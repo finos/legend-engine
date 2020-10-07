@@ -55,6 +55,14 @@ _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted fr
 
 *Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)*
 
+## Roadmap
+
+Visit [legend.finos.org/docs/roadmap](https://legend.finos.org/docs/roadmap) to know more about the roadmap.
+
+## Contributing
+
+Visit Legend [Contribution Guide](https://github.com/finos/legend/blob/master/CONTRIBUTING.md) to learn how to contribute to Legend.
+
 
 ## License
 
