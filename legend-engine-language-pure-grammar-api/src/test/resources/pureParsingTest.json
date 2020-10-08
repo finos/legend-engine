@@ -1,0 +1,6 @@
+{
+  "isolatedLambdas": {
+    "test": "{src:Person[1]|'test';}",
+    "test2": "{src:Person[1]|'test2';}"
+  }
+}

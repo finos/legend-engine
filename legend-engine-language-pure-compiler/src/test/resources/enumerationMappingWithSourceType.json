@@ -1,0 +1,128 @@
+{
+  "mappings": [
+    {
+      "enumerationMappings": [
+        {
+          "sourceType": "String",
+          "id": "SynonymEnum",
+          "enumValueMappings": [
+            {
+              "enumValue": "CUSIP",
+              "sourceValues": [
+                "CUSIP"
+              ]
+            },
+            {
+              "enumValue": "ISIN",
+              "sourceValues": [
+                "ISIN"
+              ]
+            }
+          ],
+          "enumeration": "meta::pure::tests::model::simple::ProductSynonymType"
+        }
+      ],
+      "package": "meta::sMapping::tests",
+      "includedMappings": [],
+      "_type": "mapping",
+      "name": "simpleMapping1",
+      "classMappings": []
+    }
+  ],
+  "domain": {
+    "associations": [],
+    "enums": [
+      {
+        "package": "meta::pure::tests::model::simple",
+        "values": [
+          {
+            "value": "CUSIP"
+          },
+          {
+            "value": "ISIN"
+          },
+          {
+            "value": "GSN"
+          }
+        ],
+        "_type": "Enumeration",
+        "name": "ProductSynonymType"
+      },
+      {
+        "package": "meta::pure::tests::model::simple",
+        "values": [
+          {
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "meta::pure::profiles::doc",
+                  "value": "doc"
+                },
+                "value": "A city, town, village, or other urban area."
+              }
+            ],
+            "value": "CITY"
+          },
+          {
+            "stereotypes": [
+              {
+                "profile": "meta::pure::profiles::doc",
+                "value": "deprecated"
+              }
+            ],
+            "value": "COUNTRY"
+          },
+          {
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "meta::pure::profiles::doc",
+                  "value": "doc"
+                },
+                "value": "Any geographic entity other than a city or country."
+              }
+            ],
+            "value": "REGION"
+          }
+        ],
+        "_type": "Enumeration",
+        "name": "GeographicEntityType"
+      },
+      {
+        "package": "meta::owl::tests::model",
+        "values": [
+          {
+            "value": "MALE"
+          },
+          {
+            "value": "FEMALE"
+          }
+        ],
+        "_type": "Enumeration",
+        "name": "GenderType"
+      },
+      {
+        "package": "meta::owl::tests::model",
+        "values": [
+          {
+            "value": "VP"
+          },
+          {
+            "value": "MD"
+          },
+          {
+            "value": "PMD"
+          }
+        ],
+        "_type": "Enumeration",
+        "name": "OrgLevelType"
+      }
+    ],
+    "classes": []
+  },
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

@@ -1,15 +1,6 @@
-.DS_Store
-
-# Docusaurus generated folders
-website/translated_docs/
-website/build/
-website/i18n/
-
-# Yarn build
-website/node_modules/
-
-# Generated docs
-docs/contributing.md
-
-# We use YARN
-website/package-lock.json
+.idea/**
+**/*.iml
+**/target
+**/lib
+**/surefire-reports-aggregate
+**/dependency-reduced-pom.xml

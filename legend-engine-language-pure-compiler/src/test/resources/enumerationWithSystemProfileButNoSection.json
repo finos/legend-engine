@@ -1,0 +1,154 @@
+{
+  "_type": "data",
+  "version": "v1_0_0",
+  "domain": {
+    "profiles": [],
+    "enums": [
+      {
+        "_type": "Enumeration",
+        "name": "GeographicEntityType",
+        "package": "meta::pure::tests::model::simple",
+        "sourceInformation": {
+          "endColumn": 1,
+          "endLine": 6,
+          "sourceId": "",
+          "startColumn": 1,
+          "startLine": 1
+        },
+        "stereotypes": [],
+        "taggedValues": [],
+        "values": [
+          {
+            "sourceInformation": {
+              "endColumn": 66,
+              "endLine": 3,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 3
+            },
+            "stereotypes": [],
+            "taggedValues": [
+              {
+                "sourceInformation": {
+                  "endColumn": 60,
+                  "endLine": 3,
+                  "sourceId": "",
+                  "startColumn": 6,
+                  "startLine": 3
+                },
+                "tag": {
+                  "profile": "doc",
+                  "profileSourceInformation": {
+                    "endColumn": 8,
+                    "endLine": 3,
+                    "sourceId": "",
+                    "startColumn": 6,
+                    "startLine": 3
+                  },
+                  "sourceInformation": {
+                    "endColumn": 12,
+                    "endLine": 3,
+                    "sourceId": "",
+                    "startColumn": 10,
+                    "startLine": 3
+                  },
+                  "value": "doc"
+                },
+                "value": "A city, town, village, or other urban area."
+              }
+            ],
+            "value": "CITY"
+          },
+          {
+            "sourceInformation": {
+              "endColumn": 30,
+              "endLine": 4,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 4
+            },
+            "stereotypes": [
+              {
+                "profile": "doc",
+                "profileSourceInformation": {
+                  "endColumn": 9,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 4
+                },
+                "sourceInformation": {
+                  "endColumn": 20,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 4
+                },
+                "value": "deprecated"
+              }
+            ],
+            "taggedValues": [],
+            "value": "COUNTRY"
+          },
+          {
+            "sourceInformation": {
+              "endColumn": 76,
+              "endLine": 5,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 5
+            },
+            "stereotypes": [],
+            "taggedValues": [
+              {
+                "sourceInformation": {
+                  "endColumn": 68,
+                  "endLine": 5,
+                  "sourceId": "",
+                  "startColumn": 6,
+                  "startLine": 5
+                },
+                "tag": {
+                  "profile": "doc",
+                  "profileSourceInformation": {
+                    "endColumn": 8,
+                    "endLine": 5,
+                    "sourceId": "",
+                    "startColumn": 6,
+                    "startLine": 5
+                  },
+                  "sourceInformation": {
+                    "endColumn": 12,
+                    "endLine": 5,
+                    "sourceId": "",
+                    "startColumn": 10,
+                    "startLine": 5
+                  },
+                  "value": "doc"
+                },
+                "value": "Any geographic entity other than a city or country."
+              }
+            ],
+            "value": "REGION"
+          }
+        ]
+      }
+    ],
+    "measures": [],
+    "classes": [],
+    "associations": [],
+    "functions": []
+  },
+  "stores": [],
+  "mappings": [],
+  "flattenSpecifications": [],
+  "diagrams": [],
+  "texts": [],
+  "services": [],
+  "runtimes": [],
+  "connections": [],
+  "fileGenerations": [],
+  "generationSpecifications": [],
+  "serializableModelSpecifications": [],
+  "sectionIndices": []
+}

@@ -1,0 +1,186 @@
+{
+  "lambdas": {
+    "testLambda": {
+      "_type": "lambda",
+      "body": [
+        {
+          "_type": "func",
+          "function": "groupBy",
+          "fControl": "groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "getAll",
+              "fControl": "getAll_Class_1__T_MANY_",
+              "parameters": [
+                {
+                  "_type": "class",
+                  "fullPath": "meta::datasetMetadata::domain::physicalCatalogPURE"
+                }
+              ]
+            },
+            {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "property",
+                  "property": "owningBU",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "x"
+                    }
+                  ],
+                  "class": "meta::datasetMetadata::domain::physicalCatalogPURE"
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "x",
+                  "class": "meta::datasetMetadata::domain::physicalCatalogPURE",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  }
+                }
+              ]
+            },
+            {
+              "_type": "aggregateValue",
+              "mapFn": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "plus",
+                    "fControl": "plus_String_MANY__String_1_",
+                    "parameters": [
+                      {
+                        "_type": "collection",
+                        "values": [
+                          {
+                            "_type": "func",
+                            "function": "toOne",
+                            "fControl": "toOne_T_MANY__T_1_",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "classPackage",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "x"
+                                  }
+                                ],
+                                "class": "meta::datasetMetadata::domain::physicalCatalogPURE"
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "string",
+                            "values": [
+                              "::"
+                            ],
+                            "multiplicity": {
+                              "lowerBound": 1,
+                              "upperBound": 1
+                            }
+                          },
+                          {
+                            "_type": "func",
+                            "function": "toOne",
+                            "fControl": "toOne_T_MANY__T_1_",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "className",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "x"
+                                  }
+                                ],
+                                "class": "meta::datasetMetadata::domain::physicalCatalogPURE"
+                              }
+                            ]
+                          }
+                        ],
+                        "multiplicity": {
+                          "lowerBound": 3,
+                          "upperBound": 3
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "x",
+                    "class": "meta::datasetMetadata::domain::physicalCatalogPURE",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  }
+                ]
+              },
+              "aggregateFn": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "count",
+                    "fControl": "count_Any_MANY__Integer_1_",
+                    "parameters": [
+                      {
+                        "_type": "func",
+                        "function": "distinct",
+                        "fControl": "distinct_T_MANY__T_MANY_",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "y"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "y",
+                    "class": "String",
+                    "multiplicity": {
+                      "lowerBound": 0,
+                      "upperBound": 2147483647
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "_type": "string",
+              "values": [
+                "Owning BU",
+                "fullClass Distinct Count"
+              ],
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              }
+            }
+          ]
+        }
+      ],
+      "parameters": []
+    }
+  },
+  "serializer": {
+    "name": "pure",
+    "version": "v1_0_0"
+  }
+}
+

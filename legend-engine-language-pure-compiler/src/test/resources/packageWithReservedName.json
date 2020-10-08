@@ -1,0 +1,19 @@
+{
+  "domain": {
+    "associations": [],
+    "enums": [
+      {
+        "package": "testing::$implicit",
+        "values": [],
+        "_type": "Enumeration",
+        "name": "Something"
+      }
+    ],
+    "classes": []
+  },
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}
