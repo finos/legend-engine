@@ -1,0 +1,26 @@
+Class test::Firm
+{
+  name: String[1];
+  employees: test::Person[*];
+}
+
+Class test::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class test::FirstEmployee
+{
+  name: String[1];
+}
+
+###Mapping
+Mapping test::m1
+(
+  *test::FirstEmployee[test_FirstEmployee]: Pure
+  {
+    ~src test::Firm
+    name: $src.employees->at(0).lastName
+  }
+)

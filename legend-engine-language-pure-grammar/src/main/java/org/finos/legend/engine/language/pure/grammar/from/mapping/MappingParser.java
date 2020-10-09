@@ -1,0 +1,88 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.language.pure.grammar.from.mapping;
+
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.from.DEPRECATED_SectionGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
+import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
+import org.finos.legend.engine.shared.core.function.Procedure3;
+
+import java.util.List;
+
+public class MappingParser implements DEPRECATED_SectionGrammarParser
+{
+    public static final String name = "Mapping";
+    private final List<Procedure3<MappingElementSourceCode, Mapping, PureGrammarParserContext>> extraMappingElementParsers;
+    private final List<Function3<String, MappingParserGrammar.TestInputElementContext, ParseTreeWalkerSourceInformation, InputData>> extraMappingTestInputDataParsers;
+
+    private MappingParser(List<PureGrammarParserExtension> extensions)
+    {
+        this.extraMappingElementParsers = ListIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraMappingElementParsers);
+        this.extraMappingTestInputDataParsers = ListIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraMappingTestInputDataParsers);
+    }
+
+    public static MappingParser newInstance()
+    {
+        return new MappingParser(PureGrammarParserExtensionLoader.extensions());
+    }
+
+    @Override
+    public String getName()
+    {
+        return name;
+    }
+
+    @Override
+    public SourceCodeParserInfo getParserInfo(String code, SourceInformation sourceInformation, ParseTreeWalkerSourceInformation walkerSourceInformation)
+    {
+        CharStream input = CharStreams.fromString(code);
+        ParserErrorListener errorListener = new ParserErrorListener(walkerSourceInformation);
+        MappingLexerGrammar lexer = new MappingLexerGrammar(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        MappingParserGrammar parser = new MappingParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        return new SourceCodeParserInfo(code, input, sourceInformation, walkerSourceInformation, lexer, parser, parser.definition());
+    }
+
+    @Override
+    public Section parse(SourceCodeParserInfo sectionParserInfo, PureModelContextData pureModelContextData, PureGrammarParserContext parserContext)
+    {
+        ImportAwareCodeSection section = new ImportAwareCodeSection();
+        section.parserName = this.getName();
+        section.sourceInformation = sectionParserInfo.sourceInformation;
+        MappingParseTreeWalker walker = new MappingParseTreeWalker(sectionParserInfo.input, this.extraMappingElementParsers, this.extraMappingTestInputDataParsers, sectionParserInfo.walkerSourceInformation, pureModelContextData, parserContext, section);
+        walker.visitDefinition((MappingParserGrammar.DefinitionContext) sectionParserInfo.rootContext);
+        return section;
+    }
+}

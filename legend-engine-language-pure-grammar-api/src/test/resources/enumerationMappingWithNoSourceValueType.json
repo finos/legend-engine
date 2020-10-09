@@ -1,0 +1,100 @@
+{
+  "version": "v1_0_0",
+  "_type": "data",
+  "domain": {
+    "profiles": [],
+    "enums": [
+      {
+        "_type": "Enumeration",
+        "name": "E1",
+        "package": "test::model",
+        "values": [
+          {
+            "value": "TP1"
+          },
+          {
+            "value": "TP2"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "E2",
+        "package": "test::model",
+        "values": [
+          {
+            "value": "MP1"
+          },
+          {
+            "value": "MP2"
+          },
+          {
+            "value": "MP3"
+          }
+        ]
+      }
+    ],
+    "measures": [],
+    "classes": [],
+    "associations": [],
+    "functions": []
+  },
+  "stores": [],
+  "dataStoreSpecifications": [],
+  "mappings": [
+    {
+      "_type": "mapping",
+      "includedMappings": [],
+      "classMappings": [],
+      "enumerationMappings": [
+        {
+          "enumValueMappings": [
+            {
+              "sourceValues": [
+                "MP1"
+              ],
+              "enumValue": "TP1"
+            },
+            {
+              "sourceValues": [
+                "MP2",
+                "MP3"
+              ],
+              "enumValue": "TP2"
+            }
+          ],
+          "enumeration": "test::model::E1",
+          "id": "E1Mapping"
+        },
+        {
+          "enumValueMappings": [
+            {
+              "sourceValues": [
+                10
+              ],
+              "enumValue": "MP1"
+            },
+            {
+              "sourceValues": [
+                20
+              ],
+              "enumValue": "MP2"
+            },
+            {
+              "sourceValues": [
+                30,
+                40
+              ],
+              "enumValue": "MP3"
+            }
+          ],
+          "enumeration": "test::model::E2",
+          "id": "E2Mapping"
+        }
+      ],
+      "name": "enumerationMapping",
+      "package": "test::mapping",
+      "tests": []
+    }
+  ]
+}

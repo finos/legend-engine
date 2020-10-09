@@ -1,0 +1,3807 @@
+{
+  "mappings": [
+    {
+      "enumerationMappings": [
+        {
+          "id": "GE",
+          "enumValueMappings": [
+            {
+              "enumValue": "CITY",
+              "sourceValues": [
+                {
+                  "_type": "integerSourceValue",
+                  "value": 1
+                }
+              ]
+            }
+          ],
+          "enumeration": "meta::pure::tests::model::simple::GeographicEntityType"
+        }
+      ],
+      "package": "meta::relational::tests",
+      "_type": "mapping",
+      "name": "simpleMapping",
+      "classMappings": []
+    }
+  ],
+  "stores": [],
+  "origin": {
+    "sdlcInfo": {
+      "baseVersion": "68672",
+      "_type": "pure",
+      "version": "none",
+      "packageableElementPointers": [
+        {
+          "path": "meta::relational::tests::simpleMapping",
+          "type": "MAPPING"
+        }
+      ]
+    },
+    "_type": "pointer",
+    "serializer": {
+      "name": "pure",
+      "version": "v1_15_0"
+    }
+  },
+  "domain": {
+    "associations": [
+      {
+        "package": "meta::pure::tests::model::simple",
+        "_type": "association",
+        "name": "Employment",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "firm",
+            "type": "meta::pure::tests::model::simple::Firm"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "employees",
+            "type": "meta::pure::tests::model::simple::Person"
+          }
+        ]
+      },
+      {
+        "package": "meta::pure::tests::model::simple",
+        "_type": "association",
+        "name": "FirmCEO",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "ceoFirm",
+            "type": "meta::pure::tests::model::simple::Firm"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "ceo",
+            "type": "meta::pure::tests::model::simple::Person"
+          }
+        ]
+      },
+      {
+        "package": "meta::pure::tests::model::simple",
+        "_type": "association",
+        "name": "Membership",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "organizations",
+            "type": "meta::pure::tests::model::simple::Organization"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "members",
+            "type": "meta::pure::tests::model::simple::Person"
+          }
+        ]
+      },
+      {
+        "package": "meta::pure::tests::model::simple",
+        "_type": "association",
+        "name": "BridgeAsso1",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "bridge",
+            "type": "meta::pure::tests::model::simple::Bridge"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "employees",
+            "type": "meta::pure::tests::model::simple::Person"
+          }
+        ]
+      },
+      {
+        "package": "meta::pure::tests::model::simple",
+        "_type": "association",
+        "name": "FirmOrganizations",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "firm",
+            "type": "meta::pure::tests::model::simple::Firm"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "organizations",
+            "type": "meta::pure::tests::model::simple::Organization"
+          }
+        ]
+      },
+      {
+        "package": "meta::pure::tests::model::simple",
+        "_type": "association",
+        "name": "BridgeAsso2",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "bridge",
+            "type": "meta::pure::tests::model::simple::Bridge"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "firm",
+            "type": "meta::pure::tests::model::simple::Firm"
+          }
+        ]
+      },
+      {
+        "package": "meta::pure::tests::model::simple",
+        "_type": "association",
+        "name": "AddressLocation",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "location",
+            "type": "meta::pure::tests::model::simple::Location"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "addresses",
+            "type": "meta::pure::tests::model::simple::Address"
+          }
+        ]
+      },
+      {
+        "package": "meta::pure::tests::model::simple",
+        "_type": "association",
+        "name": "SubOrganization",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "parent",
+            "type": "meta::pure::tests::model::simple::Organization"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "children",
+            "type": "meta::pure::tests::model::simple::Organization"
+          }
+        ]
+      },
+      {
+        "package": "meta::pure::tests::model::simple",
+        "_type": "association",
+        "name": "PlacesOfInterest",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "location",
+            "type": "meta::pure::tests::model::simple::Location"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "placeOfInterest",
+            "type": "meta::pure::tests::model::simple::PlaceOfInterest"
+          }
+        ]
+      }
+    ],
+    "enums": [
+      {
+        "package": "meta::pure::tests::model::simple",
+        "values": [
+          {
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "meta::pure::profiles::doc",
+                  "value": "doc"
+                },
+                "value": "A city, town, village, or other urban area."
+              }
+            ],
+            "value": "CITY"
+          },
+          {
+            "stereotypes": [
+              {
+                "profile": "meta::pure::profiles::doc",
+                "value": "deprecated"
+              }
+            ],
+            "value": "COUNTRY"
+          },
+          {
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "meta::pure::profiles::doc",
+                  "value": "doc"
+                },
+                "value": "Any geographic entity other than a city or country."
+              }
+            ],
+            "value": "REGION"
+          }
+        ],
+        "_type": "Enumeration",
+        "name": "GeographicEntityType"
+      }
+    ],
+    "classes": [
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::EntityWithAddress",
+          "meta::pure::tests::model::simple::EntityWithLocations"
+        ],
+        "qualifiedProperties": [
+          {
+            "name": "name",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "plus_String_MANY__String_1_",
+                "function": "plus",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 3,
+                      "lowerBound": 3
+                    },
+                    "values": [
+                      {
+                        "_type": "property",
+                        "property": "firstName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          " "
+                        ],
+                        "_type": "string"
+                      },
+                      {
+                        "_type": "property",
+                        "property": "lastName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      }
+                    ],
+                    "_type": "collection"
+                  }
+                ]
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "nameWithTitle",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "plus_String_MANY__String_1_",
+                "function": "plus",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 5,
+                      "lowerBound": 5
+                    },
+                    "values": [
+                      {
+                        "_type": "var",
+                        "name": "title"
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          " "
+                        ],
+                        "_type": "string"
+                      },
+                      {
+                        "_type": "property",
+                        "property": "firstName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          " "
+                        ],
+                        "_type": "string"
+                      },
+                      {
+                        "_type": "property",
+                        "property": "lastName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      }
+                    ],
+                    "_type": "collection"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "title",
+                "class": "String"
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "nameWithPrefixAndSuffix",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "if_Boolean_1__Function_1__Function_1__T_m_",
+                "function": "if",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "isEmpty_Any_$0_1$__Boolean_1_",
+                    "function": "isEmpty",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "prefix"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "if_Boolean_1__Function_1__Function_1__T_m_",
+                        "function": "if",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "fControl": "isEmpty_Any_MANY__Boolean_1_",
+                            "function": "isEmpty",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "suffixes"
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "fControl": "plus_String_MANY__String_1_",
+                                "function": "plus",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "multiplicity": {
+                                      "upperBound": 3,
+                                      "lowerBound": 3
+                                    },
+                                    "values": [
+                                      {
+                                        "_type": "property",
+                                        "property": "firstName",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "this"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "multiplicity": {
+                                          "upperBound": 1,
+                                          "lowerBound": 1
+                                        },
+                                        "values": [
+                                          " "
+                                        ],
+                                        "_type": "string"
+                                      },
+                                      {
+                                        "_type": "property",
+                                        "property": "lastName",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "this"
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    "_type": "collection"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "fControl": "plus_String_MANY__String_1_",
+                                "function": "plus",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "multiplicity": {
+                                      "upperBound": 5,
+                                      "lowerBound": 5
+                                    },
+                                    "values": [
+                                      {
+                                        "_type": "property",
+                                        "property": "firstName",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "this"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "multiplicity": {
+                                          "upperBound": 1,
+                                          "lowerBound": 1
+                                        },
+                                        "values": [
+                                          " "
+                                        ],
+                                        "_type": "string"
+                                      },
+                                      {
+                                        "_type": "property",
+                                        "property": "lastName",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "this"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "multiplicity": {
+                                          "upperBound": 1,
+                                          "lowerBound": 1
+                                        },
+                                        "values": [
+                                          ", "
+                                        ],
+                                        "_type": "string"
+                                      },
+                                      {
+                                        "fControl": "joinStrings_String_MANY__String_1__String_1_",
+                                        "function": "joinStrings",
+                                        "_type": "func",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "suffixes"
+                                          },
+                                          {
+                                            "multiplicity": {
+                                              "upperBound": 1,
+                                              "lowerBound": 1
+                                            },
+                                            "values": [
+                                              ", "
+                                            ],
+                                            "_type": "string"
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    "_type": "collection"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "if_Boolean_1__Function_1__Function_1__T_m_",
+                        "function": "if",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "fControl": "isEmpty_Any_MANY__Boolean_1_",
+                            "function": "isEmpty",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "suffixes"
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "fControl": "plus_String_MANY__String_1_",
+                                "function": "plus",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "multiplicity": {
+                                      "upperBound": 5,
+                                      "lowerBound": 5
+                                    },
+                                    "values": [
+                                      {
+                                        "fControl": "toOne_T_MANY__T_1_",
+                                        "function": "toOne",
+                                        "_type": "func",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "prefix"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "multiplicity": {
+                                          "upperBound": 1,
+                                          "lowerBound": 1
+                                        },
+                                        "values": [
+                                          " "
+                                        ],
+                                        "_type": "string"
+                                      },
+                                      {
+                                        "_type": "property",
+                                        "property": "firstName",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "this"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "multiplicity": {
+                                          "upperBound": 1,
+                                          "lowerBound": 1
+                                        },
+                                        "values": [
+                                          " "
+                                        ],
+                                        "_type": "string"
+                                      },
+                                      {
+                                        "_type": "property",
+                                        "property": "lastName",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "this"
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    "_type": "collection"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "fControl": "plus_String_MANY__String_1_",
+                                "function": "plus",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "multiplicity": {
+                                      "upperBound": 7,
+                                      "lowerBound": 7
+                                    },
+                                    "values": [
+                                      {
+                                        "fControl": "toOne_T_MANY__T_1_",
+                                        "function": "toOne",
+                                        "_type": "func",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "prefix"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "multiplicity": {
+                                          "upperBound": 1,
+                                          "lowerBound": 1
+                                        },
+                                        "values": [
+                                          " "
+                                        ],
+                                        "_type": "string"
+                                      },
+                                      {
+                                        "_type": "property",
+                                        "property": "firstName",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "this"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "multiplicity": {
+                                          "upperBound": 1,
+                                          "lowerBound": 1
+                                        },
+                                        "values": [
+                                          " "
+                                        ],
+                                        "_type": "string"
+                                      },
+                                      {
+                                        "_type": "property",
+                                        "property": "lastName",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "this"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "multiplicity": {
+                                          "upperBound": 1,
+                                          "lowerBound": 1
+                                        },
+                                        "values": [
+                                          ", "
+                                        ],
+                                        "_type": "string"
+                                      },
+                                      {
+                                        "fControl": "joinStrings_String_MANY__String_1__String_1_",
+                                        "function": "joinStrings",
+                                        "_type": "func",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "suffixes"
+                                          },
+                                          {
+                                            "multiplicity": {
+                                              "upperBound": 1,
+                                              "lowerBound": 1
+                                            },
+                                            "values": [
+                                              ", "
+                                            ],
+                                            "_type": "string"
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    "_type": "collection"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 0
+                },
+                "_type": "var",
+                "name": "prefix",
+                "class": "String"
+              },
+              {
+                "multiplicity": {
+                  "lowerBound": 0
+                },
+                "_type": "var",
+                "name": "suffixes",
+                "class": "String"
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "fullName",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "if_Boolean_1__Function_1__Function_1__T_m_",
+                "function": "if",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "lastNameFirst"
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "plus_String_MANY__String_1_",
+                        "function": "plus",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "multiplicity": {
+                              "upperBound": 3,
+                              "lowerBound": 3
+                            },
+                            "values": [
+                              {
+                                "_type": "property",
+                                "property": "lastName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  ", "
+                                ],
+                                "_type": "string"
+                              },
+                              {
+                                "_type": "property",
+                                "property": "firstName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              }
+                            ],
+                            "_type": "collection"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "plus_String_MANY__String_1_",
+                        "function": "plus",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "multiplicity": {
+                              "upperBound": 3,
+                              "lowerBound": 3
+                            },
+                            "values": [
+                              {
+                                "_type": "property",
+                                "property": "firstName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  " "
+                                ],
+                                "_type": "string"
+                              },
+                              {
+                                "_type": "property",
+                                "property": "lastName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              }
+                            ],
+                            "_type": "collection"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "lastNameFirst",
+                "class": "Boolean"
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "parameterizedName",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "if_Boolean_1__Function_1__Function_1__T_m_",
+                "function": "if",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "lastNameFirst",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "personNameParameter"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "plus_String_MANY__String_1_",
+                        "function": "plus",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "multiplicity": {
+                              "upperBound": 5,
+                              "lowerBound": 5
+                            },
+                            "values": [
+                              {
+                                "_type": "property",
+                                "property": "prefix",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "nested",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "personNameParameter"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  " "
+                                ],
+                                "_type": "string"
+                              },
+                              {
+                                "_type": "property",
+                                "property": "lastName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  ", "
+                                ],
+                                "_type": "string"
+                              },
+                              {
+                                "_type": "property",
+                                "property": "firstName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              }
+                            ],
+                            "_type": "collection"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "plus_String_MANY__String_1_",
+                        "function": "plus",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "multiplicity": {
+                              "upperBound": 3,
+                              "lowerBound": 3
+                            },
+                            "values": [
+                              {
+                                "_type": "property",
+                                "property": "firstName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  " "
+                                ],
+                                "_type": "string"
+                              },
+                              {
+                                "_type": "property",
+                                "property": "lastName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              }
+                            ],
+                            "_type": "collection"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "personNameParameter",
+                "class": "meta::pure::tests::model::simple::PersonNameParameter"
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "allOrganizations",
+            "returnMultiplicity": {
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "removeDuplicates_T_MANY__T_MANY_",
+                "function": "removeDuplicates",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "concatenate_T_MANY__T_MANY__T_MANY_",
+                    "function": "concatenate",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "organizations",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "fControl": "map_T_MANY__Function_1__V_MANY_",
+                        "function": "map",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "organizations",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "this"
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "_type": "property",
+                                "property": "superOrganizations",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "o"
+                                  }
+                                ]
+                              }
+                            ],
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "o"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Organization"
+          },
+          {
+            "name": "constant",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "values": [
+                  "constant"
+                ],
+                "_type": "string"
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "addresses",
+            "returnMultiplicity": {
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "concatenate_T_MANY__T_MANY__T_MANY_",
+                "function": "concatenate",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "address",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "property",
+                    "property": "address",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "firm",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Address"
+          }
+        ],
+        "taggedValues": [
+          {
+            "tag": {
+              "profile": "meta::slang::slang",
+              "value": "slangSuperType"
+            },
+            "value": "my::fiibar"
+          }
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "Person",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "lastName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "otherNames",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "extraInformation",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "manager",
+            "type": "meta::pure::tests::model::simple::Person"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "age",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "nickName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "activeEmployment",
+            "type": "Boolean"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::EntityWithAddress"
+        ],
+        "qualifiedProperties": [
+          {
+            "name": "averageEmployeesAge",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "times_Float_MANY__Float_1_",
+                "function": "times",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 2,
+                      "lowerBound": 2
+                    },
+                    "values": [
+                      {
+                        "fControl": "average_Integer_MANY__Float_1_",
+                        "function": "average",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "age",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "employees",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          2.0
+                        ],
+                        "_type": "float"
+                      }
+                    ],
+                    "_type": "collection"
+                  }
+                ]
+              }
+            ],
+            "returnType": "Float"
+          },
+          {
+            "name": "sumEmployeesAge",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "sum_Integer_MANY__Integer_1_",
+                "function": "sum",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "age",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "employees",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "Integer"
+          },
+          {
+            "name": "maxEmployeesAge",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "max_Integer_MANY__Integer_$0_1$_",
+                "function": "max",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "age",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "employees",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "Integer"
+          },
+          {
+            "name": "nameAndAddress",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "plus_String_MANY__String_1_",
+                "function": "plus",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 3,
+                      "lowerBound": 3
+                    },
+                    "values": [
+                      {
+                        "_type": "property",
+                        "property": "legalName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          ","
+                        ],
+                        "_type": "string"
+                      },
+                      {
+                        "_type": "property",
+                        "property": "name",
+                        "parameters": [
+                          {
+                            "fControl": "toOne_T_MANY__T_1_",
+                            "function": "toOne",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "address",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "_type": "collection"
+                  }
+                ]
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "isFirmX",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "if_Boolean_1__Function_1__Function_1__T_m_",
+                "function": "if",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                    "function": "equal",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "fControl": "toOne_T_MANY__T_1_",
+                        "function": "toOne",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "legalName",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "this"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          "Firm X"
+                        ],
+                        "_type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          "Yes"
+                        ],
+                        "_type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          "No"
+                        ],
+                        "_type": "string"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "nameAndMaskedAddress",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "if_Boolean_1__Function_1__Function_1__T_m_",
+                "function": "if",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                    "function": "equal",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "legalName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          "Firm X"
+                        ],
+                        "_type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "plus_String_MANY__String_1_",
+                        "function": "plus",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "multiplicity": {
+                              "upperBound": 2,
+                              "lowerBound": 2
+                            },
+                            "values": [
+                              {
+                                "_type": "property",
+                                "property": "legalName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  " , Top Secret"
+                                ],
+                                "_type": "string"
+                              }
+                            ],
+                            "_type": "collection"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "plus_String_MANY__String_1_",
+                        "function": "plus",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "multiplicity": {
+                              "upperBound": 3,
+                              "lowerBound": 3
+                            },
+                            "values": [
+                              {
+                                "_type": "property",
+                                "property": "legalName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  ","
+                                ],
+                                "_type": "string"
+                              },
+                              {
+                                "_type": "property",
+                                "property": "name",
+                                "parameters": [
+                                  {
+                                    "fControl": "toOne_T_MANY__T_1_",
+                                    "function": "toOne",
+                                    "_type": "func",
+                                    "parameters": [
+                                      {
+                                        "_type": "property",
+                                        "property": "address",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "this"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "_type": "collection"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "employeeByLastName",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "toOne_T_MANY__T_1_",
+                "function": "toOne",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                    "function": "filter",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "employees",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "lastName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "e"
+                                  }
+                                ]
+                              },
+                              {
+                                "_type": "var",
+                                "name": "lastName"
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "e"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "lastName",
+                "class": "String"
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Person"
+          },
+          {
+            "name": "employeeByLastNameFirstName",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "_type": "property",
+                "property": "firstName",
+                "parameters": [
+                  {
+                    "fControl": "toOne_T_MANY__T_1_",
+                    "function": "toOne",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                        "function": "filter",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "employees",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "this"
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                                "function": "equal",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "lastName",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "e"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "_type": "var",
+                                    "name": "lastName"
+                                  }
+                                ]
+                              }
+                            ],
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "e"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "lastName",
+                "class": "String"
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "employeeByLastNameWhereVarIsFirstEqualArg",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "toOne_T_MANY__T_1_",
+                "function": "toOne",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                    "function": "filter",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "employees",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "lastName"
+                              },
+                              {
+                                "_type": "property",
+                                "property": "lastName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "e"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "e"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "lastName",
+                "class": "String"
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Person"
+          },
+          {
+            "name": "employeesByAge",
+            "returnMultiplicity": {
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                "function": "filter",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "employees",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "lessThan_Number_1__Number_1__Boolean_1_",
+                        "function": "lessThan",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "fControl": "toOne_T_MANY__T_1_",
+                            "function": "toOne",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "age",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "e"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "var",
+                            "name": "age"
+                          }
+                        ]
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "e"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "age",
+                "class": "Integer"
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Person"
+          },
+          {
+            "name": "employeesByCityOrManager",
+            "returnMultiplicity": {
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                "function": "filter",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "employees",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "or_Boolean_1__Boolean_1__Boolean_1_",
+                        "function": "or",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "name",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "address",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "e"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "_type": "var",
+                                "name": "city"
+                              }
+                            ]
+                          },
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "name",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "manager",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "e"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "_type": "var",
+                                "name": "managerName"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "e"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "city",
+                "class": "String"
+              },
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "managerName",
+                "class": "String"
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Person"
+          },
+          {
+            "name": "employeesByCityOrManagerAndLastName",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "toOne_T_MANY__T_1_",
+                "function": "toOne",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                    "function": "filter",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "employees",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "fControl": "and_Boolean_1__Boolean_1__Boolean_1_",
+                            "function": "and",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                                "function": "equal",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "lastName",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "e"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "_type": "var",
+                                    "name": "name"
+                                  }
+                                ]
+                              },
+                              {
+                                "fControl": "or_Boolean_1__Boolean_1__Boolean_1_",
+                                "function": "or",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                                    "function": "equal",
+                                    "_type": "func",
+                                    "parameters": [
+                                      {
+                                        "_type": "property",
+                                        "property": "name",
+                                        "parameters": [
+                                          {
+                                            "_type": "property",
+                                            "property": "address",
+                                            "parameters": [
+                                              {
+                                                "_type": "var",
+                                                "name": "e"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "_type": "var",
+                                        "name": "city"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                                    "function": "equal",
+                                    "_type": "func",
+                                    "parameters": [
+                                      {
+                                        "_type": "property",
+                                        "property": "name",
+                                        "parameters": [
+                                          {
+                                            "_type": "property",
+                                            "property": "manager",
+                                            "parameters": [
+                                              {
+                                                "_type": "var",
+                                                "name": "e"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "_type": "var",
+                                        "name": "managerName"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "e"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "name",
+                "class": "String"
+              },
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "city",
+                "class": "String"
+              },
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "managerName",
+                "class": "String"
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Person"
+          },
+          {
+            "name": "hasEmployeeBelowAge",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "exists_T_MANY__Function_1__Boolean_1_",
+                "function": "exists",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "employees",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "lessThan_Number_1__Number_1__Boolean_1_",
+                        "function": "lessThan",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "fControl": "toOne_T_MANY__T_1_",
+                            "function": "toOne",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "age",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "e"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "var",
+                            "name": "age"
+                          }
+                        ]
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "e"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "age",
+                "class": "Integer"
+              }
+            ],
+            "returnType": "Boolean"
+          },
+          {
+            "name": "employeeWithFirmAddressName",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "first_T_MANY__T_$0_1$_",
+                "function": "first",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                    "function": "filter",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "employees",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "name",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "e"
+                                  }
+                                ]
+                              },
+                              {
+                                "_type": "property",
+                                "property": "name",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "address",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "this"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "e"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Person"
+          },
+          {
+            "name": "employeeWithAddressName",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "first_T_MANY__T_$0_1$_",
+                "function": "first",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                    "function": "filter",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "employees",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "name",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "address",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "e"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "_type": "var",
+                                "name": "name"
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "e"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "name",
+                "class": "String"
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Person"
+          },
+          {
+            "name": "employeesWithAddressNameSorted",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "joinStrings_String_MANY__String_1__String_1_",
+                "function": "joinStrings",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "lastName",
+                    "parameters": [
+                      {
+                        "fControl": "sortBy_T_m__Function_$0_1$__T_m_",
+                        "function": "sortBy",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                            "function": "filter",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "employees",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              },
+                              {
+                                "_type": "lambda",
+                                "body": [
+                                  {
+                                    "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                                    "function": "equal",
+                                    "_type": "func",
+                                    "parameters": [
+                                      {
+                                        "fControl": "trim_String_1__String_1_",
+                                        "function": "trim",
+                                        "_type": "func",
+                                        "parameters": [
+                                          {
+                                            "fControl": "toOne_T_MANY__T_1_",
+                                            "function": "toOne",
+                                            "_type": "func",
+                                            "parameters": [
+                                              {
+                                                "_type": "property",
+                                                "property": "name",
+                                                "parameters": [
+                                                  {
+                                                    "_type": "property",
+                                                    "property": "address",
+                                                    "parameters": [
+                                                      {
+                                                        "_type": "var",
+                                                        "name": "e"
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "_type": "var",
+                                        "name": "name"
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "e"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "path": [
+                              {
+                                "_type": "propertyPath",
+                                "property": "lastName"
+                              }
+                            ],
+                            "_type": "path",
+                            "name": "",
+                            "startType": "meta::pure::tests::model::simple::Person"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "values": [
+                      ""
+                    ],
+                    "_type": "string"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "name",
+                "class": "String"
+              }
+            ],
+            "returnType": "String"
+          },
+          {
+            "name": "employeeAddressesWithFirmAddressName",
+            "returnMultiplicity": {
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                "function": "filter",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "map_T_MANY__Function_1__V_MANY_",
+                    "function": "map",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "employees",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "property": "address",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "e"
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "e"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "and_Boolean_1__Boolean_1__Boolean_1_",
+                        "function": "and",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "name"
+                              },
+                              {
+                                "_type": "property",
+                                "property": "name",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "address",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "this"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "t"
+                              },
+                              {
+                                "_type": "property",
+                                "property": "type",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "x"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "x"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "name",
+                "class": "String"
+              },
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "t",
+                "class": "meta::pure::tests::model::simple::GeographicEntityType"
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Address"
+          },
+          {
+            "name": "isFirmXGroup",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "in_Any_1__Any_MANY__Boolean_1_",
+                "function": "in",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "legalName",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ]
+                  },
+                  {
+                    "multiplicity": {
+                      "upperBound": 3,
+                      "lowerBound": 3
+                    },
+                    "values": [
+                      "Firm X",
+                      "Firm X & Co.",
+                      "Firm X and Group"
+                    ],
+                    "_type": "string"
+                  }
+                ]
+              }
+            ],
+            "returnType": "Boolean"
+          }
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "Firm",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "stereotypes": [
+              {
+                "profile": "meta::pure::profiles::equality",
+                "value": "Key"
+              }
+            ],
+            "name": "legalName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "nickName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::GeographicEntity"
+        ],
+        "qualifiedProperties": [
+          {
+            "name": "description",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "plus_String_MANY__String_1_",
+                "function": "plus",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 2,
+                      "lowerBound": 2
+                    },
+                    "values": [
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          "D:"
+                        ],
+                        "_type": "string"
+                      },
+                      {
+                        "_type": "property",
+                        "property": "name",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      }
+                    ],
+                    "_type": "collection"
+                  }
+                ]
+              }
+            ],
+            "returnType": "String"
+          }
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "Address",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "street",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "comments",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "EntityWithAddress",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "address",
+            "type": "meta::pure::tests::model::simple::Address"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "qualifiedProperties": [
+          {
+            "name": "locationsByType",
+            "returnMultiplicity": {
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                "function": "filter",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "locations",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "exists_T_MANY__Function_1__Boolean_1_",
+                        "function": "exists",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "types"
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "fControl": "is_Any_1__Any_1__Boolean_1_",
+                                "function": "is",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "type",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "l"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "_type": "var",
+                                    "name": "type"
+                                  }
+                                ]
+                              }
+                            ],
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "type"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "l"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "lowerBound": 0
+                },
+                "_type": "var",
+                "name": "types",
+                "class": "meta::pure::tests::model::simple::GeographicEntityType"
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Location"
+          }
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "EntityWithLocations",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "locations",
+            "type": "meta::pure::tests::model::simple::Location"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "GeographicEntity",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "type",
+            "type": "meta::pure::tests::model::simple::GeographicEntityType"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::Person"
+        ],
+        "qualifiedProperties": [
+          {
+            "name": "birthYear",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "year_Date_$0_1$__Integer_$0_1$_",
+                "function": "year",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "birthdate",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "Integer"
+          }
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "PersonExtension",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "birthdate",
+            "type": "Date"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::Person"
+        ],
+        "package": "meta::relational::tests::mapping::union::extend",
+        "_type": "class",
+        "name": "Person"
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::Firm"
+        ],
+        "qualifiedProperties": [
+          {
+            "name": "establishedYear",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "year_Date_1__Integer_1_",
+                "function": "year",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "establishedDate",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "Integer"
+          },
+          {
+            "name": "allEmployeesLastName",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "joinStrings_String_MANY__String_1__String_1_",
+                "function": "joinStrings",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "lastName",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "employeesExt",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "values": [
+                      ","
+                    ],
+                    "_type": "string"
+                  }
+                ]
+              }
+            ],
+            "returnType": "String"
+          }
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "FirmExtension",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "establishedDate",
+            "type": "Date"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "employeesExt",
+            "type": "meta::pure::tests::model::simple::PersonExtension"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::Firm"
+        ],
+        "package": "meta::relational::tests::mapping::union::extend",
+        "_type": "class",
+        "name": "Firm"
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::Address"
+        ],
+        "package": "meta::relational::tests::mapping::union::extend",
+        "_type": "class",
+        "name": "Address"
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "qualifiedProperties": [
+          {
+            "name": "superOrganizations",
+            "returnMultiplicity": {
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "letFunction_String_1__T_m__T_m_",
+                "function": "letFunction",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "values": [
+                      "parent"
+                    ],
+                    "_type": "string"
+                  },
+                  {
+                    "_type": "property",
+                    "property": "parent",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "fControl": "if_Boolean_1__Function_1__Function_1__T_m_",
+                "function": "if",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "isEmpty_Any_$0_1$__Boolean_1_",
+                    "function": "isEmpty",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "parent"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "multiplicity": {
+                          "upperBound": 0,
+                          "lowerBound": 0
+                        },
+                        "_type": "collection"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "fControl": "concatenate_T_MANY__T_MANY__T_MANY_",
+                        "function": "concatenate",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "parent"
+                          },
+                          {
+                            "_type": "property",
+                            "property": "superOrganizations",
+                            "parameters": [
+                              {
+                                "fControl": "toOne_T_MANY__T_1_",
+                                "function": "toOne",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "parent"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Organization"
+          },
+          {
+            "name": "subOrganizations",
+            "returnMultiplicity": {
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "removeDuplicates_T_MANY__T_MANY_",
+                "function": "removeDuplicates",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "concatenate_T_MANY__T_MANY__T_MANY_",
+                    "function": "concatenate",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "children",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "fControl": "map_T_MANY__Function_1__V_MANY_",
+                        "function": "map",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "children",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "this"
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "_type": "property",
+                                "property": "subOrganizations",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "c"
+                                  }
+                                ]
+                              }
+                            ],
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "c"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Organization"
+          },
+          {
+            "name": "child",
+            "returnMultiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "body": [
+              {
+                "fControl": "toOne_T_MANY__T_1_",
+                "function": "toOne",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                    "function": "filter",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "children",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "name",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "c"
+                                  }
+                                ]
+                              },
+                              {
+                                "_type": "var",
+                                "name": "name"
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "c"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "name",
+                "class": "String"
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Organization"
+          },
+          {
+            "name": "allMembers",
+            "returnMultiplicity": {
+              "lowerBound": 0
+            },
+            "body": [
+              {
+                "fControl": "removeDuplicates_T_MANY__T_MANY_",
+                "function": "removeDuplicates",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "concatenate_T_MANY__T_MANY__T_MANY_",
+                    "function": "concatenate",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "members",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "fControl": "map_T_MANY__Function_1__V_MANY_",
+                        "function": "map",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "subOrganizations",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "this"
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "_type": "property",
+                                "property": "members",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "o"
+                                  }
+                                ]
+                              }
+                            ],
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "o"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "returnType": "meta::pure::tests::model::simple::Person"
+          }
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "Organization",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "Bridge"
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "PersonNameParameter",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "lastNameFirst",
+            "type": "Boolean"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "nested",
+            "type": "meta::pure::tests::model::simple::PersonNameParameterNested"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::GeographicEntity"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "Location",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "place",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "censusdate",
+            "type": "Date"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::Organization"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "Division"
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::Organization"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "Department"
+      },
+      {
+        "superTypes": [
+          "meta::pure::tests::model::simple::Organization"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "Team"
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "PersonNameParameterNested",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "prefix",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::tests::model::simple",
+        "_type": "class",
+        "name": "PlaceOfInterest",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      }
+    ]
+  },
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "v1_15_0"
+  }
+}

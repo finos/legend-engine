@@ -1,0 +1,671 @@
+{
+  "package": "meta::pure::mapping::modelToModel::test::union",
+  "_type": "mapping",
+  "name": "unionModelMapping",
+  "classMappings": [
+    {
+      "root": true,
+      "_type": "operation",
+      "id": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+      "operation": "STORE_UNION",
+      "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+      "parameters": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "root": true,
+      "_type": "operation",
+      "id": "meta_pure_mapping_modelToModel_test_shared_dest_Firm",
+      "operation": "STORE_UNION",
+      "class": "meta::pure::mapping::modelToModel::test::shared::dest::Firm",
+      "parameters": [
+        "f1",
+        "f2"
+      ]
+    },
+    {
+      "srcClass": "meta::pure::mapping::modelToModel::test::shared::src::_Firm",
+      "root": false,
+      "_type": "pureInstance",
+      "propertyMappings": [
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "fControl": "plus_String_MANY__String_1_",
+                "function": "plus",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 2,
+                      "lowerBound": 2
+                    },
+                    "values": [
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          "f1 \/ "
+                        ],
+                        "_type": "string"
+                      },
+                      {
+                        "_type": "property",
+                        "property": "name",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "src"
+                          }
+                        ]
+                      }
+                    ],
+                    "_type": "collection"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "src",
+                "class": "meta::pure::mapping::modelToModel::test::shared::src::_Firm"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "legalName",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Firm"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Firm",
+          "target": ""
+        }
+      ],
+      "id": "f1",
+      "class": "meta::pure::mapping::modelToModel::test::shared::dest::Firm"
+    },
+    {
+      "srcClass": "meta::pure::mapping::modelToModel::test::shared::src::_Firm",
+      "root": false,
+      "_type": "pureInstance",
+      "propertyMappings": [
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "fControl": "plus_String_MANY__String_1_",
+                "function": "plus",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 2,
+                      "lowerBound": 2
+                    },
+                    "values": [
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          "f2 \/ "
+                        ],
+                        "_type": "string"
+                      },
+                      {
+                        "_type": "property",
+                        "property": "name",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "src"
+                          }
+                        ]
+                      }
+                    ],
+                    "_type": "collection"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "src",
+                "class": "meta::pure::mapping::modelToModel::test::shared::src::_Firm"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "legalName",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Firm"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Firm",
+          "target": ""
+        }
+      ],
+      "id": "f2",
+      "class": "meta::pure::mapping::modelToModel::test::shared::dest::Firm"
+    },
+    {
+      "root": true,
+      "_type": "pureInstance",
+      "propertyMappings": [
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "values": [
+                  "streetConstant"
+                ],
+                "_type": "string"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "street",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Address"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Address",
+          "target": ""
+        }
+      ],
+      "id": "meta_pure_mapping_modelToModel_test_shared_dest_Address",
+      "class": "meta::pure::mapping::modelToModel::test::shared::dest::Address"
+    },
+    {
+      "filter": {
+        "_type": "lambda",
+        "body": [
+          {
+            "fControl": "startsWith_String_1__String_1__Boolean_1_",
+            "function": "startsWith",
+            "_type": "func",
+            "parameters": [
+              {
+                "_type": "property",
+                "property": "fullName",
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "src"
+                  }
+                ]
+              },
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "values": [
+                  "Johny"
+                ],
+                "_type": "string"
+              }
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "_type": "var",
+            "name": "src",
+            "class": "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+          }
+        ]
+      },
+      "srcClass": "meta::pure::mapping::modelToModel::test::shared::src::_Person",
+      "root": false,
+      "_type": "pureInstance",
+      "propertyMappings": [
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "fControl": "substring_String_1__Integer_1__Integer_1__String_1_",
+                "function": "substring",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "fullName",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ]
+                  },
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "values": [
+                      0
+                    ],
+                    "_type": "integer"
+                  },
+                  {
+                    "fControl": "indexOf_String_1__String_1__Integer_1_",
+                    "function": "indexOf",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "fullName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "src"
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          " "
+                        ],
+                        "_type": "string"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "src",
+                "class": "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "firstName",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+          "target": ""
+        },
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "fControl": "substring_String_1__Integer_1__Integer_1__String_1_",
+                "function": "substring",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "property": "fullName",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ]
+                  },
+                  {
+                    "fControl": "plus_Integer_MANY__Integer_1_",
+                    "function": "plus",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "multiplicity": {
+                          "upperBound": 2,
+                          "lowerBound": 2
+                        },
+                        "values": [
+                          {
+                            "fControl": "indexOf_String_1__String_1__Integer_1_",
+                            "function": "indexOf",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "fullName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "src"
+                                  }
+                                ]
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  " "
+                                ],
+                                "_type": "string"
+                              }
+                            ]
+                          },
+                          {
+                            "multiplicity": {
+                              "upperBound": 1,
+                              "lowerBound": 1
+                            },
+                            "values": [
+                              1
+                            ],
+                            "_type": "integer"
+                          }
+                        ],
+                        "_type": "collection"
+                      }
+                    ]
+                  },
+                  {
+                    "fControl": "length_String_1__Integer_1_",
+                    "function": "length",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "fullName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "src"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "src",
+                "class": "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "lastName",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+          "target": ""
+        },
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "property",
+                "property": "addresses",
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "src"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "src",
+                "class": "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "addresses",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+          "target": "meta_pure_mapping_modelToModel_test_shared_dest_Address"
+        },
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "property",
+                "property": "firm",
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "src"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "src",
+                "class": "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "firm",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+          "target": "f1"
+        }
+      ],
+      "id": "p1",
+      "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+    },
+    {
+      "filter": {
+        "_type": "lambda",
+        "body": [
+          {
+            "fControl": "startsWith_String_1__String_1__Boolean_1_",
+            "function": "startsWith",
+            "_type": "func",
+            "parameters": [
+              {
+                "_type": "property",
+                "property": "fullName",
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "src"
+                  }
+                ]
+              },
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "values": [
+                  "_"
+                ],
+                "_type": "string"
+              }
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "_type": "var",
+            "name": "src",
+            "class": "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+          }
+        ]
+      },
+      "srcClass": "meta::pure::mapping::modelToModel::test::shared::src::_Person",
+      "root": false,
+      "_type": "pureInstance",
+      "propertyMappings": [
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "values": [
+                  "N\/A"
+                ],
+                "_type": "string"
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "src",
+                "class": "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "firstName",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+          "target": ""
+        },
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "values": [
+                  "N\/A"
+                ],
+                "_type": "string"
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "src",
+                "class": "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "lastName",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+          "target": ""
+        },
+        {
+          "transform": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "property",
+                "property": "firm",
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "src"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "src",
+                "class": "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+              }
+            ]
+          },
+          "_type": "purePropertyMapping",
+          "property": {
+            "property": "firm",
+            "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+          },
+          "source": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+          "target": "f2"
+        }
+      ],
+      "id": "p2",
+      "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+    }
+  ]
+}

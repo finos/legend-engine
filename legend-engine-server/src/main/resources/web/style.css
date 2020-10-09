@@ -1,0 +1,41 @@
+body {
+  margin:0;
+}
+
+.main {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #252525;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  width: 50vw;
+}
+
+.logo svg {
+  fill: #ffa7c4;
+}
+
+.text-content {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.text {
+  font-family: Merriweather, Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  color: #efefef;
+  line-height: 23px;
+}
+
+.text a {
+  color: #ffa7c4;
+}

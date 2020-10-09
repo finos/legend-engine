@@ -1,0 +1,198 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.plan.execution.nodes.state;
+
+import io.opentracing.Span;
+import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
+import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
+import org.finos.legend.engine.plan.execution.extension.ExecutionExtensionLoader;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+
+import javax.security.auth.Subject;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
+public class ExecutionState
+{
+    public MutableList<ExecutionActivity> activities = Lists.mutable.empty();
+    public boolean inAllocation;
+    public boolean inLake;
+    public String allocationNodeName;
+    public String authId;
+    public boolean transformAllocation;
+    public Span topSpan;
+    public boolean realizeAllocationResults;
+    public List<GraphFetchCache> graphFetchCaches;
+
+    private EngineJavaCompiler javaCompiler;
+
+    private final Map<String, Result> res;
+    private final List<? extends String> templateFunctions;
+    private final boolean isJavaCompilationAllowed;
+    private final Map<StoreType, StoreExecutionState> states = new EnumMap<>(StoreType.class);
+
+    public final List<Function3<ExecutionNode, Subject, ExecutionState, Result>> extraNodeExecutors;
+    public final List<Function3<ExecutionNode, Subject, ExecutionState, Result>> extraSequenceNodeExecutors;
+
+    public ExecutionState(ExecutionState state)
+    {
+        this.inAllocation = state.inAllocation;
+        this.inLake = state.inLake;
+        this.res = state.res;
+        this.allocationNodeName = state.allocationNodeName;
+        this.templateFunctions = state.templateFunctions;
+        this.authId = state.authId;
+        this.transformAllocation = state.transformAllocation;
+        this.topSpan = state.topSpan;
+        this.activities = state.activities;
+        this.realizeAllocationResults = state.realizeAllocationResults;
+        this.isJavaCompilationAllowed = state.isJavaCompilationAllowed;
+        this.javaCompiler = state.javaCompiler;
+        this.graphFetchCaches = state.graphFetchCaches;
+        state.states.forEach((storeType, storeExecutionState) -> this.states.put(storeType, storeExecutionState.copy()));
+        List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
+        this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
+        this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
+    }
+
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed)
+    {
+        this.inAllocation = false;
+        this.inLake = false;
+        this.res = res;
+        this.templateFunctions = templateFunctions;
+        this.realizeAllocationResults = false;
+        this.isJavaCompilationAllowed = isJavaCompilationAllowed;
+        extraStates.forEach(storeExecutionState -> this.states.put(storeExecutionState.getStoreState().getStoreType(), storeExecutionState));
+        List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
+        this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
+        this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
+    }
+
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates)
+    {
+        this(res, templateFunctions, extraStates, true);
+    }
+
+    public ExecutionState inLake(boolean inLake)
+    {
+        this.inLake = inLake;
+        this.transformAllocation = true;
+        return this;
+    }
+
+    public ExecutionState varName(String var)
+    {
+        this.inAllocation = true;
+        this.allocationNodeName = var;
+        return this;
+    }
+
+    public ExecutionState setAuthUser(String user)
+    {
+        this.authId = user;
+        this.transformAllocation = true;
+        return this;
+    }
+
+    public ExecutionState setRealizeAllocationResults(boolean realize)
+    {
+        this.realizeAllocationResults = realize;
+        return this;
+    }
+
+    public ExecutionState setJavaCompiler(EngineJavaCompiler javaCompiler)
+    {
+        if (isJavaCompilationForbidden())
+        {
+            throw new IllegalStateException("Java compilation is not allowed");
+        }
+        this.javaCompiler = javaCompiler;
+        return this;
+    }
+
+    public EngineJavaCompiler getJavaCompiler()
+    {
+        return this.javaCompiler;
+    }
+
+    public boolean hasJavaCompiler()
+    {
+        return this.javaCompiler != null;
+    }
+
+    public boolean isJavaCompilationAllowed()
+    {
+        return this.isJavaCompilationAllowed;
+    }
+
+    public boolean isJavaCompilationForbidden()
+    {
+        return !isJavaCompilationAllowed();
+    }
+
+    public ExecutionState setGraphFetchCaches(List<GraphFetchCache> graphFetchCaches)
+    {
+        this.graphFetchCaches = graphFetchCaches;
+        return this;
+    }
+
+    public Result getUserSuppliedVector()
+    {
+        return this.res.get("userSuppliedVector");
+    }
+
+    public Result getResult(String key)
+    {
+        return this.res.get(key);
+    }
+
+    public Map<String, Result> getResults()
+    {
+        return Collections.unmodifiableMap(this.res);
+    }
+
+    public void addResult(String key, Result result)
+    {
+        this.res.put(key, result);
+    }
+
+    public void addParameterValue(String parameter, Object value)
+    {
+        addResult(parameter, (value instanceof Result) ? (Result) value : new ConstantResult(value));
+    }
+
+    public StoreExecutionState getStoreExecutionState(StoreType type)
+    {
+        return this.states.get(type);
+    }
+
+    public List<? extends String> getTemplateFunctions()
+    {
+        return Collections.unmodifiableList(this.templateFunctions);
+    }
+}

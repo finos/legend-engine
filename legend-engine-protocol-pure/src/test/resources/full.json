@@ -1,0 +1,5745 @@
+{
+  "_type": "data",
+  "version": "v1_0_0",
+  "domain": {
+    "profiles": [
+      {
+        "_type": "profile",
+        "name": "governanceRule",
+        "package": "apps::ep::bi::tableauGovernance",
+        "stereotypes": [],
+        "tags": [
+          "id",
+          "category",
+          "description",
+          "recommendedResolution"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "meta",
+        "package": "apps::ep::dsp",
+        "stereotypes": [],
+        "tags": [
+          "fieldName"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "entitlement",
+        "package": "apps::ep::entitlements",
+        "stereotypes": [
+          "rule"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "DataBrowser",
+        "package": "apps::finance::cma::runtime",
+        "stereotypes": [
+          "hidden"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "bosi",
+        "package": "apps::ops",
+        "stereotypes": [
+          "subobject",
+          "indexed",
+          "entity",
+          "none",
+          "event",
+          "lifecycleRoot",
+          "parentChild",
+          "generated",
+          "documentEntity"
+        ],
+        "tags": [
+          "dontIntern",
+          "objectType",
+          "parent",
+          "child",
+          "subobject",
+          "key",
+          "documentstore"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "Privacy",
+        "package": "apps::ops::finma::refData::pwm::client",
+        "stereotypes": [
+          "private"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "general",
+        "package": "apps::ops",
+        "stereotypes": [
+          "interface",
+          "enum",
+          "enableConcrete",
+          "derive",
+          "transient",
+          "persisted",
+          "nonNavigable"
+        ],
+        "tags": [
+          "implementationBody",
+          "singularName",
+          "typeVariant",
+          "length",
+          "precision",
+          "scale",
+          "roundingMode"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "hibernate",
+        "package": "apps::ops",
+        "stereotypes": [
+          "generated",
+          "audited",
+          "lob",
+          "ignoreNotFound",
+          "cascade",
+          "pk",
+          "genericGenerator"
+        ],
+        "tags": [
+          "catalog",
+          "hibernateWhereClause",
+          "idAllocationSize",
+          "customSetterLogic",
+          "columnName",
+          "tableName",
+          "genericGeneratorClass",
+          "genericGeneratorParams",
+          "customType"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "atlas",
+        "package": "apps::ops::liquidity",
+        "stereotypes": [
+          "sequenced",
+          "commandRequest",
+          "commandResponse",
+          "logMessage",
+          "positionKeeperPersist",
+          "dateAsInt",
+          "calculationContext"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "delphi",
+        "package": "apps::ops::liquidity",
+        "stereotypes": [
+          "multiSource",
+          "udsPersistedTimestamp",
+          "actionTypeMessage"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Decision",
+        "package": "apps::ops::regelig::sparkGen",
+        "stereotypes": [],
+        "tags": [
+          "factTypeName"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "Aggregation",
+        "package": "apps::pure::transition::rmd::cerebro::profiles",
+        "stereotypes": [
+          "SUM",
+          "AVERAGE",
+          "WTAVERAGE",
+          "MAX"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Descriptor",
+        "package": "apps::pure::transition::rmd::cerebro::profiles",
+        "stereotypes": [],
+        "tags": [
+          "group",
+          "hashtag",
+          "description",
+          "className",
+          "entitlementGroup",
+          "weightedBy",
+          "requestor",
+          "requiredFor"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "FO_CATEGORY",
+        "package": "apps::pure::transition::rmd::cerebro::profiles",
+        "stereotypes": [
+          "NO_RENAME"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Key",
+        "package": "apps::pure::transition::rmd::cerebro::profiles",
+        "stereotypes": [
+          "PRIMARY",
+          "TEMPORAL",
+          "EXTERNAL_ID",
+          "EXTERNAL_SOURCE",
+          "REFERENCE",
+          "ROOT",
+          "IDGEN"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "REMIT_READ",
+        "package": "apps::pure::transition::rmd::cerebro::profiles",
+        "stereotypes": [
+          "ORIGINAL_BALANCE",
+          "CURRENCY",
+          "FIRST_PAYMENT_DATE",
+          "GS_LOAN_NUMBER",
+          "SOURCE_LOAN_ID",
+          "GSN",
+          "PRIME_ID",
+          "DAY_COUNT_CONVENTION",
+          "SELLER_LOAN_ID",
+          "SOURCE_NAME",
+          "CC_SERIES_NO",
+          "MINIMUM_PAYMENT_DUE",
+          "TOTAL_AMOUNT_DUE"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "REMIT_WRITE",
+        "package": "apps::pure::transition::rmd::cerebro::profiles",
+        "stereotypes": [
+          "START_DATE",
+          "CURRENT_BALANCE",
+          "CURRENT_GROSS_RATE",
+          "TOTAL_COMMITMENT",
+          "CURRENT_UNFUNDED",
+          "BEG_UNFUNDED_BALANCE",
+          "CUSTOMER_BALANCE",
+          "GROSS_ENDING_BALANCE",
+          "NET_ENDING_BALANCE",
+          "NEXT_PMT_DUE_DATE",
+          "DAYS_PAST_DUE",
+          "DEFERRED_PRINCIPAL",
+          "PRINCIPAL_PAYMENT",
+          "SCHEDULED_PI",
+          "GROSS_INTEREST_PAYMENT",
+          "TOTAL_FEE",
+          "LATE_FEE",
+          "NONSUFFICIENT_FUNDS_FEE",
+          "OTHER_FEE",
+          "SERVICING_FEE",
+          "UNPAID_INTEREST_BALANCE",
+          "INTEREST_RATE_START_DATE",
+          "TOTAL_AMOUNT_PAID",
+          "SL_GROSS_BALANCE",
+          "GROSS_PRINCIPAL_BALANCE",
+          "GROSS_ENDING_PRIN_BAL",
+          "GROSS_INTEREST",
+          "RECOVERIES",
+          "MINIMUM_PAYMENT_DUE",
+          "SL_PAYMENT_METHOD",
+          "SL_PAYMENT_DUE_DATE",
+          "SL_PAYMENT_METHOD_DESCRIPTION",
+          "SL_SCHEDULED_PRINCIPAL",
+          "SL_SCHEDULED_INTEREST",
+          "SL_AMOUNT_PAST_DUE",
+          "TOTAL_AMOUNT_DUE",
+          "SL_CANCELED_PRINCIPAL",
+          "SL_PAYMENT_DATE",
+          "SL_AMOUNT_PAST_DUE_RECEIVED",
+          "SL_SCHEDULED_AMOUNT_RECEIVED",
+          "SL_DISBURSEMENT_AMOUNT",
+          "SL_DISBURSEMENT_DATE",
+          "SL_ACCRUED_INTEREST_FEES",
+          "SL_ESCROW_ENDING_BAL",
+          "DEFERRED_ENDING_BALANCE",
+          "BEG_DEFERRED_BALANCE",
+          "CHARGEOFF_FLAG",
+          "CHARGEOFF_AMOUNT",
+          "CHARGEOFF_PRINCIPAL",
+          "CHARGEOFF_INTEREST_FEES",
+          "BANKRUPTCY_FLAG",
+          "BANKRUPTCY_DATE",
+          "BANKRUPTCY_STATUS",
+          "COMMITMENT_ADJ",
+          "CREDIT_LIMIT",
+          "UNUSED_LIMIT",
+          "ACCOUNT_STATUS",
+          "BOOK_BALANCE",
+          "GROSS_PURCHASES",
+          "NET_INTEREST_PAYMENT",
+          "NET_CASH_ADVANCES",
+          "EXTERNAL_BALANCE_TRANSFER",
+          "NET_PURCHASES",
+          "TOTAL_CASH",
+          "TOTAL_SPEND",
+          "PUTBACK_REFUND",
+          "ANNUAL_FEES",
+          "CASH_ADVANCE_FEES",
+          "EXTERNAL_BALANCE_TRANSFER_FEES",
+          "FEE_ADJUSTMENTS",
+          "FOREIGN_FEES",
+          "FRAUD_INTEREST_FEE_WRITEOFF",
+          "FRAUD_INTEREST_WRITEOFF",
+          "FRAUD_FEE_WRITEOFF",
+          "FRAUD_PRINCIPAL_WRITEOFF",
+          "TOTAL_FRAUD_WRITEOFF",
+          "OTHER_CASH_ADJUSTMENTS",
+          "OTHER_NON_CASH_ADJUSTMENTS",
+          "OVER_LIMIT_FEES",
+          "ACCOUNT_SALE_PROCEEDS",
+          "ACCOUNT_SALE_DATE",
+          "ACCOUNT_SALE_FLAG",
+          "CUMULATIVE_FRAUD_WRITEOFF",
+          "DEFERRED_NON_CASH_PRIN",
+          "CREDIT_LIFE_DEBT_CANCEL_FEE",
+          "SERVICER_ACCRUAL_STATUS",
+          "PREPAYMENT_AMOUNT",
+          "CURTAILMENT_FEE",
+          "TOTAL_BALANCE",
+          "FRAUD_WRITEOFF_DATE",
+          "CREDIT_LIMIT_CHANGE",
+          "SERVICER_CREDIT_LIMIT",
+          "CC_WRITE_OFF_PRIN_AMT",
+          "CC_WRITE_OFF_INT_AMT",
+          "CC_WRITE_OFF_FEE_AMT",
+          "CC_TOTAL_PAYMENTS",
+          "CC_FRAUD_WO_DATE",
+          "CC_CURR_MTH_INT_FRAUD_WO",
+          "CC_SALE_OF_ACCOUNT_BALANCE",
+          "CC_FRAUD_FLAG",
+          "CC_SERIES_NO",
+          "CC_CURR_MTH_INT_FRAUD_WO",
+          "CC_CURR_MTH_FEE_FRAUD_WO",
+          "CC_UNPAID_BAL",
+          "CC_ACTIVE_ACCOUNT",
+          "CC_ACTIVE_CREDIT_LIMIT",
+          "CCS_ANNUAL_FEE",
+          "CCS_NSF_FEE",
+          "CCS_PUTBACK_REFUND",
+          "CCS_TOTAL_SPEND",
+          "CCS_TOTAL_CASH",
+          "CCS_TOTAL_BALANCE",
+          "CCS_NET_ENDING_BALANCE",
+          "CCS_CASH_ADVANCE_FEES",
+          "CCS_RECOVERIES",
+          "CCS_LATE_FEE",
+          "CCS_FOREIGN_FEES",
+          "CCS_NET_ENDING_PRINCIPAL_BALANCE",
+          "CCS_NET_ENDING_ACCRUED_INTEREST_FEES_BALANCE",
+          "OTHER_CASH_REVOLVING_ADJUSTMENTS",
+          "OTHER_NON_CASH_REVOLVING_ADJUSTMENTS",
+          "WRITE_OFF_DATE",
+          "WRITE_OFF_AMOUNT",
+          "TOTAL_CASH_TRANSACTIONS",
+          "TOTAL_NON_CASH_TRANSACTIONS",
+          "DEFERRED_BALANCE_TRANSACTIONS",
+          "ENDING_REVOLVING_BALANCE",
+          "ENDING_CASH_BALANCE",
+          "RISK_CREDIT_LIMIT",
+          "ACTIVE_RISK_CREDIT_LIMIT",
+          "CC_PRINCIPAL_SPEND",
+          "CCS_CHARGE_OFF_AMOUNT",
+          "CCS_FINANCE_CHARGE",
+          "CCS_NET_CASH_ADVANCES",
+          "CCS_EXTERNAL_BALANCE_TRANSFER",
+          "CCS_OTHER_FEES",
+          "CGOF_RECOVERY_FEE",
+          "UNPAID_CAPITALIZED_INTEREST",
+          "UNPAID_CAPITALIZED_INTEREST_CHARGE_OFF",
+          "FRAUD_RECOVERY_AMT",
+          "FRAUD_RECOVERY_AMOUNT",
+          "TOTAL_RECOVERIES",
+          "FRAUD_WRITEOFF_CURRENT_MONTH",
+          "TOTAL_FRAUD_RECOVERY_AMOUNT"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "customTags",
+        "package": "contracts::gsam::services::profiles",
+        "stereotypes": [],
+        "tags": [
+          "minLength",
+          "default",
+          "pattern",
+          "tags",
+          "format"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "UDProperty",
+        "package": "datamarts::data_intelligence::domain::torrent::messages::v1",
+        "stereotypes": [],
+        "tags": [
+          "primaryKey",
+          "avro_java_string"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "docs",
+        "package": "datamarts::ep::domain::docs::meta",
+        "stereotypes": [
+          "dataset",
+          "testDataset"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Analytics",
+        "package": "datamarts::finance::domain::capitalattribution",
+        "stereotypes": [
+          "UnitOfAccount",
+          "PassOver",
+          "attributeChange",
+          "activityChange"
+        ],
+        "tags": [
+          "sourceFromColumn"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "AllocationTransfer",
+        "package": "datamarts::finance::domain::cmaoperationalstore",
+        "stereotypes": [
+          "scalable",
+          "nonscalable"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "ApplicableRegime",
+        "package": "datamarts::finance::domain::cmaoperationalstore",
+        "stereotypes": [
+          "Standardized",
+          "Advanced",
+          "SLR",
+          "CCAR_SLR",
+          "CCAR_Std",
+          "CBal",
+          "IRBC",
+          "G_SIB",
+          "Any"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Avro",
+        "package": "datamarts::finance::domain::cmaoperationalstore",
+        "stereotypes": [
+          "wide",
+          "notAvroField",
+          "nullable"
+        ],
+        "tags": [
+          "default",
+          "aliases",
+          "namespace"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "Model",
+        "package": "datamarts::finance::domain::cmaoperationalstore",
+        "stereotypes": [
+          "ReadOnly"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "OperationalStore",
+        "package": "datamarts::finance::domain::cmaoperationalstore",
+        "stereotypes": [
+          "datasetKey",
+          "milestoneFieldIn",
+          "milestoneFieldOut",
+          "classHashField",
+          "appendOnly",
+          "ManualUpload",
+          "injectable"
+        ],
+        "tags": [
+          "tabularInputHeader",
+          "permitDomain"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "ParentDataset",
+        "package": "datamarts::finance::domain::cmaoperationalstore",
+        "stereotypes": [
+          "BankingBookDebtAndHedge"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Resource",
+        "package": "datamarts::finance::domain::cmaoperationalstore",
+        "stereotypes": [
+          "MarketRiskSecuritizationCombinedRestricted",
+          "DataWithRwa",
+          "Metadata",
+          "DataBalanceSheet",
+          "EmeaReport",
+          "CbalDataAggregation",
+          "CbalDataRestricted",
+          "CbalDataUnrestricted",
+          "NsfiExposuresDataUnrestricted",
+          "NsfiExposuresDataRestricted",
+          "BalanceSheetDataRestricted",
+          "Y14MQData",
+          "CCAROrchestratorBalanceSheetData",
+          "CCAROrchestratorDataWithRWA",
+          "GsibDataRestricted",
+          "Sold_CDS_DataSets",
+          "CapitalCalcInputData",
+          "CCAR_STORE_IRP",
+          "CCAR_STORE_CVA",
+          "CCAR_STORE_Commodities",
+          "CCAR_STORE_Credit",
+          "CCAR_STORE_EM",
+          "CCAR_STORE_Equities",
+          "CCAR_STORE_FX",
+          "CCAR_STORE_GLP",
+          "CCAR_STORE_Mortgages",
+          "CCAR_STORE_PSI",
+          "CCAR_STORE_Prime_Services",
+          "CCAR_STORE_SSG",
+          "CCAR_STORE_OTCBal",
+          "CCAR_STORE_TopDown",
+          "Capital",
+          "SampleClass"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "RestrictedResource",
+        "package": "datamarts::finance::domain::cmaoperationalstore",
+        "stereotypes": [
+          "DataWithIcr",
+          "SftCapitalResultWithIcr"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "ThresholdProfile",
+        "package": "datamarts::finance::domain::limits",
+        "stereotypes": [
+          "ThresholdCalculator"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "AgreementProfile",
+        "package": "datamarts::ops::domain::agreement::model",
+        "stereotypes": [
+          "legacy",
+          "strategic"
+        ],
+        "tags": [
+          "comment",
+          "termProfile",
+          "agreementType",
+          "requirementJira"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "decision",
+        "package": "datamarts::ops::domain::bdm::sapiens::profiles",
+        "stereotypes": [],
+        "tags": [
+          "name",
+          "id",
+          "domainType",
+          "dataType",
+          "include"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "ogm",
+        "package": "datamarts::ops::domain::cap::ogm",
+        "stereotypes": [
+          "incoming",
+          "outgoing",
+          "undirected",
+          "relationshipEntity",
+          "startNode",
+          "endNode",
+          "transient",
+          "uniqueTrue",
+          "uniqueFalse",
+          "primary",
+          "dateLong",
+          "wide"
+        ],
+        "tags": [
+          "label",
+          "type",
+          "name",
+          "dateString",
+          "convert"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "entity",
+        "package": "datamarts::ops::domain::controlevent::dpe::profiles",
+        "stereotypes": [
+          "id",
+          "oneToMany"
+        ],
+        "tags": [
+          "type",
+          "entity",
+          "provider",
+          "childEntity",
+          "columnDefinition"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "xPath",
+        "package": "datamarts::ops::domain::controlevent::dpe::profiles",
+        "stereotypes": [],
+        "tags": [
+          "xPath",
+          "xPaths",
+          "xPathContext",
+          "xPathDeserialisation",
+          "contextSensitiveXPath"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "RegModel",
+        "package": "datamarts::ops::domain::nonFinancialRegulatoryReporting::regulatoryModels::regulatoryControlModel::common",
+        "stereotypes": [
+          "businessKey"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "ClassName",
+        "package": "datamarts::ops::domain::postexecution::tradeTracker",
+        "stereotypes": [],
+        "tags": [
+          "name"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "AssetClass",
+        "package": "datamarts::ops::domain::regops::EmirPostTradeReporting",
+        "stereotypes": [
+          "ETD",
+          "Commodity",
+          "Credit",
+          "Equity",
+          "InterestRate",
+          "ForeignExchange"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Obligation",
+        "package": "datamarts::ops::domain::regops::EmirPostTradeReporting",
+        "stereotypes": [
+          "CollateralAndValuation",
+          "Trade"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "dictionary",
+        "package": "datamarts::ops::domain::traceability",
+        "stereotypes": [
+          "regProjection"
+        ],
+        "tags": [
+          "modelSource"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "traceability",
+        "package": "datamarts::ops::domain::traceability::neo4JTesting",
+        "stereotypes": [
+          "NodeEntity",
+          "ID",
+          "Version",
+          "TimeStamp",
+          "VersionedRel",
+          "VersionlessRel",
+          "Transient"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "entity",
+        "package": "datamarts::ops::domain::trackit::ui::meta::profiles",
+        "stereotypes": [
+          "id",
+          "oneToMany"
+        ],
+        "tags": [
+          "type",
+          "entity",
+          "provider",
+          "childEntity",
+          "columnDefinition"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "xPath",
+        "package": "datamarts::ops::domain::trackit::ui::meta::profiles",
+        "stereotypes": [],
+        "tags": [
+          "xPath",
+          "xPaths",
+          "xPathContext",
+          "xPathDeserialisation",
+          "contextSensitiveXPath"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "general",
+        "package": "model::domain::profiles",
+        "stereotypes": [],
+        "tags": [
+          "typeVariant"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "Privacy",
+        "package": "model::domain::referenceData::entity::pwm",
+        "stereotypes": [
+          "private"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "InterestRateStyle",
+        "package": "model::domain::referenceData::product::loans::enterprise::studentLoan",
+        "stereotypes": [],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "InterestRateStyle",
+        "package": "model::domain::referenceData::product::loans::shared",
+        "stereotypes": [
+          "Decimal",
+          "WholeNumber",
+          "BasisPoints"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "InterestRateStyle",
+        "package": "model::domain::referenceData::product::loans::sharedV2",
+        "stereotypes": [
+          "Decimal",
+          "WholeNumber",
+          "BasisPoints"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "StatesClassification",
+        "package": "model::domain::referenceData::product::loans::v2::corporate",
+        "stereotypes": [
+          "MemoSubmitted",
+          "CommitteeApproved",
+          "Committed",
+          "DealClosed",
+          "ProductSetup"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "SystemAttribute",
+        "package": "model::domain::transactional::trading::inquiry::secdiv",
+        "stereotypes": [
+          "hidden"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Droit",
+        "package": "model::external::droit::current",
+        "stereotypes": [],
+        "tags": [
+          "fieldName",
+          "optional"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "DroitEnum",
+        "package": "model::external::droit::current",
+        "stereotypes": [],
+        "tags": [
+          "enumValue"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "DroitEnum",
+        "package": "model::external::droit::old",
+        "stereotypes": [],
+        "tags": [
+          "enumValue"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "fixprotocol",
+        "package": "model::external::fix::v5_0sp2::fixtradingcommunity",
+        "stereotypes": [
+          "Message",
+          "Component"
+        ],
+        "tags": [
+          "tagName",
+          "countTag",
+          "valueRepresentation",
+          "groupName",
+          "groupRequired",
+          "messageType",
+          "messageCategory",
+          "dataType"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "requirements",
+        "package": "model::producers::equities::orderManagement::eqCashRegOps::bestExecution::eqEMEABestExecution",
+        "stereotypes": [
+          "Message"
+        ],
+        "tags": [
+          "dr",
+          "br"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "requirements",
+        "package": "model::producers::equities::orderManagement::eqCashRegOps::eqEmeaCashRegOpsTransaction",
+        "stereotypes": [
+          "Message"
+        ],
+        "tags": [
+          "dr",
+          "br"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "requirements",
+        "package": "model::producers::regulatory::nonFinancialRegulatoryReporting::reportingObligations",
+        "stereotypes": [
+          "Message"
+        ],
+        "tags": [
+          "dr",
+          "br",
+          "mdr",
+          "dus"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "Privacy",
+        "package": "model_candidate::domain::referenceData::entity::pwm",
+        "stereotypes": [
+          "private"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "dotbosi",
+        "package": "model_legacy::domain::system",
+        "stereotypes": [
+          "ignore"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "fpml",
+        "package": "model_legacy::domain::trade::contract",
+        "stereotypes": [
+          "fpml"
+        ],
+        "tags": [
+          "codingScheme"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "ProfileTest",
+        "package": "ui::mapping::editor::domain",
+        "stereotypes": [
+          "stereotype1",
+          "stereotype2"
+        ],
+        "tags": [
+          "tag1",
+          "tag2",
+          "tag3"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "DAXAttribute",
+        "package": "ui::meta::DAX::metamodel",
+        "stereotypes": [
+          "Ignore",
+          "PrimaryKey",
+          "PublicKey"
+        ],
+        "tags": [
+          "Description",
+          "DataType",
+          "PhysicalFieldNameOrPosition"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "DAXProfile",
+        "package": "ui::meta::DAX::metamodel",
+        "stereotypes": [
+          "ContractDecl",
+          "ValDSFn",
+          "DataSetFn",
+          "PrimaryDataSet"
+        ],
+        "tags": [
+          "Id",
+          "Name",
+          "Description",
+          "DatastoreName",
+          "DatasetName"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "graph",
+        "package": "ui::meta::adl",
+        "stereotypes": [
+          "domainModel",
+          "IRI",
+          "universe"
+        ],
+        "tags": [
+          "namespace",
+          "iriName",
+          "associationExpression",
+          "sameAs",
+          "lineage",
+          "iriField"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "api",
+        "package": "ui::meta::apistore",
+        "stereotypes": [
+          "function",
+          "graphql"
+        ],
+        "tags": [
+          "name",
+          "fitDivision",
+          "fitFunction",
+          "fitActivity",
+          "graphqlSingle",
+          "graphqlMulti"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "Avro",
+        "package": "ui::meta::avro::utils",
+        "stereotypes": [
+          "ignore"
+        ],
+        "tags": [
+          "default",
+          "type"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "AvroProperty",
+        "package": "ui::meta::avro::utils::tests",
+        "stereotypes": [],
+        "tags": [
+          "p1",
+          "p2",
+          "p3"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "bosi",
+        "package": "ui::meta::bosi",
+        "stereotypes": [
+          "subobject",
+          "indexed",
+          "entity",
+          "none",
+          "event",
+          "lifecycleRoot",
+          "parentChild",
+          "generated",
+          "documentEntity",
+          "indexedLifecycleId",
+          "indexedParentId",
+          "abstract"
+        ],
+        "tags": [
+          "dontIntern",
+          "objectType",
+          "parent",
+          "child",
+          "subobject",
+          "key",
+          "documentstore"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "general",
+        "package": "ui::meta::bosi",
+        "stereotypes": [
+          "interface",
+          "enum",
+          "enableConcrete",
+          "derive",
+          "transient",
+          "persisted",
+          "nonNavigable",
+          "versioned",
+          "ignored"
+        ],
+        "tags": [
+          "implementationBody",
+          "singularName",
+          "typeVariant",
+          "length",
+          "precision",
+          "scale",
+          "roundingMode",
+          "sqlTypeVariant"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "projection",
+        "package": "ui::meta::controlevent",
+        "stereotypes": [],
+        "tags": [
+          "from"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "Curb",
+        "package": "ui::meta::curb::metamodel",
+        "stereotypes": [
+          "hasDate",
+          "isHidden",
+          "dependentAttribute",
+          "extendedAttribute",
+          "outofScope",
+          "derivedAttribute",
+          "runDate"
+        ],
+        "tags": [
+          "semantic",
+          "tags",
+          "attributeKind",
+          "keys",
+          "unit",
+          "longDescription",
+          "briefDescription",
+          "sources",
+          "owners",
+          "extensionTag",
+          "slangQL",
+          "ezQuery",
+          "aggregationFunction",
+          "supportedDatabases",
+          "possibleAdditionalTables",
+          "headAliases",
+          "tailAliases",
+          "fkHeadAliases",
+          "fkTailAliases",
+          "keyMap",
+          "fkPosition",
+          "numberFormat",
+          "numberPrecision"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "BiToolkit",
+        "package": "ui::meta::dsb::bi::profiles",
+        "stereotypes": [
+          "eligible"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "FunctionTypes",
+        "package": "ui::meta::dsb::domain",
+        "stereotypes": [
+          "datePeriod"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "DataSetConfig",
+        "package": "ui::meta::dsb::domain::config",
+        "stereotypes": [
+          "universeConfig"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "DSF",
+        "package": "ui::meta::dsf::metamodel",
+        "stereotypes": [
+          "PrimaryKey",
+          "Measure",
+          "Dimension",
+          "Mapping"
+        ],
+        "tags": [
+          "universe"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "flatten",
+        "package": "ui::meta::flatten::metamodel",
+        "stereotypes": [
+          "flatten",
+          "exclude"
+        ],
+        "tags": [
+          "groupName",
+          "fullPath",
+          "name",
+          "scope",
+          "enumValue"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "Category",
+        "package": "ui::meta::governance::dataPrivacy",
+        "stereotypes": [
+          "PersonalIdentifiersAndContactInformation",
+          "SubsidiaryPersonalInformation",
+          "PersonalFinancialInformation"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "NormalizedFieldType",
+        "package": "ui::meta::governance::dataPrivacy",
+        "stereotypes": [
+          "NAME",
+          "ADDRESS",
+          "PHONE_NO",
+          "EMAIL",
+          "USERNAME",
+          "INTERNAL_GS_ID",
+          "PHOTO",
+          "DIGITIAL_IDENTIFIER",
+          "SENSITIVE_DIGITAL_IDENTIFER",
+          "GS_CORP_CONTACT_INFO",
+          "CORP_CONTACT_INFO",
+          "GOVT_ID",
+          "BACKGROUND_INFO",
+          "SENSITIVE_BACKGROUND_INFO",
+          "DEMOGRAPHIC_INFO",
+          "SENSITIVE_DEMOGRAPIC_INFO",
+          "BEHAVIORAL_INFO",
+          "HEALTH_INFO",
+          "BIOMETRIC_INFO",
+          "FINANCIAL_ACCT_NO",
+          "PERSONAL_FINANCIAL_INFO",
+          "SENSITIVE_PERSONAL_FINANCIAL_INFO"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "dataDomainModel",
+        "package": "ui::meta::governance::dgo",
+        "stereotypes": [
+          "certified",
+          "reviewed"
+        ],
+        "tags": [
+          "controlsPass",
+          "allControlsPass",
+          "controlsFail",
+          "selfAssessmentDate",
+          "certificationDate",
+          "reviewDate",
+          "resolutionDueDate",
+          "maturityLevel"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "gdpr",
+        "package": "ui::meta::governance::dgo",
+        "stereotypes": [
+          "BirthName",
+          "Bonus",
+          "CitizenshipNationality",
+          "CivilMaritalSttaus",
+          "CompensationInformation",
+          "ContactDetails",
+          "CorrespondenceMeetingsPreferences",
+          "CVAndApplication",
+          "DateOfBirth",
+          "DateOfChangeOfJob",
+          "DevelopmentNeedsAndTrainingReceived",
+          "FlexibleWorkingProcesses",
+          "Gender",
+          "GradeRoleLevel",
+          "ImmigrationStatusOrWorkEligibility",
+          "LeaveAbsenceData",
+          "LineManagerData",
+          "Name",
+          "NameButNotIncludingOwnLLoginID",
+          "Other",
+          "PeerUpwardAndDownwardFeedback",
+          "Photograph",
+          "PlaceOfBirth",
+          "PositionHeld",
+          "QualificationLicensesCertification",
+          "RecordOfRegistrationWithAnyApplicableRegulatoryAuthority",
+          "RestructureAndRedundancyPlans",
+          "RiskAssessments",
+          "SalaryAllowance",
+          "TalentProgrammes",
+          "WorkContactDdetails",
+          "WorkerID"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "collectionType",
+        "package": "ui::meta::java",
+        "stereotypes": [
+          "List",
+          "Set",
+          "Map"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "enumValue",
+        "package": "ui::meta::java",
+        "stereotypes": [
+          "Default"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "floatType",
+        "package": "ui::meta::java",
+        "stereotypes": [
+          "Float",
+          "BigDecimal",
+          "Double"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "generation",
+        "package": "ui::meta::java",
+        "stereotypes": [
+          "opaque",
+          "container",
+          "reference"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "immutables",
+        "package": "ui::meta::java",
+        "stereotypes": [
+          "Auxiliary"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "integerType",
+        "package": "ui::meta::java",
+        "stereotypes": [
+          "Integer",
+          "Long"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "jsonProperty",
+        "package": "ui::meta::java",
+        "stereotypes": [
+          "customName",
+          "ignoreProperties",
+          "ignoreProperty"
+        ],
+        "tags": [
+          "value"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "stringType",
+        "package": "ui::meta::java",
+        "stereotypes": [
+          "byteArray"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "temporalType",
+        "package": "ui::meta::java",
+        "stereotypes": [
+          "Instant",
+          "LocalDate",
+          "LocalDateTime",
+          "LocalTime",
+          "OffsetDateTime",
+          "OffsetTime",
+          "ZonedDateTime"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "TestStereotype",
+        "package": "ui::meta::protocols::pure::v1_0_0::transformation::toPureGrammar::tests::domain",
+        "stereotypes": [
+          "ST1",
+          "ST2"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "TestTaggedValue",
+        "package": "ui::meta::protocols::pure::v1_0_0::transformation::toPureGrammar::tests::domain",
+        "stereotypes": [],
+        "tags": [
+          "T1",
+          "T2"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "TestStereotype",
+        "package": "ui::meta::protocols::pure::v1_4_0::transformation::toPureGrammar::tests::domain",
+        "stereotypes": [
+          "ST1",
+          "ST2"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "TestTaggedValue",
+        "package": "ui::meta::protocols::pure::v1_4_0::transformation::toPureGrammar::tests::domain",
+        "stereotypes": [],
+        "tags": [
+          "T1",
+          "T2"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "TestStereotype",
+        "package": "ui::meta::protocols::pure::v1_5_0::transformation::toPureGrammar::tests::domain",
+        "stereotypes": [
+          "ST1",
+          "ST2"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "TestTaggedValue",
+        "package": "ui::meta::protocols::pure::v1_5_0::transformation::toPureGrammar::tests::domain",
+        "stereotypes": [],
+        "tags": [
+          "T1",
+          "T2"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "TestStereotype",
+        "package": "ui::meta::protocols::pure::vX_X_X::transformation::toPureGrammar::tests::domain",
+        "stereotypes": [
+          "ST1",
+          "ST2"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "TestTaggedValue",
+        "package": "ui::meta::protocols::pure::vX_X_X::transformation::toPureGrammar::tests::domain",
+        "stereotypes": [],
+        "tags": [
+          "T1",
+          "T2"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "serverVersion",
+        "package": "ui::meta::pure::executionPlan::profiles",
+        "stereotypes": [],
+        "tags": [
+          "exclude",
+          "start"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "myProfile",
+        "package": "ui::meta::pure::functions::test::tests",
+        "stereotypes": [
+          "myStereotype"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "TPP",
+        "package": "ui::meta::pure::metamodel::treepath::tests",
+        "stereotypes": [
+          "Root",
+          "ExistingProperty",
+          "DerivedProperty",
+          "SimpleProperty"
+        ],
+        "tags": [
+          "name",
+          "description"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "CDE",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "Tier1",
+          "Tier2"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "DataPrivacyClassification",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "PC0",
+          "PC1",
+          "PC2",
+          "PC3"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "GraphNode",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "UseCase",
+          "Runtime",
+          "PackageMetadata",
+          "Service",
+          "DomainModel",
+          "ExecutableMapping"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Lineage",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "Association"
+        ],
+        "tags": [
+          "RefinerDatabase"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "access",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "public",
+          "protected",
+          "private",
+          "externalizable"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "cipher",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "Cipher",
+          "Decipher"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "devStatus",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "inProgress"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "doc",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "deprecated"
+        ],
+        "tags": [
+          "doc",
+          "todo"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "equality",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "Key"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "infosec",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "sensitive"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "milestoning",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "generatedmilestoningproperty",
+          "generatedmilestoningdateproperty"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "report",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [],
+        "tags": [
+          "regulator",
+          "name",
+          "mailinglist",
+          "group",
+          "frequency",
+          "direct",
+          "regulation",
+          "purpose",
+          "primaryOwner",
+          "secondaryOwner"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "tdsLibrary",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "tds"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "temporal",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "bitemporal",
+          "businesstemporal",
+          "processingtemporal"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "temporaryLazyExclusion",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "exclude"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "test",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "Test",
+          "BeforePackage",
+          "AfterPackage",
+          "ToFix",
+          "ExcludeLazy"
+        ],
+        "tags": [
+          "excludePlatform",
+          "sensitiveToStereotype"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "typemodifiers",
+        "package": "ui::meta::pure::profiles",
+        "stereotypes": [
+          "abstract"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "rule",
+        "package": "ui::meta::pure::quality::model",
+        "stereotypes": [
+          "skipTests"
+        ],
+        "tags": [
+          "rule",
+          "severity",
+          "category",
+          "description",
+          "ignore"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "service",
+        "package": "ui::meta::pure::service",
+        "stereotypes": [
+          "disableStreaming"
+        ],
+        "tags": [
+          "contentType",
+          "contentDisposition",
+          "url",
+          "paramsExample"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "SystemAttribute",
+        "package": "ui::meta::pure::transition::secdiv::store::runtime",
+        "stereotypes": [
+          "hidden"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "versioning",
+        "package": "ui::meta::pure::versioning",
+        "stereotypes": [],
+        "tags": [
+          "identifierSource"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "transform",
+        "package": "ui::meta::relational::transform",
+        "stereotypes": [
+          "tinyInteger",
+          "bigInteger"
+        ],
+        "tags": [
+          "varCharLength"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "slang",
+        "package": "ui::meta::slang",
+        "stereotypes": [
+          "nogen"
+        ],
+        "tags": [
+          "name",
+          "scope",
+          "slangSuperType"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "up",
+        "package": "ui::meta::up",
+        "stereotypes": [
+          "indexed",
+          "optimisticallyLocked",
+          "primaryKey",
+          "service",
+          "read",
+          "create",
+          "update",
+          "delete",
+          "upsert",
+          "fullSync",
+          "bulkUpsert",
+          "stateMachine",
+          "versioned",
+          "wide",
+          "derived",
+          "createdByAuditProperty",
+          "updatedByAuditProperty",
+          "createdDateAuditProperty",
+          "auditIdentity",
+          "auditIdentityKey",
+          "nonPersistent",
+          "watermarked",
+          "staged"
+        ],
+        "tags": [
+          "associationExpression",
+          "authorizationExpression",
+          "databaseTable",
+          "databaseColumn",
+          "processingTemporalFromColumn",
+          "processingTemporalToColumn",
+          "businessTemporalFromColumn",
+          "businessTemporalToColumn",
+          "timezoneConversion",
+          "processingTemporalTimezoneConversion",
+          "businessTemporalTimezoneConversion",
+          "processingTemporalToIsInclusive",
+          "businessTemporalToIsInclusive",
+          "processingTemporalInfinityDate",
+          "businessTemporalInfinityDate",
+          "processingTemporalDefaultIfNotSpecified",
+          "includeAuditProperties",
+          "auditPropertyTimezoneConversion",
+          "primaryKeyStrategy",
+          "primaryKeySimulatedSequenceName",
+          "defaultValue",
+          "initialValue",
+          "maxLength",
+          "relationshipType",
+          "foreignKeyOwner",
+          "serviceInterceptorClass",
+          "tree",
+          "unique",
+          "uniquelyIndexed",
+          "nonUniquelyIndexed",
+          "bulkUploadUniqueKey",
+          "qualifiedExpression",
+          "nonPersistentDataLoaderClass",
+          "orderBy",
+          "watermarkName",
+          "watermarkProvider",
+          "numericPrecision",
+          "trimString"
+        ]
+      },
+      {
+        "_type": "profile",
+        "name": "xml",
+        "package": "ui::meta::xml",
+        "stereotypes": [
+          "attribute",
+          "extendedPrimitive"
+        ],
+        "tags": []
+      },
+      {
+        "_type": "profile",
+        "name": "Xsd",
+        "package": "ui::meta::xsd",
+        "stereotypes": [],
+        "tags": [
+          "originalValue"
+        ]
+      }
+    ],
+    "enums": [
+      {
+        "_type": "Enumeration",
+        "name": "DisruptionFallback",
+        "package": "model::producers::operations::contractFactory::latest2x::trading::contract::terms::com",
+        "taggedValues": [
+          {
+            "tag": {
+              "profile": "ui::meta::pure::profiles::doc",
+              "value": "doc"
+            },
+            "value": "This is a tagged Value Description"
+          }
+        ],
+        "values": [
+          {
+            "value": "AverageDailyPriceDisruption"
+          },
+          {
+            "value": "CalculationAgentDetermination"
+          },
+          {
+            "value": "DelayedPublicationOrAnnouncement"
+          },
+          {
+            "value": "FallbackReferenceDealers"
+          },
+          {
+            "value": "FallbackReferencePrice"
+          },
+          {
+            "value": "NegotiatedFallback"
+          },
+          {
+            "value": "NoFaultTermination"
+          },
+          {
+            "value": "Postponement"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "TriggerType",
+        "package": "model::producers::operations::contractFactory::latest2x::trading::contract::terms::shared::option",
+        "values": [
+          {
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "ui::meta::pure::profiles::doc",
+                  "value": "doc"
+                },
+                "value": "breach means that the asset level is either larger or equal to the barrier level, or smaller or equal to the barrier level"
+              }
+            ],
+            "value": "Touch"
+          },
+          {
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "ui::meta::pure::profiles::doc",
+                  "value": "doc"
+                },
+                "value": "breach means that the asset level is either strictly larger than the barrier level, or strictly smaller than the barrier level"
+              }
+            ],
+            "value": "Break"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "TestEnumeration",
+        "package": "ui",
+        "stereotypes": [
+          {
+            "profile": "ui::mapping::editor::domain::ProfileTest",
+            "value": "stereotype2"
+          }
+        ],
+        "taggedValues": [
+          {
+            "tag": {
+              "profile": "ui::mapping::editor::domain::ProfileTest",
+              "value": "tag1"
+            },
+            "value": "Enumeration Tag"
+          }
+        ],
+        "values": [
+          {
+            "stereotypes": [
+              {
+                "profile": "ui::mapping::editor::domain::ProfileTest",
+                "value": "stereotype1"
+              }
+            ],
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "ui::mapping::editor::domain::ProfileTest",
+                  "value": "tag1"
+                },
+                "value": "enumATag"
+              }
+            ],
+            "value": "enumA"
+          },
+          {
+            "value": "enumB"
+          },
+          {
+            "value": "enumC"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "Degree",
+        "package": "ui::meta::pure::constraints::tests::model",
+        "values": [
+          {
+            "value": "BSc"
+          },
+          {
+            "value": "MSc"
+          },
+          {
+            "value": "PHd"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "MiddleProductType",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "values": [
+          {
+            "value": "MP1"
+          },
+          {
+            "value": "MP2"
+          },
+          {
+            "value": "MP3"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "MiddleProductType2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "values": [
+          {
+            "value": "MP21"
+          },
+          {
+            "value": "MP22"
+          },
+          {
+            "value": "MP23"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "MiddleTradeType",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "values": [
+          {
+            "value": "MT1"
+          },
+          {
+            "value": "MT2"
+          },
+          {
+            "value": "MT3"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "MiddleTradeType2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "values": [
+          {
+            "value": "MT21"
+          },
+          {
+            "value": "MT22"
+          },
+          {
+            "value": "MT23"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "TargetProductType",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "values": [
+          {
+            "value": "TP1"
+          },
+          {
+            "value": "TP2"
+          },
+          {
+            "value": "TP3"
+          },
+          {
+            "value": "TP4"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "TargetTradeType",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "values": [
+          {
+            "value": "TT1"
+          },
+          {
+            "value": "TT2"
+          },
+          {
+            "value": "TT3"
+          },
+          {
+            "value": "TT4"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "ProductType",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model",
+        "values": [
+          {
+            "value": "A"
+          },
+          {
+            "value": "B"
+          },
+          {
+            "value": "C"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "TradeType",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model",
+        "values": [
+          {
+            "value": "P"
+          },
+          {
+            "value": "Q"
+          },
+          {
+            "value": "R"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "Region",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "values": [
+          {
+            "value": "NewYork"
+          },
+          {
+            "value": "London"
+          }
+        ]
+      },
+      {
+        "_type": "Enumeration",
+        "name": "Side",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "values": [
+          {
+            "value": "Buy"
+          },
+          {
+            "value": "Sell"
+          }
+        ]
+      }
+    ],
+    "classes": [
+      {
+        "_type": "class",
+        "constraints": [
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ],
+                      "property": "a"
+                    },
+                    {
+                      "_type": "string",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        "aa"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "name"
+          },
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ],
+                      "property": "b"
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        1
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "1"
+          }
+        ],
+        "name": "TestClass",
+        "package": "ui",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "a",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 2
+            },
+            "name": "b",
+            "stereotypes": [
+              {
+                "profile": "ui::mapping::editor::domain::ProfileTest",
+                "value": "stereotype1"
+              }
+            ],
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "ui::mapping::editor::domain::ProfileTest",
+                  "value": "tag2"
+                },
+                "value": "lets write a tag"
+              }
+            ],
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "name",
+            "type": "Boolean"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "person",
+            "type": "ui::meta::pure::constraints::tests::model::Person"
+          }
+        ],
+        "qualifiedProperties": [
+          {
+            "body": [
+              {
+                "_type": "func",
+                "function": "plus",
+                "parameters": [
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "values": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "s"
+                          }
+                        ],
+                        "property": "arms"
+                      },
+                      {
+                        "_type": "integer",
+                        "multiplicity": {
+                          "lowerBound": 1,
+                          "upperBound": 1
+                        },
+                        "values": [
+                          4
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "name": "calculate",
+            "parameters": [
+              {
+                "_type": "var",
+                "class": "ui::mapping::editor::domain::Anything",
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                },
+                "name": "s"
+              }
+            ],
+            "returnMultiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "returnType": "Integer"
+          }
+        ],
+        "stereotypes": [
+          {
+            "profile": "ui::meta::pure::profiles::temporal",
+            "value": "businesstemporal"
+          }
+        ],
+        "superTypes": [
+          "ui::mapping::editor::domain::Animal"
+        ],
+        "taggedValues": [
+          {
+            "tag": {
+              "profile": "ui::mapping::editor::domain::ProfileTest",
+              "value": "tag1"
+            },
+            "value": "test"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "TestClassSibling",
+        "package": "ui",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "anythingGoes",
+            "type": "Boolean"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Anything",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "legs",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "arms",
+            "type": "Integer"
+          }
+        ],
+        "superTypes": [
+          "ui::mapping::editor::domain::Human"
+        ],
+        "taggedValues": [
+          {
+            "tag": {
+              "profile": "ui::mapping::editor::domain::ProfileTest",
+              "value": "tag1"
+            },
+            "value": "hello"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Animal",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "legs",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "arms",
+            "type": "Integer"
+          }
+        ],
+        "superTypes": [
+          "ui::mapping::editor::domain::Organism"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Cat",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "breed",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "parents",
+            "type": "ui::mapping::editor::domain::Dog"
+          }
+        ],
+        "superTypes": [
+          "ui::mapping::editor::domain::Pet"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Dog",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "breed",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "parents",
+            "type": "ui::mapping::editor::domain::Dog"
+          }
+        ],
+        "superTypes": [
+          "ui::mapping::editor::domain::Pet"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Human",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "parents",
+            "type": "ui::mapping::editor::domain::Human"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "siblings",
+            "type": "ui::mapping::editor::domain::Human"
+          }
+        ],
+        "superTypes": [
+          "ui::mapping::editor::domain::Organism"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Something",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "legs",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "arms",
+            "type": "Integer"
+          }
+        ],
+        "superTypes": [
+          "ui::mapping::editor::domain::Human"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Organism",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "planet",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "description",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "founder",
+            "type": "ui::mapping::editor::domain::Human"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Other",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "friend",
+            "type": "ui::mapping::editor::domain::Something"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "otherFriend",
+            "type": "ui::mapping::editor::domain::Anything"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Pet",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ],
+        "superTypes": [
+          "ui::mapping::editor::domain::Animal"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Source_Something",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "lastName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "age",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Target_Something",
+        "package": "ui::mapping::editor::domain",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "fullName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "age",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "description",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "constraints": [
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "greaterThan",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "length",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "this"
+                            }
+                          ],
+                          "property": "fullName"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        1
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "c2"
+          }
+        ],
+        "name": "PersonWithComplexConstraint",
+        "package": "ui::meta::pure::constraints::tests::complex",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "fullName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Address",
+        "package": "ui::meta::pure::constraints::tests::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "line1",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "line2",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "city",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "postCode",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "constraints": [
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "endsWith",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ],
+                      "property": "legalName"
+                    },
+                    {
+                      "_type": "string",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        "LTD"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "0"
+          }
+        ],
+        "name": "Firm",
+        "package": "ui::meta::pure::constraints::tests::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "legalName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "applicants",
+            "type": "ui::meta::pure::constraints::tests::model::Person"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "constraints": [
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "startsWith",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "this"
+                            }
+                          ],
+                          "property": "firm"
+                        }
+                      ],
+                      "property": "legalName"
+                    },
+                    {
+                      "_type": "string",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        "FirmX"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "nameStartsWithGS"
+          },
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "contains",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ],
+                      "property": "degreesHeld"
+                    },
+                    {
+                      "_type": "func",
+                      "function": "extractEnumValue",
+                      "parameters": [
+                        {
+                          "_type": "string",
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          },
+                          "values": [
+                            "ui::meta::pure::constraints::tests::model::Degree"
+                          ]
+                        },
+                        {
+                          "_type": "string",
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          },
+                          "values": [
+                            "BSc"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "hasDegrees"
+          },
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "this"
+                    }
+                  ],
+                  "property": "someProp"
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "shouldBeSmart"
+          }
+        ],
+        "name": "GSEmployee",
+        "package": "ui::meta::pure::constraints::tests::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "firm",
+            "type": "ui::meta::pure::constraints::tests::model::Firm"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::constraints::tests::model::Person"
+        ]
+      },
+      {
+        "_type": "class",
+        "constraints": [
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "isNotEmpty",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ],
+                      "property": "title"
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "titleNotEmpty"
+          }
+        ],
+        "name": "GSEmployeeWithTitle",
+        "package": "ui::meta::pure::constraints::tests::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "title",
+            "type": "String"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::constraints::tests::model::GSEmployee"
+        ]
+      },
+      {
+        "_type": "class",
+        "constraints": [
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "lessThan",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "length",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "this"
+                            }
+                          ],
+                          "property": "lastName"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        10
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "lastName"
+          },
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "greaterThan",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ],
+                      "property": "age"
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        0
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "age"
+          },
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "if",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ],
+                      "property": "someProp"
+                    },
+                    {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "func",
+                          "function": "greaterThan",
+                          "parameters": [
+                            {
+                              "_type": "func",
+                              "function": "size",
+                              "parameters": [
+                                {
+                                  "_type": "property",
+                                  "parameters": [
+                                    {
+                                      "_type": "var",
+                                      "name": "this"
+                                    }
+                                  ],
+                                  "property": "degreesHeld"
+                                }
+                              ]
+                            },
+                            {
+                              "_type": "integer",
+                              "multiplicity": {
+                                "lowerBound": 1,
+                                "upperBound": 1
+                              },
+                              "values": [
+                                0
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": []
+                    },
+                    {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "func",
+                          "function": "isEmpty",
+                          "parameters": [
+                            {
+                              "_type": "property",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "this"
+                                }
+                              ],
+                              "property": "degreesHeld"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": []
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "2"
+          },
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "lessThan",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "length",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "this"
+                            }
+                          ],
+                          "property": "firstName"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        10
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "warningExample"
+          }
+        ],
+        "name": "Person",
+        "package": "ui::meta::pure::constraints::tests::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "application",
+            "type": "ui::meta::pure::constraints::tests::model::Firm"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::constraints::tests::model::PersonWithoutConstraints"
+        ],
+        "taggedValues": [
+          {
+            "tag": {
+              "profile": "ui::meta::pure::profiles::doc",
+              "value": "doc"
+            },
+            "value": "Constraint are any valid PURE boolean expression"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "PersonWithoutConstraints",
+        "package": "ui::meta::pure::constraints::tests::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "lastName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 2
+            },
+            "name": "nickNames",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "age",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "someProp",
+            "type": "Boolean"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "degreesHeld",
+            "type": "ui::meta::pure::constraints::tests::model::Degree"
+          }
+        ],
+        "qualifiedProperties": [
+          {
+            "body": [
+              {
+                "_type": "string",
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                },
+                "values": [
+                  "make this test pass"
+                ]
+              }
+            ],
+            "name": "xza",
+            "parameters": [],
+            "returnMultiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "returnType": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Degree",
+        "package": "ui::meta::pure::constraints::tests::xstore::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "personId",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Person",
+        "package": "ui::meta::pure::constraints::tests::xstore::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "lastName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "PersonWithDegree",
+        "package": "ui::meta::pure::constraints::tests::xstore::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "lastName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "constraints": [
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "lessThan",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "length",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "this"
+                            }
+                          ],
+                          "property": "fullName"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        25
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "testConstraint"
+          }
+        ],
+        "name": "_S_Person",
+        "package": "ui::meta::pure::mapping::modelToModel::test::constraints::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "fullName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "SourceType",
+        "package": "ui::meta::pure::mapping::modelToModel::test::constraintsManager",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "val",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "constraints": [
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "greaterThan",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "length",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "this"
+                            }
+                          ],
+                          "property": "name"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        16
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "name_WrongSize"
+          },
+          {
+            "functionDefinition": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "startsWith",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ],
+                      "property": "name"
+                    },
+                    {
+                      "_type": "string",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        "o"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this"
+                }
+              ]
+            },
+            "name": "name_WrongStart"
+          }
+        ],
+        "name": "TargetType",
+        "package": "ui::meta::pure::mapping::modelToModel::test::constraintsManager",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::mapping::modelToModel::test::constraintsManager::Top"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Top",
+        "package": "ui::meta::pure::mapping::modelToModel::test::constraintsManager",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "errors",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Address",
+        "package": "ui::meta::pure::mapping::modelToModel::test::delta::v1",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "add",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Firm",
+        "package": "ui::meta::pure::mapping::modelToModel::test::delta::v1",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "legalName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "employees",
+            "type": "ui::meta::pure::mapping::modelToModel::test::delta::v1::Person"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "count",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "More",
+        "package": "ui::meta::pure::mapping::modelToModel::test::delta::v1",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Person",
+        "package": "ui::meta::pure::mapping::modelToModel::test::delta::v1",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "address",
+            "type": "ui::meta::pure::mapping::modelToModel::test::delta::v1::Address"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "more",
+            "type": "ui::meta::pure::mapping::modelToModel::test::delta::v1::More"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Address",
+        "package": "ui::meta::pure::mapping::modelToModel::test::delta::v2",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "newAdd",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "useless",
+            "type": "ui::meta::pure::mapping::modelToModel::test::delta::v2::Useless"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Firm",
+        "package": "ui::meta::pure::mapping::modelToModel::test::delta::v2",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "newLegalName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "employees",
+            "type": "ui::meta::pure::mapping::modelToModel::test::delta::v2::Person"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "count",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "new",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "useless",
+            "type": "ui::meta::pure::mapping::modelToModel::test::delta::v2::Useless"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "More",
+        "package": "ui::meta::pure::mapping::modelToModel::test::delta::v2",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Person",
+        "package": "ui::meta::pure::mapping::modelToModel::test::delta::v2",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "address",
+            "type": "ui::meta::pure::mapping::modelToModel::test::delta::v2::Address"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "more",
+            "type": "ui::meta::pure::mapping::modelToModel::test::delta::v2::More"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "useless",
+            "type": "ui::meta::pure::mapping::modelToModel::test::delta::v2::Useless"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Useless",
+        "package": "ui::meta::pure::mapping::modelToModel::test::delta::v2"
+      },
+      {
+        "_type": "class",
+        "name": "Source",
+        "package": "ui::meta::pure::mapping::modelToModel::test::distinct",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "someNumber",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Target",
+        "package": "ui::meta::pure::mapping::modelToModel::test::distinct",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "someNumber",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Firm",
+        "package": "ui::meta::pure::mapping::modelToModel::test::embedded::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "legalName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Person",
+        "package": "ui::meta::pure::mapping::modelToModel::test::embedded::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "EmploymentRecord",
+        "package": "ui::meta::pure::mapping::modelToModel::test::embedded::source",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "employeeName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "employerLegalName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "MiddleProduct",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleProductType"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "MiddleProduct2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleProductType2"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "MiddleTrade",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleTradeType"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "MiddleTrade2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleTradeType2"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "SourceProduct",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "SourceProduct2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "SourceTrade",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "SourceTrade2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "TargetProduct",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetProductType"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "TargetTrade",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetTradeType"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "SourceProduct",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "SourceProduct2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "SourceTrade",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "SourceTrade2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "TargetProduct",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model::ProductType"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "TargetTrade",
+        "package": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "ui::meta::pure::mapping::modelToModel::test::enumerationMapping::primitiveTypeToEnum::model::TradeType"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Product",
+        "package": "ui::meta::pure::mapping::modelToModel::test::groupBy",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "price",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Related",
+        "package": "ui::meta::pure::mapping::modelToModel::test::milestoning",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "value",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "TargetProdWithRelated",
+        "package": "ui::meta::pure::mapping::modelToModel::test::milestoning",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "related",
+            "type": "ui::meta::pure::mapping::modelToModel::test::milestoning::Related"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "TestProduct",
+        "package": "ui::meta::pure::mapping::modelToModel::test::milestoning",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "type",
+            "type": "String"
+          }
+        ],
+        "stereotypes": [
+          {
+            "profile": "ui::meta::pure::profiles::temporal",
+            "value": "businesstemporal"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Address",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "street",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "extension",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::dest::AddressExtension"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "AddressExtension",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "stuff",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Firm",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "legalName",
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "ui::meta::relational::transform::transform",
+                  "value": "varCharLength"
+                },
+                "value": "500"
+              }
+            ],
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "employees",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::dest::Person"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "addresses",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::dest::Address"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "count",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "FirmEmployee",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "firmName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "fullName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Person",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "lastName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "addresses",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::dest::Address"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "firm",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::dest::Firm"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Product",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "subProductName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "bondDetailStatus",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "region",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Product2Simple",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "region",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::dest::Region"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Trade",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "side",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::dest::Side"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "productName",
+            "taggedValues": [
+              {
+                "tag": {
+                  "profile": "ui::meta::relational::transform::transform",
+                  "value": "varCharLength"
+                },
+                "value": "50"
+              }
+            ],
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "productRegion",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Vehicle",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::dest",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "wheelCount",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "engine",
+            "type": "Boolean"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "roadster",
+            "type": "Boolean"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Address",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "street",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "city",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "state",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "zipCode",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Applicant",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "dateOfBirth",
+            "type": "StrictDate"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "previousApplication",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Application"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::mapping::modelToModel::test::shared::src::User"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Application",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "applicant",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Applicant"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "employee",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Employee"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "previousEmployeer",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Employer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Employee",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "salary",
+            "type": "Integer"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::mapping::modelToModel::test::shared::src::User"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Employer",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "address",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Address"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Member",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "memberShipFee",
+            "type": "Integer"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::mapping::modelToModel::test::shared::src::User"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Membership",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "products",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Product"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "member",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Member"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "startDate",
+            "type": "StrictDate"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Product",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "instructor",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Employee"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "sessions",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Session"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "ProductWithRegion",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "region",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Session",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "location",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Address"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "date",
+            "type": "StrictDate"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "time",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "User",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "userName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "password",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "lastName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "email",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "startDate",
+            "type": "StrictDate"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "address",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::Address"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_Bicycle",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "roadster",
+            "type": "Boolean"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_Car",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "engine",
+            "type": "Boolean"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_Firm",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_FirmX",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "pathToEmployeesSet1",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::_PersonSrc1"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "pathToEmployeesSet2",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::_PersonSrc2"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_Person",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "fullName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "addresses",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::dest::Address"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_PersonSrc1",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "nameFrom1",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_PersonSrc2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "nameFrom2",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_Person_Address",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "street",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_Product",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "subProductName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "bondDetailStatus",
+            "type": "String"
+          }
+        ],
+        "superTypes": [
+          "ui::meta::pure::mapping::modelToModel::test::shared::src::ProductWithRegion"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_Product2",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "subProductName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "bondDetailStatus",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "region",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::dest::Region"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_RoadVehicle",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "wheelCount",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_S_Person",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "fullName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "_Trade",
+        "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "side",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "product",
+            "type": "ui::meta::pure::mapping::modelToModel::test::shared::src::_Product"
+          }
+        ]
+      }
+    ],
+    "associations": [
+      {
+        "_type": "association",
+        "name": "TestAssociation",
+        "package": "ui",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "testClassProp",
+            "type": "ui::TestClass"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "testClassSibling",
+            "type": "ui::TestClassSibling"
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "_type": "function",
+        "body": [
+          {
+            "_type": "string",
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "values": [
+              ""
+            ]
+          }
+        ],
+        "name": "TestFunction",
+        "package": "ui",
+        "parameters": [],
+        "returnMultiplicity": {
+          "lowerBound": 1,
+          "upperBound": 1
+        },
+        "returnType": "String"
+      }
+    ]
+  },
+  "stores": [],
+  "mappings": [
+    {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "ui::mapping::editor::domain::Target_Something",
+          "id": "ui_mapping_editor_domain_Target_Something",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "ui::mapping::editor::domain::Target_Something",
+                "property": "fullName"
+              },
+              "source": "ui_mapping_editor_domain_Target_Something",
+              "target": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "name"
+                  }
+                ],
+                "parameters": []
+              }
+            },
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "ui::mapping::editor::domain::Target_Something",
+                "property": "age"
+              },
+              "source": "ui_mapping_editor_domain_Target_Something",
+              "target": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "integer",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": [
+                      25
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            },
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "ui::mapping::editor::domain::Target_Something",
+                "property": "description"
+              },
+              "source": "ui_mapping_editor_domain_Target_Something",
+              "target": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "lastName"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": false,
+          "srcClass": "ui::mapping::editor::domain::Source_Something"
+        },
+        {
+          "_type": "pureInstance",
+          "class": "ui::mapping::editor::domain::Target_Something",
+          "id": "targetSomething",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "ui::mapping::editor::domain::Target_Something",
+                "property": "fullName"
+              },
+              "source": "targetSomething",
+              "target": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "string",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": [
+                      "bye"
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            },
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "ui::mapping::editor::domain::Target_Something",
+                "property": "age"
+              },
+              "source": "targetSomething",
+              "target": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "integer",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": [
+                      11
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            },
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "ui::mapping::editor::domain::Target_Something",
+                "property": "description"
+              },
+              "source": "targetSomething",
+              "target": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "string",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": [
+                      "hello"
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": false
+        },
+        {
+          "_type": "operation",
+          "class": "ui::mapping::editor::domain::Target_Something",
+          "id": "unionOfSomething",
+          "operation": "STORE_UNION",
+          "parameters": [
+            "ui_mapping_editor_domain_Target_Something",
+            "targetSomething"
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "name": "testMapping",
+      "package": "ui::mapping",
+      "tests": [
+        {
+          "assert": {
+            "_type": "expectedOutputMappingTestAssert",
+            "expectedOutput": "{}"
+          },
+          "inputData": [
+            {
+              "_type": "object",
+              "data": "{\"name\":[\"name 66\"],\"lastName\":[\"lastName 17\"],\"age\":[51]}",
+              "sourceClass": "ui::mapping::editor::domain::Source_Something"
+            }
+          ],
+          "name": "test_1",
+          "query": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "fControl": "serialize_T_MANY__RootGraphFetchTree_1__String_1_",
+                "function": "serialize",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "fControl": "graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_",
+                    "function": "graphFetchChecked",
+                    "parameters": [
+                      {
+                        "_type": "func",
+                        "fControl": "getAll_Class_1__T_MANY_",
+                        "function": "getAll",
+                        "parameters": [
+                          {
+                            "_type": "class",
+                            "fullPath": "ui::mapping::editor::domain::Target_Something"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "rootGraphFetchTree",
+                        "class": "ui::mapping::editor::domain::Target_Something",
+                        "subTrees": [
+                          {
+                            "_type": "propertyGraphFetchTree",
+                            "property": "age"
+                          },
+                          {
+                            "_type": "propertyGraphFetchTree",
+                            "property": "description"
+                          },
+                          {
+                            "_type": "propertyGraphFetchTree",
+                            "property": "fullName"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "rootGraphFetchTree",
+                    "class": "ui::mapping::editor::domain::Target_Something",
+                    "subTrees": [
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "property": "age"
+                      },
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "property": "description"
+                      },
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "property": "fullName"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "ui::meta::pure::mapping::modelToModel::test::constraintsManager::TargetType",
+          "id": "ui_meta_pure_mapping_modelToModel_test_constraintsManager_TargetType",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "ui::meta::pure::mapping::modelToModel::test::constraintsManager::TargetType",
+                "property": "name"
+              },
+              "source": "ui_meta_pure_mapping_modelToModel_test_constraintsManager_TargetType",
+              "target": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "val"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "ui::meta::pure::mapping::modelToModel::test::constraintsManager::SourceType"
+        }
+      ],
+      "enumerationMappings": [],
+      "name": "m2m",
+      "package": "ui::meta::pure::mapping::modelToModel::test::constraintsManager",
+      "tests": []
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "ui::meta::pure::mapping::modelToModel::test::shared::src::_Bicycle",
+          "id": "ui_meta_pure_mapping_modelToModel_test_shared_src__Bicycle",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "ui::meta::pure::mapping::modelToModel::test::shared::src::_Bicycle",
+                "property": "roadster"
+              },
+              "source": "ui_meta_pure_mapping_modelToModel_test_shared_src__Bicycle",
+              "target": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "boolean",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": [
+                      true
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "ui::meta::pure::mapping::modelToModel::test::shared::src::Application"
+        }
+      ],
+      "enumerationMappings": [],
+      "name": "bobby",
+      "package": "ui::meta::pure::mapping::modelToModel::test::shared::src",
+      "tests": []
+    }
+  ],
+  "diagrams": [],
+  "runtimes": [
+    {
+      "_type": "runtime",
+      "name": "testRuntime",
+      "package": "ui::mapping",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "type": "STORE",
+              "path": "ModelStore"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "JsonModelConnection",
+                  "class": "ui::mapping::editor::domain::Source_Something",
+                  "element": "ModelStore",
+                  "url": "data:application/json,{}"
+                },
+                "id": "connection_1"
+              },
+              {
+                "connection": {
+                  "_type": "connectionPointer",
+                  "connection": "ui::mapping::TestConnection"
+                },
+                "id": "connection_3"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "type": "MAPPING",
+            "path": "ui::mapping::testMapping"
+          }
+        ]
+      }
+    }
+  ],
+  "connections": [
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "JsonModelConnection",
+        "class": "ui::mapping::editor::domain::Source_Something",
+        "element": "ModelStore",
+        "url": "data:application/json,{}"
+      },
+      "name": "TestConnection",
+      "package": "ui::mapping"
+    }
+  ]
+}

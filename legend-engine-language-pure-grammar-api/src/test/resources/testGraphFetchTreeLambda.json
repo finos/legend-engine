@@ -1,0 +1,238 @@
+{
+  "lambdas": {
+    "testLambdas": {
+      "_type": "lambda",
+      "body": [
+        {
+          "_type": "func",
+          "fControl": "serialize_T_MANY__RootGraphFetchTree_1__String_1_",
+          "function": "serialize",
+          "parameters": [
+            {
+              "_type": "func",
+              "fControl": "graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_",
+              "function": "graphFetchChecked",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "fControl": "getAll_Class_1__T_MANY_",
+                  "function": "getAll",
+                  "parameters": [
+                    {
+                      "_type": "class",
+                      "fullPath": "model::complex::L1"
+                    }
+                  ]
+                },
+                {
+                  "_type": "rootGraphFetchTree",
+                  "class": "model::complex::L1",
+                  "subTrees": [
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "name1"
+                    },
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "l14",
+                      "subTrees": [
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "name4"
+                        },
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "l42",
+                          "subTrees": [
+                            {
+                              "_type": "propertyGraphFetchTree",
+                              "property": "name2"
+                            },
+                            {
+                              "_type": "propertyGraphFetchTree",
+                              "property": "l23_1",
+                              "subTrees": [
+                                {
+                                  "_type": "propertyGraphFetchTree",
+                                  "property": "name3"
+                                }
+                              ]
+                            },
+                            {
+                              "_type": "propertyGraphFetchTree",
+                              "property": "l23",
+                              "subTrees": [
+                                {
+                                  "_type": "propertyGraphFetchTree",
+                                  "property": "name3"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "l45",
+                          "subTrees": [
+                            {
+                              "_type": "propertyGraphFetchTree",
+                              "property": "name3"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "l12",
+                      "subTrees": [
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "name2"
+                        },
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "l23_1",
+                          "subTrees": [
+                            {
+                              "_type": "propertyGraphFetchTree",
+                              "property": "name3"
+                            }
+                          ]
+                        },
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "l23",
+                          "subTrees": [
+                            {
+                              "_type": "propertyGraphFetchTree",
+                              "property": "name3"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "l13",
+                      "subTrees": [
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "name3"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "rootGraphFetchTree",
+              "class": "model::complex::L1",
+              "subTrees": [
+                {
+                  "_type": "propertyGraphFetchTree",
+                  "property": "name1"
+                },
+                {
+                  "_type": "propertyGraphFetchTree",
+                  "property": "l14",
+                  "subTrees": [
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "name4"
+                    },
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "l42",
+                      "subTrees": [
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "name2"
+                        },
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "l23_1",
+                          "subTrees": [
+                            {
+                              "_type": "propertyGraphFetchTree",
+                              "property": "name3"
+                            }
+                          ]
+                        },
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "l23",
+                          "subTrees": [
+                            {
+                              "_type": "propertyGraphFetchTree",
+                              "property": "name3"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "l45",
+                      "subTrees": [
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "name3"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_type": "propertyGraphFetchTree",
+                  "property": "l12",
+                  "subTrees": [
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "name2"
+                    },
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "l23_1",
+                      "subTrees": [
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "name3"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "l23",
+                      "subTrees": [
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "name3"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_type": "propertyGraphFetchTree",
+                  "property": "l13",
+                  "subTrees": [
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "name3"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "serializer": {
+    "name": "pure",
+    "version": "v1_0_0"
+  }
+}

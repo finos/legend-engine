@@ -1,0 +1,40 @@
+Class test::Product
+{
+  name: String[1];
+}
+
+Class test::Order
+{
+  client: test::Client[1];
+  lines: test::OrderLine[1..*];
+}
+
+Class test::Client
+{
+  name: String[1];
+}
+
+Class test::OrderLine
+{
+  product: test::Product[1];
+  quantity: Integer[1];
+}
+
+Class test::OrderSummary
+{
+  clientName: String[1];
+  products: String[1];
+  totalQuantity: Integer[1];
+}
+
+###Mapping
+Mapping test::m1
+(
+  *test::OrderSummary[test_OrderSummary]: Pure
+  {
+    ~src test::Order
+    clientName: $src.client.name,
+    products: $src.lines.product.name->joinStrings(', '),
+    totalQuantity: $src.lines.quantity->plus()
+  }
+)

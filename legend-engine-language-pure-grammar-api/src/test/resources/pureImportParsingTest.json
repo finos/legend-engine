@@ -1,0 +1,4 @@
+{
+  "isolatedLambdas": {},
+  "code": "import projectA::*;\nClass {doc.doc = 'a'} model::Person extends VersionClass\n{\n  targetA: TargetA[1];\n}\n"
+}
