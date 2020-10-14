@@ -626,6 +626,14 @@
                         <groupId>io.opentracing.contrib</groupId>
                         <artifactId>opentracing-jaxrs2</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr-runtime</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
