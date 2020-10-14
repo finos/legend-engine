@@ -35,27 +35,20 @@ public class MetadataServerInfo
 
     public MetadataServerInfo(MetaDataServerConfiguration metaDataServerConfiguration)
     {
-        try
-        {
-            message = "{" +
-                    "\"metadataserver\": {" +
-                    "   \"pure\":" +
-                    "   {" +
-                    "      \"host\":\"" + metaDataServerConfiguration.getPure().host + "\"," +
-                    "      \"port\":" + metaDataServerConfiguration.getPure().port +
-                    "   }," +
-                    "   \"alloy\":" +
-                    "   {" +
-                    "      \"host\":\"" + metaDataServerConfiguration.getAlloy().host + "\"," +
-                    "      \"port\":" + metaDataServerConfiguration.getAlloy().port +
-                    "   }" +
-                    "  }" +
-                    "}";
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        this.message = "{" +
+                "\"metadataserver\": {" +
+                "   \"pure\":" +
+                "   {" +
+                "      \"host\":\"" + metaDataServerConfiguration.getPure().host + "\"," +
+                "      \"port\":" + metaDataServerConfiguration.getPure().port +
+                "   }," +
+                "   \"alloy\":" +
+                "   {" +
+                "      \"host\":\"" + metaDataServerConfiguration.getAlloy().host + "\"," +
+                "      \"port\":" + metaDataServerConfiguration.getAlloy().port +
+                "   }" +
+                "  }" +
+                "}";
     }
 
     @GET
