@@ -46,7 +46,6 @@ public class ExceptionError
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
         t.printStackTrace(writer);
-        t.printStackTrace();
         this.code = code;
         int index = ExceptionUtils.indexOfThrowable(t, EngineException.class);
         this.message = index == -1 ? ExceptionUtils.getRootCauseMessage(t) : ExceptionUtils.getThrowables(t)[index].getMessage();

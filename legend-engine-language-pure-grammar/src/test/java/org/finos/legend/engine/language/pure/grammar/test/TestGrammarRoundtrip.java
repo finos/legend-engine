@@ -51,7 +51,7 @@ public class TestGrammarRoundtrip
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
             PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
             Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelData));

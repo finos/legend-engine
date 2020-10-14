@@ -332,37 +332,6 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
             </plugin>
-            <!-- TODO - fix checkstyle issues, before enabling it -->
-            <!-- <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>8.25</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>verify</id>
-                        <phase>verify</phase>
-                        <configuration>
-                            <configLocation>checkstyle.xml</configLocation>
-                            <logViolationsToConsole>true</logViolationsToConsole>
-                            <failOnViolation>true</failOnViolation>
-                            <violationSeverity>warning</violationSeverity>
-                            <sourceDirectories>
-                                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                                <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-                            </sourceDirectories>
-                        </configuration>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin> -->
         </plugins>
     </build>
 
@@ -485,10 +454,6 @@
                 <version>${legend.pure.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>commons-codec</groupId>
-                        <artifactId>commons-codec</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.antlr</groupId>
                         <artifactId>antlr4</artifactId>
                     </exclusion>
@@ -527,10 +492,6 @@
                         <groupId>io.prometheus</groupId>
                         <artifactId>simpleclient_httpserver</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <artifactId>commons-codec</artifactId>
-                        <groupId>commons-codec</groupId>
-                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -559,52 +520,8 @@
                         <artifactId>hbase-client</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>com.ibm.db2.jcc</groupId>
-                        <artifactId>db2jcc4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.ibm.db2.jcc</groupId>
-                        <artifactId>db2jcc_license_cu</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.microsoft.sqlserver</groupId>
-                        <artifactId>mssql-jdbc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sybase.jdbcx</groupId>
-                        <artifactId>jconn4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>net.snowflake</groupId>
-                        <artifactId>snowflake-jdbc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>sybase.jdbc4.sqlanywhere</groupId>
-                        <artifactId>sajdbc4_unix</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.mariadb.jdbc</groupId>
-                        <artifactId>mariadb-java-client</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-dbcp2</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.tomcat</groupId>
-                        <artifactId>tomcat-jdbc</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.bouncycastle</groupId>
                         <artifactId>bcpg-jdk15on</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>CredLookUp</groupId>
-                        <artifactId>*</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
@@ -613,10 +530,6 @@
                     <exclusion>
                         <groupId>log4j</groupId>
                         <artifactId>log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>commons-codec</artifactId>
-                        <groupId>commons-codec</groupId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.google.guava</groupId>
@@ -632,12 +545,6 @@
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
                 <version>${legend.pure.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>commons-codec</artifactId>
-                        <groupId>commons-codec</groupId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
@@ -662,6 +569,21 @@
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-dsl-mapping</artifactId>
+                <version>${legend.pure.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr-runtime</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-dsl-diagram</artifactId>
                 <version>${legend.pure.version}</version>
                 <exclusions>
                     <exclusion>
@@ -734,10 +656,6 @@
                         <artifactId>commons-collections</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.apache.avro</groupId>
-                        <artifactId>avro</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>commons-codec</groupId>
                         <artifactId>commons-codec</artifactId>
                     </exclusion>
@@ -752,14 +670,6 @@
                     <exclusion>
                         <groupId>org.slf4j</groupId>
                         <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.hbase</groupId>
-                        <artifactId>hbase-client</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>sybase.jdbc4.sqlanywhere</groupId>
-                        <artifactId>sajdbc4_unix</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

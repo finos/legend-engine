@@ -99,7 +99,6 @@ public class TestGrammarParser
             }
             catch (Exception e)
             {
-                e.printStackTrace();
                 LogInfo errorResponse = new LogInfo(null, LoggingEventType.PARSE_ERROR, e);
                 Assert.assertNotNull("No source information provided in error", errorResponse.sourceInformation);
                 Assert.assertEquals(expectedErrorMsg, EngineException.buildPrettyErrorMessage(errorResponse.message, errorResponse.sourceInformation, EngineErrorType.PARSER));
@@ -156,7 +155,7 @@ public class TestGrammarParser
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
         Assert.assertEquals(code, grammarTransformer.renderPureModelContextData(Objects.requireNonNull(modelData)));
