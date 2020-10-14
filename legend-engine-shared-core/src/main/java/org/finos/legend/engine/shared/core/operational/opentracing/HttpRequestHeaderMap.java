@@ -21,6 +21,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class HttpRequestHeaderMap implements TextMap
 {
@@ -46,6 +47,10 @@ public class HttpRequestHeaderMap implements TextMap
             @Override
             public Map.Entry<String, String> next()
             {
+                if (!hasNext())
+                {
+                    throw new NoSuchElementException();
+                }
                 Header header = headerIterator.nextHeader();
                 return new Map.Entry<String, String>()
                 {

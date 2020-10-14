@@ -70,7 +70,7 @@ public class JavaHelper
                 compiler = compilePlanSlow(singleExecutionPlan);
             }
 
-            LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_STOP, System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
 
             return compiler;
         }

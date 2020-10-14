@@ -35,6 +35,7 @@ public class TemporaryFile implements Closeable
     private String fileName;
     public Path path;
     private final String tempPath;
+    private static Random random = new Random();
 
     public TemporaryFile(String tempPath)
     {
@@ -56,19 +57,16 @@ public class TemporaryFile implements Closeable
         try (OutputStream outputStream = new FileOutputStream(path.toString()))
         {
             source.stream(outputStream);
-
-            outputStream.close();
         }
     }
 
     private String randomString(int len)
     {
         final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        Random rnd = new Random();
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++)
         {
-            sb.append(AB.charAt(rnd.nextInt(AB.length())));
+            sb.append(AB.charAt(random.nextInt(AB.length())));
         }
         return sb.toString();
     }

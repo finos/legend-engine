@@ -734,7 +734,7 @@ public class Library
         }
         if (x instanceof Double || x instanceof Float)
         {
-            return new BigDecimal(x.doubleValue());
+            return BigDecimal.valueOf(x.doubleValue());
         }
         try
         {
@@ -761,7 +761,7 @@ public class Library
         {
             throw new RuntimeException("Step in range can't be 0");
         }
-        long limit = Math.signum(stop - start) != Math.signum(step) ? 0L : (stop - start) % step == 0 ? (stop - start) / step : (stop - start) / step + 1;
+        long limit = Math.signum((float)stop - start) != Math.signum(step) ? 0L : (stop - start) % step == 0 ? (stop - start) / step : (stop - start) / step + 1;
         return LongStream.iterate(start, (long x) -> x + step).limit(limit).boxed();
     }
 

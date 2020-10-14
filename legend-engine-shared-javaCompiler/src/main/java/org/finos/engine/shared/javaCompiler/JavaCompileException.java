@@ -175,7 +175,7 @@ public class JavaCompileException extends Exception
         private void printDiagnosticSource(Diagnostic<? extends JavaFileObject> diagnostic)
         {
             String sourceName = SOURCE_NAME.valueOf(diagnostic);
-            if (sourceName != lastSourceName)
+            if (sourceName != lastSourceName) //NOSONAR
             {
                 JavaFileObject source = diagnostic.getSource();
                 if (source instanceof StringJavaSource)

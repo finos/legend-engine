@@ -174,7 +174,7 @@ public class SDLCLoader implements ModelLoader
             HttpEntity entity1 = response.getEntity();
             PureModelContextData modelContextData = objectMapper.readValue(entity1.getContent(), PureModelContextData.class);
             Assert.assertTrue(modelContextData.serializer != null, () -> "Engine was unable to load information from the Pure SDLC <a href='" + url + "'>link</a>");
-            LOGGER.info(new LogInfo(subject, stopEvent, System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(subject, stopEvent, (double)System.currentTimeMillis() - start).toString());
             if (span != null)
             {
                 scope.span().log(String.valueOf(stopEvent));

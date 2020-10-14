@@ -169,7 +169,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source = this.context.resolveClass(property0Ref, srcAssociation.properties.get(0).sourceInformation);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target = this.context.resolveClass(property1Ref, srcAssociation.properties.get(1).sourceInformation);
 
-        if (org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(source).equals("meta::pure::metamodel::type::Any") || org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(target) == "meta::pure::metamodel::type::Any")
+        if (org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(source).equals("meta::pure::metamodel::type::Any") || org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(target).equals("meta::pure::metamodel::type::Any"))
         {
             throw new EngineException("Associations to Any are not allowed. Found in '" + packageString + "'", srcAssociation.sourceInformation, EngineErrorType.COMPILATION);
         }

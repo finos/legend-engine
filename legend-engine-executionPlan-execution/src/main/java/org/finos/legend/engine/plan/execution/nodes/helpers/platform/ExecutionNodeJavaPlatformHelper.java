@@ -243,7 +243,7 @@ public class ExecutionNodeJavaPlatformHelper
                 {
                     LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_START, "Node: " + node.getClass().getName()).toString());
                     compiler.compile(classesToCompile);
-                    LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_STOP, System.currentTimeMillis() - start).toString());
+                    LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
                 }
             }
             catch (Exception jce)
