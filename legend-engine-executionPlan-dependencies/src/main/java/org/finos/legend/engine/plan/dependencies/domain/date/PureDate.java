@@ -1966,7 +1966,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
             }
             else
             {
-                result = earlierLaterPair.getTwo().getOne().get(Calendar.DAY_OF_YEAR) - earlierLaterPair.getOne().getOne().get(Calendar.DAY_OF_YEAR);
+                result = (long)earlierLaterPair.getTwo().getOne().get(Calendar.DAY_OF_YEAR) - earlierLaterPair.getOne().getOne().get(Calendar.DAY_OF_YEAR);
             }
             return result;
         }

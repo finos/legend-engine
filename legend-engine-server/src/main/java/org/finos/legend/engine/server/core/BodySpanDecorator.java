@@ -42,7 +42,7 @@ public class BodySpanDecorator implements ReaderInterceptor
             if (GlobalTracer.get() != null && GlobalTracer.get().activeSpan() != null && is != null)
             {
                 ByteArrayOutputStream os = new ByteArrayOutputStream(MAX_LENGTH + 2);
-                IOUtils.copyLarge(is, os, 0, MAX_LENGTH + 1);
+                IOUtils.copyLarge(is, os, 0, MAX_LENGTH + 1L);
                 String body = new String(os.toByteArray());
                 if (body.length() > MAX_LENGTH)
                 {

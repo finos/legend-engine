@@ -128,7 +128,7 @@ public class Execute
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(executeInput.runtime, pureModel.getContext());
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInput.context, pureModel.getContext());
             String plan = PlanGenerator.generateExecutionPlanAsString(lambda, mapping, runtime, context, pureModel, clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
-            LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTION_PLAN_GENERATION_STOP, System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTION_PLAN_GENERATION_STOP, (double)System.currentTimeMillis() - start).toString());
             return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(plan).build();
         }
         catch (Exception ex)
@@ -156,7 +156,7 @@ public class Execute
                     this.transformers
             );
             Result result = planExecutor.execute(plan, Maps.mutable.empty(), user, subject);
-            LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTE_INTERACTIVE_STOP, System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double)System.currentTimeMillis() - start).toString());
             try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
             {
                 return manageResult(subject, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);

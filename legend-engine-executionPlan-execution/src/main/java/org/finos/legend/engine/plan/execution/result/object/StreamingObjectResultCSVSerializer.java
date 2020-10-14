@@ -99,29 +99,15 @@ public class StreamingObjectResultCSVSerializer extends CsvSerializer
         }
         finally
         {
-            try
+            if (csvPrinter != null)
             {
-                if (csvPrinter != null)
-                {
-                    csvPrinter.close();
-                }
-                if (this.streamingObjectResult != null)
-                {
-                    this.streamingObjectResult.close();
-                }
+                csvPrinter.close();
             }
-            catch (Exception e)
+            if (this.streamingObjectResult != null)
             {
-                throw new RuntimeException("error creating CSV", e);
+                this.streamingObjectResult.close();
             }
-            try
-            {
-                byteArrayOutputStream.close();
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException("error creating CSV", e);
-            }
+            byteArrayOutputStream.close();
         }
     }
 

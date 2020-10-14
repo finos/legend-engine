@@ -20,7 +20,7 @@ public class SubjectCache
 {
     private final long creationTime;
     private final Subject subject;
-    private static final long validityPeriod = 1000 * 60 * 30; // 30mn
+    private static final long validityPeriod = 1000L * 60 * 30; // 30mn
 
     public SubjectCache(Subject subject)
     {
