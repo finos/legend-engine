@@ -1,3 +1,2 @@
 org.finos.legend.engine.shared.core.url.DataProtocolHandler
 org.finos.legend.engine.shared.core.url.ExecutorProtocolHandler
-org.finos.legend.engine.shared.core.url.EncryptionProtocolHandler
