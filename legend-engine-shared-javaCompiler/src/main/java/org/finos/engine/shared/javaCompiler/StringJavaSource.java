@@ -27,7 +27,7 @@ import java.util.zip.Inflater;
 
 public abstract class StringJavaSource extends SimpleJavaFileObject
 {
-    private static final Pattern PACKAGE_DECLARATION_PATTERN = Pattern.compile("^\\h*package\\h+[^;\\s]+\\h*;\\h*$", Pattern.MULTILINE);
+    private static final Pattern PACKAGE_DECLARATION_PATTERN = Pattern.compile("^\\h*package\\h+[^;\\s]+\\h*;\\h*", Pattern.MULTILINE);
 
     private StringJavaSource(String packageName, String name)
     {
