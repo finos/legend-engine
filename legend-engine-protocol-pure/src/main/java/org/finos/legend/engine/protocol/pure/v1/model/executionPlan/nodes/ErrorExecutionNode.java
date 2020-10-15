@@ -18,11 +18,6 @@ public class ErrorExecutionNode extends ExecutionNode
 {
     public String message;
 
-    public String message()
-    {
-        return this.message;
-    }
-
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
     {

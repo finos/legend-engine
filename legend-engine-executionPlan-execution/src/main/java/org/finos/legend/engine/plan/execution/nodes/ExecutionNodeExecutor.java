@@ -96,7 +96,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     public Result visit(ErrorExecutionNode errorExecutionNode)
     {
         Result payload = (errorExecutionNode.executionNodes() == null || errorExecutionNode.executionNodes().isEmpty()) ? null : errorExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.subject, this.executionState)).realizeInMemory();
-        return new ErrorResult(1, errorExecutionNode.message(), payload);
+        return new ErrorResult(1, errorExecutionNode.message, payload);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             last = n.accept(new ExecutionNodeExecutor(this.subject, this.executionState));
             if (n instanceof AllocationExecutionNode)
             {
-                subResults.put(((AllocationExecutionNode) n).varName(), last);
+                subResults.put(((AllocationExecutionNode) n).varName, last);
             }
             if (last instanceof ErrorResult)
             {
@@ -133,7 +133,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(AllocationExecutionNode allocationExecutionNode)
     {
-        String varName = allocationExecutionNode.varName();
+        String varName = allocationExecutionNode.varName;
         Result result = allocationExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.subject, new ExecutionState(this.executionState).varName(varName)));
 //        if (!(r instanceof ConstantResult) && !(r instanceof RelationalResult) && !(r instanceof StreamingObjectResult))
 //        {
@@ -148,7 +148,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         {
             result = result.realizeInMemory();
         }
-        this.executionState.addResult(allocationExecutionNode.varName(), result);
+        this.executionState.addResult(allocationExecutionNode.varName, result);
         return result;
     }
 
