@@ -27,7 +27,7 @@ import java.util.zip.Inflater;
 
 public abstract class StringJavaSource extends SimpleJavaFileObject
 {
-    private static final Pattern PACKAGE_DECLARATION_PATTERN = Pattern.compile("^\\s*package\\s+.*($\\s*^)+", Pattern.MULTILINE);
+    private static final Pattern PACKAGE_DECLARATION_PATTERN = Pattern.compile("^\\h*package\\h+[^;\\s]+\\h*;\\h*", Pattern.MULTILINE);
 
     private StringJavaSource(String packageName, String name)
     {
@@ -62,9 +62,15 @@ public abstract class StringJavaSource extends SimpleJavaFileObject
         return (compressedCodeBytes == null) ? new SimpleStringJavaSource(packageName, name, codeString) : new StringJavaSource.CompressedStringJavaSource(packageName, name, codeBytes.length, compressedCodeBytes);
     }
 
+    // package private for testing
+    static boolean hasPackageDeclaration(String code)
+    {
+        return PACKAGE_DECLARATION_PATTERN.matcher(code).find();
+    }
+
     private static String possiblyAddPackage(String code, String packageName)
     {
-        return PACKAGE_DECLARATION_PATTERN.matcher(code).find() ? code : ("package " + packageName + ";\n" + code);
+        return hasPackageDeclaration(code) ? code : ("package " + packageName + ";\n" + code);
     }
 
     private static byte[] possiblyCompressCode(byte[] codeBytes)

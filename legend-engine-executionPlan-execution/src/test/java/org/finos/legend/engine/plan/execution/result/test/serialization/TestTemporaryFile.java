@@ -26,12 +26,12 @@ public class TestTemporaryFile
     {
         TemporaryFile tempFileWithoutEndingSlash = new TemporaryFile("/tmp");
         TemporaryFile tempFileWithEndingSlash = new TemporaryFile("/tmp/");
-        if (SystemUtils.IS_OS_LINUX)
+        if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX)
         {
             Assert.assertEquals(2, (int) tempFileWithoutEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '/').count());
             Assert.assertEquals(2, (int) tempFileWithEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '/').count());
         }
-        if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
+        else if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
         {
             Assert.assertEquals(1, (int) tempFileWithoutEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '/').count());
             Assert.assertEquals(1, (int) tempFileWithEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '/').count());
