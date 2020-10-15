@@ -14,12 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-
 public class ConnectionPointer extends Connection
 {
     public String connection;
-    public SourceInformation sourceInformation;
 
     @Override
     public <T> T accept(ConnectionVisitor<T> connectionVisitor)

@@ -18,11 +18,6 @@ public class AllocationExecutionNode extends ExecutionNode
 {
     public String varName;
 
-    public String varName()
-    {
-        return this.varName;
-    }
-
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
     {

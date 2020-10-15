@@ -355,7 +355,7 @@ public class GeneratePureConfig
             WildcardType w = (WildcardType) type;
             List<Encoded> lowers = Arrays.stream(w.getLowerBounds()).map(this::encodeType).collect(Collectors.toList());
             List<Encoded> uppers = Arrays.stream(w.getLowerBounds()).map(this::encodeType).collect(Collectors.toList());
-            if (lowers.isEmpty() & uppers.isEmpty())
+            if (lowers.isEmpty() && uppers.isEmpty())
             {
                 return new Encoded("javaWildcard");
             }
