@@ -14,10 +14,19 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -1704,5 +1713,32 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "       $this.date == %2020-01-01;\n" +
                 "   } : Boolean[1];\n" +
                 "}\n");
+    }
+    @Test
+    public void testClassWithBusinessTemporalMilesoning()
+    {
+        Pair<PureModelContextData, PureModel> modelWithInput =
+                test("Class apps::Employee \n" +
+                        "{ \n" +
+                        "  name: String[1]; \n" +
+                        "  firm: apps::Firm[1]; \n" +
+                        "}\n\n" +
+                        "Class <<meta::pure::profiles::temporal.businesstemporal>> apps::Firm \n" +
+                        "{ \n" +
+                        "  name: String[1]; \n" +
+                        "} \n" +
+                        "Association apps::Employee_Firm \n" +
+                        "{ \n" +
+                        "  worksFor: apps::Firm[*]; \n" +
+                        "  employs: apps::Employee[*]; \n" +
+                        "} \n");
+        PureModel model = modelWithInput.getTwo();
+        Type clazz = model.getType("apps::Employee", SourceInformation.getUnknownSourceInformation());
+        Root_meta_pure_metamodel_type_Class_Impl<?> type = (Root_meta_pure_metamodel_type_Class_Impl<?>) clazz;
+        org.eclipse.collections.api.block.function.Function<Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property>> originalMilestonedPropertiesGetter = org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.ClassAccessor::_originalMilestonedProperties;
+        RichIterable<? extends Property> firmProperty = originalMilestonedPropertiesGetter.valueOf(type).select(p -> p.getName().equals("firm"));
+        Assert.assertTrue("Missing firm property in _originalMilestonedProperties", firmProperty.size() == 1);
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> worksForProperty = originalMilestonedPropertiesGetter.valueOf(type).select(p -> p.getName().equals("worksFor"));
+        Assert.assertTrue("Missing worksFor property in _originalMilestonedProperties", worksForProperty.size() == 1);
     }
 }
