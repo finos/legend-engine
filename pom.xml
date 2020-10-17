@@ -337,6 +337,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Duplicative of legend-shared-pac4j dep 
+                (via jackson-dataformat-yaml). If not set,
+                snakeyaml version shown in the build is 1.24
+                Could be caused by a mvn conflict resolution,
+                the safest approach is to force version here.
+            -->
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
