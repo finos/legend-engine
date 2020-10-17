@@ -337,6 +337,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>1.26</version>
+            </dependency>
             <!-- ENGINE -->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
