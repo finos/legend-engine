@@ -95,8 +95,8 @@
         <freemarker.version>2.3.30</freemarker.version>
         <opentracing.version>0.32.0</opentracing.version>
         <prometheus.version>0.8.1</prometheus.version>
-        <httpclient.version>4.5.5</httpclient.version>
-        <httpcore.version>4.4.9</httpcore.version>
+        <httpclient.version>4.5.13</httpclient.version>
+        <httpcore.version>4.4.13</httpcore.version>
         <janino.version>3.1.0</janino.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
         <pac4j.version>3.7.0</pac4j.version>
