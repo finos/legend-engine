@@ -14,20 +14,20 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <name>Legend Engine</name>
-    <groupId>org.finos.legend.engine</groupId>
-    <artifactId>legend-engine</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>pom</packaging>
 
     <parent>
         <groupId>org.finos</groupId>
         <artifactId>finos</artifactId>
         <version>2</version>
     </parent>
+
+    <name>Legend Engine</name>
+    <groupId>org.finos.legend.engine</groupId>
+    <artifactId>legend-engine</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <modules>
         <module>legend-engine-executionPlan-generation</module>
@@ -132,6 +132,11 @@
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
     </properties>
+
+    <scm>
+        <developerConnection>scm:git:https://github.com/finos/legend-engine</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <build>
         <pluginManagement>
@@ -1054,4 +1059,20 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <name>OSSRH Public Group</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>ossrh-releases</id>
+            <name>OSSRH Public Releases Group</name>
+            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+        </repository>
+    </repositories>
 </project>
