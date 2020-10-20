@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.legend.engine.query.pure.api;
+package org.finos.legend.engine.query.pure.api;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;

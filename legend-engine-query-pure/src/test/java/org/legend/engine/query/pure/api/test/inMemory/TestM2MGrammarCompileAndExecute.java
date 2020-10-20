@@ -40,7 +40,7 @@ import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.legend.engine.query.pure.api.Execute;
+import org.finos.legend.engine.query.pure.api.Execute;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
