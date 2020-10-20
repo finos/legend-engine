@@ -9,7 +9,7 @@ Execution engine for Legend.
 
 ## Development setup
 
-This application uses Maven 3.6+ and JDK 8. Simply run `mvn install` to compile.
+This application uses Maven 3.6+ and JDK 11. Simply run `mvn install` to compile.
 
 ## Roadmap
 
