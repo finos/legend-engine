@@ -5,11 +5,16 @@
 
 # legend-engine
 
-Execution engine for Legend.
+Execution engine for Legend. It provides:
+- A Pure parser and compiler.
+- An execution engine, generating and/or executing execution plans when provided with a Pure function, a Mapping and a Runtime.
+- Access point for model transformers written using the Pure language (soon to come).
 
 ## Development setup
 
-This application uses Maven 3.6+ and JDK 11. Simply run `mvn install` to compile.
+- This application uses Maven 3.6+ and JDK 11. Simply run `mvn install` to compile.
+- In order to start the server, please use the Main class org.finos.legend.engine.server.Server with the parameters: `server legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json`.
+- You can test by trying http://127.0.0.1:9090 in a web browser. The swagger page can be accessed at http://127.0.0.1:9090/api/swagger.
 
 ## Roadmap
 

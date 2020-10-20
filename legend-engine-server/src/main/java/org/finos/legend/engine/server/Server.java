@@ -53,7 +53,7 @@ import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
 import org.finos.legend.server.shared.bundles.OpenTracingBundle;
-import org.legend.engine.query.pure.api.Execute;
+import org.finos.legend.engine.query.pure.api.Execute;
 import org.slf4j.Logger;
 
 import javax.servlet.DispatcherType;
