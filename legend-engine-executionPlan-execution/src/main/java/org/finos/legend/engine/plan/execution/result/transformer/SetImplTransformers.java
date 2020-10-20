@@ -58,6 +58,30 @@ public class SetImplTransformers
         transformers = Lists.mutable.empty();
     }
 
+    private Boolean toBoolean(Object o) 
+    {
+        if (o == null)
+        {
+            return null;
+        } 
+        else if (o instanceof Boolean) 
+        {
+            return (Boolean) o;
+        } 
+        else if (o instanceof String)
+        {
+            return Boolean.parseBoolean((String) o);
+        } 
+        else if (o instanceof  Number)
+        {
+            return ((Number) o).intValue() != 0;
+        } 
+        else 
+        {
+            throw new IllegalArgumentException("Transformer Error: Could not convert to Boolean");
+        }
+    }
+
     private <T> Function<Object, Object> buildTransformer(TransformerInput<T> transformerInput)
     {
         if (transformerInput.type != null && transformerInput.test.valueOf(transformerInput.identifier))
@@ -66,7 +90,7 @@ public class SetImplTransformers
         }
         else if (transformerInput.type != null && transformerInput.type.equals("Boolean"))
         {
-            return o -> o == null ? null : o instanceof Boolean ? o : Boolean.parseBoolean((String) o);
+            return o -> toBoolean(o);
         }
         else if (transformerInput.type != null && (transformerInput.type.equals("StrictDate") || transformerInput.type.equals("DateTime") || transformerInput.type.equals("Date")))
         {
