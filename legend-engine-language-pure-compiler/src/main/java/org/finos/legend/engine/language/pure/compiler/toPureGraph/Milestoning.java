@@ -171,7 +171,7 @@ public class Milestoning
         {
             MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> propertiesUpdated = Lists.mutable.withAll(properties.select(p -> !originalProperties.contains(p))).withAll((Iterable) edgePointProperties);
             MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> qualifiedPropertiesUpdated = Lists.mutable.withAll(qualifiedPropertiesGetter.valueOf(clazz)).withAll((Iterable) milestoningPropertyTransformations.flatCollect(t -> t.qualfiedPropertiesToAdd));
-            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> originalMilestonedPropertiesUpdated = Lists.mutable.withAll(originalProperties.select(p -> !originalMilestonedProperties.contains(p)));
+            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> originalMilestonedPropertiesUpdated = Lists.mutable.withAll(originalProperties.reject(p -> originalMilestonedProperties.anySatisfy(o -> o.getName().equals(p.getName()))));
             propertiesSetter.accept(clazz, propertiesUpdated);
             qualifiedPropertiesSetter.accept(clazz, qualifiedPropertiesUpdated);
             originalPropertySetter.accept(clazz, originalMilestonedPropertiesUpdated);
