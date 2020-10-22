@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This module includes logic for parsing [PURE grammar](https://legend.finos.org/docs/getting-started/language) to protocol JSON as well as transforming protocol to PURE.
+This module includes logic for parsing [PURE grammar](https://legend.finos.org/docs/getting-started/legend-language) to protocol JSON as well as transforming protocol to PURE.
 
 ## Philosophy
 
