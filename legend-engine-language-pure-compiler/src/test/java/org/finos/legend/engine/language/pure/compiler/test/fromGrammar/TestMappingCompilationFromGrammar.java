@@ -1282,4 +1282,59 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  ]" +
                 ")\n");
     }
+
+    @Test
+    public void testModelToModelMappingWithUnitTypeProperties()
+    {
+        String models = "Measure test::Mass\n" +
+                "{\n" +
+                "   *Gram: x -> $x;\n" +
+                "   Kilogram: x -> $x * 1000;\n" +
+                "   Pound: x -> $x * 453.59;\n" +
+                "}" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   weight : test::Mass~Kilogram[1];\n" +
+                "}\n" +
+                "Class test::_Person\n" +
+                "{\n" +
+                "   weightUnit : String[1];\n" +
+                "   weightValue : Number[1];\n" +
+                "}\n" +
+                "Class test::PersonWithPound\n" +
+                "{\n" +
+                "   weight : test::Mass~Pound[1];\n" +
+                "}\n";
+        test(models +
+                "###Mapping\n" +
+                "Mapping test::decomposeMapping\n" +
+                "(\n" +
+                "  *test::_Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    weightUnit: $src.weight->unitType(),\n" +
+                "    weightValue: $src.weight->unitValue()\n" +
+                "  }\n" +
+                ")");
+        test(models +
+                "###Mapping\n" +
+                "Mapping test::composeMapping\n" +
+                "(\n" +
+                "  *test::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::_Person\n" +
+                "    weight: newUnit(test::Mass~Kilogram, $src.weightValue)->cast(@test::Mass~Kilogram)\n" +
+                "  }\n" +
+                ")");
+        test(models +
+                "###Mapping\n" +
+                "Mapping test::convertMapping\n" +
+                "(\n" +
+                "  *test::PersonWithPound: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    weight: $src.weight->convert(test::Mass~Pound)->cast(@test::Mass~Pound)\n" +
+                "  }\n" +
+                ")");
+    }
 }

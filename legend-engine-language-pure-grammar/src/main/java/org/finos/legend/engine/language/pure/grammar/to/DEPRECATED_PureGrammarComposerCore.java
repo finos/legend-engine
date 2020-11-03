@@ -908,19 +908,19 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(HackedUnit hackedUnit)
     {
-        return unsupported(HackedUnit.class);
+        return "@" + hackedUnit.unitType;
     }
 
     @Override
     public String visit(UnitInstance unitInstance)
     {
-        return unsupported(UnitInstance.class);
+        return unitInstance.unitValue.toString() + " " + unitInstance.unitType;
     }
 
     @Override
     public String visit(UnitType unitType)
     {
-        return unsupported(UnitType.class);
+        return unitType.unitType;
     }
 
     @Override
