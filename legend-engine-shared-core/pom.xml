@@ -124,7 +124,7 @@
             <artifactId>pac4j-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend</groupId>
+            <groupId>org.finos.legend.shared</groupId>
             <artifactId>legend-shared-pac4j-kerberos</artifactId>
         </dependency>
         <!-- For ProfileManagerHelper - Extract Subject from ProfileManager -->
