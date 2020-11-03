@@ -76,7 +76,7 @@
 
         <!-- Legend -->
         <legend.pure.version>1.0.0</legend.pure.version>
-        <legend.shared.version>0.0.7</legend.shared.version>
+        <legend.shared.version>0.0.8</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -679,12 +679,18 @@
 
             <!-- LEGEND SHARED -->
             <dependency>
-                <groupId>org.finos.legend</groupId>
-                <artifactId>legend-server-shared</artifactId>
+                <groupId>org.finos.legend.shared</groupId>
+                <artifactId>legend-shared-server</artifactId>
                 <version>${legend.shared.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.finos.legend</groupId>
+                <groupId>org.finos.legend.shared</groupId>
                 <artifactId>legend-shared-pac4j</artifactId>
                 <version>${legend.shared.version}</version>
                 <exclusions>
@@ -695,7 +701,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.finos.legend</groupId>
+                <groupId>org.finos.legend.shared</groupId>
                 <artifactId>legend-shared-pac4j-kerberos</artifactId>
                 <version>${legend.shared.version}</version>
             </dependency>

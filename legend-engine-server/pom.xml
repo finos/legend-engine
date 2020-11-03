@@ -135,8 +135,8 @@
 
         <!-- Shared Drop Wizard Bundles -->
         <dependency>
-            <groupId>org.finos.legend</groupId>
-            <artifactId>legend-server-shared</artifactId>
+            <groupId>org.finos.legend.shared</groupId>
+            <artifactId>legend-shared-server</artifactId>
         </dependency>
         <!-- Shared Drop Wizard Bundles -->
 
@@ -213,7 +213,7 @@
 
         <!-- Authentication -->
         <dependency>
-            <groupId>org.finos.legend</groupId>
+            <groupId>org.finos.legend.shared</groupId>
             <artifactId>legend-shared-pac4j</artifactId>
         </dependency>
         <dependency>
