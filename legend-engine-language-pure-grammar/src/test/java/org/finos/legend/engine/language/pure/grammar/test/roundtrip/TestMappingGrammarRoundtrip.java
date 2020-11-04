@@ -228,4 +228,35 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "(\n" +
                 ")\n");
     }
+
+    @Test
+    public void testMappingWithUnitTypeProperties()
+    {
+        test("###Mapping\n" +
+                "Mapping test::decomposeMapping\n" +
+                "(\n" +
+                "  *test::_Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    weightUnit: $src.weight->unitType(),\n" +
+                "    weightValue: $src.weight->unitValue()\n" +
+                "  }\n" +
+                ")\n\n" +
+                "Mapping test::composeMapping\n" +
+                "(\n" +
+                "  *test::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::_Person\n" +
+                "    weight: test::Mass~Kilogram->newUnit($src.weightValue)->cast(@test::Mass~Kilogram)\n" +
+                "  }\n" +
+                ")\n\n" +
+                "Mapping test::convertMapping\n" +
+                "(\n" +
+                "  *test::PersonWithPound: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    weight: $src.weight->convert(test::Mass~Pound)->cast(@test::Mass~Pound)\n" +
+                "  }\n" +
+                ")\n");
+    }
 }
