@@ -75,7 +75,7 @@
         <maven.compiler.release>8</maven.compiler.release>
 
         <!-- Legend -->
-        <legend.pure.version>1.0.0</legend.pure.version>
+        <legend.pure.version>1.1.0</legend.pure.version>
         <legend.shared.version>0.1.0</legend.shared.version>
 
         <!-- Dependency versions -->
