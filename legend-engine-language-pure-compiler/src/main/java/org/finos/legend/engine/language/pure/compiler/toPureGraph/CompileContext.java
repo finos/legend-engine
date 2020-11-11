@@ -19,13 +19,12 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Sets;
-import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
@@ -62,9 +61,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.m3.navigation._package._Package;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,18 +72,12 @@ import java.util.function.Function;
 public class CompileContext
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    // NOTE: this list is taken from ImportStub resolution in PURE
-    public static final ImmutableSet<String> PRIMITIVE_TYPES = Sets.immutable.with(
-            "Boolean", "String", "Binary",
-            "Date", "StrictDate", "DateTime", "LatestDate",
-            "Number", "Float", "Decimal", "Integer"
-    );
-    public static final ImmutableSet<String> SPECIAL_TYPES = PRIMITIVE_TYPES.union(Sets.immutable.with(
-            "Package"
-    ));
-    private static final String PACKAGE_SEPARATOR = "::";
+
+    private static final ImmutableSet<String> SPECIAL_TYPES = _Package.SPECIAL_TYPES;
+    private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
+
     // NOTE: this list is taken from m3.pure in PURE
-    private static final List<String> AUTO_IMPORTS = FastList.newListWith(
+    private static final ImmutableSet<String> AUTO_IMPORTS = Sets.immutable.with(
             "meta::pure::metamodel",
             "meta::pure::metamodel::type",
             "meta::pure::metamodel::type::generics",
@@ -116,7 +109,7 @@ public class CompileContext
     );
 
     public final PureModel pureModel;
-    private final List<String> imports;
+    private final ImmutableSet<String> imports;
     public final List<CompilerExtension> extensions;
     public final List<Function2<PackageableElement, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> extraPackageableElementFirstPassProcessors;
     public final List<Procedure2<PackageableElement, CompileContext>> extraPackageableElementSecondPassProcessors;
@@ -165,7 +158,7 @@ public class CompileContext
     public static class Builder
     {
         private final PureModel pureModel;
-        private List<String> imports = new ArrayList<>();
+        private ImmutableSet<String> imports = AUTO_IMPORTS;
 
         public Builder(PureModel pureModel)
         {
@@ -178,7 +171,7 @@ public class CompileContext
             {
                 return this;
             }
-            return this.withSection(pureModel.getSection(elementPath));
+            return this.withSection(this.pureModel.getSection(elementPath));
         }
 
         public Builder withElement(PackageableElement element)
@@ -187,20 +180,17 @@ public class CompileContext
             {
                 return this;
             }
-            return this.withSection(pureModel.getSection(element));
+            return this.withSection(this.pureModel.getSection(element));
         }
 
         public Builder withSection(Section section)
         {
-            this.imports = new ArrayList<>();
             // NOTE: we add auto-imports regardless the type of the section or whether if there is any section at all
             // so system elements will always be resolved no matter what.
-            this.imports.addAll(AUTO_IMPORTS);
             if (section instanceof ImportAwareCodeSection)
             {
-                this.imports.addAll(((ImportAwareCodeSection) section).imports);
+                this.imports = AUTO_IMPORTS.newWithAll(((ImportAwareCodeSection) section).imports);
             }
-            this.imports = ListIterate.distinct(this.imports); // remove duplicates
             return this;
         }
 
@@ -218,7 +208,7 @@ public class CompileContext
         }
 
         // Try the find from special types (not user-defined top level types)
-        if (CompileContext.SPECIAL_TYPES.contains(path))
+        if (SPECIAL_TYPES.contains(path))
         {
             return resolver.apply(path);
         }
@@ -231,23 +221,7 @@ public class CompileContext
 
         // NOTE: here we make the assumption that we have populated the indices properly so the same element
         // is not referred using 2 different paths in the same element index
-        MutableMap<String, T> results = UnifiedMap.newMap();
-        ListIterate.distinct(this.imports).forEach(importPackage ->
-        {
-            try
-            {
-                String fullPath = importPackage + PACKAGE_SEPARATOR + path;
-                T result = resolver.apply(fullPath);
-                if (result != null)
-                {
-                    results.put(fullPath, result);
-                }
-            }
-            catch (Exception ignored)
-            {
-            }
-        });
-
+        MutableMap<String, T> results = searchImports(path, resolver);
         switch (results.size())
         {
             case 0:
@@ -262,7 +236,7 @@ public class CompileContext
             }
             case 1:
             {
-                return results.values().iterator().next();
+                return results.valuesView().getAny();
             }
             default:
             {
@@ -281,7 +255,7 @@ public class CompileContext
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type resolveType(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getType(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getType(path, sourceInformation));
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> resolveClass(String fullPath)
@@ -291,7 +265,7 @@ public class CompileContext
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> resolveClass(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getClass(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getClass(path, sourceInformation));
     }
 
     public Enumeration<Enum> resolveEnumeration(String fullPath)
@@ -301,17 +275,17 @@ public class CompileContext
 
     public Enumeration<Enum> resolveEnumeration(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getEnumeration(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getEnumeration(path, sourceInformation));
     }
 
     public Measure resolveMeasure(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getMeasure(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getMeasure(path, sourceInformation));
     }
 
     public Unit resolveUnit(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getUnit(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getUnit(path, sourceInformation));
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association resolveAssociation(String fullPath)
@@ -321,7 +295,7 @@ public class CompileContext
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association resolveAssociation(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getAssociation(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getAssociation(path, sourceInformation));
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile resolveProfile(String fullPath)
@@ -331,12 +305,12 @@ public class CompileContext
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile resolveProfile(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getProfile(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getProfile(path, sourceInformation));
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition resolveConcreteFunctionDefinition(String fullPath, SourceInformation sourceInformation)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> resolveConcreteFunctionDefinition(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getConcreteFunctionDefinition(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getConcreteFunctionDefinition(path, sourceInformation));
     }
 
     public Store resolveStore(String fullPath)
@@ -346,7 +320,7 @@ public class CompileContext
 
     public Store resolveStore(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getStore(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getStore(path, sourceInformation));
     }
 
     public Mapping resolveMapping(String fullPath)
@@ -356,7 +330,7 @@ public class CompileContext
 
     public Mapping resolveMapping(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getMapping(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getMapping(path, sourceInformation));
     }
 
     public Runtime resolveRuntime(String fullPath)
@@ -366,12 +340,12 @@ public class CompileContext
 
     public Runtime resolveRuntime(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getRuntime(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getRuntime(path, sourceInformation));
     }
 
     public Connection resolveConnection(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, (String path) -> this.pureModel.getConnection(path, sourceInformation));
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getConnection(path, sourceInformation));
     }
 
 
@@ -470,23 +444,7 @@ public class CompileContext
             return functionHandlerMap.get(functionName);
         }
 
-        MutableMap<String, FunctionExpressionBuilder> results = UnifiedMap.newMap();
-        ListIterate.distinct(this.imports).forEach(importPackage ->
-        {
-            try
-            {
-                String fullPath = importPackage + PACKAGE_SEPARATOR + functionName;
-                FunctionExpressionBuilder result = functionHandlerMap.get(fullPath);
-                if (result != null)
-                {
-                    results.put(fullPath, result);
-                }
-            }
-            catch (Exception ignored)
-            {
-            }
-        });
-
+        MutableMap<String, FunctionExpressionBuilder> results = searchImports(functionName, functionHandlerMap::get);
         switch (results.size())
         {
             case 0:
@@ -498,12 +456,35 @@ public class CompileContext
             }
             case 1:
             {
-                return results.values().iterator().next();
+                return results.valuesView().getAny();
             }
             default:
             {
                 throw new EngineException(results.keysView().makeString("Can't resolve the builder for function '" + functionName + "' - multiple matches found [", ", ", "]"), sourceInformation, EngineErrorType.COMPILATION);
             }
         }
+    }
+
+    private <T> MutableMap<String, T> searchImports(String name, Function<String, T> resolver)
+    {
+        MutableMap<String, T> results = Maps.mutable.empty();
+        this.imports.forEach(importPackage ->
+        {
+            String fullPath = importPackage + PACKAGE_SEPARATOR + name;
+            T result = null;
+            try
+            {
+                result = resolver.apply(fullPath);
+            }
+            catch (Exception ignored)
+            {
+                // could not resolve
+            }
+            if (result != null)
+            {
+                results.put(fullPath, result);
+            }
+        });
+        return results;
     }
 }
