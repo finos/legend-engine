@@ -15,7 +15,15 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+
+import java.util.Collections;
 
 public class CoreCompilerExtension implements CompilerExtension
 {
+    @Override
+    public Iterable<? extends Processor<?>> getExtraProcessors()
+    {
+        return Collections.emptyList();
+    }
 }

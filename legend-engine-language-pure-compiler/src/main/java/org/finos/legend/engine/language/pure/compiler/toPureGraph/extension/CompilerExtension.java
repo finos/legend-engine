@@ -46,83 +46,57 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 public interface CompilerExtension
 {
-    /**
-     * NOTE: This processor is the only one that returns the element as we will use the result to determine if an element is supported
-     */
-    default List<Function2<PackageableElement, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> getExtraPackageableElementFirstPassProcessors()
-    {
-        return new ArrayList<>();
-    }
-
-    default List<Procedure2<PackageableElement, CompileContext>> getExtraPackageableElementSecondPassProcessors()
-    {
-        return new ArrayList<>();
-    }
-
-    default List<Procedure2<PackageableElement, CompileContext>> getExtraPackageableElementThirdPassProcessors()
-    {
-        return new ArrayList<>();
-    }
-
-    default List<Procedure2<PackageableElement, CompileContext>> getExtraPackageableElementFourthPassProcessors()
-    {
-        return new ArrayList<>();
-    }
-
-    default List<Procedure2<PackageableElement, CompileContext>> getExtraPackageableElementFifthPassProcessors()
-    {
-        return new ArrayList<>();
-    }
+    Iterable<? extends Processor<?>> getExtraProcessors();
 
     default List<Function4<ValueSpecification, CompileContext, List<String>, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> getExtraValueSpecificationProcessors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Function3<ClassMapping, Mapping, CompileContext, Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>>>> getExtraClassMappingFirstPassProcessors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Procedure3<ClassMapping, Mapping, CompileContext>> getExtraClassMappingSecondPassProcessors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> getExtraAssociationMappingProcessors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Connection>> getExtraConnectionValueProcessors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Procedure2<InputData, CompileContext>> getExtraMappingTestInputDataProcessors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> getExtraFunctionHandlerDispatchBuilderInfoCollectors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> getExtraFunctionExpressionBuilderRegistrationInfoCollectors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Function<Handlers, List<FunctionHandlerRegistrationInfo>>> getExtraFunctionHandlerRegistrationInfoCollectors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     /**
@@ -140,29 +114,29 @@ public interface CompilerExtension
     @Deprecated
     default List<Procedure8<Type, ValueSpecification, CompileContext, ProcessingContext, List<ValueSpecification>, String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType, MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>>> DEPRECATED_getExtraInferredTypeProcessors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     // MISC
 
     default List<Procedure2<PackageableElement, MutableMap<String, String>>> getExtraStoreStatBuilders()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Function2<ExecutionContext, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext>> getExtraExecutionContextProcessors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Procedure3<SetImplementation, Set<String>, CompileContext>> getExtraSetImplementationSourceScanners()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     default List<Procedure2<PureModel, PureModelContextData>> getExtraPostValidators()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     /**
@@ -170,6 +144,6 @@ public interface CompilerExtension
      */
     default List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 }

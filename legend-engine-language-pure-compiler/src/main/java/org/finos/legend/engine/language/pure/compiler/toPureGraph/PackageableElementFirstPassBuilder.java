@@ -53,7 +53,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
 import java.util.List;
-import java.util.Objects;
 
 public class PackageableElementFirstPassBuilder implements PackageableElementVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>
 {
@@ -67,7 +66,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        return context.extraPackageableElementFirstPassProcessors.stream().map(processor -> processor.value(element, this.context)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported packageable element mapping type '" + element.getClass() + "'"));
+        return this.context.getExtraProcessorOrThrow(element).processFirstPass(element, this.context);
     }
 
     @Override

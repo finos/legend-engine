@@ -47,7 +47,7 @@ public class PackageableElementThirdPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        ListIterate.forEach(this.context.extraPackageableElementThirdPassProcessors, processor -> processor.value(element, this.context));
+        this.context.getExtraProcessorOrThrow(element).processThirdPass(element, this.context);
         return null;
     }
 
@@ -66,7 +66,7 @@ public class PackageableElementThirdPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Class srcClass)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> targetClass = this.context.pureModel.getClass(this.context.pureModel.buildPackageString(srcClass._package, srcClass.name), srcClass.sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass = this.context.pureModel.getClass(this.context.pureModel.buildPackageString(srcClass._package, srcClass.name), srcClass.sourceInformation);
         Milestoning.applyMilestoningClassTransformations(this.context, targetClass);
         return targetClass;
     }

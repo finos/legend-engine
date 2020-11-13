@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
@@ -84,10 +85,10 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.security.auth.Subject;
 
 public class PureModel implements IPureModel
 {
@@ -109,7 +110,7 @@ public class PureModel implements IPureModel
     final MutableMap<String, Section> sectionsIndex = UnifiedMap.newMap();
     final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> typesIndex = UnifiedMap.newMap();
     final MutableMap<String, GenericType> typesGenericTypeIndex = UnifiedMap.newMap();
-    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition> functionsIndex = UnifiedMap.newMap();
+    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?>> functionsIndex = UnifiedMap.newMap();
     final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile> profilesIndex = UnifiedMap.newMap();
     final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association> associationsIndex = UnifiedMap.newMap();
     final MutableMap<String, Store> storesIndex = UnifiedMap.newMap();
@@ -626,12 +627,12 @@ public class PureModel implements IPureModel
         );
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> getClass(String fullPath)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getClass(String fullPath)
     {
         return this.getClass(fullPath, SourceInformation.getUnknownSourceInformation());
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> getClass(String fullPath, SourceInformation sourceInformation)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getClass(String fullPath, SourceInformation sourceInformation)
     {
         Type type;
         try
@@ -642,10 +643,10 @@ public class PureModel implements IPureModel
         {
             throw new EngineException("Can't find class '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> _class;
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class;
         try
         {
-            _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object>) type;
+            _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) type;
         }
         catch (ClassCastException e)
         {
@@ -760,9 +761,9 @@ public class PureModel implements IPureModel
         );
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition getConcreteFunctionDefinition(String fullPath, SourceInformation sourceInformation)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> getConcreteFunctionDefinition(String fullPath, SourceInformation sourceInformation)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition func = this.functionsIndex.get(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> func = this.functionsIndex.get(fullPath);
         Assert.assertTrue(func != null, () -> "Can't find function '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return func;
     }
@@ -871,7 +872,7 @@ public class PureModel implements IPureModel
         return this.getProperty(this.getClass(fullPath, classSourceInformation), fullPath, propertyName, sourceInformation);
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty<?> getProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> _class, String fullPath, String propertyName, SourceInformation sourceInformation)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty<?> getProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String fullPath, String propertyName, SourceInformation sourceInformation)
     {
         return HelperModelBuilder.getOwnedProperty(_class, fullPath, propertyName, sourceInformation, this.getExecutionSupport());
     }
@@ -1073,9 +1074,9 @@ public class PureModel implements IPureModel
         return packageName;
     }
 
-    public org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> getModelClasses()
+    public RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> getModelClasses()
     {
-        return this.typesIndex.collectIf(t -> !(t instanceof Root_meta_pure_metamodel_type_Class_LazyImpl) && !(t instanceof Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl) && (t != null), t -> t);
+        return this.typesIndex.valuesView().reject(t -> (t == null) || (t instanceof Root_meta_pure_metamodel_type_Class_LazyImpl) || (t instanceof Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl));
     }
 
     public void loadModelFromFunctionHandler(FunctionHandler f)

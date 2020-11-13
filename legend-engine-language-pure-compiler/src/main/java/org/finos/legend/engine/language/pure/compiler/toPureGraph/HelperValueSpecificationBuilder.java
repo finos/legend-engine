@@ -258,7 +258,7 @@ public class HelperValueSpecificationBuilder
         return context.extraExecutionContextProcessors.stream().map(processor -> processor.value(executionContext, context)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution context type '" + executionContext.getClass() + "'"));
     }
 
-    public static GraphFetchTree buildGraphFetchTree(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree graphFetchTree, CompileContext context, Class<Object> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
+    public static GraphFetchTree buildGraphFetchTree(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree graphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
     {
         if (graphFetchTree instanceof PropertyGraphFetchTree)
         {
@@ -271,7 +271,7 @@ public class HelperValueSpecificationBuilder
         throw new UnsupportedOperationException("Unsupported graph fetch tree node type '" + graphFetchTree.getClass().getSimpleName() + "'");
     }
 
-    private static GraphFetchTree buildPropertyGraphFetchTree(PropertyGraphFetchTree propertyGraphFetchTree, CompileContext context, Class<Object> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
+    private static GraphFetchTree buildPropertyGraphFetchTree(PropertyGraphFetchTree propertyGraphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
     {
         AbstractProperty<?> property;
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> pureParameters = Lists.mutable.empty();
@@ -290,10 +290,10 @@ public class HelperValueSpecificationBuilder
         {
             property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.empty(), propertyGraphFetchTree.property, propertyGraphFetchTree.sourceInformation);
         }
-        Class<Object> subType = propertyGraphFetchTree.subType == null ? null : context.resolveClass(propertyGraphFetchTree.subType, propertyGraphFetchTree.sourceInformation);
+        Class<?> subType = propertyGraphFetchTree.subType == null ? null : context.resolveClass(propertyGraphFetchTree.subType, propertyGraphFetchTree.sourceInformation);
         Type returnType = subType == null ? property._genericType()._rawType() : subType;
 
-        ListIterable<GraphFetchTree> children = ListIterate.collect(propertyGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, (Class<Object>) returnType, openVariables, processingContext));
+        ListIterable<GraphFetchTree> children = ListIterate.collect(propertyGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, (Class<?>) returnType, openVariables, processingContext));
         return new Root_meta_pure_graphFetch_PropertyGraphFetchTree_Impl("")
                 ._property(property)
                 ._parameters(pureParameters)
@@ -302,9 +302,9 @@ public class HelperValueSpecificationBuilder
                 ._subTrees(children);
     }
 
-    private static GraphFetchTree buildRootGraphFetchTree(RootGraphFetchTree rootGraphFetchTree, CompileContext context, Class<Object> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
+    private static GraphFetchTree buildRootGraphFetchTree(RootGraphFetchTree rootGraphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
     {
-        Class<Object> _class = context.resolveClass(rootGraphFetchTree._class, rootGraphFetchTree.sourceInformation);
+        Class<?> _class = context.resolveClass(rootGraphFetchTree._class, rootGraphFetchTree.sourceInformation);
         ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree> children = ListIterate.collect(rootGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, _class, openVariables, processingContext));
         return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("")
                 ._class(_class)

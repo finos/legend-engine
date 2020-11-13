@@ -25,8 +25,10 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
@@ -73,6 +75,22 @@ public class CompileContext
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
+    @SuppressWarnings("unchecked")
+    private static final ImmutableSet<java.lang.Class<? extends PackageableElement>> FORBIDDEN_PROCESSOR_CLASSES = Sets.immutable.with(
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex.class,
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class
+    );
+
     private static final ImmutableSet<String> SPECIAL_TYPES = _Package.SPECIAL_TYPES;
     private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
 
@@ -110,12 +128,8 @@ public class CompileContext
 
     public final PureModel pureModel;
     private final ImmutableSet<String> imports;
+    private final MutableMap<java.lang.Class<? extends PackageableElement>, Processor<?>> extraProcessors;
     public final List<CompilerExtension> extensions;
-    public final List<Function2<PackageableElement, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> extraPackageableElementFirstPassProcessors;
-    public final List<Procedure2<PackageableElement, CompileContext>> extraPackageableElementSecondPassProcessors;
-    public final List<Procedure2<PackageableElement, CompileContext>> extraPackageableElementThirdPassProcessors;
-    public final List<Procedure2<PackageableElement, CompileContext>> extraPackageableElementFourthPassProcessors;
-    public final List<Procedure2<PackageableElement, CompileContext>> extraPackageableElementFifthPassProcessors;
     public final List<Function3<ClassMapping, Mapping, CompileContext, Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>>>> extraClassMappingFirstPassProcessors;
     public final List<Procedure3<ClassMapping, Mapping, CompileContext>> extraClassMappingSecondPassProcessors;
     public final List<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> extraAssociationMappingProcessors;
@@ -135,11 +149,7 @@ public class CompileContext
         this.pureModel = builder.pureModel;
         this.imports = builder.imports;
         this.extensions = builder.pureModel.extensions;
-        this.extraPackageableElementFirstPassProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraPackageableElementFirstPassProcessors);
-        this.extraPackageableElementSecondPassProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraPackageableElementSecondPassProcessors);
-        this.extraPackageableElementThirdPassProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraPackageableElementThirdPassProcessors);
-        this.extraPackageableElementFourthPassProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraPackageableElementFourthPassProcessors);
-        this.extraPackageableElementFifthPassProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraPackageableElementFifthPassProcessors);
+        this.extraProcessors = indexProcessors(LazyIterate.flatCollect(this.extensions, CompilerExtension::getExtraProcessors));
         this.extraClassMappingFirstPassProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraClassMappingFirstPassProcessors);
         this.extraClassMappingSecondPassProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraClassMappingSecondPassProcessors);
         this.extraAssociationMappingProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraAssociationMappingProcessors);
@@ -200,6 +210,52 @@ public class CompileContext
         }
     }
 
+    public Processor<?> getExtraProcessorOrThrow(PackageableElement element)
+    {
+        Processor<?> processor = getExtraProcessor(element);
+        if (processor == null)
+        {
+            throw new UnsupportedOperationException("No extra processor available for element " + element.getPath() + " of type " + element.getClass().getName());
+        }
+        return processor;
+    }
+
+    public Processor<?> getExtraProcessor(PackageableElement element)
+    {
+        return getExtraProcessor(element.getClass());
+    }
+
+    public Processor<?> getExtraProcessorOrThrow(java.lang.Class<? extends PackageableElement> cls)
+    {
+        Processor<?> processor = getExtraProcessor(cls);
+        if (processor == null)
+        {
+            throw new UnsupportedOperationException("No extra processor available for type " + cls.getName());
+        }
+        return processor;
+    }
+
+    public Processor<?> getExtraProcessor(java.lang.Class<? extends PackageableElement> cls)
+    {
+        return this.extraProcessors.isEmpty() ? null : getExtraProcessor_recursive(cls);
+    }
+
+    private Processor<?> getExtraProcessor_recursive(java.lang.Class<?> cls)
+    {
+        Processor<?> processor = this.extraProcessors.get(cls);
+        if (processor != null)
+        {
+            return processor;
+        }
+        if (FORBIDDEN_PROCESSOR_CLASSES.contains(cls))
+        {
+            return null;
+        }
+        // We can ignore interfaces in this search, since PackageableElement is itself a class (not an interface)
+        java.lang.Class<?> superClass = cls.getSuperclass();
+        return (superClass == null) ? null : getExtraProcessor_recursive(superClass);
+    }
+
     public <T> T resolve(String path, SourceInformation sourceInformation, Function<String, T> resolver)
     {
         if (path == null)
@@ -258,12 +314,12 @@ public class CompileContext
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getType(path, sourceInformation));
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> resolveClass(String fullPath)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> resolveClass(String fullPath)
     {
         return this.resolveClass(fullPath, SourceInformation.getUnknownSourceInformation());
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> resolveClass(String fullPath, SourceInformation sourceInformation)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> resolveClass(String fullPath, SourceInformation sourceInformation)
     {
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getClass(path, sourceInformation));
     }
@@ -486,5 +542,23 @@ public class CompileContext
             }
         });
         return results;
+    }
+
+    private static MutableMap<java.lang.Class<? extends PackageableElement>, Processor<?>> indexProcessors(Iterable<? extends Processor<?>> extraProcessors)
+    {
+        MutableMap<java.lang.Class<? extends PackageableElement>, Processor<?>> index = Maps.mutable.empty();
+        for (Processor<?> processor : extraProcessors)
+        {
+            java.lang.Class<? extends PackageableElement> processorClass = processor.getElementClass();
+            if (FORBIDDEN_PROCESSOR_CLASSES.contains(processorClass))
+            {
+                throw new IllegalArgumentException("Processor not allowed for class: " + processorClass.getName());
+            }
+            if (index.put(processorClass, processor) != null)
+            {
+                throw new IllegalArgumentException("Conflicting processors for class: " + processorClass.getName());
+            }
+        }
+        return index;
     }
 }

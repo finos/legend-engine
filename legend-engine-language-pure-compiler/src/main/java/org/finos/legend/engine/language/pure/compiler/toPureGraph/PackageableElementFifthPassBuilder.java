@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
@@ -40,7 +39,7 @@ public class PackageableElementFifthPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        ListIterate.forEach(this.context.extraPackageableElementFifthPassProcessors, processor -> processor.value(element, this.context));
+        this.context.getExtraProcessorOrThrow(element).processFifthPass(element, this.context);
         return null;
     }
 
