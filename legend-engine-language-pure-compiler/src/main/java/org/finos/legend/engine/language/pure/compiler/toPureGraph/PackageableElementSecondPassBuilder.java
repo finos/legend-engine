@@ -59,7 +59,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     @Override
     public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        ListIterate.forEach(this.context.extraPackageableElementSecondPassProcessors, processor -> processor.value(element, this.context));
+        this.context.getExtraProcessorOrThrow(element).processSecondPass(element, this.context);
         return null;
     }
 
@@ -92,11 +92,11 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
             Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("")._general(this.context.resolveGenericType(superType, srcClass.sourceInformation))._specific(_class);
             if (!this.context.pureModel.isImmutable(superType))
             {
-                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> superTypeClass;
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> superTypeClass;
                 Type type = this.context.resolveType(superType, srcClass.sourceInformation);
                 try
                 {
-                    superTypeClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object>) type;
+                    superTypeClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) type;
                 }
                 catch (ClassCastException e)
                 {
@@ -114,9 +114,8 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(this.context, this.context.pureModel.buildPackageString(srcClass._package, srcClass.name));
         ctx.addInferredVariables("this", thisVariable);
 
-        RichIterable<QualifiedProperty> qualifiedProperties = ListIterate.collect(srcClass.qualifiedProperties, HelperModelBuilder.processQualifiedPropertyFirstPass(this.context, _class, this.context.pureModel.buildPackageString(srcClass._package, srcClass.name), ctx));
-        _class
-                ._originalMilestonedProperties(ListIterate.collect(srcClass.originalMilestonedProperties, HelperModelBuilder.processProperty(this.context, _classGenericType, _class)))
+        RichIterable<QualifiedProperty<?>> qualifiedProperties = ListIterate.collect(srcClass.qualifiedProperties, HelperModelBuilder.processQualifiedPropertyFirstPass(this.context, _class, this.context.pureModel.buildPackageString(srcClass._package, srcClass.name), ctx));
+        _class._originalMilestonedProperties(ListIterate.collect(srcClass.originalMilestonedProperties, HelperModelBuilder.processProperty(this.context, _classGenericType, _class)))
                 ._generalizations(generalization)
                 ._qualifiedProperties(qualifiedProperties)
                 ._properties(withMilestoningProperties);
@@ -161,7 +160,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     public PackageableElement visit(Function function)
     {
         String packageString = this.context.pureModel.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition targetFunc = this.context.pureModel.getConcreteFunctionDefinition(packageString, function.sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = this.context.pureModel.getConcreteFunctionDefinition(packageString, function.sourceInformation);
         ProcessingContext ctx = new ProcessingContext("Function '" + packageString + "' Second Pass");
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> body;
         try
