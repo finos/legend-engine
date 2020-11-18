@@ -913,7 +913,8 @@ public class Handlers
                         h("meta::pure::functions::math::max_Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number")),
                         h("meta::pure::functions::date::max_DateTime_MANY__DateTime_$0_1$_", false, ps -> res("DateTime", "zeroOne"), ps -> typeMany(ps.get(0), "DateTime")),
                         h("meta::pure::functions::date::max_StrictDate_MANY__StrictDate_$0_1$_", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
-                        h("meta::pure::functions::date::max_Date_MANY__Date_$0_1$_", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")))));
+                        h("meta::pure::functions::date::max_Date_MANY__Date_$0_1$_", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
+                        h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", false, ps->res(ps.get(0)._genericType(), "zeroOne")))));
 
         register(m(
                 m(h("meta::pure::functions::math::min_Integer_1__Integer_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),

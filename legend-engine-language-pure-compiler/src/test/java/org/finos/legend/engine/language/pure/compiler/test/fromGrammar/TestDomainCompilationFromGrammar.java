@@ -1393,6 +1393,28 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testMatchMaxFunction()
+    {
+        test("function example::testMaxString():Any[0..1]\n" + 
+                "{\n"+
+                "   ['string1', 'string2']->max();"+
+                "}\n" +
+                "function example::testMaxInteger():Any[0..1]\n" + 
+                "{\n"+
+                "   [1,2]->max();"+
+                "}\n"+
+                "function example::testMaxFloat():Any[0..1]\n" +
+                "{\n"+
+                "   [1.0,2.0]->max();"+
+                "}\n"+
+                "function example::testMaxDate():Any[0..1]\n" +
+                "{\n"+
+                "   [%1999-01-01,%2000-01-01]->max();"+
+                "}\n"
+        );
+    }
+    
+    @Test
     public void testMatchWithImport()
     {
         test("Class example::MyTest\n" +
