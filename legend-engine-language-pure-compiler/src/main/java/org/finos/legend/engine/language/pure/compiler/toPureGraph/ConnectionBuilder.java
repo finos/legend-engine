@@ -49,7 +49,11 @@ public class ConnectionBuilder implements ConnectionVisitor<Connection>
     @Override
     public Connection visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection connection)
     {
-        return this.context.extraConnectionValueProcessors.stream().map(processor -> processor.value(connection, this.context)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported connection value type '" + connection.getClass() + "'"));
+        return this.context.getCompilerExtensions().getExtraConnectionValueProcessors().stream()
+                .map(processor -> processor.value(connection, this.context))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported connection value type '" + connection.getClass() + "'"));
     }
 
     @Override

@@ -61,7 +61,11 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
     @Override
     public Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>> visit(ClassMapping classMapping)
     {
-        return this.context.extraClassMappingFirstPassProcessors.stream().map(processor -> processor.value(classMapping, this.parentMapping, this.context)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported class mapping type '" + classMapping.getClass() + "'"));
+        return this.context.getCompilerExtensions().getExtraClassMappingFirstPassProcessors().stream()
+                .map(processor -> processor.value(classMapping, this.parentMapping, this.context))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported class mapping type '" + classMapping.getClass() + "'"));
     }
 
     @Override

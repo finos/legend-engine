@@ -58,7 +58,7 @@ public class HelperRuntimeBuilder
                     {
                         mappedStores.add("ModelStore");
                     }
-                    context.extraSetImplementationSourceScanners.forEach(scanner -> scanner.value(setImplementation, mappedStores, context));
+                    context.getCompilerExtensions().getExtraSetImplementationSourceScanners().forEach(scanner -> scanner.value(setImplementation, mappedStores, context));
                 }));
         return mappedStores;
     }
