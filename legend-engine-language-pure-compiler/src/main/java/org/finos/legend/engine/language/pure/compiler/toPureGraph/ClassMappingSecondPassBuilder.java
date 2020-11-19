@@ -62,7 +62,7 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
     @Override
     public SetImplementation visit(ClassMapping classMapping)
     {
-        this.context.extraClassMappingSecondPassProcessors.forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
+        this.context.getCompilerExtensions().getExtraClassMappingSecondPassProcessors().forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
         return null;
     }
 

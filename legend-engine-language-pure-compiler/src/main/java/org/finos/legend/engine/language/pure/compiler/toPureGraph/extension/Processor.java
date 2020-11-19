@@ -18,12 +18,19 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.Package;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-public abstract class Processor<T extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>
+public abstract class Processor<T extends PackageableElement>
 {
     public abstract Class<T> getElementClass();
+
+    public Collection<? extends Class<? extends PackageableElement>> getPrerequisiteClasses()
+    {
+        return Collections.emptyList();
+    }
 
     public final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(PackageableElement element, CompileContext context)
     {
@@ -53,6 +60,24 @@ public abstract class Processor<T extends org.finos.legend.engine.protocol.pure.
     public final void processFifthPass(PackageableElement element, CompileContext context)
     {
         processElementFifthPass(castElement(element), context);
+    }
+
+    @Override
+    public final boolean equals(Object other)
+    {
+        return this == other;
+    }
+
+    @Override
+    public final int hashCode()
+    {
+        return System.identityHashCode(this);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "<Processor class=" + getElementClass().getName() + " @" + Integer.toHexString(hashCode()) + ">";
     }
 
     protected abstract org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processElementFirstPass(T element, CompileContext context);

@@ -14,45 +14,25 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.function.Function2;
-import org.eclipse.collections.api.block.function.Function3;
-import org.eclipse.collections.api.block.procedure.Procedure;
-import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.FunctionExpressionBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.shared.core.function.Function4;
-import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
@@ -68,28 +48,11 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 public class CompileContext
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-
-    @SuppressWarnings("unchecked")
-    private static final ImmutableSet<java.lang.Class<? extends PackageableElement>> FORBIDDEN_PROCESSOR_CLASSES = Sets.immutable.with(
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class
-    );
 
     private static final ImmutableSet<String> SPECIAL_TYPES = _Package.SPECIAL_TYPES;
     private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
@@ -128,41 +91,11 @@ public class CompileContext
 
     public final PureModel pureModel;
     private final ImmutableSet<String> imports;
-    private final MutableMap<java.lang.Class<? extends PackageableElement>, Processor<?>> extraProcessors;
-    public final List<CompilerExtension> extensions;
-    public final List<Function3<ClassMapping, Mapping, CompileContext, Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>>>> extraClassMappingFirstPassProcessors;
-    public final List<Procedure3<ClassMapping, Mapping, CompileContext>> extraClassMappingSecondPassProcessors;
-    public final List<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> extraAssociationMappingProcessors;
-    public final List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Connection>> extraConnectionValueProcessors;
-    public final List<Procedure2<InputData, CompileContext>> extraMappingTestInputDataProcessors;
-    public final List<org.eclipse.collections.api.block.function.Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> extraFunctionHandlerDispatchBuilderInfoCollectors;
-    public final List<org.eclipse.collections.api.block.function.Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> extraFunctionExpressionBuilderRegistrationInfoCollectors;
-    public final List<org.eclipse.collections.api.block.function.Function<Handlers, List<FunctionHandlerRegistrationInfo>>> extraFunctionHandlerRegistrationInfoCollectors;
-    public final List<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> extraValueSpecificationProcessors;
-    public final List<Procedure2<PackageableElement, MutableMap<String, String>>> extraStoreStatBuilders;
-    public final List<Function2<ExecutionContext, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext>> extraExecutionContextProcessors;
-    public final List<Procedure<Procedure2<String, List<String>>>> extraElementForPathToElementRegisters;
-    public final List<Procedure3<SetImplementation, Set<String>, CompileContext>> extraSetImplementationSourceScanners;
 
     private CompileContext(Builder builder)
     {
         this.pureModel = builder.pureModel;
         this.imports = builder.imports;
-        this.extensions = builder.pureModel.extensions;
-        this.extraProcessors = indexProcessors(LazyIterate.flatCollect(this.extensions, CompilerExtension::getExtraProcessors));
-        this.extraClassMappingFirstPassProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraClassMappingFirstPassProcessors);
-        this.extraClassMappingSecondPassProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraClassMappingSecondPassProcessors);
-        this.extraAssociationMappingProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraAssociationMappingProcessors);
-        this.extraConnectionValueProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraConnectionValueProcessors);
-        this.extraMappingTestInputDataProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraMappingTestInputDataProcessors);
-        this.extraFunctionHandlerDispatchBuilderInfoCollectors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraFunctionHandlerDispatchBuilderInfoCollectors);
-        this.extraFunctionExpressionBuilderRegistrationInfoCollectors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraFunctionExpressionBuilderRegistrationInfoCollectors);
-        this.extraFunctionHandlerRegistrationInfoCollectors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraFunctionHandlerRegistrationInfoCollectors);
-        this.extraValueSpecificationProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraValueSpecificationProcessors);
-        this.extraStoreStatBuilders = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraStoreStatBuilders);
-        this.extraExecutionContextProcessors = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraExecutionContextProcessors);
-        this.extraElementForPathToElementRegisters = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraElementForPathToElementRegisters);
-        this.extraSetImplementationSourceScanners = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraSetImplementationSourceScanners);
     }
 
     public static class Builder
@@ -210,50 +143,14 @@ public class CompileContext
         }
     }
 
+    public CompilerExtensions getCompilerExtensions()
+    {
+        return this.pureModel.extensions;
+    }
+
     public Processor<?> getExtraProcessorOrThrow(PackageableElement element)
     {
-        Processor<?> processor = getExtraProcessor(element);
-        if (processor == null)
-        {
-            throw new UnsupportedOperationException("No extra processor available for element " + element.getPath() + " of type " + element.getClass().getName());
-        }
-        return processor;
-    }
-
-    public Processor<?> getExtraProcessor(PackageableElement element)
-    {
-        return getExtraProcessor(element.getClass());
-    }
-
-    public Processor<?> getExtraProcessorOrThrow(java.lang.Class<? extends PackageableElement> cls)
-    {
-        Processor<?> processor = getExtraProcessor(cls);
-        if (processor == null)
-        {
-            throw new UnsupportedOperationException("No extra processor available for type " + cls.getName());
-        }
-        return processor;
-    }
-
-    public Processor<?> getExtraProcessor(java.lang.Class<? extends PackageableElement> cls)
-    {
-        return this.extraProcessors.isEmpty() ? null : getExtraProcessor_recursive(cls);
-    }
-
-    private Processor<?> getExtraProcessor_recursive(java.lang.Class<?> cls)
-    {
-        Processor<?> processor = this.extraProcessors.get(cls);
-        if (processor != null)
-        {
-            return processor;
-        }
-        if (FORBIDDEN_PROCESSOR_CLASSES.contains(cls))
-        {
-            return null;
-        }
-        // We can ignore interfaces in this search, since PackageableElement is itself a class (not an interface)
-        java.lang.Class<?> superClass = cls.getSuperclass();
-        return (superClass == null) ? null : getExtraProcessor_recursive(superClass);
+        return getCompilerExtensions().getExtraProcessorOrThrow(element);
     }
 
     public <T> T resolve(String path, SourceInformation sourceInformation, Function<String, T> resolver)
@@ -542,23 +439,5 @@ public class CompileContext
             }
         });
         return results;
-    }
-
-    private static MutableMap<java.lang.Class<? extends PackageableElement>, Processor<?>> indexProcessors(Iterable<? extends Processor<?>> extraProcessors)
-    {
-        MutableMap<java.lang.Class<? extends PackageableElement>, Processor<?>> index = Maps.mutable.empty();
-        for (Processor<?> processor : extraProcessors)
-        {
-            java.lang.Class<? extends PackageableElement> processorClass = processor.getElementClass();
-            if (FORBIDDEN_PROCESSOR_CLASSES.contains(processorClass))
-            {
-                throw new IllegalArgumentException("Processor not allowed for class: " + processorClass.getName());
-            }
-            if (index.put(processorClass, processor) != null)
-            {
-                throw new IllegalArgumentException("Conflicting processors for class: " + processorClass.getName());
-            }
-        }
-        return index;
     }
 }

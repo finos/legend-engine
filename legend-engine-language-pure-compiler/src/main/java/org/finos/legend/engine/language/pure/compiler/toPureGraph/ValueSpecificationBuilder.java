@@ -120,7 +120,11 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification valueSpecification)
     {
-        return this.context.extraValueSpecificationProcessors.stream().map(processor -> processor.value(valueSpecification, this.context, this.openVariables, this.processingContext)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported value specification type '" + valueSpecification.getClass().getSimpleName() + "'"));
+        return this.context.getCompilerExtensions().getExtraValueSpecificationProcessors().stream()
+                .map(processor -> processor.value(valueSpecification, this.context, this.openVariables, this.processingContext))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported value specification type '" + valueSpecification.getClass().getSimpleName() + "'"));
     }
 
     @Override

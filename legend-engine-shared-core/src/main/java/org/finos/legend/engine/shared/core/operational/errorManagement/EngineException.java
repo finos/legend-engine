@@ -58,6 +58,13 @@ public class EngineException extends RuntimeException
         this.errorType = type;
     }
 
+    public EngineException(String message, SourceInformation sourceInformation, EngineErrorType type, Throwable cause)
+    {
+        super(message, cause);
+        this.sourceInformation = sourceInformation;
+        this.errorType = type;
+    }
+
     public EngineErrorType getErrorType()
     {
         return errorType;

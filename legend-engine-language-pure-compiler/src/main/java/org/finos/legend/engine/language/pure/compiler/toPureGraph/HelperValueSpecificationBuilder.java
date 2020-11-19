@@ -18,6 +18,7 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -173,7 +174,7 @@ public class HelperValueSpecificationBuilder
 
             // FIXME: remove this when we cleanup the extension method designed specifically for flatdata
             Type finalInferredType = inferredType;
-            ListIterate.flatCollect(context.extensions, CompilerExtension::DEPRECATED_getExtraInferredTypeProcessors).forEach(processor -> processor.value(
+            LazyIterate.flatCollect(context.getCompilerExtensions().getExtensions(), CompilerExtension::DEPRECATED_getExtraInferredTypeProcessors).forEach(processor -> processor.value(
                     finalInferredType, firstParameter, context, processingContext, parameters, property, genericType, processedParameters
             ));
 
@@ -244,10 +245,10 @@ public class HelperValueSpecificationBuilder
             BaseExecutionContext baseExecutionContext = (BaseExecutionContext) executionContext;
             return new Root_meta_pure_runtime_ExecutionContext_Impl(" ")._queryTimeOutInSeconds(baseExecutionContext.queryTimeOutInSeconds)._enableConstraints(baseExecutionContext.enableConstraints);
         }
-        else if (executionContext instanceof AnalyticsExecutionContext)
+        if (executionContext instanceof AnalyticsExecutionContext)
         {
             AnalyticsExecutionContext analyticsExecutionContext = (AnalyticsExecutionContext) executionContext;
-            LambdaFunction lambda = (LambdaFunction) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) analyticsExecutionContext.toFlowSetFunction.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext(""))))._values().getFirst();
+            LambdaFunction<?> lambda = (LambdaFunction<?>) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) analyticsExecutionContext.toFlowSetFunction.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext(""))))._values().getFirst();
             return new Root_meta_pure_router_analytics_AnalyticsExecutionContext_Impl("")
                     ._queryTimeOutInSeconds(analyticsExecutionContext.queryTimeOutInSeconds)
                     ._enableConstraints(analyticsExecutionContext.enableConstraints)
@@ -255,7 +256,11 @@ public class HelperValueSpecificationBuilder
                     ._toFlowSetFunction(lambda);
 
         }
-        return context.extraExecutionContextProcessors.stream().map(processor -> processor.value(executionContext, context)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution context type '" + executionContext.getClass() + "'"));
+        return context.getCompilerExtensions().getExtraExecutionContextProcessors().stream()
+                .map(processor -> processor.value(executionContext, context))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported execution context type '" + executionContext.getClass() + "'"));
     }
 
     public static GraphFetchTree buildGraphFetchTree(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree graphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)

@@ -64,6 +64,11 @@ public class TestCompilationFromGrammar
             }
             catch (EngineException e)
             {
+                if (expectedErrorMsg == null)
+                {
+                    throw e;
+                }
+
                 Assert.assertNotNull("No source information provided in error", e.getSourceInformation());
                 Assert.assertEquals(expectedErrorMsg, EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(), e.getErrorType()));
                 return null;

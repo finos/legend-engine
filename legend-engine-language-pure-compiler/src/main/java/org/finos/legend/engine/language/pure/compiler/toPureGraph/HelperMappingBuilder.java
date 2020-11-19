@@ -325,7 +325,7 @@ public class HelperMappingBuilder
         }
         else
         {
-            ListIterate.forEach(context.extraMappingTestInputDataProcessors, processor -> processor.value(inputData, context));
+            context.getCompilerExtensions().getExtraMappingTestInputDataProcessors().forEach(processor -> processor.value(inputData, context));
         }
     }
 
@@ -341,7 +341,11 @@ public class HelperMappingBuilder
             base._association(pureAssociation)._stores(stores)._propertyMappings(rpm)._parent(parentMapping);
             return base;
         }
-        return context.extraAssociationMappingProcessors.stream().map(processor -> processor.value(associationMapping, parentMapping, context)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported association mapping type '" + associationMapping.getClass() + "'"));
+        return context.getCompilerExtensions().getExtraAssociationMappingProcessors().stream()
+                .map(processor -> processor.value(associationMapping, parentMapping, context))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported association mapping type '" + associationMapping.getClass() + "'"));
     }
 
     public static Root_meta_pure_mapping_MappingClass_Impl processMappingClass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingClass mappingclass, CompileContext context, Mapping parent)
