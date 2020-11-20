@@ -30,13 +30,14 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ConnectionParser implements DEPRECATED_SectionGrammarParser
 {
@@ -79,12 +80,12 @@ public class ConnectionParser implements DEPRECATED_SectionGrammarParser
     }
 
     @Override
-    public Section parse(SourceCodeParserInfo sectionParserInfo, PureModelContextData pureModelContextData, PureGrammarParserContext parserContext)
+    public Section parse(SourceCodeParserInfo sectionParserInfo, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext parserContext)
     {
         ImportAwareCodeSection section = new ImportAwareCodeSection();
         section.parserName = this.getName();
         section.sourceInformation = sectionParserInfo.sourceInformation;
-        ConnectionParseTreeWalker walker = new ConnectionParseTreeWalker(sectionParserInfo.walkerSourceInformation, this.extraConnectionParsers, pureModelContextData, section);
+        ConnectionParseTreeWalker walker = new ConnectionParseTreeWalker(sectionParserInfo.walkerSourceInformation, this.extraConnectionParsers, elementConsumer, section);
         walker.visit((ConnectionParserGrammar.DefinitionContext) sectionParserInfo.rootContext);
         return section;
     }

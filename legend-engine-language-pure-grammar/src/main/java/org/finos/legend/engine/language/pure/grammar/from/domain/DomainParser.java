@@ -25,8 +25,7 @@ import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.domain.DomainLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.domain.DomainParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Domain;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -34,6 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DomainParser implements DEPRECATED_SectionGrammarParser
 {
@@ -65,26 +65,13 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
     }
 
     @Override
-    public Section parse(SourceCodeParserInfo sectionParserInfo, PureModelContextData pureModelContextData, PureGrammarParserContext parserContext)
+    public Section parse(SourceCodeParserInfo sectionParserInfo, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext parserContext)
     {
         ImportAwareCodeSection section = new ImportAwareCodeSection();
         section.parserName = this.getName();
         section.sourceInformation = sectionParserInfo.sourceInformation;
         DomainParseTreeWalker walker = new DomainParseTreeWalker(sectionParserInfo.walkerSourceInformation, parserContext, section);
-        Domain domain = walker.VisitDefinition((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext);
-        if (pureModelContextData.domain == null)
-        {
-            pureModelContextData.domain = domain;
-        }
-        else
-        {
-            pureModelContextData.domain.classes.addAll(domain.classes);
-            pureModelContextData.domain.associations.addAll(domain.associations);
-            pureModelContextData.domain.enums.addAll(domain.enums);
-            pureModelContextData.domain.profiles.addAll(domain.profiles);
-            pureModelContextData.domain.functions.addAll(domain.functions);
-            pureModelContextData.domain.measures.addAll(domain.measures);
-        }
+        walker.visitDefinition((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext, elementConsumer);
         return section;
     }
 

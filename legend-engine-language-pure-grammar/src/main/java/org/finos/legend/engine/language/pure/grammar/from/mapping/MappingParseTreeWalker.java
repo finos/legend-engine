@@ -26,7 +26,6 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.Mapping
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
@@ -45,34 +44,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class MappingParseTreeWalker
 {
     private final CharStream input;
-    private final PureModelContextData pureModelContextData;
+    private final Consumer<PackageableElement> elementConsumer;
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext parserContext;
     private final ImportAwareCodeSection section;
     private final List<Procedure3<MappingElementSourceCode, Mapping, PureGrammarParserContext>> extraMappingElementParsers;
     private final List<Function3<String, MappingParserGrammar.TestInputElementContext, ParseTreeWalkerSourceInformation, InputData>> extraMappingTestInputDataParsers;
 
-    public MappingParseTreeWalker(CharStream input, List<Procedure3<MappingElementSourceCode, Mapping, PureGrammarParserContext>> extraMappingElementParsers, List<Function3<String, MappingParserGrammar.TestInputElementContext, ParseTreeWalkerSourceInformation, InputData>> extraMappingTestInputDataParsers, ParseTreeWalkerSourceInformation walkerSourceInformation, PureModelContextData pureModelContextData, PureGrammarParserContext parserContext, ImportAwareCodeSection section)
+    public MappingParseTreeWalker(CharStream input, List<Procedure3<MappingElementSourceCode, Mapping, PureGrammarParserContext>> extraMappingElementParsers, List<Function3<String, MappingParserGrammar.TestInputElementContext, ParseTreeWalkerSourceInformation, InputData>> extraMappingTestInputDataParsers, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext parserContext, ImportAwareCodeSection section)
     {
         this.input = input;
         this.extraMappingElementParsers = extraMappingElementParsers;
         this.extraMappingTestInputDataParsers = extraMappingTestInputDataParsers;
         this.walkerSourceInformation = walkerSourceInformation;
-        this.pureModelContextData = pureModelContextData;
+        this.elementConsumer = elementConsumer;
         this.parserContext = parserContext;
         this.section = section;
     }
 
     public void visitDefinition(MappingParserGrammar.DefinitionContext ctx)
     {
-        this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
-        List<Mapping> elements = ListIterate.collect(ctx.mapping(), this::visitMapping);
-        this.section.elements = ListIterate.collect(elements, PackageableElement::getPath);
-        this.pureModelContextData.mappings.addAll(elements);
+        ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()), this.section.imports);
+        ctx.mapping().stream().map(this::visitMapping).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
 
     private Mapping visitMapping(MappingParserGrammar.MappingContext ctx)

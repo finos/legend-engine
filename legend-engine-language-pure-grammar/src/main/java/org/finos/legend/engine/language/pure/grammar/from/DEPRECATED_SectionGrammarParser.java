@@ -15,8 +15,10 @@
 package org.finos.legend.engine.language.pure.grammar.from;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
+
+import java.util.function.Consumer;
 
 @Deprecated
 public interface DEPRECATED_SectionGrammarParser
@@ -25,5 +27,5 @@ public interface DEPRECATED_SectionGrammarParser
 
     SourceCodeParserInfo getParserInfo(String code, SourceInformation sourceInformation, ParseTreeWalkerSourceInformation walkerSourceInformation);
 
-    Section parse(SourceCodeParserInfo sectionParserInfo, PureModelContextData pureModelContextData, PureGrammarParserContext parserContext);
+    Section parse(SourceCodeParserInfo sectionParserInfo, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext parserContext);
 }

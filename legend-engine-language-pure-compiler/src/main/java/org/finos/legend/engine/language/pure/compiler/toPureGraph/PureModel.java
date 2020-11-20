@@ -23,11 +23,13 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
+import org.eclipse.collections.api.map.primitive.ObjectIntMap;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
-import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.factory.primitive.ObjectIntMaps;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -92,7 +94,6 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Stream;
 import javax.security.auth.Subject;
 
 public class PureModel implements IPureModel
@@ -249,25 +250,43 @@ public class PureModel implements IPureModel
         }
     }
 
-    private ImmutableMap<String, Integer> buildDomainStats(PureModelContextData pure)
+    private ObjectIntMap<String> buildDomainStats(PureModelContextData pure)
     {
-        return Maps.immutable.of("classes", pure.domain == null ? 0 : pure.domain.classes.size(),
-                "enums", pure.domain == null ? 0 : pure.domain.enums.size(),
-                "associations", pure.domain == null ? 0 : pure.domain.associations.size(),
-                "functions", pure.domain == null ? 0 : pure.domain.functions.size()
-        );
+        MutableObjectIntMap<String> result = ObjectIntMaps.mutable.empty();
+        pure.getElements().forEach(e ->
+        {
+            if (e instanceof Class)
+            {
+                result.addToValue("classes", 1);
+            }
+            else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration)
+            {
+                result.addToValue("enums", 1);
+            }
+            else if (e instanceof Association)
+            {
+                result.addToValue("associations", 1);
+            }
+            else if (e instanceof Function)
+            {
+                result.addToValue("functions", 1);
+            }
+        });
+        return result;
     }
 
     private ListIterable<Map<String, String>> buildStoreStats(PureModelContextData pure, PureModel pureModel)
     {
-        return ListIterate.collect(pure.stores, store ->
-        {
-            MutableMap<String, String> map = Maps.mutable.of("name", pureModel.buildPackageString(store._package, store.name));
-            this.extensions.getExtraStoreStatBuilders().forEach(processor -> processor.value(store, map));
-            return map;
-        });
+        return LazyIterate.selectInstancesOf(pure.getElements(), org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class)
+                .collect(s -> buildStoreStats(s, pureModel), Lists.mutable.empty());
     }
 
+    private Map<String, String> buildStoreStats(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store store, PureModel pureModel)
+    {
+        MutableMap<String, String> map = Maps.mutable.of("name", pureModel.buildPackageString(store._package, store.name));
+        this.extensions.getExtraStoreStatBuilders().forEach(processor -> processor.value(store, map));
+        return map;
+    }
 
     // ------------------------------------------ INITIALIZATION -----------------------------------------
 
@@ -972,7 +991,7 @@ public class PureModel implements IPureModel
         PureModelContextDataIndex index = new PureModelContextDataIndex();
         MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>,
                 MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> otherElementsByClass = Maps.mutable.empty();
-        Stream.concat(pureModelContextData.streamAllElements(), pureModelContextData.sectionIndices.stream()).forEach(e ->
+        pureModelContextData.getElements().forEach(e ->
         {
             if (e instanceof Association)
             {

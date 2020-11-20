@@ -14,33 +14,29 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.TextParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class TextParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
-    private final PureModelContextData pureModelContextData;
+    private final Consumer<PackageableElement> elementConsumer;
     private final DefaultCodeSection section;
 
-    public TextParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureModelContextData pureModelContextData, DefaultCodeSection section)
+    public TextParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, DefaultCodeSection section)
     {
         this.walkerSourceInformation = walkerSourceInformation;
-        this.pureModelContextData = pureModelContextData;
+        this.elementConsumer = elementConsumer;
         this.section = section;
     }
 
     public void visit(TextParserGrammar.DefinitionContext ctx)
     {
-        List<Text> elements = ListIterate.collect(ctx.textElement(), this::visitText);
-        this.section.elements = ListIterate.collect(elements, PackageableElement::getPath);
-        this.pureModelContextData.texts.addAll(elements);
+        ctx.textElement().stream().map(this::visitText).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
 
     private Text visitText(TextParserGrammar.TextElementContext ctx)
