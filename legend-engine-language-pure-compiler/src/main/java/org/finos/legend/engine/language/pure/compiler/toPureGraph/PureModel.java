@@ -18,18 +18,15 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure2;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.factory.Maps;
-import org.eclipse.collections.impl.factory.Sets;
-import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
-import org.eclipse.collections.impl.utility.Iterate;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
@@ -93,8 +90,6 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.slf4j.Logger;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -104,7 +99,7 @@ import javax.security.auth.Subject;
 public class PureModel implements IPureModel
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    private static final List<String> RESERVED_PACKAGES = FastList.newListWith("$implicit");
+    private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
     private static final MetadataLazy METADATA_LAZY = new MetadataLazy(PureModel.class.getClassLoader());
     private final CompiledExecutionSupport executionSupport;
     private final DeploymentMode deploymentMode;
@@ -117,17 +112,17 @@ public class PureModel implements IPureModel
     final Handlers handlers;
 
     private final MutableSet<String> immutables = Sets.mutable.empty();
-    private final MutableMap<String, Multiplicity> multiplicitiesIndex = UnifiedMap.newMap();
-    final MutableMap<String, Section> sectionsIndex = UnifiedMap.newMap();
-    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> typesIndex = UnifiedMap.newMap();
-    final MutableMap<String, GenericType> typesGenericTypeIndex = UnifiedMap.newMap();
-    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?>> functionsIndex = UnifiedMap.newMap();
-    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile> profilesIndex = UnifiedMap.newMap();
-    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association> associationsIndex = UnifiedMap.newMap();
-    final MutableMap<String, Store> storesIndex = UnifiedMap.newMap();
-    final MutableMap<String, Mapping> mappingsIndex = UnifiedMap.newMap();
-    final MutableMap<String, Connection> connectionsIndex = UnifiedMap.newMap();
-    final MutableMap<String, Runtime> runtimesIndex = UnifiedMap.newMap();
+    private final MutableMap<String, Multiplicity> multiplicitiesIndex = Maps.mutable.empty();
+    final MutableMap<String, Section> sectionsIndex = Maps.mutable.empty();
+    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> typesIndex = Maps.mutable.empty();
+    final MutableMap<String, GenericType> typesGenericTypeIndex = Maps.mutable.empty();
+    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?>> functionsIndex = Maps.mutable.empty();
+    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile> profilesIndex = Maps.mutable.empty();
+    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association> associationsIndex = Maps.mutable.empty();
+    final MutableMap<String, Store> storesIndex = Maps.mutable.empty();
+    final MutableMap<String, Mapping> mappingsIndex = Maps.mutable.empty();
+    final MutableMap<String, Connection> connectionsIndex = Maps.mutable.empty();
+    final MutableMap<String, Runtime> runtimesIndex = Maps.mutable.empty();
 
     public PureModel(PureModelContextData pure, Subject subject, DeploymentMode deploymentMode)
     {
@@ -183,18 +178,18 @@ public class PureModel implements IPureModel
             this.initializeMultiplicities();
             this.initializePrimitiveTypes();
             long initFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_INITIALIZED, (double)initFinished - start).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_INITIALIZED, (double) initFinished - start).toString());
             scope.span().log(LoggingEventType.GRAPH_INITIALIZED.toString());
 
             long parsingFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_PARSED, (double)parsingFinished - initFinished).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_PARSED, (double) parsingFinished - initFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_PARSED.toString());
 
             // Pre Validation
             PureModelContextDataValidator preValidator = new PureModelContextDataValidator();
             preValidator.validate(this, pureModelContextData);
             long preValidationFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double)preValidationFinished - initFinished).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double) preValidationFinished - initFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED.toString());
 
             // Processing
@@ -204,27 +199,27 @@ public class PureModel implements IPureModel
 
             this.loadTypes(pureModelContextDataIndex);
             long loadTypesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_DOMAIN_BUILT, this.buildDomainStats(pureModelContextData), (double)loadTypesFinished - preValidationFinished).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_DOMAIN_BUILT, this.buildDomainStats(pureModelContextData), (double) loadTypesFinished - preValidationFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_DOMAIN_BUILT.toString());
 
             this.loadStores(pureModelContextDataIndex);
             long loadStoresFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_STORES_BUILT, this.buildStoreStats(pureModelContextData, this), (double)loadStoresFinished - loadTypesFinished).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_STORES_BUILT, this.buildStoreStats(pureModelContextData, this), (double) loadStoresFinished - loadTypesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_STORES_BUILT.toString());
 
             this.loadMappings(pureModelContextDataIndex);
             long loadMappingsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_MAPPINGS_BUILT, (double)loadMappingsFinished - loadStoresFinished).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_MAPPINGS_BUILT, (double) loadMappingsFinished - loadStoresFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_MAPPINGS_BUILT.toString());
 
             this.loadConnectionsAndRuntimes(pureModelContextDataIndex);
             long loadConnectionsAndRuntimesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT, (double)loadConnectionsAndRuntimesFinished - loadMappingsFinished).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT, (double) loadConnectionsAndRuntimesFinished - loadMappingsFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT.toString());
 
             this.loadOtherElements(pureModelContextDataIndex);
             long loadOtherElementsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT, (double)loadOtherElementsFinished - loadConnectionsAndRuntimesFinished).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT, (double) loadOtherElementsFinished - loadConnectionsAndRuntimesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT.toString());
 
             long processingFinished = System.currentTimeMillis();
@@ -234,11 +229,11 @@ public class PureModel implements IPureModel
             new MappingValidator().validate(this, pureModelContextData);
             extraPostValidators.forEach(validator -> validator.value(this, pureModelContextData));
             long postValidationFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double)postValidationFinished - processingFinished).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double) postValidationFinished - processingFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED.toString());
 
             long finished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_STOP, (double)finished - start).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_STOP, (double) finished - start).toString());
             scope.span().log(LoggingEventType.GRAPH_STOP.toString());
         }
         catch (Exception e)
@@ -283,25 +278,25 @@ public class PureModel implements IPureModel
      */
     private void registerElementsForPathToElement()
     {
-        registerElementForPathToElement("meta::pure::mapping::modelToModel", FastList.newListWith(
+        registerElementForPathToElement("meta::pure::mapping::modelToModel", Lists.mutable.with(
                 "supports_FunctionExpression_1__Boolean_1_",
                 "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_",
                 "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_"
         ));
-        registerElementForPathToElement("meta::pure::mapping::modelToModel::inMemory", FastList.newListWith(
+        registerElementForPathToElement("meta::pure::mapping::modelToModel::inMemory", Lists.mutable.with(
                 "getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_",
                 "getterOverrideNonMapped_Any_1__Property_1__Any_MANY_"
         ));
-        registerElementForPathToElement("meta::pure::router::store::platform", FastList.newListWith(
+        registerElementForPathToElement("meta::pure::router::store::platform", Lists.mutable.with(
                 "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_",
                 "supports_FunctionExpression_1__Boolean_1_",
                 "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_"
         ));
-        registerElementForPathToElement("meta::protocols::pure::vX_X_X::invocation::execution::execute", FastList.newListWith(
+        registerElementForPathToElement("meta::protocols::pure::vX_X_X::invocation::execution::execute", Lists.mutable.with(
                 "alloyExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__RouterExtension_MANY__Result_1_",
                 "executePlan_ExecutionPlan_1__String_1__Integer_1__RouterExtension_MANY__String_1_"
         ));
-        registerElementForPathToElement("meta::pure::tds", FastList.newListWith(
+        registerElementForPathToElement("meta::pure::tds", Lists.mutable.with(
                 "TDSRow"
         ));
         this.extensions.getExtraElementForPathToElementRegisters().forEach(register -> register.value(this::registerElementForPathToElement));
@@ -418,7 +413,7 @@ public class PureModel implements IPureModel
 
     private void loadOtherElements(PureModelContextDataIndex pure)
     {
-        sortProcessors(pure.otherElementsByProcessor.keysView()).forEach(p ->
+        this.extensions.sortExtraProcessors(pure.otherElementsByProcessor.keysView()).forEach(p ->
         {
             MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pure.otherElementsByProcessor.get(p);
             elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
@@ -1032,89 +1027,6 @@ public class PureModel implements IPureModel
         });
         otherElementsByClass.forEach((cls, elements) -> index.otherElementsByProcessor.getIfAbsentPut(this.extensions.getExtraProcessorOrThrow(cls), Lists.mutable::empty).addAll(elements));
         return index;
-    }
-
-    private MutableList<Processor<?>> sortProcessors(Iterable<? extends Processor<?>> processors)
-    {
-        // Collect processor pre-requisites. Those without pre-requisites can go straight into the results list.
-        MutableList<Processor<?>> results = Lists.mutable.empty();
-        MutableMap<Processor<?>, Collection<? extends java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> withPrerequisites = Maps.mutable.empty();
-        processors.forEach(p ->
-        {
-            Collection<? extends java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> prerequisites = p.getPrerequisiteClasses();
-            if (prerequisites.isEmpty())
-            {
-                results.add(p);
-            }
-            else
-            {
-                withPrerequisites.put(p, prerequisites);
-            }
-        });
-
-        // If there are processors with pre-requisites, we need to add them to the results list in an appropriate order.
-        if (withPrerequisites.notEmpty())
-        {
-            // We transform the pre-requisite classes into pre-requisite processors.
-            MutableMap<Processor<?>, RichIterable<? extends Processor<?>>> remaining = Maps.mutable.empty();
-            withPrerequisites.forEach((processor, prerequisiteClasses) ->
-            {
-                // We only need to be concerned about pre-requisite processors that are not already in the results list,
-                // since the ones already in the results list will go before any not already in that list.
-                //
-                // Note that there might be duplicate processors in this list, but that's ok. The cost of eliminating
-                // the duplication is not worth the benefit.
-                MutableList<Processor<?>> prerequisiteProcessors = Lists.mutable.ofInitialCapacity(prerequisiteClasses.size());
-                withPrerequisites.keysView().select(p -> (p != processor) && Iterate.anySatisfy(prerequisiteClasses, c -> c.isAssignableFrom(p.getElementClass())), prerequisiteProcessors);
-                LazyIterate.collect(prerequisiteClasses, this.extensions::getExtraProcessor)
-                        .select(p -> (p != null) && (p != processor) && withPrerequisites.containsKey(p))
-                        .forEach(prerequisiteProcessors::add);
-                if (prerequisiteProcessors.isEmpty())
-                {
-                    // No pre-requisite processors that are not already in results: add to results
-                    results.add(processor);
-                }
-                else
-                {
-                    remaining.put(processor, prerequisiteProcessors);
-                }
-            });
-
-            // Now we start adding processors with pre-requisites to the results list. If a processor has no pre-
-            // requisites among the other remaining processors, then all of its pre-requisites are already ahead of it
-            // in the results list and so we can add it.
-            //
-            // We repeat this process until either there are no more remaining processors or we are unable to add any
-            // remaining processors to the results list. The latter case indicates some sort of loop among the pre-
-            // requisites, so we cannot put them in a consistent order and we must throw.
-            int remainingProcessorsCount = remaining.size();
-            while (remainingProcessorsCount > 0)
-            {
-                Iterator<Map.Entry<Processor<?>, RichIterable<? extends Processor<?>>>> iterator = remaining.entrySet().iterator();
-                while (iterator.hasNext())
-                {
-                    Map.Entry<Processor<?>, RichIterable<? extends Processor<?>>> entry = iterator.next();
-                    if (entry.getValue().noneSatisfy(remaining::containsKey))
-                    {
-                        // If a processor has no pre-requisites among the remaining processors, we can add it to the
-                        // results list and remove it from the remaining processors.
-                        results.add(entry.getKey());
-                        iterator.remove();
-                    }
-                }
-                int newSize = remaining.size();
-                if (newSize == remainingProcessorsCount)
-                {
-                    // This means that all of the remaining processors have a pre-requisite of some other remaining
-                    // processor. This means that there's some sort of loop, and we cannot consistently order the
-                    // remaining processors.
-                    throw new EngineException(remaining.keysView().makeString("Could not consistently order the following processors: ", ", ", ""), SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION);
-                }
-                remainingProcessorsCount = newSize;
-            }
-        }
-
-        return results;
     }
 
     private static class PureModelContextDataIndex

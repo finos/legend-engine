@@ -24,10 +24,12 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
@@ -36,6 +38,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
@@ -44,6 +48,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -53,7 +58,11 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -63,7 +72,7 @@ public class CompilerExtensions
 
     @SuppressWarnings("unchecked")
     private static final ImmutableSet<Class<? extends PackageableElement>> FORBIDDEN_PROCESSOR_CLASSES = Sets.immutable.with(
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement.class,
+            PackageableElement.class,
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection.class,
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association.class,
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class,
@@ -238,6 +247,109 @@ public class CompilerExtensions
     public List<Procedure2<PureModel, PureModelContextData>> getExtraPostValidators()
     {
         return this.extraPostValidators.castToList();
+    }
+
+    public List<Processor<?>> sortExtraProcessors()
+    {
+        return sortExtraProcessors(getExtraProcessors(), false);
+    }
+
+    public List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors)
+    {
+        return sortExtraProcessors(processors, true);
+    }
+
+    private List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors, boolean validateProcessors)
+    {
+        // Collect processor pre-requisites. Those without pre-requisites can go straight into the results list.
+        MutableList<Processor<?>> results = Lists.mutable.empty();
+        MutableMap<Processor<?>, Collection<? extends java.lang.Class<? extends PackageableElement>>> withPrerequisites = Maps.mutable.empty();
+        processors.forEach(p ->
+        {
+            // Validate that the processor is part of this set of extensions
+            if (validateProcessors && (p != this.extraProcessors.get(p.getElementClass())))
+            {
+                throw new IllegalArgumentException("Unknown processor: " + p);
+            }
+            Collection<? extends Class<? extends PackageableElement>> prerequisites = p.getPrerequisiteClasses();
+            if (prerequisites.isEmpty())
+            {
+                results.add(p);
+            }
+            else
+            {
+                withPrerequisites.put(p, prerequisites);
+            }
+        });
+
+        // If there are processors with pre-requisites, we need to add them to the results list in an appropriate order.
+        if (withPrerequisites.notEmpty())
+        {
+            // We transform the pre-requisite classes into pre-requisite processors.
+            MutableMap<Processor<?>, RichIterable<? extends Processor<?>>> remaining = Maps.mutable.empty();
+            withPrerequisites.forEach((processor, prerequisiteClasses) ->
+            {
+                // We only need to be concerned about pre-requisite processors that are not already in the results list,
+                // since the ones already in the results list will go before any not already in that list.
+                //
+                // Note that there might be duplicate processors in this list, but that's ok. The cost of eliminating
+                // the duplication is not worth the benefit.
+                MutableList<Processor<?>> prerequisiteProcessors = Lists.mutable.ofInitialCapacity(prerequisiteClasses.size());
+                withPrerequisites.keysView().select(p -> (p != processor) && Iterate.anySatisfy(prerequisiteClasses, c -> c.isAssignableFrom(p.getElementClass())), prerequisiteProcessors);
+                LazyIterate.collect(prerequisiteClasses, this::getExtraProcessor)
+                        .select(p -> (p != null) && (p != processor) && withPrerequisites.containsKey(p))
+                        .forEach(prerequisiteProcessors::add);
+                if (prerequisiteProcessors.isEmpty())
+                {
+                    // No pre-requisite processors that are not already in results: add to results
+                    results.add(processor);
+                }
+                else
+                {
+                    remaining.put(processor, prerequisiteProcessors);
+                }
+            });
+
+            // Now we start adding processors with pre-requisites to the results list. If a processor has no pre-
+            // requisites among the other remaining processors, then all of its pre-requisites are already ahead of it
+            // in the results list and so we can add it.
+            //
+            // We repeat this process until either there are no more remaining processors or we are unable to add any
+            // remaining processors to the results list. The latter case indicates some sort of loop among the pre-
+            // requisites, so we cannot put them in a consistent order and we must throw.
+            int remainingProcessorsCount = remaining.size();
+            while (remainingProcessorsCount > 0)
+            {
+                Iterator<Map.Entry<Processor<?>, RichIterable<? extends Processor<?>>>> iterator = remaining.entrySet().iterator();
+                while (iterator.hasNext())
+                {
+                    Map.Entry<Processor<?>, RichIterable<? extends Processor<?>>> entry = iterator.next();
+                    if (entry.getValue().noneSatisfy(remaining::containsKey))
+                    {
+                        // If a processor has no pre-requisites among the remaining processors, we can add it to the
+                        // results list and remove it from the remaining processors.
+                        results.add(entry.getKey());
+                        iterator.remove();
+                    }
+                }
+                int newSize = remaining.size();
+                if (newSize == remainingProcessorsCount)
+                {
+                    // This means that all of the remaining processors have a pre-requisite of some other remaining
+                    // processor. This implies that there's some sort of loop, and we cannot consistently order the
+                    // remaining processors.
+                    throw new EngineException(remaining.keysView().makeString("Could not consistently order the following processors: ", ", ", ""), SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION);
+                }
+                remainingProcessorsCount = newSize;
+            }
+        }
+
+        return results;
+    }
+
+    public static CompilerExtensions fromExtensions(CompilerExtension... extensions)
+    {
+        return fromExtensions(Arrays.asList(extensions));
     }
 
     public static CompilerExtensions fromExtensions(Iterable<? extends CompilerExtension> extensions)
