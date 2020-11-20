@@ -29,7 +29,7 @@ public class PureModelContextDataValidator
     public void validate(PureModel pureModel, PureModelContextData pureModelContextData)
     {
         MutableSet<String> allElementPaths = Sets.mutable.empty();
-        pureModelContextData.getAllElements().forEach(el ->
+        pureModelContextData.getElements().forEach(el ->
         {
             // NOTE: this validation is not in happening in PURE but in engine, since we use it in tandem with SDLC server which
             // enforces the best practice to put things in package, we should do this check anyway
@@ -46,13 +46,9 @@ public class PureModelContextDataValidator
             // Duplication check
             // FIXME: handle user-defined functions with same name but different signature
             String elPath = pureModel.buildPackageString(el._package, el.name);
-            if (allElementPaths.contains(elPath))
+            if (!allElementPaths.add(elPath))
             {
                 throw new EngineException("Duplicated element '" + elPath + "'", el.sourceInformation, EngineErrorType.COMPILATION);
-            }
-            else
-            {
-                allElementPaths.add(elPath);
             }
         });
     }

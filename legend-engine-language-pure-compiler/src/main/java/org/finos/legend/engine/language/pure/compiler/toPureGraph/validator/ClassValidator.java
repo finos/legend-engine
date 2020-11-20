@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.validator;
 
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -32,13 +33,8 @@ public class ClassValidator
         // Create map of elements in V1 since when we try to resolve the generalization in M3, we will get stuffs like Annotated Element, PackageableElement
         // Also using V1 element is more convenient for extracting the source information purpose
         Map<String, Class> classes = new LinkedHashMap<>(); // ensure we validate element in order they are inserted in the pure model context data
-        if (pureModelContextData.domain != null)
-        {
-            pureModelContextData.domain.classes.forEach(_class ->
-            {
-                classes.put(pureModel.buildPackageString(_class._package, _class.name), (Class) _class);
-            });
-        }
+        LazyIterate.selectInstancesOf(pureModelContextData.getElements(), Class.class)
+                .forEach(_class -> classes.put(pureModel.buildPackageString(_class._package, _class.name), _class));
         this.validateGeneralization(pureModel, classes);
         // TODO Check what Pure does and try to follow
     }

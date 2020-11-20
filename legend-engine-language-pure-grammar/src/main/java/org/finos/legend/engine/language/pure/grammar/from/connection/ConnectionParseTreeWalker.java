@@ -21,7 +21,6 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtili
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ConnectionParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
@@ -30,28 +29,27 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class ConnectionParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
-    private final PureModelContextData pureModelContextData;
+    private final Consumer<PackageableElement> pureModelContextData;
     private final ImportAwareCodeSection section;
     private final List<Function<ConnectionValueSourceCode, Connection>> extraConnectionParsers;
 
-    public ConnectionParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, List<Function<ConnectionValueSourceCode, Connection>> extraConnectionParsers, PureModelContextData pureModelContextData, ImportAwareCodeSection section)
+    public ConnectionParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, List<Function<ConnectionValueSourceCode, Connection>> extraConnectionParsers, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.extraConnectionParsers = extraConnectionParsers;
-        this.pureModelContextData = pureModelContextData;
+        this.pureModelContextData = elementConsumer;
         this.section = section;
     }
 
     public void visit(ConnectionParserGrammar.DefinitionContext ctx)
     {
-        this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
-        List<PackageableConnection> elements = ListIterate.collect(ctx.connection(), this::visitConnection);
-        this.section.elements = ListIterate.collect(elements, PackageableElement::getPath);
-        this.pureModelContextData.connections.addAll(elements);
+        ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()), this.section.imports);
+        ctx.connection().stream().map(this::visitConnection).peek(e -> this.section.elements.add(e.getPath())).forEach(this.pureModelContextData);
     }
 
     public Connection visitEmbeddedRuntimeConnection(ConnectionParserGrammar.EmbeddedRuntimeConnectionContext ctx, SourceInformation embeddedConnectionSourceValue)

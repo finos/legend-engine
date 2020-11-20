@@ -48,7 +48,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [3:1-34]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
     @Test
@@ -67,14 +67,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "###Pure\n" +
                 "Class anything::somethingelse\n" +
                 "{\n" +
-                "}\n", "COMPILATION error at [6:1-8:1]: Duplicated element 'anything::somethingelse'"
+                "}\n", "COMPILATION error at [10:1-12:1]: Duplicated element 'anything::somethingelse'"
         );
         // Profile
         test(initialGraph +
                 "###Pure\n" +
                 "Profile anything::somethingelse\n" +
                 "{\n" +
-                "}\n", "COMPILATION error at [6:1-8:1]: Duplicated element 'anything::somethingelse'"
+                "}\n", "COMPILATION error at [10:1-12:1]: Duplicated element 'anything::somethingelse'"
         );
         // Enumeration
         test(initialGraph +
@@ -82,7 +82,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Enum anything::somethingelse\n" +
                 "{\n" +
                 " A\n" +
-                "}\n", "COMPILATION error at [6:1-8:1]: Duplicated element 'anything::somethingelse'"
+                "}\n", "COMPILATION error at [10:1-13:1]: Duplicated element 'anything::somethingelse'"
         );
         // Association
         test(initialGraph +
@@ -95,25 +95,25 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "  b1 : anything::class[1];\n" +
                 "  b2 : test::B[1];\n" +
-                "}\n", "COMPILATION error at [6:1-8:1]: Duplicated element 'anything::somethingelse'"
+                "}\n", "COMPILATION error at [14:1-18:1]: Duplicated element 'anything::somethingelse'"
         );
         // Function
         test(initialGraph +
-                "\n###Pure\n" +
+                "###Pure\n" +
                 "function anything::somethingelse(a:String[1]):String[1]" +
                 "{" +
                 "   'hiiii'" +
-                "}\n", "COMPILATION error at [6:1-8:1]: Duplicated element 'anything::somethingelse'"
+                "}\n", "COMPILATION error at [10:1-67]: Duplicated element 'anything::somethingelse'"
         );
         // Measure
         test(initialGraph +
-                "\n###Pure\n" +
+                "###Pure\n" +
                 "Measure anything::somethingelse\n" +
                 "{\n" +
                 "   *UnitOne: x -> $x;\n" +
                 "   UnitTwo: x -> $x * 1000;\n" +
                 "   UnitThree: x -> $x * 400;\n" +
-                "}", "COMPILATION error at [6:1-8:1]: Duplicated element 'anything::somethingelse'"
+                "}", "COMPILATION error at [10:1-15:1]: Duplicated element 'anything::somethingelse'"
         );
     }
 

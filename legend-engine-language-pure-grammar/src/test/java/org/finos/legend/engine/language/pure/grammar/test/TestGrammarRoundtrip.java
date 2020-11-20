@@ -15,15 +15,16 @@
 package org.finos.legend.engine.language.pure.grammar.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class TestGrammarRoundtrip
 {
@@ -88,7 +89,7 @@ public class TestGrammarRoundtrip
             PureModelContextData parsedModel = PureGrammarParser.newInstance().parseModel(unformattedCode);
             if (omitSectionIndex)
             {
-                parsedModel.sectionIndices = new ArrayList<>();
+                parsedModel = PureModelContextData.newPureModelContextData(parsedModel.getSerializer(), parsedModel.getOrigin(), LazyIterate.reject(parsedModel.getElements(), e -> e instanceof SectionIndex));
             }
             String formatted = grammarTransformer.renderPureModelContextData(parsedModel);
             Assert.assertEquals(code, formatted);

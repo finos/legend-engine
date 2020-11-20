@@ -29,7 +29,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.Mapping
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -37,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.shared.core.function.Procedure3;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class MappingParser implements DEPRECATED_SectionGrammarParser
 {
@@ -76,12 +77,12 @@ public class MappingParser implements DEPRECATED_SectionGrammarParser
     }
 
     @Override
-    public Section parse(SourceCodeParserInfo sectionParserInfo, PureModelContextData pureModelContextData, PureGrammarParserContext parserContext)
+    public Section parse(SourceCodeParserInfo sectionParserInfo, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext parserContext)
     {
         ImportAwareCodeSection section = new ImportAwareCodeSection();
         section.parserName = this.getName();
         section.sourceInformation = sectionParserInfo.sourceInformation;
-        MappingParseTreeWalker walker = new MappingParseTreeWalker(sectionParserInfo.input, this.extraMappingElementParsers, this.extraMappingTestInputDataParsers, sectionParserInfo.walkerSourceInformation, pureModelContextData, parserContext, section);
+        MappingParseTreeWalker walker = new MappingParseTreeWalker(sectionParserInfo.input, this.extraMappingElementParsers, this.extraMappingTestInputDataParsers, sectionParserInfo.walkerSourceInformation, elementConsumer, parserContext, section);
         walker.visitDefinition((MappingParserGrammar.DefinitionContext) sectionParserInfo.rootContext);
         return section;
     }

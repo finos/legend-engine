@@ -22,20 +22,21 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DiagramLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DiagramParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DiagramParserExtension implements PureGrammarParserExtension
 {
     public static final String NAME = "Diagram";
 
     @Override
-    public List<Function3<SectionSourceCode, PureModelContextData, PureGrammarParserContext, Section>> getExtraSectionParsers()
+    public List<Function3<SectionSourceCode, Consumer<PackageableElement>, PureGrammarParserContext, Section>> getExtraSectionParsers()
     {
-        return Lists.mutable.with((sectionSourceCode, pureModelContextData, context) ->
+        return Lists.mutable.with((sectionSourceCode, elementConsumer, context) ->
         {
             if (!NAME.equals(sectionSourceCode.sectionType))
             {
@@ -45,7 +46,7 @@ public class DiagramParserExtension implements PureGrammarParserExtension
             ImportAwareCodeSection section = new ImportAwareCodeSection();
             section.parserName = sectionSourceCode.sectionType;
             section.sourceInformation = parserInfo.sourceInformation;
-            DiagramParseTreeWalker walker = new DiagramParseTreeWalker(parserInfo.walkerSourceInformation, pureModelContextData, section);
+            DiagramParseTreeWalker walker = new DiagramParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
             walker.visit((DiagramParserGrammar.DefinitionContext) parserInfo.rootContext);
             return section;
         });

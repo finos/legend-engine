@@ -14,279 +14,320 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.context;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.collections.api.block.HashingStrategy;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.set.strategy.mutable.UnifiedSetWithHashingStrategy;
-import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Domain;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PureModelContextData extends PureModelContext
 {
-    public Protocol serializer;
-    public PureModelContextPointer origin;
-    public Domain domain;
-    public List<PackageableElement> sectionIndices = Lists.mutable.empty();
-    public List<PackageableElement> stores = Lists.mutable.empty();
-    public List<PackageableElement> mappings = Lists.mutable.empty();
-    public List<PackageableElement> services = Lists.mutable.empty();
-    public List<PackageableElement> cacheables = Lists.mutable.empty();
-    public List<PackageableElement> caches = Lists.mutable.empty();
-    public List<PackageableElement> pipelines = Lists.mutable.empty();
-    public List<PackageableElement> flattenSpecifications = Lists.mutable.empty();
-    public List<PackageableElement> diagrams = Lists.mutable.empty();
-    public List<PackageableElement> dataStoreSpecifications = Lists.mutable.empty();
-    public List<PackageableElement> texts = Lists.mutable.empty();
-    public List<PackageableElement> runtimes = Lists.mutable.empty();
-    public List<PackageableElement> connections = Lists.mutable.empty();
-    public List<PackageableElement> fileGenerations = Lists.mutable.empty();
-    public List<PackageableElement> generationSpecifications = Lists.mutable.empty();
-    public List<PackageableElement> serializableModelSpecifications = Lists.mutable.empty();
+    public final Protocol serializer;
+    public final PureModelContextPointer origin;
+    private final MutableList<PackageableElement> elements;
 
-    // ------------------------------------------------------------------------------------------------
-    // Since we are modularizing PURE protocol, adding a new space for each packageable element types
-    // is really not that beneficial anymore, make sure to discuss carefully with the team about this
-    // or to use a common space `elements` to store.
-    //-------------------------------------------------------------------------------------------------
+    private PureModelContextData(Protocol serializer, PureModelContextPointer origin, MutableList<PackageableElement> elements)
+    {
+        this.serializer = serializer;
+        this.origin = origin;
+        this.elements = elements;
+    }
+
+    public Protocol getSerializer()
+    {
+        return this.serializer;
+    }
+
+    public PureModelContextPointer getOrigin()
+    {
+        return this.origin;
+    }
+
+    public List<PackageableElement> getElements()
+    {
+        return this.elements.asUnmodifiable();
+    }
+
+    @JsonIgnore
+    public <T extends PackageableElement> List<T> getElementsOfType(java.lang.Class<T> cls)
+    {
+        return this.elements.selectInstancesOf(cls);
+    }
+
+    public static PureModelContextData newPureModelContextData(Protocol serializer, PureModelContextPointer origin, Iterable<? extends PackageableElement> elements)
+    {
+        return new PureModelContextData(serializer, origin, Lists.mutable.ofAll(elements));
+    }
+
+    @JsonCreator
+    public static PureModelContextData newPureModelContextData(
+            @JsonProperty("serializer") Protocol serializer,
+            @JsonProperty("origin") PureModelContextPointer origin,
+            @JsonProperty("elements") Iterable<? extends PackageableElement> elements,
+            @Deprecated @JsonProperty("domain") Domain domain,
+            @Deprecated @JsonProperty("sectionIndices") Collection<? extends PackageableElement> sectionIndices,
+            @Deprecated @JsonProperty("stores") Collection<? extends PackageableElement> stores,
+            @Deprecated @JsonProperty("mappings") Collection<? extends PackageableElement> mappings,
+            @Deprecated @JsonProperty("services") Collection<? extends PackageableElement> services,
+            @Deprecated @JsonProperty("cacheables") Collection<? extends PackageableElement> cacheables,
+            @Deprecated @JsonProperty("caches") Collection<? extends PackageableElement> caches,
+            @Deprecated @JsonProperty("pipelines") Collection<? extends PackageableElement> pipelines,
+            @Deprecated @JsonProperty("flattenSpecifications") Collection<? extends PackageableElement> flattenSpecifications,
+            @Deprecated @JsonProperty("diagrams") Collection<? extends PackageableElement> diagrams,
+            @Deprecated @JsonProperty("dataStoreSpecifications") Collection<? extends PackageableElement> dataStoreSpecifications,
+            @Deprecated @JsonProperty("texts") Collection<? extends PackageableElement> texts,
+            @Deprecated @JsonProperty("runtimes") Collection<? extends PackageableElement> runtimes,
+            @Deprecated @JsonProperty("connections") Collection<? extends PackageableElement> connections,
+            @Deprecated @JsonProperty("fileGenerations") Collection<? extends PackageableElement> fileGenerations,
+            @Deprecated @JsonProperty("generationSpecifications") Collection<? extends PackageableElement> generationSpecifications,
+            @Deprecated @JsonProperty("serializableModelSpecifications") Collection<? extends PackageableElement> serializableModelSpecifications)
+    {
+        MutableList<PackageableElement> allElements = (elements == null) ? Lists.mutable.empty() : Lists.mutable.withAll(elements);
+        if (domain != null)
+        {
+            allElements.addAll(domain.classes);
+            allElements.addAll(domain.associations);
+            allElements.addAll(domain.enums);
+            allElements.addAll(domain.profiles);
+            allElements.addAll(domain.functions);
+            allElements.addAll(domain.measures);
+        }
+        Optional.ofNullable(sectionIndices).ifPresent(allElements::addAll);
+        Optional.ofNullable(stores).ifPresent(allElements::addAll);
+        Optional.ofNullable(mappings).ifPresent(allElements::addAll);
+        Optional.ofNullable(services).ifPresent(allElements::addAll);
+        Optional.ofNullable(cacheables).ifPresent(allElements::addAll);
+        Optional.ofNullable(caches).ifPresent(allElements::addAll);
+        Optional.ofNullable(pipelines).ifPresent(allElements::addAll);
+        Optional.ofNullable(flattenSpecifications).ifPresent(allElements::addAll);
+        Optional.ofNullable(diagrams).ifPresent(allElements::addAll);
+        Optional.ofNullable(dataStoreSpecifications).ifPresent(allElements::addAll);
+        Optional.ofNullable(texts).ifPresent(allElements::addAll);
+        Optional.ofNullable(runtimes).ifPresent(allElements::addAll);
+        Optional.ofNullable(connections).ifPresent(allElements::addAll);
+        Optional.ofNullable(fileGenerations).ifPresent(allElements::addAll);
+        Optional.ofNullable(generationSpecifications).ifPresent(allElements::addAll);
+        Optional.ofNullable(serializableModelSpecifications).ifPresent(allElements::addAll);
+        return newPureModelContextData(serializer, origin, allElements);
+    }
 
     public PureModelContextData shallowCopy()
     {
-        PureModelContextData res = new PureModelContextData();
-        res.serializer = this.serializer;
-        res.origin = this.origin;
-        res.domain = this.domain;
-        res.sectionIndices = sort(this.sectionIndices);
-        res.stores = sort(this.stores);
-        res.mappings = sort(this.mappings);
-        res.services = sort(this.services);
-        res.cacheables = sort(this.cacheables);
-        res.caches = sort(this.caches);
-        res.pipelines = sort(this.pipelines);
-        res.flattenSpecifications = sort(this.flattenSpecifications);
-        res.dataStoreSpecifications = sort(this.dataStoreSpecifications);
-        res.diagrams = sort(this.diagrams);
-        res.texts = sort(this.texts);
-        res.runtimes = sort(this.runtimes);
-        res.connections = sort(this.connections);
-        res.fileGenerations = sort(this.fileGenerations);
-        res.generationSpecifications = sort(this.generationSpecifications);
-        res.serializableModelSpecifications = sort(this.serializableModelSpecifications);
-        return res;
+        return new PureModelContextData(this.serializer, this.origin, this.elements.toSortedList(PureModelContextData::compareByPackageAndName));
     }
 
     @JsonIgnore
+    @Deprecated
     public Stream<PackageableElement> streamAllElements()
     {
         // NOTE: right now this does not include `sectionIndex` since those are not considered as standard element models
-        return Stream.of(
-                this.domain == null ? null : this.domain.profiles,
-                this.domain == null ? null : this.domain.enums,
-                this.domain == null ? null : this.domain.classes,
-                this.domain == null ? null : this.domain.associations,
-                this.domain == null ? null : this.domain.functions,
-                this.domain == null ? null : this.domain.measures,
-                this.stores,
-                this.mappings,
-                this.diagrams,
-                this.flattenSpecifications,
-                this.dataStoreSpecifications,
-                this.texts,
-                this.services,
-                this.cacheables,
-                this.caches,
-                this.pipelines,
-                this.runtimes,
-                this.connections,
-                this.fileGenerations,
-                this.generationSpecifications,
-                this.serializableModelSpecifications
-        ).filter(Objects::nonNull).flatMap(Collection::stream);
+        return this.elements.stream().filter(e -> !(e instanceof SectionIndex));
     }
 
     @JsonIgnore
+    @Deprecated
     public List<PackageableElement> getAllElements()
     {
-        return this.streamAllElements().collect(Collectors.toList());
-    }
-
-    private static <T extends PackageableElement> List<T> sort(List<T> elements)
-    {
-        elements.sort(Comparator.comparing(element -> (element._package + "::" + element.name)));
-        return elements;
-    }
-
-    @JsonIgnore
-    public boolean isUnit()
-    {
-        long numberOfNonDomainElements = Stream.of(
-                this.stores,
-                this.mappings,
-                this.diagrams,
-                this.flattenSpecifications,
-                this.dataStoreSpecifications,
-                this.texts,
-                this.services,
-                this.cacheables,
-                this.caches,
-                this.pipelines,
-                this.runtimes,
-                this.connections,
-                this.fileGenerations,
-                this.generationSpecifications,
-                this.serializableModelSpecifications
-        ).filter(element -> element != null && !element.isEmpty()).map(List::size).reduce(0, Integer::sum);
-        return (this.domain != null && !this.domain.isEmpty() && numberOfNonDomainElements == 0) || ((this.domain == null || this.domain.isEmpty()) && numberOfNonDomainElements == 1);
-    }
-
-    public PureModelContextData domainPart()
-    {
-        PureModelContextData data = new PureModelContextData();
-        data.domain = this.domain;
-        data.serializer = this.serializer;
-        return data;
-    }
-
-    public MutableList<PureModelContextData> storeParts()
-    {
-        return ListIterate.collect(this.stores, store ->
-                {
-                    PureModelContextData data = new PureModelContextData();
-                    data.stores = Lists.mutable.with(store);
-                    data.serializer = this.serializer;
-                    return data;
-                }
-        );
-    }
-
-    public MutableList<PureModelContextData> mappingParts()
-    {
-        return ListIterate.collect(this.mappings, mapping ->
-                {
-                    PureModelContextData data = new PureModelContextData();
-                    data.mappings = Lists.mutable.with(mapping);
-                    data.serializer = this.serializer;
-                    return data;
-                }
-        );
-    }
-
-    public MutableList<PureModelContextData> dataStoreSpecParts()
-    {
-        return ListIterate.collect(this.dataStoreSpecifications, dataStoreSpecification ->
-                {
-                    PureModelContextData data = new PureModelContextData();
-                    data.dataStoreSpecifications = Lists.mutable.with(dataStoreSpecification);
-                    data.serializer = this.serializer;
-                    return data;
-                }
-        );
-    }
-
-    public MutableList<PureModelContextData> serviceParts()
-    {
-        return ListIterate.collect(this.services, service ->
-                {
-                    PureModelContextData data = new PureModelContextData();
-                    data.services = Lists.mutable.with(service);
-                    data.serializer = this.serializer;
-                    return data;
-                }
-        );
+        return streamAllElements().collect(Collectors.toList());
     }
 
     @JsonIgnore
     public PureModelContextData combine(PureModelContextData data)
     {
-        PureModelContextData result = new PureModelContextData();
-        result.domain = this.domain == null ? data.domain : this.domain.combine(data.domain);
-        result.sectionIndices = uniqueUnion(this.sectionIndices, data.sectionIndices);
-        result.stores = uniqueUnion(this.stores, data.stores);
-        result.mappings = uniqueUnion(this.mappings, data.mappings);
-        result.services = uniqueUnion(this.services, data.services);
-        result.cacheables = uniqueUnion(this.cacheables, data.cacheables);
-        result.caches = uniqueUnion(this.caches, data.caches);
-        result.pipelines = uniqueUnion(this.pipelines, data.pipelines);
-        result.flattenSpecifications = uniqueUnion(this.flattenSpecifications, data.flattenSpecifications);
-        result.dataStoreSpecifications = uniqueUnion(this.dataStoreSpecifications, data.dataStoreSpecifications);
-        result.diagrams = uniqueUnion(this.diagrams, data.diagrams);
-        result.texts = uniqueUnion(this.texts, data.texts);
-        result.runtimes = uniqueUnion(this.runtimes, data.runtimes);
-        result.connections = uniqueUnion(this.connections, data.connections);
-        result.fileGenerations = uniqueUnion(this.fileGenerations, data.fileGenerations);
-        result.generationSpecifications = uniqueUnion(this.generationSpecifications, data.generationSpecifications);
-        result.serializableModelSpecifications = uniqueUnion(this.serializableModelSpecifications, data.serializableModelSpecifications);
-        result.origin = this.origin == null ? data.origin : this.origin.combine(data.origin);
-        result.serializer = this.serializer == null ? data.serializer : this.serializer;
-        return result;
+        return combine(this, data);
+    }
+
+    public static PureModelContextData combine(PureModelContextData data1, PureModelContextData data2)
+    {
+        return combine(data1, data2, (PureModelContextData[]) null);
+    }
+
+    public static PureModelContextData combine(PureModelContextData data1, PureModelContextData data2, PureModelContextData... moreData)
+    {
+        Builder builder = new Builder().withPureModelContextData(data1).withPureModelContextData(data2);
+        if (moreData != null)
+        {
+            ArrayIterate.forEach(moreData, builder::addPureModelContextData);
+        }
+        return builder.distinct().sorted().build();
     }
 
     @JsonIgnore
-    public static <T extends PackageableElement> List<T> uniqueUnion(List<T> s1, List<T> s2)
-    {
-        MutableSet<T> set = UnifiedSetWithHashingStrategy.newSet(hash);
-        set.addAll(s1);
-        set.addAll(s2);
-        return sort(set.toList());
-    }
-
     public static List<PureModelContextData> partition(PureModelContextData inputModel, int parts)
     {
-        List<PureModelContextData> result = Lists.mutable.empty();
+        List<PureModelContextData> result = Lists.mutable.ofInitialCapacity(parts);
+        int partitionSize = (inputModel.elements.size() / parts) + 1;
         for (int i = 0; i < parts; i++)
         {
-            PureModelContextData newModel = new PureModelContextData();
-            newModel.serializer = inputModel.serializer;
-            newModel.origin = inputModel.origin;
-            result.add(newModel);
+            result.add(new PureModelContextData(inputModel.serializer, inputModel.origin, Lists.mutable.ofInitialCapacity(partitionSize)));
         }
-        List<Domain> partitionedDomain = Domain.partition(inputModel.domain, parts);
-        Lists.mutable.withAll(partitionedDomain).forEach(c -> result.get(partitionedDomain.indexOf(c) % parts).domain = c);
-        Lists.mutable.withAll(inputModel.sectionIndices).forEach(c -> result.get(inputModel.sectionIndices.indexOf(c) % parts).sectionIndices.add(c));
-        Lists.mutable.withAll(inputModel.stores).forEach(c -> result.get(inputModel.stores.indexOf(c) % parts).stores.add(c));
-        Lists.mutable.withAll(inputModel.mappings).forEach(c -> result.get(inputModel.mappings.indexOf(c) % parts).mappings.add(c));
-        Lists.mutable.withAll(inputModel.services).forEach(c -> result.get(inputModel.services.indexOf(c) % parts).services.add(c));
-        Lists.mutable.withAll(inputModel.cacheables).forEach(c -> result.get(inputModel.cacheables.indexOf(c) % parts).cacheables.add(c));
-        Lists.mutable.withAll(inputModel.caches).forEach(c -> result.get(inputModel.caches.indexOf(c) % parts).caches.add(c));
-        Lists.mutable.withAll(inputModel.pipelines).forEach(c -> result.get(inputModel.pipelines.indexOf(c) % parts).pipelines.add(c));
-        Lists.mutable.withAll(inputModel.flattenSpecifications).forEach(c -> result.get(inputModel.flattenSpecifications.indexOf(c) % parts).flattenSpecifications.add(c));
-        Lists.mutable.withAll(inputModel.diagrams).forEach(c -> result.get(inputModel.diagrams.indexOf(c) % parts).diagrams.add(c));
-        Lists.mutable.withAll(inputModel.dataStoreSpecifications).forEach(c -> result.get(inputModel.dataStoreSpecifications.indexOf(c) % parts).dataStoreSpecifications.add(c));
-        Lists.mutable.withAll(inputModel.texts).forEach(c -> result.get(inputModel.texts.indexOf(c) % parts).texts.add(c));
-        Lists.mutable.withAll(inputModel.runtimes).forEach(c -> result.get(inputModel.runtimes.indexOf(c) % parts).runtimes.add(c));
-        Lists.mutable.withAll(inputModel.connections).forEach(c -> result.get(inputModel.connections.indexOf(c) % parts).connections.add(c));
-        Lists.mutable.withAll(inputModel.fileGenerations).forEach(c -> result.get(inputModel.fileGenerations.indexOf(c) % parts).fileGenerations.add(c));
-        Lists.mutable.withAll(inputModel.generationSpecifications).forEach(c -> result.get(inputModel.generationSpecifications.indexOf(c) % parts).generationSpecifications.add(c));
-        Lists.mutable.withAll(inputModel.serializableModelSpecifications).forEach(c -> result.get(inputModel.serializableModelSpecifications.indexOf(c) % parts).serializableModelSpecifications.add(c));
+        inputModel.elements.forEachWithIndex((e, i) -> result.get(i % parts).elements.add(e));
         return result;
     }
 
-
     @JsonIgnore
-    private static HashingStrategy<PackageableElement> hash = new HashingStrategy<PackageableElement>()
+    private static final HashingStrategy<PackageableElement> ELEMENT_PATH_HASH = new HashingStrategy<PackageableElement>()
     {
         @Override
         public int computeHashCode(PackageableElement element)
         {
-            return (element._package + "::" + element.name).hashCode();
+            int hashCode = Objects.hashCode(element.name);
+            if (!isPackageEmpty(element._package))
+            {
+                hashCode += 31 * element._package.hashCode();
+            }
+            return hashCode;
         }
 
         @Override
         public boolean equals(PackageableElement el1, PackageableElement el2)
         {
-            return el1._package.equals(el2._package) && el1.name.equals(el2.name);
+            return packagesEqual(el1._package, el2._package) && Objects.equals(el1.name, el2.name);
         }
     };
+
+    private static int compareByPackageAndName(PackageableElement element1, PackageableElement element2)
+    {
+        return comparePackageAndName(element1._package, element1.name, element2._package, element2.name);
+    }
+
+    private static int comparePackageAndName(String _package1, String name1, String _package2, String name2)
+    {
+        int cmp = comparePackages(_package1, _package2);
+        return (cmp == 0) ? name1.compareTo(name2) : cmp;
+    }
+
+    private static boolean packagesEqual(String _package1, String _package2)
+    {
+        return isPackageEmpty(_package1) ? isPackageEmpty(_package2) : _package1.equals(_package2);
+    }
+
+    private static int comparePackages(String _package1, String _package2)
+    {
+        return isPackageEmpty(_package1) ? (isPackageEmpty(_package2) ? 0 : -1) : (isPackageEmpty(_package2) ? 1 : _package1.compareTo(_package2));
+    }
+
+    private static boolean isPackageEmpty(String _package)
+    {
+        return (_package == null) || _package.isEmpty();
+    }
+
+    public static class Builder
+    {
+        private Protocol serializer;
+        private PureModelContextPointer origin;
+        private final MutableList<PackageableElement> elements = Lists.mutable.empty();
+
+        public Builder()
+        {
+        }
+
+        public void setSerializer(Protocol serializer)
+        {
+            this.serializer = serializer;
+        }
+
+        public Builder withSerializer(Protocol serializer)
+        {
+            setSerializer(serializer);
+            return this;
+        }
+
+        public void setOrigin(PureModelContextPointer origin)
+        {
+            this.origin = origin;
+        }
+
+        public Builder withOrigin(PureModelContextPointer origin)
+        {
+            setOrigin(origin);
+            return this;
+        }
+
+        public boolean addElement(PackageableElement element)
+        {
+            return this.elements.add(element);
+        }
+
+        public boolean addElements(Iterable<? extends PackageableElement> elements)
+        {
+            return this.elements.addAllIterable(elements);
+        }
+
+        public Builder withElement(PackageableElement element)
+        {
+            addElement(element);
+            return this;
+        }
+
+        public Builder withElements(Iterable<? extends PackageableElement> elements)
+        {
+            addElements(elements);
+            return this;
+        }
+
+        public void addPureModelContextData(PureModelContextData pureModelContextData)
+        {
+            if (this.serializer == null)
+            {
+                this.serializer = pureModelContextData.serializer;
+            }
+            if (this.origin == null)
+            {
+                this.origin = pureModelContextData.origin;
+            }
+            this.elements.addAll(pureModelContextData.elements);
+        }
+
+        public Builder withPureModelContextData(PureModelContextData pureModelContextData)
+        {
+            addPureModelContextData(pureModelContextData);
+            return this;
+        }
+
+        public boolean removeDuplicates()
+        {
+            MutableSet<PackageableElement> set = UnifiedSetWithHashingStrategy.newSet(ELEMENT_PATH_HASH, this.elements.size());
+            return this.elements.removeIf(e -> !set.add(e));
+        }
+
+        public Builder distinct()
+        {
+            removeDuplicates();
+            return this;
+        }
+
+        public void sort()
+        {
+            this.elements.sort(PureModelContextData::compareByPackageAndName);
+        }
+
+        public Builder sorted()
+        {
+            sort();
+            return this;
+        }
+
+        public PureModelContextData build()
+        {
+            return new PureModelContextData(this.serializer, this.origin, this.elements.toList());
+        }
+    }
 }

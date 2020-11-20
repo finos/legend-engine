@@ -25,10 +25,12 @@ import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.runtime.RuntimeLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.runtime.RuntimeParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
+
+import java.util.function.Consumer;
 
 public class RuntimeParser implements DEPRECATED_SectionGrammarParser
 {
@@ -60,7 +62,7 @@ public class RuntimeParser implements DEPRECATED_SectionGrammarParser
     }
 
     @Override
-    public Section parse(SourceCodeParserInfo sectionParserInfo, PureModelContextData pureModelContextData, PureGrammarParserContext parserContext)
+    public Section parse(SourceCodeParserInfo sectionParserInfo, Consumer<PackageableElement> pureModelContextData, PureGrammarParserContext parserContext)
     {
         ImportAwareCodeSection section = new ImportAwareCodeSection();
         section.parserName = this.getName();
