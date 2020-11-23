@@ -24,6 +24,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 
@@ -1762,5 +1763,9 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertTrue("Missing firm property in _originalMilestonedProperties", firmProperty.size() == 1);
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> worksForProperty = originalMilestonedPropertiesGetter.valueOf(type).select(p -> p.getName().equals("worksFor"));
         Assert.assertTrue("Missing worksFor property in _originalMilestonedProperties", worksForProperty.size() == 1);
+
+        Association association = model.getAssociation("apps::Employee_Firm", SourceInformation.getUnknownSourceInformation());
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> worksForPropertyFromAssoc = association._originalMilestonedProperties().select(p -> p.getName().equals("worksFor"));
+        Assert.assertTrue("Missing worksFor property in _originalMilestonedProperties for association", worksForPropertyFromAssoc.size() == 1);
     }
 }

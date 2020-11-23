@@ -136,6 +136,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class class2 = this.context.resolveClass(property1Ref, srcAssociation.properties.get(1).sourceInformation);
 
         MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> properties = association._properties().toList();
+        MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> originalMilestonedProperties = association._originalMilestonedProperties().toList();
         MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?>> qualifiedProperties = association._qualifiedProperties().toList();
 
         boolean sourceIsTemporal = !Milestoning.temporalStereotypes(class1._stereotypes()).isEmpty();
@@ -143,18 +144,19 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
 
         if (sourceIsTemporal)
         {
-            Milestoning.applyMilestoningPropertyTransformations(association, class1, class2, properties, qualifiedProperties);
+            Milestoning.applyMilestoningPropertyTransformations(association, class1, class2, properties, qualifiedProperties, originalMilestonedProperties);
         }
 
         if (targetIsTemporal)
         {
-            Milestoning.applyMilestoningPropertyTransformations(association, class2, class1, properties, qualifiedProperties);
+            Milestoning.applyMilestoningPropertyTransformations(association, class2, class1, properties, qualifiedProperties, originalMilestonedProperties);
         }
 
         assert properties.size() >= association._properties().size();
         assert qualifiedProperties.size() >= association._qualifiedProperties().size();
+        assert originalMilestonedProperties.size() >= association._originalMilestonedProperties().size();
 
-        return association._properties(properties)._qualifiedProperties(qualifiedProperties);
+        return association._properties(properties)._qualifiedProperties(qualifiedProperties)._originalMilestonedProperties(originalMilestonedProperties);
     }
 
     @Override
