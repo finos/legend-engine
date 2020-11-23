@@ -63,7 +63,7 @@ public class DataProtocolHandler extends URLStreamHandler implements UrlProtocol
         @Override
         public void connect() throws IOException
         {
-            String path = getURL().getPath();
+            String path = getURL().toExternalForm().substring(DATA_PROTOCOL_NAME.length() + 1);
             int pos = 0;
             boolean base64 = false;
             while (pos < path.length() && path.charAt(pos) != ',' && path.charAt(pos) != ';')

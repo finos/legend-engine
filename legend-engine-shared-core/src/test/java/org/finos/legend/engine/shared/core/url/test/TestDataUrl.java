@@ -36,4 +36,16 @@ public class TestDataUrl extends UrlTest
     {
         Assert.assertEquals("Hello, World!", readUrl("data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=="));
     }
+
+    @Test
+    public void testWithSpecialCharacterHash()
+    {
+        Assert.assertEquals("{\"test\":\"a#b\"}", readUrl("data:application/json,{\"test\":\"a#b\"}"));
+    }
+
+    @Test
+    public void testWithSpecialCharacterQuestionMark()
+    {
+        Assert.assertEquals("{\"test\":\"a?b\"}", readUrl("data:application/json,{\"test\":\"a?b\"}"));
+    }
 }
