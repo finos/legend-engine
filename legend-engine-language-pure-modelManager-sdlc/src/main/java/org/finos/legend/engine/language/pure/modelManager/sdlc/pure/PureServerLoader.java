@@ -14,12 +14,21 @@
 
 package org.finos.legend.engine.language.pure.modelManager.sdlc.pure;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
+import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-
 import javax.security.auth.Subject;
 
 public class PureServerLoader
@@ -31,9 +40,45 @@ public class PureServerLoader
         this.metaDataServerConfiguration = metaDataServerConfiguration;
     }
 
+    public String buildPureMetadataVersionURL(Subject subject)
+    {
+        String urlSuffix = subject == null ? "" : "?auth=kerberos";
+        return  metaDataServerConfiguration.getPure().getBaseUrl()+ "/alloy/pureServerBaseVersion" + urlSuffix;
+    }
+
     private String buildPureMetadataURL(PackageableElementPointer pointer, String urlSegment, String clientVersion, String urlSuffix)
     {
         return metaDataServerConfiguration.getPure().getBaseUrl() + "/alloy/" + urlSegment + "/" + clientVersion + "/" + pointer.path + urlSuffix;
+    }
+
+    public String getBaseServerVersion(Subject subject)
+    {
+        CloseableHttpClient httpclient =  (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+        HttpGet httpGet = new HttpGet(buildPureMetadataVersionURL(subject));
+        try (CloseableHttpResponse response = httpclient.execute(httpGet))
+        {
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode < 200 || statusCode >= 300)
+            {
+                throw new EngineException("Error response with " + statusCode + "\n" + EntityUtils.toString(response.getEntity()));
+            }
+            return EntityUtils.toString(response.getEntity());
+        }
+        catch (Exception e)
+        {
+            throw new EngineException("Engine was unable to load information from the Pure SDLC", e);
+        }
+    }
+
+    public PureModelContext getCacheKey(PureModelContext context, Subject subject)
+    {
+        PureModelContextPointer deepCopy = new PureModelContextPointer();
+        PureSDLC sdlc = new PureSDLC();
+        sdlc.packageableElementPointers = ((PureSDLC)((PureModelContextPointer)context).sdlcInfo).packageableElementPointers;
+        deepCopy.sdlcInfo = sdlc;
+        deepCopy.serializer = ((PureModelContextPointer)context).serializer;
+        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(subject);
+        return deepCopy;
     }
 
     public PureModelContextData loadPurePackageableElementPointer(Subject subject, PackageableElementPointer pointer, String clientVersion, String urlSuffix)

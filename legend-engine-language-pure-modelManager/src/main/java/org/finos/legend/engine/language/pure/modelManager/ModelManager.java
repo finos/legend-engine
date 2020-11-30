@@ -15,15 +15,14 @@
 package org.finos.legend.engine.language.pure.modelManager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -35,9 +34,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class ModelManager
 {
@@ -52,9 +54,8 @@ public class ModelManager
     // TODO: consider renaming this to UNSAFE/DEPRECATED_objectMapper
     //-------------------------------------------------------------------------------------------------
     public static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    private final MutableMap<PureModelContext, Pair<PureModelContextData, PureModel>> cache = UnifiedMap.newMap();
+    public final Cache<PureModelContext, PureModel> pureModelCache = CacheBuilder.newBuilder().softValues().expireAfterWrite(24, TimeUnit.HOURS).build();
     private final DeploymentMode deploymentMode;
     private final MutableList<ModelLoader> modelLoaders;
 
@@ -66,27 +67,43 @@ public class ModelManager
     }
 
     // Remove clientVersion
-    public Pair<PureModelContextData, PureModel> load(PureModelContext context, String clientVersion, Subject subject)
+    public PureModel loadModel(PureModelContext context, String clientVersion, Subject subject, String packageOffset)
     {
-        return load(context, clientVersion, subject, null);
+        if(context instanceof PureModelContextData || context instanceof PureModelContextText)
+        {
+            return Compiler.compile(this.loadData(context, clientVersion, subject), this.deploymentMode, subject, packageOffset);
+        }
+        else
+        {
+            ModelLoader loader = this.modelLoaderForContext(context);
+            if (loader.shouldCache(context))
+            {
+                PureModelContext cacheKey = loader.cacheKey(context, subject);
+                try
+                {
+                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, subject), this.deploymentMode, subject, packageOffset));
+                }
+                catch (ExecutionException e)
+                {
+                    throw new EngineException("Engine was not able to cache", e);
+                }
+            }
+            return Compiler.compile(this.loadData(context, clientVersion, subject), this.deploymentMode, subject, packageOffset);
+        }
     }
 
     // Remove clientVersion
-    public Pair<PureModelContextData, PureModel> load(PureModelContext context, String clientVersion, Subject subject, String packageOffset)
+    public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, Subject subject, String packageOffset)
     {
-        Function0<Pair<PureModelContextData, PureModel>> block = () ->
-        {
             PureModelContextData data = this.loadData(context, clientVersion, subject);
-            return Tuples.pair(data, Compiler.compile(data, this.deploymentMode, subject, packageOffset));
-        };
-        return this.deploymentMode.equals(DeploymentMode.TEST) ? this.cache.getIfAbsentPut(context, block) : block.value();
+            return Tuples.pair(data, loadModel(data, clientVersion, subject, packageOffset));
     }
 
     // Remove clientVersion
     public String getLambdaReturnType(Lambda lambda, PureModelContext context, String clientVersion, Subject subject)
     {
-        Pair<PureModelContextData, PureModel> result = this.load(context, clientVersion, subject, null);
-        return Compiler.getLambdaReturnType(lambda, result.getTwo());
+        PureModel result = this.loadModel(context, clientVersion, subject, null);
+        return Compiler.getLambdaReturnType(lambda, result);
     }
 
     // Remove clientVersion
@@ -105,10 +122,17 @@ public class ModelManager
             }
             else
             {
-                MutableList<ModelLoader> loaders = modelLoaders.select(loader -> loader.supports(context));
-                Assert.assertTrue(loaders.size() == 1, () -> "Didn't find a model loader for " + context.getClass().getSimpleName());
-                return loaders.get(0).load(subject, context, clientVersion, scope.span());
+                ModelLoader loader = this.modelLoaderForContext(context);
+                return loader.load(subject, context, clientVersion, scope.span());
             }
         }
     }
+
+    private ModelLoader modelLoaderForContext(PureModelContext context)
+    {
+        MutableList<ModelLoader> loaders = modelLoaders.select(loader -> loader.supports(context));
+        Assert.assertTrue(loaders.size() == 1, () -> "Didn't find a model loader for " + context.getClass().getSimpleName());
+        return loaders.get(0);
+    }
+
 }

@@ -87,6 +87,18 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
+    public boolean shouldCache(PureModelContext context)
+    {
+        return this.supports(context) && ((PureModelContextPointer)context).sdlcInfo instanceof PureSDLC ;
+    }
+
+    @Override
+    public PureModelContext cacheKey(PureModelContext context,Subject subject)
+    {
+        return this.pureLoader.getCacheKey(context, subject);
+    }
+
+    @Override
     public boolean supports(PureModelContext context)
     {
         return context instanceof PureModelContextPointer;

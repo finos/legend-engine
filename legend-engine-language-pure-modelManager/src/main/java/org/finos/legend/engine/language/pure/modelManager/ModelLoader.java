@@ -27,4 +27,9 @@ public interface ModelLoader
     PureModelContextData load(Subject callerSubject, PureModelContext context, String clientVersion, Span parentSpan);
 
     void setModelManager(ModelManager modelManager);
+
+    // Caching
+    boolean shouldCache(PureModelContext context);
+
+    PureModelContext cacheKey(PureModelContext context, Subject subject);
 }
