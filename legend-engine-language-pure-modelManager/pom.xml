@@ -93,5 +93,12 @@
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
+
+        <!--CACHING-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <!--CACHING-->
     </dependencies>
 </project>
