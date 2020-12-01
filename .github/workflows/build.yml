@@ -52,4 +52,4 @@ jobs:
       - name: Build + Test + Sonar + Maven Deploy
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
         # TODO - remove skipTests
-        run: mvn javadoc:javadoc deploy -DskipTests -Psonar
+        run: mvn javadoc:javadoc deploy -Psonar
