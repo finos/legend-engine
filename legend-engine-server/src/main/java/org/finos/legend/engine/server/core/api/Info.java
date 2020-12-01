@@ -72,7 +72,7 @@ public class Info
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            message = "{}";
         }
     }
 

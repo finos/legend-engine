@@ -26,6 +26,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
 
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -44,7 +45,7 @@ public class LightScheduler
         infoBuffer.put(id, Tuples.pair(task, new Info(id, frequency)));
         Timer timer = new Timer();
         timers.add(timer);
-        timer.schedule(task, (long) (Math.random() * 10000), frequency);
+        timer.schedule(task, (long) (new SecureRandom().nextDouble() * 10000), frequency);
     }
 
     public void schedule(String id, Date start, int frequency, Function0<String> f)
@@ -54,7 +55,7 @@ public class LightScheduler
         infoBuffer.put(id, Tuples.pair(task, new Info(id, start, frequency)));
         Timer timer = new Timer();
         timers.add(timer);
-        timer.schedule(task, new Date(start.getTime() + Math.round(Math.random() * 1000 * 60 * 10)), frequency);
+        timer.schedule(task, new Date(start.getTime() + Math.round(new SecureRandom().nextDouble() * 1000 * 60 * 10)), frequency);
     }
 
     public void shutDown()

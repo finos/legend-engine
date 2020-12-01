@@ -45,7 +45,6 @@ public class PureProtocolExtensionLoader
             catch (Throwable throwable)
             {
                 LOGGER.error("Failed to load PURE protocol extension '" + extension.getClass().getSimpleName() + "'");
-                throwable.printStackTrace();
                 // Needs to be silent ... during the build process
             }
         }

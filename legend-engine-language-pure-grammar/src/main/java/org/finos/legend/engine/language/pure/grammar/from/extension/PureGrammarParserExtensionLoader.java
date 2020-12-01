@@ -44,7 +44,6 @@ public class PureGrammarParserExtensionLoader
             catch (Throwable throwable)
             {
                 LOGGER.error("Failed to load grammar parser extension '" + extension.getClass().getSimpleName() + "'");
-                throwable.printStackTrace();
                 // Needs to be silent ... during the build process
             }
         }
