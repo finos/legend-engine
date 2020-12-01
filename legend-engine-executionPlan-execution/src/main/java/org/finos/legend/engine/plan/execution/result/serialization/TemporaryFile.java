@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.Random;
 
 public class TemporaryFile implements Closeable
@@ -35,7 +36,7 @@ public class TemporaryFile implements Closeable
     private String fileName;
     public Path path;
     private final String tempPath;
-    private static Random random = new Random();
+    private static Random random = new SecureRandom();
 
     public TemporaryFile(String tempPath)
     {
