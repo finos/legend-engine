@@ -76,6 +76,11 @@ public class PureModelContextData extends PureModelContext
         return new PureModelContextData(serializer, origin, Lists.mutable.ofAll(elements));
     }
 
+    public static PureModelContextData newPureModelContextData()
+    {
+        return new PureModelContextData(null, null, Lists.fixedSize.empty());
+    }
+
     @JsonCreator
     public static PureModelContextData newPureModelContextData(
             @JsonProperty("serializer") Protocol serializer,
@@ -161,7 +166,7 @@ public class PureModelContextData extends PureModelContext
 
     public static PureModelContextData combine(PureModelContextData data1, PureModelContextData data2, PureModelContextData... moreData)
     {
-        Builder builder = new Builder().withPureModelContextData(data1).withPureModelContextData(data2);
+        Builder builder = newBuilder().withPureModelContextData(data1).withPureModelContextData(data2);
         if (moreData != null)
         {
             ArrayIterate.forEach(moreData, builder::addPureModelContextData);
@@ -169,7 +174,6 @@ public class PureModelContextData extends PureModelContext
         return builder.distinct().sorted().build();
     }
 
-    @JsonIgnore
     public static List<PureModelContextData> partition(PureModelContextData inputModel, int parts)
     {
         List<PureModelContextData> result = Lists.mutable.ofInitialCapacity(parts);
@@ -182,7 +186,6 @@ public class PureModelContextData extends PureModelContext
         return result;
     }
 
-    @JsonIgnore
     private static final HashingStrategy<PackageableElement> ELEMENT_PATH_HASH = new HashingStrategy<PackageableElement>()
     {
         @Override
@@ -227,6 +230,11 @@ public class PureModelContextData extends PureModelContext
     private static boolean isPackageEmpty(String _package)
     {
         return (_package == null) || _package.isEmpty();
+    }
+
+    public static Builder newBuilder()
+    {
+        return new Builder();
     }
 
     public static class Builder
@@ -304,6 +312,11 @@ public class PureModelContextData extends PureModelContext
 
         public boolean removeDuplicates()
         {
+            if (this.elements.size() <= 1)
+            {
+                return false;
+            }
+
             MutableSet<PackageableElement> set = UnifiedSetWithHashingStrategy.newSet(ELEMENT_PATH_HASH, this.elements.size());
             return this.elements.removeIf(e -> !set.add(e));
         }
@@ -316,7 +329,10 @@ public class PureModelContextData extends PureModelContext
 
         public void sort()
         {
-            this.elements.sort(PureModelContextData::compareByPackageAndName);
+            if (this.elements.size() > 1)
+            {
+                this.elements.sort(PureModelContextData::compareByPackageAndName);
+            }
         }
 
         public Builder sorted()
