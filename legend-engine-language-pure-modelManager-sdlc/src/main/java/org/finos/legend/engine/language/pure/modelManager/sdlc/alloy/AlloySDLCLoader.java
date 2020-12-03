@@ -33,9 +33,9 @@ public class AlloySDLCLoader
 
     public PureModelContextData loadAlloyProject(Subject subject, AlloySDLC alloySDLC, String clientVersion)
     {
-        String url = alloySDLC.version == null ?
-                "http://" + metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/pureModelContextData" :
-                "http://" + metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/revisions/" + alloySDLC.version + "/pureModelContextData";
+        String url = (alloySDLC.version == null || alloySDLC.version.equals("none")) ?
+                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/metadata/api/projects/" + alloySDLC.project + "/revisions/latest/pureModelContextData/" + clientVersion  :
+                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/metadata/api/projects/" + alloySDLC.project + "/versions/" + alloySDLC.version + "/pureModelContextData/" + clientVersion;
         return SDLCLoader.loadMetadataFromHTTPURL(subject, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url);
     }
 }
