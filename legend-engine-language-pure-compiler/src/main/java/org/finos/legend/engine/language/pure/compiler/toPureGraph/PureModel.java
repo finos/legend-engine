@@ -38,6 +38,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.Clas
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.PureModelContextDataValidator;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
@@ -163,7 +164,7 @@ public class PureModel implements IPureModel
             registerElementsForPathToElement();
 
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_START, pureModelContextData.origin == null ? "" : ((PureSDLC) pureModelContextData.origin.sdlcInfo).packageableElementPointers).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_START, (pureModelContextData.origin == null || pureModelContextData.origin.sdlcInfo instanceof AlloySDLC) ? "" : ((PureSDLC) pureModelContextData.origin.sdlcInfo).packageableElementPointers).toString());
             scope.span().log(LoggingEventType.GRAPH_START.toString());
 
             this.handlers = new Handlers(this);
