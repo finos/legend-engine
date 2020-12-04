@@ -66,7 +66,7 @@ public class Compile
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
         {
             CompilerExtensionLoader.logExtensionList();
-            modelManager.load(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, subject);
+            modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, subject, null);
             // NOTE: we could change this to return 204 (No Content), but Pure client test will break
             // on the another hand, returning 200 Ok with no content is not appropriate. So we have to put this dummy message "OK"
             return Response.ok("{\"message\":\"OK\"}", MediaType.APPLICATION_JSON_TYPE).build();

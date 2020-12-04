@@ -212,13 +212,14 @@ public class TestMetaDataServer
                         }
         );
 
-
         AbstractHandler versionHandler = createVersionHandler();
+        AbstractHandler pureBaseVersionHandler = createPureBaseVersionHandler();
 
         HandlerCollection handlerCollection = new HandlerCollection();
         handlerCollection.setHandlers(new Handler[]{
                 mappingHandle,
-                versionHandler});
+                versionHandler,
+                pureBaseVersionHandler});
 
         this.server.setHandler(handlerCollection);
         this.server.start();
@@ -258,6 +259,24 @@ public class TestMetaDataServer
                     stream.write(r.getBytes());
                     stream.flush();
                 }
+            }
+        };
+        contextHandler.setHandler(handler);
+        return contextHandler;
+    }
+
+    private AbstractHandler createPureBaseVersionHandler()
+    {
+        ContextHandler contextHandler = new ContextHandler("/alloy/pureServerBaseVersion");
+        AbstractHandler handler = new AbstractHandler()
+        {
+            @Override
+            public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
+            {
+                OutputStream stream = httpServletResponse.getOutputStream();
+                String r = "1";
+                stream.write(r.getBytes());
+                stream.flush();
             }
         };
         contextHandler.setHandler(handler);
