@@ -93,9 +93,11 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContext cacheKey(PureModelContext context,Subject subject)
+    public PureModelContext cacheKey(PureModelContext context,Subject callerSubject)
     {
-        return this.pureLoader.getCacheKey(context, subject);
+        final Subject executionSubject = getSubject();
+        Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, callerSubject, executionSubject);
+        return executionSubject == null ? pureModelContextFunction.value() : exec(executionSubject, pureModelContextFunction::value);
     }
 
     @Override

@@ -40,9 +40,8 @@ public class PureServerLoader
         this.metaDataServerConfiguration = metaDataServerConfiguration;
     }
 
-    public String buildPureMetadataVersionURL(Subject subject)
+    public String buildPureMetadataVersionURL(String urlSuffix)
     {
-        String urlSuffix = subject == null ? "" : "?auth=kerberos";
         return  metaDataServerConfiguration.getPure().getBaseUrl()+ "/alloy/pureServerBaseVersion" + urlSuffix;
     }
 
@@ -51,10 +50,10 @@ public class PureServerLoader
         return metaDataServerConfiguration.getPure().getBaseUrl() + "/alloy/" + urlSegment + "/" + clientVersion + "/" + pointer.path + urlSuffix;
     }
 
-    public String getBaseServerVersion(Subject subject)
+    public String getBaseServerVersion(Subject callerSubject, Subject executionSubject)
     {
         CloseableHttpClient httpclient =  (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
-        HttpGet httpGet = new HttpGet(buildPureMetadataVersionURL(subject));
+        HttpGet httpGet = new HttpGet(buildPureMetadataVersionURL(executionSubject == null ? "" : "?auth=kerberos"));
         try (CloseableHttpResponse response = httpclient.execute(httpGet))
         {
             int statusCode = response.getStatusLine().getStatusCode();
@@ -66,18 +65,18 @@ public class PureServerLoader
         }
         catch (Exception e)
         {
-            throw new EngineException("Engine was unable to load information from the Pure SDLC", e);
+            throw new EngineException("Engine was unable to load information from the Pure SDLC :" + e.getMessage());
         }
     }
 
-    public PureModelContext getCacheKey(PureModelContext context, Subject subject)
+    public PureModelContext getCacheKey(PureModelContext context, Subject callerSubject, Subject executionSubject)
     {
         PureModelContextPointer deepCopy = new PureModelContextPointer();
         PureSDLC sdlc = new PureSDLC();
         sdlc.packageableElementPointers = ((PureSDLC)((PureModelContextPointer)context).sdlcInfo).packageableElementPointers;
         deepCopy.sdlcInfo = sdlc;
         deepCopy.serializer = ((PureModelContextPointer)context).serializer;
-        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(subject);
+        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(callerSubject,executionSubject);
         return deepCopy;
     }
 
