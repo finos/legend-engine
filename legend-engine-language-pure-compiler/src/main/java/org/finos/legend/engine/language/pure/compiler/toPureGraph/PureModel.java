@@ -38,7 +38,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.Clas
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.PureModelContextDataValidator;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
@@ -82,6 +81,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
@@ -117,22 +117,22 @@ public class PureModel implements IPureModel
     final MutableMap<String, Connection> connectionsIndex = UnifiedMap.newMap();
     final MutableMap<String, Runtime> runtimesIndex = UnifiedMap.newMap();
 
-    public PureModel(PureModelContextData pure, Subject subject, DeploymentMode deploymentMode)
+    public PureModel(PureModelContextData pure, ProfileManager pm, DeploymentMode deploymentMode)
     {
-        this(pure, subject, null, deploymentMode, new PureModelProcessParameter());
+        this(pure, pm, null, deploymentMode, new PureModelProcessParameter());
     }
 
-    public PureModel(PureModelContextData pure, Subject subject, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
+    public PureModel(PureModelContextData pure, ProfileManager pm, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
     {
-        this(pure, subject, null, deploymentMode, pureModelProcessParameter);
+        this(pure, pm, null, deploymentMode, pureModelProcessParameter);
     }
 
-    public PureModel(PureModelContextData pure, Subject subject, ClassLoader classLoader, DeploymentMode deploymentMode)
+    public PureModel(PureModelContextData pure, ProfileManager pm, ClassLoader classLoader, DeploymentMode deploymentMode)
     {
-        this(pure, subject, classLoader, deploymentMode, new PureModelProcessParameter());
+        this(pure, pm, classLoader, deploymentMode, new PureModelProcessParameter());
     }
 
-    public PureModel(PureModelContextData pureModelContextData, Subject subject, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
+    public PureModel(PureModelContextData pureModelContextData, ProfileManager pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
     {
         this.extensions = CompilerExtensionLoader.extensions();
         List<Procedure2<PureModel, PureModelContextData>> extraPostValidators = ListIterate.flatCollect(this.extensions, CompilerExtension::getExtraPostValidators);
@@ -164,25 +164,25 @@ public class PureModel implements IPureModel
             registerElementsForPathToElement();
 
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_START, (pureModelContextData.origin == null || pureModelContextData.origin.sdlcInfo instanceof AlloySDLC) ? "" : ((PureSDLC) pureModelContextData.origin.sdlcInfo).packageableElementPointers).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_START, pureModelContextData.origin == null ? "" : ((PureSDLC) pureModelContextData.origin.sdlcInfo).packageableElementPointers).toString());
             scope.span().log(LoggingEventType.GRAPH_START.toString());
 
             this.handlers = new Handlers(this);
             this.initializeMultiplicities();
             this.initializePrimitiveTypes();
             long initFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_INITIALIZED, (double)initFinished - start).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_INITIALIZED, (double)initFinished - start).toString());
             scope.span().log(LoggingEventType.GRAPH_INITIALIZED.toString());
 
             long parsingFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_PARSED, (double)parsingFinished - initFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_PARSED, (double)parsingFinished - initFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_PARSED.toString());
 
             // Pre Validation
             PureModelContextDataValidator preValidator = new PureModelContextDataValidator();
             preValidator.validate(this, pureModelContextData);
             long preValidationFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double)preValidationFinished - initFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double)preValidationFinished - initFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED.toString());
 
             // Processing
@@ -190,72 +190,72 @@ public class PureModel implements IPureModel
 
             this.loadTypes(pureModelContextData);
             long loadTypesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_DOMAIN_BUILT, this.buildDomainStats(pureModelContextData), (double)loadTypesFinished - preValidationFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_DOMAIN_BUILT, this.buildDomainStats(pureModelContextData), (double)loadTypesFinished - preValidationFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_DOMAIN_BUILT.toString());
 
             this.loadStores(pureModelContextData);
             long loadStoresFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_STORES_BUILT, this.buildStoreStats(pureModelContextData, this), (double)loadStoresFinished - loadTypesFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_STORES_BUILT, this.buildStoreStats(pureModelContextData, this), (double)loadStoresFinished - loadTypesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_STORES_BUILT.toString());
 
             this.loadDataStoreSpecifications(pureModelContextData);
             long loadDsSpecsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_DATASTORESPECIFICATIONS_BUILT, (double)loadDsSpecsFinished - loadStoresFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_DATASTORESPECIFICATIONS_BUILT, (double)loadDsSpecsFinished - loadStoresFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_DATASTORESPECIFICATIONS_BUILT.toString());
 
             this.loadMappings(pureModelContextData);
             long loadMappingsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_MAPPINGS_BUILT, (double)loadMappingsFinished - loadDsSpecsFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_MAPPINGS_BUILT, (double)loadMappingsFinished - loadDsSpecsFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_MAPPINGS_BUILT.toString());
 
             this.loadConnectionsAndRuntimes(pureModelContextData);
             long loadConnectionsAndRuntimesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT, (double)loadConnectionsAndRuntimesFinished - loadMappingsFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT, (double)loadConnectionsAndRuntimesFinished - loadMappingsFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT.toString());
 
             this.loadServices(pureModelContextData);
             long loadServicesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_SERVICES_BUILT, (double)loadServicesFinished - loadConnectionsAndRuntimesFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_SERVICES_BUILT, (double)loadServicesFinished - loadConnectionsAndRuntimesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_SERVICES_BUILT.toString());
 
             this.loadCacheables(pureModelContextData);
             long loadCacheablesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_CACHEABLES_BUILT, (double)loadCacheablesFinished - loadServicesFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_CACHEABLES_BUILT, (double)loadCacheablesFinished - loadServicesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_CACHEABLES_BUILT.toString());
 
             this.loadCaches(pureModelContextData);
             long loadCachesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_CACHES_BUILT, (double)loadCachesFinished - loadCacheablesFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_CACHES_BUILT, (double)loadCachesFinished - loadCacheablesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_CACHES_BUILT.toString());
 
             this.loadPipelines(pureModelContextData);
             long loadPipelinesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_PIPELINES_BUILT, (double)loadPipelinesFinished - loadCachesFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_PIPELINES_BUILT, (double)loadPipelinesFinished - loadCachesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_PIPELINES_BUILT.toString());
 
             this.loadFlattenSpecifications(pureModelContextData);
             long loadFlattensFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_FLATTENSPECIFICATIONS_BUILT, (double)loadFlattensFinished - loadPipelinesFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_FLATTENSPECIFICATIONS_BUILT, (double)loadFlattensFinished - loadPipelinesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_FLATTENSPECIFICATIONS_BUILT.toString());
 
             this.loadFileGenerations(pureModelContextData);
             long loadFileGenerationsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_FLATTENSPECIFICATIONS_BUILT, (double)loadFileGenerationsFinished - loadFlattensFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_FLATTENSPECIFICATIONS_BUILT, (double)loadFileGenerationsFinished - loadFlattensFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_FLATTENSPECIFICATIONS_BUILT.toString());
 
             this.loadSerializableModelSpecifications(pureModelContextData);
             long loadSerializableModelSpecsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_SERIALIZABLE_MODEL_SPECIFICATIONS_BUILT, (double)loadSerializableModelSpecsFinished - loadFileGenerationsFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_SERIALIZABLE_MODEL_SPECIFICATIONS_BUILT, (double)loadSerializableModelSpecsFinished - loadFileGenerationsFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_SERIALIZABLE_MODEL_SPECIFICATIONS_BUILT.toString());
 
             this.loadGenerationSpecifications(pureModelContextData);
             long loadGenerationSpecificationsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_GENERATION_TREES_BUILT, (double)loadGenerationSpecificationsFinished - loadSerializableModelSpecsFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_GENERATION_TREES_BUILT, (double)loadGenerationSpecificationsFinished - loadSerializableModelSpecsFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_GENERATION_TREES_BUILT.toString());
 
             this.loadDiagrams(pureModelContextData);
             long loadDiagramsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_DIAGRAMS_BUILT, (double)loadDiagramsFinished - loadFileGenerationsFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_DIAGRAMS_BUILT, (double)loadDiagramsFinished - loadFileGenerationsFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_DIAGRAMS_BUILT.toString());
 
             // NOTE: we don't load texts
@@ -267,16 +267,16 @@ public class PureModel implements IPureModel
             new MappingValidator().validate(this, pureModelContextData);
             extraPostValidators.forEach(validator -> validator.value(this, pureModelContextData));
             long postValidationFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double)postValidationFinished - processingFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double)postValidationFinished - processingFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED.toString());
 
             long finished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_STOP, (double)finished - start).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_STOP, (double)finished - start).toString());
             scope.span().log(LoggingEventType.GRAPH_STOP.toString());
         }
         catch (Exception e)
         {
-            LOGGER.info(new LogInfo(subject, LoggingEventType.GRAPH_ERROR, e).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_ERROR, e).toString());
             // Since EngineException extends RuntimeException it is more straight forward to just
             // throw EngineException as is. This will make downstream handling of exception easier
             // TODO: we need to have a better strategy to throw compilation error instead of the generic exeception

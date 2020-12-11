@@ -58,7 +58,6 @@ public class TransformJsonToGrammar
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response transformJsonToGrammar(JsonToGrammarInput jsonInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject = ProfileManagerHelper.extractSubject(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
             PureGrammarComposerExtensionLoader.logExtensionList();
@@ -75,11 +74,11 @@ public class TransformJsonToGrammar
             {
                 symmetricResult.code = grammarTransformer.renderPureModelContextData(jsonInput.modelDataContext);
             }
-            return ManageConstantResult.manageResult(subject, symmetricResult);
+            return ManageConstantResult.manageResult(pm, symmetricResult);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, pm);
         }
     }
 }

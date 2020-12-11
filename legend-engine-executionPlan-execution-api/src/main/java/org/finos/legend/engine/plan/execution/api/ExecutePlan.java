@@ -65,18 +65,17 @@ public class ExecutePlan
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response executePlan(@Context HttpServletRequest request, ExecutionPlan execPlan, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject = ProfileManagerHelper.extractSubject(pm);
         try
         {
             if (execPlan instanceof SingleExecutionPlan)
             {
-                LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
+                LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
                 // Assume that the input exec plan has no variables
-                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, subject);
+                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, pm);
                 try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
                 {
-                    LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
-                    return ResultManager.manageResult(subject, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
+                    LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
+                    return ResultManager.manageResult(pm, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
                 }
             }
             else
@@ -86,7 +85,7 @@ public class ExecutePlan
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, pm);
         }
     }
 }

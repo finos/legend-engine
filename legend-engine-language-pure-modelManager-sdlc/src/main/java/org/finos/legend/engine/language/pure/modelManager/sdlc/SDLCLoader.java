@@ -36,6 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.kerberos.SubjectCache;
@@ -44,6 +45,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.opentracing.HttpRequestHeaderMap;
+import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
@@ -93,9 +95,9 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContext cacheKey(PureModelContext context,Subject subject)
+    public PureModelContext cacheKey(PureModelContext context, ProfileManager pm)
     {
-        return this.pureLoader.getCacheKey(context, subject);
+        return this.pureLoader.getCacheKey(context, pm);
     }
 
     @Override
@@ -105,7 +107,7 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContextData load(Subject callerSubject, PureModelContext ctx, String clientVersion, Span parentSpan)
+    public PureModelContextData load(ProfileManager callerProfileManager, PureModelContext ctx, String clientVersion, Span parentSpan)
     {
         PureModelContextPointer context = (PureModelContextPointer) ctx;
         Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
@@ -121,7 +123,7 @@ public class SDLCLoader implements ModelLoader
                 parentSpan.setTag("sdlc", "pure");
                 try (Scope scope = GlobalTracer.get().buildSpan("Request Pure Metadata").startActive(true))
                 {
-                    return ListIterate.injectInto(new PureModelContextData(), ((PureSDLC) context.sdlcInfo).packageableElementPointers, (a, b) -> a.combine(this.pureLoader.loadPurePackageableElementPointer(callerSubject, b, clientVersion, subject == null ? "" : "?auth=kerberos")));
+                    return ListIterate.injectInto(new PureModelContextData(), ((PureSDLC) context.sdlcInfo).packageableElementPointers, (a, b) -> a.combine(this.pureLoader.loadPurePackageableElementPointer(callerProfileManager, b, clientVersion, subject == null ? "" : "?auth=kerberos")));
                 }
             };
         }
@@ -133,7 +135,7 @@ public class SDLCLoader implements ModelLoader
                 try (Scope scope = GlobalTracer.get().buildSpan("Request Alloy Metadata").startActive(true))
                 {
                     AlloySDLC sdlc = (AlloySDLC) context.sdlcInfo;
-                    return this.alloyLoader.loadAlloyProject(callerSubject, sdlc, clientVersion);
+                    return this.alloyLoader.loadAlloyProject(callerProfileManager, sdlc, clientVersion);
                 }
             };
         }
@@ -154,13 +156,13 @@ public class SDLCLoader implements ModelLoader
         return metaData;
     }
 
-    public static PureModelContextData loadMetadataFromHTTPURL(Subject subject, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
+    public static PureModelContextData loadMetadataFromHTTPURL(ProfileManager pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
     {
         Scope scope = GlobalTracer.get().scopeManager().active();
         CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
         long start = System.currentTimeMillis();
 
-        LogInfo info = new LogInfo(subject, startEvent, "Requesting metadata");
+        LogInfo info = new LogInfo(pm, startEvent, "Requesting metadata");
         LOGGER.info(info.toString());
         Span span = GlobalTracer.get().activeSpan();
         if (span != null)
@@ -169,7 +171,7 @@ public class SDLCLoader implements ModelLoader
             scope.span().setOperationName(startEvent.toString());
             span.log(url);
         }
-        LOGGER.info(new LogInfo(subject, LoggingEventType.METADATA_LOAD_FROM_URL, "Loading from URL " + url).toString());
+        LOGGER.info(new LogInfo(pm, LoggingEventType.METADATA_LOAD_FROM_URL, "Loading from URL " + url).toString());
 
         HttpGet httpGet = new HttpGet(url);
         if (span != null)
@@ -186,7 +188,7 @@ public class SDLCLoader implements ModelLoader
             HttpEntity entity1 = response.getEntity();
             PureModelContextData modelContextData = objectMapper.readValue(entity1.getContent(), PureModelContextData.class);
             Assert.assertTrue(modelContextData.serializer != null, () -> "Engine was unable to load information from the Pure SDLC <a href='" + url + "'>link</a>");
-            LOGGER.info(new LogInfo(subject, stopEvent, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(pm, stopEvent, (double)System.currentTimeMillis() - start).toString());
             if (span != null)
             {
                 scope.span().log(String.valueOf(stopEvent));

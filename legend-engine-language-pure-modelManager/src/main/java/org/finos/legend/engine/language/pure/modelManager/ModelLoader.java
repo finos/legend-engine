@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.modelManager;
 import io.opentracing.Span;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
 
@@ -24,12 +25,12 @@ public interface ModelLoader
 {
     boolean supports(PureModelContext context);
 
-    PureModelContextData load(Subject callerSubject, PureModelContext context, String clientVersion, Span parentSpan);
+    PureModelContextData load(ProfileManager callerSubject, PureModelContext context, String clientVersion, Span parentSpan);
 
     void setModelManager(ModelManager modelManager);
 
     // Caching
     boolean shouldCache(PureModelContext context);
 
-    PureModelContext cacheKey(PureModelContext context, Subject subject);
+    PureModelContext cacheKey(PureModelContext context, ProfileManager pm);
 }

@@ -27,8 +27,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPo
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.pac4j.core.profile.ProfileManager;
+
 import javax.security.auth.Subject;
 
 public class PureServerLoader
@@ -51,8 +54,9 @@ public class PureServerLoader
         return metaDataServerConfiguration.getPure().getBaseUrl() + "/alloy/" + urlSegment + "/" + clientVersion + "/" + pointer.path + urlSuffix;
     }
 
-    public String getBaseServerVersion(Subject subject)
+    public String getBaseServerVersion(ProfileManager pm)
     {
+        Subject subject = ProfileManagerHelper.extractSubject(pm);
         CloseableHttpClient httpclient =  (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
         HttpGet httpGet = new HttpGet(buildPureMetadataVersionURL(subject));
         try (CloseableHttpResponse response = httpclient.execute(httpGet))
@@ -70,27 +74,27 @@ public class PureServerLoader
         }
     }
 
-    public PureModelContext getCacheKey(PureModelContext context, Subject subject)
+    public PureModelContext getCacheKey(PureModelContext context, ProfileManager pm)
     {
         PureModelContextPointer deepCopy = new PureModelContextPointer();
         PureSDLC sdlc = new PureSDLC();
         sdlc.packageableElementPointers = ((PureSDLC)((PureModelContextPointer)context).sdlcInfo).packageableElementPointers;
         deepCopy.sdlcInfo = sdlc;
         deepCopy.serializer = ((PureModelContextPointer)context).serializer;
-        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(subject);
+        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(pm);
         return deepCopy;
     }
 
-    public PureModelContextData loadPurePackageableElementPointer(Subject subject, PackageableElementPointer pointer, String clientVersion, String urlSuffix)
+    public PureModelContextData loadPurePackageableElementPointer(ProfileManager pm, PackageableElementPointer pointer, String clientVersion, String urlSuffix)
     {
         switch (pointer.type)
         {
             case MAPPING:
-                return SDLCLoader.loadMetadataFromHTTPURL(subject, LoggingEventType.METADATA_REQUEST_MAPPING_START, LoggingEventType.METADATA_REQUEST_MAPPING_STOP, buildPureMetadataURL(pointer, "pureModelFromMapping", clientVersion, urlSuffix));
+                return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_MAPPING_START, LoggingEventType.METADATA_REQUEST_MAPPING_STOP, buildPureMetadataURL(pointer, "pureModelFromMapping", clientVersion, urlSuffix));
             case STORE:
-                return SDLCLoader.loadMetadataFromHTTPURL(subject, LoggingEventType.METADATA_REQUEST_STORE_START, LoggingEventType.METADATA_REQUEST_STORE_STOP, buildPureMetadataURL(pointer, "pureModelFromStore", clientVersion, urlSuffix));
+                return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_STORE_START, LoggingEventType.METADATA_REQUEST_STORE_STOP, buildPureMetadataURL(pointer, "pureModelFromStore", clientVersion, urlSuffix));
             case SERVICE:
-                return SDLCLoader.loadMetadataFromHTTPURL(subject, LoggingEventType.METADATA_REQUEST_SERVICE_START, LoggingEventType.METADATA_REQUEST_SERVICE_STOP, buildPureMetadataURL(pointer, "pureModelFromService", clientVersion, urlSuffix));
+                return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_SERVICE_START, LoggingEventType.METADATA_REQUEST_SERVICE_STOP, buildPureMetadataURL(pointer, "pureModelFromService", clientVersion, urlSuffix));
             default:
                 throw new UnsupportedOperationException(pointer.type + " is not supported!");
         }

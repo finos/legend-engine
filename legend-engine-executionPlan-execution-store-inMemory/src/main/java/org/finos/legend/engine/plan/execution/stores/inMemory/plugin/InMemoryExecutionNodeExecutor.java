@@ -32,17 +32,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Sequen
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
 
 public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    Subject subject;
+    ProfileManager pm;
     ExecutionState executionState;
 
-    public InMemoryExecutionNodeExecutor(Subject subject, ExecutionState executionState)
+    public InMemoryExecutionNodeExecutor(ProfileManager pm, ExecutionState executionState)
     {
-        this.subject = subject;
+        this.pm = pm;
         this.executionState = executionState;
     }
 
@@ -55,7 +56,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
     @Override
     public Result visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode)
     {
-        return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(graphFetchM2MExecutionNode, GraphFetchM2MExecutionNodeContext.factory(graphFetchM2MExecutionNode), this.subject, this.executionState);
+        return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(graphFetchM2MExecutionNode, GraphFetchM2MExecutionNodeContext.factory(graphFetchM2MExecutionNode), this.pm, this.executionState);
     }
 
     @Override
