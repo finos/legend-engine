@@ -14,6 +14,10 @@
 
 package org.finos.legend.engine.shared.core.url;
 
+import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
+import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.slf4j.Logger;
+
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
@@ -25,15 +29,29 @@ import java.util.TreeMap;
 
 public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
 {
+    static final EngineUrlStreamHandlerFactory INSTANCE = new EngineUrlStreamHandlerFactory();
+
+    private enum State { UNINITIALIZED, INITIALIZED, INITIALIZATION_FAILED }
+
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final List<String> JRE_PROTOCOLS = Arrays.asList("file", "ftp", "http", "https", "jar", "mailto");
-    private static volatile boolean factoryInitialized = false;
+    private static volatile State factoryInitialized = State.UNINITIALIZED;
 
     public static synchronized void initialize()
     {
-        if (!EngineUrlStreamHandlerFactory.factoryInitialized)
+        if (EngineUrlStreamHandlerFactory.factoryInitialized == State.UNINITIALIZED)
         {
-            URL.setURLStreamHandlerFactory(new EngineUrlStreamHandlerFactory());
-            factoryInitialized = true;
+            try
+            {
+                URL.setURLStreamHandlerFactory(INSTANCE);
+                factoryInitialized = State.INITIALIZED;
+                LOGGER.info(new LogInfo(null, LoggingEventType.URL_FACTORY_REGISTERED, "Registered Alloy URL Factory").toString());
+            }
+            catch (Error e)
+            {
+                factoryInitialized = State.INITIALIZATION_FAILED;
+                LOGGER.info(new LogInfo(null, LoggingEventType.URL_FACTORY_REGISTER_FAILED, "Unable to register Alloy URL Factory.  URL creation via direct constructors will fail for Alloy protocols").toString());
+            }
         }
     }
 

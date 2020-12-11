@@ -17,8 +17,12 @@ package org.finos.legend.engine.plan.dependencies.store.inMemory;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public interface IGraphFetchM2MExecutionNodeContext extends IExecutionNodeContext
 {
     IStoreStreamReader createReader(String url) throws IOException;
+
+    URL createUrl(String url) throws MalformedURLException;
 }
