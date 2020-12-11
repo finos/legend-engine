@@ -454,7 +454,7 @@ public class GeneratePureConfig
         out.lineOut(" */");
         out.lineOut("");
         out.lineOut("import " + PURE_PACKAGE + "*;");
-        out.lineOut("import meta::java::codeGeneration::convention::*;");
+        out.lineOut("import meta::java::generation::convention::*;");
         out.lineOut("import meta::java::metamodel::factory::*;");
         out.lineOut("");
         classes.forEach(c -> c.accept(out));

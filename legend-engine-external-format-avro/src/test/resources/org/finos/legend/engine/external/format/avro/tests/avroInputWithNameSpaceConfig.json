@@ -1,0 +1,97 @@
+{
+  "clientVersion": "v1_0_0",
+  "config": {
+    "class": "meta::avro::service::tests::model::1_0_0::A",
+    "includeNamespace": true,
+    "namespaceOverride": {
+      "meta.avro.service.tests.model.1_0_0": "meta.avro.service.tests.model.latest"
+    }
+  },
+  "model": {
+    "origin": {
+      "sdlcInfo": {
+        "baseVersion": "59495",
+        "_type": "pure",
+        "version": "none",
+        "packageableElementPointers": [
+          {
+            "path": "meta::avro::service::tests::model::1_0_0::A",
+            "type": "CLASS"
+          }
+        ]
+      },
+      "_type": "pointer",
+      "serializer": {
+        "name": "pure",
+        "version": "vX_X_X"
+      }
+    },
+    "domain": {
+      "enums": [
+        {
+          "package": "meta::avro::service::tests::model::1_0_0",
+          "values": [
+            {
+              "value": "E1"
+            },
+            {
+              "value": "E2"
+            }
+          ],
+          "_type": "Enumeration",
+          "name": "E"
+        }
+      ],
+      "classes": [
+        {
+          "superTypes": [
+            "meta::pure::metamodel::type::Any"
+          ],
+          "package": "meta::avro::service::tests::model::1_0_0",
+          "_type": "class",
+          "name": "A",
+          "properties": [
+            {
+              "multiplicity": {
+                "upperBound": 1,
+                "lowerBound": 0
+              },
+              "name": "b",
+              "type": "meta::avro::service::tests::model::1_0_0::B"
+            },
+            {
+              "multiplicity": {
+                "lowerBound": 0
+              },
+              "name": "e",
+              "type": "meta::avro::service::tests::model::1_0_0::E"
+            }
+          ]
+        },
+        {
+          "superTypes": [
+            "meta::pure::metamodel::type::Any"
+          ],
+          "package": "meta::avro::service::tests::model::1_0_0",
+          "_type": "class",
+          "name": "B",
+          "properties": [
+            {
+              "multiplicity": {
+                "upperBound": 1,
+                "lowerBound": 1
+              },
+              "name": "i",
+              "type": "Integer"
+            }
+          ]
+        }
+      ]
+    },
+    "_type": "data",
+    "serializer": {
+      "name": "pure",
+      "version": "vX_X_X"
+    }
+  }
+}

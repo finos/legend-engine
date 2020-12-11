@@ -1,0 +1,121 @@
+{
+  "_type": "data",
+  "version": "v1_0_0",
+  "domain": {
+    "profiles": [],
+    "enums": [],
+    "measures": [],
+    "classes": [
+      {
+        "_type": "class",
+        "name": "Address",
+        "package": "_meta::pure::generation::tests::model",
+        "properties": [
+          {
+            "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+            "name": "street",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Firm",
+        "package": "_meta::pure::generation::tests::model",
+        "properties": [
+          {
+            "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+            "name": "legalName",
+            "type": "String"
+          },
+          {
+            "multiplicity": { "lowerBound": 0 },
+            "name": "employees",
+            "type": "_meta::pure::generation::tests::model::Person"
+          },
+          {
+            "multiplicity": { "lowerBound": 0 },
+            "name": "addresses",
+            "type": "_meta::pure::generation::tests::model::Address"
+          },
+          {
+            "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+            "name": "count",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Person",
+        "package": "_meta::pure::generation::tests::model",
+        "properties": [
+          {
+            "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+            "name": "lastName",
+            "type": "String"
+          },
+          {
+            "multiplicity": { "lowerBound": 0 },
+            "name": "addresses",
+            "type": "_meta::pure::generation::tests::model::Address"
+          },
+          {
+            "multiplicity": { "lowerBound": 0, "upperBound": 1 },
+            "name": "firm",
+            "type": "_meta::pure::generation::tests::model::Firm"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "OtherClass",
+        "package": "_other",
+        "properties": [
+          {
+            "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+            "name": "stuff",
+            "type": "String"
+          }
+        ]
+      }
+    ],
+    "associations": [],
+    "functions": []
+  },
+  "stores": [],
+  "mappings": [],
+  "flattenSpecifications": [],
+  "diagrams": [],
+  "texts": [],
+  "services": [],
+  "runtimes": [],
+  "connections": [],
+  "fileGenerations": [
+    {
+      "_type": "fileGeneration",
+      "configurationProperties": [],
+      "name": "myProtobuf",
+      "package": "_meta",
+      "scopeElements": ["_meta", "_other"],
+      "type": "protobuf"
+    }
+  ],
+  "generationSpecifications": [
+    {
+      "_type": "generationSpecification",
+      "fileGenerations": [
+        { "path": "_meta::myProtobuf", "type": "FILE_GENERATION" }
+      ],
+      "generationNodes": [],
+      "name": "MyGenerationSpecification",
+      "package": "_meta"
+    }
+  ],
+  "serializableModelSpecifications": []
+}
