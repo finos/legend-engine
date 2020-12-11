@@ -23,8 +23,10 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNo
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
+import org.finos.legend.engine.shared.core.url.UrlFactory;
 
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ServiceLoader;
 
 public class GraphFetchM2MExecutionNodeContext extends DefaultExecutionNodeContext implements IGraphFetchM2MExecutionNodeContext
@@ -53,5 +55,11 @@ public class GraphFetchM2MExecutionNodeContext extends DefaultExecutionNodeConte
         return builders.isEmpty()
                ? null
                : builders.getFirst().newStoreStreamReader(s, node.store);
+    }
+
+    @Override
+    public URL createUrl(String url) throws MalformedURLException
+    {
+        return UrlFactory.create(url);
     }
 }

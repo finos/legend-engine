@@ -15,8 +15,7 @@
 package org.finos.legend.engine.shared.core.url.test;
 
 import org.apache.commons.io.IOUtils;
-import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
-import org.junit.BeforeClass;
+import org.finos.legend.engine.shared.core.url.UrlFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,19 +23,11 @@ import java.net.URL;
 
 public abstract class UrlTest
 {
-    private static boolean factoryIsSet = false;
-
-    @BeforeClass
-    public static synchronized void setUpUlrFactory()
-    {
-        EngineUrlStreamHandlerFactory.initialize();
-    }
-
     public String readUrl(String urlString)
     {
         try
         {
-            URL url = new URL(urlString);
+            URL url = UrlFactory.create(urlString);
             try (InputStream stream = url.openStream())
             {
                 return IOUtils.toString(stream);
