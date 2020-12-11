@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Multimaps;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -45,7 +46,7 @@ public class MappingValidator
         // Also using V1 element is more convenient for extracting the source information purpose
         Map<String, Mapping> mappings = new LinkedHashMap<>(); // ensure we validate element in order they are inserted in the pure model context data
         Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings = new LinkedHashMap<>();
-        pureModelContextData.mappings.forEach(mapping ->
+        LazyIterate.selectInstancesOf(pureModelContextData.getElements(), Mapping.class).forEach(mapping ->
         {
             String mappingPath = pureModel.buildPackageString(mapping._package, mapping.name);
             mappings.put(mappingPath, (Mapping) mapping);

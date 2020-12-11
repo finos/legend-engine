@@ -18,7 +18,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensionLoader;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
@@ -32,6 +32,8 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -39,7 +41,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -65,7 +66,7 @@ public class Compile
         Subject subject = ProfileManagerHelper.extractSubject(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
         {
-            CompilerExtensionLoader.logExtensionList();
+            CompilerExtensions.logAvailableExtensions();
             modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, subject, null);
             // NOTE: we could change this to return 204 (No Content), but Pure client test will break
             // on the another hand, returning 200 Ok with no content is not appropriate. So we have to put this dummy message "OK"
@@ -94,7 +95,7 @@ public class Compile
             PureModelContext model = lambdaReturnTypeInput.model;
             Lambda lambda = lambdaReturnTypeInput.lambda;
             String typeName = modelManager.getLambdaReturnType(lambda, model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, subject);
-            HashMap<String, String> result = new HashMap<>();
+            Map<String, String> result = new HashMap<>();
             // This is an object in case we want to add more information on the lambda.
             result.put("returnType", typeName);
             return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();

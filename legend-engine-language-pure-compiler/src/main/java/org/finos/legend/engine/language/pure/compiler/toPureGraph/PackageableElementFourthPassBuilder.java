@@ -54,7 +54,7 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
     @Override
     public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        ListIterate.forEach(this.context.extraPackageableElementFourthPassProcessors, processor -> processor.value(element, this.context));
+        this.context.getExtraProcessorOrThrow(element).processFourthPass(element, this.context);
         return null;
     }
 
@@ -73,7 +73,7 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
     @Override
     public PackageableElement visit(Class srcClass)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> targetClass = this.context.pureModel.getClass(this.context.pureModel.buildPackageString(srcClass._package, srcClass.name), srcClass.sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass = this.context.pureModel.getClass(this.context.pureModel.buildPackageString(srcClass._package, srcClass.name), srcClass.sourceInformation);
 
         ProcessingContext ctx = new ProcessingContext("Class '" + this.context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "' Fourth Pass");
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(this.context, this.context.pureModel.buildPackageString(srcClass._package, srcClass.name));
@@ -98,7 +98,7 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
                 throw new EngineException(e.getMessage(), property.sourceInformation, EngineErrorType.COMPILATION);
             }
             ctx.flushVariable("this");
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty prop = targetClass._qualifiedProperties().select(o -> HelperModelBuilder.isCompatibleDerivedProperty(o, property)).getFirst();
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?> prop = targetClass._qualifiedProperties().select(o -> HelperModelBuilder.isCompatibleDerivedProperty(o, property)).getFirst();
             HelperModelBuilder.checkCompatibility(this.context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), prop._genericType()._rawType(), prop._multiplicity(), "Error in derived property '" + srcClass.name + "." + property.name + "'", property.body.get(property.body.size() - 1).sourceInformation);
             ctx.pop();
             return prop._expressionSequence(body);

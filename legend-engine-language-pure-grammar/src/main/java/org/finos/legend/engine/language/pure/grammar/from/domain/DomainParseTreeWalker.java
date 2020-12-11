@@ -40,7 +40,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Domain;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.EnumValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
@@ -72,6 +71,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DomainParseTreeWalker
 {
@@ -103,51 +103,37 @@ public class DomainParseTreeWalker
         this.flatDataRecordTypeSource = flatDataRecordTypeSource;
     }
 
-    public Domain VisitDefinition(DomainParserGrammar.DefinitionContext ctx)
+    public void visitDefinition(DomainParserGrammar.DefinitionContext ctx, Consumer<PackageableElement> elementConsumer)
     {
-        this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
-        Domain domain = new Domain();
-        this.section.elements = ListIterate.collect(ListIterate.collect(ctx.elementDefinition(), elementCtx -> this.visitElement(elementCtx, domain)), PackageableElement::getPath);
-        return domain;
+        ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()), this.section.imports);
+        ctx.elementDefinition().stream().map(this::visitElement).peek(e -> this.section.elements.add(e.getPath())).forEach(elementConsumer);
     }
 
-    private PackageableElement visitElement(DomainParserGrammar.ElementDefinitionContext ctx, Domain domain)
+    private PackageableElement visitElement(DomainParserGrammar.ElementDefinitionContext ctx)
     {
         if (ctx.classDefinition() != null)
         {
-            Class _class = this.visitClass(ctx.classDefinition());
-            domain.classes.add(_class);
-            return _class;
+            return visitClass(ctx.classDefinition());
         }
-        else if (ctx.association() != null)
+        if (ctx.association() != null)
         {
-            Association association = this.visitAssociation(ctx.association());
-            domain.associations.add(association);
-            return association;
+            return visitAssociation(ctx.association());
         }
-        else if (ctx.enumDefinition() != null)
+        if (ctx.enumDefinition() != null)
         {
-            Enumeration enumeration = this.visitEnumeration(ctx.enumDefinition());
-            domain.enums.add(enumeration);
-            return enumeration;
+            return visitEnumeration(ctx.enumDefinition());
         }
-        else if (ctx.profile() != null)
+        if (ctx.profile() != null)
         {
-            Profile profile = this.visitProfile(ctx.profile());
-            domain.profiles.add(profile);
-            return profile;
+            return visitProfile(ctx.profile());
         }
-        else if (ctx.functionDefinition() != null)
+        if (ctx.functionDefinition() != null)
         {
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function func = this.visitFunction(ctx.functionDefinition());
-            domain.functions.add(func);
-            return func;
+            return visitFunction(ctx.functionDefinition());
         }
-        else if (ctx.measureDefinition() != null)
+        if (ctx.measureDefinition() != null)
         {
-            Measure measure = this.visitMeasure(ctx.measureDefinition());
-            domain.measures.add(measure);
-            return measure;
+            return visitMeasure(ctx.measureDefinition());
         }
         throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }

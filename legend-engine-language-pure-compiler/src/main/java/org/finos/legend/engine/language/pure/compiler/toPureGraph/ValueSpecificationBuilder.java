@@ -120,7 +120,11 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification valueSpecification)
     {
-        return this.context.extraValueSpecificationProcessors.stream().map(processor -> processor.value(valueSpecification, this.context, this.openVariables, this.processingContext)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported value specification type '" + valueSpecification.getClass().getSimpleName() + "'"));
+        return this.context.getCompilerExtensions().getExtraValueSpecificationProcessors().stream()
+                .map(processor -> processor.value(valueSpecification, this.context, this.openVariables, this.processingContext))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported value specification type '" + valueSpecification.getClass().getSimpleName() + "'"));
     }
 
     @Override
@@ -239,10 +243,10 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(Path path)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object> cl = this.context.resolveClass(path.startType, path.sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> cl = this.context.resolveClass(path.startType, path.sourceInformation);
         TypeAndList res = ListIterate.injectInto(new TypeAndList(cl), path.path, (a, b) ->
                 {
-                    AbstractProperty property = HelperModelBuilder.getAppliedProperty(this.context, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object>) a.currentClass, Optional.empty(), ((PropertyPathElement) b).property);
+                    AbstractProperty<?> property = HelperModelBuilder.getAppliedProperty(this.context, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) a.currentClass, Optional.empty(), ((PropertyPathElement) b).property);
                     GenericType genericType = platform_pure_graph.Root_meta_pure_functions_meta_functionReturnType_Function_1__GenericType_1_(property, this.context.pureModel.getExecutionSupport());
                     MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PathElement> result = a.result;
                     org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PropertyPathElement ppe = new Root_meta_pure_metamodel_path_PropertyPathElement_Impl("", new SourceInformation("X", 0, 0, 0, 0), null);

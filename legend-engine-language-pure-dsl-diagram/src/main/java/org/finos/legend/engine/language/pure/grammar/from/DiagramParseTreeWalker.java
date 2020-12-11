@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.grammar.from;
 
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DiagramParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.ClassView;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
@@ -30,27 +29,25 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.function.Consumer;
 
 public class DiagramParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
-    private final PureModelContextData pureModelContextData;
+    private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
 
-    public DiagramParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureModelContextData pureModelContextData, ImportAwareCodeSection section)
+    public DiagramParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section)
     {
         this.walkerSourceInformation = walkerSourceInformation;
-        this.pureModelContextData = pureModelContextData;
+        this.elementConsumer = elementConsumer;
         this.section = section;
     }
 
     public void visit(DiagramParserGrammar.DefinitionContext ctx)
     {
-        this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
-        List<Diagram> elements = ListIterate.collect(ctx.diagram(), this::visitDiagram);
-        this.section.elements = ListIterate.collect(elements, PackageableElement::getPath);
-        this.pureModelContextData.diagrams.addAll(elements);
+        ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()), this.section.imports);
+        ctx.diagram().stream().map(this::visitDiagram).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
 
     private Diagram visitDiagram(DiagramParserGrammar.DiagramContext ctx)

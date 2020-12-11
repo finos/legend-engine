@@ -22,20 +22,21 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.TextLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.TextParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class TextParserExtension implements PureGrammarParserExtension
 {
     public static final String NAME = "Text";
 
     @Override
-    public List<Function3<SectionSourceCode, PureModelContextData, PureGrammarParserContext, Section>> getExtraSectionParsers()
+    public List<Function3<SectionSourceCode, Consumer<PackageableElement>, PureGrammarParserContext, Section>> getExtraSectionParsers()
     {
-        return Lists.mutable.with((sectionSourceCode, pureModelContextData, context) ->
+        return Lists.mutable.with((sectionSourceCode, elementConsumer, context) ->
         {
             if (!NAME.equals(sectionSourceCode.sectionType))
             {
@@ -45,7 +46,7 @@ public class TextParserExtension implements PureGrammarParserExtension
             DefaultCodeSection section = new DefaultCodeSection();
             section.parserName = sectionSourceCode.sectionType;
             section.sourceInformation = parserInfo.sourceInformation;
-            TextParseTreeWalker walker = new TextParseTreeWalker(parserInfo.walkerSourceInformation, pureModelContextData, section);
+            TextParseTreeWalker walker = new TextParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
             walker.visit((TextParserGrammar.DefinitionContext) parserInfo.rootContext);
             return section;
         });

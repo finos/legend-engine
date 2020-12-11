@@ -46,8 +46,8 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.opentracing.HttpRequestHeaderMap;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import java.util.function.Supplier;
+import javax.security.auth.Subject;
 
 import static io.opentracing.propagation.Format.Builtin.HTTP_HEADERS;
 import static org.finos.legend.engine.shared.core.kerberos.ExecSubject.exec;
@@ -123,7 +123,11 @@ public class SDLCLoader implements ModelLoader
                 parentSpan.setTag("sdlc", "pure");
                 try (Scope scope = GlobalTracer.get().buildSpan("Request Pure Metadata").startActive(true))
                 {
-                    return ListIterate.injectInto(new PureModelContextData(), ((PureSDLC) context.sdlcInfo).packageableElementPointers, (a, b) -> a.combine(this.pureLoader.loadPurePackageableElementPointer(callerSubject, b, clientVersion, subject == null ? "" : "?auth=kerberos")));
+                    return ListIterate.injectInto(
+                            new PureModelContextData.Builder(),
+                            ((PureSDLC) context.sdlcInfo).packageableElementPointers,
+                            (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(callerSubject, pointers, clientVersion, subject == null ? "" : "?auth=kerberos"))
+                    ).distinct().sorted().build();
                 }
             };
         }
@@ -187,7 +191,7 @@ public class SDLCLoader implements ModelLoader
             }
             HttpEntity entity1 = response.getEntity();
             PureModelContextData modelContextData = objectMapper.readValue(entity1.getContent(), PureModelContextData.class);
-            Assert.assertTrue(modelContextData.serializer != null, () -> "Engine was unable to load information from the Pure SDLC <a href='" + url + "'>link</a>");
+            Assert.assertTrue(modelContextData.getSerializer() != null, () -> "Engine was unable to load information from the Pure SDLC <a href='" + url + "'>link</a>");
             LOGGER.info(new LogInfo(subject, stopEvent, (double)System.currentTimeMillis() - start).toString());
             if (span != null)
             {

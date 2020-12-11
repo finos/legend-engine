@@ -427,8 +427,7 @@ public class TestJsonToGrammarApi
         try
         {
             Mapping map = objectMapper.readValue(getJsonString(protocolPath), Mapping.class);
-            PureModelContextData pureModelContextData = new PureModelContextData();
-            pureModelContextData.mappings = Collections.singletonList(map);
+            PureModelContextData pureModelContextData = new PureModelContextData.Builder().withElement(map).build();
             PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
             String pureCode = grammarTransformer.renderPureModelContextData(pureModelContextData);
             assertEquals(expected, pureCode);

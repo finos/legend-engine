@@ -15,8 +15,11 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.block.predicate.Predicate;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
@@ -26,18 +29,24 @@ import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PureGrammarComposer
 {
@@ -56,15 +65,15 @@ public class PureGrammarComposer
 
     public String renderPureModelContextData(PureModelContextData pureModelContextData)
     {
-        List<PackageableElement> elements = pureModelContextData.getAllElements();
+        List<PackageableElement> elements = pureModelContextData.getElements();
         Set<PackageableElement> elementsToCompose = Sets.mutable.withAll(elements);
-        FastList<String> composedSections = FastList.newList();
-        if (!pureModelContextData.sectionIndices.isEmpty())
+        MutableList<String> composedSections = Lists.mutable.empty();
+        if (ListIterate.anySatisfy(elements, e -> e instanceof SectionIndex))
         {
-            Map<String, PackageableElement> elementByPath = new HashMap<>();
+            Map<String, PackageableElement> elementByPath = Maps.mutable.empty();
             // NOTE: here we handle duplication, first element with the duplicated path wins
             elements.forEach(element -> elementByPath.putIfAbsent(element.getPath(), element));
-            ListIterate.forEach(pureModelContextData.sectionIndices, sectionIndex -> this.renderSectionIndex((SectionIndex) sectionIndex, elementByPath, elementsToCompose, composedSections));
+            LazyIterate.selectInstancesOf(elements, SectionIndex.class).forEach(sectionIndex -> this.renderSectionIndex(sectionIndex, elementByPath, elementsToCompose, composedSections));
         }
 
         for (Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult> composer : this.context.extraFreeSectionComposers)
@@ -79,20 +88,20 @@ public class PureGrammarComposer
         }
 
         // FIXME: the following logic should be removed completely when we move to use extensions
-        if (pureModelContextData.domain != null)
+        Predicate<PackageableElement> isDomainElement = e ->
+                (e instanceof Class) ||
+                (e instanceof Association) ||
+                (e instanceof Enumeration) ||
+                (e instanceof Function) ||
+                (e instanceof Profile) ||
+                (e instanceof Measure);
+        if (ListIterate.anySatisfy(elements, isDomainElement))
         {
-            this.DEPRECATED_renderSection(DomainParser.name, Stream.of(
-                    pureModelContextData.domain.classes,
-                    pureModelContextData.domain.associations,
-                    pureModelContextData.domain.enums,
-                    pureModelContextData.domain.functions,
-                    pureModelContextData.domain.profiles,
-                    pureModelContextData.domain.measures
-            ).filter(Objects::nonNull).flatMap(java.util.Collection::stream).collect(Collectors.toList()), elementsToCompose, composedSections);
+            this.DEPRECATED_renderSection(DomainParser.name, ListIterate.select(elements, isDomainElement), elementsToCompose, composedSections);
         }
-        this.DEPRECATED_renderSection(MappingParser.name, pureModelContextData.mappings, elementsToCompose, composedSections);
-        this.DEPRECATED_renderSection(ConnectionParser.name, pureModelContextData.connections, elementsToCompose, composedSections);
-        this.DEPRECATED_renderSection(RuntimeParser.name, pureModelContextData.runtimes, elementsToCompose, composedSections);
+        this.DEPRECATED_renderSection(MappingParser.name, pureModelContextData.getElementsOfType(Mapping.class), elementsToCompose, composedSections);
+        this.DEPRECATED_renderSection(ConnectionParser.name, pureModelContextData.getElementsOfType(PackageableConnection.class), elementsToCompose, composedSections);
+        this.DEPRECATED_renderSection(RuntimeParser.name, pureModelContextData.getElementsOfType(PackageableRuntime.class), elementsToCompose, composedSections);
         return composedSections.select(section -> !section.isEmpty()).makeString("\n\n");
     }
 
