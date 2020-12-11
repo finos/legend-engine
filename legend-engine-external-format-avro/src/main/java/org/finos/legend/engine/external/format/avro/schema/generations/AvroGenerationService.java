@@ -69,35 +69,34 @@ public class AvroGenerationService
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateAvro(AvroGenerationInput generateAvroInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject = ProfileManagerHelper.extractSubject(pm);
         boolean interactive = generateAvroInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Avro").startActive(true))
         {
             return exec(generateAvroInput.config != null ? generateAvroInput.config : new AvroGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateAvroInput.model, generateAvroInput.clientVersion, subject, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateAvroInput.model, generateAvroInput.clientVersion, pm, null).getTwo(),
                     interactive,
-                    subject);
+                    pm);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_ERROR, pm);
         }
     }
 
-    private Response exec(AvroGenerationConfig avroConfig, Function0<PureModel> pureModelFunc, boolean interactive, Subject subject)
+    private Response exec(AvroGenerationConfig avroConfig, Function0<PureModel> pureModelFunc, boolean interactive, ProfileManager pm)
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_avro_tramsformation_avroSchemaGenerator.Root_meta_external_format_avro_generation_generateAvroFromPureWithScope_AvroConfig_1__AvroOutput_MANY_(avroConfig.process(pureModel), pureModel.getExecutionSupport());
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP, System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(subject, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP, System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR, pm);
         }
     }
 }

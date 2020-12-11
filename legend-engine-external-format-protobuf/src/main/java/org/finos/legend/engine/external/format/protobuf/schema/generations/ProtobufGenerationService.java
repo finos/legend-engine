@@ -64,35 +64,34 @@ public class ProtobufGenerationService
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateProtobuf(ProtobufGenerationInput generateProtobufInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject = ProfileManagerHelper.extractSubject(pm);
         boolean interactive = generateProtobufInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Protobuf").startActive(true))
         {
             return exec(generateProtobufInput.config != null ? generateProtobufInput.config : new ProtobufGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateProtobufInput.model, generateProtobufInput.clientVersion, subject, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateProtobufInput.model, generateProtobufInput.clientVersion, pm, null).getTwo(),
                     interactive,
-                    subject);
+                    pm);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_ERROR, pm);
         }
     }
 
-    private Response exec(ProtobufGenerationConfig protobufConfig, Function0<PureModel> pureModelFunc, boolean interactive, Subject subject)
+    private Response exec(ProtobufGenerationConfig protobufConfig, Function0<PureModel> pureModelFunc, boolean interactive, ProfileManager pm)
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START).toString());
             PureModel pureModel = pureModelFunc.value();
             Object result = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_transform_ProtobufConfig_1__ProtobufOutput_MANY_(protobufConfig.transformToPure(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP, System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(subject, result);
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP, System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(pm, result);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR, pm);
         }
     }
 }

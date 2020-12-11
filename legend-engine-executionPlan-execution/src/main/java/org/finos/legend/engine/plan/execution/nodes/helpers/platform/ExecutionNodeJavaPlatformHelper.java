@@ -31,8 +31,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Compil
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaClass;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
@@ -48,17 +50,17 @@ public class ExecutionNodeJavaPlatformHelper
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
-    public static Result executeJavaImplementation(ExecutionNode node, ExecutionNodeContextFactory contextFactory, Subject subject, ExecutionState executionState)
+    public static Result executeJavaImplementation(ExecutionNode node, ExecutionNodeContextFactory contextFactory, ProfileManager pm, ExecutionState executionState)
     {
-        Result childResult = node.executionNodes().isEmpty() ? null : node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(subject, executionState));
+        Result childResult = node.executionNodes().isEmpty() ? null : node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(pm, executionState));
         ExecutionNodeContext context = contextFactory.create(executionState, childResult);
-
+        Subject subject = ProfileManagerHelper.extractSubject(pm);
         return subject == null
                 ? callJavaExecute(node, context, executionState, null)
-                : Subject.doAs(subject, (PrivilegedAction<Result>) () -> callJavaExecute(node, context, executionState, subject));
+                : Subject.doAs(subject, (PrivilegedAction<Result>) () -> callJavaExecute(node, context, executionState, pm));
     }
 
-    private static Result callJavaExecute(ExecutionNode node, ExecutionNodeContext context, ExecutionState executionState, Subject subject)
+    private static Result callJavaExecute(ExecutionNode node, ExecutionNodeContext context, ExecutionState executionState, ProfileManager pm)
     {
         if (!(node.implementation instanceof JavaPlatformImplementation))
         {
@@ -68,7 +70,7 @@ public class ExecutionNodeJavaPlatformHelper
         String className = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
         String methodName = JavaHelper.getExecutionMethodName(javaPlatformImpl);
 
-        Class<?> executionClass = getClassToExecute(node, className, executionState, subject);
+        Class<?> executionClass = getClassToExecute(node, className, executionState, pm);
         for (Method method : executionClass.getDeclaredMethods())
         {
             if (methodName.equals(method.getName()))
@@ -129,14 +131,14 @@ public class ExecutionNodeJavaPlatformHelper
         }
     }
 
-    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Class<?>> parameterTypes, List<?> parameters, ExecutionState executionState, Subject subject)
+    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Class<?>> parameterTypes, List<?> parameters, ExecutionState executionState, ProfileManager pm)
     {
-        return executeStaticJavaMethod(node, className, methodName, Collections.singletonList(Tuples.pair(parameterTypes, parameters)), executionState, subject);
+        return executeStaticJavaMethod(node, className, methodName, Collections.singletonList(Tuples.pair(parameterTypes, parameters)), executionState, pm);
     }
 
-    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Pair<? extends List<? extends Class<?>>, ? extends List<?>>> parameterTypesAndParametersAlternatives, ExecutionState executionState, Subject subject)
+    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Pair<? extends List<? extends Class<?>>, ? extends List<?>>> parameterTypesAndParametersAlternatives, ExecutionState executionState, ProfileManager pm)
     {
-        Class<?> toExecuteClass = getClassToExecute(node, className, executionState, subject);
+        Class<?> toExecuteClass = getClassToExecute(node, className, executionState, pm);
 
         List<NoSuchMethodException> noSuchMethodExceptions = new ArrayList<>();
         for (Pair<? extends List<? extends Class<?>>, ? extends List<?>> pair : parameterTypesAndParametersAlternatives)
@@ -183,7 +185,7 @@ public class ExecutionNodeJavaPlatformHelper
         return j.classes == null ? FastList.newList() : j.classes;
     }
 
-    public static Class<?> getClassToExecute(ExecutionNode node, String _class, ExecutionState executionState, Subject subject)
+    public static Class<?> getClassToExecute(ExecutionNode node, String _class, ExecutionState executionState, ProfileManager pm)
     {
         if (executionState.isJavaCompilationForbidden())
         {
@@ -241,14 +243,14 @@ public class ExecutionNodeJavaPlatformHelper
 
                 if (!classesToCompile.isEmpty())
                 {
-                    LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_START, "Node: " + node.getClass().getName()).toString());
+                    LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_START, "Node: " + node.getClass().getName()).toString());
                     compiler.compile(classesToCompile);
-                    LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
+                    LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
                 }
             }
             catch (Exception jce)
             {
-                LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, jce).getMessage()).toString());
+                LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, jce).getMessage()).toString());
                 throw jce;
             }
 

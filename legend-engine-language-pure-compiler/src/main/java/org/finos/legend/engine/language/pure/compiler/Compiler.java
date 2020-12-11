@@ -23,20 +23,21 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProce
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
 
 public class Compiler
 {
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Subject subject)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, ProfileManager pm)
     {
-        return compile(model, deploymentMode, subject, null);
+        return compile(model, deploymentMode, pm, null);
     }
 
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Subject subject, String packageOffset)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, ProfileManager pm, String packageOffset)
     {
         PureModelProcessParameter pureModelProcessParameter = new PureModelProcessParameter(packageOffset);
-        return new PureModel(model, subject, deploymentMode, pureModelProcessParameter);
+        return new PureModel(model, pm, deploymentMode, pureModelProcessParameter);
     }
 
     public static String getLambdaReturnType(Lambda lambda, PureModel pureModel)

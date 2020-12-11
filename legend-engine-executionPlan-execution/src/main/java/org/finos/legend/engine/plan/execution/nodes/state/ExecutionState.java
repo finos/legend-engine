@@ -29,6 +29,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
 import java.util.Collections;
@@ -55,8 +56,8 @@ public class ExecutionState
     private final boolean isJavaCompilationAllowed;
     private final Map<StoreType, StoreExecutionState> states = new EnumMap<>(StoreType.class);
 
-    public final List<Function3<ExecutionNode, Subject, ExecutionState, Result>> extraNodeExecutors;
-    public final List<Function3<ExecutionNode, Subject, ExecutionState, Result>> extraSequenceNodeExecutors;
+    public final List<Function3<ExecutionNode, ProfileManager, ExecutionState, Result>> extraNodeExecutors;
+    public final List<Function3<ExecutionNode, ProfileManager, ExecutionState, Result>> extraSequenceNodeExecutors;
 
     public ExecutionState(ExecutionState state)
     {

@@ -35,6 +35,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
@@ -67,47 +68,47 @@ public class ModelManager
     }
 
     // Remove clientVersion
-    public PureModel loadModel(PureModelContext context, String clientVersion, Subject subject, String packageOffset)
+    public PureModel loadModel(PureModelContext context, String clientVersion, ProfileManager pm, String packageOffset)
     {
         if(context instanceof PureModelContextData || context instanceof PureModelContextText)
         {
-            return Compiler.compile(this.loadData(context, clientVersion, subject), this.deploymentMode, subject, packageOffset);
+            return Compiler.compile(this.loadData(context, clientVersion, pm), this.deploymentMode, pm, packageOffset);
         }
         else
         {
             ModelLoader loader = this.modelLoaderForContext(context);
             if (loader.shouldCache(context))
             {
-                PureModelContext cacheKey = loader.cacheKey(context, subject);
+                PureModelContext cacheKey = loader.cacheKey(context, pm);
                 try
                 {
-                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, subject), this.deploymentMode, subject, packageOffset));
+                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, pm), this.deploymentMode, pm, packageOffset));
                 }
                 catch (ExecutionException e)
                 {
                     throw new EngineException("Engine was not able to cache", e);
                 }
             }
-            return Compiler.compile(this.loadData(context, clientVersion, subject), this.deploymentMode, subject, packageOffset);
+            return Compiler.compile(this.loadData(context, clientVersion, pm), this.deploymentMode, pm, packageOffset);
         }
     }
 
     // Remove clientVersion
-    public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, Subject subject, String packageOffset)
+    public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, ProfileManager pm, String packageOffset)
     {
-            PureModelContextData data = this.loadData(context, clientVersion, subject);
-            return Tuples.pair(data, loadModel(data, clientVersion, subject, packageOffset));
+            PureModelContextData data = this.loadData(context, clientVersion, pm);
+            return Tuples.pair(data, loadModel(data, clientVersion, pm, packageOffset));
     }
 
     // Remove clientVersion
-    public String getLambdaReturnType(Lambda lambda, PureModelContext context, String clientVersion, Subject subject)
+    public String getLambdaReturnType(Lambda lambda, PureModelContext context, String clientVersion, ProfileManager pm)
     {
-        PureModel result = this.loadModel(context, clientVersion, subject, null);
+        PureModel result = this.loadModel(context, clientVersion, pm, null);
         return Compiler.getLambdaReturnType(lambda, result);
     }
 
     // Remove clientVersion
-    public PureModelContextData loadData(PureModelContext context, String clientVersion, Subject subject)
+    public PureModelContextData loadData(PureModelContext context, String clientVersion, ProfileManager pm)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Load Model").startActive(true))
         {
@@ -123,7 +124,7 @@ public class ModelManager
             else
             {
                 ModelLoader loader = this.modelLoaderForContext(context);
-                return loader.load(subject, context, clientVersion, scope.span());
+                return loader.load(pm, context, clientVersion, scope.span());
             }
         }
     }

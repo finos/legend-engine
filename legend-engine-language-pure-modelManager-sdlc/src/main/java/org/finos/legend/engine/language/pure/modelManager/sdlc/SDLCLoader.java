@@ -44,6 +44,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.opentracing.HttpRequestHeaderMap;
+import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
 import java.util.function.Supplier;
@@ -93,7 +94,7 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContext cacheKey(PureModelContext context,Subject callerSubject)
+    public PureModelContext cacheKey(PureModelContext context, ProfileManager callerSubject)
     {
         final Subject executionSubject = getSubject();
         Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, callerSubject, executionSubject);
@@ -107,7 +108,7 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContextData load(Subject callerSubject, PureModelContext ctx, String clientVersion, Span parentSpan)
+    public PureModelContextData load(ProfileManager callerSubject, PureModelContext ctx, String clientVersion, Span parentSpan)
     {
         PureModelContextPointer context = (PureModelContextPointer) ctx;
         Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
@@ -160,13 +161,13 @@ public class SDLCLoader implements ModelLoader
         return metaData;
     }
 
-    public static PureModelContextData loadMetadataFromHTTPURL(Subject subject, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
+    public static PureModelContextData loadMetadataFromHTTPURL(ProfileManager pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
     {
         Scope scope = GlobalTracer.get().scopeManager().active();
         CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
         long start = System.currentTimeMillis();
 
-        LogInfo info = new LogInfo(subject, startEvent, "Requesting metadata");
+        LogInfo info = new LogInfo(pm, startEvent, "Requesting metadata");
         LOGGER.info(info.toString());
         Span span = GlobalTracer.get().activeSpan();
         if (span != null)
@@ -175,7 +176,7 @@ public class SDLCLoader implements ModelLoader
             scope.span().setOperationName(startEvent.toString());
             span.log(url);
         }
-        LOGGER.info(new LogInfo(subject, LoggingEventType.METADATA_LOAD_FROM_URL, "Loading from URL " + url).toString());
+        LOGGER.info(new LogInfo(pm, LoggingEventType.METADATA_LOAD_FROM_URL, "Loading from URL " + url).toString());
 
         HttpGet httpGet = new HttpGet(url);
         if (span != null)
@@ -192,7 +193,7 @@ public class SDLCLoader implements ModelLoader
             HttpEntity entity1 = response.getEntity();
             PureModelContextData modelContextData = objectMapper.readValue(entity1.getContent(), PureModelContextData.class);
             Assert.assertTrue(modelContextData.getSerializer() != null, () -> "Engine was unable to load information from the Pure SDLC <a href='" + url + "'>link</a>");
-            LOGGER.info(new LogInfo(subject, stopEvent, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(pm, stopEvent, (double)System.currentTimeMillis() - start).toString());
             if (span != null)
             {
                 scope.span().log(String.valueOf(stopEvent));
