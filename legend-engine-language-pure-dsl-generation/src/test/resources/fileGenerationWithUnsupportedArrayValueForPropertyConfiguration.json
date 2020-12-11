@@ -1,0 +1,136 @@
+{
+  "_type": "data",
+  "serializer": null,
+  "origin": null,
+  "domain": {
+    "classes": [],
+    "associations": [],
+    "enums": [],
+    "profiles": [],
+    "functions": [],
+    "measures": []
+  },
+  "sectionIndices": [
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "sourceInformation": null,
+      "sections": [
+        {
+          "_type": "importAware",
+          "parserName": "Pure",
+          "elements": [],
+          "sourceInformation": {
+            "sourceId": "",
+            "startLine": 1,
+            "startColumn": 1,
+            "endLine": 1,
+            "endColumn": 8
+          },
+          "imports": []
+        },
+        {
+          "_type": "importAware",
+          "parserName": "FileGeneration",
+          "elements": [
+            "model::AvroConfig"
+          ],
+          "sourceInformation": {
+            "sourceId": "",
+            "startLine": 2,
+            "startColumn": 8,
+            "endLine": 19,
+            "endColumn": 2
+          },
+          "imports": []
+        }
+      ],
+      "package": "__internal__"
+    }
+  ],
+  "stores": [],
+  "mappings": [],
+  "services": [],
+  "cacheables": [],
+  "caches": [],
+  "pipelines": [],
+  "flattenSpecifications": [],
+  "diagrams": [],
+  "dataStoreSpecifications": [],
+  "texts": [],
+  "runtimes": [],
+  "connections": [],
+  "fileGenerations": [
+    {
+      "_type": "fileGeneration",
+      "name": "AvroConfig",
+      "sourceInformation": {
+        "sourceId": "",
+        "startLine": 2,
+        "startColumn": 1,
+        "endLine": 17,
+        "endColumn": 1
+      },
+      "type": "avro",
+      "scopeElements": [
+        "model::MyClass",
+        "model"
+      ],
+      "configurationProperties": [
+        {
+          "name": "namespaceOverride",
+          "value": [
+            "val1",
+            1
+          ],
+          "sourceInformation": {
+            "sourceId": "",
+            "startLine": 5,
+            "startColumn": 3,
+            "endLine": 8,
+            "endColumn": 4
+          }
+        },
+        {
+          "name": "namespaceOverride2",
+          "value": {
+            "key1": "true",
+            "key2": "false"
+          },
+          "sourceInformation": {
+            "sourceId": "",
+            "startLine": 9,
+            "startColumn": 3,
+            "endLine": 12,
+            "endColumn": 4
+          }
+        },
+        {
+          "name": "namespaceOverride2",
+          "value": {
+            "key1": "1",
+            "key2": "2"
+          },
+          "sourceInformation": {
+            "sourceId": "",
+            "startLine": 13,
+            "startColumn": 3,
+            "endLine": 16,
+            "endColumn": 4
+          }
+        }
+      ],
+      "typeSourceInformation": {
+        "sourceId": "",
+        "startLine": 2,
+        "startColumn": 1,
+        "endLine": 2,
+        "endColumn": 4
+      },
+      "generationOutputPath": null,
+      "package": "model"
+    }
+  ],
+  "generationSpecifications": [],
+  "serializableModelSpecifications": []
+}

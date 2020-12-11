@@ -23,8 +23,16 @@ import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import io.prometheus.client.CollectorRegistry;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
+import org.finos.legend.engine.external.shared.format.extension.GenerationType;
+import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
+import org.finos.legend.engine.external.shared.format.generations.loaders.SchemaGenerators;
+import org.finos.legend.engine.external.shared.format.imports.loaders.CodeImports;
+import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImports;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.TransformGrammarToJson;
@@ -36,6 +44,7 @@ import org.finos.legend.engine.plan.execution.api.ExecutePlan;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
@@ -49,17 +58,19 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
+import org.finos.legend.pure.generated.core_pure_extensions_extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
 import org.finos.legend.server.shared.bundles.OpenTracingBundle;
-import org.finos.legend.engine.query.pure.api.Execute;
 import org.slf4j.Logger;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
 import java.util.EnumSet;
+import java.util.Objects;
+import java.util.ServiceLoader;
 
 public class Server extends Application<ServerConfiguration>
 {
@@ -132,12 +143,15 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new Compile(modelManager));
 
         // Generation and Import
-        // WIP: These APIs are placeholders until we open-source external format supports
-        environment.jersey().register(new GenerationAndImportApi());
+        MutableList<GenerationExtension> genExtensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty());
+        environment.jersey().register(new CodeGenerators(modelManager, genExtensions.select(p -> p.getType() == GenerationType.Code).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
+        environment.jersey().register(new SchemaGenerators(modelManager, genExtensions.select(p -> p.getType() == GenerationType.Schema).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
+        environment.jersey().register(new CodeImports(modelManager, genExtensions.select(p -> p.getType() == GenerationType.Code).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
+        environment.jersey().register(new SchemaImports(modelManager, genExtensions.select(p -> p.getType() == GenerationType.Schema).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
+        genExtensions.forEach(p -> environment.jersey().register(p.getService(modelManager)));
 
         // Execution
-        // Should use: core_pure_extensions_extension.Root_meta_pure_router_extension_defaultExtensions__RouterExtension_MANY_(modelManager.)
-        environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> Lists.mutable.empty(), LegendPlanTransformers.transformers));
+        environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> core_pure_extensions_extension.Root_meta_pure_router_extension_defaultExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
         environment.jersey().register(new ExecutePlan(planExecutor));
 
         // Global
