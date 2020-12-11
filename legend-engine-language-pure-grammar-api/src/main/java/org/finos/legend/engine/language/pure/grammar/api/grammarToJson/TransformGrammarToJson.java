@@ -61,7 +61,6 @@ public class TransformGrammarToJson
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response transformGrammarToJson(GrammarToJsonInput grammarInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject = ProfileManagerHelper.extractSubject(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
             PureGrammarParserExtensionLoader.logExtensionList();
@@ -87,7 +86,7 @@ public class TransformGrammarToJson
                         }
                         lambdaErrors.put(key, new ParserError(exception.getMessage(), exception.getSourceInformation()));
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, subject);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, pm);
                 }
             });
             JsonToGrammarInput symmetricResult = new JsonToGrammarInput();
@@ -112,14 +111,14 @@ public class TransformGrammarToJson
                         }
                         symmetricResult.codeError = new ParserError(exception.getMessage(), exception.getSourceInformation());
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, subject);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, pm);
                 }
             }
-            return ManageConstantResult.manageResult(subject, symmetricResult, objectMapper);
+            return ManageConstantResult.manageResult(pm, symmetricResult, objectMapper);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, pm);
         }
     }
 }

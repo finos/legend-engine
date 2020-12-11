@@ -35,4 +35,18 @@ public class ProfileManagerHelper
         }
         return null;
     }
+
+    public static KerberosProfile extractKerberosProfile(ProfileManager<CommonProfile> pm)
+    {
+        if (pm == null)
+        {
+            return null;
+        }
+        CommonProfile profile = pm.get(true).orElse(null);
+        if (profile instanceof KerberosProfile)
+        {
+            return ((KerberosProfile) profile);
+        }
+        return null;
+    }
 }

@@ -32,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaCl
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
@@ -52,12 +53,12 @@ public class JavaHelper
     {
     }
 
-    public static EngineJavaCompiler compilePlan(SingleExecutionPlan singleExecutionPlan, Subject subject) throws JavaCompileException
+    public static EngineJavaCompiler compilePlan(SingleExecutionPlan singleExecutionPlan, ProfileManager pm) throws JavaCompileException
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_START, "Compile Plan").toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_START, "Compile Plan").toString());
 
             EngineJavaCompiler compiler;
             try
@@ -70,13 +71,13 @@ public class JavaHelper
                 compiler = compilePlanSlow(singleExecutionPlan);
             }
 
-            LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
 
             return compiler;
         }
         catch (Exception e)
         {
-            LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, e).getMessage()).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, e).getMessage()).toString());
             throw e;
         }
     }

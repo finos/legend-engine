@@ -65,35 +65,34 @@ public class RosettaGenerationService
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateCdm(RosettaGenerationInput generateCdmInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject = ProfileManagerHelper.extractSubject(pm);
         boolean interactive = generateCdmInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate CDM").startActive(true))
         {
             return exec(
                     generateCdmInput.config != null ? generateCdmInput.config : new RosettaGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateCdmInput.model, generateCdmInput.clientVersion, subject, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateCdmInput.model, generateCdmInput.clientVersion, pm, null).getTwo(),
                     interactive,
-                    subject);
+                    pm);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_CDM_INTERACTIVE_ERROR : LoggingEventType.GENERATE_CDM_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_CDM_INTERACTIVE_ERROR : LoggingEventType.GENERATE_CDM_ERROR, pm);
         }
 
     }
 
-    private Response exec(RosettaGenerationConfig cdmConfig, Function0<PureModel> pureModelFunc, boolean interactive, Subject subject)
+    private Response exec(RosettaGenerationConfig cdmConfig, Function0<PureModel> pureModelFunc, boolean interactive, ProfileManager pm)
     {
         try
         {
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE_CDM_INTERACTIVE_START : LoggingEventType.GENERATE_CDM_START).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_CDM_INTERACTIVE_START : LoggingEventType.GENERATE_CDM_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(cdmConfig.process(pureModel), pureModel.getExecutionSupport());
-            return ManageConstantResult.manageResult(subject, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
+            return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_CDM_INTERACTIVE_ERROR : LoggingEventType.GENERATE_CDM_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_CDM_INTERACTIVE_ERROR : LoggingEventType.GENERATE_CDM_ERROR, pm);
         }
     }
 }

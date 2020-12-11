@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
 import javax.ws.rs.core.MediaType;
@@ -26,12 +27,12 @@ import java.io.IOException;
 
 public class ManageConstantResult
 {
-    public static Response manageResult(Subject subject, Object value)
+    public static Response manageResult(ProfileManager pm, Object value)
     {
-        return manageResult(subject, value, ObjectMapperFactory.getNewStandardObjectMapper());
+        return manageResult(pm, value, ObjectMapperFactory.getNewStandardObjectMapper());
     }
 
-    public static Response manageResult(Subject subject, Object value, ObjectMapper objectMapper)
+    public static Response manageResult(ProfileManager pm, Object value, ObjectMapper objectMapper)
     {
         try
         {
@@ -39,7 +40,7 @@ public class ManageConstantResult
         }
         catch (IOException exception)
         {
-            return ExceptionTool.exceptionManager(exception, LoggingEventType.EXECUTE_CONSTANT_RESPONSE_ERROR, subject);
+            return ExceptionTool.exceptionManager(exception, LoggingEventType.EXECUTE_CONSTANT_RESPONSE_ERROR, pm);
         }
     }
 }
