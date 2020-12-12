@@ -46,8 +46,10 @@ public class HelperGenerationSpecificationBuilder
             }
             // TODO? maybe we should think of a way to inform the users when the element is found but not supported by any of the plugins
             List<Function3<String, SourceInformation, CompileContext, PackageableElement>> extraModelGenerationSpecificationResolvers = ListIterate.flatCollect(getGenerationCompilerExtensions(context), GenerationCompilerExtension::getExtraModelGenerationSpecificationResolvers);
-            extraModelGenerationSpecificationResolvers.stream().map(resolver -> resolver.value(node.generationElement, node.sourceInformation, context)).filter(Objects::nonNull).findFirst()
-                    .orElseThrow(() -> new EngineException("Can't find generation element '" + node.generationElement + "'", node.sourceInformation, EngineErrorType.COMPILATION));
+            if (extraModelGenerationSpecificationResolvers.stream().map(resolver -> resolver.value(node.generationElement, node.sourceInformation, context)).noneMatch(Objects::nonNull))
+            {
+                throw new EngineException("Can't find generation element '" + node.generationElement + "'", node.sourceInformation, EngineErrorType.COMPILATION);
+            }
         });
         Set<String> fileGenerations = new HashSet<>();
         generationSpecification.fileGenerations.forEach(fileGeneration ->
