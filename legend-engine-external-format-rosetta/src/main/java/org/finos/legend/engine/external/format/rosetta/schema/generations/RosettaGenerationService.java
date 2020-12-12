@@ -25,7 +25,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -36,7 +35,6 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -76,7 +74,7 @@ public class RosettaGenerationService
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_CDM_INTERACTIVE_ERROR : LoggingEventType.GENERATE_CDM_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, pm);
         }
 
     }
@@ -85,14 +83,15 @@ public class RosettaGenerationService
     {
         try
         {
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_CDM_INTERACTIVE_START : LoggingEventType.GENERATE_CDM_START).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_START : LoggingEventType.GENERATE_ROSETTA_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(cdmConfig.process(pureModel), pureModel.getExecutionSupport());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_STOP : LoggingEventType.GENERATE_ROSETTA_STOP).toString());
             return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_CDM_INTERACTIVE_ERROR : LoggingEventType.GENERATE_CDM_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, pm);
         }
     }
 }

@@ -20,14 +20,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
-import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationConfig;
-import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationInput;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -38,9 +35,6 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -79,7 +73,7 @@ public class AvroGenerationService
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_AVRO_CODE_ERROR, pm);
         }
     }
 
@@ -88,15 +82,15 @@ public class AvroGenerationService
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_AVRO_CODE_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_avro_tramsformation_avroSchemaGenerator.Root_meta_external_format_avro_generation_generateAvroFromPureWithScope_AvroConfig_1__AvroOutput_MANY_(avroConfig.process(pureModel), pureModel.getExecutionSupport());
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP, System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_AVRO_CODE_STOP, System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_AVRO_CODE_ERROR, pm);
         }
     }
 }
