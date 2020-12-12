@@ -87,7 +87,6 @@ public class PureModelContextDataGenerator
             }
             catch (Exception e)
             {
-                e.printStackTrace();
             }
         });
 
