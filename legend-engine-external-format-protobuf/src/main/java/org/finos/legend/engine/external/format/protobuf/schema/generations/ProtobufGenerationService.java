@@ -24,7 +24,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -35,7 +34,6 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -74,7 +72,7 @@ public class ProtobufGenerationService
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_PROTOBUF_CODE_ERROR, pm);
         }
     }
 
@@ -83,15 +81,15 @@ public class ProtobufGenerationService
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_START).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_PROTOBUF_CODE_START).toString());
             PureModel pureModel = pureModelFunc.value();
             Object result = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_transform_ProtobufConfig_1__ProtobufOutput_MANY_(protobufConfig.transformToPure(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE__MODEL_CODE_INTERACTIVE_STOP, System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(pm, result);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MODEL_CODE_INTERACTIVE_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_PROTOBUF_CODE_ERROR, pm);
         }
     }
 }
