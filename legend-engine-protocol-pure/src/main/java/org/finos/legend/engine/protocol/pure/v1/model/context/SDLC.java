@@ -17,6 +17,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.context;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
@@ -28,6 +30,7 @@ public abstract class SDLC
 {
     public String baseVersion;
     public String version = "none";
+    public List<PackageableElementPointer> packageableElementPointers = Collections.emptyList();
 
     @Override
     public boolean equals(Object o)
@@ -41,12 +44,12 @@ public abstract class SDLC
             return false;
         }
         SDLC sdlc = (SDLC) o;
-        return Objects.equals(version, sdlc.version);
+        return Objects.equals(version, sdlc.version) && Objects.equals(packageableElementPointers, sdlc.packageableElementPointers);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(version);
+        return Objects.hash(version, packageableElementPointers);
     }
 }
