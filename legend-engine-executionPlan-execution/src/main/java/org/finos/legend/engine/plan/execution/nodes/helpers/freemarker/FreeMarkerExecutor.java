@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.nodes.helpers.freemarker;
 
 import freemarker.core.TemplateDateFormatFactory;
+import freemarker.template.Configuration;
 import freemarker.template.Template;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -75,7 +76,9 @@ public class FreeMarkerExecutor
         String result;
         try
         {
-            Template template = new Template("template", new StringReader(templateFunctions + input.replace("\\\"", "\"")));
+            Configuration cfg = new Configuration();
+            cfg.setNumberFormat("computer");
+            Template template = new Template("template", new StringReader(templateFunctions + input.replace("\\\"", "\"")), cfg);
             Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
             template.setCustomDateFormats(customDateFormats);
             template.setDateFormat("@alloyDate");
