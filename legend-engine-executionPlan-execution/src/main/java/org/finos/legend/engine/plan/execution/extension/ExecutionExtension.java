@@ -20,19 +20,18 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.pac4j.core.profile.ProfileManager;
 
-import javax.security.auth.Subject;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public interface ExecutionExtension
 {
-    default List<Function3<ExecutionNode, ProfileManager, ExecutionState, Result>> getExtraNodeExecutors()
+    default List<Function3<ExecutionNode, ProfileManager<?>, ExecutionState, Result>> getExtraNodeExecutors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
-    default List<Function3<ExecutionNode, ProfileManager, ExecutionState, Result>> getExtraSequenceNodeExecutors()
+    default List<Function3<ExecutionNode, ProfileManager<?>, ExecutionState, Result>> getExtraSequenceNodeExecutors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 }

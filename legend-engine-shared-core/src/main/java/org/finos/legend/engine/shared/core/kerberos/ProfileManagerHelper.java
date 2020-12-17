@@ -22,30 +22,28 @@ import javax.security.auth.Subject;
 
 public class ProfileManagerHelper
 {
-    public static Subject extractSubject(ProfileManager<CommonProfile> pm)
+    public static Subject extractSubject(ProfileManager<?> pm)
     {
-        if (pm == null)
+        if (pm != null)
         {
-            return null;
-        }
-        CommonProfile profile = pm.get(true).orElse(null);
-        if (profile instanceof KerberosProfile)
-        {
-            return ((KerberosProfile) profile).getSubject();
+            CommonProfile profile = pm.get(true).orElse(null);
+            if (profile instanceof KerberosProfile)
+            {
+                return ((KerberosProfile) profile).getSubject();
+            }
         }
         return null;
     }
 
-    public static KerberosProfile extractKerberosProfile(ProfileManager<CommonProfile> pm)
+    public static KerberosProfile extractKerberosProfile(ProfileManager<?> pm)
     {
-        if (pm == null)
+        if (pm != null)
         {
-            return null;
-        }
-        CommonProfile profile = pm.get(true).orElse(null);
-        if (profile instanceof KerberosProfile)
-        {
-            return ((KerberosProfile) profile);
+            CommonProfile profile = pm.get(true).orElse(null);
+            if (profile instanceof KerberosProfile)
+            {
+                return ((KerberosProfile) profile);
+            }
         }
         return null;
     }

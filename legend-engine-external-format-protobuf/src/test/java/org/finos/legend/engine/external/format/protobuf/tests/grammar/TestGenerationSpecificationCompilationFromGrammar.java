@@ -51,14 +51,14 @@ public class TestGenerationSpecificationCompilationFromGrammar extends TestCompi
                 "GenerationSpecification model::MyGenerationSpecification\n" +
                 "{\n" +
                 "  fileGenerations: [_meta::myAvro, _meta::myAvro];\n" +
-                "}\n", "COMPILATION error at [10:36-48]: Duplicate file generation'_meta::myAvro'");
+                "}\n", "COMPILATION error at [10:36-48]: Duplicate file generation '_meta::myAvro'");
         // file gen not found
         test(fileGen +
                 "###GenerationSpecification\n" +
                 "GenerationSpecification model::MyGenerationSpecification\n" +
                 "{\n" +
                 "  fileGenerations: [_meta::myAvroMisSpelled];\n" +
-                "}\n", "COMPILATION error at [10:21-43]: Can't find file generation'_meta::myAvroMisSpelled'");
+                "}\n", "COMPILATION error at [10:21-43]: Can't find file generation '_meta::myAvroMisSpelled'");
         test("###GenerationSpecification\n" +
                 "GenerationSpecification _meta::MyGenerationSpecification\n" +
                 "{\n" +

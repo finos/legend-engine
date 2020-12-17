@@ -20,13 +20,13 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public interface GenerationCompilerExtension extends CompilerExtension
 {
     default List<Function3<String, SourceInformation, CompileContext, PackageableElement>> getExtraModelGenerationSpecificationResolvers()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 }
