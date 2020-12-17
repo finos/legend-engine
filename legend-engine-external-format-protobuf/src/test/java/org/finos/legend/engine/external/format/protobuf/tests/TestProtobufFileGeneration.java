@@ -41,7 +41,7 @@ public class TestProtobufFileGeneration
         {
             PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
             PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
-            FileGenerationSpecification fileGeneration = (FileGenerationSpecification) pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
+            FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             ProtobufGenerationConfig protobufConfig = ProtobufGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
             Root_meta_external_format_protobuf_generation_ProtobufConfig metaModelConfig = protobufConfig.transformToPure(pureModel);
             List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_generateProtobufFromPureWithScope_ProtobufConfig_1__ProtobufOutput_MANY_(metaModelConfig, pureModel.getExecutionSupport()).toList();

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -23,7 +24,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generat
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -37,7 +37,7 @@ public class HelperGenerationSpecificationBuilder
 
     public static void processGenerationSpecification(GenerationSpecification generationSpecification, CompileContext context)
     {
-        Set<String> ids = new HashSet<>();
+        Set<String> ids = Sets.mutable.empty();
         generationSpecification.generationNodes.forEach(node ->
         {
             if (!ids.add(node.id))
@@ -51,12 +51,12 @@ public class HelperGenerationSpecificationBuilder
                 throw new EngineException("Can't find generation element '" + node.generationElement + "'", node.sourceInformation, EngineErrorType.COMPILATION);
             }
         });
-        Set<String> fileGenerations = new HashSet<>();
+        Set<String> fileGenerations = Sets.mutable.empty();
         generationSpecification.fileGenerations.forEach(fileGeneration ->
         {
             if (!fileGenerations.add(fileGeneration.path))
             {
-                throw new EngineException("Duplicate file generation'" + fileGeneration.path + "'", fileGeneration.sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Duplicate file generation '" + fileGeneration.path + "'", fileGeneration.sourceInformation, EngineErrorType.COMPILATION);
             }
             HelperFileGenerationBuilder.resolveFileGeneration(fileGeneration.path, fileGeneration.sourceInformation, context);
         });

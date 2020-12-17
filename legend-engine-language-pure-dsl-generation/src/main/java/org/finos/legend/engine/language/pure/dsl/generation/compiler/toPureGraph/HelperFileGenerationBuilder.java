@@ -39,20 +39,20 @@ public class HelperFileGenerationBuilder
     public static Root_meta_pure_generation_metamodel_GenerationConfiguration getFileGeneration(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
         Root_meta_pure_generation_metamodel_GenerationConfiguration fileGeneration = getGenerationCompilerExtensionInstance(context).fileConfigurationsIndex.get(fullPath);
-        Assert.assertTrue(fileGeneration != null, () -> "Can't find file generation'" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        Assert.assertTrue(fileGeneration != null, () -> "Can't find file generation '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return fileGeneration;
     }
 
     public static Root_meta_pure_generation_metamodel_GenerationConfiguration resolveFileGeneration(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
-        return context.resolve(fullPath, sourceInformation, (String path) -> getFileGeneration(path, sourceInformation, context));
+        return context.resolve(fullPath, sourceInformation, path -> getFileGeneration(path, sourceInformation, context));
     }
 
     public static Root_meta_pure_generation_metamodel_GenerationConfiguration processFileGeneration(FileGenerationSpecification fileGeneration, CompileContext context)
     {
         MutableListMultimap<String, GenerationExtension> extensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty()).groupBy(x -> x.getKey().toLowerCase());
         GenerationExtension extension = extensions.get(fileGeneration.type.toLowerCase()).getFirst();
-        Assert.assertTrue(extension != null, ()->"Can't find a handler for the file type '"+fileGeneration.type.toLowerCase()+"'");
+        Assert.assertTrue(extension != null, () -> "Can't find a handler for the file type '" + fileGeneration.type.toLowerCase() + "'");
         return extension.defaultConfig(context);
     }
 }
