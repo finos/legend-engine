@@ -28,7 +28,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
-import org.finos.legend.engine.external.shared.format.extension.GenerationType;
+import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
 import org.finos.legend.engine.external.shared.format.generations.loaders.SchemaGenerators;
 import org.finos.legend.engine.external.shared.format.imports.loaders.CodeImports;
@@ -144,10 +144,10 @@ public class Server extends Application<ServerConfiguration>
 
         // Generation and Import
         MutableList<GenerationExtension> genExtensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty());
-        environment.jersey().register(new CodeGenerators(modelManager, genExtensions.select(p -> p.getType() == GenerationType.Code).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
-        environment.jersey().register(new SchemaGenerators(modelManager, genExtensions.select(p -> p.getType() == GenerationType.Schema).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
-        environment.jersey().register(new CodeImports(modelManager, genExtensions.select(p -> p.getType() == GenerationType.Code).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
-        environment.jersey().register(new SchemaImports(modelManager, genExtensions.select(p -> p.getType() == GenerationType.Schema).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
+        environment.jersey().register(new CodeGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Code).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
+        environment.jersey().register(new SchemaGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Schema).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
+        environment.jersey().register(new CodeImports(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Code).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
+        environment.jersey().register(new SchemaImports(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Schema).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
         genExtensions.forEach(p -> environment.jersey().register(p.getService(modelManager)));
 
         // Execution

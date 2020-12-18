@@ -16,7 +16,7 @@ package org.finos.legend.engine.external.format.rosetta.extension;
 
 import org.finos.legend.engine.external.format.rosetta.schema.generations.RosettaGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
-import org.finos.legend.engine.external.shared.format.extension.GenerationType;
+import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationConfigurationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationProperty;
@@ -32,15 +32,21 @@ import java.util.List;
 public class RosettaGenerationExtension implements GenerationExtension
 {
     @Override
-    public String getKey()
+    public String getLabel()
     {
         return "Rosetta";
     }
 
     @Override
-    public GenerationType getType()
+    public String getKey()
     {
-        return GenerationType.Schema;
+        return "rosetta";
+    }
+
+    @Override
+    public GenerationMode getMode()
+    {
+        return GenerationMode.Schema;
     }
 
     @Override
@@ -49,9 +55,15 @@ public class RosettaGenerationExtension implements GenerationExtension
         return new GenerationConfigurationDescription()
         {
             @Override
-            public String getType()
+            public String getLabel()
             {
-                return getKey();
+                return RosettaGenerationExtension.this.getLabel();
+            }
+
+            @Override
+            public String getKey()
+            {
+                return RosettaGenerationExtension.this.getKey();
             }
 
             @Override
