@@ -24,22 +24,22 @@ import java.util.stream.Collectors;
 
 public class FileGenerationDescription
 {
-    public String type;
+    public String key;
 
     public String label;
 
     public List<GenerationProperty> properties;
 
-    FileGenerationDescription(String type, String label, List<GenerationProperty> properties)
+    FileGenerationDescription(String key, String label, List<GenerationProperty> properties)
     {
-        this.type = type;
+        this.key = key;
         this.label = label;
         this.properties = properties;
     }
 
     public static FileGenerationDescription newDescription(GenerationConfigurationDescription generationConfigurationDescription, PureModel pureModel)
     {
-        return new FileGenerationDescription(generationConfigurationDescription.getType(), generationConfigurationDescription.getLabel(), generationConfigurationDescription.getProperties(pureModel));
+        return new FileGenerationDescription(generationConfigurationDescription.getKey(), generationConfigurationDescription.getLabel(), generationConfigurationDescription.getProperties(pureModel));
     }
 
     public static List<GenerationProperty> extractGenerationProperties(RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> props)

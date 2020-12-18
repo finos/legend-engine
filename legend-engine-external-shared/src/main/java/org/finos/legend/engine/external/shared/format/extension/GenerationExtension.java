@@ -22,9 +22,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_Gener
 
 public interface GenerationExtension
 {
+    String getLabel();
+
     String getKey();
 
-    GenerationType getType();
+    GenerationMode getMode();
 
     GenerationConfigurationDescription getGenerationDescription();
 

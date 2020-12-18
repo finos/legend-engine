@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.external.shared.format.extension;
 
-public enum GenerationType
+public enum GenerationMode
 {
     Schema, Code
 }

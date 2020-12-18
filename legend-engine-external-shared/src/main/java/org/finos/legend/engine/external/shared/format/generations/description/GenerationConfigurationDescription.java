@@ -20,11 +20,11 @@ import java.util.List;
 
 public interface GenerationConfigurationDescription
 {
-    String getType();
+    String getKey();
 
     default String getLabel()
     {
-        return this.getType();
+        return this.getKey();
     }
 
     List<GenerationProperty> getProperties(PureModel pureModel);

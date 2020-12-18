@@ -16,7 +16,7 @@ package org.finos.legend.engine.external.format.avro.extension;
 
 import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
-import org.finos.legend.engine.external.shared.format.extension.GenerationType;
+import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationConfigurationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationProperty;
@@ -32,15 +32,21 @@ import java.util.List;
 public class AvroGenerationExtension implements GenerationExtension
 {
     @Override
-    public String getKey()
+    public String getLabel()
     {
         return "Avro";
     }
 
     @Override
-    public GenerationType getType()
+    public String getKey()
     {
-        return GenerationType.Schema;
+        return "avro";
+    }
+
+    @Override
+    public GenerationMode getMode()
+    {
+        return GenerationMode.Schema;
     }
 
     @Override
@@ -49,9 +55,15 @@ public class AvroGenerationExtension implements GenerationExtension
         return new GenerationConfigurationDescription()
         {
             @Override
-            public String getType()
+            public String getLabel()
             {
-                return getKey();
+                return AvroGenerationExtension.this.getLabel();
+            }
+
+            @Override
+            public String getKey()
+            {
+                return AvroGenerationExtension.this.getKey();
             }
 
             @Override
