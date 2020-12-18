@@ -87,6 +87,7 @@
         <junit.version>4.13.1</junit.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
         <jackson.version>2.10.5</jackson.version>
+        <jackson.databind.version>2.10.5.1</jackson.databind.version>
         <mongodb.version>3.10.2</mongodb.version>
         <hibernate-validator.version>5.4.2.Final</hibernate-validator.version>
         <log4j.version>1.2.17</log4j.version>
@@ -764,7 +765,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
+                <version>${jackson.databind.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
