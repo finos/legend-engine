@@ -20,30 +20,15 @@ import java.util.Objects;
 
 public class PureSDLC extends SDLC
 {
-    public List<PackageableElementPointer> packageableElementPointers = Collections.emptyList();
-
     @Override
     public boolean equals(Object o)
     {
-        if (this == o)
-        {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass())
-        {
-            return false;
-        }
-        if (!super.equals(o))
-        {
-            return false;
-        }
-        PureSDLC pureSDLC = (PureSDLC) o;
-        return Objects.equals(packageableElementPointers, pureSDLC.packageableElementPointers);
+        return super.equals(o);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(super.hashCode(), packageableElementPointers);
+        return Objects.hash(super.hashCode());
     }
 }
