@@ -32,18 +32,18 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Scanner;
 
-public class TestCdmFileGeneration
+public class TestRosettaFileGeneration
 {
     @Test
-    public void testSimpleCDM()
+    public void testSimpleRosetta()
     {
         try
         {
             PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
             PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
-            RosettaGenerationConfig cdmConfig = RosettaGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
-            Root_meta_external_format_rosetta_generation_RosettaConfig metaModelConfig = cdmConfig.process(pureModel);
+            RosettaGenerationConfig rosettaConfig = RosettaGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
+            Root_meta_external_format_rosetta_generation_RosettaConfig metaModelConfig = rosettaConfig.process(pureModel);
             List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(metaModelConfig, pureModel.getExecutionSupport()).toList();
             Assert.assertEquals(outputs.size(), 1);
         } catch (Exception e)
@@ -59,7 +59,7 @@ public class TestCdmFileGeneration
 
     private String getResourceAsString(String fileName)
     {
-        InputStream inputStream = TestCdmFileGeneration.class.getResourceAsStream(fileName);
+        InputStream inputStream = TestRosettaFileGeneration.class.getResourceAsStream(fileName);
         Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter("\\A");
         return scanner.hasNext() ? scanner.next() : "";
     }

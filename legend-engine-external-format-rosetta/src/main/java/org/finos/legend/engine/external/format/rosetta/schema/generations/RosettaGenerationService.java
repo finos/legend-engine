@@ -58,13 +58,13 @@ public class RosettaGenerationService
     }
 
     @POST
-    @Path("cdm")
-    @ApiOperation(value = "Generates Rosetta CDM classes from PureModel")
+    @Path("rosetta")
+    @ApiOperation(value = "Generates Rosetta classes from PureModel")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateCdm(RosettaGenerationInput generateCdmInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         boolean interactive = generateCdmInput.model instanceof PureModelContextData;
-        try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate CDM").startActive(true))
+        try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Rosetta").startActive(true))
         {
             return exec(
                     generateCdmInput.config != null ? generateCdmInput.config : new RosettaGenerationConfig(),
@@ -79,13 +79,13 @@ public class RosettaGenerationService
 
     }
 
-    private Response exec(RosettaGenerationConfig cdmConfig, Function0<PureModel> pureModelFunc, boolean interactive, ProfileManager pm)
+    private Response exec(RosettaGenerationConfig rosettaConfig, Function0<PureModel> pureModelFunc, boolean interactive, ProfileManager pm)
     {
         try
         {
             LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_START : LoggingEventType.GENERATE_ROSETTA_START).toString());
             PureModel pureModel = pureModelFunc.value();
-            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(cdmConfig.process(pureModel), pureModel.getExecutionSupport());
+            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(rosettaConfig.process(pureModel), pureModel.getExecutionSupport());
             LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_STOP : LoggingEventType.GENERATE_ROSETTA_STOP).toString());
             return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }

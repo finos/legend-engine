@@ -25,10 +25,10 @@ public class RosettaGenerationConfigFromFileGenerationSpecificationBuilder
     public static RosettaGenerationConfig build(FileGenerationSpecification fileGeneration)
     {
         Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.rosetta.name()), () -> "File generation of type of rosetta expected, got '" + fileGeneration.type + "'");
-        RosettaGenerationConfig cdmConfig = new RosettaGenerationConfig();
+        RosettaGenerationConfig rosettaConfig = new RosettaGenerationConfig();
         ConfigBuilder.noConfigurationPropertiesCheck(fileGeneration);
-        ConfigBuilder.setScopeElements(fileGeneration, cdmConfig);
-        return cdmConfig;
+        ConfigBuilder.setScopeElements(fileGeneration, rosettaConfig);
+        return rosettaConfig;
     }
 }
 
