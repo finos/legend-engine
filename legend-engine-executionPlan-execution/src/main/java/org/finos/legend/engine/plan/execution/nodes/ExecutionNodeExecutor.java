@@ -56,7 +56,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
 import org.pac4j.core.profile.ProfileManager;
 
-import javax.security.auth.Subject;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -72,10 +71,10 @@ import java.util.stream.StreamSupport;
 
 public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    private final ProfileManager pm;
+    private final ProfileManager<?> pm;
     private final ExecutionState executionState;
 
-    public ExecutionNodeExecutor(ProfileManager pm, ExecutionState executionState)
+    public ExecutionNodeExecutor(ProfileManager<?> pm, ExecutionState executionState)
     {
         this.pm = pm;
         this.executionState = executionState;

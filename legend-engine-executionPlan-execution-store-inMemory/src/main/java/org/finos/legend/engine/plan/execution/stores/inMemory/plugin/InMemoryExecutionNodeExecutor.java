@@ -34,14 +34,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
 import org.pac4j.core.profile.ProfileManager;
 
-import javax.security.auth.Subject;
-
 public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    ProfileManager pm;
+    ProfileManager<?> pm;
     ExecutionState executionState;
 
-    public InMemoryExecutionNodeExecutor(ProfileManager pm, ExecutionState executionState)
+    public InMemoryExecutionNodeExecutor(ProfileManager<?> pm, ExecutionState executionState)
     {
         this.pm = pm;
         this.executionState = executionState;
