@@ -25,7 +25,6 @@ import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.pac4j.core.profile.ProfileManager;
 
-import javax.security.auth.Subject;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -44,38 +43,38 @@ public class LogInfo
     public String trace;
     public SourceInformation sourceInformation;
 
-    public LogInfo(ProfileManager user, LoggingEventType eventType)
+    public LogInfo(ProfileManager<?> user, LoggingEventType eventType)
     {
         this.timeStamp = new Date();
         this.user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(user));
         this.eventType = eventType;
     }
 
-    public LogInfo(ProfileManager user, LoggingEventType eventType, double duration)
+    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, double duration)
     {
         this(user, eventType);
         this.duration = duration;
     }
 
-    public LogInfo(ProfileManager user, LoggingEventType eventType, String message)
+    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, String message)
     {
         this(user, eventType);
         this.message = message;
     }
 
-    public LogInfo(ProfileManager user, LoggingEventType eventType, Object info)
+    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, Object info)
     {
         this(user, eventType);
         this.info = info;
     }
 
-    public LogInfo(ProfileManager user, LoggingEventType eventType, Object info, double duration)
+    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, Object info, double duration)
     {
         this(user, eventType, info);
         this.duration = duration;
     }
 
-    public LogInfo(ProfileManager user, LoggingEventType eventType, Throwable t)
+    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, Throwable t)
     {
         this(user, eventType);
         StringWriter out = new StringWriter();

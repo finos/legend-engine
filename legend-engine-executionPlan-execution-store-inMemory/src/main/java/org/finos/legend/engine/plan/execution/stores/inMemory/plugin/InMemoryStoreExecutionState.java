@@ -21,8 +21,6 @@ import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.pac4j.core.profile.ProfileManager;
 
-import javax.security.auth.Subject;
-
 public class InMemoryStoreExecutionState implements StoreExecutionState
 {
     private final InMemoryStoreState state;
@@ -39,7 +37,7 @@ public class InMemoryStoreExecutionState implements StoreExecutionState
     }
 
     @Override
-    public ExecutionNodeVisitor<Result> getVisitor(ProfileManager pm, ExecutionState executionState)
+    public ExecutionNodeVisitor<Result> getVisitor(ProfileManager<?> pm, ExecutionState executionState)
     {
         return new InMemoryExecutionNodeExecutor(pm, executionState);
     }

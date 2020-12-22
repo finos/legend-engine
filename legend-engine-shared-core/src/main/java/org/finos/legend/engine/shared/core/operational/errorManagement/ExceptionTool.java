@@ -23,7 +23,6 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -32,20 +31,20 @@ public class ExceptionTool
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapper();
 
-    public static Response exceptionManager(Exception exception, LoggingEventType eventType, ProfileManager pm)
+    public static Response exceptionManager(Exception exception, LoggingEventType eventType, ProfileManager<?> pm)
     {
         return manage(eventType, pm, new ExceptionError(-1, exception));
     }
 
-    public static Response exceptionManager(String message, LoggingEventType eventType, ProfileManager pm)
+    public static Response exceptionManager(String message, LoggingEventType eventType, ProfileManager<?> pm)
     {
         return manage(eventType, pm, new ExceptionError(-1, message));
     }
 
-    private static Response manage(LoggingEventType eventType, ProfileManager pm, ExceptionError error)
+    private static Response manage(LoggingEventType eventType, ProfileManager<?> pm, ExceptionError error)
     {
         LOGGER.error(new LogInfo(pm, eventType, error).toString());
-        String text = null;
+        String text;
         try
         {
             text = "{\"status\":\"error\", \"message\":\"" + objectMapper.writeValueAsString(error) + "\"}";

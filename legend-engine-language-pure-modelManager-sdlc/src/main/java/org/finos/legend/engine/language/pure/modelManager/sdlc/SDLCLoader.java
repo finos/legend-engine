@@ -94,10 +94,10 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContext cacheKey(PureModelContext context, ProfileManager callerSubject)
+    public PureModelContext cacheKey(PureModelContext context, ProfileManager<?> pm)
     {
         final Subject executionSubject = getSubject();
-        Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, callerSubject, executionSubject);
+        Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, pm, executionSubject);
         return executionSubject == null ? pureModelContextFunction.value() : exec(executionSubject, pureModelContextFunction::value);
     }
 
@@ -108,7 +108,7 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContextData load(ProfileManager callerSubject, PureModelContext ctx, String clientVersion, Span parentSpan)
+    public PureModelContextData load(ProfileManager<?> pm, PureModelContext ctx, String clientVersion, Span parentSpan)
     {
         PureModelContextPointer context = (PureModelContextPointer) ctx;
         Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
@@ -126,8 +126,8 @@ public class SDLCLoader implements ModelLoader
                 {
                     return ListIterate.injectInto(
                             new PureModelContextData.Builder(),
-                            ((PureSDLC) context.sdlcInfo).packageableElementPointers,
-                            (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(callerSubject, pointers, clientVersion, subject == null ? "" : "?auth=kerberos"))
+                            context.sdlcInfo.packageableElementPointers,
+                            (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(pm, pointers, clientVersion, subject == null ? "" : "?auth=kerberos"))
                     ).distinct().sorted().build();
                 }
             };
@@ -140,7 +140,7 @@ public class SDLCLoader implements ModelLoader
                 try (Scope scope = GlobalTracer.get().buildSpan("Request Alloy Metadata").startActive(true))
                 {
                     AlloySDLC sdlc = (AlloySDLC) context.sdlcInfo;
-                    return this.alloyLoader.loadAlloyProject(callerSubject, sdlc, clientVersion);
+                    return this.alloyLoader.loadAlloyProject(pm, sdlc, clientVersion);
                 }
             };
         }
