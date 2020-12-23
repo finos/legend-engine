@@ -783,6 +783,12 @@
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
+            <dependency>
+                <!-- Needed to resolve dependency divergence issue in `legend-engine-test-reports` -->
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-json-provider</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
             <!-- JACKSON -->
 
             <!-- JUNIT -->
