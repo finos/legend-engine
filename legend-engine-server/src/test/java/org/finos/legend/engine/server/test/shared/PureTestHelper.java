@@ -54,6 +54,7 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.junit.Ignore;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.Objects;
@@ -377,7 +378,14 @@ public class PureTestHelper
             // See https://github.com/opentracing/opentracing-java/issues/170
             // See https://github.com/opentracing/opentracing-java/issues/364
             GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
-            method.invoke(null, this.executionSupport);
+            try
+            {
+                method.invoke(null, this.executionSupport);
+            }
+	    catch(InvocationTargetException e)
+            {
+                throw e.getTargetException();
+            }
         }
     }
 
