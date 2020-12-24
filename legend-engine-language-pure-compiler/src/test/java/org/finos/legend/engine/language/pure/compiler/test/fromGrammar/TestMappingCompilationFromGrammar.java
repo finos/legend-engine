@@ -1337,4 +1337,47 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 ")");
     }
+
+    @Test
+    public void testModelToModelMappingWithMilestonedProperties()
+    {
+        test("Class <<meta::pure::profiles::temporal.businesstemporal>> model::person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "  employees: model::person[*];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<meta::pure::profiles::temporal.businesstemporal>> model::_person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::_firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "  employees: model::_person[*];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping model::test\n" +
+                "(\n" +
+                "  *model::firm: Pure\n" +
+                "  {\n" +
+                "    ~src model::_firm\n" +
+                "    legalName: $src.legalName,\n" +
+                "    employees[model_person]: $src.employeesAllVersions\n" +
+                "  }\n" +
+                "  *model::person: Pure\n" +
+                "  {\n" +
+                "    ~src model::_person\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                ")");
+    }
 }
