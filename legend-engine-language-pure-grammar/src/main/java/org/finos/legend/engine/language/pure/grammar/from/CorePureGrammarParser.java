@@ -40,6 +40,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.shared.core.function.Procedure3;
@@ -52,6 +53,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     public static final String NAME = "Pure";
     public static final String JSON_MODEL_CONNECTION_TYPE = "JsonModelConnection";
     public static final String XML_MODEL_CONNECTION_TYPE = "XmlModelConnection";
+    public static final String MODEL_CHAIN_CONNECTION_TYPE = "ModelChainConnection";
     public static final String ENUMERATION_MAPPING_TYPE = "EnumerationMapping";
     public static final String OPERATION_CLASS_MAPPING_TYPE = "Operation";
     public static final String PURE_INSTANCE_CLASS_MAPPING_TYPE = "Pure";
@@ -134,6 +136,13 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
                 SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
                 ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
                 walker.visitXmlModelConnectionValue((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
+                return connectionValue;
+            } else if (MODEL_CHAIN_CONNECTION_TYPE.equals(connectionValueSourceCode.connectionType)) {
+                ModelChainConnection connectionValue = new ModelChainConnection();
+                connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
+                SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
+                ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+                walker.visitModelChainConnection((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
                 return connectionValue;
             }
             return null;

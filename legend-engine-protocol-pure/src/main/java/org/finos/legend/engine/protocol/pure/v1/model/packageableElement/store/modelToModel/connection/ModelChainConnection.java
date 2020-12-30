@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection;
 
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class ModelChainConnection extends Connection
 {
     public List<String> mappings;
+    public SourceInformation mappingsSourceInformation;
 
     @Override
     public <T> T accept(ConnectionVisitor<T> connectionVisitor)

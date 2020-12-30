@@ -7,3 +7,4 @@ import CoreLexerGrammar;
 
 MODEL_CONNECTION_CLASS:                 'class';
 URL:                                    'url';
+MODEL_CHAIN_CONNECTION_MAPPINGS:        'mappings';

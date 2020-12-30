@@ -32,6 +32,13 @@ public class TestConnectionGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "{\n" +
                 "  class: model::firm::Person;\n" +
                 "  url: 'my_url';\n" +
+                "}\n\n" +
+                "ModelChainConnection meta::modelChainConnection\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    mapping::MyMapping1,\n" +
+                "    mapping::MyMapping2\n" +
+                "  ];\n" +
                 "}\n"
         );
     }
@@ -45,6 +52,10 @@ public class TestConnectionGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "}\n" +
                 "\n" +
                 "\n" +
+                "###Mapping\n" +
+                "Mapping meta::myMapping\n" +
+                "(\n" +
+                ")\n\n\n" +
                 "###Connection\n" +
                 "import meta::*;\n" +
                 "JsonModelConnection meta::mySimpleConnection\n" +
@@ -63,6 +74,12 @@ public class TestConnectionGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "{\n" +
                 "  class: myClass;\n" +
                 "  url: 'my_url';\n" +
+                "}\n\n" +
+                "ModelChainConnection meta::modelChainConnection\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    myMapping\n" +
+                "  ];\n" +
                 "}\n");
     }
 }
