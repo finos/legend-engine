@@ -64,6 +64,17 @@ public class TestConnectionCompilationFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    public void testModelChainConnection()
+    {
+        test("###Connection\n" +
+                "ModelChainConnection test::connection\n" +
+                "{\n" +
+                "  mappings: [test::someMapping];\n" +
+                "}\n", "COMPILATION error at [4:3-32]: Can't find mapping 'test::someMapping'"
+        );
+    }
+
+    @Test
     public void testConnectionWithImport()
     {
         test("Class meta::myClass\n" +
@@ -72,6 +83,10 @@ public class TestConnectionCompilationFromGrammar extends TestCompilationFromGra
                 "}\n" +
                 "\n" +
                 "\n" +
+                "###Mapping\n" +
+                "Mapping meta::myMapping\n" +
+                "(\n" +
+                ")\n\n\n" +
                 "###Connection\n" +
                 "import meta::*;\n" +
                 "JsonModelConnection meta::mySimpleConnection\n" +
@@ -92,6 +107,12 @@ public class TestConnectionCompilationFromGrammar extends TestCompilationFromGra
                 // model connection class
                 "  class: myClass;\n" +
                 "  url: 'my_url';\n" +
+                "}\n" +
+                "ModelChainConnection meta::modelChainConnection\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    myMapping\n" +
+                "  ];\n" +
                 "}\n" +
                 "\n");
     }

@@ -108,4 +108,21 @@ public class TestConnectionGrammarParser extends TestGrammarParser.TestGrammarPa
                 "  url: '';\n" +
                 "}\n\n", "PARSER error at [2:1-7:1]: Field 'url' should be specified only once");
     }
+
+    @Test
+    public void testModelChainConnection()
+    {
+        // Missing fields
+        test("###Connection\n" +
+                "ModelChainConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "}\n\n", "PARSER error at [2:1-4:1]: Field 'mappings' is required");
+        // Duplicated fields
+        test("###Connection\n" +
+                "ModelChainConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  mappings: [model::firm::Person];\n" +
+                "  mappings: [model::firm::Person];\n" +
+                "}\n\n", "PARSER error at [2:1-6:1]: Field 'mappings' should be specified only once");
+    }
 }
