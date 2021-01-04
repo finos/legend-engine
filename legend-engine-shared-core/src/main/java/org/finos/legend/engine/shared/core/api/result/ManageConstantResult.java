@@ -15,9 +15,11 @@
 package org.finos.legend.engine.shared.core.api.result;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
@@ -27,12 +29,12 @@ import java.io.IOException;
 
 public class ManageConstantResult
 {
-    public static Response manageResult(ProfileManager pm, Object value)
+    public static Response manageResult(MutableList<CommonProfile> pm, Object value)
     {
         return manageResult(pm, value, ObjectMapperFactory.getNewStandardObjectMapper());
     }
 
-    public static Response manageResult(ProfileManager pm, Object value, ObjectMapper objectMapper)
+    public static Response manageResult(MutableList<CommonProfile> pm, Object value, ObjectMapper objectMapper)
     {
         try
         {

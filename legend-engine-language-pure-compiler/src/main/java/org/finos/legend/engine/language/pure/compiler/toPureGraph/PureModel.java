@@ -90,6 +90,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
@@ -126,22 +127,22 @@ public class PureModel implements IPureModel
     final MutableMap<String, Connection> connectionsIndex = Maps.mutable.empty();
     final MutableMap<String, Runtime> runtimesIndex = Maps.mutable.empty();
 
-    public PureModel(PureModelContextData pure,ProfileManager pm, DeploymentMode deploymentMode)
+    public PureModel(PureModelContextData pure, MutableList<CommonProfile> pm, DeploymentMode deploymentMode)
     {
         this(pure, pm, null, deploymentMode, new PureModelProcessParameter());
     }
 
-    public PureModel(PureModelContextData pure, ProfileManager pm, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
+    public PureModel(PureModelContextData pure, MutableList<CommonProfile> pm, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
     {
         this(pure, pm, null, deploymentMode, pureModelProcessParameter);
     }
 
-    public PureModel(PureModelContextData pure, ProfileManager pm, ClassLoader classLoader, DeploymentMode deploymentMode)
+    public PureModel(PureModelContextData pure, MutableList<CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode)
     {
         this(pure, pm, classLoader, deploymentMode, new PureModelProcessParameter());
     }
 
-    public PureModel(PureModelContextData pureModelContextData, ProfileManager pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
+    public PureModel(PureModelContextData pureModelContextData, MutableList<CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
     {
         this.extensions = CompilerExtensions.fromAvailableExtensions();
         List<Procedure2<PureModel, PureModelContextData>> extraPostValidators = this.extensions.getExtraPostValidators();

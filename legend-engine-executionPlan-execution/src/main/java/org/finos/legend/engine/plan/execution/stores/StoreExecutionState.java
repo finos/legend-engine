@@ -14,16 +14,18 @@
 
 package org.finos.legend.engine.plan.execution.stores;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
 public interface StoreExecutionState
 {
     StoreState getStoreState();
 
-    ExecutionNodeVisitor<Result> getVisitor(ProfileManager<?> pm, ExecutionState executionState);
+    ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState);
 
     StoreExecutionState copy();
 }

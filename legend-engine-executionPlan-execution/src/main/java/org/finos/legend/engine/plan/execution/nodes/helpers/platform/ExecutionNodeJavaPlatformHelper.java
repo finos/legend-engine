@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPl
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
@@ -50,17 +52,17 @@ public class ExecutionNodeJavaPlatformHelper
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
-    public static Result executeJavaImplementation(ExecutionNode node, ExecutionNodeContextFactory contextFactory, ProfileManager pm, ExecutionState executionState)
+    public static Result executeJavaImplementation(ExecutionNode node, ExecutionNodeContextFactory contextFactory, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        Result childResult = node.executionNodes().isEmpty() ? null : node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(pm, executionState));
+        Result childResult = node.executionNodes().isEmpty() ? null : node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, executionState));
         ExecutionNodeContext context = contextFactory.create(executionState, childResult);
-        Subject subject = ProfileManagerHelper.extractSubject(pm);
+        Subject subject = ProfileManagerHelper.extractKerberosProfile(profiles).getSubject();
         return subject == null
                 ? callJavaExecute(node, context, executionState, null)
-                : Subject.doAs(subject, (PrivilegedAction<Result>) () -> callJavaExecute(node, context, executionState, pm));
+                : Subject.doAs(subject, (PrivilegedAction<Result>) () -> callJavaExecute(node, context, executionState, profiles));
     }
 
-    private static Result callJavaExecute(ExecutionNode node, ExecutionNodeContext context, ExecutionState executionState, ProfileManager pm)
+    private static Result callJavaExecute(ExecutionNode node, ExecutionNodeContext context, ExecutionState executionState, MutableList<CommonProfile> pm)
     {
         if (!(node.implementation instanceof JavaPlatformImplementation))
         {
@@ -131,12 +133,12 @@ public class ExecutionNodeJavaPlatformHelper
         }
     }
 
-    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Class<?>> parameterTypes, List<?> parameters, ExecutionState executionState, ProfileManager pm)
+    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Class<?>> parameterTypes, List<?> parameters, ExecutionState executionState, MutableList<CommonProfile> pm)
     {
         return executeStaticJavaMethod(node, className, methodName, Collections.singletonList(Tuples.pair(parameterTypes, parameters)), executionState, pm);
     }
 
-    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Pair<? extends List<? extends Class<?>>, ? extends List<?>>> parameterTypesAndParametersAlternatives, ExecutionState executionState, ProfileManager pm)
+    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Pair<? extends List<? extends Class<?>>, ? extends List<?>>> parameterTypesAndParametersAlternatives, ExecutionState executionState, MutableList<CommonProfile> pm)
     {
         Class<?> toExecuteClass = getClassToExecute(node, className, executionState, pm);
 
@@ -185,7 +187,7 @@ public class ExecutionNodeJavaPlatformHelper
         return j.classes == null ? FastList.newList() : j.classes;
     }
 
-    public static Class<?> getClassToExecute(ExecutionNode node, String _class, ExecutionState executionState, ProfileManager pm)
+    public static Class<?> getClassToExecute(ExecutionNode node, String _class, ExecutionState executionState, MutableList<CommonProfile> pm)
     {
         if (executionState.isJavaCompilationForbidden())
         {

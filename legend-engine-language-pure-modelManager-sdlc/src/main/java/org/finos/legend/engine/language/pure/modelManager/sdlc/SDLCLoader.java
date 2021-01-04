@@ -25,6 +25,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -44,6 +45,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.opentracing.HttpRequestHeaderMap;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
@@ -94,7 +96,7 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContext cacheKey(PureModelContext context, ProfileManager<?> pm)
+    public PureModelContext cacheKey(PureModelContext context, MutableList<CommonProfile> pm)
     {
         final Subject executionSubject = getSubject();
         Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, pm, executionSubject);
@@ -108,7 +110,7 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContextData load(ProfileManager<?> pm, PureModelContext ctx, String clientVersion, Span parentSpan)
+    public PureModelContextData load(MutableList<CommonProfile> pm, PureModelContext ctx, String clientVersion, Span parentSpan)
     {
         PureModelContextPointer context = (PureModelContextPointer) ctx;
         Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
@@ -161,7 +163,7 @@ public class SDLCLoader implements ModelLoader
         return metaData;
     }
 
-    public static PureModelContextData loadMetadataFromHTTPURL(ProfileManager pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
+    public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
     {
         Scope scope = GlobalTracer.get().scopeManager().active();
         CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());

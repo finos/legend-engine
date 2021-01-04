@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.compilation.ExecutionPlanDependenciesFilter;
 import org.codehaus.commons.compiler.CompileException;
 import org.eclipse.collections.api.factory.Maps;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaCl
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
@@ -53,7 +55,7 @@ public class JavaHelper
     {
     }
 
-    public static EngineJavaCompiler compilePlan(SingleExecutionPlan singleExecutionPlan, ProfileManager pm) throws JavaCompileException
+    public static EngineJavaCompiler compilePlan(SingleExecutionPlan singleExecutionPlan, MutableList<CommonProfile> pm) throws JavaCompileException
     {
         try
         {

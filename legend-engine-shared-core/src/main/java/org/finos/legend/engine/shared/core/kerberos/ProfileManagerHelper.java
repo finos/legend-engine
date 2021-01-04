@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.shared.core.kerberos;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
@@ -35,6 +37,16 @@ public class ProfileManagerHelper
         return null;
     }
 
+    public static KerberosProfile extractKerberosProfile(MutableList<CommonProfile> profiles)
+    {
+        if (profiles.size() > 0)
+        {
+            profiles.select(p-> p instanceof KerberosProfile).getFirst();
+
+        }
+        return null;
+    }
+
     public static KerberosProfile extractKerberosProfile(ProfileManager<?> pm)
     {
         if (pm != null)
@@ -46,5 +58,30 @@ public class ProfileManagerHelper
             }
         }
         return null;
+    }
+
+    public static Subject extractSubject(MutableList<CommonProfile> profiles)
+    {
+        if (profiles!=null && (profiles.size() > 0))
+        {
+           CommonProfile k =  profiles.select(p-> p instanceof KerberosProfile).getFirst();
+           if(k != null)
+           {
+               return ((KerberosProfile)k).getSubject();
+           }
+
+        }
+        return null;
+    }
+
+    public static MutableList<CommonProfile> extractProfile(ProfileManager<?> pm)
+    {
+        MutableList availableProfiles = Lists.mutable.empty();
+        if (pm != null)
+        {
+            CommonProfile profile = pm.get(true).orElse(null);
+            availableProfiles.add(profile);
+        }
+        return availableProfiles;
     }
 }

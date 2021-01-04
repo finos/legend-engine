@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.inMemory.plugin;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -32,14 +33,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Sequen
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
 public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    ProfileManager<?> pm;
+    MutableList<CommonProfile> pm;
     ExecutionState executionState;
 
-    public InMemoryExecutionNodeExecutor(ProfileManager<?> pm, ExecutionState executionState)
+    public InMemoryExecutionNodeExecutor(MutableList<CommonProfile> pm, ExecutionState executionState)
     {
         this.pm = pm;
         this.executionState = executionState;

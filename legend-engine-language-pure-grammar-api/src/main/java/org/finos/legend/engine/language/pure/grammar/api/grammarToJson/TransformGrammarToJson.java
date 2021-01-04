@@ -19,6 +19,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammarInput;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.LambdaInput;
 import org.finos.legend.engine.language.pure.grammar.from.ParserError;
@@ -61,6 +62,7 @@ public class TransformGrammarToJson
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response transformGrammarToJson(GrammarToJsonInput grammarInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfile(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
             PureGrammarParserExtensionLoader.logExtensionList();
@@ -86,7 +88,7 @@ public class TransformGrammarToJson
                         }
                         lambdaErrors.put(key, new ParserError(exception.getMessage(), exception.getSourceInformation()));
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, pm);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
                 }
             });
             JsonToGrammarInput symmetricResult = new JsonToGrammarInput();
@@ -111,14 +113,14 @@ public class TransformGrammarToJson
                         }
                         symmetricResult.codeError = new ParserError(exception.getMessage(), exception.getSourceInformation());
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, pm);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
                 }
             }
-            return ManageConstantResult.manageResult(pm, symmetricResult, objectMapper);
+            return ManageConstantResult.manageResult(profiles, symmetricResult, objectMapper);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
         }
     }
 }

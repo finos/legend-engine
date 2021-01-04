@@ -15,9 +15,11 @@
 package org.finos.legend.engine.plan.execution.extension;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
 import java.util.Collections;
@@ -25,12 +27,12 @@ import java.util.List;
 
 public interface ExecutionExtension
 {
-    default List<Function3<ExecutionNode, ProfileManager<?>, ExecutionState, Result>> getExtraNodeExecutors()
+    default List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.emptyList();
     }
 
-    default List<Function3<ExecutionNode, ProfileManager<?>, ExecutionState, Result>> getExtraSequenceNodeExecutors()
+    default List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraSequenceNodeExecutors()
     {
         return Collections.emptyList();
     }
