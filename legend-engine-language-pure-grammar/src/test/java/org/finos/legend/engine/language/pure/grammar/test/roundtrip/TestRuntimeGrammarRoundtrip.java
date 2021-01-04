@@ -131,6 +131,16 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "          class: meta::mySimpleClass;\n" +
                 "          url: 'my_url';\n" +
                 "        }\n" +
+                "      }#,\n" +
+                "      id6:\n" +
+                "      #{\n" +
+                "        ModelChainConnection\n" +
+                "        {\n" +
+                "          mappings: [\n" +
+                "            mapping::MyMapping1,\n" +
+                "            mapping::MyMapping2\n" +
+                "          ];\n" +
+                "        }\n" +
                 "      }#\n" +
                 "    ]\n" +
                 "  ];\n" +
@@ -196,6 +206,16 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "        {\n" +
                 "          class: meta::mySimpleClass;\n" +
                 "          url: 'my_url';\n" +
+                "        }\n" +
+                "      }#,\n" +
+                "      id6:\n" +
+                "      #{\n" +
+                "        ModelChainConnection\n" +
+                "        {\n" +
+                "          mappings: [\n" +
+                "            mapping::MyMapping1,\n" +
+                "            mapping::MyMapping2\n" +
+                "          ];\n" +
                 "        }\n" +
                 "      }#\n" +
                 "    ]\n" +

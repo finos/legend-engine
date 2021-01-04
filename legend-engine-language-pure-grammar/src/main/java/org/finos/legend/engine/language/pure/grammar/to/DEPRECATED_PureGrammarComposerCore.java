@@ -546,9 +546,16 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
-    public String visit(ModelChainConnection modelChainConnection)
-    {
-        return unsupported(ModelChainConnection.class);
+    public String visit(ModelChainConnection modelChainConnection) {
+        int baseIndentation = 0;
+        String mappingsValue = "";
+        if (modelChainConnection.mappings != null) {
+            mappingsValue = modelChainConnection.mappings.stream().map(m -> this.indentationString + getTabString(baseIndentation + 2) + m).collect(Collectors.joining(",\n")) + (modelChainConnection.mappings.isEmpty() ? "" : "\n");
+        }
+        String mappings = "[\n" + mappingsValue + this.indentationString + getTabString(baseIndentation + 1) + "]";
+        return this.indentationString + getTabString(baseIndentation) + "{\n" +
+                this.indentationString + getTabString(baseIndentation + 1) + "mappings: " + mappings + ";\n" +
+                this.indentationString + getTabString(baseIndentation) + "}";
     }
 
 

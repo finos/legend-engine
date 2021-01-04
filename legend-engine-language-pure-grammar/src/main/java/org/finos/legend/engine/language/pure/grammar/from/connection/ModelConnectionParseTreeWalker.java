@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.connection;
 
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 
 import java.util.Collections;
@@ -59,5 +61,17 @@ public class ModelConnectionParseTreeWalker
         // url
         ModelConnectionParserGrammar.ConnectionUrlContext urlContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.connectionUrl(), "url", connectionValue.sourceInformation);
         connectionValue.url = PureGrammarParserUtility.fromGrammarString(urlContext.STRING().getText(), true);
+    }
+
+    public void visitModelChainConnection(ModelConnectionParserGrammar.DefinitionContext ctx, ModelChainConnection connectionValue, boolean isEmbedded)
+    {
+        if (!isEmbedded)
+        {
+            connectionValue.element = "ModelStore"; // stub value since we don't use an actual store for this type of connection
+        }
+        // mappings
+        ModelConnectionParserGrammar.ModelChainMappingsContext modelChainMappingsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.modelChainMappings(), "mappings", connectionValue.sourceInformation);
+        connectionValue.mappings = ListIterate.collect(modelChainMappingsContext.mappings().qualifiedName(), t -> PureGrammarParserUtility.fromQualifiedName(t.packagePath() == null ? Collections.emptyList() : t.packagePath().identifier(), t.identifier()));
+        connectionValue.mappingsSourceInformation = this.walkerSourceInformation.getSourceInformation(modelChainMappingsContext);
     }
 }

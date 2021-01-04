@@ -98,6 +98,6 @@ public class ConnectionBuilder implements ConnectionVisitor<Connection>
         HelperConnectionBuilder.verifyModelConnectionStore(modelChainConnection.element, modelChainConnection.elementSourceInformation);
         return new Root_meta_pure_mapping_modelToModel_ModelChainConnection_Impl("")
                 ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("")))
-                ._mappings(ListIterate.collect(modelChainConnection.mappings, this.context::resolveMapping));
+                ._mappings(ListIterate.collect(modelChainConnection.mappings, m -> this.context.resolveMapping(m, modelChainConnection.mappingsSourceInformation)));
     }
 }

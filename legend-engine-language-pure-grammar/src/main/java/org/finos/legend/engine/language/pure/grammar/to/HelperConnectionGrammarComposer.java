@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.to;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 
 import java.util.Objects;
@@ -36,6 +37,10 @@ public class HelperConnectionGrammarComposer
         else if (connection instanceof XmlModelConnection)
         {
             return "XmlModelConnection";
+        }
+        else if (connection instanceof ModelChainConnection)
+        {
+            return "ModelChainConnection";
         }
         Optional<org.eclipse.collections.api.tuple.Pair<String, String>> connectionValueString = context.extraConnectionValueComposers.stream().map(composer -> composer.value(connection, context)).filter(Objects::nonNull).findFirst();
         return connectionValueString.orElseGet(() -> Tuples.pair(unsupported(connection.getClass(), "connection type"), null)).getOne();
