@@ -56,7 +56,7 @@ public class ExecutionNodeJavaPlatformHelper
     {
         Result childResult = node.executionNodes().isEmpty() ? null : node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, executionState));
         ExecutionNodeContext context = contextFactory.create(executionState, childResult);
-        Subject subject = ProfileManagerHelper.extractKerberosProfile(profiles).getSubject();
+        Subject subject = ProfileManagerHelper.extractSubject(profiles);
         return subject == null
                 ? callJavaExecute(node, context, executionState, null)
                 : Subject.doAs(subject, (PrivilegedAction<Result>) () -> callJavaExecute(node, context, executionState, profiles));
