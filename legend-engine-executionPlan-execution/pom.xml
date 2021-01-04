@@ -66,10 +66,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-dependencies</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.shared</groupId>
-            <artifactId>legend-shared-pac4j-kerberos</artifactId>
-        </dependency>
         <!-- ENGINE -->
 
         <!-- PAC4J -->

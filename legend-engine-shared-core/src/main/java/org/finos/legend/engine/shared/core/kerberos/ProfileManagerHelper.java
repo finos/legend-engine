@@ -39,7 +39,7 @@ public class ProfileManagerHelper
 
     public static KerberosProfile extractKerberosProfile(MutableList<CommonProfile> profiles)
     {
-        if (profiles.size() > 0)
+        if (profiles!=null && profiles.size() > 0)
         {
             profiles.select(p-> p instanceof KerberosProfile).getFirst();
 
