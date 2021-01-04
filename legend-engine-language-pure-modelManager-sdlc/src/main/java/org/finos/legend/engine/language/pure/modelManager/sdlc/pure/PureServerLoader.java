@@ -19,6 +19,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -29,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
@@ -52,7 +54,7 @@ public class PureServerLoader
         return metaDataServerConfiguration.getPure().getBaseUrl() + "/alloy/" + urlSegment + "/" + clientVersion + "/" + pointer.path + urlSuffix;
     }
 
-    public String getBaseServerVersion(ProfileManager callerSubject, Subject executionSubject)
+    public String getBaseServerVersion(MutableList<CommonProfile> profiles, Subject executionSubject)
     {
         CloseableHttpClient httpclient =  (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
         HttpGet httpGet = new HttpGet(buildPureMetadataVersionURL(executionSubject == null ? "" : "?auth=kerberos"));
@@ -71,18 +73,18 @@ public class PureServerLoader
         }
     }
 
-    public PureModelContext getCacheKey(PureModelContext context, ProfileManager callerSubject, Subject executionSubject)
+    public PureModelContext getCacheKey(PureModelContext context, MutableList<CommonProfile> profiles, Subject executionSubject)
     {
         PureModelContextPointer deepCopy = new PureModelContextPointer();
         PureSDLC sdlc = new PureSDLC();
         sdlc.packageableElementPointers = ((PureSDLC)((PureModelContextPointer)context).sdlcInfo).packageableElementPointers;
         deepCopy.sdlcInfo = sdlc;
         deepCopy.serializer = ((PureModelContextPointer)context).serializer;
-        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(callerSubject,executionSubject);
+        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(profiles,executionSubject);
         return deepCopy;
     }
 
-    public PureModelContextData loadPurePackageableElementPointer(ProfileManager pm, PackageableElementPointer pointer, String clientVersion, String urlSuffix)
+    public PureModelContextData loadPurePackageableElementPointer(MutableList<CommonProfile> pm, PackageableElementPointer pointer, String clientVersion, String urlSuffix)
     {
         switch (pointer.type)
         {

@@ -16,6 +16,7 @@ package org.finos.legend.engine.shared.core.operational.logs;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -23,6 +24,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
 import java.io.PrintWriter;
@@ -43,40 +45,40 @@ public class LogInfo
     public String trace;
     public SourceInformation sourceInformation;
 
-    public LogInfo(ProfileManager<?> user, LoggingEventType eventType)
+    public LogInfo(MutableList<CommonProfile> userProfiles, LoggingEventType eventType)
     {
         this.timeStamp = new Date();
-        this.user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(user));
+        this.user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(userProfiles));
         this.eventType = eventType;
     }
 
-    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, double duration)
+    public LogInfo(MutableList<CommonProfile> userProfiles, LoggingEventType eventType, double duration)
     {
-        this(user, eventType);
+        this(userProfiles, eventType);
         this.duration = duration;
     }
 
-    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, String message)
+    public LogInfo(MutableList<CommonProfile> userProfiles, LoggingEventType eventType, String message)
     {
-        this(user, eventType);
+        this(userProfiles, eventType);
         this.message = message;
     }
 
-    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, Object info)
+    public LogInfo(MutableList<CommonProfile> userProfiles, LoggingEventType eventType, Object info)
     {
-        this(user, eventType);
+        this(userProfiles, eventType);
         this.info = info;
     }
 
-    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, Object info, double duration)
+    public LogInfo(MutableList<CommonProfile> userProfiles, LoggingEventType eventType, Object info, double duration)
     {
-        this(user, eventType, info);
+        this(userProfiles, eventType, info);
         this.duration = duration;
     }
 
-    public LogInfo(ProfileManager<?> user, LoggingEventType eventType, Throwable t)
+    public LogInfo(MutableList<CommonProfile> userProfiles, LoggingEventType eventType, Throwable t)
     {
-        this(user, eventType);
+        this(userProfiles, eventType);
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
         t.printStackTrace(writer);

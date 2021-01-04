@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
@@ -36,6 +37,7 @@ import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.engine.shared.core.url.InputStreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProviderHolder;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
@@ -156,19 +158,19 @@ public class PlanExecutor
         }
     }
 
-    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, ProfileManager pm)
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles)
     {
-        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars), user, pm);
+        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars), user, profiles);
     }
 
-    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, ProfileManager pm, PlanExecutionContext planExecutionContext)
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
     {
-        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, pm);
+        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, profiles);
     }
 
-    public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, ProfileManager pm)
+    public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, MutableList<CommonProfile> profiles)
     {
-        EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, pm);
+        EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, profiles);
         try (JavaHelper.ThreadContextClassLoaderScope scope = (engineJavaCompiler == null) ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
         {
             // set up the state
@@ -179,11 +181,11 @@ public class PlanExecutor
             singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
 
             // execute
-            return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(pm, state));
+            return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(profiles, state));
         }
     }
 
-    private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, ProfileManager pm)
+    private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         if (state.isJavaCompilationForbidden())
         {
@@ -195,7 +197,7 @@ public class PlanExecutor
         }
         try
         {
-            EngineJavaCompiler engineJavaCompiler = JavaHelper.compilePlan(plan, pm);
+            EngineJavaCompiler engineJavaCompiler = JavaHelper.compilePlan(plan, profiles);
             if (engineJavaCompiler != null)
             {
                 state.setJavaCompiler(engineJavaCompiler);
