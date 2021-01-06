@@ -77,11 +77,6 @@
                         <goals>
                             <goal>analyze-only</goal>
                         </goals>
-                        <configuration>
-                            <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>org.finos.legend.shared:legend-shared-pac4j-gitlab</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -268,6 +263,7 @@
         <dependency>
             <groupId>org.finos.legend.shared</groupId>
             <artifactId>legend-shared-pac4j-gitlab</artifactId>
+            <scope>runtime</scope>
             <exclusions>
                 <exclusion>
                     <groupId>javax.activation</groupId>
