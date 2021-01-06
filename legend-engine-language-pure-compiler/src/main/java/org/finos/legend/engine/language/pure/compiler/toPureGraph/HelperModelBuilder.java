@@ -40,6 +40,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecificati
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
+import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint;
@@ -340,6 +341,19 @@ public class HelperModelBuilder
         }
         Assert.assertTrue(prop != null, () -> "Can't find property '" + name + "' in class '" + (classPath != null ? classPath : getElementFullPath(_class, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return prop;
+    }
+
+    /**
+     * Recursively go through hierarchical/generalization chain and find the property and resolve to edge point property for milestoned properties.
+    */
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    {
+        AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, sourceInformation);
+        if((abstractProperty instanceof QualifiedProperty) && !Milestoning.temporalStereotypes(abstractProperty._genericType()._rawType()._stereotypes()).isEmpty())
+        {
+            return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property) HelperModelBuilder.getAppliedProperty(context, _class, parameters, MilestoningFunctions.getEdgePointPropertyName(name), sourceInformation);
+        }
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property) abstractProperty;
     }
 
     /**
