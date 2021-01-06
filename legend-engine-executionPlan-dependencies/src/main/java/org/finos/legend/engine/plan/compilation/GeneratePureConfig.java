@@ -59,6 +59,7 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URL;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -231,6 +232,7 @@ public class GeneratePureConfig
         standardTypes.put(Method.class, new Encoded("javaReflectMethod"));
         standardTypes.put(ResultSet.class, new Encoded("javaResultSet"));
         standardTypes.put(StringBuilder.class, new Encoded("javaStringBuilder"));
+        standardTypes.put(URL.class, new Encoded("javaURL"));
     }
 
     private GeneratePureConfig addClass(String pureClassPath)
