@@ -75,6 +75,15 @@ aggregation:                                    PAREN_OPEN aggregationType PAREN
 aggregationType:                                AGGREGATION_TYPE_COMPOSITE | AGGREGATION_TYPE_SHARED | AGGREGATION_TYPE_NONE
 ;
 
+defaultValue: EQUAL defaultValueExpression
+;
+
+defaultValueExpression: (instanceReference)(propertyExpression) | expressionInstance | instanceLiteralToken | defaultValueExpressionsArray
+;
+
+defaultValueExpressionsArray: BRACKET_OPEN ( defaultValueExpression (COMMA defaultValueExpression)* )? BRACKET_CLOSE
+;
+
 
 // -------------------------------------- ASSOCIATION --------------------------------------
 

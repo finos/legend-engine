@@ -594,4 +594,55 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "   'ok'->println()\n" +
                 "}\n");
     }
+
+    @Test
+    public void testDefaultValue()
+    {
+        test("import test::*;\n" +
+                "Class my::exampleRootType\n" +
+                "{\n" +
+                "}\n\n" +
+
+                "Class my::exampleSubType extends my::exampleRootType\n" +
+                "{\n" +
+                "}\n\n" +
+
+                "Enum test::EnumWithDefault\n" +
+                "{\n" +
+                "  DefaultValue,\n" +
+                "  AnotherValue\n" +
+                "}\n\n" +
+
+                "Class test::A\n" +
+                "{\n" +
+                "  stringProperty: String[1] = 'default';\n" +
+                "  classProperty: my::exampleRootType[1] = ^my::exampleRootType();\n" +
+                "  enumProperty: test::EnumWithDefault[1] = test::EnumWithDefault.DefaultValue;\n" +
+                "  floatProperty: Float[1] = 0.12;\n" +
+                "  inheritProperty: Number[1] = 0.12;\n" +
+                "  booleanProperty: Boolean[1] = false;\n" +
+                "  integerProperty: Integer[1] = 0;\n" +
+                "  collectionProperty: String[1..*] = ['one', 'two'];\n" +
+                "  enumCollection: EnumWithDefault[1..*] = [EnumWithDefault.DefaultValue, EnumWithDefault.AnotherValue];\n" +
+                "  classCollection: my::exampleRootType[1..4] = [^my::exampleRootType(), ^my::exampleSubType()];\n" +
+                "  singleProperty: String[1] = ['one'];\n" +
+                "  anyProperty: Any[1] = 'anyString';\n" +
+                "}\n"
+        );
+    }
+
+    @Test
+    public void testInstanceWithDefaultValue()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "  stringProperty: String[1] = 'default';\n" +
+                "  booleanProperty: Boolean[1] = false;\n" +
+                "}\n\n" +
+                "function f(): Any[1]\n" +
+                "{\n" +
+                "   let x = ^test::A(booleanProperty=true)\n" +
+                "}\n"
+        );
+    }
 }
