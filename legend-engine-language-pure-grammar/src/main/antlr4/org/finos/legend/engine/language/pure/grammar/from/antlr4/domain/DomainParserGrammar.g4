@@ -63,7 +63,7 @@ classBody:                                      BRACE_OPEN
 ;
 properties:                                     (property | qualifiedProperty)*
 ;
-property:                                       stereotypes? taggedValues? aggregation? identifier COLON propertyReturnType SEMI_COLON
+property:                                       stereotypes? taggedValues? aggregation? identifier COLON propertyReturnType defaultValue? SEMI_COLON
 ;
 qualifiedProperty:                              stereotypes? taggedValues? identifier qualifiedPropertyBody COLON propertyReturnType  SEMI_COLON
 ;
