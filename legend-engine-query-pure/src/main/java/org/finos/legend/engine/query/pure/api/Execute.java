@@ -52,7 +52,6 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -92,7 +91,7 @@ public class Execute
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response execute(@Context HttpServletRequest request, ExecuteInput executeInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfile(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
         {
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.latest : executeInput.clientVersion;
@@ -116,7 +115,7 @@ public class Execute
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generatePlan(@Context HttpServletRequest request, ExecuteInput executeInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfile(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
         {
             long start = System.currentTimeMillis();
