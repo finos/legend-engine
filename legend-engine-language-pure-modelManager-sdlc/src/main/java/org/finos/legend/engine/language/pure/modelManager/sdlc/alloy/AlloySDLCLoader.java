@@ -24,6 +24,8 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AlloySDLCLoader
 {
@@ -36,9 +38,18 @@ public class AlloySDLCLoader
 
     public PureModelContextData loadAlloyProject(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion)
     {
-        String url = (alloySDLC.version == null || alloySDLC.version.equals("none")) ?
+        String url = (alloySDLC.version == null || alloySDLC.version.equals("none") || alloySDLC.version.equals("master-SNAPSHOT")) ?
                 metaDataServerConfiguration.getAlloy().getBaseUrl() + "/metadata/api/projects/" + alloySDLC.project + "/revisions/latest/pureModelContextData/" + clientVersion  :
                 metaDataServerConfiguration.getAlloy().getBaseUrl() + "/metadata/api/projects/" + alloySDLC.project + "/versions/" + alloySDLC.version + "/pureModelContextData/" + clientVersion;
         return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url);
     }
+
+    public List<String> checkAllPathsExist(PureModelContextData data, AlloySDLC alloySDLC) {
+        List<String> pathsFromPointer = alloySDLC.packageableElementPointers.stream().map(s -> s.path).collect(Collectors.toList());
+        List<String> entities = data.getElements().stream().map(s -> s.getPath()).collect(Collectors.toList());
+
+        pathsFromPointer.removeAll(entities);
+        return pathsFromPointer;
+    }
+
 }
