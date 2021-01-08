@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -64,7 +63,7 @@ public class Compile
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response compile(PureModelContext model, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfile(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
         {
             CompilerExtensions.logAvailableExtensions();
@@ -90,7 +89,7 @@ public class Compile
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfile(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
         {
             PureModelContext model = lambdaReturnTypeInput.model;

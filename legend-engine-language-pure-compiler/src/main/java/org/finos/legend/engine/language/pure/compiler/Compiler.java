@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -25,18 +24,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
-
-import javax.security.auth.Subject;
 
 public class Compiler
 {
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, MutableList<CommonProfile> pm)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Iterable<? extends CommonProfile> pm)
     {
         return compile(model, deploymentMode, pm, null);
     }
 
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, MutableList<CommonProfile> pm, String packageOffset)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Iterable<? extends CommonProfile> pm, String packageOffset)
     {
         PureModelProcessParameter pureModelProcessParameter = new PureModelProcessParameter(packageOffset);
         return new PureModel(model, pm, deploymentMode, pureModelProcessParameter);

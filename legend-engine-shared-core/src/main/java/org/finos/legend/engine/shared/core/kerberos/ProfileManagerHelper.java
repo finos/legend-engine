@@ -16,72 +16,44 @@ package org.finos.legend.engine.shared.core.kerberos;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
+import java.util.Objects;
+import java.util.Optional;
 import javax.security.auth.Subject;
 
 public class ProfileManagerHelper
 {
     public static Subject extractSubject(ProfileManager<?> pm)
     {
+        return (pm == null) ? null : extractSubject(pm.getAll(true));
+    }
+
+    public static Subject extractSubject(Iterable<? extends CommonProfile> profiles)
+    {
+        if (profiles == null)
+        {
+            return null;
+        }
+        return LazyIterate.selectInstancesOf(profiles, KerberosProfile.class)
+                .collect(KerberosProfile::getSubject)
+                .select(Objects::nonNull)
+                .getFirst();
+    }
+
+    public static <T extends CommonProfile> MutableList<T> extractProfiles(ProfileManager<T> pm)
+    {
         if (pm != null)
         {
-            CommonProfile profile = pm.get(true).orElse(null);
-            if (profile instanceof KerberosProfile)
+            Optional<T> profile = pm.get(true);
+            if (profile.isPresent())
             {
-                return ((KerberosProfile) profile).getSubject();
+                return Lists.fixedSize.with(profile.get());
             }
         }
-        return null;
-    }
-
-    public static KerberosProfile extractKerberosProfile(MutableList<CommonProfile> profiles)
-    {
-        if (profiles!=null && profiles.size() > 0)
-        {
-            profiles.select(p-> p instanceof KerberosProfile).getFirst();
-
-        }
-        return null;
-    }
-
-    public static KerberosProfile extractKerberosProfile(ProfileManager<?> pm)
-    {
-        if (pm != null)
-        {
-            CommonProfile profile = pm.get(true).orElse(null);
-            if (profile instanceof KerberosProfile)
-            {
-                return ((KerberosProfile) profile);
-            }
-        }
-        return null;
-    }
-
-    public static Subject extractSubject(MutableList<CommonProfile> profiles)
-    {
-        if (profiles!=null && (profiles.size() > 0))
-        {
-           CommonProfile k =  profiles.select(p-> p instanceof KerberosProfile).getFirst();
-           if(k != null)
-           {
-               return ((KerberosProfile)k).getSubject();
-           }
-
-        }
-        return null;
-    }
-
-    public static MutableList<CommonProfile> extractProfile(ProfileManager<?> pm)
-    {
-        MutableList availableProfiles = Lists.mutable.empty();
-        if (pm != null)
-        {
-            CommonProfile profile = pm.get(true).orElse(null);
-            availableProfiles.add(profile);
-        }
-        return availableProfiles;
+        return Lists.fixedSize.empty();
     }
 }
