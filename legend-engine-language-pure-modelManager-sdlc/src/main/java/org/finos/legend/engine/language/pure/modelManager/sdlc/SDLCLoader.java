@@ -49,6 +49,7 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.function.Supplier;
 import javax.security.auth.Subject;
 
@@ -142,7 +143,14 @@ public class SDLCLoader implements ModelLoader
                 try (Scope scope = GlobalTracer.get().buildSpan("Request Alloy Metadata").startActive(true))
                 {
                     AlloySDLC sdlc = (AlloySDLC) context.sdlcInfo;
-                    return this.alloyLoader.loadAlloyProject(pm, sdlc, clientVersion);
+                    PureModelContextData loadedProject = this.alloyLoader.loadAlloyProject(pm, sdlc, clientVersion);
+                    loadedProject.origin.sdlcInfo.packageableElementPointers = sdlc.packageableElementPointers;
+                    List<String> missingPaths = this.alloyLoader.checkAllPathsExist(loadedProject, sdlc);
+                    if (missingPaths.isEmpty()) {
+                        return loadedProject;
+                    } else {
+                        throw new RuntimeException("The following PackageableElementPointers:" + missingPaths.toString() +  " do not exist in the project data loaded from the metadata server");
+                    }
                 }
             };
         }
