@@ -349,7 +349,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         builder.append("{\n");
         if (!_class.properties.isEmpty())
         {
-            builder.append(LazyIterate.collect(_class.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n")).append("\n");
+            builder.append(LazyIterate.collect(_class.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p) + ";").makeString("\n")).append("\n");
         }
         if (!_class.qualifiedProperties.isEmpty())
         {
@@ -363,7 +363,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         return "Association " + HelperDomainGrammarComposer.renderAnnotations(association.stereotypes, association.taggedValues) + PureGrammarComposerUtility.convertPath(association.getPath()) + "\n" +
                 "{\n" +
-                LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
+                LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
                 LazyIterate.collect(association.qualifiedProperties, p -> getTabString() + HelperDomainGrammarComposer.renderDerivedProperty(p, this) + ";").makeString("\n") + (association.qualifiedProperties.isEmpty() ? "" : "\n") +
                 "}";
     }

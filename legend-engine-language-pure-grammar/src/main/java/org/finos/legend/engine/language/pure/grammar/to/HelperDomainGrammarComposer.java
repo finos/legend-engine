@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.DefaultValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
@@ -73,9 +72,9 @@ public class HelperDomainGrammarComposer
         return multiplicity.lowerBound == 0 && multiplicity.getUpperBoundInt() == Integer.MAX_VALUE ? "*" : multiplicity.lowerBound == multiplicity.getUpperBoundInt() ? String.valueOf(multiplicity.lowerBound) : multiplicity.lowerBound + ".." + (multiplicity.getUpperBoundInt() == Integer.MAX_VALUE ? "*" : multiplicity.getUpperBoundInt());
     }
 
-    public static String renderProperty(Property property, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderProperty(Property property)
     {
-        return renderAnnotations(property.stereotypes, property.taggedValues) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + property.type + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null? " = " + property.defaultValue.value.accept(transformer) : "");
+        return renderAnnotations(property.stereotypes, property.taggedValues) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + property.type + "[" + renderMultiplicity(property.multiplicity) + "]";
     }
 
     public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, DEPRECATED_PureGrammarComposerCore transformer)
