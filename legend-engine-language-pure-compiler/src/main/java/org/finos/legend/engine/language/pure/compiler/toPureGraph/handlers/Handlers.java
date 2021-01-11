@@ -1023,6 +1023,7 @@ public class Handlers
     private void registerRuntimeHelper()
     {
         register(h("meta::pure::runtime::getRuntimeWithModelConnection_Class_1__Any_MANY__Runtime_1_", false, ps -> res("meta::pure::runtime::Runtime", "one"), ps -> true));
+        register(h("meta::pure::runtime::generateGuid__String_1_", true, ps->res("String", "one"), ps ->true));
     }
 
     private void registerUnitFunctions()
