@@ -24,7 +24,6 @@ public class Property
     public String name;
     public String type;
     public Multiplicity multiplicity;
-    public DefaultValue defaultValue;
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
     public SourceInformation sourceInformation;

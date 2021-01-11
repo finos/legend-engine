@@ -63,7 +63,7 @@ classBody:                                      BRACE_OPEN
 ;
 properties:                                     (property | qualifiedProperty)*
 ;
-property:                                       stereotypes? taggedValues? aggregation? identifier COLON propertyReturnType defaultValue? SEMI_COLON
+property:                                       stereotypes? taggedValues? aggregation? identifier COLON propertyReturnType SEMI_COLON
 ;
 qualifiedProperty:                              stereotypes? taggedValues? identifier qualifiedPropertyBody COLON propertyReturnType  SEMI_COLON
 ;
@@ -73,15 +73,6 @@ qualifiedPropertyBody:                          PAREN_OPEN (functionVariableExpr
 aggregation:                                    PAREN_OPEN aggregationType PAREN_CLOSE
 ;
 aggregationType:                                AGGREGATION_TYPE_COMPOSITE | AGGREGATION_TYPE_SHARED | AGGREGATION_TYPE_NONE
-;
-
-defaultValue: EQUAL defaultValueExpression
-;
-
-defaultValueExpression: (instanceReference)(propertyExpression) | expressionInstance | instanceLiteralToken | defaultValueExpressionsArray
-;
-
-defaultValueExpressionsArray: BRACKET_OPEN ( defaultValueExpression (COMMA defaultValueExpression)* )? BRACKET_CLOSE
 ;
 
 
