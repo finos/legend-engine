@@ -36,14 +36,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
+import javax.security.auth.Subject;
+
 public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    MutableList<CommonProfile> pm;
+    Subject subject;
     ExecutionState executionState;
 
-    public InMemoryExecutionNodeExecutor(MutableList<CommonProfile> pm, ExecutionState executionState)
+    public InMemoryExecutionNodeExecutor(Subject subject, ExecutionState executionState)
     {
-        this.pm = pm;
+        this.subject = subject;
         this.executionState = executionState;
     }
 
@@ -56,7 +58,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
     @Override
     public Result visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode)
     {
-        return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(graphFetchM2MExecutionNode, GraphFetchM2MExecutionNodeContext.factory(graphFetchM2MExecutionNode), this.pm, this.executionState);
+        return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(graphFetchM2MExecutionNode, GraphFetchM2MExecutionNodeContext.factory(graphFetchM2MExecutionNode), this.subject, this.executionState);
     }
 
     @Override

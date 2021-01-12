@@ -25,6 +25,7 @@ import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.pac4j.core.profile.CommonProfile;
 
+import javax.security.auth.Subject;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -43,40 +44,40 @@ public class LogInfo
     public String trace;
     public SourceInformation sourceInformation;
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType)
+    public LogInfo(Subject subject, LoggingEventType eventType)
     {
         this.timeStamp = new Date();
-        this.user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(userProfiles));
+        this.user = SubjectTools.getPrincipal(subject);
         this.eventType = eventType;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, double duration)
+    public LogInfo(Subject subject, LoggingEventType eventType, double duration)
     {
-        this(userProfiles, eventType);
+        this(subject, eventType);
         this.duration = duration;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, String message)
+    public LogInfo(Subject subject, LoggingEventType eventType, String message)
     {
-        this(userProfiles, eventType);
+        this(subject, eventType);
         this.message = message;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, Object info)
+    public LogInfo(Subject subject, LoggingEventType eventType, Object info)
     {
-        this(userProfiles, eventType);
+        this(subject, eventType);
         this.info = info;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, Object info, double duration)
+    public LogInfo(Subject subject, LoggingEventType eventType, Object info, double duration)
     {
-        this(userProfiles, eventType, info);
+        this(subject, eventType, info);
         this.duration = duration;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, Throwable t)
+    public LogInfo(Subject subject, LoggingEventType eventType, Throwable t)
     {
-        this(userProfiles, eventType);
+        this(subject, eventType);
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
         t.printStackTrace(writer);

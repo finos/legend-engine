@@ -23,6 +23,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -31,19 +32,19 @@ public class ExceptionTool
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapper();
 
-    public static Response exceptionManager(Exception exception, LoggingEventType eventType, Iterable<? extends CommonProfile> pm)
+    public static Response exceptionManager(Exception exception, LoggingEventType eventType, Subject subject)
     {
-        return manage(eventType, pm, new ExceptionError(-1, exception));
+        return manage(eventType, subject, new ExceptionError(-1, exception));
     }
 
-    public static Response exceptionManager(String message, LoggingEventType eventType, Iterable<? extends CommonProfile> pm)
+    public static Response exceptionManager(String message, LoggingEventType eventType, Subject subject)
     {
-        return manage(eventType, pm, new ExceptionError(-1, message));
+        return manage(eventType, subject, new ExceptionError(-1, message));
     }
 
-    private static Response manage(LoggingEventType eventType, Iterable<? extends CommonProfile> pm, ExceptionError error)
+    private static Response manage(LoggingEventType eventType, Subject subject, ExceptionError error)
     {
-        LOGGER.error(new LogInfo(pm, eventType, error).toString());
+        LOGGER.error(new LogInfo(subject, eventType, error).toString());
         String text;
         try
         {

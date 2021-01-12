@@ -52,17 +52,16 @@ public class ExecutionNodeJavaPlatformHelper
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
-    public static Result executeJavaImplementation(ExecutionNode node, ExecutionNodeContextFactory contextFactory, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public static Result executeJavaImplementation(ExecutionNode node, ExecutionNodeContextFactory contextFactory, Subject subject, ExecutionState executionState)
     {
-        Result childResult = node.executionNodes().isEmpty() ? null : node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, executionState));
+        Result childResult = node.executionNodes().isEmpty() ? null : node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(subject, executionState));
         ExecutionNodeContext context = contextFactory.create(executionState, childResult);
-        Subject subject = ProfileManagerHelper.extractSubject(profiles);
         return subject == null
                 ? callJavaExecute(node, context, executionState, null)
-                : Subject.doAs(subject, (PrivilegedAction<Result>) () -> callJavaExecute(node, context, executionState, profiles));
+                : Subject.doAs(subject, (PrivilegedAction<Result>) () -> callJavaExecute(node, context, executionState, subject));
     }
 
-    private static Result callJavaExecute(ExecutionNode node, ExecutionNodeContext context, ExecutionState executionState, MutableList<CommonProfile> pm)
+    private static Result callJavaExecute(ExecutionNode node, ExecutionNodeContext context, ExecutionState executionState, Subject subject)
     {
         if (!(node.implementation instanceof JavaPlatformImplementation))
         {
@@ -72,7 +71,7 @@ public class ExecutionNodeJavaPlatformHelper
         String className = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
         String methodName = JavaHelper.getExecutionMethodName(javaPlatformImpl);
 
-        Class<?> executionClass = getClassToExecute(node, className, executionState, pm);
+        Class<?> executionClass = getClassToExecute(node, className, executionState, subject);
         for (Method method : executionClass.getDeclaredMethods())
         {
             if (methodName.equals(method.getName()))
@@ -133,14 +132,14 @@ public class ExecutionNodeJavaPlatformHelper
         }
     }
 
-    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Class<?>> parameterTypes, List<?> parameters, ExecutionState executionState, MutableList<CommonProfile> pm)
+    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Class<?>> parameterTypes, List<?> parameters, ExecutionState executionState, Subject subject)
     {
-        return executeStaticJavaMethod(node, className, methodName, Collections.singletonList(Tuples.pair(parameterTypes, parameters)), executionState, pm);
+        return executeStaticJavaMethod(node, className, methodName, Collections.singletonList(Tuples.pair(parameterTypes, parameters)), executionState, subject);
     }
 
-    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Pair<? extends List<? extends Class<?>>, ? extends List<?>>> parameterTypesAndParametersAlternatives, ExecutionState executionState, MutableList<CommonProfile> pm)
+    public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Pair<? extends List<? extends Class<?>>, ? extends List<?>>> parameterTypesAndParametersAlternatives, ExecutionState executionState, Subject subject)
     {
-        Class<?> toExecuteClass = getClassToExecute(node, className, executionState, pm);
+        Class<?> toExecuteClass = getClassToExecute(node, className, executionState, subject);
 
         List<NoSuchMethodException> noSuchMethodExceptions = new ArrayList<>();
         for (Pair<? extends List<? extends Class<?>>, ? extends List<?>> pair : parameterTypesAndParametersAlternatives)
@@ -187,7 +186,7 @@ public class ExecutionNodeJavaPlatformHelper
         return j.classes == null ? FastList.newList() : j.classes;
     }
 
-    public static Class<?> getClassToExecute(ExecutionNode node, String _class, ExecutionState executionState, MutableList<CommonProfile> pm)
+    public static Class<?> getClassToExecute(ExecutionNode node, String _class, ExecutionState executionState, Subject subject)
     {
         if (executionState.isJavaCompilationForbidden())
         {
@@ -245,14 +244,14 @@ public class ExecutionNodeJavaPlatformHelper
 
                 if (!classesToCompile.isEmpty())
                 {
-                    LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_START, "Node: " + node.getClass().getName()).toString());
+                    LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_START, "Node: " + node.getClass().getName()).toString());
                     compiler.compile(classesToCompile);
-                    LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
+                    LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
                 }
             }
             catch (Exception jce)
             {
-                LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, jce).getMessage()).toString());
+                LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, jce).getMessage()).toString());
                 throw jce;
             }
 
