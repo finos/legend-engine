@@ -98,12 +98,6 @@
             <artifactId>swagger-annotations</artifactId>
         </dependency>
         <!-- ANNOTATIONS -->
-        <!--ECLIPSE-->
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-        <!--ECLIPSE-->
 
         <!-- JACKSON -->
         <dependency>

@@ -55,12 +55,12 @@ public class JavaHelper
     {
     }
 
-    public static EngineJavaCompiler compilePlan(SingleExecutionPlan singleExecutionPlan, MutableList<CommonProfile> pm) throws JavaCompileException
+    public static EngineJavaCompiler compilePlan(SingleExecutionPlan singleExecutionPlan, Subject subject) throws JavaCompileException
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_START, "Compile Plan").toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_START, "Compile Plan").toString());
 
             EngineJavaCompiler compiler;
             try
@@ -73,13 +73,13 @@ public class JavaHelper
                 compiler = compilePlanSlow(singleExecutionPlan);
             }
 
-            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
 
             return compiler;
         }
         catch (Exception e)
         {
-            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, e).getMessage()).toString());
+            LOGGER.info(new LogInfo(subject, LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, e).getMessage()).toString());
             throw e;
         }
     }

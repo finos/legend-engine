@@ -21,17 +21,18 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.IOException;
+import javax.security.auth.Subject;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 public class ManageConstantResult
 {
-    public static Response manageResult(Iterable<? extends CommonProfile> pm, Object value)
+    public static Response manageResult(Subject subject, Object value)
     {
-        return manageResult(pm, value, ObjectMapperFactory.getNewStandardObjectMapper());
+        return manageResult(subject, value, ObjectMapperFactory.getNewStandardObjectMapper());
     }
 
-    public static Response manageResult(Iterable<? extends CommonProfile> pm, Object value, ObjectMapper objectMapper)
+    public static Response manageResult(Subject subject, Object value, ObjectMapper objectMapper)
     {
         try
         {
@@ -39,7 +40,7 @@ public class ManageConstantResult
         }
         catch (IOException exception)
         {
-            return ExceptionTool.exceptionManager(exception, LoggingEventType.EXECUTE_CONSTANT_RESPONSE_ERROR, pm);
+            return ExceptionTool.exceptionManager(exception, LoggingEventType.EXECUTE_CONSTANT_RESPONSE_ERROR, subject);
         }
     }
 }

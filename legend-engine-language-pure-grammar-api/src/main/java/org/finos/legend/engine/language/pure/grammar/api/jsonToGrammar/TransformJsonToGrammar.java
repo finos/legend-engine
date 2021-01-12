@@ -38,6 +38,7 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -58,7 +59,7 @@ public class TransformJsonToGrammar
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response transformJsonToGrammar(JsonToGrammarInput jsonInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Subject subject  = ProfileManagerHelper.extractSubject(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
             PureGrammarComposerExtensionLoader.logExtensionList();
@@ -75,11 +76,11 @@ public class TransformJsonToGrammar
             {
                 symmetricResult.code = grammarTransformer.renderPureModelContextData(jsonInput.modelDataContext);
             }
-            return ManageConstantResult.manageResult(profiles, symmetricResult);
+            return ManageConstantResult.manageResult(subject, symmetricResult);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, subject);
         }
     }
 }

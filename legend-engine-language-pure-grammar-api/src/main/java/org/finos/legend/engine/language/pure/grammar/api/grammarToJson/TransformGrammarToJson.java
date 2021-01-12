@@ -39,6 +39,7 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -61,7 +62,7 @@ public class TransformGrammarToJson
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response transformGrammarToJson(GrammarToJsonInput grammarInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Subject subject  = ProfileManagerHelper.extractSubject(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
             PureGrammarParserExtensionLoader.logExtensionList();
@@ -87,7 +88,7 @@ public class TransformGrammarToJson
                         }
                         lambdaErrors.put(key, new ParserError(exception.getMessage(), exception.getSourceInformation()));
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, subject);
                 }
             });
             JsonToGrammarInput symmetricResult = new JsonToGrammarInput();
@@ -112,14 +113,14 @@ public class TransformGrammarToJson
                         }
                         symmetricResult.codeError = new ParserError(exception.getMessage(), exception.getSourceInformation());
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, subject);
                 }
             }
-            return ManageConstantResult.manageResult(profiles, symmetricResult, objectMapper);
+            return ManageConstantResult.manageResult(subject, symmetricResult, objectMapper);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, subject);
         }
     }
 }

@@ -22,17 +22,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
+import javax.security.auth.Subject;
 import java.util.Collections;
 import java.util.List;
 
 public interface ExecutionExtension
 {
-    default List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
+    default List<Function3<ExecutionNode, Subject, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.emptyList();
     }
 
-    default List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraSequenceNodeExecutors()
+    default List<Function3<ExecutionNode, Subject, ExecutionState, Result>> getExtraSequenceNodeExecutors()
     {
         return Collections.emptyList();
     }
