@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.generation.transformers;
+package org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
 
-public class LegendPlanTransformers
+import java.util.List;
+import java.util.stream.Stream;
+
+public interface IInMemoryPropertyGraphFetchExecutionNodeSpecifics
 {
-    public static MutableList<PlanTransformer> transformers = Lists.mutable.with(new DevPlanTransformer(), new VersionPlanTransformer());
+    Stream<IGraphInstance> transformProperty(List<?> graphObjects);
 }

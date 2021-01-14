@@ -12,17 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch;
+package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory;
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 
-public class LocalGraphFetchExecutionNode extends ExecutionNode
+public class StoreStreamReadingExecutionNode extends ExecutionNode
 {
-    public int nodeIndex;
-    public Integer parentIndex;
-    public GraphFetchTree graphFetchTree;
+    public RootGraphFetchTree graphFetchTree;
+    public Store store;
+    public Connection connection;
+    public boolean enableConstraints;
+    public boolean checked;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

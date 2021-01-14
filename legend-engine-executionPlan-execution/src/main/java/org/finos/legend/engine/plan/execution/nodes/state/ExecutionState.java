@@ -26,6 +26,7 @@ import org.finos.legend.engine.plan.execution.extension.ExecutionExtensionLoader
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
@@ -47,6 +48,8 @@ public class ExecutionState
     public boolean transformAllocation;
     public Span topSpan;
     public boolean realizeAllocationResults;
+
+    public GraphObjectsBatch graphObjectsBatch;
     public List<GraphFetchCache> graphFetchCaches;
 
     private EngineJavaCompiler javaCompiler;
@@ -73,6 +76,7 @@ public class ExecutionState
         this.realizeAllocationResults = state.realizeAllocationResults;
         this.isJavaCompilationAllowed = state.isJavaCompilationAllowed;
         this.javaCompiler = state.javaCompiler;
+        this.graphObjectsBatch = state.graphObjectsBatch;
         this.graphFetchCaches = state.graphFetchCaches;
         state.states.forEach((storeType, storeExecutionState) -> this.states.put(storeType, storeExecutionState.copy()));
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
@@ -154,6 +158,12 @@ public class ExecutionState
     public boolean isJavaCompilationForbidden()
     {
         return !isJavaCompilationAllowed();
+    }
+
+    public ExecutionState setGraphObjectsBatch(GraphObjectsBatch graphObjectsBatch)
+    {
+        this.graphObjectsBatch = graphObjectsBatch;
+        return this;
     }
 
     public ExecutionState setGraphFetchCaches(List<GraphFetchCache> graphFetchCaches)

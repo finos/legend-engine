@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.generation.transformers;
+package org.finos.legend.engine.plan.dependencies.store.inMemory;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
 
-public class LegendPlanTransformers
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+public interface IStoreStreamReadingExecutionNodeContext extends IExecutionNodeContext
 {
-    public static MutableList<PlanTransformer> transformers = Lists.mutable.with(new DevPlanTransformer(), new VersionPlanTransformer());
+    IStoreStreamReader createReader(String url) throws IOException;
+
+    URL createUrl(String url) throws MalformedURLException;
 }

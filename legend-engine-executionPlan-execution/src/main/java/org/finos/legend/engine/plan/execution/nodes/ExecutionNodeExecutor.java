@@ -20,6 +20,9 @@ import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeSerializerHelper;
@@ -33,7 +36,10 @@ import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.MultiResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.result.builder._class.PartialClassBuilder;
+import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult;
+import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.validation.FunctionParametersParametersValidation;
@@ -53,6 +59,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Sequen
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
 import org.pac4j.core.profile.CommonProfile;
@@ -68,11 +77,14 @@ import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
+    public static final long MAX_MEMORY_BYTES_PER_GRAPH_BATCH = 52_428_800L; /* 50MB - 50 * 1024 * 1024 */
+
     private final MutableList<CommonProfile> profiles;
     private final ExecutionState executionState;
 
@@ -88,6 +100,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
     }
 
+    @Deprecated
     @Override
     public Result visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode)
     {
@@ -183,6 +196,29 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 throw new RuntimeException(e);
             }
         }
+        if (Arrays.asList(clazz.getInterfaces()).contains(IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics.class))
+        {
+            StreamingObjectResult<?> streamResult1 = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.subject, this.executionState));
+            StreamingObjectResult<?> streamResult2 = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(1).accept(new ExecutionNodeExecutor(this.subject, this.executionState));
+
+            Result childResult = new Result("success")
+            {
+                @Override
+                public <T> T accept(ResultVisitor<T> resultVisitor)
+                {
+                    throw new RuntimeException("Not implemented");
+                }
+
+                @Override
+                public void close()
+                {
+                    streamResult1.close();
+                    streamResult2.close();
+                }
+            };
+
+            return new StreamingObjectResult<>(Stream.concat(streamResult1.getObjectStream(), streamResult2.getObjectStream()), streamResult1.getResultBuilder(), childResult);
+        }
         else
         {
             return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(pureExpressionPlatformExecutionNode, DefaultExecutionNodeContext.factory(), this.profiles, this.executionState);
@@ -224,6 +260,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         return aggregationAwareExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.Relational).getVisitor(this.profiles, this.executionState));
     }
 
+    @Deprecated
     @Override
     public Result visit(GraphFetchExecutionNode graphFetchExecutionNode)
     {
@@ -362,7 +399,93 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(GlobalGraphFetchExecutionNode globalGraphFetchExecutionNode)
     {
-        throw new RuntimeException("Not implemented!");
+        final Span topSpan = GlobalTracer.get().activeSpan();
+        final boolean isGraphRoot = globalGraphFetchExecutionNode.parentIndex == null;
+
+        if (isGraphRoot)
+        {
+            final boolean enableConstraints = globalGraphFetchExecutionNode.enableConstraints == null ? false : globalGraphFetchExecutionNode.enableConstraints;
+            final boolean checked = globalGraphFetchExecutionNode.checked == null ? false : globalGraphFetchExecutionNode.checked;
+
+            // Handle batching at root level
+            final AtomicLong rowCount = new AtomicLong(0L);
+            GraphFetchResult graphFetchResult = (GraphFetchResult) globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.subject, this.executionState));
+
+            Stream<?> objectStream = graphFetchResult.getGraphObjectsBatchStream().map(batch ->
+            {
+                List<?> parentObjects = batch.getObjectsForNodeIndex(0);
+                boolean nonEmptyObjectList = !parentObjects.isEmpty();
+
+                ExecutionState newState = new ExecutionState(this.executionState).setGraphObjectsBatch(batch);
+                if (globalGraphFetchExecutionNode.children != null && !globalGraphFetchExecutionNode.children.isEmpty() && nonEmptyObjectList)
+                {
+                    globalGraphFetchExecutionNode.children.forEach(c -> c.accept(new ExecutionNodeExecutor(this.subject, newState)));
+                }
+
+                rowCount.addAndGet(batch.getRowCount());
+
+                if (!nonEmptyObjectList)
+                {
+                    if (topSpan != null && rowCount.get() > 0)
+                    {
+                        topSpan.setTag("lastQueryRowCount", rowCount);
+                    }
+                }
+
+                if (checked)
+                {
+                    return parentObjects.stream()
+                            .map(x -> (IChecked<?>) x)
+                            .map(x -> x.getValue() instanceof Constrained ? ((Constrained<?>) x.getValue()).toChecked(x.getSource(), enableConstraints) : x).collect(Collectors.toList());
+                }
+
+                if (enableConstraints)
+                {
+                    return parentObjects.stream()
+                            .map(x -> x instanceof Constrained ? ((Constrained<?>) x).withConstraintsApplied() : x).collect(Collectors.toList());
+                }
+
+                return parentObjects;
+
+            }).flatMap(Collection::stream);
+
+            return new StreamingObjectResult<>(objectStream, new PartialClassBuilder(globalGraphFetchExecutionNode), graphFetchResult.getRootResult());
+        }
+        else
+        {
+            GraphObjectsBatch graphObjectsBatch = this.executionState.graphObjectsBatch;
+            List<?> parentObjects = graphObjectsBatch.getObjectsForNodeIndex(globalGraphFetchExecutionNode.parentIndex);
+
+            if (!parentObjects.isEmpty())
+            {
+                globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.subject, this.executionState));
+
+                if (globalGraphFetchExecutionNode.children != null && !globalGraphFetchExecutionNode.children.isEmpty())
+                {
+                    globalGraphFetchExecutionNode.children.forEach(c -> c.accept(new ExecutionNodeExecutor(this.subject, this.executionState)));
+                }
+            }
+
+            return new ConstantResult(parentObjects);
+        }
+    }
+
+    @Override
+    public Result visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode)
+    {
+        return storeStreamReadingExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.subject, this.executionState));
+    }
+
+    @Override
+    public Result visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
+    {
+        return inMemoryRootGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.subject, this.executionState));
+    }
+
+    @Override
+    public Result visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode)
+    {
+        return inMemoryPropertyGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.subject, this.executionState));
     }
 
     @Override

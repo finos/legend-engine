@@ -12,17 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch;
+package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory;
 
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree;
 
-public class LocalGraphFetchExecutionNode extends ExecutionNode
+public class InMemoryRootGraphFetchExecutionNode extends InMemoryGraphFetchExecutionNode
 {
-    public int nodeIndex;
-    public Integer parentIndex;
-    public GraphFetchTree graphFetchTree;
+    public Integer batchSize;
+    public boolean checked;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
