@@ -52,19 +52,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- JACKSON -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- JACKSON -->
-
         <!-- COMMONS CODEC -->
         <dependency>
             <groupId>commons-codec</groupId>
@@ -72,5 +59,25 @@
             <scope>runtime</scope>
         </dependency>
         <!-- COMMONS CODEC -->
+
+        <!-- Dependencies needed to compile generaated code -->
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <!-- JACKSON -->
+
+        <!-- OPEN JDK -->
+        <dependency>
+            <groupId>org.openjdk.jol</groupId>
+            <artifactId>jol-core</artifactId>
+        </dependency>
+        <!-- OPEN JDK -->
+        <!-- Dependencies needed to compile generaated code -->
     </dependencies>
 </project>
