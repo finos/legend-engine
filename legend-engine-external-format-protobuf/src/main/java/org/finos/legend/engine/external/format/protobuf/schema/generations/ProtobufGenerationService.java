@@ -36,7 +36,6 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -65,35 +64,35 @@ public class ProtobufGenerationService
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateProtobuf(ProtobufGenerationInput generateProtobufInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject  = ProfileManagerHelper.extractSubject(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateProtobufInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Protobuf").startActive(true))
         {
             return exec(generateProtobufInput.config != null ? generateProtobufInput.config : new ProtobufGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateProtobufInput.model, generateProtobufInput.clientVersion, subject, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateProtobufInput.model, generateProtobufInput.clientVersion, profiles, null).getTwo(),
                     interactive,
-                    subject);
+                    profiles);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_PROTOBUF_CODE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_PROTOBUF_CODE_ERROR, profiles);
         }
     }
 
-    private Response exec(ProtobufGenerationConfig protobufConfig, Function0<PureModel> pureModelFunc, boolean interactive, Subject subject)
+    private Response exec(ProtobufGenerationConfig protobufConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> pm)
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_PROTOBUF_CODE_START).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_PROTOBUF_CODE_START).toString());
             PureModel pureModel = pureModelFunc.value();
             Object result = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_generateProtobufFromPureWithScope_ProtobufConfig_1__ProtobufOutput_MANY_(protobufConfig.transformToPure(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double)System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(subject, result);
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double)System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(pm, result);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_PROTOBUF_CODE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_PROTOBUF_CODE_ERROR, pm);
         }
     }
 }

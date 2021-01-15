@@ -21,13 +21,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
-import javax.security.auth.Subject;
-
 public interface StoreExecutionState
 {
     StoreState getStoreState();
 
-    ExecutionNodeVisitor<Result> getVisitor(Subject subject, ExecutionState executionState);
+    ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState);
 
     StoreExecutionState copy();
 }

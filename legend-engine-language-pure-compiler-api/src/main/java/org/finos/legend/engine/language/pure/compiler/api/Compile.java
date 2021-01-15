@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -64,18 +63,18 @@ public class Compile
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response compile(PureModelContext model, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject  = ProfileManagerHelper.extractSubject(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
         {
             CompilerExtensions.logAvailableExtensions();
-            modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, subject, null);
+            modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles, null);
             // NOTE: we could change this to return 204 (No Content), but Pure client test will break
             // on the another hand, returning 200 Ok with no content is not appropriate. So we have to put this dummy message "OK"
             return Response.ok("{\"message\":\"OK\"}", MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
-            Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, subject);
+            Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, profiles);
             if (ex instanceof EngineException)
             {
                 return Response.status(Response.Status.BAD_REQUEST).entity(ex).build();
@@ -90,12 +89,12 @@ public class Compile
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject  = ProfileManagerHelper.extractSubject(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
         {
             PureModelContext model = lambdaReturnTypeInput.model;
             Lambda lambda = lambdaReturnTypeInput.lambda;
-            String typeName = modelManager.getLambdaReturnType(lambda, model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, subject);
+            String typeName = modelManager.getLambdaReturnType(lambda, model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles);
             Map<String, String> result = new HashMap<>();
             // This is an object in case we want to add more information on the lambda.
             result.put("returnType", typeName);
@@ -103,7 +102,7 @@ public class Compile
         }
         catch (Exception ex)
         {
-            Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, subject);
+            Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, profiles);
             if (ex instanceof EngineException)
             {
                 return Response.status(Response.Status.BAD_REQUEST).entity(ex).build();

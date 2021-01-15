@@ -158,19 +158,19 @@ public class PlanExecutor
         }
     }
 
-    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, Subject subject)
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles)
     {
-        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars), user, subject);
+        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars), user, profiles);
     }
 
-    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, Subject subject, PlanExecutionContext planExecutionContext)
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
     {
-        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, subject);
+        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, profiles);
     }
 
-    public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, Subject subject)
+    public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, MutableList<CommonProfile> profiles)
     {
-        EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, subject);
+        EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, profiles);
         try (JavaHelper.ThreadContextClassLoaderScope scope = (engineJavaCompiler == null) ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
         {
             // set up the state
@@ -181,11 +181,11 @@ public class PlanExecutor
             singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
 
             // execute
-            return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(subject, state));
+            return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(profiles, state));
         }
     }
 
-    private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, Subject subject)
+    private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         if (state.isJavaCompilationForbidden())
         {
@@ -197,7 +197,7 @@ public class PlanExecutor
         }
         try
         {
-            EngineJavaCompiler engineJavaCompiler = JavaHelper.compilePlan(plan, subject);
+            EngineJavaCompiler engineJavaCompiler = JavaHelper.compilePlan(plan, profiles);
             if (engineJavaCompiler != null)
             {
                 state.setJavaCompiler(engineJavaCompiler);

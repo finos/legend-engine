@@ -37,7 +37,6 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -66,36 +65,36 @@ public class RosettaGenerationService
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateCdm(RosettaGenerationInput generateCdmInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject  = ProfileManagerHelper.extractSubject(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateCdmInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Rosetta").startActive(true))
         {
             return exec(
                     generateCdmInput.config != null ? generateCdmInput.config : new RosettaGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateCdmInput.model, generateCdmInput.clientVersion, subject, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateCdmInput.model, generateCdmInput.clientVersion, profiles, null).getTwo(),
                     interactive,
-                    subject);
+                    profiles);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, profiles);
         }
 
     }
 
-    private Response exec(RosettaGenerationConfig rosettaConfig, Function0<PureModel> pureModelFunc, boolean interactive, Subject subject)
+    private Response exec(RosettaGenerationConfig rosettaConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> pm)
     {
         try
         {
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_START : LoggingEventType.GENERATE_ROSETTA_START).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_START : LoggingEventType.GENERATE_ROSETTA_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(rosettaConfig.process(pureModel), pureModel.getExecutionSupport());
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_STOP : LoggingEventType.GENERATE_ROSETTA_STOP).toString());
-            return ManageConstantResult.manageResult(subject, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_STOP : LoggingEventType.GENERATE_ROSETTA_STOP).toString());
+            return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, pm);
         }
     }
 }

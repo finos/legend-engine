@@ -61,19 +61,19 @@ public class PlanGenerator
         return PlanGenerator.stringToPlan(generateExecutionPlanAsString(l, mapping, pureRuntime, context, pureModel, clientVersion, platform, planId, extensions, transformers));
     }
 
-    public static SingleExecutionPlan generateExecutionPlanWithTrace(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, Subject subject, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    public static SingleExecutionPlan generateExecutionPlanWithTrace(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, MutableList<CommonProfile> profiles, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
     {
         Root_meta_pure_executionPlan_ExecutionPlan plan = generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, null, extensions);
-        return transformExecutionPlan(plan, pureModel, clientVersion, subject, extensions, transformers);
+        return transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions, transformers);
     }
 
-    public static SingleExecutionPlan transformExecutionPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, String clientVersion, Subject subject, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    public static SingleExecutionPlan transformExecutionPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, String clientVersion, MutableList<CommonProfile> profiles, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Serialize plan to JSON").startActive(true))
         {
             String jsonPlan = serializeToJSON(plan, clientVersion, pureModel, extensions, transformers);
             scope.span().setTag("plan", jsonPlan);
-            LOGGER.info(new LogInfo(subject, LoggingEventType.PLAN_GENERATED, jsonPlan).toString());
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.PLAN_GENERATED, jsonPlan).toString());
             return stringToPlan(jsonPlan);
         }
     }
