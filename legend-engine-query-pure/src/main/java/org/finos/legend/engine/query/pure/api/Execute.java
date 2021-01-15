@@ -52,7 +52,6 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -92,22 +91,22 @@ public class Execute
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response execute(@Context HttpServletRequest request, ExecuteInput executeInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject  = ProfileManagerHelper.extractSubject(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
         {
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.latest : executeInput.clientVersion;
             return exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, Lists.fixedSize.<Variable>empty(), pureModel.getContext()),
-                    () -> modelManager.loadModel(executeInput.model, clientVersion, subject, null),
+                    () -> modelManager.loadModel(executeInput.model, clientVersion, profiles, null),
                     this.planExecutor,
                     executeInput.mapping,
                     executeInput.runtime,
                     executeInput.context,
                     clientVersion,
-                    subject, request.getRemoteUser(), format);
+                    profiles, request.getRemoteUser(), format);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
     }
 
@@ -116,33 +115,33 @@ public class Execute
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generatePlan(@Context HttpServletRequest request, ExecuteInput executeInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject  = ProfileManagerHelper.extractSubject(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTION_PLAN_GENERATION_START, "").toString());
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_START, "").toString());
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.latest : executeInput.clientVersion;
-            PureModel pureModel = modelManager.loadModel(executeInput.model, clientVersion, subject, null);
+            PureModel pureModel = modelManager.loadModel(executeInput.model, clientVersion, profiles, null);
             LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, Lists.fixedSize.empty(), pureModel.getContext());
             Mapping mapping = pureModel.getMapping(executeInput.mapping);
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(executeInput.runtime, pureModel.getContext());
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInput.context, pureModel.getContext());
             String plan = PlanGenerator.generateExecutionPlanAsString(lambda, mapping, runtime, context, pureModel, clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
-            LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTION_PLAN_GENERATION_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_STOP, (double)System.currentTimeMillis() - start).toString());
             return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(plan).build();
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_GENERATION_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_GENERATION_ERROR, profiles);
         }
     }
 
-    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Subject subject, String user, SerializationFormat format)
+    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format)
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
             PureModel pureModel = pureModelFunc.value();
             SingleExecutionPlan plan = PlanGenerator.generateExecutionPlanWithTrace(functionFunc.valueOf(pureModel),
                     mapping == null ? null : pureModel.getMapping(mapping),
@@ -151,21 +150,21 @@ public class Execute
                     pureModel,
                     clientVersion,
                     PlanPlatform.JAVA,
-                    subject,
+                    pm,
                     this.extensions.apply(pureModel),
                     this.transformers
             );
-            Result result = planExecutor.execute(plan, Maps.mutable.empty(), user, subject);
-            LOGGER.info(new LogInfo(subject, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double)System.currentTimeMillis() - start).toString());
+            Result result = planExecutor.execute(plan, Maps.mutable.empty(), user, pm);
+            LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double)System.currentTimeMillis() - start).toString());
             try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
             {
-                return manageResult(subject, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
+                return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
             }
 
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, pm);
         }
     }
 }

@@ -37,7 +37,6 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -66,35 +65,35 @@ public class AvroGenerationService
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateAvro(AvroGenerationInput generateAvroInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        Subject subject  = ProfileManagerHelper.extractSubject(pm);
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateAvroInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Avro").startActive(true))
         {
             return exec(generateAvroInput.config != null ? generateAvroInput.config : new AvroGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateAvroInput.model, generateAvroInput.clientVersion, subject, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateAvroInput.model, generateAvroInput.clientVersion, profiles, null).getTwo(),
                     interactive,
-                    subject);
+                    profiles);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_AVRO_CODE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_AVRO_CODE_ERROR, profiles);
         }
     }
 
-    private Response exec(AvroGenerationConfig avroConfig, Function0<PureModel> pureModelFunc, boolean interactive, Subject subject)
+    private Response exec(AvroGenerationConfig avroConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> pm)
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_AVRO_CODE_START).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_AVRO_CODE_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_avro_tramsformation_avroSchemaGenerator.Root_meta_external_format_avro_generation_generateAvroFromPureWithScope_AvroConfig_1__AvroOutput_MANY_(avroConfig.process(pureModel), pureModel.getExecutionSupport());
-            LOGGER.info(new LogInfo(subject, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_AVRO_CODE_STOP, (double)System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(subject, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_AVRO_CODE_STOP, (double)System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_AVRO_CODE_ERROR, subject);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_AVRO_CODE_ERROR, pm);
         }
     }
 }

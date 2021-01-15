@@ -25,19 +25,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.pac4j.core.profile.CommonProfile;
 
-import javax.security.auth.Subject;
-
 public class Compiler
 {
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Subject subject)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Iterable<? extends CommonProfile> pm)
     {
-        return compile(model, deploymentMode, subject, null);
+        return compile(model, deploymentMode, pm, null);
     }
 
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Subject subject, String packageOffset)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Iterable<? extends CommonProfile> pm, String packageOffset)
     {
         PureModelProcessParameter pureModelProcessParameter = new PureModelProcessParameter(packageOffset);
-        return new PureModel(model, subject, deploymentMode, pureModelProcessParameter);
+        return new PureModel(model, pm, deploymentMode, pureModelProcessParameter);
     }
 
     public static String getLambdaReturnType(Lambda lambda, PureModel pureModel)

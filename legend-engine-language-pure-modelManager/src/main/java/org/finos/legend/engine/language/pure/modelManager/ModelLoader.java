@@ -21,18 +21,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
-import javax.security.auth.Subject;
-
 public interface ModelLoader
 {
     boolean supports(PureModelContext context);
 
-    PureModelContextData load(Subject subject, PureModelContext context, String clientVersion, Span parentSpan);
+    PureModelContextData load(MutableList<CommonProfile> profiles, PureModelContext context, String clientVersion, Span parentSpan);
 
     void setModelManager(ModelManager modelManager);
 
     // Caching
     boolean shouldCache(PureModelContext context);
 
-    PureModelContext cacheKey(PureModelContext context, Subject subject);
+    PureModelContext cacheKey(PureModelContext context, MutableList<CommonProfile> pm);
 }

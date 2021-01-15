@@ -38,17 +38,17 @@ public class ResultManager
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final JsonStringEncoder jsonStringEncoder = JsonStringEncoder.getInstance();
 
-    public static Response manageResult(Subject subject, Result result, LoggingEventType loggingEventType)
+    public static Response manageResult(MutableList<CommonProfile> pm, Result result, LoggingEventType loggingEventType)
     {
-        return manageResult(subject, result, SerializationFormat.defaultFormat, loggingEventType);
+        return manageResult(pm, result, SerializationFormat.defaultFormat, loggingEventType);
     }
 
-    public static Response manageResult(Subject subject, Result result, SerializationFormat format, LoggingEventType loggingEventType)
+    public static Response manageResult(MutableList<CommonProfile> pm, Result result, SerializationFormat format, LoggingEventType loggingEventType)
     {
         if (result instanceof ErrorResult)
         {
             String message = ((ErrorResult) result).getMessage();
-            LOGGER.info(new LogInfo(subject, loggingEventType, message).toString());
+            LOGGER.info(new LogInfo(pm, loggingEventType, message).toString());
             return Response.status(500).type(MediaType.APPLICATION_JSON_TYPE).entity(new ErrorMessage(20, "{\"message\":\"" + new String(jsonStringEncoder.quoteAsString(message)) + "\"}")).build();
         }
         else if (result instanceof StreamingResult)
@@ -57,7 +57,7 @@ public class ResultManager
         }
         else if (result instanceof ConstantResult)
         {
-            return ManageConstantResult.manageResult(subject, ((ConstantResult) result).getValue());
+            return ManageConstantResult.manageResult(pm, ((ConstantResult) result).getValue());
         }
         else
         {
