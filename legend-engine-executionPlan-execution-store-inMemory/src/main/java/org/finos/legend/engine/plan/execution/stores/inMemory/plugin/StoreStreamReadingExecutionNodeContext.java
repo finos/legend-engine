@@ -16,37 +16,36 @@ package org.finos.legend.engine.plan.execution.stores.inMemory.plugin;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.IGraphFetchM2MExecutionNodeContext;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReader;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReadingExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.DefaultExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.shared.core.url.UrlFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ServiceLoader;
 
-@Deprecated
-public class GraphFetchM2MExecutionNodeContext extends DefaultExecutionNodeContext implements IGraphFetchM2MExecutionNodeContext
+public class StoreStreamReadingExecutionNodeContext extends DefaultExecutionNodeContext implements IStoreStreamReadingExecutionNodeContext
 {
-    public static ExecutionNodeJavaPlatformHelper.ExecutionNodeContextFactory factory(GraphFetchM2MExecutionNode node)
+    public static ExecutionNodeJavaPlatformHelper.ExecutionNodeContextFactory factory(StoreStreamReadingExecutionNode node)
     {
-        return (ExecutionState state, Result childResult) -> new GraphFetchM2MExecutionNodeContext(node, state, childResult);
+        return (ExecutionState state, Result childResult) -> new StoreStreamReadingExecutionNodeContext(node, state, childResult);
     }
 
-    private final GraphFetchM2MExecutionNode node;
+    private final StoreStreamReadingExecutionNode node;
 
-    private GraphFetchM2MExecutionNodeContext(GraphFetchM2MExecutionNode node, ExecutionState state, Result childResult)
+    private StoreStreamReadingExecutionNodeContext(StoreStreamReadingExecutionNode node, ExecutionState state, Result childResult)
     {
         super(state, childResult);
         this.node = node;
     }
 
     @Override
-    public IStoreStreamReader createReader(String s) 
+    public IStoreStreamReader createReader(String s)
     {
         MutableList<StoreStreamReaderBuilder> builders = Lists.mutable.empty();
         for (StoreStreamReaderBuilder desc : ServiceLoader.load(StoreStreamReaderBuilder.class))
@@ -54,8 +53,8 @@ public class GraphFetchM2MExecutionNodeContext extends DefaultExecutionNodeConte
             builders.add(desc);
         }
         return builders.isEmpty()
-               ? null
-               : builders.getFirst().newStoreStreamReader(s, node.store);
+                ? null
+                : builders.getFirst().newStoreStreamReader(s, node.store);
     }
 
     @Override
