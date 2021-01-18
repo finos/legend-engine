@@ -62,14 +62,14 @@ public class ExecutionNodeJavaPlatformHelper
                 : Subject.doAs(subject, (PrivilegedAction<Result>) () -> callJavaExecute(node, context, executionState, profiles));
     }
 
-    public static <T> T getNodeSpecificsInstance(ExecutionNode node, ExecutionState executionState, Subject subject)
+    public static <T> T getNodeSpecificsInstance(ExecutionNode node, ExecutionState executionState, MutableList<CommonProfile> profiles)
     {
         if (!(node.implementation instanceof JavaPlatformImplementation))
         {
             throw new RuntimeException("Only Java implementations are currently supported, found: " + node.implementation);
         }
 
-        Class<?> specificsClass = getClassToExecute(node, JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation), executionState, subject);
+        Class<?> specificsClass = getClassToExecute(node, JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation), executionState, profiles);
 
         try
         {
@@ -94,7 +94,7 @@ public class ExecutionNodeJavaPlatformHelper
         }
     }
 
-    private static Result callJavaExecute(ExecutionNode node, ExecutionNodeContext context, ExecutionState executionState, Subject subject)
+    private static Result callJavaExecute(ExecutionNode node, ExecutionNodeContext context, ExecutionState executionState, MutableList<CommonProfile> pm)
     {
         if (!(node.implementation instanceof JavaPlatformImplementation))
         {

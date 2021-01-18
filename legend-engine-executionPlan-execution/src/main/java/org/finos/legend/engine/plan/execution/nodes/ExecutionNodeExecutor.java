@@ -198,8 +198,8 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         }
         if (Arrays.asList(clazz.getInterfaces()).contains(IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics.class))
         {
-            StreamingObjectResult<?> streamResult1 = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.subject, this.executionState));
-            StreamingObjectResult<?> streamResult2 = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(1).accept(new ExecutionNodeExecutor(this.subject, this.executionState));
+            StreamingObjectResult<?> streamResult1 = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            StreamingObjectResult<?> streamResult2 = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(1).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
 
             Result childResult = new Result("success")
             {
@@ -409,7 +409,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
             // Handle batching at root level
             final AtomicLong rowCount = new AtomicLong(0L);
-            GraphFetchResult graphFetchResult = (GraphFetchResult) globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.subject, this.executionState));
+            GraphFetchResult graphFetchResult = (GraphFetchResult) globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
 
             Stream<?> objectStream = graphFetchResult.getGraphObjectsBatchStream().map(batch ->
             {
@@ -419,7 +419,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 ExecutionState newState = new ExecutionState(this.executionState).setGraphObjectsBatch(batch);
                 if (globalGraphFetchExecutionNode.children != null && !globalGraphFetchExecutionNode.children.isEmpty() && nonEmptyObjectList)
                 {
-                    globalGraphFetchExecutionNode.children.forEach(c -> c.accept(new ExecutionNodeExecutor(this.subject, newState)));
+                    globalGraphFetchExecutionNode.children.forEach(c -> c.accept(new ExecutionNodeExecutor(this.profiles, newState)));
                 }
 
                 rowCount.addAndGet(batch.getRowCount());
@@ -458,11 +458,11 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
             if (!parentObjects.isEmpty())
             {
-                globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.subject, this.executionState));
+                globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
 
                 if (globalGraphFetchExecutionNode.children != null && !globalGraphFetchExecutionNode.children.isEmpty())
                 {
-                    globalGraphFetchExecutionNode.children.forEach(c -> c.accept(new ExecutionNodeExecutor(this.subject, this.executionState)));
+                    globalGraphFetchExecutionNode.children.forEach(c -> c.accept(new ExecutionNodeExecutor(this.profiles, this.executionState)));
                 }
             }
 
@@ -473,19 +473,19 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode)
     {
-        return storeStreamReadingExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.subject, this.executionState));
+        return storeStreamReadingExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
     }
 
     @Override
     public Result visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
     {
-        return inMemoryRootGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.subject, this.executionState));
+        return inMemoryRootGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
     }
 
     @Override
     public Result visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode)
     {
-        return inMemoryPropertyGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.subject, this.executionState));
+        return inMemoryPropertyGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
     }
 
     @Override
