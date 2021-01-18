@@ -69,7 +69,9 @@ public class PureTestHelper
         if (isNotSet)
         {
             System.setProperty("alloy.test.clientVersion", defaultClientVersion);
+            System.setProperty("legend.test.clientVersion", defaultClientVersion);
             System.setProperty("alloy.test.serverVersion", "v1");
+            System.setProperty("legend.test.serverVersion", "v1");
         }
         return isNotSet;
     }
@@ -77,6 +79,7 @@ public class PureTestHelper
     public static void cleanUp()
     {
         System.clearProperty("alloy.test.clientVersion");
+        System.clearProperty("legend.test.clientVersion");
     }
 
     @Ignore
@@ -126,7 +129,9 @@ public class PureTestHelper
         // Pure client configuration (to call the engine server)
         System.setProperty("test.metadataserver.pure.port", String.valueOf(metadataServerPort));
         System.setProperty("alloy.test.server.host", "127.0.0.1");
+        System.setProperty("legend.test.server.host", "127.0.0.1");
         System.setProperty("alloy.test.server.port", String.valueOf(engineServerPort));
+        System.setProperty("legend.test.server.port", String.valueOf(engineServerPort));
         System.out.println("Pure client configured to reach engine server");
 
         return new ServersState(server, metadataServer);
@@ -190,9 +195,10 @@ public class PureTestHelper
 
     public static boolean satisfiesConditions(CoreInstance node, ProcessorSupport processorSupport)
     {
+        String ver = System.getProperty("alloy.test.clientVersion") == null ? System.getProperty("legend.test.clientVersion") : System.getProperty("alloy.test.clientVersion");
         return !hasTestStereotypeWithValue(node, "ExcludeAlloy", processorSupport) &&
-                !shouldExcludeOnClientVersion(node, System.getProperty("alloy.test.clientVersion"), processorSupport) &&
-                shouldExecuteOnClientVersionOnwards(node, System.getProperty("alloy.test.clientVersion"), processorSupport);
+                !shouldExcludeOnClientVersion(node, ver, processorSupport) &&
+                shouldExecuteOnClientVersionOnwards(node, ver, processorSupport);
     }
 
     public static CompiledExecutionSupport getExecutionSupport()
