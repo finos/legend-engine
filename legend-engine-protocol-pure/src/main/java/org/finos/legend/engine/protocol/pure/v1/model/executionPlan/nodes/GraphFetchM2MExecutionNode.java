@@ -20,7 +20,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.gra
 
 import java.util.List;
 
-@Deprecated
 public class GraphFetchM2MExecutionNode extends ExecutionNode
 {
     public GraphFetchTree tree;

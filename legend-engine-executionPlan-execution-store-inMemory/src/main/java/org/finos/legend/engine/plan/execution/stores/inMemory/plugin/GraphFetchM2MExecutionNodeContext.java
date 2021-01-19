@@ -29,7 +29,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ServiceLoader;
 
-@Deprecated
 public class GraphFetchM2MExecutionNodeContext extends DefaultExecutionNodeContext implements IGraphFetchM2MExecutionNodeContext
 {
     public static ExecutionNodeJavaPlatformHelper.ExecutionNodeContextFactory factory(GraphFetchM2MExecutionNode node)

@@ -21,7 +21,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.gra
 public class LocalGraphFetchExecutionNode extends ExecutionNode
 {
     public int nodeIndex;
-    public Integer parentIndex;
     public GraphFetchTree graphFetchTree;
 
     @Override

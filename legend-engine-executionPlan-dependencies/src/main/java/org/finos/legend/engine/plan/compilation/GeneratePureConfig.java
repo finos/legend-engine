@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.compilation;
 
-import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicRelativePathNode;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
@@ -37,13 +36,8 @@ import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstanc
 import org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IGraphFetchM2MExecutionNodeContext;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReader;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReadingExecutionNodeContext;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryPropertyGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.ISerializationWriter;
 import org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;
@@ -51,10 +45,6 @@ import org.finos.legend.engine.plan.dependencies.store.relational.classResult.IR
 import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalChildGraphNodeExecutor;
 import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalCrossRootGraphNodeExecutor;
 import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalRootGraphNodeExecutor;
-import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IConstantResult;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
 import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
@@ -145,18 +135,8 @@ public class GeneratePureConfig
                 register(PURE_PACKAGE + "IReferencedObject", IReferencedObject.class),
                 register(PURE_PACKAGE + "IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics", IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics.class),
                 register(PURE_PACKAGE + "IPlatformPureExpressionExecutionNodeSerializeSpecifics", IPlatformPureExpressionExecutionNodeSerializeSpecifics.class),
-                register(PURE_PACKAGE + "IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics", IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics.class),
                 register(PURE_PACKAGE + "ISerializationWriter", ISerializationWriter.class),
-                register(PURE_PACKAGE + "IGraphSerializer", IGraphSerializer.class),
-                register(PURE_PACKAGE + "IStoreStreamReadingExecutionNodeSpecifics", IStoreStreamReadingExecutionNodeSpecifics.class),
-                register(PURE_PACKAGE + "IStoreStreamReadingExecutionNodeContext", IStoreStreamReadingExecutionNodeContext.class),
-                register(PURE_PACKAGE + "IInMemoryRootGraphFetchExecutionNodeSpecifics", IInMemoryRootGraphFetchExecutionNodeSpecifics.class),
-                register(PURE_PACKAGE + "IInMemoryPropertyGraphFetchExecutionNodeSpecifics", IInMemoryPropertyGraphFetchExecutionNodeSpecifics.class),
-                register(PURE_PACKAGE + "IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics", IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics.class),
-                register(PURE_PACKAGE + "IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics", IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics.class),
-                register(PURE_PACKAGE + "IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics", IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics.class),
-                register(PURE_PACKAGE + "IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics", IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics.class)
-
+                register(PURE_PACKAGE + "IGraphSerializer", IGraphSerializer.class)
         );
 
         extensionConfig("flatData",
@@ -361,11 +341,6 @@ public class GeneratePureConfig
             else if (Consumer.class.equals(raw))
             {
                 return new Encoded("javaConsumer", encodeType(typeParams[0]));
-            }
-            else if (Pair.class.equals(raw))
-            {
-                List<Encoded> params = Arrays.stream(typeParams).map(this::encodeType).collect(Collectors.toList());
-                return new Encoded("javaParameterizedType", new Encoded("javaClass", Pair.class.getCanonicalName()), new Encoded(params));
             }
             else if (javaClasses.containsKey(raw))
             {
