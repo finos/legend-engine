@@ -19,5 +19,5 @@ import org.eclipse.collections.api.list.MutableList;
 
 public class LegendPlanTransformers
 {
-    public static MutableList<PlanTransformer> transformers = Lists.mutable.with(new DevPlanTransformer(), new VersionPlanTransformer());
+    public static MutableList<PlanTransformer> transformers = Lists.mutable.with(new DevPlanTransformer());
 }

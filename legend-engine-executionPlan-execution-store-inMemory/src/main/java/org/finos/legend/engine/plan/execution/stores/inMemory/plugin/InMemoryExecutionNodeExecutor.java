@@ -217,6 +217,11 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                 childResult.close();
             }
 
+            if (e instanceof RuntimeException)
+            {
+                throw e;
+            }
+
             Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) throw (RuntimeException) cause;
             if (cause instanceof Error) throw (Error) cause;
