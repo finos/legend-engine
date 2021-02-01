@@ -240,17 +240,39 @@ public class HelperModelBuilder
      */
     public static String getSignature(Function function)
     {
-        return function.name + "_" + LazyIterate.collect(function.parameters, p -> p._class != null ? p._class + "_" + getMultiplicitySignature(p.multiplicity) : null).select(Objects::nonNull).makeString("__")
+        return getFunctionNameWithoutSignature(function)+getFunctionSignatureSuffix(function);
+    }
+
+
+    private static String getFunctionSignatureSuffix(Function function)
+    {
+        return  "_" + LazyIterate.collect(function.parameters, p -> p._class != null ? p._class + "_" + getMultiplicitySignature(p.multiplicity) : null).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + function.returnType + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
     }
+    public static String getFunctionNameWithoutSignature(Function function)
+    {
+        String signaureSuffix=  terseSignatureSuffix(function);
+        return function.name.endsWith(signaureSuffix)? function.name.substring(0,function.name.length()-signaureSuffix.length()) : function.name;
+    }
+
 
     public static String getTerseSignature(Function function)
     {
-        return function.name + "_" + LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
+        String suffix = terseSignatureSuffix(function);
+       //A function name may or may not already have a signature. Only add it if it's not present
+        return function.name.endsWith(suffix)? function.name : function.name+suffix;
+    }
+
+    private static String terseSignatureSuffix(Function function)
+    {
+        return "_" + LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
+
     }
+
+
 
     private static String getParameterSignature(Variable p)
     {

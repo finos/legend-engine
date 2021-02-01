@@ -25,4 +25,10 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
         testWithProtocolPath("packageWithReservedName.json",
                 "COMPILATION error: Error in 'testing::$implicit::Something': Can't create package with reserved name '$implicit'");
     }
+
+    @Test
+    public void testAppliedFunctionWithFullPath()
+    {
+        testWithProtocolPath("appliedFunctionWithFullyQualifiedName.json");
+    }
 }

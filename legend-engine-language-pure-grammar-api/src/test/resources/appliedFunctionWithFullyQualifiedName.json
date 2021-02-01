@@ -1,0 +1,185 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [
+        {
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "my::underscore_package::constraintfn_String_1__Boolean_1_",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this",
+                        "sourceInformation": {
+                          "endColumn": 10,
+                          "endLine": 3,
+                          "sourceId": "",
+                          "startColumn": 6,
+                          "startLine": 3
+                        }
+                      }
+                    ],
+                    "property": "prop",
+                    "sourceInformation": {
+                      "endColumn": 15,
+                      "endLine": 3,
+                      "sourceId": "",
+                      "startColumn": 12,
+                      "startLine": 3
+                    }
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 53,
+                  "endLine": 3,
+                  "sourceId": "",
+                  "startColumn": 18,
+                  "startLine": 3
+                }
+              }
+            ],
+            "parameters": []
+          },
+          "name": "c",
+          "sourceInformation": {
+            "endColumn": 55,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 3
+          }
+        }
+      ],
+      "name": "ClassA",
+      "originalMilestonedProperties": [],
+      "package": "my::underscore_package",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "prop",
+          "propertyTypeSourceInformation": {
+            "endColumn": 14,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 9,
+            "startLine": 6
+          },
+          "sourceInformation": {
+            "endColumn": 18,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 6
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 7,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "startsWith",
+          "parameters": [
+            {
+              "_type": "var",
+              "name": "value",
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 11,
+                "sourceId": "",
+                "startColumn": 4,
+                "startLine": 11
+              }
+            },
+            {
+              "_type": "string",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "sourceInformation": {
+                "endColumn": 25,
+                "endLine": 11,
+                "sourceId": "",
+                "startColumn": 23,
+                "startLine": 11
+              },
+              "values": [
+                "A"
+              ]
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 21,
+            "endLine": 11,
+            "sourceId": "",
+            "startColumn": 12,
+            "startLine": 11
+          }
+        }
+      ],
+      "name": "constraintfn_String_1__Boolean_1_",
+      "package": "my::underscore_package",
+      "parameters": [
+        {
+          "_type": "var",
+          "class": "String",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "value",
+          "sourceInformation": {
+            "endColumn": 62,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 47,
+            "startLine": 9
+          }
+        }
+      ],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "Boolean",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 12,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 9
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    }
+  ]
+}

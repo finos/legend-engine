@@ -147,4 +147,11 @@ public class PureGrammarComposerUtility
         }
         return String.valueOf(value);
     }
+
+    public static String removeFunctionSignature(String functionName)
+    {
+        int index = functionName.lastIndexOf("::")+1;
+        String name = functionName.substring(index);
+        return  name.contains("_") ?  functionName.substring(0,index) +  name.substring(0,name.indexOf("_")) : functionName;
+    }
 }
