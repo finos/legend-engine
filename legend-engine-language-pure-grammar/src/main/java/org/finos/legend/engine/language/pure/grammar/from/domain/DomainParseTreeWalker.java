@@ -665,6 +665,37 @@ public class DomainParseTreeWalker
                 {
                     result = propertyExpression(pfCtx.propertyExpression(), result, typeParametersNames, lambdaContext, space, addLines);
                 }
+                else if (pfCtx.propertyBracketExpression() != null)
+                {
+                    String columnName = pfCtx.propertyBracketExpression().INTEGER() != null ? pfCtx.propertyBracketExpression().INTEGER().getText() : PureGrammarParserUtility.fromGrammarString(pfCtx.propertyBracketExpression().STRING().getText(), true);
+                    if (this.flatDataRecordTypeSource == null)
+                    {
+                        throw new EngineException("Bracket operation is not supported", walkerSourceInformation.getSourceInformation(pfCtx.propertyBracketExpression()), EngineErrorType.PARSER);
+                    }
+                    String getPropertyName = "oneString";
+                    if (this.parserContext.flatDataRecordTypeFieldFuncMap.get(this.flatDataRecordTypeSource) != null && this.parserContext.flatDataRecordTypeFieldFuncMap.get(this.flatDataRecordTypeSource).get(columnName) != null)
+                    {
+                        getPropertyName = this.parserContext.flatDataRecordTypeFieldFuncMap.get(this.flatDataRecordTypeSource).get(columnName);
+                    }
+                    parameters = new ArrayList<>();
+                    AppliedProperty appliedProperty = new AppliedProperty();
+                    appliedProperty.property = getPropertyName;
+                    appliedProperty.parameters = Lists.mutable.of(result).withAll(parameters);
+                    if (pfCtx.propertyBracketExpression().STRING() != null)
+                    {
+                        CString instance = getInstanceString(pfCtx.propertyBracketExpression().STRING().getText());
+                        instance.sourceInformation = walkerSourceInformation.getSourceInformation(pfCtx.propertyBracketExpression());
+                        appliedProperty.parameters.add(instance);
+                    }
+                    else
+                    {
+                        CInteger instance = getInstanceInteger(pfCtx.propertyBracketExpression().INTEGER().getText());
+                        instance.sourceInformation = walkerSourceInformation.getSourceInformation(pfCtx.propertyBracketExpression());
+                        appliedProperty.parameters.add(instance);
+                    }
+                    appliedProperty.sourceInformation = walkerSourceInformation.getSourceInformation(pfCtx.propertyBracketExpression());
+                    result = appliedProperty;
+                }
                 else
                 {
                     for (int i = 0; i < pfCtx.functionExpression().qualifiedName().size(); i++)
