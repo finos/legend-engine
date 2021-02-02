@@ -202,7 +202,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
                     action.accept(inMemoryGraphObjectsBatch);
 
-                    return !resultObjects.isEmpty();
+                    return objectCount != 0;
                 }
             };
 
