@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.grammar.from.mapping;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.misc.Interval;
-import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
@@ -24,26 +23,27 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserConte
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class MappingParseTreeWalker
@@ -53,14 +53,14 @@ public class MappingParseTreeWalker
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext parserContext;
     private final ImportAwareCodeSection section;
-    private final List<Procedure3<MappingElementSourceCode, Mapping, PureGrammarParserContext>> extraMappingElementParsers;
-    private final List<Function3<String, MappingParserGrammar.TestInputElementContext, ParseTreeWalkerSourceInformation, InputData>> extraMappingTestInputDataParsers;
+    private final Map<String, MappingElementParser> extraMappingElementParsersByType;
+    private final Map<String, MappingTestInputDataParser> extraMappingTestInputDataParsersByType;
 
-    public MappingParseTreeWalker(CharStream input, List<Procedure3<MappingElementSourceCode, Mapping, PureGrammarParserContext>> extraMappingElementParsers, List<Function3<String, MappingParserGrammar.TestInputElementContext, ParseTreeWalkerSourceInformation, InputData>> extraMappingTestInputDataParsers, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext parserContext, ImportAwareCodeSection section)
+    public MappingParseTreeWalker(CharStream input, Map<String, MappingElementParser> extraMappingElementParsersByType, Map<String, MappingTestInputDataParser> extraMappingTestInputDataParsersByType, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext parserContext, ImportAwareCodeSection section)
     {
         this.input = input;
-        this.extraMappingElementParsers = extraMappingElementParsers;
-        this.extraMappingTestInputDataParsers = extraMappingTestInputDataParsers;
+        this.extraMappingElementParsersByType = extraMappingElementParsersByType;
+        this.extraMappingTestInputDataParsersByType = extraMappingTestInputDataParsersByType;
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.parserContext = parserContext;
@@ -117,7 +117,28 @@ public class MappingParseTreeWalker
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.mappingElementBody().BRACE_OPEN().getSymbol().getCharPositionInLine() + ctx.mappingElementBody().BRACE_OPEN().getText().length();
         ParseTreeWalkerSourceInformation mappingElementWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(mapping.getPath(), lineOffset, columnOffset).build();
         MappingElementSourceCode mappingElementSourceCode = new MappingElementSourceCode(mappingElementCode, parserName, mappingElementWalkerSourceInformation, ctx, this.walkerSourceInformation);
-        this.extraMappingElementParsers.forEach(parser -> parser.value(mappingElementSourceCode, mapping, this.parserContext));
+        MappingElementParser extraParser = this.extraMappingElementParsersByType.get(mappingElementSourceCode.name);
+        if (extraParser == null)
+        {
+            throw new EngineException("No parser for " + mappingElementSourceCode.name, this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        Object mappingElement = extraParser.parse(mappingElementSourceCode, this.parserContext);
+        if (mappingElement instanceof ClassMapping)
+        {
+            mapping.classMappings.add((ClassMapping) mappingElement);
+        }
+        else if (mappingElement instanceof EnumerationMapping)
+        {
+            mapping.enumerationMappings.add((EnumerationMapping) mappingElement);
+        }
+        else if (mappingElement instanceof AssociationMapping)
+        {
+            mapping.associationMappings.add((AssociationMapping) mappingElement);
+        }
+        else
+        {
+            throw new EngineException("Invalid parser result for " + mappingElementSourceCode.name + ": " + mappingElement, this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
         return mapping;
     }
 
@@ -156,31 +177,12 @@ public class MappingParseTreeWalker
     {
         SourceInformation testInputDataSourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         String inputDataType = ctx.testInputType().getText();
-        if ("Object".equals(inputDataType))
+        MappingTestInputDataParser mappingTestInputDataParser = this.extraMappingTestInputDataParsersByType.get(inputDataType);
+        if (mappingTestInputDataParser == null)
         {
-            ObjectInputData objectInputData = new ObjectInputData();
-            objectInputData.sourceInformation = testInputDataSourceInformation;
-            objectInputData.sourceClass = PureGrammarParserUtility.fromQualifiedName(ctx.testInputSrc().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.testInputSrc().qualifiedName().packagePath().identifier(), ctx.testInputSrc().qualifiedName().identifier());
-            objectInputData.data = PureGrammarParserUtility.fromGrammarString(ctx.testInputDataContent().STRING().getText(), false);
-            if (ctx.testInputFormat() != null)
-            {
-                try
-                {
-                    objectInputData.inputType = ObjectInputType.valueOf(ctx.testInputFormat().getText());
-                }
-                catch (IllegalArgumentException e)
-                {
-                    throw new EngineException("Mapping test object input data does not support format '" + ctx.testInputFormat().getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.testInputFormat()), EngineErrorType.PARSER);
-                }
-            }
-            else
-            {
-                throw new EngineException("Mapping test object input data format type is missing", testInputDataSourceInformation, EngineErrorType.PARSER);
-            }
-            return objectInputData;
+            throw new EngineException("Unsupported mapping test input data type '" + inputDataType + "'", testInputDataSourceInformation, EngineErrorType.PARSER);
         }
-        return this.extraMappingTestInputDataParsers.stream().map(parser -> parser.value(inputDataType, ctx, this.walkerSourceInformation)).filter(Objects::nonNull).findFirst()
-                .orElseThrow(() -> new EngineException("Unsupported mapping test input data type '" + inputDataType + "'", testInputDataSourceInformation, EngineErrorType.PARSER));
+        return mappingTestInputDataParser.parse(ctx, this.walkerSourceInformation);
     }
 
     private Lambda visitMappingTestQuery(MappingParserGrammar.CombinedExpressionContext ctx, Mapping mapping)

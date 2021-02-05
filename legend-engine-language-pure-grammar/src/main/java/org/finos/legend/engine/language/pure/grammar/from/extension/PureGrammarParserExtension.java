@@ -16,18 +16,12 @@ package org.finos.legend.engine.language.pure.grammar.from.extension;
 
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function3;
-import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
-import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
-import org.finos.legend.engine.shared.core.function.Procedure3;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,12 +40,12 @@ public interface PureGrammarParserExtension
         return Collections.emptyList();
     }
 
-    default List<Procedure3<MappingElementSourceCode, Mapping, PureGrammarParserContext>> getExtraMappingElementParsers()
+    default Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
     {
         return Collections.emptyList();
     }
 
-    default List<Function3<String, MappingParserGrammar.TestInputElementContext, ParseTreeWalkerSourceInformation, InputData>> getExtraMappingTestInputDataParsers()
+    default Iterable<? extends MappingTestInputDataParser> getExtraMappingTestInputDataParsers()
     {
         return Collections.emptyList();
     }

@@ -17,8 +17,9 @@ package org.finos.legend.engine.language.pure.grammar.from.mapping;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.eclipse.collections.api.block.function.Function3;
-import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.DEPRECATED_SectionGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
@@ -26,29 +27,31 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserConte
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
-import org.finos.legend.engine.shared.core.function.Procedure3;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class MappingParser implements DEPRECATED_SectionGrammarParser
 {
     public static final String name = "Mapping";
-    private final List<Procedure3<MappingElementSourceCode, Mapping, PureGrammarParserContext>> extraMappingElementParsers;
-    private final List<Function3<String, MappingParserGrammar.TestInputElementContext, ParseTreeWalkerSourceInformation, InputData>> extraMappingTestInputDataParsers;
+
+    private final Map<String, MappingElementParser> extraMappingElementParsersByType;
+    private final Map<String, MappingTestInputDataParser> extraMappingTestInputDataParsersByType;
 
     private MappingParser(List<PureGrammarParserExtension> extensions)
     {
-        this.extraMappingElementParsers = ListIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraMappingElementParsers);
-        this.extraMappingTestInputDataParsers = ListIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraMappingTestInputDataParsers);
+        this.extraMappingElementParsersByType = indexExtraMappingElementParsers(extensions);
+        this.extraMappingTestInputDataParsersByType = indexExtraMappingTestInputDataParsers(extensions);
     }
 
     public static MappingParser newInstance()
@@ -82,8 +85,36 @@ public class MappingParser implements DEPRECATED_SectionGrammarParser
         ImportAwareCodeSection section = new ImportAwareCodeSection();
         section.parserName = this.getName();
         section.sourceInformation = sectionParserInfo.sourceInformation;
-        MappingParseTreeWalker walker = new MappingParseTreeWalker(sectionParserInfo.input, this.extraMappingElementParsers, this.extraMappingTestInputDataParsers, sectionParserInfo.walkerSourceInformation, elementConsumer, parserContext, section);
+        MappingParseTreeWalker walker = new MappingParseTreeWalker(sectionParserInfo.input, this.extraMappingElementParsersByType, this.extraMappingTestInputDataParsersByType, sectionParserInfo.walkerSourceInformation, elementConsumer, parserContext, section);
         walker.visitDefinition((MappingParserGrammar.DefinitionContext) sectionParserInfo.rootContext);
         return section;
+    }
+
+    private static Map<String, MappingElementParser> indexExtraMappingElementParsers(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraMappingElementParsers),
+                MappingElementParser::getElementTypeName,
+                "Conflicting parsers for mapping element type");
+    }
+
+    private static Map<String, MappingTestInputDataParser> indexExtraMappingTestInputDataParsers(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraMappingTestInputDataParsers),
+                MappingTestInputDataParser::getInputDataTypeName,
+                "Conflicting parsers for mapping test input data type");
+    }
+
+    private static <T> Map<String, T> indexByKey(Iterable<? extends T> elements, Function<? super T, String> keyFn, String conflictMessagePrefix)
+    {
+        MutableMap<String, T> index = Maps.mutable.empty();
+        elements.forEach(e ->
+        {
+            String key = keyFn.apply(e);
+            if (index.put(key, e) != null)
+            {
+                throw new IllegalArgumentException(conflictMessagePrefix + ": " + key);
+            }
+        });
+        return index.asUnmodifiable();
     }
 }

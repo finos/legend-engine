@@ -28,25 +28,12 @@ public class PureGrammarParserExtensionLoader
     {
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug(LazyIterate.collect(extensions(), extension -> "- " + extension.getClass().getSimpleName()).makeString("Pure grammar parser extension(s) loaded:\n", "\n", ""));
+            LOGGER.debug(LazyIterate.collect(ServiceLoader.load(PureGrammarParserExtension.class), extension -> "- " + extension.getClass().getSimpleName()).makeString("Pure grammar parser extension(s) loaded:\n", "\n", ""));
         }
     }
 
     public static List<PureGrammarParserExtension> extensions()
     {
-        List<PureGrammarParserExtension> extensions = Lists.mutable.empty();
-        for (PureGrammarParserExtension extension : ServiceLoader.load(PureGrammarParserExtension.class))
-        {
-            try
-            {
-                extensions.add(extension);
-            }
-            catch (Throwable throwable)
-            {
-                LOGGER.error("Failed to load grammar parser extension '" + extension.getClass().getSimpleName() + "'");
-                // Needs to be silent ... during the build process
-            }
-        }
-        return extensions;
+        return Lists.mutable.withAll(ServiceLoader.load(PureGrammarParserExtension.class));
     }
 }
