@@ -24,6 +24,8 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserConte
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.runtime.RuntimeLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.runtime.RuntimeParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
@@ -35,6 +37,23 @@ import java.util.function.Consumer;
 public class RuntimeParser implements DEPRECATED_SectionGrammarParser
 {
     public static final String name = "Runtime";
+
+    private final ConnectionParser connectionParser;
+
+    private RuntimeParser(ConnectionParser connectionParser)
+    {
+        this.connectionParser = connectionParser;
+    }
+
+    public static RuntimeParser newInstance(ConnectionParser connectionParser)
+    {
+        return new RuntimeParser(connectionParser);
+    }
+
+    public static RuntimeParser newInstance(PureGrammarParserExtensions extensions)
+    {
+        return newInstance(ConnectionParser.newInstance(extensions));
+    }
 
     @Override
     public String getName()
@@ -67,7 +86,7 @@ public class RuntimeParser implements DEPRECATED_SectionGrammarParser
         ImportAwareCodeSection section = new ImportAwareCodeSection();
         section.parserName = this.getName();
         section.sourceInformation = sectionParserInfo.sourceInformation;
-        RuntimeParseTreeWalker walker = new RuntimeParseTreeWalker(sectionParserInfo.walkerSourceInformation, pureModelContextData, section);
+        RuntimeParseTreeWalker walker = new RuntimeParseTreeWalker(sectionParserInfo.walkerSourceInformation, pureModelContextData, section, this.connectionParser);
         walker.visit((RuntimeParserGrammar.DefinitionContext) sectionParserInfo.rootContext);
         return section;
     }
@@ -75,7 +94,7 @@ public class RuntimeParser implements DEPRECATED_SectionGrammarParser
     public EngineRuntime parseEmbeddedRuntime(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation)
     {
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(code, null, walkerSourceInformation, false);
-        RuntimeParseTreeWalker walker = new RuntimeParseTreeWalker(walkerSourceInformation, null, null);
+        RuntimeParseTreeWalker walker = new RuntimeParseTreeWalker(walkerSourceInformation, null, null, this.connectionParser);
         return walker.visitEmbeddedRuntime(((RuntimeParserGrammar) sectionParserInfo.parser).embeddedRuntime(), sourceInformation);
     }
 }

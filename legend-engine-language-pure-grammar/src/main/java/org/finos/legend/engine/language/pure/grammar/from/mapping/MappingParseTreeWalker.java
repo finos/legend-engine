@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.Mapping
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -43,7 +44,6 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
 import java.util.function.Consumer;
 
 public class MappingParseTreeWalker
@@ -53,14 +53,12 @@ public class MappingParseTreeWalker
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext parserContext;
     private final ImportAwareCodeSection section;
-    private final Map<String, MappingElementParser> extraMappingElementParsersByType;
-    private final Map<String, MappingTestInputDataParser> extraMappingTestInputDataParsersByType;
+    private final PureGrammarParserExtensions extensions;
 
-    public MappingParseTreeWalker(CharStream input, Map<String, MappingElementParser> extraMappingElementParsersByType, Map<String, MappingTestInputDataParser> extraMappingTestInputDataParsersByType, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext parserContext, ImportAwareCodeSection section)
+    public MappingParseTreeWalker(CharStream input, PureGrammarParserExtensions extensions, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext parserContext, ImportAwareCodeSection section)
     {
         this.input = input;
-        this.extraMappingElementParsersByType = extraMappingElementParsersByType;
-        this.extraMappingTestInputDataParsersByType = extraMappingTestInputDataParsersByType;
+        this.extensions = extensions;
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.parserContext = parserContext;
@@ -117,7 +115,7 @@ public class MappingParseTreeWalker
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.mappingElementBody().BRACE_OPEN().getSymbol().getCharPositionInLine() + ctx.mappingElementBody().BRACE_OPEN().getText().length();
         ParseTreeWalkerSourceInformation mappingElementWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(mapping.getPath(), lineOffset, columnOffset).build();
         MappingElementSourceCode mappingElementSourceCode = new MappingElementSourceCode(mappingElementCode, parserName, mappingElementWalkerSourceInformation, ctx, this.walkerSourceInformation);
-        MappingElementParser extraParser = this.extraMappingElementParsersByType.get(mappingElementSourceCode.name);
+        MappingElementParser extraParser = this.extensions.getExtraMappingElementParser(mappingElementSourceCode.name);
         if (extraParser == null)
         {
             throw new EngineException("No parser for " + mappingElementSourceCode.name, this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
@@ -177,7 +175,7 @@ public class MappingParseTreeWalker
     {
         SourceInformation testInputDataSourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         String inputDataType = ctx.testInputType().getText();
-        MappingTestInputDataParser mappingTestInputDataParser = this.extraMappingTestInputDataParsersByType.get(inputDataType);
+        MappingTestInputDataParser mappingTestInputDataParser = this.extensions.getExtraMappingTestInputDataParser(inputDataType);
         if (mappingTestInputDataParser == null)
         {
             throw new EngineException("Unsupported mapping test input data type '" + inputDataType + "'", testInputDataSourceInformation, EngineErrorType.PARSER);

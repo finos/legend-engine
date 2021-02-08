@@ -24,7 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGra
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.LambdaInput;
 import org.finos.legend.engine.language.pure.grammar.from.ParserError;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -64,7 +64,7 @@ public class TransformGrammarToJson
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
-            PureGrammarParserExtensionLoader.logExtensionList();
+            PureGrammarParserExtensions.logExtensionList();
             PureGrammarParser parser = PureGrammarParser.newInstance();
             Map<String, Lambda> lambdas = new HashMap<>();
             Map<String, ParserError> lambdaErrors = new HashMap<>();

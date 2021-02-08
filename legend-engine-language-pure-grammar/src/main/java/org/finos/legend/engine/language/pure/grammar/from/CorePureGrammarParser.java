@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionParserGrammar;
@@ -30,6 +29,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureIns
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ModelConnectionParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
@@ -53,7 +53,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
-import java.util.List;
 
 public class CorePureGrammarParser implements PureGrammarParserExtension
 {
@@ -82,39 +81,42 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     }
 
     @Override
-    public List<Function<ConnectionValueSourceCode, Connection>> getExtraConnectionParsers()
+    public Iterable<? extends ConnectionValueParser> getExtraConnectionParsers()
     {
-        return Collections.singletonList((connectionValueSourceCode) ->
-        {
-            if (JSON_MODEL_CONNECTION_TYPE.equals(connectionValueSourceCode.connectionType))
-            {
-                JsonModelConnection connectionValue = new JsonModelConnection();
-                connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
-                SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
-                ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
-                walker.visitJsonModelConnectionValue((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
-                return connectionValue;
-            }
-            else if (XML_MODEL_CONNECTION_TYPE.equals(connectionValueSourceCode.connectionType))
-            {
-                XmlModelConnection connectionValue = new XmlModelConnection();
-                connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
-                SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
-                ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
-                walker.visitXmlModelConnectionValue((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
-                return connectionValue;
-            }
-            else if (MODEL_CHAIN_CONNECTION_TYPE.equals(connectionValueSourceCode.connectionType))
-            {
-                ModelChainConnection connectionValue = new ModelChainConnection();
-                connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
-                SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
-                ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
-                walker.visitModelChainConnection((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
-                return connectionValue;
-            }
-            return null;
-        });
+        return Lists.immutable.with(
+                ConnectionValueParser.newParser(JSON_MODEL_CONNECTION_TYPE, CorePureGrammarParser::parseJsonModelConnection),
+                ConnectionValueParser.newParser(XML_MODEL_CONNECTION_TYPE, CorePureGrammarParser::parseXmlModelConnection),
+                ConnectionValueParser.newParser(MODEL_CHAIN_CONNECTION_TYPE, CorePureGrammarParser::parseModelChainConnection));
+    }
+
+    private static Connection parseJsonModelConnection(ConnectionValueSourceCode connectionValueSourceCode)
+    {
+        JsonModelConnection connectionValue = new JsonModelConnection();
+        connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
+        SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
+        ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+        walker.visitJsonModelConnectionValue((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
+        return connectionValue;
+    }
+
+    private static Connection parseXmlModelConnection(ConnectionValueSourceCode connectionValueSourceCode)
+    {
+        XmlModelConnection connectionValue = new XmlModelConnection();
+        connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
+        SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
+        ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+        walker.visitXmlModelConnectionValue((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
+        return connectionValue;
+    }
+
+    private static Connection parseModelChainConnection(ConnectionValueSourceCode connectionValueSourceCode)
+    {
+        ModelChainConnection connectionValue = new ModelChainConnection();
+        connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
+        SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
+        ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+        walker.visitModelChainConnection((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
+        return connectionValue;
     }
 
     private static EnumerationMapping parseEnumerationMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
