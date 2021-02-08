@@ -85,6 +85,7 @@
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
+        <mockito.version>3.3.3</mockito.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
         <jackson.version>2.10.5</jackson.version>
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
@@ -812,6 +813,14 @@
                 <version>${junit.version}</version>
             </dependency>
             <!-- JUNIT -->
+
+            <!-- MOCKITO -->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
+            <!-- MOCKITO -->
 
             <!-- ANTLR -->
             <dependency>
