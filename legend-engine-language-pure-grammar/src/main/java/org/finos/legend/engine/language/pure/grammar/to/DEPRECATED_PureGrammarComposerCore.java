@@ -99,9 +99,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 @Deprecated
 public final class DEPRECATED_PureGrammarComposerCore implements
@@ -371,7 +369,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Function function)
     {
-        return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + PureGrammarComposerUtility.convertPath(function.getPath())
+        return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + removeFunctionSignature( PureGrammarComposerUtility.convertPath(function.getPath()))
                 + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
                 + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +

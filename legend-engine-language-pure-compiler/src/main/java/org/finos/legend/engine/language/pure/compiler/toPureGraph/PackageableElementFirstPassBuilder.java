@@ -209,7 +209,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         // NOTE: in the protocol, we still store the function name as is, but in the function index, we will store the function based on its function signature
         String functionSignature = HelperModelBuilder.getSignature(function);
         String functionFullName = this.context.pureModel.buildPackageString(function._package, functionSignature);
-        String functionName = this.context.pureModel.buildPackageString(function._package, function.name);
+        String functionName = this.context.pureModel.buildPackageString(function._package,  HelperModelBuilder.getFunctionNameWithoutSignature(function) );
         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = new Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl<>(functionSignature, SourceInformationHelper.toM3SourceInformation(function.sourceInformation), null);
         this.context.pureModel.functionsIndex.put(functionFullName, targetFunc);
 
@@ -218,7 +218,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(function._package);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> res = targetFunc
                 ._name(HelperModelBuilder.getTerseSignature(function)) // function signature here - e.g. meta::pure::functions::date::isAfterDay_Date_1__Date_1__Boolean_1_
-                ._functionName(functionName) // function name to be used in the handler map -> need to be full path
+                ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"))
                                                                                                        ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx))), this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity)))))
                 ._stereotypes(ListIterate.collect(function.stereotypes, s -> this.context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))

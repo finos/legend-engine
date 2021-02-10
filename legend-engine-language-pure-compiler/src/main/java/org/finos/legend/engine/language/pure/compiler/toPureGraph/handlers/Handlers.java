@@ -522,6 +522,12 @@ public class Handlers
         register("meta::pure::functions::collection::head_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"));
         register("meta::pure::functions::collection::oneOf_Boolean_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
 
+        register("meta::pure::functions::string::isUUID_String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"));
+        register("meta::json::schema::mapSchema_String_1__Type_1__DiscriminatorMapping_1_", false, ps -> res("meta::json::schema::DiscriminatorMapping", "one"));
+        register("meta::json::schema::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
+
+
+
         // Extensions
         CompileContext context = this.pureModel.getContext();
         ListIterate.flatCollect(context.getCompilerExtensions().getExtraFunctionExpressionBuilderRegistrationInfoCollectors(), collector -> collector.valueOf(this)).forEach(this::register);
@@ -1307,6 +1313,8 @@ public class Handlers
         map.put("meta::java::generation::functions::unit::convert_Any_1__Unit_1__Any_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Unit".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::java::generation::functions::unit::unitType_Any_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
         map.put("meta::java::generation::functions::unit::unitValue_Any_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
+        map.put("meta::json::schema::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil","Type","DataType","FunctionType","Class","Measure","Unit","PrimitiveType","Enumeration","ClassProjection","MappingClass").contains(ps.get(2)._genericType()._rawType()._name()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "DiscriminatorMapping".equals(ps.get(3)._genericType()._rawType()._name())));
+        map.put("meta::json::schema::mapSchema_String_1__Type_1__DiscriminatorMapping_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil","Type","DataType","Measure","FunctionType","Class","PrimitiveType","Enumeration","Unit","ClassProjection","MappingClass").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::json::toJSON_Any_MANY__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "LambdaFunction".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::asserts::assertContains_Any_MANY__Any_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()));
@@ -1717,6 +1725,8 @@ public class Handlers
         map.put("meta::pure::functions::string::isLowerCase_String_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::string::isNoLongerThan_String_$0_1$__Integer_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::string::isNoShorterThan_String_$0_1$__Integer_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::string::isUUID_String_$0_1$__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && matchZeroOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())));
+
         map.put("meta::pure::functions::string::isUpperCase_String_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::string::joinStrings_String_MANY__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())));
