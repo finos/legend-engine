@@ -123,7 +123,7 @@ public class Execute
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.latest : executeInput.clientVersion;
             PureModel pureModel = modelManager.loadModel(executeInput.model, clientVersion, profiles, null);
             LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, Lists.fixedSize.empty(), pureModel.getContext());
-            Mapping mapping = pureModel.getMapping(executeInput.mapping);
+            Mapping mapping = executeInput.mapping == null ? null : pureModel.getMapping(executeInput.mapping);
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(executeInput.runtime, pureModel.getContext());
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInput.context, pureModel.getContext());
             String plan = PlanGenerator.generateExecutionPlanAsString(lambda, mapping, runtime, context, pureModel, clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
