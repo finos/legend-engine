@@ -14,16 +14,15 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
+import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class PureGrammarParserContext
 {
-    public final List<PureGrammarParserExtension> extensions;
+    private final PureGrammarParserExtensions extensions;
+
     /**
      * flatDataRecordTypeFieldFuncMap holds a map of flat data record types to
      * another map of its corresponding field names' mapped to property function names.
@@ -31,16 +30,21 @@ public class PureGrammarParserContext
      * <p>
      * TODO: this is very hacky and should be removed, potentially by using generic for flat data Column type
      */
-    public Map<String, Map<String, String>> flatDataRecordTypeFieldFuncMap = new HashMap<>();
+    public final Map<String, Map<String, String>> flatDataRecordTypeFieldFuncMap;
 
-    public PureGrammarParserContext()
+    public PureGrammarParserContext(PureGrammarParserExtensions extensions)
     {
-        this(new HashMap<>());
+        this(extensions, Maps.mutable.empty());
     }
 
-    public PureGrammarParserContext(Map<String, Map<String, String>> flatDataRecordTypeFieldFuncMap)
+    public PureGrammarParserContext(PureGrammarParserExtensions extensions, Map<String, Map<String, String>> flatDataRecordTypeFieldFuncMap)
     {
+        this.extensions = extensions;
         this.flatDataRecordTypeFieldFuncMap = flatDataRecordTypeFieldFuncMap;
-        this.extensions = PureGrammarParserExtensionLoader.extensions();
+    }
+
+    public PureGrammarParserExtensions getPureGrammarParserExtensions()
+    {
+        return this.extensions;
     }
 }

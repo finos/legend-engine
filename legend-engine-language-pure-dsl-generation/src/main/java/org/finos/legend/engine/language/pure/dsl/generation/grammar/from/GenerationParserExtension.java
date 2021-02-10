@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.dsl.generation.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
@@ -28,11 +27,11 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.FileGenerationP
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.GenerationSpecificationLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.GenerationSpecificationParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class GenerationParserExtension implements PureGrammarParserExtension
@@ -41,38 +40,34 @@ public class GenerationParserExtension implements PureGrammarParserExtension
     public static final String GENERATION_SPECIFICATION_SECTION_NAME = "GenerationSpecification";
 
     @Override
-    public List<Function3<SectionSourceCode, Consumer<PackageableElement>, PureGrammarParserContext, Section>> getExtraSectionParsers()
+    public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
-        return Lists.mutable.with(
-                (sectionSourceCode, elementConsumer, context) ->
-                {
-                    if (!FILE_GENERATION_SECTION_NAME.equals(sectionSourceCode.sectionType))
-                    {
-                        return null;
-                    }
-                    SourceCodeParserInfo parserInfo = getFileGenerationParserInfo(sectionSourceCode);
-                    ImportAwareCodeSection section = new ImportAwareCodeSection();
-                    section.parserName = sectionSourceCode.sectionType;
-                    section.sourceInformation = parserInfo.sourceInformation;
-                    FileGenerationParseTreeWalker walker = new FileGenerationParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
-                    walker.visit((FileGenerationParserGrammar.DefinitionContext) parserInfo.rootContext);
-                    return section;
-                },
-                (sectionSourceCode, elementConsumer, context) ->
-                {
-                    if (!GENERATION_SPECIFICATION_SECTION_NAME.equals(sectionSourceCode.sectionType))
-                    {
-                        return null;
-                    }
-                    SourceCodeParserInfo parserInfo = getGenerationSpecificationParserInfo(sectionSourceCode);
-                    ImportAwareCodeSection section = new ImportAwareCodeSection();
-                    section.parserName = sectionSourceCode.sectionType;
-                    section.sourceInformation = parserInfo.sourceInformation;
-                    GenerationSpecificationParseTreeWalker walker = new GenerationSpecificationParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
-                    walker.visit((GenerationSpecificationParserGrammar.DefinitionContext) parserInfo.rootContext);
-                    return section;
-                }
+        return Lists.immutable.with(
+                SectionParser.newParser(FILE_GENERATION_SECTION_NAME, GenerationParserExtension::parseFileGenerationSection),
+                SectionParser.newParser(GENERATION_SPECIFICATION_SECTION_NAME, GenerationParserExtension::parseGenerationSpecificationSection)
         );
+    }
+
+    private static Section parseFileGenerationSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext pureGrammarParserContext)
+    {
+        SourceCodeParserInfo parserInfo = getFileGenerationParserInfo(sectionSourceCode);
+        ImportAwareCodeSection section = new ImportAwareCodeSection();
+        section.parserName = sectionSourceCode.sectionType;
+        section.sourceInformation = parserInfo.sourceInformation;
+        FileGenerationParseTreeWalker walker = new FileGenerationParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        walker.visit((FileGenerationParserGrammar.DefinitionContext) parserInfo.rootContext);
+        return section;
+    }
+
+    private static Section parseGenerationSpecificationSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext pureGrammarParserContext)
+    {
+        SourceCodeParserInfo parserInfo = getGenerationSpecificationParserInfo(sectionSourceCode);
+        ImportAwareCodeSection section = new ImportAwareCodeSection();
+        section.parserName = sectionSourceCode.sectionType;
+        section.sourceInformation = parserInfo.sourceInformation;
+        GenerationSpecificationParseTreeWalker walker = new GenerationSpecificationParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        walker.visit((GenerationSpecificationParserGrammar.DefinitionContext) parserInfo.rootContext);
+        return section;
     }
 
     private static SourceCodeParserInfo getFileGenerationParserInfo(SectionSourceCode sectionSourceCode)

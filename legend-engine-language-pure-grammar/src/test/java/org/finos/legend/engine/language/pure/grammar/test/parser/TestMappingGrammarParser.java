@@ -354,4 +354,16 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  }\n" +
                 ")\n", "PARSER error at [9:5-13]: Unexpected token");
     }
+
+    @Test
+    public void testUnknownClassMappingType()
+    {
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Unknown\n" +
+                "  {\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [4:3-6:3]: No parser for Unknown");
+    }
 }

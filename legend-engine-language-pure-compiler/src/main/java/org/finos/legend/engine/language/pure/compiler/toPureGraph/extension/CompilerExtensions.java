@@ -58,7 +58,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -349,7 +348,7 @@ public class CompilerExtensions
 
     public static CompilerExtensions fromExtensions(CompilerExtension... extensions)
     {
-        return fromExtensions(Arrays.asList(extensions));
+        return fromExtensions(Lists.immutable.with(extensions));
     }
 
     public static CompilerExtensions fromExtensions(Iterable<? extends CompilerExtension> extensions)
