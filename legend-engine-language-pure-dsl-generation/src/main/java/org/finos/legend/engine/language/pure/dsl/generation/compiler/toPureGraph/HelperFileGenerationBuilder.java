@@ -51,7 +51,7 @@ public class HelperFileGenerationBuilder
     public static Root_meta_pure_generation_metamodel_GenerationConfiguration processFileGeneration(FileGenerationSpecification fileGeneration, CompileContext context)
     {
         MutableListMultimap<String, GenerationExtension> extensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty()).groupBy(x -> x.getKey());
-        GenerationExtension extension = extensions.get(fileGeneration.type.toLowerCase()).getFirst();
+        GenerationExtension extension = extensions.get(fileGeneration.type).getFirst();
         Assert.assertTrue(extension != null, () -> "Can't find a handler for the file type '" + fileGeneration.type.toLowerCase() + "'");
         return extension.defaultConfig(context);
     }
