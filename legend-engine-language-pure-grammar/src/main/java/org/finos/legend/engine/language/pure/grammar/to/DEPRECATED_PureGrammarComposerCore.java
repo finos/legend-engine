@@ -65,6 +65,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
@@ -756,6 +757,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(CStrictDate cStrictDate)
     {
         return this.isValueSpecificationExternalParameter ? cStrictDate.values.get(0) : "%" + cStrictDate.values.get(0);
+    }
+
+    @Override
+    public String visit(CStrictTime CStrictTime)
+    {
+        return this.isValueSpecificationExternalParameter ? CStrictTime.values.get(0) : "%" + CStrictTime.values.get(0);
     }
 
     @Override

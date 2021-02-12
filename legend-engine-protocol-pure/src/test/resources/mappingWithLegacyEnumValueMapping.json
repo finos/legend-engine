@@ -6478,6 +6478,14 @@
             "type": "DateTime"
           },
           {
+            "name": "settlementStrictTime",
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "type": "StrictTime"
+          },
+          {
             "name": "pnl",
             "multiplicity": {
               "lowerBound": 0,

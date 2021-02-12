@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
@@ -76,6 +77,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.pat
         @JsonSubTypes.Type(value = CFloat.class, name = "float"),
         @JsonSubTypes.Type(value = CDateTime.class, name = "dateTime"),
         @JsonSubTypes.Type(value = CStrictDate.class, name = "strictDate"),
+        @JsonSubTypes.Type(value = CStrictTime.class, name = "strictTime"),
         @JsonSubTypes.Type(value = CLatestDate.class, name = "latestDate"),
 
         @JsonSubTypes.Type(value = AggregateValue.class, name = "aggregateValue"),

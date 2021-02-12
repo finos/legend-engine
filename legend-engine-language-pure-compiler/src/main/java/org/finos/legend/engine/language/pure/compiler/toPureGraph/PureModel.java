@@ -368,6 +368,8 @@ public class PureModel implements IPureModel
         this.immutables.add("DateTime");
         this.typesIndex.put("LatestDate", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "LatestDate"));
         this.immutables.add("LatestDate");
+        this.typesIndex.put("StrictTime", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "StrictTime"));
+        this.immutables.add("StrictTime");
     }
 
 
