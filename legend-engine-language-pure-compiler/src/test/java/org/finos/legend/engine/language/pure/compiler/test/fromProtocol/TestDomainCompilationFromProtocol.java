@@ -31,4 +31,17 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
     {
         testWithProtocolPath("appliedFunctionWithFullyQualifiedName.json");
     }
+
+    @Test
+    public void testCreatePackageWithWrongStrictTimeDomain()
+    {
+        testWithProtocolPath("packageWithWrongStrictTimeDomain.json",
+                "COMPILATION error: Error in 'ui::TestClassSibling': Can't find type 'Stricttime'");
+    }
+
+    @Test
+    public void testCreatePackageWithCorrectStrictTimeDomain()
+    {
+        testWithProtocolPath("packageWithCorrectStrictTimeDomain.json");
+    }
 }

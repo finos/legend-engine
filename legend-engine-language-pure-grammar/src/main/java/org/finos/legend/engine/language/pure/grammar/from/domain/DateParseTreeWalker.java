@@ -18,7 +18,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
@@ -84,7 +83,7 @@ public class DateParseTreeWalker
         // Year
         int year = -1;
         int previous = (value.charAt(start) == '-') ? start + 1 : start;
-        int index = findNonDigit(value, previous, end);
+        int index = ParserTreeWalkerUtility.findNonDigit(value, previous, end);
         try
         {
             year = Integer.parseInt(value.substring(start, index));
@@ -106,7 +105,7 @@ public class DateParseTreeWalker
         // Month
         int month = -1;
         previous = index;
-        index = findNonDigit(value, previous, end);
+        index = ParserTreeWalkerUtility.findNonDigit(value, previous, end);
         try
         {
             month = Integer.parseInt(value.substring(previous, index));
@@ -128,7 +127,7 @@ public class DateParseTreeWalker
         // Day
         int day = -1;
         previous = index;
-        index = findNonDigit(value, previous, end);
+        index = ParserTreeWalkerUtility.findNonDigit(value, previous, end);
         try
         {
             day = Integer.parseInt(value.substring(previous, index));
@@ -140,7 +139,7 @@ public class DateParseTreeWalker
         if (index == end && day != -1)
         {
             CStrictDate cStrictDate = new CStrictDate();
-            cStrictDate.multiplicity = this.getMultiplicityOneOne();
+            cStrictDate.multiplicity = ParserTreeWalkerUtility.getMultiplicityOneOne();
             cStrictDate.values = Lists.mutable.with(value);
             cStrictDate.sourceInformation = walkerSourceInformation.getSourceInformation(this.dateToken.getSymbol());
             return cStrictDate;
@@ -155,7 +154,7 @@ public class DateParseTreeWalker
     private CDateTime createDateTime(String values)
     {
         CDateTime cDateTime = new CDateTime();
-        cDateTime.multiplicity = this.getMultiplicityOneOne();
+        cDateTime.multiplicity = ParserTreeWalkerUtility.getMultiplicityOneOne();
         cDateTime.values = Lists.mutable.with(values);
         cDateTime.sourceInformation = walkerSourceInformation.getSourceInformation(this.dateToken.getSymbol());
         return cDateTime;
@@ -174,37 +173,5 @@ public class DateParseTreeWalker
     private void throwInvalidDateString(String message, String dateString, int start, int end)
     {
         throw new EngineException(message + " '" + dateString.substring(start, end).replace("'", "\\'") + "'", this.walkerSourceInformation.getSourceInformation(this.dateToken.getSymbol()), EngineErrorType.PARSER);
-    }
-
-    /**
-     * Return the index of the first character in string
-     * between start and end that is not a digit.  Returns
-     * end if no non-digit character is found.
-     *
-     * @param string date string
-     * @param start  start index for search (inclusive)
-     * @param end    end index for search (exclusive)
-     * @return index of the first non-digit character
-     */
-    private static int findNonDigit(String string, int start, int end)
-    {
-        while ((start < end) && isDigit(string.charAt(start)))
-        {
-            start++;
-        }
-        return start;
-    }
-
-    private static boolean isDigit(char character)
-    {
-        return ('0' <= character) && (character <= '9');
-    }
-
-    private Multiplicity getMultiplicityOneOne()
-    {
-        Multiplicity m = new Multiplicity();
-        m.lowerBound = 1;
-        m.setUpperBound(1);
-        return m;
     }
 }

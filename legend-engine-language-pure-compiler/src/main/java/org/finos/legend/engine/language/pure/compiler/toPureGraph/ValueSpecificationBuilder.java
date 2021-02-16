@@ -38,6 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
@@ -99,6 +100,7 @@ import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFormat;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.LatestDate;
+import org.finos.legend.pure.m4.coreinstance.primitive.strictTime.StrictTimeFormat;
 
 import java.util.List;
 import java.util.Objects;
@@ -170,6 +172,15 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                 ._genericType(this.context.pureModel.getGenericType("StrictDate"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cStrictDate.multiplicity))
                 ._values(ListIterate.collect(cStrictDate.values, DateFormat::parseStrictDate));
+    }
+
+    @Override
+    public ValueSpecification visit(CStrictTime cStrictTime)
+    {
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+                ._genericType(this.context.pureModel.getGenericType("StrictTime"))
+                ._multiplicity(this.context.pureModel.getMultiplicity(cStrictTime.multiplicity))
+                ._values(ListIterate.collect(cStrictTime.values, StrictTimeFormat::parsePureStrictTime));
     }
 
     @Override

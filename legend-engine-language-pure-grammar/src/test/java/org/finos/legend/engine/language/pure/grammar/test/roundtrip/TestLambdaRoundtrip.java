@@ -95,6 +95,18 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testLambdaWithBodyWithStrictTime()
+    {
+        testLambda("|%22:22:22.1111");
+    }
+
+    @Test
+    public void testLambdaWithBodyWithStrictTimeMany()
+    {
+        testLambda("|[%22:22:22.1, %09:20:21, %8:08:08]");
+    }
+
+    @Test
     public void testLambdaWithGetAll()
     {
         testLambda("|Person.all()->filter(p|true)");
