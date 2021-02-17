@@ -27,6 +27,8 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operati
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operationClassMapping.OperationClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ModelConnectionParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
@@ -37,13 +39,16 @@ import org.finos.legend.engine.language.pure.grammar.from.mapping.EnumerationMap
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.OperationClassMappingParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.PureInstanceClassMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.XStoreAssociationMappingParseTreeWalker;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
@@ -64,6 +69,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     public static final String OPERATION_CLASS_MAPPING_TYPE = "Operation";
     public static final String PURE_INSTANCE_CLASS_MAPPING_TYPE = "Pure";
     public static final String OBJECT_TEST_DATA_INPUT_TYPE = "Object";
+    public static final String XSTORE_ASSOCIATION_MAPPING_TYPE = "XStore";
 
     @Override
     public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
@@ -71,7 +77,8 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         return Lists.immutable.with(
                 MappingElementParser.newParser(ENUMERATION_MAPPING_TYPE, CorePureGrammarParser::parseEnumerationMapping),
                 MappingElementParser.newParser(OPERATION_CLASS_MAPPING_TYPE, CorePureGrammarParser::parseOperationClassMapping),
-                MappingElementParser.newParser(PURE_INSTANCE_CLASS_MAPPING_TYPE, CorePureGrammarParser::parsePureClassMapping));
+                MappingElementParser.newParser(PURE_INSTANCE_CLASS_MAPPING_TYPE, CorePureGrammarParser::parsePureClassMapping),
+                MappingElementParser.newParser(XSTORE_ASSOCIATION_MAPPING_TYPE, CorePureGrammarParser::parseXStoreAssociationMapping));
     }
 
     @Override
@@ -163,6 +170,19 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         return classMapping;
     }
 
+    private static AssociationMapping parseXStoreAssociationMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+        SourceCodeParserInfo parserInfo = getXStoreAssociationMappingParserInfo(mappingElementSourceCode);
+        XStoreAssociationMappingParseTreeWalker walker = new XStoreAssociationMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext);
+        XStoreAssociationMapping xStoreAssociationMapping = new XStoreAssociationMapping();
+        xStoreAssociationMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+        xStoreAssociationMapping.association = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        xStoreAssociationMapping.sourceInformation = parserInfo.sourceInformation;
+        walker.visitXStoreAssociationMapping((XStoreAssociationMappingParserGrammar.XStoreAssociationMappingContext) parserInfo.rootContext, xStoreAssociationMapping);
+        return xStoreAssociationMapping;
+    }
+
     private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation sourceInformation)
     {
         SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
@@ -235,5 +255,18 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(mappingElementSourceCode.code, input, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext), mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.pureInstanceClassMapping());
+    }
+
+    private static SourceCodeParserInfo getXStoreAssociationMappingParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation);
+        XStoreAssociationMappingLexerGrammar lexer = new XStoreAssociationMappingLexerGrammar(CharStreams.fromString(mappingElementSourceCode.code));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        XStoreAssociationMappingParserGrammar parser = new XStoreAssociationMappingParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext), mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.xStoreAssociationMapping());
     }
 }

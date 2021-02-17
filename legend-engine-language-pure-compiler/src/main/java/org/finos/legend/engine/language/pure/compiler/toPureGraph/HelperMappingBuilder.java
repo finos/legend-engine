@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingStringSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.LocalMappingPropertyInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateFunction;
@@ -59,12 +60,14 @@ import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_A
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_GroupByFunctionSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Generalization_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregateSpecification;
@@ -72,7 +75,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.GroupByFunctionSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
@@ -83,6 +88,7 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
@@ -337,8 +343,7 @@ public class HelperMappingBuilder
             XStoreAssociationImplementation base = new Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl("");
             final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(xStoreAssociationMapping.association);
             MutableList<Store> stores = ListIterate.collect(xStoreAssociationMapping.stores, context::resolveStore);
-            RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> rpm = ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping))));
-            base._association(pureAssociation)._stores(stores)._propertyMappings(rpm)._parent(parentMapping);
+            base._association(pureAssociation)._stores(stores)._parent(parentMapping)._propertyMappings(ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
             return base;
         }
         return context.getCompilerExtensions().getExtraAssociationMappingProcessors().stream()
@@ -415,5 +420,68 @@ public class HelperMappingBuilder
         variable.multiplicity = new Multiplicity(1, 1);
         afs._aggregateFn((LambdaFunction) ((InstanceValue) aggregateFunction.aggregateFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)))._values().getFirst());
         return afs;
+    }
+
+    public static Property getMappedProperty(PropertyMapping propertyMapping, Class propertyOwner, CompileContext context)
+    {
+        if (propertyMapping.localMappingProperty != null)
+        {
+            // Local property mapping
+            LocalMappingPropertyInfo localMappingPropertyInfo = propertyMapping.localMappingProperty;
+
+            GenericType sourceGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl(""); // Raw type will be populated when mapping class is built
+            GenericType targetGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                    ._rawType(context.resolveType(localMappingPropertyInfo.type, localMappingPropertyInfo.sourceInformation));
+            GenericType propertyClassifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                    ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))
+                    ._typeArguments(Lists.fixedSize.of(sourceGenericType, targetGenericType))
+                    ._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(localMappingPropertyInfo.multiplicity));
+
+            return new Root_meta_pure_metamodel_function_property_Property_Impl<>(propertyMapping.property.property)
+                    ._name(propertyMapping.property.property)
+                    ._classifierGenericType(propertyClassifierGenericType)
+                    ._genericType(targetGenericType)
+                    ._multiplicity(context.pureModel.getMultiplicity(localMappingPropertyInfo.multiplicity));
+        }
+
+        return HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, propertyOwner, Optional.empty(), propertyMapping.property.property, propertyMapping.sourceInformation);
+    }
+
+    public static void buildMappingClassOutOfLocalProperties(SetImplementation setImplementation, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> propertyMappings, CompileContext context)
+    {
+        if (setImplementation instanceof InstanceSetImplementation && propertyMappings != null)
+        {
+            List<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> localPropertyMappings = ListIterate.select(
+                    propertyMappings.toList(),
+                    x -> x._localMappingProperty() != null && x._localMappingProperty()
+            );
+
+            if (!localPropertyMappings.isEmpty())
+            {
+                String mappingClassName = setImplementation._class().getName() + "_" + setImplementation._parent().getName() + "_" + setImplementation._id();
+
+                final MappingClass mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>(mappingClassName);
+                mappingClass._name(mappingClassName);
+
+                GenericType classifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                        ._rawType(context.pureModel.getType("meta::pure::metamodel::type::Class"))
+                        ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(mappingClass)));
+                mappingClass._classifierGenericType(classifierGenericType);
+
+                GenericType superType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(setImplementation._class());
+                Generalization newGeneralization = new Root_meta_pure_metamodel_relationship_Generalization_Impl("")._specific(mappingClass)._general(superType);
+                mappingClass._generalizations(Lists.immutable.with(newGeneralization));
+                setImplementation._class()._specializationsAdd(newGeneralization);
+
+                mappingClass._properties(ListIterate.collect(localPropertyMappings, pm -> {
+                    Property property = pm._property();
+                    property._owner(mappingClass);
+                    property._classifierGenericType()._typeArguments().toList().get(0)._rawType(mappingClass);
+                    return property;
+                }));
+
+                ((InstanceSetImplementation) setImplementation)._mappingClass(mappingClass);
+            }
+        }
     }
 }

@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.Mapping
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.enumerationMapping.EnumerationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operationClassMapping.OperationClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import org.junit.Test;
 
@@ -40,7 +41,8 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
         return FastList.newListWith(
                 EnumerationMappingParserGrammar.VOCABULARY,
                 OperationClassMappingParserGrammar.VOCABULARY,
-                PureInstanceClassMappingParserGrammar.VOCABULARY
+                PureInstanceClassMappingParserGrammar.VOCABULARY,
+                XStoreAssociationMappingParserGrammar.VOCABULARY
         );
     }
 
@@ -365,5 +367,169 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  {\n" +
                 "  }\n" +
                 ")\n", "PARSER error at [4:3-6:3]: No parser for Unknown");
+    }
+
+    @Test
+    public void testModelMappingWithLocalProperties()
+    {
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : [1] : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [7:19]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : String : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [7:26]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [7:19]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [7:19]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : String[1] : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : String[1] : $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    + lastName : String[1] : $src.lastName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testCrossStoreAssociationMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    ~src Something\n" +
+                "  }\n" +
+                ")", "PARSER error at [6:5]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    +p: String[1]: 'a'\n" +
+                "  }\n" +
+                ")", "PARSER error at [6:5]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p: true\n" +
+                "  }\n" +
+                ")");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1: true,\n" +
+                "    p2: false\n" +
+                "  }\n" +
+                ")");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x, y]: true\n" +
+                "    p2[y, x]: false\n" +
+                "  }\n" +
+                ")", "PARSER error at [7:5-6]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x]: true\n" +
+                "  }\n" +
+                ")", "PARSER error at [6:9]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x, ]: true\n" +
+                "  }\n" +
+                ")", "PARSER error at [6:11]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x, y]: true,\n" +
+                "    p2[y, x]: false\n" +
+                "  }\n" +
+                ")");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x, y]: true,\n" +
+                "    p2: false\n" +
+                "  }\n" +
+                ")");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x1, y2]: true,\n" +
+                "    p1[x2, y2]: false\n" +
+                "  }\n" +
+                ")");
     }
 }

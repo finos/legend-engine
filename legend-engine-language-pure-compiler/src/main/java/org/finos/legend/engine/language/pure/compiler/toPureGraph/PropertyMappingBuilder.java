@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl;
@@ -96,7 +97,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping pm = new Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl("");
         Class propertyOwner = this.context.resolveClass(propertyMapping.property._class, propertyMapping.sourceInformation);
-        Property property = HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(this.context, propertyOwner, Optional.empty(), propertyMapping.property.property, propertyMapping.sourceInformation);
+        Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, propertyOwner, this.context);
         pm.setSourceInformation(SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation));
         pm._property(property)
           ._explodeProperty(propertyMapping.explodeProperty)
@@ -112,6 +113,14 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             Assert.assertTrue(eMap != null, () -> "Can't find enumeration mapping '" + propertyMapping.enumMappingId + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
             pm._transformer(eMap);
         }
+
+        if (propertyMapping.localMappingProperty != null)
+        {
+            pm._localMappingProperty(true);
+            pm._localMappingPropertyType(this.context.resolveType(propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
+            pm._localMappingPropertyMultiplicity(this.context.pureModel.getMultiplicity(propertyMapping.localMappingProperty.multiplicity));
+        }
+
         return pm;
     }
 
@@ -121,10 +130,16 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         ProcessingContext ctx = new ProcessingContext("Create Xstore Property Mapping");
 
         InstanceSetImplementation sourceSet = (InstanceSetImplementation) allClassMappings.detect(c -> c._id().equals(propertyMapping.source));
-        Assert.assertTrue(sourceSet != null, () -> "Can't find class mapping '" + propertyMapping.source + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'");
+        if (sourceSet == null)
+        {
+            throw new EngineException("Can't find class mapping '" + propertyMapping.source + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+        }
 
         InstanceSetImplementation targetSet = (InstanceSetImplementation) allClassMappings.detect(c -> c._id().equals(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping)));
-        Assert.assertTrue(targetSet != null, () -> "Can't find class mapping '" + propertyMapping.target + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'");
+        if (targetSet == null)
+        {
+            throw new EngineException("Can't find class mapping '" + propertyMapping.target + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+        }
 
         Class thisClass = sourceSet._mappingClass() == null ? sourceSet._class() : sourceSet._mappingClass();
         Class thatClass = targetSet._mappingClass() == null ? targetSet._class() : targetSet._mappingClass();
@@ -154,14 +169,18 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         ctx.flushVariable("that");
         ctx.flushVariable("this");
 
+        if (!valueSpecifications.getLast()._genericType()._rawType().equals(context.pureModel.getType("Boolean")) || !valueSpecifications.getLast()._multiplicity().equals(context.pureModel.getMultiplicity("one")))
+        {
+            throw new EngineException("XStore property mapping function should return 'Boolean[1]'", propertyMapping.crossExpression.body.get(propertyMapping.crossExpression.body.size() - 1).sourceInformation, EngineErrorType.COMPILATION);
+        }
+
         LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl(propertyName, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStorePropertyMapping xpm = new Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl("");
-        Property property = propertyMapping.localMappingProperty == null ? HelperModelBuilder.getOwnedProperty(this.context.resolveClass(propertyMapping.property._class, propertyMapping.property.sourceInformation), propertyMapping.property.property, this.context.pureModel.getExecutionSupport()) :
-                ((InstanceSetImplementation) parent)._mappingClass()._properties().detect(p -> p._name().equals(propertyMapping.property.property));
+        Property property = HelperModelBuilder.getAssociationProperty(parent._association(), propertyMapping.property.property, propertyMapping.property.sourceInformation, this.context);
         return xpm._property(property)
                   ._localMappingProperty(propertyMapping.localMappingProperty != null)
                   ._sourceSetImplementationId(propertyMapping.source == null ? parent._id() : propertyMapping.source)

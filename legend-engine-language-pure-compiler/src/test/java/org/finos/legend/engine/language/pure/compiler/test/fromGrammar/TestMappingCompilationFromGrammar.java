@@ -1380,4 +1380,106 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 ")");
     }
+
+    @Test
+    public void testModelMappingWithLocalProperties()
+    {
+        test("Class test::Firm\n" +
+                "{" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping a::localPropertyMapping\n" +
+                "(\n" +
+                "   \n" +
+                "   test::Firm : Pure\n" +
+                "   {\n" +
+                "       ~src test::Firm\n" +
+                "       +prop1: String[1]: $src.name,\n" +
+                "       name : $src.name\n" +
+                "   }\n" +
+                ")");
+    }
+
+    @Test
+    public void testCrossStoreMappingWithLocalProperties()
+    {
+        String mapping = "###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employer: test::Firm[1];\n" +
+                "   employees: test::Person[*];\n" +
+                "}\n\n\n" +
+                "###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "%s\n" +
+                ")\n";
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                        "      employer[p1, f]: $this.firmId + $that.id\n" +
+                        "   }"),
+                "COMPILATION error at [36:7-46]: Can't find class mapping 'p1' in mapping 'test::crossPropertyMappingWithLocalProperties'"
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f1]: $this.firmId + $that.id\n" +
+                                "   }"),
+                "COMPILATION error at [36:7-46]: Can't find class mapping 'f1' in mapping 'test::crossPropertyMappingWithLocalProperties'"
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f]: $this.firmId + $that.id\n" +
+                                "   }"),
+                "COMPILATION error at [36:36-45]: XStore property mapping function should return 'Boolean[1]'"
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f]: [true, true]\n" +
+                                "   }"),
+                "COMPILATION error at [36:23-34]: XStore property mapping function should return 'Boolean[1]'"
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f]: $this.firmId == $that.id\n" +
+                                "   }")
+        );
+    }
 }

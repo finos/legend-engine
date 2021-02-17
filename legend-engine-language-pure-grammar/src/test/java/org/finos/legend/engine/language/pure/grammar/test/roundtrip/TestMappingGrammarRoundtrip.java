@@ -259,4 +259,69 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testModelMappingWithLocalProperties()
+    {
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
+                "    +prop1: String[1]: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
+                "    +prop1: String[1]: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    +prop2: Integer[1]: 1,\n" +
+                "    +prop3: Float[1]: 1.0,\n" +
+                "    +prop4: Boolean[1]: true,\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testCrossStoreAssociationMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties\n" +
+                "(\n" +
+                "  test::Person[p]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    +firmId: Integer[1]: 1,\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  test::Firm[f]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Firm\n" +
+                "    id: $src.id,\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                "\n" +
+                "  test::Firm_Person: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                "    employer: $this.firmId == $that.id\n" +
+                "  }\n" +
+                "  test::Firm_Person[p1]: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                "    employer: $this.firmId == $that.id\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

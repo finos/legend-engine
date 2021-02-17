@@ -118,6 +118,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
             lambda.setSourceInformation(new SourceInformation(mappingPath, 0, 0, 0, 0));
             rootSetImpl._filter(lambda);
         }
+        HelperMappingBuilder.buildMappingClassOutOfLocalProperties(rootSetImpl, rootSetImpl._propertyMappings(), this.context);
         return Tuples.pair(rootSetImpl, Lists.immutable.empty());
     }
 
