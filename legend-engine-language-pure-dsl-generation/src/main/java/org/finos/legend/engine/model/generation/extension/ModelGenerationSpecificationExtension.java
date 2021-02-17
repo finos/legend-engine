@@ -12,9 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.external.shared.format.generations.description;
+package org.finos.legend.engine.model.generation.extension;
 
-public enum GenerationItemType
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.ModelGenerationSpecification;
+
+public interface ModelGenerationSpecificationExtension<T extends ModelGenerationSpecification>
 {
-    ARRAY, BOOLEAN, ENUMERATION, INTEGER, MAP, STRING, ENUM
+
+    Class<T> getElementClass();
+
+    PureModelContextData generate(T element, CompileContext compileContext);
+
 }
