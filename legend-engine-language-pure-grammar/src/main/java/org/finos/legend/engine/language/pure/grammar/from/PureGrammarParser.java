@@ -67,7 +67,6 @@ public class PureGrammarParser
         return new PureGrammarParser(extensions);
     }
 
-    @Deprecated
     public static PureGrammarParser newInstance()
     {
         return new PureGrammarParser(PureGrammarParserExtensions.fromAvailableExtensions());
