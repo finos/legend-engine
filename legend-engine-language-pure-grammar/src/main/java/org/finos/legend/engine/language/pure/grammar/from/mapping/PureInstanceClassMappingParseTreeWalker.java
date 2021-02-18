@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.Mapping
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.LocalMappingPropertyInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
@@ -68,8 +69,17 @@ public class PureInstanceClassMappingParseTreeWalker
 
     private PurePropertyMapping visitPurePropertyMapping(PureInstanceClassMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, PureInstanceClassMapping pureInstanceClassMapping)
     {
-        // TODO localMappingProperty
         PurePropertyMapping purePropertyMapping = new PurePropertyMapping();
+
+        if (ctx.PLUS() != null)
+        {
+            // Local property mapping
+            purePropertyMapping.localMappingProperty = new LocalMappingPropertyInfo();
+            purePropertyMapping.localMappingProperty.type = ctx.type().getText();
+            purePropertyMapping.localMappingProperty.multiplicity = buildMultiplicity(ctx.multiplicity().multiplicityArgument());
+            purePropertyMapping.localMappingProperty.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+        }
+
         purePropertyMapping.property = new PropertyPointer();
         purePropertyMapping.property._class = PureGrammarParserUtility.fromQualifiedName(classMappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : classMappingContext.qualifiedName().packagePath().identifier(), classMappingContext.qualifiedName().identifier());
         purePropertyMapping.property.property = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
@@ -116,6 +126,15 @@ public class PureInstanceClassMappingParseTreeWalker
             lambda.parameters.add(variable);
         }
         return lambda;
+    }
+
+    private static Multiplicity buildMultiplicity(PureInstanceClassMappingParserGrammar.MultiplicityArgumentContext ctx)
+    {
+        String star = "*";
+        Multiplicity m = new Multiplicity();
+        m.lowerBound = Integer.parseInt(ctx.fromMultiplicity() != null ? ctx.fromMultiplicity().getText() : star.equals(ctx.toMultiplicity().getText()) ? "0" : ctx.toMultiplicity().getText());
+        m.setUpperBound(star.equals(ctx.toMultiplicity().getText()) ? null : Integer.parseInt(ctx.toMultiplicity().getText()));
+        return m;
     }
 }
 
