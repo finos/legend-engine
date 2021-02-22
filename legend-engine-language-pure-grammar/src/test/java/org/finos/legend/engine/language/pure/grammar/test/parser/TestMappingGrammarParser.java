@@ -17,12 +17,19 @@ package org.finos.legend.engine.language.pure.grammar.test.parser;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.enumerationMapping.EnumerationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operationClassMapping.OperationClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -531,5 +538,21 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    p1[x2, y2]: false\n" +
                 "  }\n" +
                 ")");
+    }
+
+    @Test
+    public void testLatestMultiplicity()
+    {
+        PureModelContextData model = PureGrammarParser.newInstance().parseModel("import test::*;\n" +
+                "Class test::A\n" +
+                "{\n" +
+                "  stringProperty: String[1];\n" +
+                "  latestProduct(){\n" +
+                "         $this.stringProperty(%latest)\n" +
+                "   }:String[*];\n" +
+                "}\n"
+        );
+        Multiplicity latest = ((CLatestDate)((AppliedProperty)model.getElementsOfType(Class.class).get(0).qualifiedProperties.get(0).body.get(0)).parameters.get(1)).multiplicity;
+        Assert.assertTrue(latest.isUpperBoundEqualTo(1), () -> "CLatestDate must have multiplicity set to 1");
     }
 }
