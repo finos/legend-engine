@@ -96,8 +96,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     public PropertyMapping visit(PurePropertyMapping propertyMapping)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping pm = new Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl("");
-        Class propertyOwner = this.context.resolveClass(propertyMapping.property._class, propertyMapping.sourceInformation);
-        Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, propertyOwner, this.context);
+        Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         pm.setSourceInformation(SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation));
         pm._property(property)
           ._explodeProperty(propertyMapping.explodeProperty)

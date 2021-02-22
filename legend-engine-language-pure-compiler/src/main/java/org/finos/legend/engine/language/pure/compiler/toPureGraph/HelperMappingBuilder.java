@@ -422,7 +422,7 @@ public class HelperMappingBuilder
         return afs;
     }
 
-    public static Property getMappedProperty(PropertyMapping propertyMapping, Class propertyOwner, CompileContext context)
+    public static Property getMappedProperty(PropertyMapping propertyMapping, CompileContext context)
     {
         if (propertyMapping.localMappingProperty != null)
         {
@@ -444,7 +444,7 @@ public class HelperMappingBuilder
                     ._multiplicity(context.pureModel.getMultiplicity(localMappingPropertyInfo.multiplicity));
         }
 
-        return HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, propertyOwner, Optional.empty(), propertyMapping.property.property, propertyMapping.sourceInformation);
+        return HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, context.resolveClass(propertyMapping.property._class, propertyMapping.sourceInformation), Optional.empty(), propertyMapping.property.property, propertyMapping.sourceInformation);
     }
 
     public static void buildMappingClassOutOfLocalProperties(SetImplementation setImplementation, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> propertyMappings, CompileContext context)
