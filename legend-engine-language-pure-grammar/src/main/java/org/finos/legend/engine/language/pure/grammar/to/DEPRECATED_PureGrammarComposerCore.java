@@ -469,7 +469,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         purePropertyMapping.transform.parameters = Collections.emptyList();
         String lambdaString = purePropertyMapping.transform.accept(this).replaceFirst("\\|", "");
-        return PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) + (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
+        return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
+                (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
+                (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
                 (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
                 (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
                 ": " + lambdaString;
