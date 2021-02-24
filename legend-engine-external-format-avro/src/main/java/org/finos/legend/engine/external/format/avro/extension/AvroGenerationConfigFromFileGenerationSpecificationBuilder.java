@@ -26,7 +26,7 @@ public class AvroGenerationConfigFromFileGenerationSpecificationBuilder
     {
         Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.avro.name()), () -> "File generation of type of "+FileGenerationType.avro.name()+" expected, got '" + fileGeneration.type + "'");
         AvroGenerationConfig avroConfig = new AvroGenerationConfig();
-        ConfigBuilder.noConfigurationPropertiesCheck(fileGeneration);
+        ConfigBuilder.duplicateCheck(fileGeneration.configurationProperties);
         ConfigBuilder.setScopeElements(fileGeneration, avroConfig);
         fileGeneration.configurationProperties.forEach(e -> ConfigBuilder.setConfigurationProperty(fileGeneration, e, avroConfig));
         return avroConfig;
