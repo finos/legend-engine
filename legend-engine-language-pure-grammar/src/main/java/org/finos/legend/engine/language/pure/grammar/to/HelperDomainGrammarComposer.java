@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.DefaultValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
@@ -56,13 +55,13 @@ public class HelperDomainGrammarComposer
         return renderAnnotations(enumValue.stereotypes, enumValue.taggedValues) + PureGrammarComposerUtility.convertIdentifier(enumValue.value);
     }
 
-    public static String renderUnit(Unit unit, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderUnit(Unit unit, PureGrammarComposerCore transformer)
     {
         String unitName = PureGrammarComposerUtility.convertIdentifier(unit.name);
         return (unitName.startsWith("'") ? "'" : "") + unitName.substring(unitName.lastIndexOf("~") + 1) + (unit.conversionFunction == null ? ";" : ": " + renderUnitLambda(unit.conversionFunction, transformer) + ";");
     }
 
-    public static String renderUnitLambda(Lambda conversionFunction, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderUnitLambda(Lambda conversionFunction, PureGrammarComposerCore transformer)
     {
         return (conversionFunction.parameters.isEmpty() ? "" : LazyIterate.collect(conversionFunction.parameters, variable -> variable.name).makeString(","))
                 + " -> " + LazyIterate.collect(conversionFunction.body, valueSpecification -> valueSpecification.accept(transformer)).makeString(";");
@@ -73,24 +72,24 @@ public class HelperDomainGrammarComposer
         return multiplicity.lowerBound == 0 && multiplicity.getUpperBoundInt() == Integer.MAX_VALUE ? "*" : multiplicity.lowerBound == multiplicity.getUpperBoundInt() ? String.valueOf(multiplicity.lowerBound) : multiplicity.lowerBound + ".." + (multiplicity.getUpperBoundInt() == Integer.MAX_VALUE ? "*" : multiplicity.getUpperBoundInt());
     }
 
-    public static String renderProperty(Property property, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderProperty(Property property, PureGrammarComposerCore transformer)
     {
         return renderAnnotations(property.stereotypes, property.taggedValues) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + property.type + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null? " = " + property.defaultValue.value.accept(transformer) : "");
     }
 
-    public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, PureGrammarComposerCore transformer)
     {
         List<Variable> functionParameters = qualifiedProperty.parameters.stream().filter(p -> !p.name.equals("this")).collect(Collectors.toList());
         return renderAnnotations(qualifiedProperty.stereotypes, qualifiedProperty.taggedValues)
                 + PureGrammarComposerUtility.convertIdentifier(qualifiedProperty.name) + "("
-                + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(",")
+                + LazyIterate.collect(functionParameters, p -> p.accept(PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(",")
                 + ") {"
                 + LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
                 + "}: "
                 + qualifiedProperty.returnType + "[" + renderMultiplicity(qualifiedProperty.returnMultiplicity) + "]";
     }
 
-    public static String renderConstraint(Constraint constraint, List<Constraint> allConstraints, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderConstraint(Constraint constraint, List<Constraint> allConstraints, PureGrammarComposerCore transformer)
     {
         constraint.functionDefinition.parameters = Collections.emptyList();
         String lambdaString = constraint.functionDefinition.accept(transformer).replaceFirst("\\|", "");
