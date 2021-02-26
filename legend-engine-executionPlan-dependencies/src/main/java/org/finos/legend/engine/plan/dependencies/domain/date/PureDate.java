@@ -37,6 +37,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
     private static final char DATE_TIME_SEPARATOR = 'T';
 
     private static final TimeZone GMT_TIME_ZONE = TimeZone.getTimeZone("GMT");
+    private static final char ISO_UTC = 'Z';
 
     private int year = 0;
     private int month = -1;
@@ -1160,6 +1161,12 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
             throw new RuntimeException("Cannot set time zone without time");
         }
         char first = string.charAt(start++);
+        if ((first == ISO_UTC) && (start == end))
+        {
+            // time zone = Z, which means UTC: no adjustment necessary
+            return;
+        }
+
         boolean negative;
         if (first == '+')
         {
