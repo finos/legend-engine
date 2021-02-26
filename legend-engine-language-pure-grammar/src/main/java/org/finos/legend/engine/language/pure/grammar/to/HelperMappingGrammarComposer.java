@@ -105,10 +105,10 @@ public class HelperMappingGrammarComposer
     {
         return PureGrammarComposerUtility.convertIdentifier(xStorePropertyMapping.property.property) +
                 (xStorePropertyMapping.source == null || xStorePropertyMapping.source.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(xStorePropertyMapping.source) + ", " + PureGrammarComposerUtility.convertIdentifier(xStorePropertyMapping.target) + "]") +
-                ": " + xStorePropertyMapping.crossExpression.body.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+                ": " + xStorePropertyMapping.crossExpression.body.get(0).accept(PureGrammarComposerCore.Builder.newInstance(context).build());
     }
 
-    public static String renderMappingTest(MappingTest mappingTest, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderMappingTest(MappingTest mappingTest, PureGrammarComposerCore transformer)
     {
         return "  " + mappingTest.name + "\n" +
                 getTabString(2) + "(\n" +

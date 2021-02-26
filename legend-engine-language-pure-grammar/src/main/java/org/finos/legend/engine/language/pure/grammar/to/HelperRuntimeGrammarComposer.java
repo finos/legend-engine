@@ -29,7 +29,7 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class HelperRuntimeGrammarComposer
 {
-    private static String renderIdentifiedConnection(IdentifiedConnection identifiedConnection, int baseIndentation, DEPRECATED_PureGrammarComposerCore transformer)
+    private static String renderIdentifiedConnection(IdentifiedConnection identifiedConnection, int baseIndentation, PureGrammarComposerCore transformer)
     {
         if (identifiedConnection.connection instanceof ConnectionPointer)
         {
@@ -38,11 +38,11 @@ public class HelperRuntimeGrammarComposer
         return getTabString(baseIndentation) + PureGrammarComposerUtility.convertIdentifier(identifiedConnection.id) + ":\n" +
                 getTabString(baseIndentation) + "#{\n" +
                 getTabString(baseIndentation + 1) + HelperConnectionGrammarComposer.getConnectionValueName(identifiedConnection.connection, transformer.toContext()) + "\n" +
-                identifiedConnection.connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(baseIndentation + 1), true).build()) + "\n" +
+                identifiedConnection.connection.accept(PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(baseIndentation + 1), true).build()) + "\n" +
                 getTabString(baseIndentation) + "}#";
     }
 
-    public static String renderRuntimeValue(EngineRuntime engineRuntime, int baseIndentation, boolean isEmbeddedRuntime, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderRuntimeValue(EngineRuntime engineRuntime, int baseIndentation, boolean isEmbeddedRuntime, PureGrammarComposerCore transformer)
     {
         StringBuilder builder = new StringBuilder();
         if (!isEmbeddedRuntime || !engineRuntime.mappings.isEmpty())

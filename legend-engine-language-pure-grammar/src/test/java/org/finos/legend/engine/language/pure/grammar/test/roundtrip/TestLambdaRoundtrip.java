@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
-import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,6 +32,12 @@ public class TestLambdaRoundtrip
     public void testLambdaWithParameter()
     {
         testLambda("s: String[1]|'ok'");
+    }
+
+    @Test
+    public void testLambdaWithTwoParameters()
+    {
+        testLambda("{a,b|ok}");
     }
 
     @Test
@@ -466,11 +472,11 @@ public class TestLambdaRoundtrip
 
     private void testLambda(String string)
     {
-        Assert.assertEquals(string, new DomainParser().parseLambda(string, "").accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
+        Assert.assertEquals(string, new DomainParser().parseLambda(string, "").accept(PureGrammarComposerCore.Builder.newInstance().build()));
     }
 
     private void testLambdaWithFormat(String string, String toCompare, PureGrammarComposerContext.RenderStyle renderStyle)
     {
-        Assert.assertEquals(toCompare, new DomainParser().parseLambda(string, "").accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle).build()));
+        Assert.assertEquals(toCompare, new DomainParser().parseLambda(string, "").accept(PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle).build()));
     }
 }
