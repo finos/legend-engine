@@ -128,7 +128,7 @@ public class PureGrammarComposerContext
         }
 
         // WIP: to be removed when we remove the deprecated composer
-        public static Builder newInstance(PureGrammarComposerCore DEPRECATED_context)
+        public static Builder newInstance(DEPRECATED_PureGrammarComposerCore DEPRECATED_context)
         {
             Builder builder = new Builder();
             builder.indentationString = DEPRECATED_context.getIndentationString();
