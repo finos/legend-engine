@@ -155,6 +155,6 @@ public class PureGrammarComposer
 
     private String DEPRECATED_renderElement(PackageableElement element)
     {
-        return element.accept(PureGrammarComposerCore.Builder.newInstance(this.context).build());
+        return element.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this.context).build());
     }
 }

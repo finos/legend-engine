@@ -26,7 +26,7 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.MapIterate;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJsonInput;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtensionLoader;
@@ -63,7 +63,7 @@ public class TransformJsonToGrammar
         {
             PureGrammarComposerExtensionLoader.logExtensionList();
             PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(jsonInput.renderStyle).build());
-            PureGrammarComposerCore grammarTransformerVisitor = PureGrammarComposerCore.Builder.newInstance().withRenderStyle(jsonInput.renderStyle).build();
+            DEPRECATED_PureGrammarComposerCore grammarTransformerVisitor = DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(jsonInput.renderStyle).build();
             GrammarToJsonInput symmetricResult = new GrammarToJsonInput();
             MutableMap<String, String> resMap = Maps.mutable.empty();
             if (jsonInput.isolatedLambdas != null)

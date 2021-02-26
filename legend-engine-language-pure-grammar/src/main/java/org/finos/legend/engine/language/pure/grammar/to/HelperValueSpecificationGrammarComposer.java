@@ -56,7 +56,7 @@ public class HelperValueSpecificationGrammarComposer
 
     public static final MutableSet<String> NEXT_LINE_FN = Sets.mutable.with("filter", "project", "and", "or", "groupBy");
 
-    public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, PureGrammarComposerCore shiftedTransformer, PureGrammarComposerCore topParameterTransfomer, PureGrammarComposerCore transformer)
+    public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore shiftedTransformer, DEPRECATED_PureGrammarComposerCore topParameterTransfomer, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<ValueSpecification> parameters = appliedFunction.parameters;
         String function = removeFunctionSignature(LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::"));
@@ -70,21 +70,21 @@ public class HelperValueSpecificationGrammarComposer
             }
             return top + (toCreateNewLine ? shiftedTransformer.returnChar() + shiftedTransformer.getIndentationString() : "") + (shiftedTransformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (shiftedTransformer.isRenderingHTML() ? "</span>" : "")
                     + renderFunctionName(function, transformer)
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 1) : "") + "("
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3) : "")
-                    + ListIterate.collect(parameters.subList(1, parameters.size()), p -> p.accept(PureGrammarComposerCore.Builder.newInstance(shiftedTransformer).withIndentation(3).build()))
-                                 .makeString(", " + (toCreateNewLine ? shiftedTransformer.returnChar() + PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3) : ""))
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 1) : "") + ")";
+                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 1) : "") + "("
+                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3) : "")
+                    + ListIterate.collect(parameters.subList(1, parameters.size()), p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(shiftedTransformer).withIndentation(3).build()))
+                                 .makeString(", " + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3) : ""))
+                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 1) : "") + ")";
         }
         return renderFunctionName(function, transformer) + "()";
     }
 
-    public static String renderFunctionName(String name, PureGrammarComposerCore transformer)
+    public static String renderFunctionName(String name, DEPRECATED_PureGrammarComposerCore transformer)
     {
         return (transformer.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + name + (transformer.isRenderingHTML() ? "</span>" : "");
     }
 
-    public static String possiblyAddParenthesis(String function, ValueSpecification param, PureGrammarComposerCore transformer)
+    public static String possiblyAddParenthesis(String function, ValueSpecification param, DEPRECATED_PureGrammarComposerCore transformer)
     {
         if (function.equals("and") || function.equals("or"))
         {
@@ -131,19 +131,19 @@ public class HelperValueSpecificationGrammarComposer
     }
 
 
-    public static String renderCollection(List<?> values, org.eclipse.collections.api.block.function.Function<Object, String> func, PureGrammarComposerCore transformer)
+    public static String renderCollection(List<?> values, org.eclipse.collections.api.block.function.Function<Object, String> func, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return "[" + (transformer.isRenderingPretty() ? transformer.returnChar() + PureGrammarComposerCore.computeIndentationString(transformer, 2) : "")
-                + LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + PureGrammarComposerCore.computeIndentationString(transformer, 2) : ""))
+        return "[" + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, 2) : "")
+                + LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, 2) : ""))
                 + (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "") + "]";
     }
 
-    public static String renderDecimal(BigDecimal b, PureGrammarComposerCore transformer)
+    public static String renderDecimal(BigDecimal b, DEPRECATED_PureGrammarComposerCore transformer)
     {
         return transformer.isRenderingHTML() ? "<span class='pureGrammar-decimal'>" + b + "</span>" : String.valueOf(b);
     }
 
-    public static String renderString(String s, PureGrammarComposerCore transformer)
+    public static String renderString(String s, DEPRECATED_PureGrammarComposerCore transformer)
     {
         String resultString;
         if (transformer.isRenderingHTML())
@@ -161,22 +161,22 @@ public class HelperValueSpecificationGrammarComposer
         return resultString;
     }
 
-    public static String renderBoolean(Boolean b, PureGrammarComposerCore transformer)
+    public static String renderBoolean(Boolean b, DEPRECATED_PureGrammarComposerCore transformer)
     {
         return transformer.isRenderingHTML() ? "<span class='pureGrammar-boolean'>" + b + "</span>" : String.valueOf(b);
     }
 
-    public static String renderFloat(Double f, PureGrammarComposerCore transformer)
+    public static String renderFloat(Double f, DEPRECATED_PureGrammarComposerCore transformer)
     {
         return transformer.isRenderingHTML() ? "<span class='pureGrammar-float'>" + f + "</span>" : String.valueOf(f);
     }
 
-    public static String renderInteger(Long b, PureGrammarComposerCore transformer)
+    public static String renderInteger(Long b, DEPRECATED_PureGrammarComposerCore transformer)
     {
         return transformer.isRenderingHTML() ? "<span class='pureGrammar-integer'>" + b + "</span>" : String.valueOf(b);
     }
 
-    public static String renderDate(String s, PureGrammarComposerCore transformer)
+    public static String renderDate(String s, DEPRECATED_PureGrammarComposerCore transformer)
     {
         String dateString;
         if (transformer.isRenderingHTML())
@@ -194,7 +194,7 @@ public class HelperValueSpecificationGrammarComposer
         return dateString;
     }
 
-    public static String renderPathElement(PathElement pathElement, PureGrammarComposerCore transformer)
+    public static String renderPathElement(PathElement pathElement, DEPRECATED_PureGrammarComposerCore transformer)
     {
         if (pathElement instanceof PropertyPathElement)
         {
@@ -205,7 +205,7 @@ public class HelperValueSpecificationGrammarComposer
         return unsupported(pathElement.getClass());
     }
 
-    public static String printFullPath(String fullPath, PureGrammarComposerCore transformer)
+    public static String printFullPath(String fullPath, DEPRECATED_PureGrammarComposerCore transformer)
     {
         if (transformer.isRenderingHTML())
         {
