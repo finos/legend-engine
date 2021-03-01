@@ -240,14 +240,8 @@ public class PureModel implements IPureModel
         catch (Exception e)
         {
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_ERROR, e).toString());
-            // Since EngineException extends RuntimeException it is more straight forward to just
-            // throw EngineException as is. This will make downstream handling of exception easier
             // TODO: we need to have a better strategy to throw compilation error instead of the generic exeception
-            if (e instanceof EngineException)
-            {
-                throw e;
-            }
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
