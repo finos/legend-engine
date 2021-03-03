@@ -128,6 +128,15 @@ public class HelperMappingBuilder
         return pm.target == null ? "" : pm.target;
     }
 
+    public static String getPropertyMappingTargetId(PropertyMapping propertyMapping, Property property, CompileContext context)
+    {
+        if (propertyMapping.target == null && property instanceof Root_meta_pure_metamodel_function_property_Property_Impl && ((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType instanceof Class)
+        {
+            return HelperModelBuilder.getElementFullPath(((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
+        }
+        return HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping);
+    }
+
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping<Object> processEnumMapping(EnumerationMapping em, Mapping pureMapping, CompileContext context)
     {
         // validate there is no mixed protocol format for source value

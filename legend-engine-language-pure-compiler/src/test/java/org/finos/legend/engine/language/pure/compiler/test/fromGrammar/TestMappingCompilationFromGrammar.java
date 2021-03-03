@@ -15,6 +15,9 @@
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestMappingCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -826,7 +829,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "    dog: $src.dog\n" +
                         "  }\n" +
                         ")\n",
-                "COMPILATION error at [20:5-17]: Can't find class mapping for 'ui::Dog'");
+                "COMPILATION error at [20:5-17]: Can't find class mapping 'ui_Dog'");
     }
 
     @Test
@@ -1379,6 +1382,48 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    name: $src.name\n" +
                 "  }\n" +
                 ")");
+    }
+
+    @Test
+    public void testPropertyMappingWithTargetId()
+    {
+        String models = "Class test::A {\n" +
+                "  prop1: String[1];\n" +
+                "  prop2: test::B[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::_A {\n" +
+                "  prop1: String[1];\n" +
+                "  prop2: test::_B[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  prop: String[1];\n" +
+                "}\n" +
+                "Class test::_B\n" +
+                "{\n" +
+                "  prop: String[1];\n" +
+                "}\n" +
+                "\n";
+        PureModel model = test(models +
+                "###Mapping\n" +
+                "Mapping test::M1 (\n" +
+                "   test::A: Pure {\n" +
+                "      ~src test::_A\n" +
+                "      prop1: $src.prop1,\n" +
+                "      prop2: $src.prop2\n" +
+                "   }\n" +
+                "   test::B: Pure {\n" +
+                "      ~src test::_B\n" +
+                "      prop: $src.prop\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n").getTwo();
+
+        Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl classA = (Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl) model.getMapping("test::M1")._classMappings().getFirst();
+        Assert.assertEquals(classA._propertyMappings().getLast()._targetSetImplementationId(), "test_B");
     }
 
     @Test

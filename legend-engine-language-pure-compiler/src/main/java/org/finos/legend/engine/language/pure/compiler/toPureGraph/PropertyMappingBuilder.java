@@ -101,7 +101,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         pm._property(property)
           ._explodeProperty(propertyMapping.explodeProperty)
           ._sourceSetImplementationId(propertyMapping.source)
-          ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping))
+          ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context))
           ._owner(owner);
         String mappingName = owner._parent().getName();
         pm._transform(HelperMappingBuilder.processPurePropertyMappingTransform(propertyMapping, propertyMapping.transform, owner, owner._srcClass(), this.context, mappingName));
