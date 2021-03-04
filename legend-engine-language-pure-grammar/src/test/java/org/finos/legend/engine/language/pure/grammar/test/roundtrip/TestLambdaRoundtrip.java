@@ -35,6 +35,12 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testLambdaWithTwoParameters()
+    {
+        testLambda("{a,b|'ok'}");
+    }
+
+    @Test
     public void testLambdaWithBodyWithString()
     {
         testLambda("|'ok'");

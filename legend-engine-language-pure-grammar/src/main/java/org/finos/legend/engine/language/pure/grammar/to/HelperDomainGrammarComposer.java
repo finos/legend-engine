@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.DefaultValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;

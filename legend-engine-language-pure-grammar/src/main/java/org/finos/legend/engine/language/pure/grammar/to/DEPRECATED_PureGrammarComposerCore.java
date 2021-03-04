@@ -102,7 +102,6 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
-@Deprecated
 public final class DEPRECATED_PureGrammarComposerCore implements
         PackageableElementVisitor<String>,
         ValueSpecificationVisitor<String>,
@@ -615,12 +614,13 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return "";
         }
-        boolean addWrapper = lambda.body.size() > 1;
+        boolean addWrapper = lambda.body.size() > 1 || lambda.parameters.size() > 1;
+        boolean addCR = lambda.body.size() > 1;
         return (addWrapper ? "{" : "")
                 + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
-                + "|" + (addWrapper ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) : "")
-                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addWrapper ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2))
-                + (addWrapper ? ";" + this.returnChar() + this.indentationString + "}" : "");
+                + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) : "")
+                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2))
+                + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
     }
 
     @Override

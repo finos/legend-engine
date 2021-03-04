@@ -12,17 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.model.generation.extension;
+package org.finos.legend.engine.generation.model.extension;
 
+import org.eclipse.collections.api.block.function.Function3;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.ModelGenerationSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
-public interface ModelGenerationSpecificationExtension<T extends ModelGenerationSpecification>
+import java.util.Collections;
+import java.util.List;
+
+public interface ModelGenerationExtension
 {
 
-    Class<T> getElementClass();
-
-    PureModelContextData generate(T element, CompileContext compileContext);
+    default List<Function3<PackageableElement, CompileContext, String, PureModelContextData>> getPureModelContextDataGenerators()
+    {
+        return Collections.emptyList();
+    }
 
 }
