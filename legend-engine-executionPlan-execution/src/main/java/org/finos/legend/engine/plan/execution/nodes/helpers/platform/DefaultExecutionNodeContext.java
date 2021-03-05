@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 
 public class DefaultExecutionNodeContext implements ExecutionNodeContext
 {
-    private final ExecutionState state;
+    protected final ExecutionState state;
     private final Result childResult;
 
     public DefaultExecutionNodeContext(ExecutionState state, Result childResult)
