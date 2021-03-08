@@ -15,8 +15,10 @@
 package org.finos.legend.engine.plan.execution.result;
 
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
+import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
 import org.finos.legend.engine.plan.execution.result.date.EngineDate;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -69,6 +71,24 @@ public class ResultNormalizer
         if (o instanceof String)
         {
             return ((String) o).replace("'", "\'");
+        }
+
+        if(o instanceof IReferencedObject)
+        {
+            Field[] fields = o.getClass().getDeclaredFields();
+            for(Field f:fields)
+            {
+                try
+                {
+                    f.setAccessible(true);
+                    f.set(o,normalizeToSql(f.get(o),databaseTimeZone));
+                }
+                catch (IllegalAccessException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            return o;
         }
 
         return o.toString();
