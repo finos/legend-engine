@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
@@ -24,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
 
+import java.lang.Class;
 import java.util.List;
 
 public class GenerationProtocolExtension implements PureProtocolExtension
@@ -40,4 +42,14 @@ public class GenerationProtocolExtension implements PureProtocolExtension
                         )).build()
         ));
     }
+
+    @Override
+    public List<Function0<List<Pair<Class<? extends PackageableElement>, String>>>> getExtraProtocolToClassifierPathCollectors()
+    {
+        return Lists.mutable.with(() -> FastList.newListWith(
+                Tuples.pair(GenerationSpecification.class, "meta::pure::generation::metamodel::GenerationSpecification"),
+                Tuples.pair(FileGenerationSpecification.class, "meta::pure::generation::metamodel::GenerationConfiguration")
+        ));
+    }
+
 }

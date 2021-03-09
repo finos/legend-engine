@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
@@ -36,6 +37,14 @@ public class DiagramProtocolExtension implements PureProtocolExtension
                         .withSubtypes(FastList.newListWith(
                                 Tuples.pair(Diagram.class, "diagram")
                         )).build()
+        ));
+    }
+
+    @Override
+    public List<Function0<List<Pair<Class<? extends PackageableElement>, String>>>> getExtraProtocolToClassifierPathCollectors()
+    {
+        return Lists.mutable.with(() -> FastList.newListWith(
+                Tuples.pair(Diagram.class, "meta::pure::diagram::Diagram")
         ));
     }
 }

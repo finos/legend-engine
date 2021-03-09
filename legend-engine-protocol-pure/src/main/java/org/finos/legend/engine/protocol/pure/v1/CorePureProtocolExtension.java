@@ -16,11 +16,13 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
@@ -28,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
@@ -68,4 +72,23 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .build()
         ));
     }
+
+    @Override
+    public List<Function0<List<Pair<java.lang.Class<? extends PackageableElement>, String>>>> getExtraProtocolToClassifierPathCollectors()
+    {
+        return Lists.mutable.with(() -> FastList.newListWith(
+                        Tuples.pair(Association.class, "meta::pure::metamodel::relationship::Association"),
+                        Tuples.pair(Class.class, "meta::pure::metamodel::type::Class"),
+                        Tuples.pair(Enumeration.class, "meta::pure::metamodel::type::Enumeration"),
+                        Tuples.pair(Mapping.class, "meta::pure::mapping::Mapping"),
+                        Tuples.pair(Function.class, "meta::pure::metamodel::function::ConcreteFunctionDefinition"),
+                        Tuples.pair(Measure.class, "meta::pure::metamodel::type::Measure"),
+                        Tuples.pair(PackageableConnection.class, "meta::pure::runtime::PackageableConnection"),
+                        Tuples.pair(PackageableRuntime.class, "meta::pure::runtime::PackageableRuntime"),
+                        Tuples.pair(Profile.class, "meta::pure::metamodel::extension::Profile"),
+                        Tuples.pair(SectionIndex.class, "meta::pure::metamodel::section::SectionIndex"),
+                        Tuples.pair(Unit.class, "meta::pure::metamodel::type::Unit")
+        ));
+    }
+
 }

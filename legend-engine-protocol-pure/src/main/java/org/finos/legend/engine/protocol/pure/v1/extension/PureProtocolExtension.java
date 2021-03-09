@@ -15,6 +15,8 @@
 package org.finos.legend.engine.protocol.pure.v1.extension;
 
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,4 +27,11 @@ public interface PureProtocolExtension
     {
         return new ArrayList<>();
     }
+
+
+    default List<Function0<List<Pair<java.lang.Class<? extends PackageableElement>, String>>>> getExtraProtocolToClassifierPathCollectors()
+    {
+        return new ArrayList<>();
+    }
+
 }
