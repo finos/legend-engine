@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
@@ -24,7 +25,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
 
+import java.lang.Class;
 import java.util.List;
+import java.util.Map;
 
 public class GenerationProtocolExtension implements PureProtocolExtension
 {
@@ -40,4 +43,14 @@ public class GenerationProtocolExtension implements PureProtocolExtension
                         )).build()
         ));
     }
+
+    @Override
+    public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathCollectors()
+    {
+        return Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(2)
+                .withKeyValue(GenerationSpecification.class, "meta::pure::generation::metamodel::GenerationSpecification")
+                .withKeyValue(FileGenerationSpecification.class, "meta::pure::generation::metamodel::GenerationConfiguration");
+    }
+
+
 }
