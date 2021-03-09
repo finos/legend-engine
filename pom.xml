@@ -80,8 +80,8 @@
         <maven.compiler.release>8</maven.compiler.release>
 
         <!-- Legend -->
-        <legend.pure.version>1.12.0</legend.pure.version>
-        <legend.shared.version>0.5.0</legend.shared.version>
+        <legend.pure.version>1.13.1</legend.pure.version>
+        <legend.shared.version>0.7.0</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -533,6 +533,14 @@
                 <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
                 <version>${legend.pure.version}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr-runtime</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-common</artifactId>
