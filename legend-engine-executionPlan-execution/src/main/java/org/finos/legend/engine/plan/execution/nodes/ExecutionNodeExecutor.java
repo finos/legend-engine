@@ -452,7 +452,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             boolean realizeAsConstant = this.executionState.inAllocation && ExecutionNodeResultHelper.isResultSizeRangeSet(globalGraphFetchExecutionNode) && ExecutionNodeResultHelper.isSingleRecordResult(globalGraphFetchExecutionNode);
             if(realizeAsConstant)
             {
-                return new ConstantResult(objectStream.findFirst().get());
+                return new ConstantResult(objectStream.findFirst().orElseThrow(() -> new RuntimeException("Constant value not found")));
             }
             return new StreamingObjectResult<>(objectStream, new PartialClassBuilder(globalGraphFetchExecutionNode), graphFetchResult.getRootResult());
         }

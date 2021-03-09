@@ -85,7 +85,6 @@ public class ResultNormalizer
                 }
                 catch (IllegalAccessException e)
                 {
-                    e.printStackTrace();
                 }
             }
             return o;
