@@ -162,11 +162,11 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
             throw new EngineException("Expected 2 properties for an association '" + packageString + "'", srcAssociation.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        String property0Ref = this.context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(0).type);
-        String property1Ref = this.context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(1).type);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source = this.context.resolveClass(srcAssociation.properties.get(0).type, srcAssociation.properties.get(0).sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target = this.context.resolveClass(srcAssociation.properties.get(1).type, srcAssociation.properties.get(1).sourceInformation);
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source = this.context.resolveClass(property0Ref, srcAssociation.properties.get(0).sourceInformation);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target = this.context.resolveClass(property1Ref, srcAssociation.properties.get(1).sourceInformation);
+        String property0Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(source, context.pureModel.getExecutionSupport()));
+        String property1Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(target, context.pureModel.getExecutionSupport()));
 
         if (org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(source).equals("meta::pure::metamodel::type::Any") || org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(target).equals("meta::pure::metamodel::type::Any"))
         {
