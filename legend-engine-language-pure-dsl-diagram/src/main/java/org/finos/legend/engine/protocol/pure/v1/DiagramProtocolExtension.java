@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
@@ -24,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 
 import java.util.List;
+import java.util.Map;
 
 public class DiagramProtocolExtension implements PureProtocolExtension
 {
@@ -37,5 +39,13 @@ public class DiagramProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(Diagram.class, "diagram")
                         )).build()
         ));
+    }
+
+    @Override
+    public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathCollectors()
+    {
+        return Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(1)
+                .withKeyValue(Diagram.class, "meta::pure::diagram::Diagram");
+
     }
 }

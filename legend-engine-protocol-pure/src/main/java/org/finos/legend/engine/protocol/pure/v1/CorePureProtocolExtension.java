@@ -16,11 +16,13 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
@@ -28,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
@@ -35,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 
 import java.util.List;
+import java.util.Map;
 
 public class CorePureProtocolExtension implements PureProtocolExtension
 {
@@ -68,4 +73,22 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .build()
         ));
     }
+
+    @Override
+    public Map<java.lang.Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathCollectors()
+    {
+        return  Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(11)
+                 .withKeyValue(Association.class, "meta::pure::metamodel::relationship::Association")
+                .withKeyValue(Class.class, "meta::pure::metamodel::type::Class")
+                .withKeyValue(Enumeration.class, "meta::pure::metamodel::type::Enumeration")
+                .withKeyValue(Mapping.class, "meta::pure::mapping::Mapping")
+                .withKeyValue(Function.class, "meta::pure::metamodel::function::ConcreteFunctionDefinition")
+                .withKeyValue(Measure.class, "meta::pure::metamodel::type::Measure")
+                .withKeyValue(PackageableConnection.class, "meta::pure::runtime::PackageableConnection")
+                .withKeyValue(PackageableRuntime.class, "meta::pure::runtime::PackageableRuntime")
+                .withKeyValue(Profile.class, "meta::pure::metamodel::extension::Profile")
+                .withKeyValue(SectionIndex.class, "meta::pure::metamodel::section::SectionIndex")
+                .withKeyValue(Unit.class, "meta::pure::metamodel::type::Unit");
+    }
+
 }
