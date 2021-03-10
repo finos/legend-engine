@@ -18,11 +18,13 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReader;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReadingExecutionNodeContext;
+import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.DefaultExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.shared.core.url.UrlFactory;
 
 import java.net.MalformedURLException;
@@ -31,6 +33,8 @@ import java.util.ServiceLoader;
 
 public class StoreStreamReadingExecutionNodeContext extends DefaultExecutionNodeContext implements IStoreStreamReadingExecutionNodeContext
 {
+
+    private final ExecutionState state;
     public static ExecutionNodeJavaPlatformHelper.ExecutionNodeContextFactory factory(StoreStreamReadingExecutionNode node)
     {
         return (ExecutionState state, Result childResult) -> new StoreStreamReadingExecutionNodeContext(node, state, childResult);
@@ -41,6 +45,7 @@ public class StoreStreamReadingExecutionNodeContext extends DefaultExecutionNode
     private StoreStreamReadingExecutionNodeContext(StoreStreamReadingExecutionNode node, ExecutionState state, Result childResult)
     {
         super(state, childResult);
+        this.state = super.state;
         this.node = node;
     }
 
@@ -60,6 +65,6 @@ public class StoreStreamReadingExecutionNodeContext extends DefaultExecutionNode
     @Override
     public URL createUrl(String url) throws MalformedURLException
     {
-        return UrlFactory.create(url);
+        return UrlFactory.create(FreeMarkerExecutor.process(url,this.state));
     }
 }

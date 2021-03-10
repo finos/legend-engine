@@ -25,6 +25,7 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
+import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeSerializerHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.DefaultExecutionNodeContext;
@@ -448,7 +449,11 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 return parentObjects;
 
             }).flatMap(Collection::stream);
-
+            boolean realizeAsConstant = this.executionState.inAllocation && ExecutionNodeResultHelper.isResultSizeRangeSet(globalGraphFetchExecutionNode) && ExecutionNodeResultHelper.isSingleRecordResult(globalGraphFetchExecutionNode);
+            if(realizeAsConstant)
+            {
+                return new ConstantResult(objectStream.findFirst().orElseThrow(() -> new RuntimeException("Constant value not found")));
+            }
             return new StreamingObjectResult<>(objectStream, new PartialClassBuilder(globalGraphFetchExecutionNode), graphFetchResult.getRootResult());
         }
         else
