@@ -75,7 +75,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
     }
 
     @Override
-    public Map<java.lang.Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathCollectors()
+    public Map<java.lang.Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
         return  Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(11)
                  .withKeyValue(Association.class, "meta::pure::metamodel::relationship::Association")

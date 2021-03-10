@@ -27,12 +27,12 @@ public class ProtocolToClassifierPathLoader {
     {
         Map<Class<? extends PackageableElement>, String> protocolToClassifierMap = Maps.mutable.empty();
         for (PureProtocolExtension extension : PureProtocolExtensionLoader.extensions()) {
-            extension.getExtraProtocolToClassifierPathCollectors().forEach((key, value) -> {
+            extension.getExtraProtocolToClassifierPathMap().forEach((key, value) -> {
                 if (protocolToClassifierMap.containsKey(key)) {
                     throw new RuntimeException("Conflicting classifier paths for class '" + key.getName() + "'");
                 }
             });
-            protocolToClassifierMap.putAll(extension.getExtraProtocolToClassifierPathCollectors());
+            protocolToClassifierMap.putAll(extension.getExtraProtocolToClassifierPathMap());
         }
         return protocolToClassifierMap;
     }
