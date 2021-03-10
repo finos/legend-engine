@@ -42,10 +42,8 @@ public class DiagramProtocolExtension implements PureProtocolExtension
     }
 
     @Override
-    public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathCollectors()
+    public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(1)
-                .withKeyValue(Diagram.class, "meta::pure::diagram::Diagram");
-
+        return Maps.mutable.with(Diagram.class, "meta::pure::diagram::Diagram");
     }
 }

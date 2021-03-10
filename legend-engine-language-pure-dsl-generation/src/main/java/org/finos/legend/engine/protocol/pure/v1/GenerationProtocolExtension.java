@@ -45,12 +45,9 @@ public class GenerationProtocolExtension implements PureProtocolExtension
     }
 
     @Override
-    public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathCollectors()
+    public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(2)
-                .withKeyValue(GenerationSpecification.class, "meta::pure::generation::metamodel::GenerationSpecification")
-                .withKeyValue(FileGenerationSpecification.class, "meta::pure::generation::metamodel::GenerationConfiguration");
+        return Maps.mutable.with(GenerationSpecification.class, "meta::pure::generation::metamodel::GenerationSpecification", FileGenerationSpecification.class, "meta::pure::generation::metamodel::GenerationConfiguration");
     }
-
 
 }
