@@ -37,7 +37,7 @@ public class MetricsHandler
             if (m.isAnnotationPresent(Prometheus.class))
             {
                 Prometheus val = m.getAnnotation(Prometheus.class);
-                if (val.type() == Prometheus.Type.SUMMARY)
+                if (val.type() == Prometheus.Type.SUMMARY && (serviceMetrics.get(val.name()) ==null))
                 {
                     Summary g = Summary.build().name(generateMetricName(val.name(), false))
                                        .quantile(0.5, 0.05).quantile(0.9, 0.01).quantile(0.99, 0.001)
