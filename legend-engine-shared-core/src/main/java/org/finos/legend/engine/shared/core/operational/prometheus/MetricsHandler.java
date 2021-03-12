@@ -26,7 +26,7 @@ public class MetricsHandler
 {
     public static final String METRIC_PREFIX = "alloy_";
     static MutableMap<String, Summary> serviceMetrics = Maps.mutable.empty();
-    static MutableMap<String, Counter> serviceErrors = Maps.mutable.empty();
+    static MutableMap<String, Gauge> serviceErrors = Maps.mutable.empty();
     static final Gauge allExecutions = Gauge.build().name("alloy_executions").help("Execution gauge metric ").register();
     static final Gauge allExecutionErrors = Gauge.build().name("alloy_executions_errors").help("Execution error gauge metric ").register();
 
@@ -37,7 +37,7 @@ public class MetricsHandler
             if (m.isAnnotationPresent(Prometheus.class))
             {
                 Prometheus val = m.getAnnotation(Prometheus.class);
-                if (val.type() == Prometheus.Type.SUMMARY)
+                if (val.type() == Prometheus.Type.SUMMARY && (serviceMetrics.get(val.name()) ==null))
                 {
                     Summary g = Summary.build().name(generateMetricName(val.name(), false))
                                        .quantile(0.5, 0.05).quantile(0.9, 0.01).quantile(0.99, 0.001)
@@ -76,10 +76,24 @@ public class MetricsHandler
             serviceMetrics.get(name).observe((endTime - startTime) / 1000F);
         }
     }
+    public static synchronized void observeCount(String name)
+    {
+        observe(name, 0, 0);
+    }
 
     public static synchronized void observeError(String name)
     {
         incrementExecutionErrorGauge();
+        if (serviceErrors.get(name) == null)
+        {
+           Gauge g = Gauge.build().name(generateMetricName(name, true)).help(name + "error gauge").register();
+            serviceErrors.put(name, g);
+            g.inc();
+        }
+        else
+        {
+            serviceErrors.get(name).inc();
+        }
     }
 
     public static String generateMetricName(String name, boolean isErrorMetric)

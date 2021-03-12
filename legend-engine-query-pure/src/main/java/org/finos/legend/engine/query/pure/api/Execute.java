@@ -44,6 +44,8 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -83,6 +85,7 @@ public class Execute
         this.planExecutor = planExecutor;
         this.extensions = extensions;
         this.transformers = transformers;
+        MetricsHandler.createMetrics(this.getClass());
     }
 
     @POST
@@ -113,6 +116,7 @@ public class Execute
     @POST
     @Path("generatePlan")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Prometheus(name="generate plan")
     public Response generatePlan(@Context HttpServletRequest request, ExecuteInput executeInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
@@ -128,10 +132,12 @@ public class Execute
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInput.context, pureModel.getContext());
             String plan = PlanGenerator.generateExecutionPlanAsString(lambda, mapping, runtime, context, pureModel, clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_STOP, (double)System.currentTimeMillis() - start).toString());
+            MetricsHandler.observe("generate plan", start, System.currentTimeMillis());
             return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(plan).build();
         }
         catch (Exception ex)
         {
+            MetricsHandler.observeError("generate plan");
             return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_GENERATION_ERROR, profiles);
         }
     }
@@ -156,6 +162,7 @@ public class Execute
             );
             Result result = planExecutor.execute(plan, Maps.mutable.empty(), user, pm);
             LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double)System.currentTimeMillis() - start).toString());
+            MetricsHandler.observe("execute", start, System.currentTimeMillis());
             try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
             {
                 return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
@@ -164,6 +171,7 @@ public class Execute
         }
         catch (Exception ex)
         {
+            MetricsHandler.observeError("execute");
             return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, pm);
         }
     }
