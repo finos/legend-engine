@@ -24,11 +24,11 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.list.primitive.LongList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.server.Server;
+import org.finos.legend.pure.configuration.PureRepositoriesExternal;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -36,7 +36,6 @@ import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CoreCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
@@ -341,13 +340,11 @@ public class PureTestHelper
 
     public static CompiledExecutionSupport getClassLoaderExecutionSupport()
     {
-//        ClassLoaderCodeStorage platformCodeStorage = new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), PureRepositories.getRepositoryByName("platform"), new PureRepositoryRevisionCache(SVNWCUtil.createDefaultAuthenticationManager("puresvntest", "Pure#Test#Access".toCharArray())));
-        MutableList<CodeRepository> codeRepos = Lists.mutable.of(CoreCodeRepository.newPlatformCodeRepository(), CodeRepository.newCoreCodeRepository());
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
                 new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), new MetadataLazy(PureTestHelper.class.getClassLoader()), Sets.mutable.empty()),
                 null,
-                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), codeRepos, null)),
+                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), PureRepositoriesExternal.repositories(), null)),
                 null,
                 null,
                 new ConsoleCompiled(),
