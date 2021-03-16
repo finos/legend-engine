@@ -49,6 +49,8 @@
         <module>legend-engine-language-pure-dsl-text</module>
         <module>legend-engine-language-pure-dsl-generation</module>
         <module>legend-engine-language-pure-dsl-service</module>
+        <module>legend-engine-language-pure-dsl-service-generation</module>
+        <module>legend-engine-language-pure-dsl-service-execution</module>
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-pure</module>
         <module>legend-engine-query-pure</module>
@@ -463,6 +465,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-dsl-service-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-dsl-service-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
