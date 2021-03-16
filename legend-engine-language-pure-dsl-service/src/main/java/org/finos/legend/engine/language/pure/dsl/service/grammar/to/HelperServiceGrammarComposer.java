@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.grammar.to;
+package org.finos.legend.engine.language.pure.dsl.service.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.HelperRuntimeGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;

@@ -1,0 +1,640 @@
+{
+  "mappings": [
+    {
+      "package": "meta::pure::mapping::modelToModel::test::simple",
+      "_type": "mapping",
+      "name": "simpleModelMapping",
+      "classMappings": [
+        {
+          "srcClass": "meta::pure::mapping::modelToModel::test::shared::src::_S_Person",
+          "root": true,
+          "_type": "pureInstance",
+          "propertyMappings": [
+            {
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "fControl": "substring_String_1__Integer_1__Integer_1__String_1_",
+                    "function": "substring",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "fullName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "src"
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          0
+                        ],
+                        "_type": "integer"
+                      },
+                      {
+                        "fControl": "indexOf_String_1__String_1__Integer_1_",
+                        "function": "indexOf",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "fullName",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "src"
+                              }
+                            ]
+                          },
+                          {
+                            "multiplicity": {
+                              "upperBound": 1,
+                              "lowerBound": 1
+                            },
+                            "values": [
+                              " "
+                            ],
+                            "_type": "string"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "_type": "var",
+                    "name": "src",
+                    "class": "meta::pure::mapping::modelToModel::test::shared::src::_S_Person"
+                  }
+                ]
+              },
+              "_type": "purePropertyMapping",
+              "property": {
+                "property": "firstName",
+                "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+              },
+              "source": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+              "explodeProperty": false,
+              "target": ""
+            },
+            {
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "fControl": "substring_String_1__Integer_1__Integer_1__String_1_",
+                    "function": "substring",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "fullName",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "src"
+                          }
+                        ]
+                      },
+                      {
+                        "fControl": "plus_Integer_MANY__Integer_1_",
+                        "function": "plus",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "multiplicity": {
+                              "upperBound": 2,
+                              "lowerBound": 2
+                            },
+                            "values": [
+                              {
+                                "fControl": "indexOf_String_1__String_1__Integer_1_",
+                                "function": "indexOf",
+                                "_type": "func",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "property": "fullName",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "src"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "multiplicity": {
+                                      "upperBound": 1,
+                                      "lowerBound": 1
+                                    },
+                                    "values": [
+                                      " "
+                                    ],
+                                    "_type": "string"
+                                  }
+                                ]
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  1
+                                ],
+                                "_type": "integer"
+                              }
+                            ],
+                            "_type": "collection"
+                          }
+                        ]
+                      },
+                      {
+                        "fControl": "length_String_1__Integer_1_",
+                        "function": "length",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "fullName",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "src"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "_type": "var",
+                    "name": "src",
+                    "class": "meta::pure::mapping::modelToModel::test::shared::src::_S_Person"
+                  }
+                ]
+              },
+              "_type": "purePropertyMapping",
+              "property": {
+                "property": "lastName",
+                "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+              },
+              "source": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+              "explodeProperty": false,
+              "target": ""
+            }
+          ],
+          "id": "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+          "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+        },
+        {
+          "srcClass": "meta::pure::mapping::modelToModel::test::shared::src::_Product2",
+          "root": true,
+          "_type": "pureInstance",
+          "propertyMappings": [
+            {
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "property": "name",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "_type": "var",
+                    "name": "src",
+                    "class": "meta::pure::mapping::modelToModel::test::shared::src::_Product2"
+                  }
+                ]
+              },
+              "_type": "purePropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple"
+              },
+              "source": "meta_pure_mapping_modelToModel_test_shared_dest_Product2Simple",
+              "explodeProperty": false,
+              "target": ""
+            },
+            {
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "property": "region",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "_type": "var",
+                    "name": "src",
+                    "class": "meta::pure::mapping::modelToModel::test::shared::src::_Product2"
+                  }
+                ]
+              },
+              "_type": "purePropertyMapping",
+              "property": {
+                "property": "region",
+                "class": "meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple"
+              },
+              "source": "meta_pure_mapping_modelToModel_test_shared_dest_Product2Simple",
+              "explodeProperty": false,
+              "target": ""
+            }
+          ],
+          "id": "meta_pure_mapping_modelToModel_test_shared_dest_Product2Simple",
+          "class": "meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple"
+        }
+      ]
+    }
+  ],
+  "stores": [
+  ],
+  "origin": {
+    "sdlcInfo": {
+      "baseVersion": "66060",
+      "_type": "pure",
+      "version": "none",
+      "packageableElementPointers": [
+        {
+          "path": "meta::legend::service::execution::test::m2m::simpleJsonService__Service_1_",
+          "type": "SERVICE"
+        }
+      ]
+    },
+    "_type": "pointer",
+    "serializer": {
+      "name": "pure",
+      "version": "vX_X_X"
+    }
+  },
+  "domain": {
+    "classes": [
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::mapping::modelToModel::test::shared::dest",
+        "_type": "class",
+        "name": "Person",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "lastName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "addresses",
+            "type": "meta::pure::mapping::modelToModel::test::shared::dest::Address"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "firm",
+            "type": "meta::pure::mapping::modelToModel::test::shared::dest::Firm"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::mapping::modelToModel::test::shared::src",
+        "_type": "class",
+        "name": "_S_Person",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "fullName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::mapping::modelToModel::test::shared::dest",
+        "_type": "class",
+        "name": "Product2Simple",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "region",
+            "type": "meta::pure::mapping::modelToModel::test::shared::dest::Region"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "meta::pure::mapping::modelToModel::test::shared::src",
+        "_type": "class",
+        "name": "_Product2",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "subProductName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "bondDetailStatus",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 0
+            },
+            "name": "region",
+            "type": "meta::pure::mapping::modelToModel::test::shared::dest::Region"
+          }
+        ]
+      }
+    ]
+  },
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  },
+  "services": [
+    {
+      "execution": {
+        "mapping": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+        "func": {
+          "_type": "lambda",
+          "body": [
+            {
+              "fControl": "serialize_T_MANY__RootGraphFetchTree_1__String_1_",
+              "function": "serialize",
+              "_type": "func",
+              "parameters": [
+                {
+                  "fControl": "graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_",
+                  "function": "graphFetch",
+                  "_type": "func",
+                  "parameters": [
+                    {
+                      "fControl": "getAll_Class_1__T_MANY_",
+                      "function": "getAll",
+                      "_type": "func",
+                      "parameters": [
+                        {
+                          "fullPath": "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+                          "_type": "class"
+                        }
+                      ]
+                    },
+                    {
+                      "subTrees": [
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "firstName"
+                        },
+                        {
+                          "_type": "propertyGraphFetchTree",
+                          "property": "lastName"
+                        }
+                      ],
+                      "_type": "rootGraphFetchTree",
+                      "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+                    }
+                  ]
+                },
+                {
+                  "subTrees": [
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "firstName"
+                    },
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "property": "lastName"
+                    }
+                  ],
+                  "_type": "rootGraphFetchTree",
+                  "class": "meta::pure::mapping::modelToModel::test::shared::dest::Person"
+                }
+              ]
+            }
+          ]
+        },
+        "_type": "pureSingleExecution",
+        "runtime": {
+          "connections": [
+            {
+              "_type": "JsonModelConnection",
+              "class": "meta::pure::mapping::modelToModel::test::shared::src::_S_Person",
+              "url": "executor:default",
+              "element": "ModelStore"
+            }
+          ]
+        }
+      },
+      "package": "meta::legend::service::execution::test::m2m",
+      "test": {
+        "asserts": [
+          {
+            "assert": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "fControl": "and_Boolean_1__Boolean_1__Boolean_1_",
+                  "function": "and",
+                  "_type": "func",
+                  "parameters": [
+                    {
+                      "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                      "function": "equal",
+                      "_type": "func",
+                      "parameters": [
+                        {
+                          "fControl": "size_Any_MANY__Integer_1_",
+                          "function": "size",
+                          "_type": "func",
+                          "parameters": [
+                            {
+                              "_type": "property",
+                              "property": "values",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "res"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "multiplicity": {
+                            "upperBound": 1,
+                            "lowerBound": 1
+                          },
+                          "values": [
+                            1
+                          ],
+                          "_type": "integer"
+                        }
+                      ]
+                    },
+                    {
+                      "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                      "function": "equal",
+                      "_type": "func",
+                      "parameters": [
+                        {
+                          "fControl": "cast_Any_m__T_1__T_m_",
+                          "function": "cast",
+                          "_type": "func",
+                          "parameters": [
+                            {
+                              "_type": "property",
+                              "property": "values",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "res"
+                                }
+                              ]
+                            },
+                            {
+                              "fullPath": "String",
+                              "_type": "hackedClass"
+                            }
+                          ]
+                        },
+                        {
+                          "multiplicity": {
+                            "upperBound": 1,
+                            "lowerBound": 1
+                          },
+                          "values": [
+                            "[{\"firstName\":\"Johny\",\"lastName\":\"Doe\"},{\"firstName\":\"Jane\",\"lastName\":\"Doe\"}]"
+                          ],
+                          "_type": "string"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "multiplicity": {
+                    "upperBound": 1,
+                    "lowerBound": 1
+                  },
+                  "_type": "var",
+                  "name": "res",
+                  "class": "meta::pure::mapping::Result"
+                }
+              ]
+            }
+          }
+        ],
+        "data": "[{\"fullName\":\"Johny Doe\"},{\"fullName\":\"Jane Doe\"}]",
+        "_type": "singleExecutionTest"
+      },
+      "documentation": "JsonModelConnection example M2M service",
+      "_type": "service",
+      "pattern": "\/simpleJson",
+      "autoActivateUpdates": true,
+      "name": "simpleJsonService",
+      "owners": [
+        "owner1",
+        "owner2",
+        "owner3"
+      ]
+    }
+  ]
+}
