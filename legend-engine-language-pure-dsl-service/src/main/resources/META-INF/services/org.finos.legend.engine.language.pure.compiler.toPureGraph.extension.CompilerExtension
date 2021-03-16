@@ -1,1 +1,1 @@
-org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceCompilerExtensionImpl
+org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph.ServiceCompilerExtensionImpl

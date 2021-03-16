@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
@@ -30,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 
 import java.util.List;
+import java.util.Map;
 
 public class ServiceProtocolExtension implements PureProtocolExtension
 {
@@ -57,5 +59,11 @@ public class ServiceProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(MultiExecutionTest.class, "multiExecutionTest")
                         )).build()
         ));
+    }
+
+    @Override
+    public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
+    {
+        return Maps.mutable.with(Service.class, "meta::legend::service::metamodel::Service");
     }
 }
