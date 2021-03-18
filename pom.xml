@@ -37,6 +37,7 @@
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
         <module>legend-engine-external-shared</module>
         <module>legend-engine-external-format-avro</module>
+        <module>legend-engine-external-format-jsonSchema</module>
         <module>legend-engine-external-format-rosetta</module>
         <module>legend-engine-external-format-protobuf</module>
         <module>legend-engine-language-pure-modelManager</module>
@@ -116,6 +117,7 @@
         <jetty.version>9.4.37.v20210219</jetty.version>
         <jersey.version>2.25.1</jersey.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
+        <javax.inject.version>1</javax.inject.version>
         <swagger.annotation.version>1.5.20</swagger.annotation.version>
         <joda.time.version>2.10.6</joda.time.version>
         <zipkin.reporter.version>2.15.0</zipkin.reporter.version>
@@ -490,6 +492,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-format-avro</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-jsonSchema</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1094,6 +1101,11 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.servlet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>${javax.inject.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.prometheus</groupId>
