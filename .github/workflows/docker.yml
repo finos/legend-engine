@@ -1,0 +1,31 @@
+name: Docker
+
+on:
+  schedule:
+    - cron: '0 0 * * 2' # every Tuesday on default/base branch
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  release:
+    name: Run Image Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build simplified Docker image for checks
+        # NOTE: if this gets more complicated, consider having this as a bash script
+        run: mkdir -p ./legend-engine-server/target && touch ./legend-engine-server/target/legend-engine-server-dummy.jar && docker build --quiet --tag local/legend-engine-server:${{ github.sha }} ./legend-engine-server
+      - name: Scan image for security issues
+        uses: Azure/container-scan@v0
+        env:
+          # Skip `won't fix` CVEs
+          # See https://github.com/Azure/container-scan/issues/61
+          TRIVY_IGNORE_UNFIXED: true
+        with:
+          image-name: local/legend-engine-server:${{ github.sha }}
+          severity-threshold: CRITICAL
