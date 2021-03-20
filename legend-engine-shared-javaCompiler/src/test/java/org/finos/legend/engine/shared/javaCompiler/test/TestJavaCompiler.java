@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.engine.shared.javaCompiler.test;
+package org.finos.legend.engine.shared.javaCompiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.finos.engine.shared.javaCompiler.StringJavaSource;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.junit.Assert;
 import org.junit.Test;
 

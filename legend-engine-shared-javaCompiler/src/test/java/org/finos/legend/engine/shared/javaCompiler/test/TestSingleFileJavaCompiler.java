@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.engine.shared.javaCompiler.test;
+package org.finos.legend.engine.shared.javaCompiler.test;
 
-import org.finos.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.finos.engine.shared.javaCompiler.JavaVersion;
-import org.finos.engine.shared.javaCompiler.SingleFileCompiler;
-import org.finos.engine.shared.javaCompiler.StringJavaSource;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
+import org.finos.legend.engine.shared.javaCompiler.SingleFileCompiler;
+import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.junit.Assert;
 import org.junit.Test;
 

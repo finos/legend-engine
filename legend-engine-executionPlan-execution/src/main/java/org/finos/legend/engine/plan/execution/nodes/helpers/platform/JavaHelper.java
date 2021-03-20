@@ -20,11 +20,11 @@ import org.codehaus.commons.compiler.CompileException;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
-import org.finos.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.finos.engine.shared.javaCompiler.JavaCompileException;
-import org.finos.engine.shared.javaCompiler.JavaVersion;
-import org.finos.engine.shared.javaCompiler.SingleFileCompiler;
-import org.finos.engine.shared.javaCompiler.StringJavaSource;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
+import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
+import org.finos.legend.engine.shared.javaCompiler.SingleFileCompiler;
+import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.CompiledClass;
@@ -34,10 +34,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPl
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;

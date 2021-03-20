@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.engine.shared.javaCompiler.test;
+package org.finos.legend.engine.shared.javaCompiler.test;
 
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.finos.engine.shared.javaCompiler.ClassPathFilter;
-import org.finos.engine.shared.javaCompiler.JavaCompileException;
-import org.finos.engine.shared.javaCompiler.JavaVersion;
-import org.finos.engine.shared.javaCompiler.StringJavaSource;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
+import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
+import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ public class TestJavaCompileClassPathFilter
             "{" +
             "    public static String execute()\n" +
             "    {\n" +
-            "       return org.finos.engine.shared.javaCompiler.JavaVersion.JAVA_8.toString();" +
+            "       return org.finos.legend.engine.shared.javaCompiler.JavaVersion.JAVA_8.toString();" +
             "    }\n" +
             "}";
 
