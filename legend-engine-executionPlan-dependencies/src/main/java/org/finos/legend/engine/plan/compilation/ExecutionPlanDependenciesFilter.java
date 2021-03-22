@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.compilation;
 
-import org.finos.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
 
 import java.util.ArrayList;
 import java.util.Arrays;

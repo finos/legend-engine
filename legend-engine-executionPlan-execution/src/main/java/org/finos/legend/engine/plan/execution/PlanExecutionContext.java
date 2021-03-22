@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.plan.execution;
 
-import org.finos.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.finos.engine.shared.javaCompiler.JavaCompileException;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;

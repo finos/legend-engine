@@ -21,8 +21,8 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.finos.engine.shared.javaCompiler.StringJavaSource;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -36,7 +36,6 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.legend.engine.query.pure.api.test.inMemory;
+package org.finos.legend.engine.query.pure.api.test.inMemory;
 
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
