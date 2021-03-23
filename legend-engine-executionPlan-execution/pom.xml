@@ -15,7 +15,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
@@ -34,6 +35,35 @@
                     <execution>
                         <goals>
                             <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>11</version>
+                                </requireJavaVersion>
+                                <dependencyConvergence/>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.finos.legend.pure:*:*:*:compile</exclude>
+                                        <exclude>org.finos.legend.pure:*:*:*:runtime</exclude>
+                                    </excludes>
+                                    <includes>
+                                        <include>org.finos.legend.pure:legend-pure-m4</include>
+                                    </includes>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                        <goals>
+                            <goal>enforce</goal>
                         </goals>
                     </execution>
                 </executions>
