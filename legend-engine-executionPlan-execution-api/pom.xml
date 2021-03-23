@@ -25,6 +25,40 @@
     <artifactId>legend-engine-executionPlan-execution-api</artifactId>
     <name>Legend Engine - Execution Plan API</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>11</version>
+                                </requireJavaVersion>
+                                <dependencyConvergence />
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.finos.legend.pure:*:*:*:compile</exclude>
+                                        <exclude>org.finos.legend.pure:*:*:*:runtime</exclude>
+                                    </excludes>
+                                    <includes>
+                                        <include>org.finos.legend.pure:legend-pure-m4</include>
+                                    </includes>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <!-- ENGINE -->
         <dependency>
