@@ -17,7 +17,7 @@
     ],
     "clients": [
       {
-        "org.finos.legend.server.pac4j.kerberos.LocalKerberosClient": {
+        "org.pac4j.core.client.direct.AnonymousClient": {
         }
       }
     ],
@@ -35,7 +35,7 @@
     }
   },
   "swagger": {
-    "title": "Legend Execution REST Services",
+    "title": "Legend Engine",
     "resourcePackage": "org.finos.legend",
     "uriPrefix": "/api"
   },
@@ -46,7 +46,7 @@
     "connector": {
       "maxRequestHeaderSize": "32KiB",
       "type": "http",
-      "port": 9090
+      "port": 6060
     },
     "requestLog": {
       "appenders": [
