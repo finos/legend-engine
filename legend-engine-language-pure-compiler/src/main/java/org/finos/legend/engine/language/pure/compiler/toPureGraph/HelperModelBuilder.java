@@ -44,6 +44,7 @@ import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.Mi
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
@@ -100,6 +101,17 @@ public class HelperModelBuilder
         Multiplicity multiplicity = new Multiplicity();
         multiplicity.lowerBound = 1;
         multiplicity.setUpperBound(1);
+        ve._multiplicity(context.pureModel.getMultiplicity(multiplicity));
+        return ve;
+    }
+
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createVariableForMapped(LambdaFunction mapFn, CompileContext context)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("mapped");
+        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(((Root_meta_pure_metamodel_type_FunctionType_Impl)mapFn._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType._rawType());
+        ve._genericType(genericType);
+        Multiplicity multiplicity = new Multiplicity();
+        multiplicity.lowerBound = 0;
         ve._multiplicity(context.pureModel.getMultiplicity(multiplicity));
         return ve;
     }

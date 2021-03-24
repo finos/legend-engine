@@ -160,6 +160,7 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
     @Override
     public SetImplementation visit(AggregationAwareClassMapping classMapping)
     {
+        this.context.getCompilerExtensions().getExtraAggregationAwareClassMappingSecondPassProcessors().forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
         return null;
     }
 }
