@@ -96,7 +96,7 @@ public class JSONSchemaGenerationService
             LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_START : LoggingEventType.GENERATE_JSONSCHEMA_START).toString());
             PureModel pureModel = pureModelFunc.value();
             List<GenerationOutput> result = generate(jsonSchemaConfig, pureModel);
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_JSONSCHEMA_START, System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_JSONSCHEMA_START, (double)System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(profiles, result);
         }
         catch (Exception ex)
