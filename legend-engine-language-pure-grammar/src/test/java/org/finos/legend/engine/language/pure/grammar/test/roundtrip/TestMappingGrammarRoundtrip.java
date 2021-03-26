@@ -324,4 +324,78 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testAggregationAware()
+    {
+        test("###Pure\n" +
+                "Class test::Product\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  producer: test::Person[1];\n" +
+                "  price: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::DiscountedProduct extends test::Product\n" +
+                "{\n" +
+                "  discount: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Service\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  provider: test::Person[1];\n" +
+                "  price: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
+                "{\n" +
+                "   $numbers->plus()\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "  test::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  test::DiscountedProduct[PR]: AggregationAware \n" +
+                "  {\n" +
+                "    Views: [\n" +
+                "      (\n" +
+                "        ~modelOperation: {\n" +
+                "          ~canAggregate true,\n" +
+                "          ~groupByFunctions (\n" +
+                "            $this.id\n" +
+                "          ),\n" +
+                "          ~aggregateValues (\n" +
+                "            ( ~mapFn:$this.price , ~aggregateFn: $mapped->sum() )\n" +
+                "          )\n" +
+                "        },\n" +
+                "        ~aggregateMapping: Pure\n" +
+                "        {\n" +
+                "          ~src test::Service\n" +
+                "          price: $src.price,\n" +
+                "          producer: $src.provider\n" +
+                "        }\n" +
+                "      )\n" +
+                "    ],\n" +
+                "    ~mainMapping: Pure\n" +
+                "    {\n" +
+                "      ~src test::DiscountedProduct\n" +
+                "      price: $src.price,\n" +
+                "      producer: $src.producer,\n" +
+                "      discount: $src.discount\n" +
+                "    }\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

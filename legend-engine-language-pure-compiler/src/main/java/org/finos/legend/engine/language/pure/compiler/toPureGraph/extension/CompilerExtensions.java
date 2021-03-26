@@ -44,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
@@ -89,6 +90,8 @@ public class CompilerExtensions
     private final MapIterable<Class<? extends PackageableElement>, Processor<?>> extraProcessors;
     private final ImmutableList<Function3<ClassMapping, Mapping, CompileContext, Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>>>> extraClassMappingFirstPassProcessors;
     private final ImmutableList<Procedure3<ClassMapping, Mapping, CompileContext>> extraClassMappingSecondPassProcessors;
+    private final ImmutableList<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> extraAggregationAwareClassMappingFirstPassProcessors;
+    private final ImmutableList<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> extraAggregationAwareClassMappingSecondPassProcessors;
     private final ImmutableList<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> extraAssociationMappingProcessors;
     private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Connection>> extraConnectionValueProcessors;
     private final ImmutableList<Procedure2<InputData, CompileContext>> extraMappingTestInputDataProcessors;
@@ -107,6 +110,8 @@ public class CompilerExtensions
         this.extensions = Lists.immutable.withAll(extensions);
         this.extraProcessors = indexProcessors(this.extensions);
         this.extraClassMappingFirstPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraClassMappingFirstPassProcessors);
+        this.extraAggregationAwareClassMappingFirstPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAggregationAwareClassMappingFirstPassProcessors);
+        this.extraAggregationAwareClassMappingSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAggregationAwareClassMappingSecondPassProcessors);
         this.extraClassMappingSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraClassMappingSecondPassProcessors);
         this.extraAssociationMappingProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAssociationMappingProcessors);
         this.extraConnectionValueProcessors = this.extensions.flatCollect(CompilerExtension::getExtraConnectionValueProcessors);
@@ -186,6 +191,17 @@ public class CompilerExtensions
     public List<Procedure3<ClassMapping, Mapping, CompileContext>> getExtraClassMappingSecondPassProcessors()
     {
         return this.extraClassMappingSecondPassProcessors.castToList();
+    }
+
+    public List<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> getExtraAggregationAwareClassMappingFirstPassProcessors()
+    {
+        return this.extraAggregationAwareClassMappingFirstPassProcessors.castToList();
+    }
+
+
+    public List<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> getExtraAggregationAwareClassMappingSecondPassProcessors()
+    {
+        return this.extraAggregationAwareClassMappingSecondPassProcessors.castToList();
     }
 
     public List<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> getExtraAssociationMappingProcessors()

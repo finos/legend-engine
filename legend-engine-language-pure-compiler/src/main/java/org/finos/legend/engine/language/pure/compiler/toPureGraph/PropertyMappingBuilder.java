@@ -191,11 +191,11 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     public PropertyMapping visit(AggregationAwarePropertyMapping propertyMapping)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwarePropertyMapping apm = new Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl("");
-        Property property = HelperModelBuilder.getOwnedProperty(this.context.resolveClass(propertyMapping.property._class, propertyMapping.property.sourceInformation), propertyMapping.property.property, this.context.pureModel.getExecutionSupport());
+        Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         apm._localMappingProperty(propertyMapping.localMappingProperty != null)
            ._property(property)
-           ._sourceSetImplementationId(propertyMapping.source == null ? immediateParent._id() : propertyMapping.source)
-           ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping))
+           ._sourceSetImplementationId(propertyMapping.source == null || propertyMapping.source.isEmpty() ? immediateParent._id() : propertyMapping.source)
+           ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context))
            ._owner(immediateParent);
         return apm;
     }

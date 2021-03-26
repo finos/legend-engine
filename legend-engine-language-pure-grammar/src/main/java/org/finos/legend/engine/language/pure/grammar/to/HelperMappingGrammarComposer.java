@@ -24,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingStringSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
@@ -148,5 +149,28 @@ public class HelperMappingGrammarComposer
     public static String renderMappingId(String id)
     {
         return (id != null ? ("[" + PureGrammarComposerUtility.convertIdentifier(id) + "]") : "");
+    }
+
+    public static String renderAggregateSetImplementationContainer(AggregateSetImplementationContainer agg,  DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        String aggregateMapping = "";
+        if(agg.setImplementation != null) {
+            transformer.setBaseTabLevel(4);
+            aggregateMapping = "~aggregateMapping" + agg.setImplementation.accept(transformer);
+            transformer.setBaseTabLevel(1);
+        }
+        return "(\n" +
+                getTabString(4) + "~modelOperation" + ":" + " {\n" +
+                getTabString(5) + "~canAggregate " + (agg.aggregateSpecification.canAggregate ? "true" : "false") + ",\n" +
+                getTabString(5) + "~groupByFunctions (\n" +
+                LazyIterate.collect(agg.aggregateSpecification.groupByFunctions, groupByFunction -> getTabString(6) + groupByFunction.groupByFn.accept(transformer).replaceFirst("\\|", "")).makeString(",\n") +
+                "\n" + getTabString(5) + "),\n" +
+                getTabString(5) + "~aggregateValues (\n" +
+                LazyIterate.collect(agg.aggregateSpecification.aggregateValues, aggregateFunction -> getTabString(6) + "( " + "~mapFn:" + aggregateFunction.mapFn.accept(transformer).replaceFirst("\\|", "")
+                        + " ," + " ~aggregateFn: " + aggregateFunction.aggregateFn.accept(transformer).replaceFirst("\\|", "") + " )").makeString(",\n") +
+                "\n" + getTabString(5) + ")\n" +
+                getTabString(4) +  "},\n" +
+                getTabString(4) + aggregateMapping +
+                "\n" + getTabString(3) + ")\n";
     }
 }

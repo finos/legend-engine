@@ -21,6 +21,8 @@ import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.aggregationAware.AggregationAwareLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.aggregationAware.AggregationAwareParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.enumerationMapping.EnumerationMappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.enumerationMapping.EnumerationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operationClassMapping.OperationClassMappingLexerGrammar;
@@ -40,6 +42,7 @@ import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElement
 import org.finos.legend.engine.language.pure.grammar.from.mapping.OperationClassMappingParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.PureInstanceClassMappingParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.XStoreAssociationMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.AggregationAwareMappingParseTreeWalker;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -47,6 +50,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
@@ -70,6 +75,8 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     public static final String PURE_INSTANCE_CLASS_MAPPING_TYPE = "Pure";
     public static final String OBJECT_TEST_DATA_INPUT_TYPE = "Object";
     public static final String XSTORE_ASSOCIATION_MAPPING_TYPE = "XStore";
+    public static final String AGGREGATION_AWARE_MAPPING_TYPE = "AggregationAware";
+    public static final String AGGREGATE_SPECIFICATION = "AggregateSpecification";
 
     @Override
     public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
@@ -78,7 +85,9 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
                 MappingElementParser.newParser(ENUMERATION_MAPPING_TYPE, CorePureGrammarParser::parseEnumerationMapping),
                 MappingElementParser.newParser(OPERATION_CLASS_MAPPING_TYPE, CorePureGrammarParser::parseOperationClassMapping),
                 MappingElementParser.newParser(PURE_INSTANCE_CLASS_MAPPING_TYPE, CorePureGrammarParser::parsePureClassMapping),
-                MappingElementParser.newParser(XSTORE_ASSOCIATION_MAPPING_TYPE, CorePureGrammarParser::parseXStoreAssociationMapping));
+                MappingElementParser.newParser(XSTORE_ASSOCIATION_MAPPING_TYPE, CorePureGrammarParser::parseXStoreAssociationMapping),
+                MappingElementParser.newParser(AGGREGATION_AWARE_MAPPING_TYPE, CorePureGrammarParser::parseAggregationAwareMapping),
+                MappingElementParser.newParser(AGGREGATE_SPECIFICATION, CorePureGrammarParser::parseAggregateSpecification));
     }
 
     @Override
@@ -183,6 +192,31 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         return xStoreAssociationMapping;
     }
 
+    private static ClassMapping parseAggregationAwareMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+        SourceCodeParserInfo parserInfo = getAggregationAwareMappingParserInfo(mappingElementSourceCode);
+        AggregationAwareMappingParseTreeWalker walker = new AggregationAwareMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext, mappingElementSourceCode);
+        AggregationAwareClassMapping aggregationAwareClassMapping = new AggregationAwareClassMapping();
+        String className = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        aggregationAwareClassMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : className.replaceAll("::", "_");
+        aggregationAwareClassMapping._class = className;
+        aggregationAwareClassMapping.root = ctx.STAR() != null;
+        aggregationAwareClassMapping.extendsClassMappingId = ctx.superClassMappingId() != null ? ctx.superClassMappingId().getText() : null;
+        aggregationAwareClassMapping.sourceInformation = parserInfo.sourceInformation;
+        walker.visitAggregationAwareMapping((AggregationAwareParserGrammar.AggregationAwareClassMappingContext)parserInfo.rootContext, aggregationAwareClassMapping);
+        return aggregationAwareClassMapping;
+    }
+
+    private static AggregateSpecification parseAggregateSpecification(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        SourceCodeParserInfo parserInfo = getAggregateSpecificationParserInfo(mappingElementSourceCode);
+        AggregationAwareMappingParseTreeWalker walker = new AggregationAwareMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext, mappingElementSourceCode);
+        AggregateSpecification aggregateSpecification = new AggregateSpecification();
+        walker.visitAggregateSpecification((AggregationAwareParserGrammar.AggregateSpecificationContext)parserInfo.rootContext, aggregateSpecification);
+        return aggregateSpecification;
+    }
+
     private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation sourceInformation)
     {
         SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
@@ -268,5 +302,33 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(mappingElementSourceCode.code, input, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext), mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.xStoreAssociationMapping());
+    }
+
+    private static SourceCodeParserInfo getAggregationAwareMappingParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation);
+        AggregationAwareLexerGrammar lexer = new AggregationAwareLexerGrammar(CharStreams.fromString(mappingElementSourceCode.code));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        AggregationAwareParserGrammar parser = new AggregationAwareParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        SourceInformation source = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext);
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, source, mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.aggregationAwareClassMapping());
+    }
+
+    private static SourceCodeParserInfo getAggregateSpecificationParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation);
+        AggregationAwareLexerGrammar lexer = new AggregationAwareLexerGrammar(CharStreams.fromString(mappingElementSourceCode.code));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        AggregationAwareParserGrammar parser = new AggregationAwareParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        SourceInformation source = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext);
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, source, mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.aggregateSpecification());
     }
 }

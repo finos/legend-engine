@@ -386,6 +386,12 @@ public class HelperMappingBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregateSetImplementationContainer processAggregateSetImplementationContainer(AggregateSetImplementationContainer aggregateSetImplementationContainer, CompileContext context, Mapping parent)
     {
+        if (aggregateSetImplementationContainer.setImplementation.mappingClass == null) {
+            Class _class = context.resolveClass(aggregateSetImplementationContainer.setImplementation._class, aggregateSetImplementationContainer.setImplementation.classSourceInformation);
+            aggregateSetImplementationContainer.setImplementation.mappingClass = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingClass();
+            aggregateSetImplementationContainer.setImplementation.mappingClass.name = _class.getName() + "_" + parent.getName() + "_" + aggregateSetImplementationContainer.setImplementation.id;
+            aggregateSetImplementationContainer.setImplementation.mappingClass.superTypes = Lists.mutable.with(getElementFullPath(_class, context.pureModel.getExecutionSupport()));
+        }
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregateSetImplementationContainer container = new Root_meta_pure_mapping_aggregationAware_AggregateSetImplementationContainer_Impl("");
         container._setImplementation((InstanceSetImplementation) aggregateSetImplementationContainer.setImplementation.accept(new ClassMappingFirstPassBuilder(context, parent)).getOne());
         container._index(aggregateSetImplementationContainer.index);
@@ -424,9 +430,16 @@ public class HelperMappingBuilder
         AggregationFunctionSpecification afs = new Root_meta_pure_mapping_aggregationAware_AggregationFunctionSpecification_Impl(" ");
         InstanceValue processed = (InstanceValue) aggregateFunction.mapFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
         afs._mapFn((LambdaFunction) processed._values().getFirst());
-        Variable variable = aggregateFunction.aggregateFn.parameters.get(0);
-        variable._class = PackageableElement.getUserPathForPackageableElement(Handlers.funcReturnType(processed, context.pureModel)._rawType());
-        variable.multiplicity = new Multiplicity(1, 1);
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createVariableForMapped((LambdaFunction) processed._values().getFirst(), context);
+        processingContext.addInferredVariables("mapped", thisVariable);
+
+        if (aggregateFunction.aggregateFn.parameters.size() > 0)
+        {
+            Variable variable = aggregateFunction.aggregateFn.parameters.get(0);
+            variable._class = PackageableElement.getUserPathForPackageableElement(Handlers.funcReturnType(processed, context.pureModel)._rawType());
+            variable.multiplicity = new Multiplicity(1, 1);
+        }
         afs._aggregateFn((LambdaFunction) ((InstanceValue) aggregateFunction.aggregateFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)))._values().getFirst());
         return afs;
     }

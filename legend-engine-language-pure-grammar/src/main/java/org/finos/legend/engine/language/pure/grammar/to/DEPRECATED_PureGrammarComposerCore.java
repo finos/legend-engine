@@ -125,6 +125,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     // FIXME: remove this when we remove inference for flat-data column
     private final boolean isFlatDataMappingProcessingModeEnabled;
 
+    private int baseTabLevel = 1;
+
     private DEPRECATED_PureGrammarComposerCore(DEPRECATED_PureGrammarComposerCore.Builder builder)
     {
         this.indentationString = builder.indentationString;
@@ -132,6 +134,14 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.isVariableInFunctionSignature = builder.isVariableInFunctionSignature;
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
         this.isFlatDataMappingProcessingModeEnabled = builder.isFlatDataMappingProcessingModeEnabled;
+    }
+
+    public int getBaseTabLevel() {
+        return baseTabLevel;
+    }
+
+    public void setBaseTabLevel(int baseTabLevel) {
+        this.baseTabLevel = baseTabLevel;
     }
 
     public String getIndentationString()
@@ -397,7 +407,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             builder.append(isMappingContentEmpty ? "" : "\n");
             isMappingContentEmpty = false;
-            builder.append(LazyIterate.collect(mapping.classMappings, classMapping -> getTabString() + classMapping.accept(this)).makeString("\n"));
+            builder.append(LazyIterate.collect(mapping.classMappings, classMapping -> getTabString() + (classMapping.root ? "*" : "")
+                    + classMapping._class + HelperMappingGrammarComposer.renderClassMappingId(classMapping) + classMapping.accept(this)).makeString("\n"));
             builder.append("\n");
         }
         if (!mapping.associationMappings.isEmpty())
@@ -440,7 +451,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(OperationClassMapping operationClassMapping)
     {
-        return (operationClassMapping.root ? "*" : "") + operationClassMapping._class + HelperMappingGrammarComposer.renderClassMappingId(operationClassMapping) + ": " + "Operation\n" +
+        return ": " + "Operation\n" +
                 getTabString() + "{\n" +
                 getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
                 getTabString() + "}";
@@ -456,11 +467,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             String filterString = pureInstanceClassMapping.filter.accept(this).replaceFirst("\\|", "");
             pureFilter = getTabString(2) + "~filter " + filterString + "\n";
         }
-        return (pureInstanceClassMapping.root ? "*" : "") + pureInstanceClassMapping._class + HelperMappingGrammarComposer.renderClassMappingId(pureInstanceClassMapping) + ": " + "Pure\n" +
-                getTabString() + "{\n" +
-                (pureInstanceClassMapping.srcClass == null ? "" : getTabString(2) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
-                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(2) + propertyMapping.accept(this)).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
-                getTabString() + "}";
+        return ": " + "Pure\n" +
+                getTabString(getBaseTabLevel()) + "{\n" +
+                (pureInstanceClassMapping.srcClass == null ? "" : getTabString(getBaseTabLevel() + 1) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
+                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(this)).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
+                getTabString(getBaseTabLevel()) + "}";
     }
 
     @Override
@@ -485,7 +496,19 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(AggregationAwareClassMapping classMapping)
     {
-        return unsupported(AggregationAwareClassMapping.class);
+        String mainMapping = "";
+        if(classMapping.mainSetImplementation != null) {
+            setBaseTabLevel(2);
+            mainMapping = "~mainMapping" + classMapping.mainSetImplementation.accept(this);
+            setBaseTabLevel(1);
+        }
+        return ": " + "AggregationAware " + "\n" +
+                getTabString() + "{\n" +
+                getTabString(2) + "Views" + ":" + " [\n" +
+                (classMapping.aggregateSetImplementations == null ? "" : LazyIterate.collect(classMapping.aggregateSetImplementations, implementation -> getTabString(3) + HelperMappingGrammarComposer.renderAggregateSetImplementationContainer(implementation, this)).makeString(",\n")) +
+                getTabString(2) + "],\n" +
+                getTabString(2) + mainMapping + "\n" +
+                getTabString() + "}";
     }
 
     @Override
