@@ -19,6 +19,7 @@ import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
 import org.finos.legend.engine.plan.execution.result.date.EngineDate;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -76,18 +77,21 @@ public class ResultNormalizer
         if(o instanceof IReferencedObject)
         {
             Field[] fields = o.getClass().getDeclaredFields();
+            Map<String, Object> fieldToNormalizedValueMap = new HashMap<>();
             for(Field f:fields)
             {
                 try
                 {
                     f.setAccessible(true);
-                    f.set(o,normalizeToSql(f.get(o),databaseTimeZone));
+                    fieldToNormalizedValueMap.put(f.getName(),normalizeToSql(f.get(o),databaseTimeZone));
+
                 }
                 catch (IllegalAccessException e)
                 {
+                    throw new RuntimeException(e.getMessage());
                 }
             }
-            return o;
+            return fieldToNormalizedValueMap;
         }
 
         return o.toString();
