@@ -1863,4 +1863,62 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> worksForPropertyFromAssoc = association._originalMilestonedProperties().select(p -> p.getName().equals("worksFor"));
         Assert.assertTrue("Missing worksFor property in _originalMilestonedProperties for association", worksForPropertyFromAssoc.size() == 1);
     }
+    
+    @Test
+    public void testBusinesstemporalDatePropagationWithInheritance()
+    {
+        String grammar =
+                "###Pure\n" +
+                        "Class <<temporal.businesstemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue\n" +
+                        "{\n" +
+                        "  value: String[1];\n" +
+                        "  productCollection: my::domainModel::migration::test::product::ProductCollection[*];\n" +
+                        "  getCategory() {$this.productCollection(%2020-02-02).productType(%2020-02-03).category->joinStrings()}: String[1];\n" +
+                        "  getCategoryInRange() {$this.productCollectionAllVersionsInRange(%2020-02-02, %2020-02-03).productTypeAllVersionsInRange(%2020-02-02, %2020-02-03).category->joinStrings()}: String[1];\n" +
+                        "  getCategoryWithDatePropagation() {$this.productCollection(%2020-02-02).productType.category->joinStrings()}: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductCollection extends my::domainModel::migration::test::product::baseClass\n" +
+                        "{\n" +
+                        "  collectionName: String[1];\n" +
+                        "}\n" +
+                        "Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductType\n" +
+                        "{\n" +
+                        "   category: String[1];\n" +
+                        "}\n" +
+                        "Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::baseClass\n" +
+                        "{\n" +
+                        "  productType: my::domainModel::migration::test::product::ProductType[1];\n" +
+                        "}\n";
+        test(grammar);
+    }
+
+    @Test
+    public void testProcessingtemporalDatePropagationWithInheritance()
+    {
+        String grammar =
+                "###Pure\n" +
+                        "Class <<temporal.processingtemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue\n" +
+                        "{\n" +
+                        "  value: String[1];\n" +
+                        "  productCollection: my::domainModel::migration::test::product::ProductCollection[*];\n" +
+                        "  getCategory() {$this.productCollection(%2020-02-02).productType(%2020-02-03).category->joinStrings()}: String[1];\n" +
+                        "  getCategoryInRange() {$this.productCollectionAllVersionsInRange(%2020-02-02, %2020-02-03).productTypeAllVersionsInRange(%2020-02-02, %2020-02-03).category->joinStrings()}: String[1];\n" +
+                        "  getCategoryWithDatePropagation() {$this.productCollection(%2020-02-02).productType.category->joinStrings()}: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.processingtemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductCollection extends my::domainModel::migration::test::product::baseClass\n" +
+                        "{\n" +
+                        "  collectionName: String[1];\n" +
+                        "}\n" +
+                        "Class <<temporal.processingtemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductType\n" +
+                        "{\n" +
+                        "   category: String[1];\n" +
+                        "}\n" +
+                        "Class <<temporal.processingtemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::baseClass\n" +
+                        "{\n" +
+                        "  productType: my::domainModel::migration::test::product::ProductType[1];\n" +
+                        "}\n";
+        test(grammar);
+    }
 }

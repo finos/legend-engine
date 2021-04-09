@@ -33,7 +33,7 @@ public class HelperDiagramBuilder
     public static void processPropertyView(PropertyView propertyView, CompileContext context, Diagram diagram)
     {
         // Property Views can hold either class properties or qualified property views
-        HelperModelBuilder.getOwnedAppliedProperty(context.resolveClass(propertyView.property._class, propertyView.property.sourceInformation), propertyView.property.property, propertyView.property.sourceInformation, context.pureModel.getExecutionSupport());
+        HelperModelBuilder.getOwnedAppliedProperty(context, context.resolveClass(propertyView.property._class, propertyView.property.sourceInformation), propertyView.property.property, propertyView.property.sourceInformation, context.pureModel.getExecutionSupport());
         Assert.assertTrue(diagram.classViews.stream().anyMatch(view -> view.id.equals(propertyView.sourceView)), () -> "Can't find source class view '" + propertyView.sourceView + "'", propertyView.sourceViewSourceInformation, EngineErrorType.COMPILATION);
         Assert.assertTrue(diagram.classViews.stream().anyMatch(view -> view.id.equals(propertyView.targetView)), () -> "Can't find target class view '" + propertyView.targetView + "'", propertyView.targetViewSourceInformation, EngineErrorType.COMPILATION);
     }

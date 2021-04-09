@@ -350,28 +350,40 @@ public class HelperModelBuilder
         return property;
     }
 
-    public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    public static AbstractProperty<?> getOwnedAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
-        return HelperModelBuilder.getOwnedAppliedProperty(_class, null, name, sourceInformation, executionSupport);
+        return HelperModelBuilder.getOwnedAppliedProperty(context, _class, null, name, sourceInformation, executionSupport);
     }
 
     /**
      * Find the property (normal and derived) that the class owns.
      */
-    public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    public static AbstractProperty<?> getOwnedAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
-        AbstractProperty<?> prop = _class._properties().detect(p -> name.equals(p.getName()));
-        if (prop == null)
+        AbstractProperty<?> prop = null;
+        for (CoreInstance c_type : org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
-            prop = _class._propertiesFromAssociations().detect(p -> name.equals(p._name()));
-        }
-        if (prop == null)
-        {
-            prop = _class._qualifiedProperties().detect(p -> name.equals(p._name()));
-        }
-        if (prop == null)
-        {
-            prop = _class._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) c_type;
+            prop = type._properties().detect(p -> name.equals(p.getName()));
+            if (prop != null)
+            {
+                return prop;
+            }
+            prop = type._propertiesFromAssociations().detect(p -> name.equals(p._name()));
+            if (prop != null)
+            {
+                return prop;
+            }
+            prop = type._qualifiedProperties().detect(p -> name.equals(p._name()));
+            if (prop != null)
+            {
+                return prop;
+            }
+            prop = type._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
+            if (prop != null)
+            {
+                return prop;
+            }
         }
         Assert.assertTrue(prop != null, () -> "Can't find property '" + name + "' in class '" + (classPath != null ? classPath : getElementFullPath(_class, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return prop;
