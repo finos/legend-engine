@@ -32,6 +32,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStorePrope
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -43,11 +44,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAsso
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping>
 {
@@ -163,7 +166,6 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         MutableList<String> cleanedOpenVariables = openVariables.distinct();
         cleanedOpenVariables.removeAll(pureParameters.collect(e -> e._name()));
         GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity());
-        String propertyName = parent._id() + "." + propertyMapping.property.property;
         String mappingPath = HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()).replace("::", "_");
         ctx.flushVariable("that");
         ctx.flushVariable("this");
@@ -173,13 +175,19 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             throw new EngineException("XStore property mapping function should return 'Boolean[1]'", propertyMapping.crossExpression.body.get(propertyMapping.crossExpression.body.size() - 1).sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl(propertyName, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
+        LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl(parent._id() + "." + propertyMapping.property.property, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStorePropertyMapping xpm = new Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl("");
-        Property property = HelperModelBuilder.getAssociationProperty(parent._association(), propertyMapping.property.property, propertyMapping.property.sourceInformation, this.context);
+
+        String propertyName = propertyMapping.property.property;
+        String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
+        Function<Type, Boolean> isTypeTemporalMilestoned = type -> !Milestoning.temporalStereotypes(type._stereotypes()).isEmpty();
+        Property property = parent._association()._properties().detect(p -> (propertyName.equals(p.getName())) || (isTypeTemporalMilestoned.apply(p._genericType()._rawType()) && edgePointPropertyName.equals(p.getName())));
+        Assert.assertTrue(property != null, () -> "Can't find property '" + propertyName + "' in association '" + (HelperModelBuilder.getElementFullPath(parent._association(), context.pureModel.getExecutionSupport())) + "'", propertyMapping.property.sourceInformation, EngineErrorType.COMPILATION);
+
         return xpm._property(property)
                   ._localMappingProperty(propertyMapping.localMappingProperty != null)
                   ._sourceSetImplementationId(propertyMapping.source == null ? parent._id() : propertyMapping.source)
