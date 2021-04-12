@@ -1527,4 +1527,49 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "   }")
         );
     }
+
+    @Test
+    public void testCrossStoreMappingWithMilestoning()
+    {
+        test("###Pure\n" +
+                "Class <<temporal.businesstemporal>> test::Firm_Milestoned\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.businesstemporal>> test::Person_Milestoned\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person_Milestoned\n" +
+                "{\n" +
+                "  employer: test::Firm_Milestoned[1];\n" +
+                "  employees: test::Person_Milestoned[*];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties_Milestoned\n" +
+                "(\n" +
+                "  test::Person_Milestoned[p]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person_Milestoned\n" +
+                "    +firmId: Integer[1]: 1,\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  test::Firm_Milestoned[f]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Firm_Milestoned\n" +
+                "    id: $src.id,\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                "\n" +
+                "  test::Firm_Person_Milestoned: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id\n" +
+                "  }\n" +
+                ")");
+    }
 }
