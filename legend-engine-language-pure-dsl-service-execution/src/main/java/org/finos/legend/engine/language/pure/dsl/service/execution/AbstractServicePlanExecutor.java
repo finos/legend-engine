@@ -67,6 +67,16 @@ public abstract class AbstractServicePlanExecutor
         this(servicePath, executionPlanResource, PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(allowJavaCompilation));
     }
 
+    protected AbstractServicePlanExecutor(String servicePath, ExecutionPlan plan, boolean allowJavaCompilation, long graphFetchBatchMemoryLimit)
+    {
+        this(servicePath, plan, PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(allowJavaCompilation, graphFetchBatchMemoryLimit));
+    }
+
+    protected AbstractServicePlanExecutor(String servicePath, String executionPlanResource, boolean allowJavaCompilation, long graphFetchBatchMemoryLimit)
+    {
+        this(servicePath, executionPlanResource, PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(allowJavaCompilation, graphFetchBatchMemoryLimit));
+    }
+
     protected AbstractServicePlanExecutor(String servicePath, ExecutionPlan plan, boolean allowJavaCompilation, StoreExecutor... storeExecutors)
     {
         this(servicePath, plan, PlanExecutor.newPlanExecutor(allowJavaCompilation, storeExecutors));

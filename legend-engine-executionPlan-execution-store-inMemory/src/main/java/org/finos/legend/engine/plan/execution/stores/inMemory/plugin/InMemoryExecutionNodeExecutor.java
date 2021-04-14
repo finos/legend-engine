@@ -122,7 +122,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                 public boolean tryAdvance(Consumer<? super GraphObjectsBatch> action) {
 
                     long currentBatch = batchIndex.incrementAndGet();
-                    GraphObjectsBatch inMemoryGraphObjectsBatch = new GraphObjectsBatch(currentBatch);
+                    GraphObjectsBatch inMemoryGraphObjectsBatch = new GraphObjectsBatch(currentBatch, executionState.getGraphFetchBatchMemoryLimit());
                     List<Object> resultObjects = new ArrayList<>();
                     int objectCount = 0;
 

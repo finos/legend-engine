@@ -84,8 +84,6 @@ import java.util.stream.StreamSupport;
 
 public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    public static final long MAX_MEMORY_BYTES_PER_GRAPH_BATCH = 52_428_800L; /* 50MB - 50 * 1024 * 1024 */
-
     private final MutableList<CommonProfile> profiles;
     private final ExecutionState executionState;
 
