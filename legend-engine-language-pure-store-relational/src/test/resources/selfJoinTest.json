@@ -1,0 +1,101 @@
+{
+  "sectionIndices": [],
+  "serializableModelSpecifications": [],
+  "texts": [],
+  "diagrams": [],
+  "flattenSpecifications": [],
+  "mappings": [],
+  "dataStoreSpecifications": [],
+  "stores": [
+    {
+      "schemas": [
+        {
+          "views": [],
+          "tables": [
+            {
+              "primaryKey": [
+                "col1"
+              ],
+              "name": "table1",
+              "columns": [
+                {
+                  "type": {
+                    "size": 32,
+                    "_type": "Char"
+                  },
+                  "nullable": false,
+                  "name": "col1"
+                },
+                {
+                  "type": {
+                    "size": 32,
+                    "_type": "Char"
+                  },
+                  "nullable": true,
+                  "name": "col2"
+                }
+              ]
+            }
+          ],
+          "name": "mySchema"
+        }
+      ],
+      "package": "test",
+      "name": "db",
+      "joins": [
+        {
+          "target": "t_table1",
+          "operation": {
+            "parameters": [
+              {
+                "tableAlias": "table1",
+                "table": {
+                  "table": "table1",
+                  "schema": "mySchema",
+                  "database": "test::db",
+                  "_type": "Table"
+                },
+                "column": "col1",
+                "_type": "column"
+              },
+              {
+                "tableAlias": "{target}",
+                "table": {
+                  "table": "{target}",
+                  "schema": "mySchema",
+                  "database": "test::db",
+                  "_type": "Table"
+                },
+                "column": "col2",
+                "_type": "column"
+              }
+            ],
+            "funcName": "equal",
+            "_type": "dynaFunc"
+          },
+          "name": "selfJoin"
+        }
+      ],
+      "includedStores": [],
+      "filters": [],
+      "_type": "relational"
+    }
+  ],
+  "domain": {
+    "functions": [],
+    "associations": [],
+    "classes": [],
+    "measures": [],
+    "enums": [],
+    "profiles": []
+  },
+  "_type": "data",
+  "services": [],
+  "cacheables": [],
+  "caches": [],
+  "pipelines": [],
+  "runtimes": [],
+  "connections": [],
+  "fileGenerations": [],
+  "generationSpecifications": []
+}

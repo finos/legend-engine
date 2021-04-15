@@ -35,6 +35,8 @@
         <module>legend-engine-executionPlan-execution</module>
         <module>legend-engine-executionPlan-execution-api</module>
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
+        <module>legend-engine-executionPlan-execution-store-relational</module>
+        <module>legend-engine-executionPlan-execution-store-relational-connection</module>
         <module>legend-engine-external-shared</module>
         <module>legend-engine-external-format-avro</module>
         <module>legend-engine-external-format-jsonSchema</module>
@@ -52,6 +54,7 @@
         <module>legend-engine-language-pure-dsl-service</module>
         <module>legend-engine-language-pure-dsl-service-generation</module>
         <module>legend-engine-language-pure-dsl-service-execution</module>
+        <module>legend-engine-language-pure-store-relational</module>
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-pure</module>
         <module>legend-engine-query-pure</module>
@@ -83,8 +86,12 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
 
+        <!-- Databases -->
+        <hikaricp.version>3.4.5</hikaricp.version>
+        <h2.version>1.4.200</h2.version>
+
         <!-- Legend -->
-        <legend.pure.version>1.17.0</legend.pure.version>
+        <legend.pure.version>1.18.0</legend.pure.version>
         <legend.shared.version>0.8.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -123,6 +130,7 @@
         <zipkin.reporter.version>2.15.0</zipkin.reporter.version>
         <dropwizard.version>1.3.29</dropwizard.version>
         <dropwizard-swagger.version>1.3.17-1</dropwizard-swagger.version>
+        <dropwizard.metrics.version>4.1.16</dropwizard.metrics.version>
         <guava.version>30.0-jre</guava.version>
         <jsonunit.version>2.17.0</jsonunit.version>
         <janino.version>3.1.0</janino.version>
@@ -374,6 +382,16 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution-store-relational</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution-store-relational-connection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-executionPlan-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -502,6 +520,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-format-rosetta</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-store-relational</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->
@@ -697,6 +720,26 @@
                         <artifactId>antlr-runtime</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-store-relational</artifactId>
+                <version>${legend.pure.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr-runtime</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
+                <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
@@ -989,6 +1032,11 @@
                 <version>${dropwizard.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.dropwizard.metrics</groupId>
+                <artifactId>metrics-core</artifactId>
+                <version>${dropwizard.metrics.version}</version>
+            </dependency>
+            <dependency>
                 <!-- Needed this exclusion to resolve dependency divergence issue in `legend-engine-server` -->
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-util</artifactId>
@@ -1047,7 +1095,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
             <!-- DROPWIZARD -->
 
             <!-- JSON-UNIT -->
@@ -1203,6 +1250,21 @@
             </dependency>
             <!-- Jetty -->
 
+
+            <!-- Database -->
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>${hikaricp.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+            </dependency>
+            <!-- Database -->
+
             <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-common</artifactId>
@@ -1213,7 +1275,18 @@
                 <artifactId>joda-time</artifactId>
                 <version>${joda.time.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.openjdk.jol</groupId>
+                <artifactId>jol-core</artifactId>
+                <version>0.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>4.1.0</version>
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
 
     <repositories>
