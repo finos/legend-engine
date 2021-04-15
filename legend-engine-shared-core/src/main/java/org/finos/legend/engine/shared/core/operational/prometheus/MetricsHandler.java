@@ -92,7 +92,9 @@ public class MetricsHandler
         Gauge g;
         if (gauges.get(name) == null)
         {
-            g = Gauge.build().name(generateMetricName(name,false)).labelNames(labelNames).register();
+            g = Gauge.build().name(generateMetricName(name,false))
+                    .help(name + " gauge metric")
+                    .labelNames(labelNames).register();
             gauges.put(name, g);
             if (decrement) {
                 g.labels(labelValues).dec();
@@ -119,7 +121,9 @@ public class MetricsHandler
     {
         if (errorCounters.get(name) == null)
         {
-            Counter c = Counter.build().name(generateMetricName(name,true)).labelNames(labelNames).register();
+            Counter c = Counter.build().name(generateMetricName(name,true))
+                    .help(name+" count metric")
+                    .labelNames(labelNames).register();
             errorCounters.put(name, c);
             c.labels(labelValues).inc();
         }
