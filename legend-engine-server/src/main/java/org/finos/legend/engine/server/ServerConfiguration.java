@@ -17,6 +17,8 @@ package org.finos.legend.engine.server;
 import io.dropwizard.Configuration;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.server.core.configuration.DeploymentConfiguration;
 import org.finos.legend.engine.server.core.configuration.OpenTracingConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jConfiguration;
@@ -31,4 +33,7 @@ public class ServerConfiguration extends Configuration
     public OpenTracingConfiguration opentracing;
     public Map<String, Integer> filterPriorities;
     public MetaDataServerConfiguration metadataserver;
+
+    public RelationalExecutionConfiguration relationalexecution;
+    public TemporaryTestDbConfiguration temporarytestdb;
 }

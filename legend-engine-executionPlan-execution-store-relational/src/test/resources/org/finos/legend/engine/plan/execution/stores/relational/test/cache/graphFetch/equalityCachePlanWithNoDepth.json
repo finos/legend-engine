@@ -1,0 +1,450 @@
+{
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  },
+  "templateFunctions": [
+    "<#function renderCollection collection separator><#return collection?join(separator)><\/#function>",
+    "<#function collectionSize collection> <#return collection?size> <\/#function>"
+  ],
+  "rootExecutionNode": {
+    "_type": "sequence",
+    "resultType": {
+      "dataType": "String",
+      "_type": "dataType"
+    },
+    "resultSizeRange": null,
+    "executionNodes": [
+      {
+        "functionParameters": [
+          {
+            "name": "count",
+            "supportsStream": false,
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "class": "Integer",
+            "_type": "var",
+            "sourceInformation": null
+          }
+        ],
+        "_type": "function-parameters-validation",
+        "resultType": {
+          "dataType": "Boolean",
+          "_type": "dataType"
+        },
+        "resultSizeRange": null,
+        "executionNodes": [],
+        "implementation": null
+      },
+      {
+        "pure": {
+          "function": "serialize",
+          "fControl": "serialize_T_MANY__RootGraphFetchTree_1__String_1_",
+          "parameters": [
+            {
+              "function": "graphFetch",
+              "fControl": "graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_",
+              "parameters": [
+                {
+                  "function": "take",
+                  "fControl": "take_T_MANY__Integer_1__T_MANY_",
+                  "parameters": [
+                    {
+                      "function": "sortBy",
+                      "fControl": "sortBy_T_m__Function_$0_1$__T_m_",
+                      "parameters": [
+                        {
+                          "function": "getAll",
+                          "fControl": "getAll_Class_1__T_MANY_",
+                          "parameters": [
+                            {
+                              "fullPath": "meta::pure::tests::model::simple::Person",
+                              "_type": "class",
+                              "sourceInformation": null
+                            }
+                          ],
+                          "_type": "func",
+                          "sourceInformation": null
+                        },
+                        {
+                          "name": "",
+                          "startType": "meta::pure::tests::model::simple::Person",
+                          "path": [
+                            {
+                              "property": "lastName",
+                              "parameters": [],
+                              "_type": "propertyPath",
+                              "sourceInformation": null
+                            }
+                          ],
+                          "_type": "path",
+                          "sourceInformation": null
+                        }
+                      ],
+                      "_type": "func",
+                      "sourceInformation": null
+                    },
+                    {
+                      "name": "count",
+                      "supportsStream": null,
+                      "multiplicity": null,
+                      "class": null,
+                      "_type": "var",
+                      "sourceInformation": null
+                    }
+                  ],
+                  "_type": "func",
+                  "sourceInformation": null
+                },
+                {
+                  "class": "meta::pure::tests::model::simple::Person",
+                  "_type": "rootGraphFetchTree",
+                  "subTrees": [],
+                  "_type": "rootGraphFetchTree",
+                  "sourceInformation": null
+                }
+              ],
+              "_type": "func",
+              "sourceInformation": null
+            },
+            {
+              "class": "meta::pure::tests::model::simple::Person",
+              "_type": "rootGraphFetchTree",
+              "subTrees": [
+                {
+                  "property": "firstName",
+                  "parameters": [],
+                  "alias": null,
+                  "subType": null,
+                  "_type": "propertyGraphFetchTree",
+                  "subTrees": [],
+                  "_type": "propertyGraphFetchTree",
+                  "sourceInformation": null
+                },
+                {
+                  "property": "lastName",
+                  "parameters": [],
+                  "alias": null,
+                  "subType": null,
+                  "_type": "propertyGraphFetchTree",
+                  "subTrees": [],
+                  "_type": "propertyGraphFetchTree",
+                  "sourceInformation": null
+                }
+              ],
+              "_type": "rootGraphFetchTree",
+              "sourceInformation": null
+            }
+          ],
+          "_type": "func",
+          "sourceInformation": null
+        },
+        "_type": "pureExp",
+        "resultType": {
+          "dataType": "String",
+          "_type": "dataType"
+        },
+        "resultSizeRange": null,
+        "executionNodes": [
+          {
+            "graphFetchTree": {
+              "class": "meta::pure::tests::model::simple::Person",
+              "_type": "rootGraphFetchTree",
+              "subTrees": [],
+              "_type": "rootGraphFetchTree",
+              "sourceInformation": null
+            },
+            "rootExecutionNode": {
+              "sqlQuery": "select top ${count} \"root\".ID as \"pk_0\", \"root\".FIRSTNAME as \"firstName\", \"root\".LASTNAME as \"lastName\" from personTable as \"root\" order by \"root\".LASTNAME",
+              "onConnectionCloseCommitQuery": null,
+              "onConnectionCloseRollbackQuery": null,
+              "resultColumns": [
+                {
+                  "label": "\"pk_0\"",
+                  "dataType": "INTEGER"
+                },
+                {
+                  "label": "\"firstName\"",
+                  "dataType": "VARCHAR(200)"
+                },
+                {
+                  "label": "\"lastName\"",
+                  "dataType": "VARCHAR(200)"
+                }
+              ],
+              "connection": {
+                "_type": "RelationalDatabaseConnection",
+                "type": "H2",
+                "authenticationStrategy" : {
+                  "_type" : "test"
+                },
+                "datasourceSpecification" : {
+                  "_type" : "h2Local"
+                }
+              },
+              "_type": "sql",
+              "resultType": {
+                "dataType": "meta::pure::metamodel::type::Any",
+                "_type": "dataType"
+              },
+              "resultSizeRange": null,
+              "executionNodes": [],
+              "implementation": null
+            },
+            "batchSize": 1000,
+            "globalGraphFetchExecutionNode": {
+              "graphFetchTree": {
+                "class": "meta::pure::tests::model::simple::Person",
+                "_type": "rootGraphFetchTree",
+                "subTrees": [],
+                "_type": "rootGraphFetchTree",
+                "sourceInformation": null
+              },
+              "store": "meta::relational::tests::db",
+              "children": [],
+              "localGraphFetchExecutionNode": {
+                "tempTableName": "node_0",
+                "columns": [
+                  {
+                    "label": "pk_0",
+                    "dataType": "INT"
+                  }
+                ],
+                "relationalNode": null,
+                "children": [],
+                "nodeIndex": 0,
+                "graphFetchTree": {
+                  "class": "meta::pure::tests::model::simple::Person",
+                  "_type": "rootGraphFetchTree",
+                  "subTrees": [
+                    {
+                      "property": "firstName",
+                      "parameters": [],
+                      "alias": null,
+                      "subType": null,
+                      "_type": "propertyGraphFetchTree",
+                      "subTrees": [],
+                      "_type": "propertyGraphFetchTree",
+                      "sourceInformation": null
+                    },
+                    {
+                      "property": "lastName",
+                      "parameters": [],
+                      "alias": null,
+                      "subType": null,
+                      "_type": "propertyGraphFetchTree",
+                      "subTrees": [],
+                      "_type": "propertyGraphFetchTree",
+                      "sourceInformation": null
+                    }
+                  ],
+                  "_type": "rootGraphFetchTree",
+                  "sourceInformation": null
+                },
+                "_type": "relationalRootGraphFetchExecutionNode",
+                "resultType": {
+                  "propertiesWithParameters": [
+                    {
+                      "property": "firstName",
+                      "parameters": []
+                    },
+                    {
+                      "property": "lastName",
+                      "parameters": []
+                    }
+                  ],
+                  "class": "meta::pure::tests::model::simple::Person",
+                  "setImplementations": [
+                    {
+                      "class": "meta::pure::tests::model::simple::Person",
+                      "mapping": "meta::relational::tests::simpleRelationalMappingInc",
+                      "id": "meta_pure_tests_model_simple_Person",
+                      "propertyMappings": [
+                        {
+                          "property": "firstName",
+                          "type": "String",
+                          "enumMapping": null
+                        },
+                        {
+                          "property": "age",
+                          "type": "Integer",
+                          "enumMapping": null
+                        },
+                        {
+                          "property": "lastName",
+                          "type": "String",
+                          "enumMapping": null
+                        }
+                      ]
+                    }
+                  ],
+                  "_type": "partialClass"
+                },
+                "resultSizeRange": null,
+                "executionNodes": [],
+                "implementation": {
+                  "classes": [],
+                  "executionClassFullName": "_pure.plan.root.n2.n1.globalGraph.localGraph.Execute",
+                  "executionMethodName": null,
+                  "_type": "java"
+                }
+              },
+              "parentIndex": null,
+              "xStorePropertyMapping": null,
+              "_type": "globalGraphFetchExecutionNode",
+              "resultType": {
+                "propertiesWithParameters": [
+                  {
+                    "property": "firstName",
+                    "parameters": []
+                  },
+                  {
+                    "property": "lastName",
+                    "parameters": []
+                  }
+                ],
+                "class": "meta::pure::tests::model::simple::Person",
+                "setImplementations": [
+                  {
+                    "class": "meta::pure::tests::model::simple::Person",
+                    "mapping": "meta::relational::tests::simpleRelationalMappingInc",
+                    "id": "meta_pure_tests_model_simple_Person",
+                    "propertyMappings": [
+                      {
+                        "property": "firstName",
+                        "type": "String",
+                        "enumMapping": null
+                      },
+                      {
+                        "property": "age",
+                        "type": "Integer",
+                        "enumMapping": null
+                      },
+                      {
+                        "property": "lastName",
+                        "type": "String",
+                        "enumMapping": null
+                      }
+                    ]
+                  }
+                ],
+                "_type": "partialClass"
+              },
+              "resultSizeRange": null,
+              "executionNodes": [],
+              "implementation": null
+            },
+            "_type": "graphFetchExecutionNode",
+            "resultType": {
+              "propertiesWithParameters": [
+                {
+                  "property": "firstName",
+                  "parameters": []
+                },
+                {
+                  "property": "lastName",
+                  "parameters": []
+                }
+              ],
+              "class": "meta::pure::tests::model::simple::Person",
+              "setImplementations": [
+                {
+                  "class": "meta::pure::tests::model::simple::Person",
+                  "mapping": "meta::relational::tests::simpleRelationalMappingInc",
+                  "id": "meta_pure_tests_model_simple_Person",
+                  "propertyMappings": [
+                    {
+                      "property": "firstName",
+                      "type": "String",
+                      "enumMapping": null
+                    },
+                    {
+                      "property": "age",
+                      "type": "Integer",
+                      "enumMapping": null
+                    },
+                    {
+                      "property": "lastName",
+                      "type": "String",
+                      "enumMapping": null
+                    }
+                  ]
+                }
+              ],
+              "_type": "partialClass"
+            },
+            "resultSizeRange": null,
+            "executionNodes": [],
+            "implementation": null
+          }
+        ],
+        "implementation": {
+          "classes": [],
+          "executionClassFullName": "_pure.plan.root.n2.Serialize",
+          "executionMethodName": null,
+          "_type": "java"
+        }
+      }
+    ],
+    "implementation": null
+  },
+  "authDependent": false,
+  "kerberos": null,
+  "globalImplementationSupport": {
+    "classes": [
+      {
+        "package": "_pure.app.meta.pure.tests.model.simple",
+        "name": "EntityWithAddress",
+        "source": "package _pure.app.meta.pure.tests.model.simple;\n\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport java.math.*;\nimport java.util.*;\n\npublic interface EntityWithAddress extends org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject {\n\n    String getAlloyStoreObjectReference$();\n}\n",
+        "byteCode": null
+      },
+      {
+        "package": "_pure.app.meta.pure.tests.model.simple",
+        "name": "EntityWithLocations",
+        "source": "package _pure.app.meta.pure.tests.model.simple;\n\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport java.math.*;\nimport java.util.*;\n\npublic interface EntityWithLocations extends org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject {\n\n    String getAlloyStoreObjectReference$();\n}\n",
+        "byteCode": null
+      },
+      {
+        "package": "_pure.app.meta.pure.tests.model.simple",
+        "name": "Person",
+        "source": "package _pure.app.meta.pure.tests.model.simple;\n\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport java.math.*;\nimport java.util.*;\n\npublic interface Person extends EntityWithAddress, EntityWithLocations, org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject {\n\n    String getFirstName();\n\n    String getLastName();\n\n    List<String> getOtherNames();\n\n    String getExtraInformation();\n\n    Long getAge();\n\n    String getNickName();\n\n    Boolean getActiveEmployment();\n\n    String getAlloyStoreObjectReference$();\n}\n",
+        "byteCode": null
+      },
+      {
+        "package": "_pure.plan.root.n2",
+        "name": "Serialize",
+        "source": "package _pure.plan.root.n2;\n\nimport _pure.plan.root.n2.Serializer;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\nimport org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer;\nimport org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;\nimport org.finos.legend.engine.plan.dependencies.store.platform.ISerializationWriter;\n\npublic class Serialize implements IPlatformPureExpressionExecutionNodeSerializeSpecifics {\n\n    public IGraphSerializer<?> serializer(ISerializationWriter writer, IExecutionNodeContext context) {\n        return new Serializer(writer, context);\n    }\n}\n",
+        "byteCode": null
+      },
+      {
+        "package": "_pure.plan.root.n2",
+        "name": "Serializer",
+        "source": "package _pure.plan.root.n2;\n\nimport _pure.app.meta.pure.tests.model.simple.Person;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;\nimport org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer;\nimport org.finos.legend.engine.plan.dependencies.store.platform.ISerializationWriter;\n\npublic class Serializer implements IGraphSerializer<Person> {\n\n    private ISerializationWriter writer;\n\n    private IExecutionNodeContext context;\n\n    Serializer(ISerializationWriter writer,IExecutionNodeContext context) {\n        this.writer = writer;\n        this.context = context;\n    }\n\n    public void serialize(Person value) {\n        if (value instanceof IReferencedObject)\n        {\n            this.writer.startObject(\"meta::pure::tests::model::simple::Person\", ((IReferencedObject) value).getAlloyStoreObjectReference$());\n        }\n        else\n        {\n            this.writer.startObject(\"meta::pure::tests::model::simple::Person\");\n        }\n        this.writer.writeStringProperty(\"firstName\", value.getFirstName());\n        this.writer.writeStringProperty(\"lastName\", value.getLastName());\n        this.writer.endObject();\n    }\n}\n",
+        "byteCode": null
+      },
+      {
+        "package": "_pure.plan.root.n2.n1.globalGraph.localGraph",
+        "name": "Execute",
+        "source": "package _pure.plan.root.n2.n1.globalGraph.localGraph;\n\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\nimport org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;\nimport org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalRootGraphNodeExecutor;\nimport java.sql.ResultSet;\nimport java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\n\npublic class Execute implements IRelationalRootGraphNodeExecutor {\n\n    private Specifics specifics;\n\n    public Execute() {\n        this.specifics = new Specifics();\n    }\n\n    public IGraphInstance<?> getObjectFromResultSet(ResultSet resultSet, String databaseTimeZone, String databaseConnection) {\n        return this.specifics.getObjectFromResultSet(resultSet, databaseTimeZone, databaseConnection);\n    }\n\n    public List<java.lang.reflect.Method> primaryKeyGetters() {\n        return this.specifics.primaryKeyGetters();\n    }\n\n    public List<String> primaryKeyColumns() {\n        return this.specifics.primaryKeyColumns();\n    }\n\n    public boolean supportsCaching() {\n        return true;\n    }\n\n    public Object deepCopy(Object object) {\n        return this.specifics.deepCopy(object);\n    }\n\n    public String getMappingId(ResultSet resultSet, String databaseTimeZone, String databaseConnection) {\n        return this.specifics.getMappingId(resultSet, databaseTimeZone, databaseConnection);\n    }\n\n    public String getInstanceSetId(ResultSet resultSet, String databaseTimeZone, String databaseConnection) {\n        return this.specifics.getInstanceSetId(resultSet, databaseTimeZone, databaseConnection);\n    }\n}\n",
+        "byteCode": null
+      },
+      {
+        "package": "_pure.plan.root.n2.n1.globalGraph.localGraph",
+        "name": "GraphFetch_Node0_Person_Impl",
+        "source": "package _pure.plan.root.n2.n1.globalGraph.localGraph;\n\nimport com.fasterxml.jackson.annotation.JsonIgnore;\nimport com.fasterxml.jackson.annotation.JsonInclude;\nimport com.fasterxml.jackson.annotation.JsonProperty;\nimport com.fasterxml.jackson.core.JsonGenerator;\nimport com.fasterxml.jackson.databind.JsonSerializer;\nimport com.fasterxml.jackson.databind.ObjectMapper;\nimport com.fasterxml.jackson.databind.SerializerProvider;\nimport com.fasterxml.jackson.databind.module.SimpleModule;\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport java.io.IOException;\nimport java.util.*;\nimport org.openjdk.jol.info.ClassLayout;\n\npublic class GraphFetch_Node0_Person_Impl implements _pure.app.meta.pure.tests.model.simple.Person {\n\n    private String firstName;\n\n    private String lastName;\n\n    private List<String> otherNames;\n\n    private String extraInformation;\n\n    private Long age;\n\n    private String nickName;\n\n    private Boolean activeEmployment;\n\n    private String setId$;\n\n    private String databaseConnection$;\n\n    private static final ObjectMapper objectMapper$ = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).registerModule(new SimpleModule().addSerializer(PureDate.class, new JsonSerializer<PureDate>() { @Override public void serialize(PureDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException { gen.writeRawValue(\"\\\"\" + value.toString() + \"\\\"\"); } }));\n\n    private String alloyStoreObjectReference$;\n\n    private Object pk$_0;\n\n    private static Long classSize$;\n\n    public String getFirstName() {\n        return this.firstName;\n    }\n\n    public void setFirstName(String firstName) {\n        this.firstName = firstName;\n    }\n\n    public void addFirstName(String object) {\n        if ((Object) this.firstName != null)\n        {\n            throw new RuntimeException(\"Found multiple objects for property 'firstName' of multiplicity with bound 1\");\n        }\n        this.firstName = object;\n    }\n\n    public String getLastName() {\n        return this.lastName;\n    }\n\n    public void setLastName(String lastName) {\n        this.lastName = lastName;\n    }\n\n    public void addLastName(String object) {\n        if ((Object) this.lastName != null)\n        {\n            throw new RuntimeException(\"Found multiple objects for property 'lastName' of multiplicity with bound 1\");\n        }\n        this.lastName = object;\n    }\n\n    public List<String> getOtherNames() {\n        return this.otherNames == null ? Collections.<String>emptyList() : this.otherNames;\n    }\n\n    public void setOtherNames(List<String> otherNames) {\n        this.otherNames = otherNames;\n    }\n\n    public void addOtherNames(String object) {\n        if (this.otherNames == null)\n        {\n            this.otherNames = new ArrayList<String>();\n        }\n        this.otherNames.add(object);\n    }\n\n    public String getExtraInformation() {\n        return this.extraInformation;\n    }\n\n    public void setExtraInformation(String extraInformation) {\n        this.extraInformation = extraInformation;\n    }\n\n    public void addExtraInformation(String object) {\n        if ((Object) this.extraInformation != null)\n        {\n            throw new RuntimeException(\"Found multiple objects for property 'extraInformation' of multiplicity with bound 1\");\n        }\n        this.extraInformation = object;\n    }\n\n    public Long getAge() {\n        return this.age;\n    }\n\n    public void setAge(Long age) {\n        this.age = age;\n    }\n\n    public void addAge(Long object) {\n        if ((Object) this.age != null)\n        {\n            throw new RuntimeException(\"Found multiple objects for property 'age' of multiplicity with bound 1\");\n        }\n        this.age = object;\n    }\n\n    public String getNickName() {\n        return this.nickName;\n    }\n\n    public void setNickName(String nickName) {\n        this.nickName = nickName;\n    }\n\n    public void addNickName(String object) {\n        if ((Object) this.nickName != null)\n        {\n            throw new RuntimeException(\"Found multiple objects for property 'nickName' of multiplicity with bound 1\");\n        }\n        this.nickName = object;\n    }\n\n    public Boolean getActiveEmployment() {\n        return this.activeEmployment;\n    }\n\n    public void setActiveEmployment(Boolean activeEmployment) {\n        this.activeEmployment = activeEmployment;\n    }\n\n    public void addActiveEmployment(Boolean object) {\n        if ((Object) this.activeEmployment != null)\n        {\n            throw new RuntimeException(\"Found multiple objects for property 'activeEmployment' of multiplicity with bound 1\");\n        }\n        this.activeEmployment = object;\n    }\n\n    @JsonIgnore\n    public String getSetId$() {\n        return this.setId$;\n    }\n\n    public void setSetId$(String setId) {\n        this.setId$ = setId;\n    }\n\n    @JsonIgnore\n    public String getDatabaseConnection$() {\n        return this.databaseConnection$;\n    }\n\n    public void setDatabaseConnection$(String databaseConnection) {\n        this.databaseConnection$ = databaseConnection;\n    }\n\n    public void setAlloyStoreObjectReference$(String storeObjectReferenceIdentifier$) {\n        this.databaseConnection$ = storeObjectReferenceIdentifier$;\n    }\n\n    @JsonProperty(value=\"alloyStoreObjectReference$\")\n    public String getAlloyStoreObjectReference$() {\n        if (this.alloyStoreObjectReference$ == null)\n        {\n            try\n            {\n                StringBuilder referenceBuilder = new StringBuilder();\n                referenceBuilder.append(\"001:\");\n                referenceBuilder.append(\"010:\");\n        \n                referenceBuilder.append(\"0000000010:\");\n                referenceBuilder.append(\"Relational:\");\n        \n                referenceBuilder.append(\"0000000051:\");\n                referenceBuilder.append(\"meta::relational::tests::simpleRelationalMappingInc:\");\n        \n                referenceBuilder.append(\"0000000035:\");\n                referenceBuilder.append(\"meta_pure_tests_model_simple_Person:\");\n        \n                String setId = this.getSetId$();\n                referenceBuilder.append(String.format(\"%010d\", setId.length()));\n                referenceBuilder.append(\":\");\n                referenceBuilder.append(setId);\n                referenceBuilder.append(\":\");\n        \n                String databaseConnectionString = this.getDatabaseConnection$();\n                referenceBuilder.append(String.format(\"%010d\", databaseConnectionString.length()));\n                referenceBuilder.append(\":\");\n                referenceBuilder.append(databaseConnectionString);\n                referenceBuilder.append(\":\");\n        \n                Map<String, Object> pkMap = new HashMap<>();\n        \n                pkMap.put(\"pk$_0\", this.getPk$_0());\n                String pkMapString = objectMapper$.writeValueAsString(pkMap);\n                referenceBuilder.append(String.format(\"%010d\", pkMapString.length()));\n                referenceBuilder.append(\":\");\n                referenceBuilder.append(pkMapString);\n        \n                this.alloyStoreObjectReference$ = \"ASOR:\" + org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString(referenceBuilder.toString().getBytes());\n            }\n            catch (Exception e)\n            {\n               throw new RuntimeException(e);\n            }}\n        \n        return this.alloyStoreObjectReference$;\n    }\n\n    @JsonIgnore\n    public Object getPk$_0() {\n        return this.pk$_0;\n    }\n\n    public void setPk$_0(Object pk$_0) {\n        this.pk$_0 = pk$_0;\n    }\n\n    private static long getClassSize$() {\n        if (GraphFetch_Node0_Person_Impl.classSize$ == null)\n        {\n            long classSize = org.openjdk.jol.info.ClassLayout.parseClass(GraphFetch_Node0_Person_Impl.class).instanceSize();\n            classSize = classSize + org.openjdk.jol.info.ClassLayout.parseClass(String.class).instanceSize();\n            classSize = classSize + org.openjdk.jol.info.ClassLayout.parseClass(String.class).instanceSize();\n            classSize = classSize + org.openjdk.jol.info.ClassLayout.parseClass(String.class).instanceSize();\n            classSize = classSize + org.openjdk.jol.info.ClassLayout.parseClass(Long.class).instanceSize();\n            classSize = classSize + org.openjdk.jol.info.ClassLayout.parseClass(String.class).instanceSize();\n            classSize = classSize + org.openjdk.jol.info.ClassLayout.parseClass(Boolean.class).instanceSize();\n            classSize = classSize + org.openjdk.jol.info.ClassLayout.parseClass(String.class).instanceSize();\n            classSize = classSize + org.openjdk.jol.info.ClassLayout.parseClass(String.class).instanceSize();\n            classSize = classSize + org.openjdk.jol.info.ClassLayout.parseClass(String.class).instanceSize();\n            GraphFetch_Node0_Person_Impl.classSize$ = classSize;\n        }\n        return GraphFetch_Node0_Person_Impl.classSize$;\n    }\n\n    public long getInstanceSize$() {\n        long instanceSize = GraphFetch_Node0_Person_Impl.getClassSize$();\n        if (this.firstName != null)\n        {\n            instanceSize = instanceSize + this.firstName.length();\n        }\n        if (this.lastName != null)\n        {\n            instanceSize = instanceSize + this.lastName.length();\n        }\n        if (this.extraInformation != null)\n        {\n            instanceSize = instanceSize + this.extraInformation.length();\n        }\n        if (this.nickName != null)\n        {\n            instanceSize = instanceSize + this.nickName.length();\n        }\n        if (this.setId$ != null)\n        {\n            instanceSize = instanceSize + this.setId$.length();\n        }\n        if (this.databaseConnection$ != null)\n        {\n            instanceSize = instanceSize + this.databaseConnection$.length();\n        }\n        if (this.alloyStoreObjectReference$ != null)\n        {\n            instanceSize = instanceSize + this.alloyStoreObjectReference$.length();\n        }\n        return instanceSize;\n    }\n}\n",
+        "byteCode": null
+      },
+      {
+        "package": "_pure.plan.root.n2.n1.globalGraph.localGraph",
+        "name": "Specifics",
+        "source": "package _pure.plan.root.n2.n1.globalGraph.localGraph;\n\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\nimport org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IConstantResult;\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport java.sql.ResultSet;\nimport java.sql.ResultSetMetaData;\nimport java.sql.Types;\nimport java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\nimport org.openjdk.jol.info.ClassLayout;\n\nclass Specifics {\n\n    private static final List<Integer> STRING_TYPES = Arrays.asList(Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR, Types.NCHAR, Types.NVARCHAR, Types.LONGNVARCHAR, Types.OTHER, Types.NULL);\n\n    private static final List<Integer> INT_TYPES = Arrays.asList(Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.NULL);\n\n    private static final List<Integer> FLOAT_TYPES = Arrays.asList(Types.REAL, Types.FLOAT, Types.DOUBLE, Types.DECIMAL, Types.NUMERIC, Types.NULL);\n\n    private static final List<Integer> BOOL_TYPES = Arrays.asList(Types.BIT, Types.BOOLEAN, Types.NULL);\n\n    private static final List<Integer> STRICT_DATE_TYPES = Arrays.asList(Types.DATE, Types.NULL);\n\n    private static final List<Integer> DATE_TIME_TYPES = Arrays.asList(Types.TIMESTAMP, Types.NULL);\n\n    private static final long STRING_SIZE = ClassLayout.parseClass(String.class).instanceSize();\n\n    private static final long LONG_SIZE = ClassLayout.parseClass(Long.class).instanceSize();\n\n    private static final long DOUBLE_SIZE = ClassLayout.parseClass(Double.class).instanceSize();\n\n    private static final long DECIMAL_SIZE = ClassLayout.parseClass(java.math.BigDecimal.class).instanceSize();\n\n    private static final long BOOL_SIZE = ClassLayout.parseClass(Boolean.class).instanceSize();\n\n    private static final long DATE_SIZE = ClassLayout.parseClass(PureDate.class).instanceSize();\n\n    private static final long ENUM_SIZE = ClassLayout.parseClass(int.class).instanceSize();\n\n    private List<Integer> columnTypes;\n\n    private List<List<Integer>> propertyIndices;\n\n    private List<List<Supplier<Object>>> propertyGetters;\n\n    private Calendar calendar;\n\n    private java.lang.reflect.Method parentPropertyAdder;\n\n    private Object getAlloyNativeValueFromResultSet(ResultSet resultSet, int columnIndex, int columnType) {\n        try\n        {\n            Object result = null;\n            switch (columnType)\n            {\n                case Types.DATE:\n                {\n                    java.sql.Date date = resultSet.getDate(columnIndex);\n                    if (date != null)\n                    {\n                        result = PureDate.fromSQLDate(date);\n                    }\n                    break;\n                }\n                case Types.TIMESTAMP:\n                {\n                    java.sql.Timestamp timestamp = resultSet.getTimestamp(columnIndex, this.calendar);\n                    if (timestamp != null)\n                    {\n                        result = PureDate.fromSQLTimestamp(timestamp);\n                    }\n                    break;\n                }\n                case Types.TINYINT:\n                case Types.SMALLINT:\n                case Types.INTEGER:\n                case Types.BIGINT:\n                {\n                    long num = resultSet.getLong(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        result = Long.valueOf(num);\n                    }\n                    break;\n                }\n                case Types.REAL:\n                case Types.FLOAT:\n                case Types.DOUBLE:\n                {\n                    double num = resultSet.getDouble(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        result = Double.valueOf(num);\n                    }\n                    break;\n                }\n                case Types.DECIMAL:\n                case Types.NUMERIC:\n                {\n                    result = resultSet.getBigDecimal(columnIndex);\n                    break;\n                }\n                case Types.CHAR:\n                case Types.VARCHAR:\n                case Types.LONGVARCHAR:\n                case Types.NCHAR:\n                case Types.NVARCHAR:\n                case Types.LONGNVARCHAR:\n                case Types.OTHER:\n                {\n                    result = resultSet.getString(columnIndex);\n                    break;\n                }\n                case Types.BIT:\n                case Types.BOOLEAN:\n                {\n                    boolean bool = resultSet.getBoolean(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        result = Boolean.valueOf(bool);\n                    }\n                }\n                case Types.BINARY:\n                case Types.VARBINARY:\n                case Types.LONGVARBINARY:\n                {\n                    byte[] bytes = resultSet.getBytes(columnIndex);\n                    if (bytes != null)\n                    {\n                        result = this.encodeHex(bytes);\n                    }\n                    break;\n                }\n                case Types.NULL:\n                {\n                    \/\/ do nothing: value is already assigned to null\n                    break;\n                }\n                default:\n                {\n                    result = resultSet.getObject(columnIndex);\n                }\n            }\n            return result;}\n        catch (Exception e)\n        {\n            throw new RuntimeException(e);\n        }\n        \n    }\n\n    private String encodeHex(byte[] data) {\n        final char[] DIGITS_LOWER = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};\n        final int l = data.length;\n        final char[] out = new char[l << 1];\n        for (int i = 0, j = 0; i < l; i++)\n        {\n            out[j++] = DIGITS_LOWER[(0xF0 & data[i]) >>> 4];\n            out[j++] = DIGITS_LOWER[0x0F & data[i]];\n        }\n        return new String(out);\n        \n    }\n\n    private Supplier<Object> getResultSetPropertyGetterForStringProperty(ResultSet resultSet, int columnIndex, int columnType, String propertyName) {\n        if (STRING_TYPES.contains(columnType))\n        {\n           return () -> {\n                try\n                {\n                    return resultSet.getString(columnIndex);\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        else\n        {\n            throw new RuntimeException(\"Error reading in property '\" + propertyName + \"' of type String from SQL column of type '\" + columnType + \"'.\");\n        }\n        \n    }\n\n    private Supplier<Object> getResultSetPropertyGetterForIntegerProperty(ResultSet resultSet, int columnIndex, int columnType, String propertyName) {\n        if (INT_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    Long res = null;\n                    long r = resultSet.getLong(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        res = Long.valueOf(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        throw new RuntimeException(\"Error reading in property '\" + propertyName + \"' of type Integer from SQL column of type '\" + columnType + \"'.\");\n        \n    }\n\n    private Supplier<Object> getResultSetPropertyGetterForFloatProperty(ResultSet resultSet, int columnIndex, int columnType, String propertyName) {\n        if (FLOAT_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    Double res = null;\n                    double r = resultSet.getDouble(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        res = Double.valueOf(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        if (INT_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    Double res = null;\n                    long r = resultSet.getLong(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        res = Double.valueOf(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        throw new RuntimeException(\"Error reading in property '\" + propertyName + \"' of type Float from SQL column of type '\" + columnType + \"'.\");\n        \n    }\n\n    private Supplier<Object> getResultSetPropertyGetterForDecimalProperty(ResultSet resultSet, int columnIndex, int columnType, String propertyName) {\n        if (FLOAT_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    java.math.BigDecimal res = null;\n                    double r = resultSet.getDouble(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        res = java.math.BigDecimal.valueOf(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        if (INT_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    java.math.BigDecimal res = null;\n                    long r = resultSet.getLong(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        res = java.math.BigDecimal.valueOf(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        throw new RuntimeException(\"Error reading in property '\" + propertyName + \"' of type Decimal from SQL column of type '\" + columnType + \"'.\");\n        \n    }\n\n    private Supplier<Object> getResultSetPropertyGetterForBooleanProperty(ResultSet resultSet, int columnIndex, int columnType, String propertyName) {\n        if (BOOL_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    Boolean res = null;\n                    boolean r = resultSet.getBoolean(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        res = Boolean.valueOf(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        if (STRING_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    Boolean res = null;\n                    String r = resultSet.getString(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        res = Boolean.valueOf(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        if (INT_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    Boolean res = null;\n                    long r = resultSet.getLong(columnIndex);\n                    if (!resultSet.wasNull())\n                    {\n                        res = Boolean.valueOf(r == 1);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        throw new RuntimeException(\"Error reading in property '\" + propertyName + \"' of type Boolean from SQL column of type '\" + columnType + \"'.\");\n        \n    }\n\n    private Supplier<Object> getResultSetPropertyGetterForStrictDateProperty(ResultSet resultSet, int columnIndex, int columnType, String propertyName) {\n        if (STRICT_DATE_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    PureDate res = null;\n                    java.sql.Date r = resultSet.getDate(columnIndex);\n                    if (r != null)\n                    {\n                        res = PureDate.fromSQLDate(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        if (STRING_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    PureDate res = null;\n                    String r = resultSet.getString(columnIndex);\n                    if (r != null)\n                    {\n                        try\n                        {\n                            res = PureDate.parsePureDate(r);\n                        }\n                        catch (java.lang.IllegalArgumentException dateTimeParseException)\n                        {\n                            res = PureDate.fromSQLDate(java.sql.Date.valueOf(r));\n                        }\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        throw new RuntimeException(\"Error reading in property '\" + propertyName + \"' of type StrictDate from SQL column of type '\" + columnType + \"'.\");\n        \n    }\n\n    private Supplier<Object> getResultSetPropertyGetterForDateTimeProperty(ResultSet resultSet, int columnIndex, int columnType, String propertyName) {\n        if (DATE_TIME_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    PureDate res = null;\n                    java.sql.Timestamp r = resultSet.getTimestamp(columnIndex, this.calendar);\n                    if (r != null)\n                    {\n                        res = PureDate.fromSQLTimestamp(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        if (STRING_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    PureDate res = null;\n                    String r = resultSet.getString(columnIndex);\n                    if (r != null)\n                    {\n                        try\n                        {\n                            res = PureDate.parsePureDate(r);\n                        }\n                        catch (java.lang.IllegalArgumentException dateTimeParseException)\n                        {\n                            res = PureDate.fromSQLTimestamp(java.sql.Timestamp.valueOf(r));\n                        }\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        throw new RuntimeException(\"Error reading in property '\" + propertyName + \"' of type DateTime from SQL column of type '\" + columnType + \"'.\");\n        \n    }\n\n    private Supplier<Object> getResultSetPropertyGetterForDateProperty(ResultSet resultSet, int columnIndex, int columnType, String propertyName) {\n        if (STRICT_DATE_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    PureDate res = null;\n                    java.sql.Date r = resultSet.getDate(columnIndex);\n                    if (r != null)\n                    {\n                        res = PureDate.fromSQLDate(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        if (DATE_TIME_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    PureDate res = null;\n                    java.sql.Timestamp r = resultSet.getTimestamp(columnIndex, this.calendar);\n                    if (r != null)\n                    {\n                        res = PureDate.fromSQLTimestamp(r);\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        if (STRING_TYPES.contains(columnType))\n        {\n            return () -> {\n                try\n                {\n                    PureDate res = null;\n                    String r = resultSet.getString(columnIndex);\n                    if (r != null)\n                    {\n                        try\n                        {\n                            res = PureDate.parsePureDate(r);\n                        }\n                        catch (java.lang.IllegalArgumentException dateTimeParseException1)\n                        {\n                            try\n                            {\n                                res = PureDate.fromSQLTimestamp(java.sql.Timestamp.valueOf(r));\n                            }\n                            catch (java.time.format.DateTimeParseException dateTimeParseException2)\n                            {\n                                res = PureDate.fromSQLDate(java.sql.Date.valueOf(r));\n                            }\n                        }\n                    }\n                    return res;\n                }\n                catch (Exception e)\n                {\n                    throw new RuntimeException(e);\n                }\n            };\n        }\n        throw new RuntimeException(\"Error reading in property '\" + propertyName + \"' of type Date from SQL column of type '\" + columnType + \"'.\");\n        \n    }\n\n    private void doSetup(ResultSet resultSet, String databaseTimeZone) {\n        try\n        {\n            this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));\n            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();\n            int columnCount = resultSetMetaData.getColumnCount();\n            this.columnTypes = new ArrayList<Integer>();\n            List<String> columnNames = new ArrayList<String>();\n            for (int i = 1; i <= columnCount; i++)\n            {\n                String columnLabel = resultSetMetaData.getColumnLabel(i);\n                columnNames.add(columnLabel.startsWith(\"\\\"\") && columnLabel.endsWith(\"\\\"\") ? columnLabel.substring(1, columnLabel.length() - 1).toUpperCase() : columnLabel.toUpperCase());\n                this.columnTypes.add(resultSetMetaData.getColumnType(i));\n            }\n            this.propertyIndices = new ArrayList<List<Integer>>();\n            List<Integer> index_0 = new ArrayList<Integer>();\n            index_0.add(columnNames.indexOf(\"FIRSTNAME\") + 1);\n            index_0.add(columnNames.indexOf(\"LASTNAME\") + 1);\n            index_0.add(columnNames.indexOf(\"PK_0\") + 1);\n            this.propertyIndices.add(index_0);\n            this.propertyGetters = new ArrayList<List<Supplier<Object>>>();\n            int propertyIndex;\n            Supplier<Object> propertyGetter = null;\n            List<Supplier<Object>> propertyGetter_0 = new ArrayList<Supplier<Object>>();\n            propertyIndex = this.propertyIndices.get(0).get(0);\n            propertyGetter = this.getResultSetPropertyGetterForStringProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), \"firstName\");\n            propertyGetter_0.add(propertyGetter);\n            propertyIndex = this.propertyIndices.get(0).get(1);\n            propertyGetter = this.getResultSetPropertyGetterForStringProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), \"lastName\");\n            propertyGetter_0.add(propertyGetter);\n            this.propertyGetters.add(propertyGetter_0);\n        }\n        catch (RuntimeException e)\n        {\n            throw e;\n        }\n        catch (Exception e)\n        {\n            throw new RuntimeException(e);\n        }\n    }\n\n    IGraphInstance<?> getObjectFromResultSet(ResultSet resultSet, String databaseTimeZone, String databaseConnection) {\n        if (this.propertyIndices == null)\n        {\n            this.doSetup(resultSet, databaseTimeZone);\n        }\n        final GraphFetch_Node0_Person_Impl object = new GraphFetch_Node0_Person_Impl();\n        object.setDatabaseConnection$(databaseConnection);\n        object.setSetId$(\"meta_pure_tests_model_simple_Person\");\n        int pkColIndex;\n        int propertyIndex;\n        pkColIndex = this.propertyIndices.get(0).get(2);\n        Object pk$_0 = this.getAlloyNativeValueFromResultSet(resultSet, pkColIndex, this.columnTypes.get(pkColIndex - 1));\n        object.setPk$_0(pk$_0);\n        propertyIndex = this.propertyIndices.get(0).get(0);\n        {\n            String res = (String) this.propertyGetters.get(0).get(0).get();\n            if (res == null)\n            {\n                throw new RuntimeException(\"Error reading in property 'firstName'. Property of multiplicity [1] can not be null\");\n            }\n            object.setFirstName(res);\n        }\n        propertyIndex = this.propertyIndices.get(0).get(1);\n        {\n            String res = (String) this.propertyGetters.get(0).get(1).get();\n            if (res == null)\n            {\n                throw new RuntimeException(\"Error reading in property 'lastName'. Property of multiplicity [1] can not be null\");\n            }\n            object.setLastName(res);\n        }\n        return new IGraphInstance<GraphFetch_Node0_Person_Impl>()\n        {\n            public GraphFetch_Node0_Person_Impl getValue()\n            {\n                return object;\n            }\n            public long instanceSize()\n            {\n                return object.getInstanceSize$();\n            }\n        };\n    }\n\n    List<java.lang.reflect.Method> primaryKeyGetters() {\n        try\n        {\n            return Arrays.asList(GraphFetch_Node0_Person_Impl.class.getMethod(\"getPk$_0\"));\n        }\n        catch (Exception e)\n        {\n            throw new RuntimeException(e);\n        }\n    }\n\n    List<String> primaryKeyColumns() {\n        try\n        {\n            return Arrays.asList(\"pk_0\");\n        }\n        catch (Exception e)\n        {\n            throw new RuntimeException(e);\n        }\n    }\n\n    public Object deepCopy(Object object) {\n        final GraphFetch_Node0_Person_Impl input_0 = (GraphFetch_Node0_Person_Impl) object;\n        final GraphFetch_Node0_Person_Impl object_0 = new GraphFetch_Node0_Person_Impl();\n        object_0.setFirstName(input_0.getFirstName());\n        object_0.setLastName(input_0.getLastName());\n        object_0.setPk$_0(input_0.getPk$_0());\n        object_0.setSetId$(input_0.getSetId$());\n        object_0.setDatabaseConnection$(input_0.getDatabaseConnection$());\n        object_0.setAlloyStoreObjectReference$(input_0.getAlloyStoreObjectReference$());\n        return object_0;\n    }\n\n    public String getMappingId(ResultSet resultSet, String databaseTimeZone, String databaseConnection) {\n        if (this.propertyIndices == null)\n        {\n            this.doSetup(resultSet, databaseTimeZone);\n        }\n        return \"meta::relational::tests::simpleRelationalMappingInc\";\n    }\n\n    public String getInstanceSetId(ResultSet resultSet, String databaseTimeZone, String databaseConnection) {\n        if (this.propertyIndices == null)\n        {\n            this.doSetup(resultSet, databaseTimeZone);\n        }\n        return \"meta_pure_tests_model_simple_Person\";\n    }\n}\n",
+        "byteCode": null
+      }
+    ],
+    "executionClassFullName": null,
+    "executionMethodName": null,
+    "_type": "java"
+  }
+}
