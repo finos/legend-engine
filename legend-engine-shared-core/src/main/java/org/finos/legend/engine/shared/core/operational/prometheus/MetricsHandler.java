@@ -25,8 +25,11 @@ import java.lang.reflect.Method;
 public class MetricsHandler
 {
     public static final String METRIC_PREFIX = "alloy_";
+    private static final String[] empty  = new String[]{};
     static MutableMap<String, Summary> serviceMetrics = Maps.mutable.empty();
     static MutableMap<String, Gauge> serviceErrors = Maps.mutable.empty();
+    static MutableMap<String , Gauge> gauges = Maps.mutable.empty();
+    static MutableMap<String , Counter> errorCounters = Maps.mutable.empty();
     static final Gauge allExecutions = Gauge.build().name("alloy_executions").help("Execution gauge metric ").register();
     static final Gauge allExecutionErrors = Gauge.build().name("alloy_executions_errors").help("Execution error gauge metric ").register();
 
@@ -61,7 +64,6 @@ public class MetricsHandler
 
     public static synchronized void observe(String name, long startTime, long endTime)
     {
-        incrementExecutionGauge();
         if (serviceMetrics.get(name) == null)
         {
             Summary g = Summary.build().name(generateMetricName(name, false))
@@ -76,14 +78,63 @@ public class MetricsHandler
             serviceMetrics.get(name).observe((endTime - startTime) / 1000F);
         }
     }
-    public static synchronized void observeCount(String name)
+
+    public static synchronized void observeCount(String name) {
+        observeCount(name, empty,empty, false);
+    }
+
+    public static synchronized void decrementCount(String name) {
+        observeCount(name, empty,empty, true);
+    }
+
+    public static synchronized void observeCount(String name, String[] labelNames, String[] labelValues, boolean decrement)
     {
-        observe(name, 0, 0);
+        Gauge g;
+        if (gauges.get(name) == null)
+        {
+            g = Gauge.build().name(generateMetricName(name,false))
+                    .help(name + " gauge metric")
+                    .labelNames(labelNames).register();
+            gauges.put(name, g);
+            if (decrement) {
+                g.labels(labelValues).dec();
+            } else {
+                g.labels(labelValues).inc();
+            }
+        }
+        else
+        {
+           g = gauges.get(name);
+            if (decrement) {
+                g.labels(labelValues).dec();
+            } else {
+                g.labels(labelValues).inc();
+            }
+        }
+    }
+
+    public static synchronized void observeErrorCount(String name) {
+        observeErrorCount(name, empty,empty);
+    }
+
+    public static synchronized void observeErrorCount(String name,  String[] labelNames, String[] labelValues)
+    {
+        if (errorCounters.get(name) == null)
+        {
+            Counter c = Counter.build().name(generateMetricName(name,true))
+                    .help(name+" count metric")
+                    .labelNames(labelNames).register();
+            errorCounters.put(name, c);
+            c.labels(labelValues).inc();
+        }
+        else
+        {
+            errorCounters.get(name).labels(labelValues).inc();
+        }
     }
 
     public static synchronized void observeError(String name)
     {
-        incrementExecutionErrorGauge();
         if (serviceErrors.get(name) == null)
         {
            Gauge g = Gauge.build().name(generateMetricName(name, true)).help(name + "error gauge").register();
