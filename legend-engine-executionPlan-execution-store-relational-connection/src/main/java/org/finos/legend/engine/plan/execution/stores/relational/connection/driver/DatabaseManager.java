@@ -14,22 +14,21 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.factory.Maps;
-import org.eclipse.collections.impl.utility.Iterate;
 
 import java.util.Properties;
 import java.util.ServiceLoader;
 
 public abstract class DatabaseManager
 {
-    private static volatile MutableMap<String, DatabaseManager> managersByName;
+    private static volatile ConcurrentHashMap<String, DatabaseManager> managersByName; //NOSONAR - ConcurrentHashMap is good enough
 
     private static void initialize()
     {
@@ -39,7 +38,7 @@ public abstract class DatabaseManager
             {
                 if (managersByName == null)
                 {
-                    managersByName = Maps.mutable.empty();
+                    managersByName = ConcurrentHashMap.newMap();
                     register(new H2Manager());
                     MutableList<ConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionExtension.class), Lists.mutable.empty());
                     extensions.flatCollect(ConnectionExtension::getAdditionalDatabaseManager).forEach(DatabaseManager::register);

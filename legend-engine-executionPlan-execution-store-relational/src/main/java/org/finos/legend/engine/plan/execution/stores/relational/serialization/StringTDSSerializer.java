@@ -47,7 +47,6 @@ public class StringTDSSerializer extends Serializer
     public void stream(OutputStream targetStream) throws IOException
     {
         streamCollection(targetStream, ((TDSBuilder) relationalResult.builder).columns.stream().map(col -> col.name).collect(Collectors.toList()));
-
         try
         {
             MutableList<Function<Object, Object>>  transformers = relationalResult.getTransformers();
@@ -93,7 +92,6 @@ public class StringTDSSerializer extends Serializer
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
         }
     }
 

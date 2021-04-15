@@ -107,7 +107,6 @@ public class TestExecutionPlan
         }
         catch (Exception e)
         {
-            e.printStackTrace();
         }
         finally
         {

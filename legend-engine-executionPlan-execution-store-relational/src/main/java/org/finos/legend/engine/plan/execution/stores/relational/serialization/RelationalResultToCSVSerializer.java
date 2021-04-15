@@ -94,7 +94,7 @@ public class RelationalResultToCSVSerializer extends CsvSerializer
             }
             catch (Exception e)
             {
-                throw new RuntimeException("error creating CSV");
+                e.printStackTrace();
             }
         }
     }

@@ -142,16 +142,15 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
             }
             catch (Exception e)
             {
-                throw new RuntimeException("error creating CSV", e);
+                e.printStackTrace();
             }
-
             try
             {
                 byteArrayOutputStream.close();
             }
             catch (Exception e)
             {
-                throw new RuntimeException("error creating CSV", e);
+                e.printStackTrace();
             }
         }
     }

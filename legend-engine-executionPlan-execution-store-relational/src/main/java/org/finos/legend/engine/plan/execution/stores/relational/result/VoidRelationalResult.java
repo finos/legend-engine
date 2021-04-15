@@ -48,7 +48,7 @@ public class VoidRelationalResult extends Result
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.statement.execute(sql);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double)System.currentTimeMillis() - start).toString());
         }
         catch (SQLException e)
         {
@@ -77,7 +77,6 @@ public class VoidRelationalResult extends Result
             }
             catch (Exception e)
             {
-                e.printStackTrace();
             }
         }
         if (this.connection != null)
@@ -88,7 +87,6 @@ public class VoidRelationalResult extends Result
             }
             catch (Exception e)
             {
-                e.printStackTrace();
             }
         }
     }
