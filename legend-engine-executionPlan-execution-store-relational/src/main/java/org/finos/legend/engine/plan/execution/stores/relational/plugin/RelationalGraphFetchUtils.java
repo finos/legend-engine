@@ -108,13 +108,12 @@ class RelationalGraphFetchUtils
         }
 
         @Override
-        public boolean equals(Object other)
+        public boolean equals(Object other) //NOSONAR hashCode is properly implemented
         {
             if (!(other instanceof GraphFetchCacheKey))
             {
                 return false;
             }
-
             return this.equivalent(other);
         }
 

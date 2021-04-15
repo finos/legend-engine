@@ -105,16 +105,15 @@ public class RealizedRelationalResultCSVSerializer extends CsvSerializer
                 }
                 catch (Exception e)
                 {
-                    throw new RuntimeException("Error creating CSV");
+                    e.printStackTrace();
                 }
-
                 try
                 {
                     byteArrayOutputStream.close();
                 }
                 catch (Exception e)
                 {
-                    throw new RuntimeException("Error creating CSV");
+                    e.printStackTrace();
                 }
             }
         }
