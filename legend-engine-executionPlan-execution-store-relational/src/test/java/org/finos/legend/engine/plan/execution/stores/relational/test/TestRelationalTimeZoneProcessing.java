@@ -99,7 +99,6 @@ public class TestRelationalTimeZoneProcessing
         }
         catch (Exception e)
         {
-            e.printStackTrace();
         }
         finally
         {

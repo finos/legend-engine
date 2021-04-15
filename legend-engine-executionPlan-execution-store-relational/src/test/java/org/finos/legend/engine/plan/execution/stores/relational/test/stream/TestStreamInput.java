@@ -84,7 +84,6 @@ public class TestStreamInput
         }
         catch (Exception e)
         {
-            e.printStackTrace();
         }
         finally
         {

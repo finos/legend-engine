@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
@@ -77,19 +79,20 @@ public class RelationalExecutor
     private RelationalExecutorInfo relationalExecutorInfo;
     private MutableList<Function2<ExecutionState, List<Map<String, Object>>,Result>> resultInterpreterExtensions;
 
-    private static final Map<String, String> DATA_TYPE_RELATIONAL_TYPE_MAP = new HashMap<String, String>()
+    private static final MutableMap<String, String> DATA_TYPE_RELATIONAL_TYPE_MAP = Maps.mutable.empty();
+
+    static
     {
-        {
-            put("Integer", "INT");
-            put("Float", "FLOAT");
-            put("Number", "FLOAT");
-            put("String", "VARCHAR(1000)");
-            put("Date", "TIMESTAMP");
-            put("DateTime", "TIMESTAMP");
-            put("StrictDate", "DATE");
-            put("Boolean", "BIT");
-        }
-    };
+        DATA_TYPE_RELATIONAL_TYPE_MAP.put("Integer", "INT");
+        DATA_TYPE_RELATIONAL_TYPE_MAP.put("Float", "FLOAT");
+        DATA_TYPE_RELATIONAL_TYPE_MAP.put("Number", "FLOAT");
+        DATA_TYPE_RELATIONAL_TYPE_MAP.put("String", "VARCHAR(1000)");
+        DATA_TYPE_RELATIONAL_TYPE_MAP.put("Date", "TIMESTAMP");
+        DATA_TYPE_RELATIONAL_TYPE_MAP.put("DateTime", "TIMESTAMP");
+        DATA_TYPE_RELATIONAL_TYPE_MAP.put("StrictDate", "DATE");
+        DATA_TYPE_RELATIONAL_TYPE_MAP.put("Boolean", "BIT");
+
+    }
 
     public RelationalExecutor(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration)
     {
@@ -363,7 +366,6 @@ public class RelationalExecutor
         }
         catch (Exception e)
         {
-            e.printStackTrace();
         }
         return result;
     }

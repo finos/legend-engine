@@ -45,44 +45,46 @@ public class ExcelTDSSerializer extends Serializer
             ResultSet resultSet = this.relationalResult.resultSet;
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 
-            SXSSFWorkbook wb = new SXSSFWorkbook(500);
-            SXSSFSheet sheet = wb.createSheet();
-            sheet.trackAllColumnsForAutoSizing();
-
-            int currentRow = 0;
-
-            // Generate headers
-            SXSSFRow row = sheet.createRow(currentRow);
-            for (int i = 0; i < this.relationalResult.columnCount; i++)
+            try (SXSSFWorkbook wb = new SXSSFWorkbook(500))
             {
-                String columnTitle = resultSetMetaData.getColumnName(i + 1);
-                generateCell(row, i, columnTitle, ValueType.STRING);
-            }
+                SXSSFSheet sheet = wb.createSheet();
+                sheet.trackAllColumnsForAutoSizing();
 
-            ValueType[] valueTypes = new ValueType[this.relationalResult.columnCount];
-            for (int i = 0; i < valueTypes.length; i++)
-            {
-                valueTypes[i] = getValueType(resultSetMetaData, i + 1);
-            }
-            currentRow++;
-            while (resultSet.next())
-            {
-                row = sheet.createRow(currentRow++);
+                int currentRow = 0;
+
+                // Generate headers
+                SXSSFRow row = sheet.createRow(currentRow);
                 for (int i = 0; i < this.relationalResult.columnCount; i++)
                 {
-                    generateCell(row, i, this.relationalResult.getValue(i + 1), valueTypes[i]);
+                    String columnTitle = resultSetMetaData.getColumnName(i + 1);
+                    generateCell(row, i, columnTitle, ValueType.STRING);
                 }
-            }
 
-            resizeColumns(sheet, this.relationalResult.columnCount);
+                ValueType[] valueTypes = new ValueType[this.relationalResult.columnCount];
+                for (int i = 0; i < valueTypes.length; i++)
+                {
+                    valueTypes[i] = getValueType(resultSetMetaData, i + 1);
+                }
+                currentRow++;
+                while (resultSet.next())
+                {
+                    row = sheet.createRow(currentRow++);
+                    for (int i = 0; i < this.relationalResult.columnCount; i++)
+                    {
+                        generateCell(row, i, this.relationalResult.getValue(i + 1), valueTypes[i]);
+                    }
+                }
 
-            try
-            {
-                wb.write(targetStream);
-            }
-            finally
-            {
-                targetStream.close();
+                resizeColumns(sheet, this.relationalResult.columnCount);
+
+                try
+                {
+                    wb.write(targetStream);
+                }
+                finally
+                {
+                    targetStream.close();
+                }
             }
         }
         catch (Exception e)

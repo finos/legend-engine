@@ -115,7 +115,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.resultSet = this.statement.executeQuery(sql);
             this.executedSQl = sql;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double)System.currentTimeMillis() - start).toString());
             this.resultSetMetaData = resultSet.getMetaData();
             this.columnCount = this.resultSetMetaData.getColumnCount();
             this.resultColumns = sqlResultColumns;
@@ -317,7 +317,6 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 }
             });
         }
-
         if (resultSet != null)
         {
             try
@@ -326,7 +325,6 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             catch (Exception e)
             {
-                e.printStackTrace();
             }
         }
         if (statement != null)
@@ -337,7 +335,6 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             catch (Exception e)
             {
-                e.printStackTrace();
             }
         }
         if (connection != null)
@@ -348,7 +345,6 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             catch (Exception e)
             {
-                e.printStackTrace();
             }
         }
     }

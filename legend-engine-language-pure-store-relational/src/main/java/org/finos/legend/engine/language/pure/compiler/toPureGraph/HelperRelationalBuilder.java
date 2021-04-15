@@ -209,7 +209,7 @@ public class HelperRelationalBuilder
     private static Join getJoin(Database db, String _joinName, SourceInformation sourceInformation)
     {
         Join join = findJoin(db, _joinName);
-        if(join == null)
+        if (join == null)
         {
             throw new EngineException("Can't find join '" + _joinName + "' in database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
@@ -219,18 +219,22 @@ public class HelperRelationalBuilder
     private static Join findJoin(Database db, String _joinName)
     {
         Join join = db._joins().detect(j -> _joinName.equals(j._name()));
-        if (join == null) {
+        if (join == null)
+        {
             List<Join> includedJoins = Lists.mutable.empty();
             db._includes().forEach(new Procedure<Store>()
             {
                 @Override
                 public void value(Store each)
                 {
-                    Join subJoin = findJoin((Database)each, _joinName);
-                    if(subJoin != null && !includedJoins.contains(subJoin)) includedJoins.add(subJoin);
+                    Join subJoin = findJoin((Database) each, _joinName);
+                    if (subJoin != null && !includedJoins.contains(subJoin))
+                    {
+                        includedJoins.add(subJoin);
+                    }
                 }
             });
-           return includedJoins.isEmpty() ? null : includedJoins.get(0);
+            return includedJoins.isEmpty() ? null : includedJoins.get(0);
         }
         return join;
     }
@@ -1037,15 +1041,21 @@ public class HelperRelationalBuilder
         Property property = HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, propertyOwnerClass, Optional.empty(), propertyMapping.property.property, propertyMapping.property.sourceInformation);
 
         String id = null;
-        if(propertyMapping.classMapping.id != null ) {
+        if (propertyMapping.classMapping.id != null)
+        {
             id = propertyMapping.classMapping.id;
-        } else if(firstParent._id() != null ) {
+        }
+        else if (firstParent._id() != null)
+        {
             id = firstParent._id() + "_" + propertyMapping.property.property;
-        } else if(propertyMapping.classMapping._class != null) {
+        }
+        else if (propertyMapping.classMapping._class != null)
+        {
             id = HelperMappingBuilder.getClassMappingId(propertyMapping.classMapping, context);
         }
 
-        if ( id.isEmpty() ) {
+        if (id == null || id.isEmpty())
+        {
             throw new EngineException("Can't resolve id for '" + propertyMapping.property.property + "'", propertyMapping.property.sourceInformation, EngineErrorType.COMPILATION);
         }
 
@@ -1384,7 +1394,9 @@ public class HelperRelationalBuilder
             propertyMapping.target = parentId + "_" + propertyMapping.property.property;
             aggregationAwarePropertyMapping.target = parentId + "_" + propertyMapping.property.property;
             ((EmbeddedRelationalPropertyMapping) propertyMapping).classMapping.propertyMappings.forEach(p -> p.source = propertyMapping.target);
-        } else {
+        }
+        else
+        {
             aggregationAwarePropertyMapping.target = propertyMapping.target;
         }
         aggregationAwarePropertyMapping.sourceInformation = propertyMapping.sourceInformation;
@@ -1392,14 +1404,19 @@ public class HelperRelationalBuilder
         return aggregationAwarePropertyMapping;
     }
 
-    public static void processRootRelationalClassMapping(RootRelationalInstanceSetImplementation rsi, RootRelationalClassMapping classMapping, CompileContext context) {
+    public static void processRootRelationalClassMapping(RootRelationalInstanceSetImplementation rsi, RootRelationalClassMapping classMapping, CompileContext context)
+    {
         if (rsi._mainTableAlias() == null && rsi._superSetImplementationId() != null)
         {
             PropertyMappingsImplementation superMapping = rsi.superMapping(context.pureModel.getExecutionSupport());
             if (superMapping == null)
+            {
                 throw new EngineException("Can't find the main table for class '" + classMapping.id + "'");
+            }
             if (superMapping instanceof RootRelationalInstanceSetImplementation)
+            {
                 rsi._mainTableAlias(((RootRelationalInstanceSetImplementation) superMapping)._mainTableAlias());
+            }
         }
 
         org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.FilterMapping filterMapping = classMapping.filter == null ? null : HelperRelationalBuilder.processFilterMapping(classMapping.filter, HelperRelationalBuilder.resolveDatabase(classMapping.filter.filter.db, classMapping.filter.sourceInformation, context), context);
@@ -1425,15 +1442,19 @@ public class HelperRelationalBuilder
                     public void value(PropertyMapping propertyMapping)
                     {
 
-                        if (propertyMapping instanceof Root_meta_relational_mapping_EmbeddedRelationalInstanceSetImplementation_Impl) {
-                            enhanceEmbeddedMappingsWithRelationalOperationElement(Lists.mutable.with((Root_meta_relational_mapping_EmbeddedRelationalInstanceSetImplementation_Impl)propertyMapping), res);
+                        if (propertyMapping instanceof Root_meta_relational_mapping_EmbeddedRelationalInstanceSetImplementation_Impl)
+                        {
+                            enhanceEmbeddedMappingsWithRelationalOperationElement(Lists.mutable.with((Root_meta_relational_mapping_EmbeddedRelationalInstanceSetImplementation_Impl) propertyMapping), res);
                         }
-                        if( propertyMapping instanceof Root_meta_relational_mapping_RelationalPropertyMapping_Impl) {
-                            if(((Root_meta_relational_mapping_RelationalPropertyMapping_Impl) propertyMapping)._relationalOperationElement instanceof Root_meta_relational_metamodel_Literal_Impl ) {
-                               Root_meta_relational_metamodel_Literal_Impl literal = ((Root_meta_relational_metamodel_Literal_Impl)((Root_meta_relational_mapping_RelationalPropertyMapping_Impl) propertyMapping)._relationalOperationElement);
-                               if (literal._value instanceof Root_meta_relational_metamodel_SQLNull_Impl) {
-                                   ((Root_meta_relational_mapping_RelationalPropertyMapping_Impl) propertyMapping)._relationalOperationElement = createRelationalOperationElement(((Root_meta_relational_mapping_RelationalPropertyMapping_Impl) propertyMapping)._property.getName(), res);
-                               }
+                        if (propertyMapping instanceof Root_meta_relational_mapping_RelationalPropertyMapping_Impl)
+                        {
+                            if (((Root_meta_relational_mapping_RelationalPropertyMapping_Impl) propertyMapping)._relationalOperationElement instanceof Root_meta_relational_metamodel_Literal_Impl)
+                            {
+                                Root_meta_relational_metamodel_Literal_Impl literal = ((Root_meta_relational_metamodel_Literal_Impl) ((Root_meta_relational_mapping_RelationalPropertyMapping_Impl) propertyMapping)._relationalOperationElement);
+                                if (literal._value instanceof Root_meta_relational_metamodel_SQLNull_Impl)
+                                {
+                                    ((Root_meta_relational_mapping_RelationalPropertyMapping_Impl) propertyMapping)._relationalOperationElement = createRelationalOperationElement(((Root_meta_relational_mapping_RelationalPropertyMapping_Impl) propertyMapping)._property.getName(), res);
+                                }
                             }
                         }
                     }
