@@ -26,6 +26,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.list.primitive.LongList;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.server.Server;
 import org.finos.legend.pure.configuration.PureRepositoriesExternal;
@@ -111,6 +112,11 @@ public class PureTestHelper
     {
         int engineServerPort = 1100 + (int) (Math.random() * 30000);
         int metadataServerPort = 1100 + (int) (Math.random() * 30000);
+        int relationalDBPort = 1100 + 2345;//(int) (Math.random() * 30000);
+
+        // Relational
+        org.h2.tools.Server h2Server = AlloyH2Server.startServer(relationalDBPort);
+        System.out.println("H2 database started on port:" + relationalDBPort);
 
         // Start metadata server
         TestMetaDataServer metadataServer = new TestMetaDataServer(metadataServerPort, true);
@@ -119,6 +125,7 @@ public class PureTestHelper
         // Start engine server
         System.setProperty("dw.server.connector.port", String.valueOf(engineServerPort));
         System.setProperty("dw.metadataserver.pure.port", String.valueOf(metadataServerPort));
+        System.setProperty("dw.temporarytestdb.port", String.valueOf(relationalDBPort));
         System.out.println("Found Config file: " + Objects.requireNonNull(PureTestHelper.class.getClassLoader().getResource("org/finos/legend/engine/server/test/userTestConfig.json")).getFile());
 
         Server server = new Server();
@@ -127,13 +134,15 @@ public class PureTestHelper
 
         // Pure client configuration (to call the engine server)
         System.setProperty("test.metadataserver.pure.port", String.valueOf(metadataServerPort));
+        System.setProperty("alloy.test.h2.port", String.valueOf(relationalDBPort));
+        System.setProperty("legend.test.h2.port", String.valueOf(relationalDBPort));
         System.setProperty("alloy.test.server.host", "127.0.0.1");
-        System.setProperty("legend.test.server.host", "127.0.0.1");
         System.setProperty("alloy.test.server.port", String.valueOf(engineServerPort));
+        System.setProperty("legend.test.server.host", "127.0.0.1");
         System.setProperty("legend.test.server.port", String.valueOf(engineServerPort));
         System.out.println("Pure client configured to reach engine server");
 
-        return new ServersState(server, metadataServer);
+        return new ServersState(server, metadataServer, h2Server);
     }
 
     private static boolean hasTestStereotypeWithValue(CoreInstance node, String value, ProcessorSupport processorSupport)

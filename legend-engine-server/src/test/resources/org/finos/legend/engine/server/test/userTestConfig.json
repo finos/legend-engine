@@ -58,5 +58,11 @@
       "host": "127.0.0.1",
       "port": 8090
     }
+  },
+  "temporarytestdb": {
+    "port": 9092
+  },
+  "relationalexecution": {
+    "tempPath": "/tmp/"
   }
 }

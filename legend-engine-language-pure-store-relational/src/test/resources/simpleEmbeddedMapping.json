@@ -1,0 +1,561 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [
+        {
+          "name": "Person_Join",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "full_name",
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::relational::db",
+                  "mainTableDb": "meta::relational::db",
+                  "schema": "default_schema",
+                  "table": "Person_View"
+                },
+                "tableAlias": "Person_View"
+              },
+              {
+                "_type": "column",
+                "column": "full_name",
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::relational::db",
+                  "mainTableDb": "meta::relational::db",
+                  "schema": "default_schema",
+                  "table": "Person_Table"
+                },
+                "tableAlias": "Person_Table"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Person_Role_Join",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "ROLE_ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::relational::db",
+                  "mainTableDb": "meta::relational::db",
+                  "schema": "default_schema",
+                  "table": "Person_Table"
+                },
+                "tableAlias": "Person_Table"
+              },
+              {
+                "_type": "column",
+                "column": "ROLE_ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::relational::db",
+                  "mainTableDb": "meta::relational::db",
+                  "schema": "default_schema",
+                  "table": "Role_Table"
+                },
+                "tableAlias": "Role_Table"
+              }
+            ]
+          }
+        }
+      ],
+      "name": "db",
+      "package": "meta::relational",
+      "schemas": [
+        {
+          "name": "default_schema",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "ID",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 32
+                  }
+                },
+                {
+                  "name": "ROLE_ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "BigInt"
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "Role_Table",
+              "primaryKey": [
+                "ID"
+              ]
+            },
+            {
+              "columns": [
+                {
+                  "name": "full_name",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 32
+                  }
+                },
+                {
+                  "name": "ROLE_ID",
+                  "nullable": false,
+                  "type": {
+                    "_type": "BigInt"
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "Person_Table",
+              "primaryKey": [
+                "full_name",
+                "ROLE_ID"
+              ]
+            }
+          ],
+          "views": [
+            {
+              "columnMappings": [
+                {
+                  "name": "full_name",
+                  "operation": {
+                    "_type": "column",
+                    "column": "full_name",
+                    "table": {
+                      "_type": "Table",
+                      "database": "meta::relational::db",
+                      "mainTableDb": "meta::relational::db",
+                      "schema": "default_schema",
+                      "table": "Person_Table"
+                    },
+                    "tableAlias": "Person_Table"
+                  }
+                }
+              ],
+              "distinct": true,
+              "groupBy": [],
+              "name": "Person_View",
+              "primaryKey": [
+                "full_name"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "PeopleRolesView",
+      "originalMilestonedProperties": [],
+      "package": "meta::relational",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "users",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "meta::relational::Person"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "roles",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "meta::relational::Role"
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Role",
+      "originalMilestonedProperties": [],
+      "package": "meta::relational",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "roleId",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "id",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Person",
+      "originalMilestonedProperties": [],
+      "package": "meta::relational",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "association",
+      "name": "PeopleRolesAssociation",
+      "originalMilestonedProperties": [],
+      "package": "meta::relational",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "users",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "meta::relational::Person"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "roles",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "meta::relational::Role"
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "mapping",
+      "associationMappings": [],
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "meta::relational::Person",
+          "distinct": false,
+          "groupBy": [],
+          "mainTable": {
+            "_type": "Table",
+            "database": "meta::relational::db",
+            "mainTableDb": "meta::relational::db",
+            "schema": "default_schema",
+            "table": "Person_View"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "full_name",
+              "table": {
+                "_type": "Table",
+                "database": "meta::relational::db",
+                "mainTableDb": "meta::relational::db",
+                "schema": "default_schema",
+                "table": "Person_View"
+              },
+              "tableAlias": "Person_View"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::relational::Person",
+                "property": "name"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "full_name",
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::relational::db",
+                  "mainTableDb": "meta::relational::db",
+                  "schema": "default_schema",
+                  "table": "Person_View"
+                },
+                "tableAlias": "Person_View"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::relational::Person",
+                "property": "roles"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "meta::relational::db",
+                    "name": "Person_Join"
+                  },
+                  {
+                    "db": "meta::relational::db",
+                    "name": "Person_Role_Join"
+                  }
+                ]
+              },
+              "target": "meta_relational_Role"
+            }
+          ],
+          "root": false
+        },
+        {
+          "_type": "relational",
+          "class": "meta::relational::Role",
+          "distinct": false,
+          "groupBy": [],
+          "mainTable": {
+            "_type": "Table",
+            "database": "meta::relational::db",
+            "mainTableDb": "meta::relational::db",
+            "schema": "default_schema",
+            "table": "Role_Table"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "ID",
+              "table": {
+                "_type": "Table",
+                "database": "meta::relational::db",
+                "mainTableDb": "meta::relational::db",
+                "schema": "default_schema",
+                "table": "Role_Table"
+              },
+              "tableAlias": "Role_Table"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::relational::Role",
+                "property": "id"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::relational::db",
+                  "mainTableDb": "meta::relational::db",
+                  "schema": "default_schema",
+                  "table": "Role_Table"
+                },
+                "tableAlias": "Role_Table"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::relational::Role",
+                "property": "users"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "meta::relational::db",
+                    "name": "Person_Role_Join"
+                  },
+                  {
+                    "db": "meta::relational::db",
+                    "name": "Person_Join"
+                  }
+                ]
+              },
+              "target": "meta_relational_Person"
+            }
+          ],
+          "root": false
+        },
+        {
+          "_type": "relational",
+          "class": "meta::relational::PeopleRolesView",
+          "distinct": false,
+          "groupBy": [],
+          "mainTable": {
+            "_type": "Table",
+            "database": "meta::relational::db",
+            "mainTableDb": "meta::relational::db",
+            "schema": "default_schema",
+            "table": "Person_Table"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "full_name",
+              "table": {
+                "_type": "Table",
+                "database": "meta::relational::db",
+                "mainTableDb": "meta::relational::db",
+                "schema": "default_schema",
+                "table": "Person_Table"
+              },
+              "tableAlias": "Person_Table"
+            },
+            {
+              "_type": "column",
+              "column": "ROLE_ID",
+              "table": {
+                "_type": "Table",
+                "database": "meta::relational::db",
+                "mainTableDb": "meta::relational::db",
+                "schema": "default_schema",
+                "table": "Person_Table"
+              },
+              "tableAlias": "Person_Table"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "embeddedPropertyMapping",
+              "classMapping": {
+                "_type": "embedded",
+                "class": "meta::relational::Person",
+                "primaryKey": [],
+                "propertyMappings": [
+                  {
+                    "_type": "relationalPropertyMapping",
+                    "property": {
+                      "property": "name"
+                    },
+                    "relationalOperation": {
+                      "_type": "column",
+                      "column": "full_name",
+                      "table": {
+                        "_type": "Table",
+                        "database": "meta::relational::db",
+                        "mainTableDb": "meta::relational::db",
+                        "schema": "default_schema",
+                        "table": "Person_Table"
+                      },
+                      "tableAlias": "Person_Table"
+                    }
+                  }
+                ],
+                "root": false
+              },
+              "property": {
+                "class": "meta::relational::PeopleRolesView",
+                "property": "users"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::relational::PeopleRolesView",
+                "property": "roles"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "meta::relational::db",
+                    "name": "Person_Role_Join"
+                  }
+                ]
+              },
+              "target": "meta_relational_Role"
+            }
+          ],
+          "root": false
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "exampleMapping",
+      "package": "meta::relational::mapping",
+      "tests": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [],
+          "imports": [],
+          "parserName": "Pure"
+        },
+        {
+          "_type": "default",
+          "elements": [
+            "meta::relational::db"
+          ],
+          "parserName": "Relational"
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::relational::PeopleRolesView",
+            "meta::relational::Role",
+            "meta::relational::Person",
+            "meta::relational::PeopleRolesAssociation"
+          ],
+          "imports": [],
+          "parserName": "Pure"
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::relational::example"
+          ],
+          "imports": [],
+          "parserName": "Mapping"
+        }
+      ]
+    }
+  ]
+}
