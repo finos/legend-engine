@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.result.graphFetch;
 
-import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,13 +22,21 @@ import java.util.Map;
 
 public class GraphObjectsBatch
 {
+    private final long graphFetchBatchMemoryLimit;
     protected final long batchIndex;
     protected Map<Integer, List<?>> nodeObjects;
     protected long totalObjectMemoryUtilization;
     protected long rowCount;
 
+    @Deprecated
     public GraphObjectsBatch(long batchIndex)
     {
+        this(batchIndex, PlanExecutor.DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+    }
+
+    public GraphObjectsBatch(long batchIndex, long graphFetchBatchMemoryLimit)
+    {
+        this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
         this.batchIndex = batchIndex;
         this.nodeObjects = new HashMap<>();
         this.totalObjectMemoryUtilization = 0;
@@ -37,6 +45,7 @@ public class GraphObjectsBatch
 
     public GraphObjectsBatch(GraphObjectsBatch other)
     {
+        this.graphFetchBatchMemoryLimit = other.graphFetchBatchMemoryLimit;
         this.batchIndex = other.batchIndex;
         this.nodeObjects = other.nodeObjects;
         this.totalObjectMemoryUtilization = other.totalObjectMemoryUtilization;
@@ -71,7 +80,7 @@ public class GraphObjectsBatch
     public void addObjectMemoryUtilization(long memoryBytes)
     {
         this.totalObjectMemoryUtilization += memoryBytes;
-        if (this.totalObjectMemoryUtilization > ExecutionNodeExecutor.MAX_MEMORY_BYTES_PER_GRAPH_BATCH)
+        if (this.totalObjectMemoryUtilization > this.graphFetchBatchMemoryLimit)
         {
             throw new RuntimeException("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.");
         }
