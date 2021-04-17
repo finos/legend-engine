@@ -96,6 +96,21 @@ public class Handlers
         }
     }
 
+    private static void updateTwoParamsLambdaDiffTypes(Object lambda, GenericType newGenericType, GenericType newGenericType2, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m)
+    {
+        if (lambda instanceof Lambda)
+        {
+            Variable variable = ((Lambda) lambda).parameters.get(0);
+            variable._class = PackageableElement.getUserPathForPackageableElement(newGenericType._rawType());
+            variable.multiplicity = m;
+
+            Variable variable2 = ((Lambda) lambda).parameters.get(1);
+            variable2._class = PackageableElement.getUserPathForPackageableElement(newGenericType2._rawType());
+            variable2.multiplicity = m;
+        }
+    }
+
+
     private static void updateSimpleLambda(Object lambda, GenericType newGenericType, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m)
     {
         if (lambda instanceof Lambda)
@@ -212,6 +227,13 @@ public class Handlers
     {
         List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof Lambda ? null : p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
         updateTwoParamsLambda(parameters.get(1), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
+        return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(new ValueSpecificationBuilder(cc, ov, pc)));
+    };
+
+    public static final ParametersInference TwoParameterLambdaInferenceDiffTypes = (parameters, ov, cc, pc) ->
+    {
+        List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof Lambda ? null : p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        updateTwoParamsLambdaDiffTypes(parameters.get(1), firstPassProcessed.get(0)._genericType(), firstPassProcessed.get(2)._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
         return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(new ValueSpecificationBuilder(cc, ov, pc)));
     };
 
@@ -514,7 +536,8 @@ public class Handlers
         register("meta::pure::functions::meta::id_Any_1__String_1_", true, ps -> res("String", "one"));
         register("meta::pure::functions::meta::type_Any_MANY__Type_1_", false, ps -> res("meta::pure::metamodel::type::Type", "one"));
         register("meta::pure::functions::lang::compare_T_1__T_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register(m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", true, ps -> res(ps.get(2)._genericType(), ps.get(2)._multiplicity()), p -> true))));
+        // meta::pure::functions::collection::fold<T,V|m>(value:T[*], func:Function<{T[1],V[m]->V[m]}>[1], accumulator:V[m]):V[m], note return type is V and not T
+        register(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", true, ps -> res(ps.get(2)._genericType(), ps.get(2)._multiplicity()), p -> true))));
 
         register(m(m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_", true, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 3)),
                 m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2))));
