@@ -1,0 +1,97 @@
+{
+    "clientVersion": "vX_X_X",
+    "model": {
+        "_type": "data",
+        "elements": [
+            {
+                "_type": "class",
+                "name": "Person",
+                "package": "main",
+                "properties": [
+                    {
+                        "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                        },
+                        "name": "name",
+                        "type": "String"
+                    }
+                ]
+            },
+            {
+                "_type": "function",
+                "body": [
+                    {
+                        "_type": "func",
+                        "function": "fold",
+                        "parameters": [
+                            {
+                                "_type": "var",
+                                "name": "people"
+                            },
+                            {
+                                "_type": "lambda",
+                                "body": [
+                                    {
+                                        "_type": "func",
+                                        "function": "concatenate",
+                                        "parameters": [
+                                            {
+                                                "_type": "var",
+                                                "name": "a"
+                                            },
+                                            {
+                                                "_type": "property",
+                                                "parameters": [
+                                                    {
+                                                        "_type": "var",
+                                                        "name": "p"
+                                                    }
+                                                ],
+                                                "property": "name"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "parameters": [
+                                    {
+                                        "_type": "var",
+                                        "name": "p"
+                                    },
+                                    {
+                                        "_type": "var",
+                                        "name": "a"
+                                    }
+                                ]
+                            },
+                            {
+                                "_type": "var",
+                                "name": "accum",
+                                "class": "String",
+                                "multiplicity": {
+                                    "lowerBound": 0
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "name": "walkTree",
+                "package": "main",
+                "parameters": [
+                    {
+                        "_type": "var",
+                        "class": "main::Person",
+                        "multiplicity": {
+                            "lowerBound": 0
+                        },
+                        "name": "people"
+                    }
+                ],
+                "returnMultiplicity": {
+                    "lowerBound": 0
+                },
+                "returnType": "String"
+            }
+        ]
+    }
+}
