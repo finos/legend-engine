@@ -44,6 +44,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class MappingParseTreeWalker
@@ -91,9 +92,21 @@ public class MappingParseTreeWalker
         MappingInclude mappingInclude = new MappingInclude();
         mappingInclude.setIncludedMapping(PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()));
         mappingInclude.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        // TODO support storeSubPath
-        mappingInclude.sourceDatabasePath = null;
-        mappingInclude.targetDatabasePath = null;
+        List<MappingParserGrammar.StoreSubPathContext> storeSubPathContextList = ctx.storeSubPath();
+
+        if (storeSubPathContextList.size() == 1) {
+            visitStoreSubPath(storeSubPathContextList.get(0), mappingInclude);
+        } else {
+            mappingInclude.sourceDatabasePath = null;
+            mappingInclude.targetDatabasePath = null;
+        }
+        return mappingInclude;
+    }
+
+    private MappingInclude visitStoreSubPath(MappingParserGrammar.StoreSubPathContext ctx, MappingInclude mappingInclude)
+    {
+        mappingInclude.sourceDatabasePath = PureGrammarParserUtility.fromQualifiedName(ctx.sourceStore().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.sourceStore().qualifiedName().packagePath().identifier(), ctx.sourceStore().qualifiedName().identifier());
+        mappingInclude.targetDatabasePath = PureGrammarParserUtility.fromQualifiedName(ctx.targetStore().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.targetStore().qualifiedName().packagePath().identifier(), ctx.targetStore().qualifiedName().identifier());
         return mappingInclude;
     }
 
