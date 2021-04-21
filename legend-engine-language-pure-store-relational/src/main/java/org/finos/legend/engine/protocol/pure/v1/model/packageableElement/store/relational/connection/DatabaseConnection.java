@@ -15,9 +15,15 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter;
+
+import java.util.Collections;
+import java.util.List;
 
 public abstract class DatabaseConnection extends Connection
 {
     public DatabaseType type;
     public String timeZone;
+
+    public List<PostProcessorWithParameter> postProcessorWithParameter = Collections.emptyList();
 }
