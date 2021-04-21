@@ -321,7 +321,12 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         //and _postProcessors is used for serialization of plan to protocol
                         relational._datasourceSpecification(datasource);
                         relational._authenticationStrategy(authenticationStrategy);
-                        relational._queryPostProcessorsWithParameter(ListIterate.collect(pp, Pair::getTwo));
+                        List<PostProcessorWithParameter> postProcessorWithParameters = ListIterate.collect(relationalDatabaseConnection.postProcessorWithParameter, p -> IRelationalCompilerExtension.process(
+                            p,
+                            ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraLegacyPostProcessors),
+                            context));
+                        List<PostProcessorWithParameter> translatedForPlanGeneration = ListIterate.collect(pp, Pair::getTwo);
+                        relational._queryPostProcessorsWithParameter(Lists.mutable.withAll(postProcessorWithParameters).withAll(translatedForPlanGeneration));
                         relational._postProcessors(ListIterate.collect(pp, Pair::getOne));
 
                         return relational;

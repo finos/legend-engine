@@ -58,6 +58,11 @@ public interface IRelationalCompilerExtension extends CompilerExtension
         return process(postProcessor, processors, context, "Post Processor", postProcessor.sourceInformation);
     }
 
+    static PostProcessorWithParameter process(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter postProcessorWithParameter, List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter, CompileContext, PostProcessorWithParameter>> processors, CompileContext context)
+    {
+        return process(postProcessorWithParameter, processors, context, "Post Processor With Parameter", null);
+    }
+
     static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning process(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning milestoning, List<Function3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning, CompileContext, Multimap<String, Column>, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning>> processors, Multimap<String, Column> columnMap, CompileContext context)
     {
         return process(milestoning, processors, context, columnMap, "Milestoning", milestoning.sourceInformation);
@@ -80,6 +85,11 @@ public interface IRelationalCompilerExtension extends CompilerExtension
     }
 
     default List<Function2<PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>>> getExtraConnectionPostProcessor()
+    {
+        return FastList.newList();
+    }
+
+    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter, CompileContext, PostProcessorWithParameter>> getExtraLegacyPostProcessors()
     {
         return FastList.newList();
     }
