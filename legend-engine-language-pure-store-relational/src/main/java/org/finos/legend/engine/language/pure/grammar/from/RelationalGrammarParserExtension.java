@@ -153,6 +153,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseDataSourceSpecification(code, p -> walker.visitEmbeddedH2DatasourceSpecification(code, p.embeddedH2DatasourceSpecification()));
                 case "Snowflake":
                     return parseDataSourceSpecification(code, p-> walker.visitSnowflakeDatasourceSpecification(code, p.snowflakeDatasourceSpecification()));
+                case "BigQuery":
+                    return parseDataSourceSpecification(code, p -> walker.visitBigQueryDatasourceSpecification(code, p.bigQueryDatasourceSpecification()));
                 default:
                     return null;
             }
@@ -176,6 +178,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseAuthenticationStrategy(code, p -> walker.visitTestDatabaseAuthenticationStrategy(code, p.testDBAuth()));
                 case "SnowflakePublic":
                     return parseAuthenticationStrategy(code, p -> walker.visitSnowflakePublicAuthenticationStrategy(code, p.snowflakePublicAuth()));
+                case "GCPApplicationDefaultCredentials":
+                    return parseAuthenticationStrategy(code, p -> walker.visitGCPApplicationDefaultCredentialsAuthenticationStrategy(code, p.gcpApplicationDefaultCredentialsAuth() ));
                 default:
                     return null;
             }

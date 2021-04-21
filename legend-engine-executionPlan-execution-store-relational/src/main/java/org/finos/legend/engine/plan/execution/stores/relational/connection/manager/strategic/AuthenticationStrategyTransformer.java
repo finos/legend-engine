@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
 
@@ -55,6 +56,10 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
                     snowflakePublicAuthenticationStrategy.passPhraseVaultReference,
                     snowflakePublicAuthenticationStrategy.publicUserName
             );
+        }
+        else if (authenticationStrategy instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)
+        {
+            return new GCPApplicationDefaultCredentialsAuthenticationStrategy();
         }
         return null;
     }

@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication;
 
-public enum DatabaseType
+public class GCPApplicationDefaultCredentialsAuthenticationStrategy extends AuthenticationStrategy
 {
-    DB2, H2, MemSQL, Sybase, SybaseIQ, Composite, Postgres, SqlServer, Hive,
-    Snowflake, Presto,
-    BigQuery
+    @Override
+    public <T> T accept(AuthenticationStrategyVisitor<T> authenticationStrategyVisitor)
+    {
+        return authenticationStrategyVisitor.visit(this);
+    }
 }
