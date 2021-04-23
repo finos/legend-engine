@@ -41,12 +41,14 @@ public class RuntimeParseTreeWalker
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
+    private final ConnectionParser connectionParser;
 
-    public RuntimeParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section)
+    public RuntimeParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, ConnectionParser connectionParser)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
+        this.connectionParser = connectionParser;
     }
 
     public void visit(RuntimeParserGrammar.DefinitionContext ctx)
@@ -121,7 +123,6 @@ public class RuntimeParseTreeWalker
                             embeddedConnectionText.append(fragment.getText());
                         }
                         String embeddedConnectionParsingText = embeddedConnectionText.length() > 0 ? embeddedConnectionText.substring(0, embeddedConnectionText.length() - 2) : embeddedConnectionText.toString();
-                        ConnectionParser connectionParser = ConnectionParser.newInstance();
                         // prepare island grammar walker source information
                         int startLine = embeddedConnectionContext.ISLAND_OPEN().getSymbol().getLine();
                         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
@@ -129,7 +130,7 @@ public class RuntimeParseTreeWalker
                         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + embeddedConnectionContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + embeddedConnectionContext.ISLAND_OPEN().getSymbol().getText().length();
                         ParseTreeWalkerSourceInformation embeddedConnectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
                         SourceInformation embeddedConnectionSourceInformation = walkerSourceInformation.getSourceInformation(embeddedConnectionContext);
-                        identifiedConnection.connection = connectionParser.parseEmbeddedRuntimeConnections(embeddedConnectionParsingText, embeddedConnectionWalkerSourceInformation, embeddedConnectionSourceInformation);
+                        identifiedConnection.connection = this.connectionParser.parseEmbeddedRuntimeConnections(embeddedConnectionParsingText, embeddedConnectionWalkerSourceInformation, embeddedConnectionSourceInformation);
                     }
                     else
                     {

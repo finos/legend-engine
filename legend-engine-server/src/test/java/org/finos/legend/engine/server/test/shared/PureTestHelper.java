@@ -24,11 +24,12 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.list.primitive.LongList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.server.Server;
+import org.finos.legend.pure.configuration.PureRepositoriesExternal;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -36,7 +37,6 @@ import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CoreCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
@@ -54,6 +54,7 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.junit.Ignore;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.Objects;
@@ -68,7 +69,9 @@ public class PureTestHelper
         if (isNotSet)
         {
             System.setProperty("alloy.test.clientVersion", defaultClientVersion);
+            System.setProperty("legend.test.clientVersion", defaultClientVersion);
             System.setProperty("alloy.test.serverVersion", "v1");
+            System.setProperty("legend.test.serverVersion", "v1");
         }
         return isNotSet;
     }
@@ -76,6 +79,7 @@ public class PureTestHelper
     public static void cleanUp()
     {
         System.clearProperty("alloy.test.clientVersion");
+        System.clearProperty("legend.test.clientVersion");
     }
 
     @Ignore
@@ -108,6 +112,11 @@ public class PureTestHelper
     {
         int engineServerPort = 1100 + (int) (Math.random() * 30000);
         int metadataServerPort = 1100 + (int) (Math.random() * 30000);
+        int relationalDBPort = 1100 + 2345;//(int) (Math.random() * 30000);
+
+        // Relational
+        org.h2.tools.Server h2Server = AlloyH2Server.startServer(relationalDBPort);
+        System.out.println("H2 database started on port:" + relationalDBPort);
 
         // Start metadata server
         TestMetaDataServer metadataServer = new TestMetaDataServer(metadataServerPort, true);
@@ -116,6 +125,7 @@ public class PureTestHelper
         // Start engine server
         System.setProperty("dw.server.connector.port", String.valueOf(engineServerPort));
         System.setProperty("dw.metadataserver.pure.port", String.valueOf(metadataServerPort));
+        System.setProperty("dw.temporarytestdb.port", String.valueOf(relationalDBPort));
         System.out.println("Found Config file: " + Objects.requireNonNull(PureTestHelper.class.getClassLoader().getResource("org/finos/legend/engine/server/test/userTestConfig.json")).getFile());
 
         Server server = new Server();
@@ -124,11 +134,15 @@ public class PureTestHelper
 
         // Pure client configuration (to call the engine server)
         System.setProperty("test.metadataserver.pure.port", String.valueOf(metadataServerPort));
+        System.setProperty("alloy.test.h2.port", String.valueOf(relationalDBPort));
+        System.setProperty("legend.test.h2.port", String.valueOf(relationalDBPort));
         System.setProperty("alloy.test.server.host", "127.0.0.1");
         System.setProperty("alloy.test.server.port", String.valueOf(engineServerPort));
+        System.setProperty("legend.test.server.host", "127.0.0.1");
+        System.setProperty("legend.test.server.port", String.valueOf(engineServerPort));
         System.out.println("Pure client configured to reach engine server");
 
-        return new ServersState(server, metadataServer);
+        return new ServersState(server, metadataServer, h2Server);
     }
 
     private static boolean hasTestStereotypeWithValue(CoreInstance node, String value, ProcessorSupport processorSupport)
@@ -189,9 +203,10 @@ public class PureTestHelper
 
     public static boolean satisfiesConditions(CoreInstance node, ProcessorSupport processorSupport)
     {
+        String ver = System.getProperty("alloy.test.clientVersion") == null ? System.getProperty("legend.test.clientVersion") : System.getProperty("alloy.test.clientVersion");
         return !hasTestStereotypeWithValue(node, "ExcludeAlloy", processorSupport) &&
-                !shouldExcludeOnClientVersion(node, System.getProperty("alloy.test.clientVersion"), processorSupport) &&
-                shouldExecuteOnClientVersionOnwards(node, System.getProperty("alloy.test.clientVersion"), processorSupport);
+                !shouldExcludeOnClientVersion(node, ver, processorSupport) &&
+                shouldExecuteOnClientVersionOnwards(node, ver, processorSupport);
     }
 
     public static CompiledExecutionSupport getExecutionSupport()
@@ -334,13 +349,11 @@ public class PureTestHelper
 
     public static CompiledExecutionSupport getClassLoaderExecutionSupport()
     {
-//        ClassLoaderCodeStorage platformCodeStorage = new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), PureRepositories.getRepositoryByName("platform"), new PureRepositoryRevisionCache(SVNWCUtil.createDefaultAuthenticationManager("puresvntest", "Pure#Test#Access".toCharArray())));
-        MutableList<CodeRepository> codeRepos = Lists.mutable.of(CoreCodeRepository.newPlatformCodeRepository(), CodeRepository.newCoreCodeRepository());
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
                 new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), new MetadataLazy(PureTestHelper.class.getClassLoader()), Sets.mutable.empty()),
                 null,
-                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), codeRepos, null)),
+                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), PureRepositoriesExternal.repositories(), null)),
                 null,
                 null,
                 new ConsoleCompiled(),
@@ -377,7 +390,14 @@ public class PureTestHelper
             // See https://github.com/opentracing/opentracing-java/issues/170
             // See https://github.com/opentracing/opentracing-java/issues/364
             GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
-            method.invoke(null, this.executionSupport);
+            try
+            {
+                method.invoke(null, this.executionSupport);
+            }
+	    catch(InvocationTargetException e)
+            {
+                throw e.getTargetException();
+            }
         }
     }
 

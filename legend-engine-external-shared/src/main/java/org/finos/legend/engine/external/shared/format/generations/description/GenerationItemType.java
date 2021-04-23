@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,5 +16,5 @@ package org.finos.legend.engine.external.shared.format.generations.description;
 
 public enum GenerationItemType
 {
-    ARRAY, BOOLEAN, ENUMERATION, INTEGER, MAP, STRING
+    ARRAY, BOOLEAN, ENUMERATION, INTEGER, MAP, STRING, ENUM
 }

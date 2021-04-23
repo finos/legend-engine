@@ -19,11 +19,12 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammarInput;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.LambdaInput;
 import org.finos.legend.engine.language.pure.grammar.from.ParserError;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -36,15 +37,14 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.security.auth.Subject;
+import java.util.HashMap;
+import java.util.Map;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -61,9 +61,10 @@ public class TransformGrammarToJson
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response transformGrammarToJson(GrammarToJsonInput grammarInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
-            PureGrammarParserExtensionLoader.logExtensionList();
+            PureGrammarParserExtensions.logExtensionList();
             PureGrammarParser parser = PureGrammarParser.newInstance();
             Map<String, Lambda> lambdas = new HashMap<>();
             Map<String, ParserError> lambdaErrors = new HashMap<>();
@@ -86,7 +87,7 @@ public class TransformGrammarToJson
                         }
                         lambdaErrors.put(key, new ParserError(exception.getMessage(), exception.getSourceInformation()));
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, pm);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
                 }
             });
             JsonToGrammarInput symmetricResult = new JsonToGrammarInput();
@@ -111,14 +112,14 @@ public class TransformGrammarToJson
                         }
                         symmetricResult.codeError = new ParserError(exception.getMessage(), exception.getSourceInformation());
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, pm);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
                 }
             }
-            return ManageConstantResult.manageResult(pm, symmetricResult, objectMapper);
+            return ManageConstantResult.manageResult(profiles, symmetricResult, objectMapper);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
         }
     }
 }

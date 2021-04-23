@@ -20,11 +20,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -58,34 +60,35 @@ public class RosettaGenerationService
     }
 
     @POST
-    @Path("cdm")
-    @ApiOperation(value = "Generates Rosetta CDM classes from PureModel")
+    @Path("rosetta")
+    @ApiOperation(value = "Generates Rosetta classes from PureModel")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateCdm(RosettaGenerationInput generateCdmInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateCdmInput.model instanceof PureModelContextData;
-        try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate CDM").startActive(true))
+        try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Rosetta").startActive(true))
         {
             return exec(
                     generateCdmInput.config != null ? generateCdmInput.config : new RosettaGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateCdmInput.model, generateCdmInput.clientVersion, pm, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateCdmInput.model, generateCdmInput.clientVersion, profiles, null).getTwo(),
                     interactive,
-                    pm);
+                    profiles);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, profiles);
         }
 
     }
 
-    private Response exec(RosettaGenerationConfig cdmConfig, Function0<PureModel> pureModelFunc, boolean interactive, ProfileManager pm)
+    private Response exec(RosettaGenerationConfig rosettaConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> pm)
     {
         try
         {
             LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_START : LoggingEventType.GENERATE_ROSETTA_START).toString());
             PureModel pureModel = pureModelFunc.value();
-            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(cdmConfig.process(pureModel), pureModel.getExecutionSupport());
+            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(rosettaConfig.process(pureModel), pureModel.getExecutionSupport());
             LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_STOP : LoggingEventType.GENERATE_ROSETTA_STOP).toString());
             return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }

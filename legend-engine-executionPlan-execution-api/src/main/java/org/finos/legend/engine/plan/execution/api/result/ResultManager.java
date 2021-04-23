@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.api.result;
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -23,6 +24,7 @@ import org.finos.legend.engine.plan.execution.result.serialization.Serialization
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
@@ -36,12 +38,12 @@ public class ResultManager
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final JsonStringEncoder jsonStringEncoder = JsonStringEncoder.getInstance();
 
-    public static Response manageResult(ProfileManager pm, Result result, LoggingEventType loggingEventType)
+    public static Response manageResult(MutableList<CommonProfile> pm, Result result, LoggingEventType loggingEventType)
     {
         return manageResult(pm, result, SerializationFormat.defaultFormat, loggingEventType);
     }
 
-    public static Response manageResult(ProfileManager pm, Result result, SerializationFormat format, LoggingEventType loggingEventType)
+    public static Response manageResult(MutableList<CommonProfile> pm, Result result, SerializationFormat format, LoggingEventType loggingEventType)
     {
         if (result instanceof ErrorResult)
         {

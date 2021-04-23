@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.domain;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.DEPRECATED_SectionGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
@@ -24,6 +25,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserConte
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.domain.DomainLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.domain.DomainParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -77,6 +79,11 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
 
     public Lambda parseLambda(String code, String lambdaId)
     {
+        return parseLambda(code, lambdaId, new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty())));
+    }
+
+    public Lambda parseLambda(String code, String lambdaId, PureGrammarParserContext parserContext)
+    {
         ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(lambdaId, 0, 0).build();
         String prefix = "function go():Any[*]{";
         String fullCode = prefix + code + "}";
@@ -84,7 +91,7 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
                 // NOTE: as we prepend the lambda with this prefix, we need to subtract this prefix length from the column offset
                 .withColumnOffset(lambdaWalkerSourceInformation.getColumnOffset() - prefix.length()).build();
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(fullCode, null, walkerSourceInformation, true);
-        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, new PureGrammarParserContext(), (ImportAwareCodeSection) null);
+        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, (ImportAwareCodeSection) null);
         return (Lambda) walker.concreteFunctionDefinition(((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext).elementDefinition(0).functionDefinition());
     }
 

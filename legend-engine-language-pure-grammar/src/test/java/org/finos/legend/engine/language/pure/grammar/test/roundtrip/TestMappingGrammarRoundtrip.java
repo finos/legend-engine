@@ -259,4 +259,187 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testModelMappingWithLocalProperties()
+    {
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
+                "    +prop1: String[1]: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
+                "    +prop1: String[1]: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    +prop2: Integer[1]: 1,\n" +
+                "    +prop3: Float[1]: 1.0,\n" +
+                "    +prop4: Boolean[1]: true,\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testCrossStoreAssociationMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties\n" +
+                "(\n" +
+                "  test::Person[p]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    +firmId: Integer[1]: 1,\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  test::Firm[f]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Firm\n" +
+                "    id: $src.id,\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                "\n" +
+                "  test::Firm_Person: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                "    employer: $this.firmId == $that.id\n" +
+                "  }\n" +
+                "  test::Firm_Person[p1]: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                "    employer: $this.firmId == $that.id\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testCrossStoreAssociationMappingWithMilestoning()
+    {
+        test("Class <<temporal.businesstemporal>> test::Firm_Milestoned\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.businesstemporal>> test::Person_Milestoned\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person_Milestoned\n" +
+                "{\n" +
+                "  employer: test::Firm_Milestoned[1];\n" +
+                "  employees: test::Person_Milestoned[*];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties_Milestoned\n" +
+                "(\n" +
+                "  test::Person_Milestoned[p]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person_Milestoned\n" +
+                "    +firmId: Integer[1]: 1,\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  test::Firm_Milestoned[f]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Firm_Milestoned\n" +
+                "    id: $src.id,\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                "\n" +
+                "  test::Firm_Person_Milestoned: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testAggregationAware()
+    {
+        test("###Pure\n" +
+                "Class test::Product\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  producer: test::Person[1];\n" +
+                "  price: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::DiscountedProduct extends test::Product\n" +
+                "{\n" +
+                "  discount: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Service\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  provider: test::Person[1];\n" +
+                "  price: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
+                "{\n" +
+                "   $numbers->plus()\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "  test::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  test::DiscountedProduct[PR]: AggregationAware \n" +
+                "  {\n" +
+                "    Views: [\n" +
+                "      (\n" +
+                "        ~modelOperation: {\n" +
+                "          ~canAggregate true,\n" +
+                "          ~groupByFunctions (\n" +
+                "            $this.id\n" +
+                "          ),\n" +
+                "          ~aggregateValues (\n" +
+                "            ( ~mapFn:$this.price , ~aggregateFn: $mapped->sum() )\n" +
+                "          )\n" +
+                "        },\n" +
+                "        ~aggregateMapping: Pure\n" +
+                "        {\n" +
+                "          ~src test::Service\n" +
+                "          price: $src.price,\n" +
+                "          producer: $src.provider\n" +
+                "        }\n" +
+                "      )\n" +
+                "    ],\n" +
+                "    ~mainMapping: Pure\n" +
+                "    {\n" +
+                "      ~src test::DiscountedProduct\n" +
+                "      price: $src.price,\n" +
+                "      producer: $src.producer,\n" +
+                "      discount: $src.discount\n" +
+                "    }\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

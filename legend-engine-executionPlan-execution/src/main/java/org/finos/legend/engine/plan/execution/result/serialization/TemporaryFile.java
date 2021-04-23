@@ -18,6 +18,7 @@ import org.apache.commons.lang.SystemUtils;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.slf4j.Logger;
 
 import java.io.Closeable;
@@ -55,6 +56,7 @@ public class TemporaryFile implements Closeable
     {
 
         LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_CREATED, fileName).toString());
+        MetricsHandler.observeCount("temp file created");
         try (OutputStream outputStream = new FileOutputStream(path.toString()))
         {
             source.stream(outputStream);
@@ -79,6 +81,7 @@ public class TemporaryFile implements Closeable
         {
             Files.deleteIfExists(path);
             LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_DELETED, fileName).toString());
+            MetricsHandler.decrementCount("temp file created");
         }
         catch (Exception e)
         {

@@ -15,14 +15,22 @@
 package org.finos.legend.engine.protocol.pure.v1.extension;
 
 import org.eclipse.collections.api.block.function.Function0;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public interface PureProtocolExtension
 {
     default List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
+
+    default Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
+    {
+        return Collections.emptyMap();
+    }
+
 }

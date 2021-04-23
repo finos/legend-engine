@@ -14,39 +14,43 @@
 
 package org.finos.legend.engine.plan.execution.cache.graphFetch;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class GraphFetchCacheByTargetCrossKeys implements GraphFetchCache
 {
-    private final String mappingId;
-    private final List<String> sourceSetIds;
+    private final List<Pair<String, String>> sourceSetIds;
     private final String targetSetId;
     private final ExecutionCache<GraphFetchCacheKey, List<Object>> cache;
     private List<String> targetPropertiesOrdered;
     private String subTree;
 
-    public GraphFetchCacheByTargetCrossKeys(String mappingId, List<String> sourceSetIds, String targetSetId, ExecutionCache<GraphFetchCacheKey, List<Object>> cache)
+    public GraphFetchCacheByTargetCrossKeys(String mappingId, String sourceSetId, String targetSetId, ExecutionCache<GraphFetchCacheKey, List<Object>> cache)
     {
-        Objects.requireNonNull(mappingId, "Mapping ID should be non null");
+        this(Collections.singletonList(Tuples.pair(mappingId, sourceSetId)), targetSetId, cache);
+    }
+
+    public GraphFetchCacheByTargetCrossKeys(List<Pair<String, String>> sourceSetIds, String targetSetId, ExecutionCache<GraphFetchCacheKey, List<Object>> cache)
+    {
         Objects.requireNonNull(sourceSetIds, "Source Set IDs should be non null");
+        sourceSetIds.forEach(s -> {
+            Objects.requireNonNull(s.getOne(), "Mapping ID should be non null");
+            Objects.requireNonNull(s.getOne(), "Source Set ID should be non null");
+        });
         Objects.requireNonNull(targetSetId, "Target Set ID should be non null");
         Objects.requireNonNull(cache, "Cache should be non null");
 
-        this.mappingId = mappingId;
         this.sourceSetIds = sourceSetIds;
         this.targetSetId = targetSetId;
         this.cache = cache;
     }
 
-    public String getMappingId()
-    {
-        return this.mappingId;
-    }
-
-    public List<String> getSourceSetIds()
+    public List<Pair<String, String>> getSourceSetIds()
     {
         return this.sourceSetIds;
     }

@@ -17,10 +17,9 @@ package org.finos.legend.engine.plan.generation;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.ConcurrentMutableMap;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -38,41 +37,38 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
-import org.pac4j.core.profile.ProfileManager;
+import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 public class PlanGenerator
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    private static final ConcurrentMutableMap<String, Method> planTransforms = ConcurrentHashMap.newMap();
 
-    public static String generateExecutionPlanAsString(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    public static String generateExecutionPlanAsString(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         return PlanGenerator.serializeToJSON(PlanGenerator.generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, planId, extensions), clientVersion, pureModel, extensions, transformers);
     }
 
-    public static SingleExecutionPlan generateExecutionPlan(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    public static SingleExecutionPlan generateExecutionPlan(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         return PlanGenerator.stringToPlan(generateExecutionPlanAsString(l, mapping, pureRuntime, context, pureModel, clientVersion, platform, planId, extensions, transformers));
     }
 
-    public static SingleExecutionPlan generateExecutionPlanWithTrace(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, ProfileManager pm, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    public static SingleExecutionPlan generateExecutionPlanWithTrace(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, Iterable<? extends CommonProfile> profiles, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         Root_meta_pure_executionPlan_ExecutionPlan plan = generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, null, extensions);
-        return transformExecutionPlan(plan, pureModel, clientVersion, pm, extensions, transformers);
+        return transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions, transformers);
     }
 
-    public static SingleExecutionPlan transformExecutionPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, String clientVersion, ProfileManager pm, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    public static SingleExecutionPlan transformExecutionPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, String clientVersion, Iterable<? extends CommonProfile> profiles, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Serialize plan to JSON").startActive(true))
         {
             String jsonPlan = serializeToJSON(plan, clientVersion, pureModel, extensions, transformers);
             scope.span().setTag("plan", jsonPlan);
-            LOGGER.info(new LogInfo(pm, LoggingEventType.PLAN_GENERATED, jsonPlan).toString());
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.PLAN_GENERATED, jsonPlan).toString());
             return stringToPlan(jsonPlan);
         }
     }
@@ -104,13 +100,13 @@ public class PlanGenerator
         }
     }
 
-    private static String serializeToJSON(Root_meta_pure_executionPlan_ExecutionPlan purePlan, String clientVersion, PureModel pureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    private static String serializeToJSON(Root_meta_pure_executionPlan_ExecutionPlan purePlan, String clientVersion, PureModel pureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         String cl = clientVersion == null ? PureClientVersions.latest : clientVersion;
-        MutableList<PlanTransformer> handlers = transformers.select(t -> t.supports(cl));
+        MutableList<? extends PlanTransformer> handlers = Iterate.selectWith(transformers, PlanTransformer::supports, cl, Lists.mutable.empty());
         Assert.assertTrue(handlers.size() == 1, () -> "Zero or more than one handler (" + handlers.size() + ") was found for protocol " + cl);
-        Object transformerdToSerialzableModel = handlers.getFirst().transformToVersionedModel(purePlan, cl, extensions, pureModel.getExecutionSupport());
-        return serializeToJSON(transformerdToSerialzableModel, pureModel);
+        Object transformed = handlers.get(0).transformToVersionedModel(purePlan, cl, extensions, pureModel.getExecutionSupport());
+        return serializeToJSON(transformed, pureModel);
     }
 
     private static SingleExecutionPlan stringToPlan(String plan)

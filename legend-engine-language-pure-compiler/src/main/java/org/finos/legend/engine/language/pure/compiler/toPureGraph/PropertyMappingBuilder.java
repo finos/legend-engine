@@ -25,12 +25,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -42,11 +44,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAsso
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping>
 {
@@ -95,12 +99,12 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     public PropertyMapping visit(PurePropertyMapping propertyMapping)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping pm = new Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl("");
-        Property property = (Property) HelperModelBuilder.getAppliedProperty(this.context, this.context.resolveClass(propertyMapping.property._class, propertyMapping.sourceInformation), Optional.empty(), propertyMapping.property.property, propertyMapping.sourceInformation);
+        Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         pm.setSourceInformation(SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation));
         pm._property(property)
           ._explodeProperty(propertyMapping.explodeProperty)
           ._sourceSetImplementationId(propertyMapping.source)
-          ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping))
+          ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context))
           ._owner(owner);
         String mappingName = owner._parent().getName();
         pm._transform(HelperMappingBuilder.processPurePropertyMappingTransform(propertyMapping, propertyMapping.transform, owner, owner._srcClass(), this.context, mappingName));
@@ -111,6 +115,14 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             Assert.assertTrue(eMap != null, () -> "Can't find enumeration mapping '" + propertyMapping.enumMappingId + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
             pm._transformer(eMap);
         }
+
+        if (propertyMapping.localMappingProperty != null)
+        {
+            pm._localMappingProperty(true);
+            pm._localMappingPropertyType(this.context.resolveType(propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
+            pm._localMappingPropertyMultiplicity(this.context.pureModel.getMultiplicity(propertyMapping.localMappingProperty.multiplicity));
+        }
+
         return pm;
     }
 
@@ -120,10 +132,16 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         ProcessingContext ctx = new ProcessingContext("Create Xstore Property Mapping");
 
         InstanceSetImplementation sourceSet = (InstanceSetImplementation) allClassMappings.detect(c -> c._id().equals(propertyMapping.source));
-        Assert.assertTrue(sourceSet != null, () -> "Can't find class mapping '" + propertyMapping.source + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'");
+        if (sourceSet == null)
+        {
+            throw new EngineException("Can't find class mapping '" + propertyMapping.source + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+        }
 
         InstanceSetImplementation targetSet = (InstanceSetImplementation) allClassMappings.detect(c -> c._id().equals(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping)));
-        Assert.assertTrue(targetSet != null, () -> "Can't find class mapping '" + propertyMapping.target + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'");
+        if (targetSet == null)
+        {
+            throw new EngineException("Can't find class mapping '" + propertyMapping.target + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+        }
 
         Class thisClass = sourceSet._mappingClass() == null ? sourceSet._class() : sourceSet._mappingClass();
         Class thatClass = targetSet._mappingClass() == null ? targetSet._class() : targetSet._mappingClass();
@@ -148,19 +166,28 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         MutableList<String> cleanedOpenVariables = openVariables.distinct();
         cleanedOpenVariables.removeAll(pureParameters.collect(e -> e._name()));
         GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity());
-        String propertyName = parent._id() + "." + propertyMapping.property.property;
         String mappingPath = HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()).replace("::", "_");
         ctx.flushVariable("that");
         ctx.flushVariable("this");
 
-        LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl(propertyName, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
+        if (!valueSpecifications.getLast()._genericType()._rawType().equals(context.pureModel.getType("Boolean")) || !valueSpecifications.getLast()._multiplicity().equals(context.pureModel.getMultiplicity("one")))
+        {
+            throw new EngineException("XStore property mapping function should return 'Boolean[1]'", propertyMapping.crossExpression.body.get(propertyMapping.crossExpression.body.size() - 1).sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl(parent._id() + "." + propertyMapping.property.property, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStorePropertyMapping xpm = new Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl("");
-        Property property = propertyMapping.localMappingProperty == null ? HelperModelBuilder.getOwnedProperty(this.context.resolveClass(propertyMapping.property._class, propertyMapping.property.sourceInformation), propertyMapping.property.property, this.context.pureModel.getExecutionSupport()) :
-                ((InstanceSetImplementation) parent)._mappingClass()._properties().detect(p -> p._name().equals(propertyMapping.property.property));
+
+        String propertyName = propertyMapping.property.property;
+        String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
+        Function<Type, Boolean> isTypeTemporalMilestoned = type -> !Milestoning.temporalStereotypes(type._stereotypes()).isEmpty();
+        Property property = parent._association()._properties().detect(p -> (propertyName.equals(p.getName())) || (isTypeTemporalMilestoned.apply(p._genericType()._rawType()) && edgePointPropertyName.equals(p.getName())));
+        Assert.assertTrue(property != null, () -> "Can't find property '" + propertyName + "' in association '" + (HelperModelBuilder.getElementFullPath(parent._association(), context.pureModel.getExecutionSupport())) + "'", propertyMapping.property.sourceInformation, EngineErrorType.COMPILATION);
+
         return xpm._property(property)
                   ._localMappingProperty(propertyMapping.localMappingProperty != null)
                   ._sourceSetImplementationId(propertyMapping.source == null ? parent._id() : propertyMapping.source)
@@ -172,11 +199,11 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     public PropertyMapping visit(AggregationAwarePropertyMapping propertyMapping)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwarePropertyMapping apm = new Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl("");
-        Property property = HelperModelBuilder.getOwnedProperty(this.context.resolveClass(propertyMapping.property._class, propertyMapping.property.sourceInformation), propertyMapping.property.property, this.context.pureModel.getExecutionSupport());
+        Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         apm._localMappingProperty(propertyMapping.localMappingProperty != null)
            ._property(property)
-           ._sourceSetImplementationId(propertyMapping.source == null ? immediateParent._id() : propertyMapping.source)
-           ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping))
+           ._sourceSetImplementationId(propertyMapping.source == null || propertyMapping.source.isEmpty() ? immediateParent._id() : propertyMapping.source)
+           ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context))
            ._owner(immediateParent);
         return apm;
     }

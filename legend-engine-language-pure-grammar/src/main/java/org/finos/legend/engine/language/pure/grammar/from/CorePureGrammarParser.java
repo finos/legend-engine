@@ -17,127 +17,226 @@ package org.finos.legend.engine.language.pure.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.aggregationAware.AggregationAwareLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.aggregationAware.AggregationAwareParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.enumerationMapping.EnumerationMappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.enumerationMapping.EnumerationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operationClassMapping.OperationClassMappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operationClassMapping.OperationClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ModelConnectionParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.EnumerationMappingParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.OperationClassMappingParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.PureInstanceClassMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.XStoreAssociationMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.AggregationAwareMappingParseTreeWalker;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
-import org.finos.legend.engine.shared.core.function.Procedure3;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
-import java.util.List;
 
 public class CorePureGrammarParser implements PureGrammarParserExtension
 {
     public static final String NAME = "Pure";
     public static final String JSON_MODEL_CONNECTION_TYPE = "JsonModelConnection";
     public static final String XML_MODEL_CONNECTION_TYPE = "XmlModelConnection";
+    public static final String MODEL_CHAIN_CONNECTION_TYPE = "ModelChainConnection";
     public static final String ENUMERATION_MAPPING_TYPE = "EnumerationMapping";
     public static final String OPERATION_CLASS_MAPPING_TYPE = "Operation";
     public static final String PURE_INSTANCE_CLASS_MAPPING_TYPE = "Pure";
+    public static final String OBJECT_TEST_DATA_INPUT_TYPE = "Object";
+    public static final String XSTORE_ASSOCIATION_MAPPING_TYPE = "XStore";
+    public static final String AGGREGATION_AWARE_MAPPING_TYPE = "AggregationAware";
+    public static final String AGGREGATE_SPECIFICATION = "AggregateSpecification";
 
     @Override
-    public List<Procedure3<MappingElementSourceCode, Mapping, PureGrammarParserContext>> getExtraMappingElementParsers()
+    public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
     {
-        return Lists.mutable.with(
-                (mappingElementSourceCode, mapping, parserContext) ->
-                {
-                    if (ENUMERATION_MAPPING_TYPE.equals(mappingElementSourceCode.name))
-                    {
-                        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
-                        SourceCodeParserInfo parserInfo = getEnumerationMappingParserInfo(mappingElementSourceCode);
-                        EnumerationMappingParseTreeWalker walker = new EnumerationMappingParseTreeWalker(parserInfo.walkerSourceInformation);
-                        EnumerationMapping enumerationMapping = new EnumerationMapping();
-                        enumerationMapping.enumeration = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-                        enumerationMapping.id = ctx.mappingElementName() != null ? ctx.mappingElementName().getText() : null;
-                        enumerationMapping.sourceInformation = parserInfo.sourceInformation;
-                        walker.visitEnumerationMapping((EnumerationMappingParserGrammar.EnumerationMappingContext) parserInfo.rootContext, enumerationMapping);
-                        mapping.enumerationMappings.add(enumerationMapping);
-                    }
-                },
-                (mappingElementSourceCode, mapping, parserContext) ->
-                {
-                    if (OPERATION_CLASS_MAPPING_TYPE.equals(mappingElementSourceCode.name))
-                    {
-                        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
-                        SourceCodeParserInfo parserInfo = getOperationClassMappingParserInfo(mappingElementSourceCode);
-                        OperationClassMappingParseTreeWalker walker = new OperationClassMappingParseTreeWalker();
-                        OperationClassMapping classMapping = new OperationClassMapping();
-                        classMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-                        classMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
-                        classMapping.root = ctx.STAR() != null;
-                        classMapping.sourceInformation = parserInfo.sourceInformation;
-                        classMapping.classSourceInformation = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-                        walker.visitOperationClassMapping((OperationClassMappingParserGrammar.OperationClassMappingContext) parserInfo.rootContext, classMapping);
-                        mapping.classMappings.add(classMapping);
-                    }
-                },
-                (mappingElementSourceCode, mapping, parserContext) ->
-                {
-                    if (PURE_INSTANCE_CLASS_MAPPING_TYPE.equals(mappingElementSourceCode.name))
-                    {
-                        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
-                        SourceCodeParserInfo parserInfo = getPureInstanceClassMappingParserInfo(mappingElementSourceCode);
-                        PureInstanceClassMappingParseTreeWalker walker = new PureInstanceClassMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext);
-                        PureInstanceClassMapping classMapping = new PureInstanceClassMapping();
-                        classMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-                        classMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
-                        classMapping.root = ctx.STAR() != null;
-                        classMapping.extendsClassMappingId = ctx.superClassMappingId() != null ? ctx.superClassMappingId().getText() : null;
-                        classMapping.sourceInformation = parserInfo.sourceInformation;
-                        classMapping.classSourceInformation = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-                        walker.visitPureInstanceClassMapping((PureInstanceClassMappingParserGrammar.PureInstanceClassMappingContext) parserInfo.rootContext, ctx, classMapping);
-                        mapping.classMappings.add(classMapping);
-                    }
-                }
-        );
+        return Lists.immutable.with(
+                MappingElementParser.newParser(ENUMERATION_MAPPING_TYPE, CorePureGrammarParser::parseEnumerationMapping),
+                MappingElementParser.newParser(OPERATION_CLASS_MAPPING_TYPE, CorePureGrammarParser::parseOperationClassMapping),
+                MappingElementParser.newParser(PURE_INSTANCE_CLASS_MAPPING_TYPE, CorePureGrammarParser::parsePureClassMapping),
+                MappingElementParser.newParser(XSTORE_ASSOCIATION_MAPPING_TYPE, CorePureGrammarParser::parseXStoreAssociationMapping),
+                MappingElementParser.newParser(AGGREGATION_AWARE_MAPPING_TYPE, CorePureGrammarParser::parseAggregationAwareMapping),
+                MappingElementParser.newParser(AGGREGATE_SPECIFICATION, CorePureGrammarParser::parseAggregateSpecification));
     }
 
     @Override
-    public List<Function<ConnectionValueSourceCode, Connection>> getExtraConnectionParsers()
+    public Iterable<? extends MappingTestInputDataParser> getExtraMappingTestInputDataParsers()
     {
-        return Lists.mutable.with((connectionValueSourceCode) ->
+        return Lists.immutable.with(MappingTestInputDataParser.newParser(OBJECT_TEST_DATA_INPUT_TYPE, CorePureGrammarParser::parseObjectInputData));
+    }
+
+    @Override
+    public Iterable<? extends ConnectionValueParser> getExtraConnectionParsers()
+    {
+        return Lists.immutable.with(
+                ConnectionValueParser.newParser(JSON_MODEL_CONNECTION_TYPE, CorePureGrammarParser::parseJsonModelConnection),
+                ConnectionValueParser.newParser(XML_MODEL_CONNECTION_TYPE, CorePureGrammarParser::parseXmlModelConnection),
+                ConnectionValueParser.newParser(MODEL_CHAIN_CONNECTION_TYPE, CorePureGrammarParser::parseModelChainConnection));
+    }
+
+    private static Connection parseJsonModelConnection(ConnectionValueSourceCode connectionValueSourceCode)
+    {
+        JsonModelConnection connectionValue = new JsonModelConnection();
+        connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
+        SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
+        ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+        walker.visitJsonModelConnectionValue((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
+        return connectionValue;
+    }
+
+    private static Connection parseXmlModelConnection(ConnectionValueSourceCode connectionValueSourceCode)
+    {
+        XmlModelConnection connectionValue = new XmlModelConnection();
+        connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
+        SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
+        ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+        walker.visitXmlModelConnectionValue((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
+        return connectionValue;
+    }
+
+    private static Connection parseModelChainConnection(ConnectionValueSourceCode connectionValueSourceCode)
+    {
+        ModelChainConnection connectionValue = new ModelChainConnection();
+        connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
+        SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
+        ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+        walker.visitModelChainConnection((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
+        return connectionValue;
+    }
+
+    private static EnumerationMapping parseEnumerationMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+        SourceCodeParserInfo parserInfo = getEnumerationMappingParserInfo(mappingElementSourceCode);
+        EnumerationMappingParseTreeWalker walker = new EnumerationMappingParseTreeWalker(parserInfo.walkerSourceInformation);
+        EnumerationMapping enumerationMapping = new EnumerationMapping();
+        enumerationMapping.enumeration = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        enumerationMapping.id = ctx.mappingElementName() != null ? ctx.mappingElementName().getText() : null;
+        enumerationMapping.sourceInformation = parserInfo.sourceInformation;
+        walker.visitEnumerationMapping((EnumerationMappingParserGrammar.EnumerationMappingContext) parserInfo.rootContext, enumerationMapping);
+        return enumerationMapping;
+    }
+
+    private static ClassMapping parseOperationClassMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+        SourceCodeParserInfo parserInfo = getOperationClassMappingParserInfo(mappingElementSourceCode);
+        OperationClassMappingParseTreeWalker walker = new OperationClassMappingParseTreeWalker();
+        OperationClassMapping classMapping = new OperationClassMapping();
+        classMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        classMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+        classMapping.root = ctx.STAR() != null;
+        classMapping.sourceInformation = parserInfo.sourceInformation;
+        classMapping.classSourceInformation = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+        walker.visitOperationClassMapping((OperationClassMappingParserGrammar.OperationClassMappingContext) parserInfo.rootContext, classMapping);
+        return classMapping;
+    }
+
+    private static ClassMapping parsePureClassMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+        SourceCodeParserInfo parserInfo = getPureInstanceClassMappingParserInfo(mappingElementSourceCode);
+        PureInstanceClassMappingParseTreeWalker walker = new PureInstanceClassMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext);
+        PureInstanceClassMapping classMapping = new PureInstanceClassMapping();
+        classMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        classMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+        classMapping.root = ctx.STAR() != null;
+        classMapping.extendsClassMappingId = ctx.superClassMappingId() != null ? ctx.superClassMappingId().getText() : null;
+        classMapping.sourceInformation = parserInfo.sourceInformation;
+        classMapping.classSourceInformation = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+        walker.visitPureInstanceClassMapping((PureInstanceClassMappingParserGrammar.PureInstanceClassMappingContext) parserInfo.rootContext, ctx, classMapping);
+        return classMapping;
+    }
+
+    private static AssociationMapping parseXStoreAssociationMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+        SourceCodeParserInfo parserInfo = getXStoreAssociationMappingParserInfo(mappingElementSourceCode);
+        XStoreAssociationMappingParseTreeWalker walker = new XStoreAssociationMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext);
+        XStoreAssociationMapping xStoreAssociationMapping = new XStoreAssociationMapping();
+        xStoreAssociationMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+        xStoreAssociationMapping.association = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        xStoreAssociationMapping.sourceInformation = parserInfo.sourceInformation;
+        walker.visitXStoreAssociationMapping((XStoreAssociationMappingParserGrammar.XStoreAssociationMappingContext) parserInfo.rootContext, xStoreAssociationMapping);
+        return xStoreAssociationMapping;
+    }
+
+    private static ClassMapping parseAggregationAwareMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+        SourceCodeParserInfo parserInfo = getAggregationAwareMappingParserInfo(mappingElementSourceCode);
+        AggregationAwareMappingParseTreeWalker walker = new AggregationAwareMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext, mappingElementSourceCode);
+        AggregationAwareClassMapping aggregationAwareClassMapping = new AggregationAwareClassMapping();
+        String className = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        aggregationAwareClassMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : className.replaceAll("::", "_");
+        aggregationAwareClassMapping._class = className;
+        aggregationAwareClassMapping.root = ctx.STAR() != null;
+        aggregationAwareClassMapping.extendsClassMappingId = ctx.superClassMappingId() != null ? ctx.superClassMappingId().getText() : null;
+        aggregationAwareClassMapping.sourceInformation = parserInfo.sourceInformation;
+        walker.visitAggregationAwareMapping((AggregationAwareParserGrammar.AggregationAwareClassMappingContext)parserInfo.rootContext, aggregationAwareClassMapping);
+        return aggregationAwareClassMapping;
+    }
+
+    private static AggregateSpecification parseAggregateSpecification(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        SourceCodeParserInfo parserInfo = getAggregateSpecificationParserInfo(mappingElementSourceCode);
+        AggregationAwareMappingParseTreeWalker walker = new AggregationAwareMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext, mappingElementSourceCode);
+        AggregateSpecification aggregateSpecification = new AggregateSpecification();
+        walker.visitAggregateSpecification((AggregationAwareParserGrammar.AggregateSpecificationContext)parserInfo.rootContext, aggregateSpecification);
+        return aggregateSpecification;
+    }
+
+    private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation sourceInformation)
+    {
+        SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
+        ObjectInputData objectInputData = new ObjectInputData();
+        objectInputData.sourceInformation = testInputDataSourceInformation;
+        objectInputData.sourceClass = PureGrammarParserUtility.fromQualifiedName(inputDataContext.testInputSrc().qualifiedName().packagePath() == null ? Collections.emptyList() : inputDataContext.testInputSrc().qualifiedName().packagePath().identifier(), inputDataContext.testInputSrc().qualifiedName().identifier());
+        objectInputData.data = PureGrammarParserUtility.fromGrammarString(inputDataContext.testInputDataContent().STRING().getText(), false);
+        if (inputDataContext.testInputFormat() == null)
         {
-            if (JSON_MODEL_CONNECTION_TYPE.equals(connectionValueSourceCode.connectionType))
-            {
-                JsonModelConnection connectionValue = new JsonModelConnection();
-                connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
-                SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
-                ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
-                walker.visitJsonModelConnectionValue((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
-                return connectionValue;
-            }
-            else if (XML_MODEL_CONNECTION_TYPE.equals(connectionValueSourceCode.connectionType))
-            {
-                XmlModelConnection connectionValue = new XmlModelConnection();
-                connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
-                SourceCodeParserInfo parserInfo = getModelConnectionParserInfo(connectionValueSourceCode);
-                ModelConnectionParseTreeWalker walker = new ModelConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
-                walker.visitXmlModelConnectionValue((ModelConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
-                return connectionValue;
-            }
-            return null;
-        });
+            throw new EngineException("Mapping test object input data format type is missing", testInputDataSourceInformation, EngineErrorType.PARSER);
+        }
+        try
+        {
+            objectInputData.inputType = ObjectInputType.valueOf(inputDataContext.testInputFormat().getText());
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new EngineException("Mapping test object input data does not support format '" + inputDataContext.testInputFormat().getText() + "'", sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
+        }
+        return objectInputData;
     }
 
     private static SourceCodeParserInfo getModelConnectionParserInfo(ConnectionValueSourceCode connectionValueSourceCode)
@@ -190,5 +289,46 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(mappingElementSourceCode.code, input, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext), mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.pureInstanceClassMapping());
+    }
+
+    private static SourceCodeParserInfo getXStoreAssociationMappingParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation);
+        XStoreAssociationMappingLexerGrammar lexer = new XStoreAssociationMappingLexerGrammar(CharStreams.fromString(mappingElementSourceCode.code));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        XStoreAssociationMappingParserGrammar parser = new XStoreAssociationMappingParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext), mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.xStoreAssociationMapping());
+    }
+
+    private static SourceCodeParserInfo getAggregationAwareMappingParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation);
+        AggregationAwareLexerGrammar lexer = new AggregationAwareLexerGrammar(CharStreams.fromString(mappingElementSourceCode.code));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        AggregationAwareParserGrammar parser = new AggregationAwareParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        SourceInformation source = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext);
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, source, mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.aggregationAwareClassMapping());
+    }
+
+    private static SourceCodeParserInfo getAggregateSpecificationParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation);
+        AggregationAwareLexerGrammar lexer = new AggregationAwareLexerGrammar(CharStreams.fromString(mappingElementSourceCode.code));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        AggregationAwareParserGrammar parser = new AggregationAwareParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        SourceInformation source = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext);
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, source, mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.aggregateSpecification());
     }
 }

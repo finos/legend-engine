@@ -17,11 +17,19 @@ package org.finos.legend.engine.language.pure.grammar.test.parser;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.enumerationMapping.EnumerationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operationClassMapping.OperationClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -40,7 +48,8 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
         return FastList.newListWith(
                 EnumerationMappingParserGrammar.VOCABULARY,
                 OperationClassMappingParserGrammar.VOCABULARY,
-                PureInstanceClassMappingParserGrammar.VOCABULARY
+                PureInstanceClassMappingParserGrammar.VOCABULARY,
+                XStoreAssociationMappingParserGrammar.VOCABULARY
         );
     }
 
@@ -353,5 +362,197 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
                 "  }\n" +
                 ")\n", "PARSER error at [9:5-13]: Unexpected token");
+    }
+
+    @Test
+    public void testUnknownClassMappingType()
+    {
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Unknown\n" +
+                "  {\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [4:3-6:3]: No parser for Unknown");
+    }
+
+    @Test
+    public void testModelMappingWithLocalProperties()
+    {
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : [1] : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [7:19]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : String : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [7:26]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [7:19]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [7:19]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : String[1] : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  *anything::goes[anything_goes]: Pure\n" +
+                "  {\n" +
+                "    ~src anything::goes\n" +
+                "    + firstName : String[1] : $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    + lastName : String[1] : $src.lastName->substring(0, $src.fullName->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testCrossStoreAssociationMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    ~src Something\n" +
+                "  }\n" +
+                ")", "PARSER error at [6:5]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    +p: String[1]: 'a'\n" +
+                "  }\n" +
+                ")", "PARSER error at [6:5]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p: true\n" +
+                "  }\n" +
+                ")");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1: true,\n" +
+                "    p2: false\n" +
+                "  }\n" +
+                ")");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x, y]: true\n" +
+                "    p2[y, x]: false\n" +
+                "  }\n" +
+                ")", "PARSER error at [7:5-6]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x]: true\n" +
+                "  }\n" +
+                ")", "PARSER error at [6:9]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x, ]: true\n" +
+                "  }\n" +
+                ")", "PARSER error at [6:11]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x, y]: true,\n" +
+                "    p2[y, x]: false\n" +
+                "  }\n" +
+                ")");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x, y]: true,\n" +
+                "    p2: false\n" +
+                "  }\n" +
+                ")");
+
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: XStore\n" +
+                "  {\n" +
+                "    p1[x1, y2]: true,\n" +
+                "    p1[x2, y2]: false\n" +
+                "  }\n" +
+                ")");
+    }
+
+    @Test
+    public void testLatestMultiplicity()
+    {
+        PureModelContextData model = PureGrammarParser.newInstance().parseModel("import test::*;\n" +
+                "Class test::A\n" +
+                "{\n" +
+                "  stringProperty: String[1];\n" +
+                "  latestProduct(){\n" +
+                "         $this.stringProperty(%latest)\n" +
+                "   }:String[*];\n" +
+                "}\n"
+        );
+        Multiplicity latest = ((CLatestDate)((AppliedProperty)model.getElementsOfType(Class.class).get(0).qualifiedProperties.get(0).body.get(0)).parameters.get(1)).multiplicity;
+        Assert.assertTrue(latest.isUpperBoundEqualTo(1), () -> "CLatestDate must have multiplicity set to 1");
     }
 }

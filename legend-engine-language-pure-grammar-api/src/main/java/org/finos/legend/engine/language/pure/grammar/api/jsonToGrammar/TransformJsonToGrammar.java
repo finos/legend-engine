@@ -19,6 +19,7 @@ import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.eclipse.collections.api.block.procedure.Procedure;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Maps;
@@ -37,7 +38,6 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -58,6 +58,7 @@ public class TransformJsonToGrammar
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response transformJsonToGrammar(JsonToGrammarInput jsonInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
             PureGrammarComposerExtensionLoader.logExtensionList();
@@ -74,11 +75,11 @@ public class TransformJsonToGrammar
             {
                 symmetricResult.code = grammarTransformer.renderPureModelContextData(jsonInput.modelDataContext);
             }
-            return ManageConstantResult.manageResult(pm, symmetricResult);
+            return ManageConstantResult.manageResult(profiles, symmetricResult);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, profiles);
         }
     }
 }

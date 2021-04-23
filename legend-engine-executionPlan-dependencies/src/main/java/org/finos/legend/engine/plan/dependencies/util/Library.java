@@ -836,6 +836,20 @@ public class Library
         return (V v) -> seen.stream().noneMatch((V vv) -> eql.test(vv, v)) && seen.add(v);
     }
 
+    public static <T> T first(T in)
+    {
+        return in;
+    }
+
+    public static <T> T first(List<T> in)
+    {
+        if (in == null || in.size() == 0)
+        {
+            return null;
+        }
+        return in.get(0);
+    }
+
     public static <R> R match(Object object, List<Predicate<Object>> predicates, List<Function<Object, R>> actions)
     {
         for (int i = 0; i < predicates.size(); i++)

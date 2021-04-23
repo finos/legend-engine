@@ -16,7 +16,7 @@ package org.finos.legend.engine.external.shared.format.imports.description;
 
 public interface ImportConfigurationDescription
 {
-    String getType();
-
     String getLabel();
+
+    String getKey();
 }

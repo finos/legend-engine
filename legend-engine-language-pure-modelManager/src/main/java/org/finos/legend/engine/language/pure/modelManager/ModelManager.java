@@ -35,6 +35,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
@@ -68,7 +69,7 @@ public class ModelManager
     }
 
     // Remove clientVersion
-    public PureModel loadModel(PureModelContext context, String clientVersion, ProfileManager pm, String packageOffset)
+    public PureModel loadModel(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm, String packageOffset)
     {
         if(context instanceof PureModelContextData || context instanceof PureModelContextText)
         {
@@ -94,21 +95,21 @@ public class ModelManager
     }
 
     // Remove clientVersion
-    public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, ProfileManager pm, String packageOffset)
+    public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm, String packageOffset)
     {
             PureModelContextData data = this.loadData(context, clientVersion, pm);
             return Tuples.pair(data, loadModel(data, clientVersion, pm, packageOffset));
     }
 
     // Remove clientVersion
-    public String getLambdaReturnType(Lambda lambda, PureModelContext context, String clientVersion, ProfileManager pm)
+    public String getLambdaReturnType(Lambda lambda, PureModelContext context, String clientVersion, MutableList<CommonProfile> pm)
     {
         PureModel result = this.loadModel(context, clientVersion, pm, null);
         return Compiler.getLambdaReturnType(lambda, result);
     }
 
     // Remove clientVersion
-    public PureModelContextData loadData(PureModelContext context, String clientVersion, ProfileManager pm)
+    public PureModelContextData loadData(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Load Model").startActive(true))
         {

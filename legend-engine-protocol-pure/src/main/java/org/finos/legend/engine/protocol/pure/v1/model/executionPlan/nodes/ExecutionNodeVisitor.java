@@ -17,6 +17,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 
 public interface ExecutionNodeVisitor<T>
 {
@@ -36,6 +39,7 @@ public interface ExecutionNodeVisitor<T>
     T visit(FunctionParametersValidationNode functionParametersValidationNode);
 
     // Shared GraphFetch Superstructure
+    @Deprecated
     T visit(GraphFetchExecutionNode graphFetchExecutionNode);
 
     T visit(GlobalGraphFetchExecutionNode globalGraphFetchExecutionNode);
@@ -43,7 +47,14 @@ public interface ExecutionNodeVisitor<T>
     T visit(LocalGraphFetchExecutionNode localGraphFetchExecutionNode);
 
     // InMemory
+    @Deprecated
     T visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode);
+
+    T visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode);
+
+    T visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode);
+
+    T visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode);
 
     // Aggregation Aware
     T visit(AggregationAwareExecutionNode aggregationAwareExecutionNode);

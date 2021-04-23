@@ -1,0 +1,35 @@
+{
+  "domain": {
+    "associations": [],
+    "enums": [
+      {
+        "package": "testing::my",
+        "values": [],
+        "_type": "Enumeration",
+        "name": "Something"
+      }
+    ],
+    "classes": [
+      {
+        "_type": "class",
+        "name": "TestClassSibling",
+        "package": "ui",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "time",
+            "type": "StrictTime"
+          }
+        ]
+      }
+    ]
+  },
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

@@ -14,14 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.inMemory.plugin;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
-
-import javax.security.auth.Subject;
 
 public class InMemoryStoreExecutionState implements StoreExecutionState
 {
@@ -39,9 +39,9 @@ public class InMemoryStoreExecutionState implements StoreExecutionState
     }
 
     @Override
-    public ExecutionNodeVisitor<Result> getVisitor(ProfileManager pm, ExecutionState executionState)
+    public ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        return new InMemoryExecutionNodeExecutor(pm, executionState);
+        return new InMemoryExecutionNodeExecutor(profiles, executionState);
     }
 
     @Override

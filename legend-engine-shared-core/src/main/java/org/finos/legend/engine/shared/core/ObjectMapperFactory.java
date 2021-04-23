@@ -24,7 +24,7 @@ import java.util.TimeZone;
 
 public class ObjectMapperFactory
 {
-    public static ObjectMapper withStandardConfigurations(ObjectMapper objectMapper)
+    public static <T extends ObjectMapper> T withStandardConfigurations(T objectMapper)
     {
         objectMapper
                 .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)

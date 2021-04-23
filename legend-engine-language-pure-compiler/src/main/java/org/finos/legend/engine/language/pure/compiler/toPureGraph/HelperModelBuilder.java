@@ -40,9 +40,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecificati
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
+import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
@@ -99,6 +101,17 @@ public class HelperModelBuilder
         Multiplicity multiplicity = new Multiplicity();
         multiplicity.lowerBound = 1;
         multiplicity.setUpperBound(1);
+        ve._multiplicity(context.pureModel.getMultiplicity(multiplicity));
+        return ve;
+    }
+
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createVariableForMapped(LambdaFunction mapFn, CompileContext context)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("mapped");
+        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(((Root_meta_pure_metamodel_type_FunctionType_Impl)mapFn._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType._rawType());
+        ve._genericType(genericType);
+        Multiplicity multiplicity = new Multiplicity();
+        multiplicity.lowerBound = 0;
         ve._multiplicity(context.pureModel.getMultiplicity(multiplicity));
         return ve;
     }
@@ -239,17 +252,39 @@ public class HelperModelBuilder
      */
     public static String getSignature(Function function)
     {
-        return function.name + "_" + LazyIterate.collect(function.parameters, p -> p._class != null ? p._class + "_" + getMultiplicitySignature(p.multiplicity) : null).select(Objects::nonNull).makeString("__")
+        return getFunctionNameWithoutSignature(function)+getFunctionSignatureSuffix(function);
+    }
+
+
+    private static String getFunctionSignatureSuffix(Function function)
+    {
+        return  "_" + LazyIterate.collect(function.parameters, p -> p._class != null ? p._class + "_" + getMultiplicitySignature(p.multiplicity) : null).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + function.returnType + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
     }
+    public static String getFunctionNameWithoutSignature(Function function)
+    {
+        String signaureSuffix=  terseSignatureSuffix(function);
+        return function.name.endsWith(signaureSuffix)? function.name.substring(0,function.name.length()-signaureSuffix.length()) : function.name;
+    }
+
 
     public static String getTerseSignature(Function function)
     {
-        return function.name + "_" + LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
+        String suffix = terseSignatureSuffix(function);
+       //A function name may or may not already have a signature. Only add it if it's not present
+        return function.name.endsWith(suffix)? function.name : function.name+suffix;
+    }
+
+    private static String terseSignatureSuffix(Function function)
+    {
+        return "_" + LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
+
     }
+
+
 
     private static String getParameterSignature(Variable p)
     {
@@ -340,6 +375,19 @@ public class HelperModelBuilder
         }
         Assert.assertTrue(prop != null, () -> "Can't find property '" + name + "' in class '" + (classPath != null ? classPath : getElementFullPath(_class, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return prop;
+    }
+
+    /**
+     * Recursively go through hierarchical/generalization chain and find the property and resolve to edge point property for milestoned properties.
+    */
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    {
+        AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, sourceInformation);
+        if((abstractProperty instanceof QualifiedProperty) && !Milestoning.temporalStereotypes(abstractProperty._genericType()._rawType()._stereotypes()).isEmpty())
+        {
+            return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property) HelperModelBuilder.getAppliedProperty(context, _class, parameters, MilestoningFunctions.getEdgePointPropertyName(name), sourceInformation);
+        }
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property) abstractProperty;
     }
 
     /**

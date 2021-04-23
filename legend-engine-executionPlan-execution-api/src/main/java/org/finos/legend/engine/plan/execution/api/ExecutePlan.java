@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.api;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.result.ResultManager;
@@ -33,7 +34,6 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -65,17 +65,19 @@ public class ExecutePlan
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response executePlan(@Context HttpServletRequest request, ExecutionPlan execPlan, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+
         try
         {
             if (execPlan instanceof SingleExecutionPlan)
             {
-                LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
+                LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
                 // Assume that the input exec plan has no variables
-                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, pm);
+                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles);
                 try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
                 {
-                    LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
-                    return ResultManager.manageResult(pm, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
+                    LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
+                    return ResultManager.manageResult(profiles, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
                 }
             }
             else
@@ -85,7 +87,7 @@ public class ExecutePlan
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, profiles);
         }
     }
 }

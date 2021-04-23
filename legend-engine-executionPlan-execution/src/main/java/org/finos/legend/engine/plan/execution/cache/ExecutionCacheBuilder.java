@@ -16,9 +16,12 @@ package org.finos.legend.engine.plan.execution.cache;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheStats;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByTargetCrossKeys;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -30,6 +33,8 @@ public class ExecutionCacheBuilder
         return buildExecutionCacheFromGuavaCache(guavaCache);
     }
 
+    // Equality key cache builders
+    // Cache type: Key -> Object (as key for an object is unique)
     public static GraphFetchCacheByEqualityKeys buildGraphFetchCacheByEqualityKeysFromExecutionCache(ExecutionCache<GraphFetchCacheKey, Object> executionCache, String mappingId, String instanceSetId)
     {
         return new GraphFetchCacheByEqualityKeys(mappingId, instanceSetId, executionCache);
@@ -39,6 +44,31 @@ public class ExecutionCacheBuilder
     {
         ExecutionCache<GraphFetchCacheKey, Object> executionCache = buildExecutionCacheFromGuavaCache(guavaCache);
         return new GraphFetchCacheByEqualityKeys(mappingId, instanceSetId, executionCache);
+    }
+
+
+    // Cross Key cache builders
+    // Cache type: Key -> List<Object> (cross key cache can be used for 1 -> MANY relationships as well)
+    public static GraphFetchCacheByTargetCrossKeys buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(ExecutionCache<GraphFetchCacheKey, List<Object>> executionCache, String mappingId, String sourceSetId, String targetSetId)
+    {
+        return new GraphFetchCacheByTargetCrossKeys(mappingId, sourceSetId, targetSetId, executionCache);
+    }
+
+    public static GraphFetchCacheByTargetCrossKeys buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(Cache<GraphFetchCacheKey, List<Object>> guavaCache, String mappingId, String sourceSetId, String targetSetId)
+    {
+        ExecutionCache<GraphFetchCacheKey, List<Object>> executionCache = buildExecutionCacheFromGuavaCache(guavaCache);
+        return new GraphFetchCacheByTargetCrossKeys(mappingId, sourceSetId, targetSetId, executionCache);
+    }
+
+    public static GraphFetchCacheByTargetCrossKeys buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(ExecutionCache<GraphFetchCacheKey, List<Object>> executionCache, List<Pair<String, String>> sourceSetIds, String targetSetId)
+    {
+        return new GraphFetchCacheByTargetCrossKeys(sourceSetIds, targetSetId, executionCache);
+    }
+
+    public static GraphFetchCacheByTargetCrossKeys buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(Cache<GraphFetchCacheKey, List<Object>> guavaCache, List<Pair<String, String>> sourceSetIds, String targetSetId)
+    {
+        ExecutionCache<GraphFetchCacheKey, List<Object>> executionCache = buildExecutionCacheFromGuavaCache(guavaCache);
+        return new GraphFetchCacheByTargetCrossKeys(sourceSetIds, targetSetId, executionCache);
     }
 
     private static <K, V> ExecutionCache<K, V> buildExecutionCacheFromGuavaCache(Cache<K, V> guavaCache)

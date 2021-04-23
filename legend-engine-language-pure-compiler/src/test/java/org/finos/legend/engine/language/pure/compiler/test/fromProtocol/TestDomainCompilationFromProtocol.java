@@ -25,4 +25,23 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
         testWithProtocolPath("packageWithReservedName.json",
                 "COMPILATION error: Error in 'testing::$implicit::Something': Can't create package with reserved name '$implicit'");
     }
+
+    @Test
+    public void testAppliedFunctionWithFullPath()
+    {
+        testWithProtocolPath("appliedFunctionWithFullyQualifiedName.json");
+    }
+
+    @Test
+    public void testCreatePackageWithWrongStrictTimeDomain()
+    {
+        testWithProtocolPath("packageWithWrongStrictTimeDomain.json",
+                "COMPILATION error: Error in 'ui::TestClassSibling': Can't find type 'Stricttime'");
+    }
+
+    @Test
+    public void testCreatePackageWithCorrectStrictTimeDomain()
+    {
+        testWithProtocolPath("packageWithCorrectStrictTimeDomain.json");
+    }
 }

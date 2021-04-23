@@ -90,13 +90,12 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
-import org.pac4j.core.profile.ProfileManager;
+import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.security.auth.Subject;
 
 public class PureModel implements IPureModel
 {
@@ -126,22 +125,22 @@ public class PureModel implements IPureModel
     final MutableMap<String, Connection> connectionsIndex = Maps.mutable.empty();
     final MutableMap<String, Runtime> runtimesIndex = Maps.mutable.empty();
 
-    public PureModel(PureModelContextData pure,ProfileManager pm, DeploymentMode deploymentMode)
+    public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode)
     {
         this(pure, pm, null, deploymentMode, new PureModelProcessParameter());
     }
 
-    public PureModel(PureModelContextData pure, ProfileManager pm, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
+    public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
     {
         this(pure, pm, null, deploymentMode, pureModelProcessParameter);
     }
 
-    public PureModel(PureModelContextData pure, ProfileManager pm, ClassLoader classLoader, DeploymentMode deploymentMode)
+    public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode)
     {
         this(pure, pm, classLoader, deploymentMode, new PureModelProcessParameter());
     }
 
-    public PureModel(PureModelContextData pureModelContextData, ProfileManager pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
+    public PureModel(PureModelContextData pureModelContextData, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
     {
         this.extensions = CompilerExtensions.fromAvailableExtensions();
         List<Procedure2<PureModel, PureModelContextData>> extraPostValidators = this.extensions.getExtraPostValidators();
@@ -241,14 +240,8 @@ public class PureModel implements IPureModel
         catch (Exception e)
         {
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_ERROR, e).toString());
-            // Since EngineException extends RuntimeException it is more straight forward to just
-            // throw EngineException as is. This will make downstream handling of exception easier
             // TODO: we need to have a better strategy to throw compilation error instead of the generic exeception
-            if (e instanceof EngineException)
-            {
-                throw e;
-            }
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
@@ -369,6 +362,8 @@ public class PureModel implements IPureModel
         this.immutables.add("DateTime");
         this.typesIndex.put("LatestDate", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "LatestDate"));
         this.immutables.add("LatestDate");
+        this.typesIndex.put("StrictTime", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "StrictTime"));
+        this.immutables.add("StrictTime");
     }
 
 

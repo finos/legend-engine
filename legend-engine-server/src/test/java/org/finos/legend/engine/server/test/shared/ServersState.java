@@ -20,11 +20,13 @@ public class ServersState
 {
     private final Server server;
     private final TestMetaDataServer metadataServer;
+    private final org.h2.tools.Server H2Server;
 
-    public ServersState(Server server, TestMetaDataServer metadataServer)
+    public ServersState(Server server, TestMetaDataServer metadataServer, org.h2.tools.Server h2Server)
     {
         this.server = server;
         this.metadataServer = metadataServer;
+        this.H2Server = h2Server;
     }
 
     public void shutDown()
@@ -33,6 +35,8 @@ public class ServersState
         {
             this.server.shutDown();
             this.metadataServer.shutDown();
+            this.H2Server.shutdown();
+            this.H2Server.stop();
         }
         catch (Exception e)
         {

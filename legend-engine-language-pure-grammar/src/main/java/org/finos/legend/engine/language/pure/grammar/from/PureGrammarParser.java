@@ -16,15 +16,14 @@ package org.finos.legend.engine.language.pure.grammar.from;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.eclipse.collections.api.block.function.Function3;
-import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.CodeLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.CodeParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -41,9 +40,6 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class PureGrammarParser
@@ -52,27 +48,33 @@ public class PureGrammarParser
     private static final String DEFAULT_SECTION_BEGIN = "\n###" + DomainParser.name + "\n";
 
     private final DEPRECATED_PureGrammarParserLibrary parsers;
-    private final List<PureGrammarParserExtension> extensions;
+    private final PureGrammarParserExtensions extensions;
 
-    private PureGrammarParser(List<PureGrammarParserExtension> extensions)
+    private PureGrammarParser(PureGrammarParserExtensions extensions)
     {
+        this.extensions = extensions;
+        ConnectionParser connectionParser = ConnectionParser.newInstance(extensions);
         this.parsers = new DEPRECATED_PureGrammarParserLibrary(Lists.immutable.with(
                 new DomainParser(),
-                MappingParser.newInstance(),
-                ConnectionParser.newInstance(),
-                new RuntimeParser()
+                MappingParser.newInstance(extensions),
+                connectionParser,
+                RuntimeParser.newInstance(connectionParser)
         ));
-        this.extensions = extensions;
+    }
+
+    public static PureGrammarParser newInstance(PureGrammarParserExtensions extensions)
+    {
+        return new PureGrammarParser(extensions);
     }
 
     public static PureGrammarParser newInstance()
     {
-        return new PureGrammarParser(PureGrammarParserExtensionLoader.extensions());
+        return new PureGrammarParser(PureGrammarParserExtensions.fromAvailableExtensions());
     }
 
     public PureModelContextData parseModel(String code)
     {
-        return this.parse(code, this.parsers, this.extensions);
+        return this.parse(code, this.parsers);
     }
 
     public Lambda parseLambda(String code, String lambdaId)
@@ -80,10 +82,10 @@ public class PureGrammarParser
         return new DomainParser().parseLambda(code, lambdaId);
     }
 
-    public PureModelContextData parse(String code, DEPRECATED_PureGrammarParserLibrary parserLibrary, List<PureGrammarParserExtension> extensions)
+    private PureModelContextData parse(String code, DEPRECATED_PureGrammarParserLibrary parserLibrary)
     {
         String fullCode = DEFAULT_SECTION_BEGIN + code;
-        PureGrammarParserContext parserContext = new PureGrammarParserContext(new HashMap<>());
+        PureGrammarParserContext parserContext = new PureGrammarParserContext(this.extensions);
         ParseTreeWalkerSourceInformation walkerSourceInformation = ParseTreeWalkerSourceInformation.DEFAULT_WALKER_SOURCE_INFORMATION();
         // init the parser
         ParserErrorListener errorListener = new ParserErrorListener(walkerSourceInformation);
@@ -101,13 +103,12 @@ public class PureGrammarParser
         // in the consumer, we should ensure this does not leak and gets persisted to SDLC or Services per se
         sectionIndex.name = "SectionIndex";
         sectionIndex._package = "__internal__";
-        sectionIndex.sections = ListIterate.collect(parser.definition().section(), sectionCtx -> this.visitSection(sectionCtx, parserLibrary, extensions, walkerSourceInformation, parserContext, builder::addElement));
+        sectionIndex.sections = ListIterate.collect(parser.definition().section(), sectionCtx -> this.visitSection(sectionCtx, parserLibrary, walkerSourceInformation, parserContext, builder::addElement));
         return builder.withElement(sectionIndex).build();
     }
 
-    private Section visitSection(CodeParserGrammar.SectionContext ctx, DEPRECATED_PureGrammarParserLibrary parserLibrary, List<PureGrammarParserExtension> extensions, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, Consumer<PackageableElement> elementConsumer)
+    private Section visitSection(CodeParserGrammar.SectionContext ctx, DEPRECATED_PureGrammarParserLibrary parserLibrary, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, Consumer<PackageableElement> elementConsumer)
     {
-        List<Function3<SectionSourceCode, Consumer<PackageableElement>, PureGrammarParserContext, Section>> extraSectionParsers = ListIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraSectionParsers);
         String parserName = ctx.SECTION_START().getText().substring(4); // the prefix is `\n###` hence 4 characters
         SourceInformation parserNameSourceInformation = walkerSourceInformation.getSourceInformation(ctx.SECTION_START().getSymbol());
         int lineOffset = ctx.SECTION_START().getSymbol().getLine() - 2; // since the CODE_BLOCK_START is `\n###` we have to subtract 1 more line than usual
@@ -123,16 +124,22 @@ public class PureGrammarParser
                     codeBuilder.append(tn.getText());
                 }
                 SectionSourceCode codeSection = new SectionSourceCode(codeBuilder.toString(), parserName, sectionSourceInformation, sectionWalkerSourceInformation);
-                Section section = extraSectionParsers.stream().map(sectionParser -> sectionParser.value(codeSection, elementConsumer, parserContext)).filter(Objects::nonNull).findFirst().orElse(null);
-                if (section == null)
+                SectionParser sectionParser = this.extensions.getExtraSectionParser(parserName);
+                Section section;
+                if (sectionParser == null)
                 {
-                    DEPRECATED_SectionGrammarParser parser = parserLibrary.getParser(parserName, parserNameSourceInformation);
-                    if (parser == null)
+                    DEPRECATED_SectionGrammarParser legacyParser = parserLibrary.getParser(parserName, parserNameSourceInformation);
+                    if (legacyParser == null)
                     {
                         throw new EngineException("'" + parserName + "' is not a known section parser", parserNameSourceInformation, EngineErrorType.PARSER);
                     }
-                    section = parser.parse(parser.getParserInfo(codeSection.code, codeSection.sourceInformation, codeSection.walkerSourceInformation), elementConsumer, parserContext);
+                    section = legacyParser.parse(legacyParser.getParserInfo(codeSection.code, codeSection.sourceInformation, codeSection.walkerSourceInformation), elementConsumer, parserContext);
                 }
+                else
+                {
+                    section = sectionParser.parse(codeSection, elementConsumer, parserContext);
+                }
+
                 // remove duplicates in imports and content of the section
                 section.elements = ListIterate.distinct(section.elements);
                 if (section instanceof ImportAwareCodeSection)

@@ -35,6 +35,12 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testLambdaWithTwoParameters()
+    {
+        testLambda("{a,b|'ok'}");
+    }
+
+    @Test
     public void testLambdaWithBodyWithString()
     {
         testLambda("|'ok'");
@@ -92,6 +98,18 @@ public class TestLambdaRoundtrip
     public void testLambdaWithBodyWithStrictDateMany()
     {
         testLambda("|[%2010-10-20, %2010-10-22]");
+    }
+
+    @Test
+    public void testLambdaWithBodyWithStrictTime()
+    {
+        testLambda("|%22:22:22.1111");
+    }
+
+    @Test
+    public void testLambdaWithBodyWithStrictTimeMany()
+    {
+        testLambda("|[%22:22:22.1, %09:20:21, %8:08:08]");
     }
 
     @Test

@@ -29,6 +29,7 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.finos.legend.engine.server.test.shared.execute.PureFunctions;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
@@ -201,7 +202,7 @@ public class TestMetaDataServer
         AbstractHandler mappingHandle = registerService(
                 "/alloy/pureModelFromMapping",
                 messageFromPureJAR ?
-                        (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromMapping(_package, version, Lists.mutable.empty(), executionSupport) :
+                        (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromMapping(_package, version, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(executionSupport), executionSupport) :
                         (_package, version) ->
                         {
                             String key = "" + _package + version;
@@ -212,12 +213,27 @@ public class TestMetaDataServer
                         }
         );
 
+        AbstractHandler storeHandle = registerService(
+                "/alloy/pureModelFromStore",
+                messageFromPureJAR ?
+                        (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromStore(_package, version, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(executionSupport), executionSupport):
+                        (_package, version) -> {
+                            String key = "" + _package + version;
+                            String res = fromStores.get(key);
+                            System.out.println(key);
+                            Assert.assertTrue(res != null, () -> key + " can't be found");
+                            return res;
+                        }
+        );
+
+
         AbstractHandler versionHandler = createVersionHandler();
         AbstractHandler pureBaseVersionHandler = createPureBaseVersionHandler();
 
         HandlerCollection handlerCollection = new HandlerCollection();
         handlerCollection.setHandlers(new Handler[]{
                 mappingHandle,
+                storeHandle,
                 versionHandler,
                 pureBaseVersionHandler});
 

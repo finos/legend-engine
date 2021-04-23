@@ -30,8 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.pat
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class HelperValueSpecificationGrammarComposer
 {
@@ -60,7 +59,7 @@ public class HelperValueSpecificationGrammarComposer
     public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore shiftedTransformer, DEPRECATED_PureGrammarComposerCore topParameterTransfomer, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<ValueSpecification> parameters = appliedFunction.parameters;
-        String function = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
+        String function = removeFunctionSignature(LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::"));
         if (!parameters.isEmpty())
         {
             ValueSpecification firstParameter = parameters.get(0);

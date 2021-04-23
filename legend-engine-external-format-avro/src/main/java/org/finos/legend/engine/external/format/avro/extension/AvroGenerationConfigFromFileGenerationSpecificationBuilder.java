@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,8 +26,9 @@ public class AvroGenerationConfigFromFileGenerationSpecificationBuilder
     {
         Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.avro.name()), () -> "File generation of type of "+FileGenerationType.avro.name()+" expected, got '" + fileGeneration.type + "'");
         AvroGenerationConfig avroConfig = new AvroGenerationConfig();
-        ConfigBuilder.noConfigurationPropertiesCheck(fileGeneration);
+        ConfigBuilder.duplicateCheck(fileGeneration.configurationProperties);
         ConfigBuilder.setScopeElements(fileGeneration, avroConfig);
+        fileGeneration.configurationProperties.forEach(e -> ConfigBuilder.setConfigurationProperty(fileGeneration, e, avroConfig));
         return avroConfig;
     }
 }

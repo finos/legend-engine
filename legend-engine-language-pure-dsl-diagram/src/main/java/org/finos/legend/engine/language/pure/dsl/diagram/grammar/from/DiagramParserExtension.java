@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.dsl.diagram.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
@@ -26,11 +25,11 @@ import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DiagramLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DiagramParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class DiagramParserExtension implements PureGrammarParserExtension
@@ -38,22 +37,20 @@ public class DiagramParserExtension implements PureGrammarParserExtension
     public static final String NAME = "Diagram";
 
     @Override
-    public List<Function3<SectionSourceCode, Consumer<PackageableElement>, PureGrammarParserContext, Section>> getExtraSectionParsers()
+    public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
-        return Lists.mutable.with((sectionSourceCode, elementConsumer, context) ->
-        {
-            if (!NAME.equals(sectionSourceCode.sectionType))
-            {
-                return null;
-            }
-            SourceCodeParserInfo parserInfo = getDiagramParserInfo(sectionSourceCode);
-            ImportAwareCodeSection section = new ImportAwareCodeSection();
-            section.parserName = sectionSourceCode.sectionType;
-            section.sourceInformation = parserInfo.sourceInformation;
-            DiagramParseTreeWalker walker = new DiagramParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
-            walker.visit((DiagramParserGrammar.DefinitionContext) parserInfo.rootContext);
-            return section;
-        });
+        return Lists.immutable.with(SectionParser.newParser(NAME, DiagramParserExtension::parseSection));
+    }
+
+    private static Section parseSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext pureGrammarParserContext)
+    {
+        SourceCodeParserInfo parserInfo = getDiagramParserInfo(sectionSourceCode);
+        ImportAwareCodeSection section = new ImportAwareCodeSection();
+        section.parserName = sectionSourceCode.sectionType;
+        section.sourceInformation = parserInfo.sourceInformation;
+        DiagramParseTreeWalker walker = new DiagramParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        walker.visit((DiagramParserGrammar.DefinitionContext) parserInfo.rootContext);
+        return section;
     }
 
     private static SourceCodeParserInfo getDiagramParserInfo(SectionSourceCode sectionSourceCode)

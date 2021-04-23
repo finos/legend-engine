@@ -65,6 +65,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
@@ -99,11 +100,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
-@Deprecated
 public final class DEPRECATED_PureGrammarComposerCore implements
         PackageableElementVisitor<String>,
         ValueSpecificationVisitor<String>,
@@ -127,6 +125,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     // FIXME: remove this when we remove inference for flat-data column
     private final boolean isFlatDataMappingProcessingModeEnabled;
 
+    private int baseTabLevel = 1;
+
     private DEPRECATED_PureGrammarComposerCore(DEPRECATED_PureGrammarComposerCore.Builder builder)
     {
         this.indentationString = builder.indentationString;
@@ -134,6 +134,14 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.isVariableInFunctionSignature = builder.isVariableInFunctionSignature;
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
         this.isFlatDataMappingProcessingModeEnabled = builder.isFlatDataMappingProcessingModeEnabled;
+    }
+
+    public int getBaseTabLevel() {
+        return baseTabLevel;
+    }
+
+    public void setBaseTabLevel(int baseTabLevel) {
+        this.baseTabLevel = baseTabLevel;
     }
 
     public String getIndentationString()
@@ -349,7 +357,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         builder.append("{\n");
         if (!_class.properties.isEmpty())
         {
-            builder.append(LazyIterate.collect(_class.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p) + ";").makeString("\n")).append("\n");
+            builder.append(LazyIterate.collect(_class.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n")).append("\n");
         }
         if (!_class.qualifiedProperties.isEmpty())
         {
@@ -363,7 +371,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         return "Association " + HelperDomainGrammarComposer.renderAnnotations(association.stereotypes, association.taggedValues) + PureGrammarComposerUtility.convertPath(association.getPath()) + "\n" +
                 "{\n" +
-                LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
+                LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
                 LazyIterate.collect(association.qualifiedProperties, p -> getTabString() + HelperDomainGrammarComposer.renderDerivedProperty(p, this) + ";").makeString("\n") + (association.qualifiedProperties.isEmpty() ? "" : "\n") +
                 "}";
     }
@@ -371,7 +379,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Function function)
     {
-        return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + PureGrammarComposerUtility.convertPath(function.getPath())
+        return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + removeFunctionSignature( PureGrammarComposerUtility.convertPath(function.getPath()))
                 + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
                 + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +
@@ -399,7 +407,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             builder.append(isMappingContentEmpty ? "" : "\n");
             isMappingContentEmpty = false;
-            builder.append(LazyIterate.collect(mapping.classMappings, classMapping -> getTabString() + classMapping.accept(this)).makeString("\n"));
+            builder.append(LazyIterate.collect(mapping.classMappings, classMapping -> getTabString() + (classMapping.root ? "*" : "")
+                    + classMapping._class + HelperMappingGrammarComposer.renderClassMappingId(classMapping) + classMapping.accept(this)).makeString("\n"));
             builder.append("\n");
         }
         if (!mapping.associationMappings.isEmpty())
@@ -442,7 +451,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(OperationClassMapping operationClassMapping)
     {
-        return (operationClassMapping.root ? "*" : "") + operationClassMapping._class + HelperMappingGrammarComposer.renderClassMappingId(operationClassMapping) + ": " + "Operation\n" +
+        return ": " + "Operation\n" +
                 getTabString() + "{\n" +
                 getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
                 getTabString() + "}";
@@ -458,11 +467,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             String filterString = pureInstanceClassMapping.filter.accept(this).replaceFirst("\\|", "");
             pureFilter = getTabString(2) + "~filter " + filterString + "\n";
         }
-        return (pureInstanceClassMapping.root ? "*" : "") + pureInstanceClassMapping._class + HelperMappingGrammarComposer.renderClassMappingId(pureInstanceClassMapping) + ": " + "Pure\n" +
-                getTabString() + "{\n" +
-                (pureInstanceClassMapping.srcClass == null ? "" : getTabString(2) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
-                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(2) + propertyMapping.accept(this)).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
-                getTabString() + "}";
+        return ": " + "Pure\n" +
+                getTabString(getBaseTabLevel()) + "{\n" +
+                (pureInstanceClassMapping.srcClass == null ? "" : getTabString(getBaseTabLevel() + 1) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
+                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(this)).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
+                getTabString(getBaseTabLevel()) + "}";
     }
 
     @Override
@@ -470,7 +479,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         purePropertyMapping.transform.parameters = Collections.emptyList();
         String lambdaString = purePropertyMapping.transform.accept(this).replaceFirst("\\|", "");
-        return PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) + (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
+        return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
+                (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
+                (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
                 (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
                 (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
                 ": " + lambdaString;
@@ -485,7 +496,19 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(AggregationAwareClassMapping classMapping)
     {
-        return unsupported(AggregationAwareClassMapping.class);
+        String mainMapping = "";
+        if(classMapping.mainSetImplementation != null) {
+            setBaseTabLevel(2);
+            mainMapping = "~mainMapping" + classMapping.mainSetImplementation.accept(this);
+            setBaseTabLevel(1);
+        }
+        return ": " + "AggregationAware " + "\n" +
+                getTabString() + "{\n" +
+                getTabString(2) + "Views" + ":" + " [\n" +
+                (classMapping.aggregateSetImplementations == null ? "" : LazyIterate.collect(classMapping.aggregateSetImplementations, implementation -> getTabString(3) + HelperMappingGrammarComposer.renderAggregateSetImplementationContainer(implementation, this)).makeString(",\n")) +
+                getTabString(2) + "],\n" +
+                getTabString(2) + mainMapping + "\n" +
+                getTabString() + "}";
     }
 
     @Override
@@ -546,9 +569,16 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
-    public String visit(ModelChainConnection modelChainConnection)
-    {
-        return unsupported(ModelChainConnection.class);
+    public String visit(ModelChainConnection modelChainConnection) {
+        int baseIndentation = 0;
+        String mappingsValue = "";
+        if (modelChainConnection.mappings != null) {
+            mappingsValue = modelChainConnection.mappings.stream().map(m -> this.indentationString + getTabString(baseIndentation + 2) + m).collect(Collectors.joining(",\n")) + (modelChainConnection.mappings.isEmpty() ? "" : "\n");
+        }
+        String mappings = "[\n" + mappingsValue + this.indentationString + getTabString(baseIndentation + 1) + "]";
+        return this.indentationString + getTabString(baseIndentation) + "{\n" +
+                this.indentationString + getTabString(baseIndentation + 1) + "mappings: " + mappings + ";\n" +
+                this.indentationString + getTabString(baseIndentation) + "}";
     }
 
 
@@ -607,12 +637,13 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return "";
         }
-        boolean addWrapper = lambda.body.size() > 1;
+        boolean addWrapper = lambda.body.size() > 1 || lambda.parameters.size() > 1;
+        boolean addCR = lambda.body.size() > 1;
         return (addWrapper ? "{" : "")
                 + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
-                + "|" + (addWrapper ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) : "")
-                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addWrapper ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2))
-                + (addWrapper ? ";" + this.returnChar() + this.indentationString + "}" : "");
+                + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) : "")
+                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2))
+                + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
     }
 
     @Override
@@ -751,6 +782,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(CStrictDate cStrictDate)
     {
         return this.isValueSpecificationExternalParameter ? cStrictDate.values.get(0) : "%" + cStrictDate.values.get(0);
+    }
+
+    @Override
+    public String visit(CStrictTime CStrictTime)
+    {
+        return this.isValueSpecificationExternalParameter ? CStrictTime.values.get(0) : "%" + CStrictTime.values.get(0);
     }
 
     @Override

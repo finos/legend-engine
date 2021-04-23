@@ -14,11 +14,12 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.connection;
 
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ConnectionParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -27,8 +28,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class ConnectionParseTreeWalker
@@ -36,12 +35,12 @@ public class ConnectionParseTreeWalker
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> pureModelContextData;
     private final ImportAwareCodeSection section;
-    private final List<Function<ConnectionValueSourceCode, Connection>> extraConnectionParsers;
+    private final PureGrammarParserExtensions extensions;
 
-    public ConnectionParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, List<Function<ConnectionValueSourceCode, Connection>> extraConnectionParsers, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section)
+    public ConnectionParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserExtensions extensions, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section)
     {
         this.walkerSourceInformation = walkerSourceInformation;
-        this.extraConnectionParsers = extraConnectionParsers;
+        this.extensions = extensions;
         this.pureModelContextData = elementConsumer;
         this.section = section;
     }
@@ -96,6 +95,11 @@ public class ConnectionParseTreeWalker
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.BRACE_OPEN().getSymbol().getCharPositionInLine() + ctx.BRACE_OPEN().getSymbol().getText().length();
         ParseTreeWalkerSourceInformation connectionValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
         ConnectionValueSourceCode connectionValueSourceCode = new ConnectionValueSourceCode(connectionValueCode, connectionType, sourceInformation, connectionValueWalkerSourceInformation, isProcessingEmbeddedConnection);
-        return this.extraConnectionParsers.stream().map(parser -> parser.valueOf(connectionValueSourceCode)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported connection value type '" + connectionType + "'"));
+        ConnectionValueParser connectionValueParser = this.extensions.getConnectionValueParser(connectionType);
+        if (connectionValueParser == null)
+        {
+            throw new EngineException("Unsupported connection value type: " + connectionType, sourceInformation, EngineErrorType.PARSER);
+        }
+        return connectionValueParser.parse(connectionValueSourceCode);
     }
 }

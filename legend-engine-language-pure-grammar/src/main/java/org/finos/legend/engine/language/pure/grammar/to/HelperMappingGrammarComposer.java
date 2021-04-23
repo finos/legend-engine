@@ -24,10 +24,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingStringSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestAssert;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
@@ -84,7 +87,26 @@ public class HelperMappingGrammarComposer
 
     public static String renderAssociationMapping(AssociationMapping associationMapping, PureGrammarComposerContext context)
     {
+        if (associationMapping instanceof XStoreAssociationMapping)
+        {
+            return renderXStoreAssociationMapping((XStoreAssociationMapping) associationMapping, context);
+        }
         return context.extraAssociationMappingComposers.stream().map(composer -> composer.value(associationMapping, context)).findFirst().orElseGet(() -> unsupported(associationMapping.getClass()));
+    }
+
+    private static String renderXStoreAssociationMapping(XStoreAssociationMapping xStoreAssociationMapping, PureGrammarComposerContext context)
+    {
+        return xStoreAssociationMapping.association + renderMappingId(xStoreAssociationMapping.id) + ": " + "XStore\n" +
+                getTabString() + "{\n" +
+                LazyIterate.collect(xStoreAssociationMapping.propertyMappings, p -> getTabString(2) + HelperMappingGrammarComposer.renderXStorePropertyMapping((XStorePropertyMapping) p, context)).makeString(",\n") + (xStoreAssociationMapping.propertyMappings.isEmpty() ? "" : "\n") +
+                getTabString() + "}";
+    }
+
+    private static String renderXStorePropertyMapping(XStorePropertyMapping xStorePropertyMapping, PureGrammarComposerContext context)
+    {
+        return PureGrammarComposerUtility.convertIdentifier(xStorePropertyMapping.property.property) +
+                (xStorePropertyMapping.source == null || xStorePropertyMapping.source.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(xStorePropertyMapping.source) + ", " + PureGrammarComposerUtility.convertIdentifier(xStorePropertyMapping.target) + "]") +
+                ": " + xStorePropertyMapping.crossExpression.body.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
     }
 
     public static String renderMappingTest(MappingTest mappingTest, DEPRECATED_PureGrammarComposerCore transformer)
@@ -121,6 +143,34 @@ public class HelperMappingGrammarComposer
 
     public static String renderClassMappingId(ClassMapping cm)
     {
-        return (cm.id != null ? ("[" + PureGrammarComposerUtility.convertIdentifier(cm.id) + "]") : "");
+        return renderMappingId(cm.id);
+    }
+
+    public static String renderMappingId(String id)
+    {
+        return (id != null ? ("[" + PureGrammarComposerUtility.convertIdentifier(id) + "]") : "");
+    }
+
+    public static String renderAggregateSetImplementationContainer(AggregateSetImplementationContainer agg,  DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        String aggregateMapping = "";
+        if(agg.setImplementation != null) {
+            transformer.setBaseTabLevel(4);
+            aggregateMapping = "~aggregateMapping" + agg.setImplementation.accept(transformer);
+            transformer.setBaseTabLevel(1);
+        }
+        return "(\n" +
+                getTabString(4) + "~modelOperation" + ":" + " {\n" +
+                getTabString(5) + "~canAggregate " + (agg.aggregateSpecification.canAggregate ? "true" : "false") + ",\n" +
+                getTabString(5) + "~groupByFunctions (\n" +
+                LazyIterate.collect(agg.aggregateSpecification.groupByFunctions, groupByFunction -> getTabString(6) + groupByFunction.groupByFn.accept(transformer).replaceFirst("\\|", "")).makeString(",\n") +
+                "\n" + getTabString(5) + "),\n" +
+                getTabString(5) + "~aggregateValues (\n" +
+                LazyIterate.collect(agg.aggregateSpecification.aggregateValues, aggregateFunction -> getTabString(6) + "( " + "~mapFn:" + aggregateFunction.mapFn.accept(transformer).replaceFirst("\\|", "")
+                        + " ," + " ~aggregateFn: " + aggregateFunction.aggregateFn.accept(transformer).replaceFirst("\\|", "") + " )").makeString(",\n") +
+                "\n" + getTabString(5) + ")\n" +
+                getTabString(4) +  "},\n" +
+                getTabString(4) + aggregateMapping +
+                "\n" + getTabString(3) + ")\n";
     }
 }

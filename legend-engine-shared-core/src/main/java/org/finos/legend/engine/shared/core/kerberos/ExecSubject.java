@@ -16,22 +16,47 @@ package org.finos.legend.engine.shared.core.kerberos;
 
 import org.eclipse.collections.impl.block.function.checked.ThrowingFunction0;
 
-import javax.security.auth.Subject;
 import java.security.AccessController;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import javax.security.auth.Subject;
 
 public class ExecSubject
 {
     public static <T> T exec(Subject subject, ThrowingFunction0<T> proc)
     {
+        Subject currentSubject = Subject.getSubject(AccessController.getContext());
+        if ((subject == null) || (currentSubject != null))
+        {
+            try
+            {
+                return proc.safeValue();
+            }
+            catch (RuntimeException e)
+            {
+                throw e;
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
         try
         {
-            Subject currentSubject = Subject.getSubject(AccessController.getContext());
-            return subject == null || currentSubject != null ? proc.safeValue() : Subject.doAs(subject, (PrivilegedExceptionAction<T>) proc::safeValue);
+            return Subject.doAs(subject, (PrivilegedExceptionAction<T>) proc::safeValue);
         }
-        catch (Exception e)
+        catch (PrivilegedActionException e)
         {
-            throw new RuntimeException(e);
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException)
+            {
+                throw (RuntimeException) cause;
+            }
+            if (cause instanceof Error)
+            {
+                throw (Error) cause;
+            }
+            throw new RuntimeException(cause);
         }
     }
 }

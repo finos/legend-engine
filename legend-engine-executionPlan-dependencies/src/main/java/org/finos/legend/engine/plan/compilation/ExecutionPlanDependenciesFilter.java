@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.compilation;
 
-import org.finos.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +42,19 @@ public class ExecutionPlanDependenciesFilter implements ClassPathFilter
             "org.apache.commons",
             "org.finos.legend.pure.m4.coreinstance.primitive.date"
     );
+
+    /*
+     * This method exists to ensure we have compile-time dependencies on libraries that
+     * are required when compiling generated code (these should be included in those listed
+     * above).  That is to say that generated code should only depend on classes from
+     * libraries that are guaranteed to be available at compile time through a reference
+     * to them here.
+     */
+    public static void main(String[] args) {
+        System.out.println(com.fasterxml.jackson.core.JsonFactory.class.getSimpleName());
+        System.out.println(com.fasterxml.jackson.dataformat.xml.XmlFactory.class.getSimpleName());
+        System.out.println(org.openjdk.jol.info.ClassLayout.class.getSimpleName());
+    }
 
     private static List<Class<?>> expandClass(Class<?> c)
     {

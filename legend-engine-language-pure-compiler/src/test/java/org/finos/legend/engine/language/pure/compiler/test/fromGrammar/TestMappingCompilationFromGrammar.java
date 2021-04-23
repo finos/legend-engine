@@ -15,6 +15,9 @@
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestMappingCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -826,7 +829,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "    dog: $src.dog\n" +
                         "  }\n" +
                         ")\n",
-                "COMPILATION error at [20:5-17]: Can't find class mapping for 'ui::Dog'");
+                "COMPILATION error at [20:5-17]: Can't find class mapping 'ui_Dog'");
     }
 
     @Test
@@ -1334,6 +1337,238 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  {\n" +
                 "    ~src test::Person\n" +
                 "    weight: $src.weight->convert(test::Mass~Pound)->cast(@test::Mass~Pound)\n" +
+                "  }\n" +
+                ")");
+    }
+
+    @Test
+    public void testModelToModelMappingWithMilestonedProperties()
+    {
+        test("Class <<meta::pure::profiles::temporal.businesstemporal>> model::person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "  employees: model::person[*];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<meta::pure::profiles::temporal.businesstemporal>> model::_person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::_firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "  employees: model::_person[*];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping model::test\n" +
+                "(\n" +
+                "  *model::firm: Pure\n" +
+                "  {\n" +
+                "    ~src model::_firm\n" +
+                "    legalName: $src.legalName,\n" +
+                "    employees[model_person]: $src.employeesAllVersions\n" +
+                "  }\n" +
+                "  *model::person: Pure\n" +
+                "  {\n" +
+                "    ~src model::_person\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                ")");
+    }
+
+    @Test
+    public void testPropertyMappingWithTargetId()
+    {
+        String models = "Class test::A {\n" +
+                "  prop1: String[1];\n" +
+                "  prop2: test::B[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::_A {\n" +
+                "  prop1: String[1];\n" +
+                "  prop2: test::_B[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  prop: String[1];\n" +
+                "}\n" +
+                "Class test::_B\n" +
+                "{\n" +
+                "  prop: String[1];\n" +
+                "}\n" +
+                "\n";
+        PureModel model = test(models +
+                "###Mapping\n" +
+                "Mapping test::M1 (\n" +
+                "   test::A: Pure {\n" +
+                "      ~src test::_A\n" +
+                "      prop1: $src.prop1,\n" +
+                "      prop2: $src.prop2\n" +
+                "   }\n" +
+                "   test::B: Pure {\n" +
+                "      ~src test::_B\n" +
+                "      prop: $src.prop\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n").getTwo();
+
+        Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl classA = (Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl) model.getMapping("test::M1")._classMappings().getFirst();
+        Assert.assertEquals(classA._propertyMappings().getLast()._targetSetImplementationId(), "test_B");
+    }
+
+    @Test
+    public void testModelMappingWithLocalProperties()
+    {
+        test("Class test::Firm\n" +
+                "{" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping a::localPropertyMapping\n" +
+                "(\n" +
+                "   \n" +
+                "   test::Firm : Pure\n" +
+                "   {\n" +
+                "       ~src test::Firm\n" +
+                "       +prop1: String[1]: $src.name,\n" +
+                "       name : $src.name\n" +
+                "   }\n" +
+                ")");
+    }
+
+    @Test
+    public void testCrossStoreMappingWithLocalProperties()
+    {
+        String mapping = "###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employer: test::Firm[1];\n" +
+                "   employees: test::Person[*];\n" +
+                "}\n\n\n" +
+                "###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "%s\n" +
+                ")\n";
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                        "      employer[p1, f]: $this.firmId + $that.id\n" +
+                        "   }"),
+                "COMPILATION error at [36:7-46]: Can't find class mapping 'p1' in mapping 'test::crossPropertyMappingWithLocalProperties'"
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f1]: $this.firmId + $that.id\n" +
+                                "   }"),
+                "COMPILATION error at [36:7-46]: Can't find class mapping 'f1' in mapping 'test::crossPropertyMappingWithLocalProperties'"
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f]: $this.firmId + $that.id\n" +
+                                "   }"),
+                "COMPILATION error at [36:36-45]: XStore property mapping function should return 'Boolean[1]'"
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f]: [true, true]\n" +
+                                "   }"),
+                "COMPILATION error at [36:23-34]: XStore property mapping function should return 'Boolean[1]'"
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f]: $this.firmId == $that.id\n" +
+                                "   }")
+        );
+    }
+
+    @Test
+    public void testCrossStoreMappingWithMilestoning()
+    {
+        test("###Pure\n" +
+                "Class <<temporal.businesstemporal>> test::Firm_Milestoned\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.businesstemporal>> test::Person_Milestoned\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person_Milestoned\n" +
+                "{\n" +
+                "  employer: test::Firm_Milestoned[1];\n" +
+                "  employees: test::Person_Milestoned[*];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties_Milestoned\n" +
+                "(\n" +
+                "  test::Person_Milestoned[p]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person_Milestoned\n" +
+                "    +firmId: Integer[1]: 1,\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  test::Firm_Milestoned[f]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Firm_Milestoned\n" +
+                "    id: $src.id,\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                "\n" +
+                "  test::Firm_Person_Milestoned: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id\n" +
                 "  }\n" +
                 ")");
     }

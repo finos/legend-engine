@@ -25,4 +25,9 @@ public class PureFunctions
     {
         return core_pure_protocol_vX_X_X_scan_buildBasePureModel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_buildBasePureModelFromMappingStr_String_1__RouterExtension_MANY__String_1_(_package, extensions, executionSupport);
     }
+
+    public static String alloy_metadataServer_pureModelFromStore(String _package, String version, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, ExecutionSupport executionSupport)
+    {
+        return core_pure_protocol_vX_X_X_scan_buildBasePureModel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_buildBasePureModelFromStoreStr_String_1__RouterExtension_MANY__String_1_(_package, extensions, executionSupport);
+    }
 }

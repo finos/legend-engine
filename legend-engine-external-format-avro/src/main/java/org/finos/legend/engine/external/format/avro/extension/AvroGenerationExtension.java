@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.external.format.avro.extension;
 
+import org.eclipse.collections.api.RichIterable;
+import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationConfig;
 import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
-import org.finos.legend.engine.external.shared.format.extension.GenerationType;
+import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationConfigurationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationProperty;
@@ -24,23 +26,34 @@ import org.finos.legend.engine.external.shared.format.imports.description.Import
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.finos.legend.pure.generated.core_external_format_avro_integration;
+import org.finos.legend.pure.generated.core_external_format_avro_tramsformation_avroSchemaGenerator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AvroGenerationExtension implements GenerationExtension
 {
     @Override
-    public String getKey()
+    public String getLabel()
     {
         return "Avro";
     }
 
     @Override
-    public GenerationType getType()
+    public String getKey()
     {
-        return GenerationType.Schema;
+        return "avro";
+    }
+
+    @Override
+    public GenerationMode getMode()
+    {
+        return GenerationMode.Schema;
     }
 
     @Override
@@ -49,9 +62,15 @@ public class AvroGenerationExtension implements GenerationExtension
         return new GenerationConfigurationDescription()
         {
             @Override
-            public String getType()
+            public String getLabel()
             {
-                return getKey();
+                return AvroGenerationExtension.this.getLabel();
+            }
+
+            @Override
+            public String getKey()
+            {
+                return AvroGenerationExtension.this.getKey();
             }
 
             @Override
@@ -72,6 +91,18 @@ public class AvroGenerationExtension implements GenerationExtension
     public Object getService(ModelManager modelManager)
     {
         return new AvroGenerationService(modelManager);
+    }
+
+    @Override
+    public List<Root_meta_pure_generation_metamodel_GenerationOutput> generateFromElement(PackageableElement element, CompileContext compileContext) {
+        if (element instanceof FileGenerationSpecification) {
+            FileGenerationSpecification specification = (FileGenerationSpecification) element;
+            AvroGenerationConfig avroGenerationConfig = AvroGenerationConfigFromFileGenerationSpecificationBuilder.build(specification);
+            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output =
+                    core_external_format_avro_tramsformation_avroSchemaGenerator.Root_meta_external_format_avro_generation_generateAvroFromPureWithScope_AvroConfig_1__AvroOutput_MANY_(avroGenerationConfig.process(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
+            return new ArrayList<>(output.toList());
+        }
+        return null;
     }
 
     @Override

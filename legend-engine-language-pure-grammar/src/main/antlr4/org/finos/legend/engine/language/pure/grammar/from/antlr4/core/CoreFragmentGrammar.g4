@@ -79,6 +79,8 @@ fragment Date:                          '%' ('-')? (Digit)+ ('-'(Digit)+ ('-'(Di
 ;
 fragment DateTime:                      (Digit)+ (':'(Digit)+ (':'(Digit)+ ('.'(Digit)+)?)?)?
 ;
+fragment StrictTime:                     '%' (Digit)+ (':'(Digit)+ (':'(Digit)+ ('.'(Digit)+)?)?)?
+;
 
 
 // --------------------------------------- INVALID -------------------------------------------

@@ -31,6 +31,8 @@ public class GlobalGraphFetchExecutionNode extends ExecutionNode
     public LocalGraphFetchExecutionNode localGraphFetchExecutionNode;
     public Integer parentIndex;
     public XStorePropertyMapping xStorePropertyMapping;
+    public Boolean enableConstraints;
+    public Boolean checked;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

@@ -396,6 +396,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "  ok5: StrictDate[1..2];\n" +
                 "  ok6: DateTime[1..2];\n" +
                 "  ok7: LatestDate[1..2];\n" +
+                "  ok8: StrictTime[1..2];\n" +
                 "  anyValue: meta::pure::metamodel::type::Any[1];\n" +
                 "}\n" +
                 "\n" +
@@ -1724,6 +1725,100 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "       $this.employees->sortBy(#/model::Person/lastName#).lastName->joinStrings('')\n" +
                 "    }:String[0..1];\n" +
                 "}");
+    }
+
+    @Test
+    public void testClassWithStrictTime()
+    {
+        test("Class apps::Trade\n" +
+                "{\n" +
+                "   time : StrictTime[1];\n" +
+                "   testStrictTime(){\n" +
+                "       $this.time == %9:12:22;\n" +
+                "   } : Boolean[1];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testClassWithStrictTimeWithSubsec()
+    {
+        test("Class apps::Trade\n" +
+                "{\n" +
+                "   time : StrictTime[1];\n" +
+                "   testStrictTime(){\n" +
+                "       $this.time == %10:12:22.88;\n" +
+                "   } : Boolean[1];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testClassWithStrictTimeWithParserError()
+    {
+        test("Class apps::Trade\n" +
+                "{\n" +
+                "   time : StrictTime[1];\n" +
+                "   testStrictTime(){\n" +
+                "       $this.time == %10:12:2b;\n" +
+                "   } : Boolean[1];\n" +
+                "}\n", "PARSER error at [5:30]: no viable alternative at input '==%10:12:2b'");
+
+    }
+
+    @Test
+    public void testClassWithInvalidStrictTime()
+    {
+        try
+        {
+            test("Class apps::Trade\n" +
+                    "{\n" +
+                    "   time : StrictTime[1];\n" +
+                    "   testStrictTime(){\n" +
+                    "       $this.time == %200:12:22.88;\n" +
+                    "   } : Boolean[1];\n" +
+                    "}\n");
+        }
+        catch (Exception e)
+        {
+            Assert.assertEquals("Invalid hour: 200", e.getMessage());
+        }
+        try
+        {
+            test("Class apps::Trade\n" +
+                    "{\n" +
+                    "   time : StrictTime[1];\n" +
+                    "   testStrictTime(){\n" +
+                    "       $this.time == %20:122:22.88;\n" +
+                    "   } : Boolean[1];\n" +
+                    "}\n");
+        }
+        catch (Exception e)
+        {
+            Assert.assertEquals("Invalid minute: 122", e.getMessage());
+        }
+        try
+        {
+            test("Class apps::Trade\n" +
+                    "{\n" +
+                    "   time : StrictTime[1];\n" +
+                    "   testStrictTime(){\n" +
+                    "       $this.time == %20:12:61.88;\n" +
+                    "   } : Boolean[1];\n" +
+                    "}\n");
+        }
+        catch (Exception e)
+        {
+            Assert.assertEquals("Invalid second: 61", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testReturnTypeErrorOfStrictTime()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "   names : String[*];\n" +
+                "   prop() {%20:20:20} : Date[1];\n" +
+                "}", "COMPILATION error at [4:12-20]: Error in derived property 'A.prop' - Type error: 'StrictTime' is not a subtype of 'Date'");
     }
 
     @Test

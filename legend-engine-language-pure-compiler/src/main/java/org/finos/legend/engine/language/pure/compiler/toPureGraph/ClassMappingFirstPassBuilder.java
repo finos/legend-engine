@@ -118,6 +118,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
             lambda.setSourceInformation(new SourceInformation(mappingPath, 0, 0, 0, 0));
             rootSetImpl._filter(lambda);
         }
+        HelperMappingBuilder.buildMappingClassOutOfLocalProperties(rootSetImpl, rootSetImpl._propertyMappings(), this.context);
         return Tuples.pair(rootSetImpl, Lists.immutable.empty());
     }
 
@@ -126,6 +127,9 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
     {
         String id = HelperMappingBuilder.getClassMappingId(classMapping, this.context);
         final AggregationAwareSetImplementation res = new Root_meta_pure_mapping_aggregationAware_AggregationAwareSetImplementation_Impl(id)._id(id);
+
+        this.context.getCompilerExtensions().getExtraAggregationAwareClassMappingFirstPassProcessors().forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
+
         res._mainSetImplementation((InstanceSetImplementation) classMapping.mainSetImplementation.accept(new ClassMappingFirstPassBuilder(this.context, parentMapping)).getOne());
         for (AggregateSetImplementationContainer agg : classMapping.aggregateSetImplementations)
         {

@@ -422,6 +422,26 @@ public class TestJsonToGrammarApi
         testMappingFromProtocol(expected, "unionModelMapping.json");
     }
 
+
+    @Test
+    public void testFullyQualifiedFunctionName()
+    {
+        String expected = "Class my::underscore_package::ClassA\n" +
+                "[\n" +
+                "  c: $this.prop->my::underscore_package::constraintfn()\n" +
+                "]\n" +
+                "{\n" +
+                "  prop: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function my::underscore_package::constraintfn(value: String[1]): Boolean[1]\n" +
+                "{\n" +
+                "   $value->startsWith('A')\n" +
+                "}\n";
+        testModelFromProtocol(expected, "appliedFunctionWithFullyQualifiedName.json");
+
+    }
+
     private void testMappingFromProtocol(String expected, String protocolPath)
     {
         try
