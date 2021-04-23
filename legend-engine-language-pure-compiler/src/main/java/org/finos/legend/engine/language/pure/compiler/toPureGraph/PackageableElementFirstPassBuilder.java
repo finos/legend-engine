@@ -217,7 +217,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
 
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(function._package);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> res = targetFunc
-                ._name(HelperModelBuilder.getTerseSignature(function)) // function signature here - e.g. meta::pure::functions::date::isAfterDay_Date_1__Date_1__Boolean_1_
+                ._name(HelperModelBuilder.getTerseSignature(function)) // function signature here - e.g. isAfterDay_Date_1__Date_1__Boolean_1_
                 ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"))
                                                                                                        ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx))), this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity)))))

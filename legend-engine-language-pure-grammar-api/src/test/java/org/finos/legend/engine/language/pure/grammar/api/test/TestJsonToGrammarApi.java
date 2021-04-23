@@ -25,7 +25,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
@@ -424,21 +423,21 @@ public class TestJsonToGrammarApi
 
 
     @Test
-    public void testFullyQualifiedFunctionName()
+    public void testFunctionWithUnderscores()
     {
         String expected = "Class my::underscore_package::ClassA\n" +
                 "[\n" +
-                "  c: $this.prop->my::underscore_package::constraintfn()\n" +
+                "  c: $this.prop->my::underscore_package::constraint_fn()\n" +
                 "]\n" +
                 "{\n" +
                 "  prop: String[1];\n" +
                 "}\n" +
                 "\n" +
-                "function my::underscore_package::constraintfn(value: String[1]): Boolean[1]\n" +
+                "function my::underscore_package::constraint_fn(value: String[1]): Boolean[1]\n" +
                 "{\n" +
                 "   $value->startsWith('A')\n" +
                 "}\n";
-        testModelFromProtocol(expected, "appliedFunctionWithFullyQualifiedName.json");
+        testModelFromProtocol(expected, "functionWithUnderscores.json");
 
     }
 

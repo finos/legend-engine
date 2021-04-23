@@ -355,23 +355,10 @@ public class CompileContext
     public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, String fControl, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, ProcessingContext processingContext)
     {
         Pair<SimpleFunctionExpression, List<ValueSpecification>> functionExpression;
-        String name = functionName.substring(functionName.lastIndexOf(':') + 1);
-
-        if (name.contains("_"))
+        functionExpression = this.pureModel.handlers.buildFunctionExpression(functionName, parameters, openVariables, sourceInformation, this, processingContext);
+        if (fControl != null)
         {
-            // Keep for old flow: something like `toOne_T_MANY__T_1_`
-            String path = functionName.substring(0, functionName.lastIndexOf(':') + 1);
-
-            functionExpression = this.pureModel.handlers.buildFunctionExpression(path.concat(name.substring(0,name.indexOf('_') )), parameters, openVariables, sourceInformation, this, processingContext);
-            testFunction(functionName, processingContext, functionExpression.getOne());
-        }
-        else
-        {
-            functionExpression = this.pureModel.handlers.buildFunctionExpression(functionName, parameters, openVariables, sourceInformation, this, processingContext);
-            if (fControl != null)
-            {
-                testFunction(fControl, processingContext, functionExpression.getOne());
-            }
+            testFunction(fControl, processingContext, functionExpression.getOne());
         }
         return functionExpression;
     }

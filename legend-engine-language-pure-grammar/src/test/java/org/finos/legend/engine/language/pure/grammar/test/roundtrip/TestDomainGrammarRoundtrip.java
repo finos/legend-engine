@@ -645,4 +645,17 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "}\n"
         );
     }
+    @Test
+    public void testUnderscores()
+    {
+        test(   "function my::under_score::function_example(): Any[1]\n" +
+                "{\n" +
+                "   my::under_score::function_example2()\n" +
+                "}\n\n"+
+                "function my::under_score::function_example2(): Any[1]\n" +
+                        "{\n" +
+                        "   'a'\n" +
+                        "}\n"
+        );
+    }
 }

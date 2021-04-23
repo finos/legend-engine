@@ -379,7 +379,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Function function)
     {
-        return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + removeFunctionSignature( PureGrammarComposerUtility.convertPath(function.getPath()))
+        return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + PureGrammarComposerUtility.convertPath(HelperValueSpecificationGrammarComposer.getFunctionName(function))
                 + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
                 + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +

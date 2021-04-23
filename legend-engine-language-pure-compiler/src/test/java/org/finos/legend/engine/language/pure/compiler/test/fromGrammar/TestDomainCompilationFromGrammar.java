@@ -1399,11 +1399,11 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testMatchMaxFunction()
     {
-        test("function example::testMaxString():Any[0..1]\n" + 
+        test("function example::testMaxString():Any[0..1]\n" +
                 "{\n"+
                 "   ['string1', 'string2']->max();"+
                 "}\n" +
-                "function example::testMaxInteger():Any[0..1]\n" + 
+                "function example::testMaxInteger():Any[0..1]\n" +
                 "{\n"+
                 "   [1,2]->max();"+
                 "}\n"+
@@ -1417,7 +1417,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "}\n"
         );
     }
-    
+
     @Test
     public void testMatchWithImport()
     {
@@ -1866,7 +1866,6 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertTrue("Missing worksFor property in _originalMilestonedProperties for association", worksForPropertyFromAssoc.size() == 1);
     }
 
-
     public String getMilestoningModelWithDatePropagationAndInheritance()
     {
         String model ="###Pure\n" +
@@ -1929,5 +1928,33 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty singleDateQP = singleDateQPWithArgAndNoArg.getFirst();
         Assert.assertTrue("The productType property for Class in my::domainModel::migration::test::product::Classification _qualifiedProperties should contain one argument for Date", ((Root_meta_pure_metamodel_type_FunctionType_Impl) singleDateQP._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 2);
+
+    @Test
+    public void testFunctionNamingUsingUnderStore()
+    {
+        String grammar =
+                "###Pure\n" +
+                        "Class <<temporal.businesstemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue\n" +
+                        "{\n" +
+                        "  value: String[1];\n" +
+                        "  productCollecton: my::domainModel::migration::test::product::ProductCollection[*];\n" +
+                        "  getCategory() {$this->my::domainModel::migration::test::product::my_helper_function('tt')}: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductCollection\n" +
+                        "{\n" +
+                        "  collectionName: String[1];\n" +
+                        "  type: my::domainModel::migration::test::product::ProductType[1];\n" +
+                        "}\n" +
+                        "Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductType\n" +
+                        "{\n" +
+                        "   category: String[1];\n" +
+                        "}\n" +
+                        "function my::domainModel::migration::test::product::my_helper_function(acc: my::domainModel::migration::test::account::AccountValue[1], str: String[1]):String[1]\n" +
+                        "{\n" +
+                        "  $acc.productCollecton(%2020-02-02).type.category->joinStrings();\n" +
+                        "}\n";
+
+        test(grammar);
     }
 }

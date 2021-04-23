@@ -27,9 +27,9 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
     }
 
     @Test
-    public void testAppliedFunctionWithFullPath()
+    public void testAppliedFunctionWithUnderscore()
     {
-        testWithProtocolPath("appliedFunctionWithFullyQualifiedName.json");
+        testWithProtocolPath("functionWithUnderscores.json");
     }
 
     @Test
