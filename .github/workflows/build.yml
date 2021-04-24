@@ -53,3 +53,9 @@ jobs:
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
         # TODO - remove skipTests
         run: mvn javadoc:javadoc deploy -Psonar
+      - name: Surefire Report
+        uses: ScaCap/action-surefire-report@v1.0.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: 'legend-engine-test-reports/surefire-reports-aggregate/TEST-*.xml'
+
