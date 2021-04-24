@@ -60,12 +60,10 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
-import org.finos.legend.pure.generated.core_pure_extensions_extension;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
-import org.finos.legend.server.shared.bundles.OpenTracingBundle;
 import org.slf4j.Logger;
 
 import javax.servlet.DispatcherType;
@@ -100,7 +98,6 @@ public class Server extends Application<ServerConfiguration>
                 return configuration.swagger;
             }
         });
-        bootstrap.addBundle(new OpenTracingBundle(Lists.mutable.empty(), Lists.mutable.of("/api/server/v1/info")));
         bootstrap.addBundle(new HostnameHeaderBundle());
         bootstrap.addBundle(new LegendPac4jBundle<>(serverConfiguration -> serverConfiguration.pac4j));
         bootstrap.addBundle(new SessionAttributeBundle());

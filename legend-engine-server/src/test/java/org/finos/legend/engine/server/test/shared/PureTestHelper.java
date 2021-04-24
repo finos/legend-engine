@@ -21,6 +21,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.list.primitive.LongList;
@@ -65,7 +66,7 @@ public class PureTestHelper
 
     public static boolean initClientVersionIfNotAlreadySet(String defaultClientVersion)
     {
-        boolean isNotSet = System.getProperty("alloy.test.clientVersion") == null;
+        boolean isNotSet = System.getProperty("alloy.test.clientVersion") == null && System.getProperty("legend.test.clientVersion") == null;
         if (isNotSet)
         {
             System.setProperty("alloy.test.clientVersion", defaultClientVersion);
@@ -83,14 +84,22 @@ public class PureTestHelper
     }
 
     @Ignore
-    public static TestSetup wrapSuite(TestSuite suite, boolean shouldClean)
+    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder)
     {
+        boolean shouldCleanUp = init.value();
+        TestSuite suite = suiteBuilder.value();
+        if (shouldCleanUp)
+        {
+            cleanUp();
+        }
         return new TestSetup(suite)
         {
+            boolean shouldCleanUp;
             @Override
             protected void setUp() throws Exception
             {
                 super.setUp();
+                shouldCleanUp = init.value();
                 state.set(initEnvironment());
             }
 
@@ -100,10 +109,11 @@ public class PureTestHelper
                 super.tearDown();
                 state.get().shutDown();
                 state.remove();
-                if (shouldClean)
+                if (this.shouldCleanUp)
                 {
                     cleanUp();
                 }
+                System.out.println("STOP");
             }
         };
     }
@@ -112,7 +122,7 @@ public class PureTestHelper
     {
         int engineServerPort = 1100 + (int) (Math.random() * 30000);
         int metadataServerPort = 1100 + (int) (Math.random() * 30000);
-        int relationalDBPort = 1100 + 2345;//(int) (Math.random() * 30000);
+        int relationalDBPort = 1100 + (int) (Math.random() * 30000);
 
         // Relational
         org.h2.tools.Server h2Server = AlloyH2Server.startServer(relationalDBPort);

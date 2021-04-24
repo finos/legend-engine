@@ -26,11 +26,14 @@ public class Test_Engine_UsingPureClient extends TestSuite
 {
     public static Test suite()
     {
-        boolean wasNotSet = PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X");
-        CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
-        TestSuite suite = new TestSuite();
-        suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::legend::test::handlers", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-        suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::legend::test::model", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-        return wrapSuite(suite, wasNotSet);
+        return wrapSuite(
+                () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
+                () -> {
+                    CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
+                    TestSuite suite = new TestSuite();
+                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::legend::test::handlers", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::legend::test::model", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    return suite;
+                });
     }
 }
