@@ -93,7 +93,7 @@
         <h2.version>1.4.200</h2.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.18.4</legend.pure.version>
+        <legend.pure.version>1.18.5</legend.pure.version>
         <legend.shared.version>0.9.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -259,7 +259,8 @@
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
-                    <reportsDirectory>${project.parent.basedir}/legend-engine-test-reports/surefire-reports-aggregate
+                    <reportsDirectory>
+                        ${project.parent.basedir}/legend-engine-test-reports/surefire-reports-aggregate
                     </reportsDirectory>
                 </configuration>
             </plugin>

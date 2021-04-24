@@ -47,8 +47,6 @@ public class RelationalExecutionExtension implements ExecutionExtension
                     || executionNode instanceof RelationalGraphFetchExecutionNode
             )
             {
-                System.out.println(executionState);
-                System.out.println(executionState.getStoreExecutionState(StoreType.Relational));
                 return executionNode.accept(executionState.getStoreExecutionState(StoreType.Relational).getVisitor(profiles, executionState));
             }
             return null;

@@ -23,11 +23,15 @@ public class Test_LoadMappings_UsingPureClient extends TestSuite
 {
     public static Test suite()
     {
-        boolean wasNotSet = PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X");
-        CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
-        TestSuite suite = new TestSuite();
-        // NOTE: temporarily ignore these tests until we bring extensions back into Legend
-        // suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::alloy::test::mapping", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-        return PureTestHelper.wrapSuite(suite, wasNotSet);
+        return PureTestHelper.wrapSuite(
+                () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
+                () -> {
+                    CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
+                    TestSuite suite = new TestSuite();
+                    // NOTE: temporarily ignore these tests until we bring extensions back into Legend
+                    // suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::alloy::test::mapping", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    return suite;
+                }
+        );
     }
 }
