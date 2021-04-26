@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -32,24 +31,23 @@ public class TestCompilationFromProtocol
     {
         private final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
-        public PureModel testWithProtocolPath(String protocolPath)
+        public void testWithProtocolPath(String protocolPath)
         {
-            return testWithProtocolPath(protocolPath, null);
+            testWithProtocolPath(protocolPath, null);
         }
 
-        public PureModel testWithProtocolPath(String protocolPath, String expectedErrorMsg)
+        public void testWithProtocolPath(String protocolPath, String expectedErrorMsg)
         {
             String jsonString = new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(protocolPath), "Can't find resource '" + protocolPath + "'"), "UTF-8").useDelimiter("\\A").next();
-            return testWithJson(jsonString, expectedErrorMsg);
+            testWithJson(jsonString, expectedErrorMsg);
         }
 
-        public PureModel testWithJson(String pureModelContextDataJsonStr, String expectedErrorMsg)
+        public void testWithJson(String pureModelContextDataJsonStr, String expectedErrorMsg)
         {
-            PureModel model = null;
             try
             {
                 PureModelContextData pureModelContextData = objectMapper.readValue(pureModelContextDataJsonStr, PureModelContextData.class);
-                model = Compiler.compile(pureModelContextData, null, null);
+                Compiler.compile(pureModelContextData, null, null);
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");
@@ -64,7 +62,6 @@ public class TestCompilationFromProtocol
             {
                 throw new RuntimeException(e);
             }
-            return model;
         }
     }
 }

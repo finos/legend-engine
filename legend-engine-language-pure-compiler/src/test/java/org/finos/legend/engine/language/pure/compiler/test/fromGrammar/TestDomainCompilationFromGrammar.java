@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -25,11 +26,14 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -1957,5 +1961,33 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "}\n";
 
         test(grammar);
+    }
+
+    @Test
+    public void testLambdaReturnTypes()
+    {
+        Pair<PureModelContextData, PureModel> modelWithInput =
+                test("###Pure \n" +
+                        " \n" +
+                        "Class main::Person \n" +
+                        "{ \n" +
+                        "    name : String[1]; \n" +
+                        "} \n" +
+                        " \n" +
+                        "function main::walkTree(accum: String[*], people: main::Person[*]): String[*] \n" +
+                        "{ \n" +
+                        "    $people->fold({p,a|$a->concatenate($p.name)}, $accum); \n" +
+                        "} \n");
+        PureModel pureModel = modelWithInput.getTwo();
+
+        String WALK_TREE = "main::walkTree_String_MANY__main::Person_MANY__String_MANY_";
+
+        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
+        SimpleFunctionExpression fold = (SimpleFunctionExpression) walkTree._expressionSequence().getFirst();
+        InstanceValue iv = (InstanceValue) ((FastList) fold._parametersValues()).get(1);
+        SimpleFunctionExpression concat = (SimpleFunctionExpression) ((LambdaFunction) iv._values().getFirst())._expressionSequence().getFirst();
+
+        Assert.assertEquals(pureModel.getType("String"), fold._genericType()._rawType());
+        Assert.assertEquals(pureModel.getType("String"), concat._genericType()._rawType());
     }
 }
