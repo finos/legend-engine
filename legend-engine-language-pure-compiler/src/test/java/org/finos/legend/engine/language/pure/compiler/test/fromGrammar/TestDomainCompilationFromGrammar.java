@@ -1974,9 +1974,9 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "    name : String[1]; \n" +
                         "} \n" +
                         " \n" +
-                        "function main::walkTree(accum: String[*], people: main::Person[*]): String[*] \n" +
+                        "function main::walkTree(zero: String[*], people: main::Person[*]): String[*] \n" +
                         "{ \n" +
-                        "    $people->fold({p,a|$a->concatenate($p.name)}, $accum); \n" +
+                        "    $people->fold({p,a|$a->concatenate($p.name)}, $zero); \n" +
                         "} \n");
         PureModel pureModel = modelWithInput.getTwo();
 
