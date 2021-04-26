@@ -25,6 +25,14 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     private final String warehouseName;
     private final String databaseName;
 
+    private String proxyHost;
+    private String proxyPort;
+    private String nonProxyHosts;
+
+    private SnowflakeAccountType accountType;
+    private String organisation;
+    private String cloudType;
+
     public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName)
     {
         this.accountName = accountName;
@@ -53,6 +61,53 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return databaseName;
     }
 
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String cloudType)
+    {
+        this.accountName = accountName;
+        this.region = region;
+        this.warehouseName = warehouseName;
+        this.databaseName = databaseName;
+
+        this.proxyHost = proxyHost;
+        this.proxyPort = proxyPort;
+        this.nonProxyHosts = nonProxyHosts;
+
+        this.accountType = SnowflakeAccountType.valueOf(accountType);
+        this.organisation = organisation;
+        this.cloudType = cloudType;
+    }
+
+    public String getProxyHost()
+    {
+        return proxyHost;
+    }
+
+    public String getProxyPort()
+    {
+        return proxyPort;
+    }
+
+    public String getNonProxyHosts()
+    {
+        return nonProxyHosts;
+    }
+
+    public SnowflakeAccountType getAccountType()
+    {
+        return accountType;
+    }
+
+    public String getOrganisation()
+    {
+        return organisation;
+    }
+
+    public String getCloudType()
+    {
+        return cloudType;
+    }
+
+
     @Override
     public String toString()
     {
@@ -61,6 +116,12 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 ", region='" + region + '\'' +
                 ", warehouseName='" + warehouseName + '\'' +
                 ", databaseName='" + databaseName + '\'' +
+                ", proxyHost='" + proxyHost + '\'' +
+                ", proxyPort='" + proxyPort + '\'' +
+                ", nonProxyHosts='" + nonProxyHosts + '\'' +
+                ", accountType='" + accountType + '\'' +
+                ", organisation='" + organisation + '\'' +
+                ", cloudType='" + cloudType + '\'' +
                 '}';
     }
 
@@ -94,6 +155,6 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     @Override
     public int hashCode()
     {
-        return Objects.hash(accountName, region, warehouseName, databaseName);
+        return Objects.hash(accountName, region, warehouseName, databaseName, proxyHost, proxyHost, nonProxyHosts, accountType, region, organisation);
     }
 }
