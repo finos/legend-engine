@@ -36,7 +36,8 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
         }
         else if (authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl("");
+            return new Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl("")
+                    ._serverPrincipal(((DelegatedKerberosAuthenticationStrategy) authenticationStrategy).serverPrincipal);
         }
         return null;
     }
