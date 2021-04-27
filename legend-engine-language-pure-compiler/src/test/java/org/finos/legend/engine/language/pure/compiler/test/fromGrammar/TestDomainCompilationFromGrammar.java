@@ -1928,6 +1928,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty singleDateQP = singleDateQPWithArgAndNoArg.getFirst();
         Assert.assertTrue("The productType property for Class in my::domainModel::migration::test::product::Classification _qualifiedProperties should contain one argument for Date", ((Root_meta_pure_metamodel_type_FunctionType_Impl) singleDateQP._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 2);
+    }
 
     @Test
     public void testFunctionNamingUsingUnderStore()
