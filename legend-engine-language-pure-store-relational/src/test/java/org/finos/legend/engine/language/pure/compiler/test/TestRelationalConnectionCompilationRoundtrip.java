@@ -14,7 +14,7 @@ import static org.finos.legend.engine.language.pure.compiler.test.TestCompilatio
 public class TestRelationalConnectionCompilationRoundtrip
 {
     @Test
-    public void testJoinInferenceWithClass()
+    public void testServerPrincipalPropagatedToCompiledGraph()
     {
         Pair<PureModelContextData, PureModel> compiledGraph = test("###Connection\n" +
                 "RelationalDatabaseConnection simple::H2Connection\n" +
