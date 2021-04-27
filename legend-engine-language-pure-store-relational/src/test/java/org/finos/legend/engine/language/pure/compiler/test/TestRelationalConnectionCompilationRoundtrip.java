@@ -26,7 +26,7 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "  };\n" +
                 "  auth: DelegatedKerberos\n" +
                 "  {\n" +
-                "    serverPrincipal: 'dummyPrincipal'" +
+                "    serverPrincipal: 'dummyPrincipal';" +
                 "  };\n" +
                 "}\n");
         String serverPrincipal = ((Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl)
