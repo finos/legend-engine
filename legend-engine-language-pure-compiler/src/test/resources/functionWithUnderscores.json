@@ -10,7 +10,7 @@
             "body": [
               {
                 "_type": "func",
-                "function": "my::underscore_package::constraintfn_String_1__Boolean_1_",
+                "function": "my::underscore_package::constraint_fn",
                 "parameters": [
                   {
                     "_type": "property",
@@ -144,7 +144,7 @@
           }
         }
       ],
-      "name": "constraintfn_String_1__Boolean_1_",
+      "name": "constraint_fn_String_1__Boolean_1_",
       "package": "my::underscore_package",
       "parameters": [
         {
