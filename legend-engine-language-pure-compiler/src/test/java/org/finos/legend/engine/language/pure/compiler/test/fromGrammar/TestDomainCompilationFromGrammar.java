@@ -16,11 +16,13 @@ package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
@@ -1862,5 +1864,70 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Association association = model.getAssociation("apps::Employee_Firm", SourceInformation.getUnknownSourceInformation());
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> worksForPropertyFromAssoc = association._originalMilestonedProperties().select(p -> p.getName().equals("worksFor"));
         Assert.assertTrue("Missing worksFor property in _originalMilestonedProperties for association", worksForPropertyFromAssoc.size() == 1);
+    }
+
+
+    public String getMilestoningModelWithDatePropagationAndInheritance()
+    {
+        String model ="###Pure\n" +
+                "Class <<temporal.businesstemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue\n" +
+                "{\n" +
+                "  value: String[1];\n" +
+                "  productCollection: my::domainModel::migration::test::product::ProductCollection[*];\n" +
+                "  getCategoryWithDatePropagation() {$this.productCollection(%2020-02-02).productType.category->joinStrings()}: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductCollection extends my::domainModel::migration::test::product::Collections\n" +
+                "{\n" +
+                "  collectionName: String[1];\n" +
+                "}\n" +
+                "Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductType\n" +
+                "{\n" +
+                "   category: String[1];\n" +
+                "}\n" +
+                "Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::Collections\n" +
+                "{\n" +
+                "  productType: my::domainModel::migration::test::product::ProductType[1];\n" +
+                "}\n" +
+                "Class my::domainModel::migration::test::product::Classification\n" +
+                "{\n" +
+                "  productType: my::domainModel::migration::test::product::ProductType[1];\n" +
+                "}\n";
+        return model;
+    }
+
+    @Test
+    public void testCompilationOfBusinesstemporalDatePropagationWithInheritance()
+    {
+        String grammar = getMilestoningModelWithDatePropagationAndInheritance();
+        Pair<PureModelContextData, PureModel> modelWithInput = test(grammar);
+        PureModel model = modelWithInput.getTwo();
+        Type collectionsClazz = model.getType("my::domainModel::migration::test::product::Collections", SourceInformation.getUnknownSourceInformation());
+        Root_meta_pure_metamodel_type_Class_Impl<?> collectionsType = (Root_meta_pure_metamodel_type_Class_Impl<?>) collectionsClazz;
+        org.eclipse.collections.api.block.function.Function<Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty>> updatedQualifiedProperties = org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.ClassAccessor::_qualifiedProperties;
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> collectionsQPs = updatedQualifiedProperties.valueOf(collectionsType);
+        Assert.assertEquals(3, collectionsQPs.size());
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
+        Assert.assertTrue("Missing productType property for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties", singleDateQPWithArgAndNoArg.size() == 2);
+        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp->((Root_meta_pure_metamodel_type_FunctionType_Impl) (qp._classifierGenericType()._typeArguments().getFirst()._rawType()))._parameters.size() == 2));
+        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should not contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp->((Root_meta_pure_metamodel_type_FunctionType_Impl) qp._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 1));
+    }
+
+    @Test
+    public void testCompilationOfNonMilestonedClasstoMilestonedClass()
+    {
+        String grammar = getMilestoningModelWithDatePropagationAndInheritance();
+        test(grammar);
+        Pair<PureModelContextData, PureModel> modelWithInput = test(grammar);
+        PureModel model = modelWithInput.getTwo();
+        Type collectionsClazz = model.getType("my::domainModel::migration::test::product::Classification", SourceInformation.getUnknownSourceInformation());
+        Root_meta_pure_metamodel_type_Class_Impl<?> collectionsType = (Root_meta_pure_metamodel_type_Class_Impl<?>) collectionsClazz;
+        org.eclipse.collections.api.block.function.Function<Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty>> updatedQualifiedProperties = org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.ClassAccessor::_qualifiedProperties;
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> collectionsQPs = updatedQualifiedProperties.valueOf(collectionsType);
+        Assert.assertEquals(2, collectionsQPs.size());
+        Assert.assertTrue("Missing productType property for Class in my::domainModel::migration::test::product::Classification _qualifiedProperties", collectionsQPs.select(p -> p.getName().equals("productType")).size() == 1);
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty singleDateQP = singleDateQPWithArgAndNoArg.getFirst();
+        Assert.assertTrue("The productType property for Class in my::domainModel::migration::test::product::Classification _qualifiedProperties should contain one argument for Date", ((Root_meta_pure_metamodel_type_FunctionType_Impl) singleDateQP._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 2);
     }
 }
