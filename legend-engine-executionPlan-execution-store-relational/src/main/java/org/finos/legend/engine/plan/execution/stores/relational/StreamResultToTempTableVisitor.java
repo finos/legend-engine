@@ -33,6 +33,9 @@ import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResul
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResultCSVSerializer;
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
 import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
+import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
+import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.slf4j.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
@@ -46,6 +49,8 @@ import java.util.stream.Collectors;
 
 public class StreamResultToTempTableVisitor implements RelationalDatabaseCommandsVisitor<Boolean>
 {
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+
     protected RelationalExecutionConfiguration config;
     protected Connection connection;
     protected StreamingResult result;
@@ -148,6 +153,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     {
         try
         {
+            LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTION_RELATIONAL_COMMIT, sql, 0.0d).toString());
             return statement.execute(sql);
         }
         catch (SQLException e)

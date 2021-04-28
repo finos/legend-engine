@@ -22,13 +22,18 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PathElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PropertyPathElement;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
@@ -59,7 +64,7 @@ public class HelperValueSpecificationGrammarComposer
     public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore shiftedTransformer, DEPRECATED_PureGrammarComposerCore topParameterTransfomer, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<ValueSpecification> parameters = appliedFunction.parameters;
-        String function = removeFunctionSignature(LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::"));
+        String function = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
         if (!parameters.isEmpty())
         {
             ValueSpecification firstParameter = parameters.get(0);
@@ -185,7 +190,7 @@ public class HelperValueSpecificationGrammarComposer
         }
         else if (transformer.isValueSpecificationExternalParameter())
         {
-            dateString = s.replaceFirst("%", "").replaceAll(".0000", "");
+            dateString = s.replaceFirst(Character.toString(DateParseTreeWalker.DATE_PREFIX), "").replaceAll(".0000", "");
         }
         else
         {
@@ -217,5 +222,46 @@ public class HelperValueSpecificationGrammarComposer
             return "<span class='pureGrammar-package'>" + fullPath.substring(0, index + 2) + "</span><span class='pureGrammar-packageableElement'>" + fullPath.substring(index + 2) + "</span>";
         }
         return fullPath;
+    }
+
+    public static String getFunctionName(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function fn)
+    {
+        int signatureIndex = fn.name.indexOf(getFunctionSignature(fn));
+        String name = signatureIndex > 0 ? fn.name.substring(0,signatureIndex) : fn.name;
+        return fn._package == null || fn._package.isEmpty() ? name : fn._package + "::" + name;
+    }
+
+    private static String getFunctionSignature(Function function)
+    {
+        return "_" + LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
+                + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
+
+    }
+
+    private static String getParameterSignature(Variable p)
+    {
+        return p._class != null ? getClassSignature(p._class) + "_" + getMultiplicitySignature(p.multiplicity) : null;
+    }
+
+    private static String getClassSignature(String _class)
+    {
+        if (_class == null)
+        {
+            return null;
+        }
+        return _class.contains("::") ? _class.substring(_class.lastIndexOf("::") + 2) : _class;
+    }
+
+    private static String getMultiplicitySignature(Multiplicity multiplicity)
+    {
+        if (multiplicity.lowerBound == multiplicity.getUpperBoundInt())
+        {
+            return "" + multiplicity.lowerBound;
+        }
+        else if (multiplicity.lowerBound == 0 && multiplicity.getUpperBoundInt() == Integer.MAX_VALUE)
+        {
+            return "MANY";
+        }
+        return "$" + multiplicity.lowerBound + "_" + (multiplicity.getUpperBoundInt() == Integer.MAX_VALUE ? "MANY" : multiplicity.getUpperBoundInt()) + "$";
     }
 }

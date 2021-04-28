@@ -34,7 +34,7 @@ public class H2Commands extends RelationalDatabaseCommands
     @Override
     public List<String> createAndLoadTempTable(String tableName, List<Column> columns, String optionalCSVFileLocation)
     {
-        return Lists.mutable.with("CREATE TABLE " + tableName + "(" + columns.stream().map(c -> c.name + " " + c.type).collect(Collectors.joining(", ")) + ") AS SELECT * FROM CSVREAD('" + optionalCSVFileLocation + "');");
+        return Lists.mutable.with("CREATE LOCAL TEMPORARY TABLE " + tableName + "(" + columns.stream().map(c -> c.name + " " + c.type).collect(Collectors.joining(", ")) + ") AS SELECT * FROM CSVREAD('" + optionalCSVFileLocation + "');");
     }
 
     @Override

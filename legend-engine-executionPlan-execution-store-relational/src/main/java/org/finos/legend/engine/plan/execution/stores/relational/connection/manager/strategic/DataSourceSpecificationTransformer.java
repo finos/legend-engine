@@ -101,7 +101,6 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
             }
             else
             {
-                System.out.println("---> "+((StaticDataSourceSpecificationKey) key).getPort());
                 return new StaticDataSourceSpecification(
                         (StaticDataSourceSpecificationKey) key,
                         new H2Manager(),
