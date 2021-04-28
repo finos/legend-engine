@@ -28,7 +28,7 @@ public class DateParseTreeWalker
     static final char DATE_SEPARATOR = '-';
     static final char DATE_TIME_SEPARATOR = 'T';
 
-    private static final char DATE_PREFIX = '%';
+    public static final char DATE_PREFIX = '%';
     public TerminalNode dateToken;
     public ParseTreeWalkerSourceInformation walkerSourceInformation;
 
@@ -40,7 +40,7 @@ public class DateParseTreeWalker
 
     public CDate visitDefinition()
     {
-        String value = this.dateToken.getText().substring(1);
+        String value = this.dateToken.getText();
         return this.parsePureDate(value, 0, value.length());
     }
 

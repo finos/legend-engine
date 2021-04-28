@@ -347,6 +347,12 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "   'ok'->println();\n" +
                 "   'a';\n" +
                 "}\n");
+
+        test("###Pure\n" +
+                "function test::getDateTime(): DateTime[1]\n" +
+                "{\n" +
+                "   %1970-01-01T00:00:00.000\n" +
+                "}\n");
     }
 
     @Test

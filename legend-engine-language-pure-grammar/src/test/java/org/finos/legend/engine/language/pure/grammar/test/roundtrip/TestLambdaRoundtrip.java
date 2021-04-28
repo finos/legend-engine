@@ -101,6 +101,18 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testLambdaWithBodyWithDateTime()
+    {
+        testLambda("|%2010-10-20T20:20:20.000");
+    }
+
+    @Test
+    public void testLambdaWithBodyWithDateTimeMany()
+    {
+        testLambda("|[%2010-10-20T20:20:20.000, %2010-10-22T00:00:00.000]");
+    }
+
+    @Test
     public void testLambdaWithBodyWithStrictTime()
     {
         testLambda("|%22:22:22.1111");

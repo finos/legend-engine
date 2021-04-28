@@ -21,8 +21,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CSt
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-public class StrictTimeParseTreeWalker {
-    private static final char STRICT_TIME_PREFIX = '%';
+public class StrictTimeParseTreeWalker
+{
+    public static final char STRICT_TIME_PREFIX = '%';
     public TerminalNode timeToken;
     public ParseTreeWalkerSourceInformation walkerSourceInformation;
 
@@ -34,7 +35,7 @@ public class StrictTimeParseTreeWalker {
 
     public CStrictTime visitStrictTimeDefinition()
     {
-        String value = this.timeToken.getText().substring(1);
+        String value = this.timeToken.getText();
         return this.parseStrictTime(value);
     }
     /**

@@ -21,6 +21,8 @@ import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
+import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.domain.StrictTimeParseTreeWalker;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -781,13 +783,13 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(CStrictDate cStrictDate)
     {
-        return this.isValueSpecificationExternalParameter ? cStrictDate.values.get(0) : "%" + cStrictDate.values.get(0);
+        return this.isValueSpecificationExternalParameter ? cStrictDate.values.get(0).replaceFirst(Character.toString(DateParseTreeWalker.DATE_PREFIX), "") : cStrictDate.values.get(0);
     }
 
     @Override
     public String visit(CStrictTime CStrictTime)
     {
-        return this.isValueSpecificationExternalParameter ? CStrictTime.values.get(0) : "%" + CStrictTime.values.get(0);
+        return this.isValueSpecificationExternalParameter ? CStrictTime.values.get(0).replaceFirst(Character.toString(StrictTimeParseTreeWalker.STRICT_TIME_PREFIX), "") : CStrictTime.values.get(0);
     }
 
     @Override
