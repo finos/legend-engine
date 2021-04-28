@@ -12,18 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.generation.extension;
+package org.finos.legend.engine.protocol.pure.v1.extension;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
-import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 
-public class LegendPlanGeneratorExtension implements PlanGeneratorExtension {
+import java.util.Optional;
 
-    @Override
-    public  MutableList<PlanTransformer> getExtraPlanTransformers()
-    {
-        return LegendPlanTransformers.transformers;
+public interface ConnectionFactoryExtension {
+
+    default Optional<Connection> tryBuildFromInputData(InputData inputData) {
+        return Optional.empty();
     }
 
+    default Optional<Connection> tryBuildFromConnection(Connection connection, String testData, String element)
+    {
+        return Optional.empty();
+    }
 }
