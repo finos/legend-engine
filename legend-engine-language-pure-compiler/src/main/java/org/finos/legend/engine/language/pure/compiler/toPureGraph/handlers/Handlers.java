@@ -96,7 +96,7 @@ public class Handlers
         }
     }
 
-    private static void updateTwoParamsLambdaDiffTypes(Object lambda, GenericType newGenericType, GenericType newGenericType2, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m)
+    private static void updateTwoParamsLambdaDiffTypes(Object lambda, GenericType newGenericType, GenericType newGenericType2, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m2)
     {
         if (lambda instanceof Lambda)
         {
@@ -106,7 +106,7 @@ public class Handlers
 
             Variable variable2 = ((Lambda) lambda).parameters.get(1);
             variable2._class = PackageableElement.getUserPathForPackageableElement(newGenericType2._rawType());
-            variable2.multiplicity = m;
+            variable2.multiplicity = m2;
         }
     }
 
@@ -233,7 +233,16 @@ public class Handlers
     public static final ParametersInference TwoParameterLambdaInferenceDiffTypes = (parameters, ov, cc, pc) ->
     {
         List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof Lambda ? null : p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
-        updateTwoParamsLambdaDiffTypes(parameters.get(1), firstPassProcessed.get(0)._genericType(), firstPassProcessed.get(2)._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
+
+        Multiplicity mul = firstPassProcessed.get(2)._multiplicity();
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m2 = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
+        m2.lowerBound = mul._lowerBound()._value().intValue();
+        if (mul._upperBound()._value() != null)
+        {
+            m2.setUpperBound(mul._upperBound()._value().intValue());
+        }
+
+        updateTwoParamsLambdaDiffTypes(parameters.get(1), firstPassProcessed.get(0)._genericType(), firstPassProcessed.get(2)._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), m2);
         return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(new ValueSpecificationBuilder(cc, ov, pc)));
     };
 
