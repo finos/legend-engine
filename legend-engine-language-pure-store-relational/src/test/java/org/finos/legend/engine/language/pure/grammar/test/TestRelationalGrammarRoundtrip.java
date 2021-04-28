@@ -573,4 +573,30 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "  }\n" +
                 ")\n", unformatted);
     }
+
+    @Test
+    public void testMappingWithIncludedMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping test::includedRelationalMapping\n" +
+                "(\n" +
+                "  simple::Person[simple_Person]: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [dbInc]personTable\n" +
+                "    firstName: [dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [dbInc]personTable.LASTNAME,\n" +
+                "    age: [dbInc]personTable.AGE\n" +
+                "  }\n" +
+                ")\n\n" +
+                "Mapping test::simpleRelationalMapping\n" +
+                "(\n" +
+                "  include test::includedRelationalMapping[dbInc->db]\n\n" +
+                "  simple::Firm[simple_Firm]: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [db]firmTable\n" +
+                "    legalName: [db]firmTable.LEGALNAME,\n" +
+                "    employees: [db]@Firm_Person\n" +
+                "  }\n" +
+                ")\n");
+    }
 }
