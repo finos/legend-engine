@@ -51,7 +51,9 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put("db", key.getDatabaseName());
         this.extraDatasourceProperties.put("ocspFailOpen", true);
 
-        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_ACCOUNT_TYPE_NAME, key.getAccountType().toString());
+        StringBuilder accountType = new StringBuilder();
+        Optional.ofNullable(key.getAccountType()).ifPresent(x -> accountType.append(x.toString()));
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_ACCOUNT_TYPE_NAME, accountType.toString());
         putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_ORGANISATION_NAME, key.getOrganisation());
         putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_CLOUD_TYPE_NAME, key.getCloudType());
 
