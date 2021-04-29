@@ -296,7 +296,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connectionValue;
 
                         Root_meta_pure_alloy_connections_RelationalDatabaseConnection relational = new Root_meta_pure_alloy_connections_RelationalDatabaseConnection_Impl("");
-                        HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, context);
+                        HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.quoteIdentifiers, context);
 
                         List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
 
