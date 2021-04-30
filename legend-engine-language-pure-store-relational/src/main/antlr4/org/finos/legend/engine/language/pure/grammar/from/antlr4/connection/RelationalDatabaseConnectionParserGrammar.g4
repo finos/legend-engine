@@ -13,7 +13,7 @@ options
 identifier:                             VALID_STRING | STRING
                                         | STORE
                                         | TYPE | RELATIONAL_DATASOURCE_SPEC | RELATIONAL_AUTH_STRATEGY
-                                        | DB_TIMEZONE
+                                        | DB_TIMEZONE | QUOTE_IDENTIFIERS
 ;
 
 
@@ -23,6 +23,7 @@ definition:                             (
                                             connectionStore
                                             | dbType
                                             | dbConnectionTimezone
+                                            | dbQuoteIdentifiers
                                             | relationalDBAuth
                                             | relationalDBDatasourceSpec
                                             | relationalPostProcessors
@@ -32,6 +33,8 @@ definition:                             (
 connectionStore:                        STORE COLON qualifiedName SEMI_COLON
 ;
 dbConnectionTimezone:                   DB_TIMEZONE COLON TIMEZONE SEMI_COLON
+;
+dbQuoteIdentifiers:                     QUOTE_IDENTIFIERS COLON BOOLEAN SEMI_COLON
 ;
 dbType:                                 TYPE COLON identifier SEMI_COLON
 ;

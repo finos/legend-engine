@@ -14,13 +14,15 @@ import static org.finos.legend.engine.language.pure.compiler.test.TestCompilatio
 public class TestRelationalConnectionCompilationRoundtrip
 {
     @Test
-    public void testServerPrincipalPropagatedToCompiledGraph()
+    public void testSConnectionPropertiesPropagatedToCompiledGraph()
     {
-        Pair<PureModelContextData, PureModel> compiledGraph = test("###Connection\n" +
+        Pair<PureModelContextData, PureModel> compiledGraph = test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
                 "RelationalDatabaseConnection simple::H2Connection\n" +
                 "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  store: model::relational::tests::dbInc;\n" +
                 "  type: H2;\n" +
+                "  quoteIdentifiers: true;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
                 "  };\n" +
@@ -29,9 +31,11 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "    serverPrincipal: 'dummyPrincipal';" +
                 "  };\n" +
                 "}\n");
-        String serverPrincipal = ((Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl)
-                                    ((Root_meta_pure_alloy_connections_RelationalDatabaseConnection)
-                                            compiledGraph.getTwo().getConnection("simple::H2Connection", SourceInformation.getUnknownSourceInformation()))._authenticationStrategy())._serverPrincipal();
+        Root_meta_pure_alloy_connections_RelationalDatabaseConnection connection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) compiledGraph.getTwo().getConnection("simple::H2Connection", SourceInformation.getUnknownSourceInformation());
+        String serverPrincipal = ((Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl) connection._authenticationStrategy())._serverPrincipal();
+        Boolean quoteIdentifiers = connection._quoteIdentifiers();
+
+        Assert.assertTrue(quoteIdentifiers);
         Assert.assertEquals("dummyPrincipal", serverPrincipal);
     }
 }

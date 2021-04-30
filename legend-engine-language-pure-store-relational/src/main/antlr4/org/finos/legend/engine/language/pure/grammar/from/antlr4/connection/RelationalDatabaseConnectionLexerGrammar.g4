@@ -12,6 +12,7 @@ RELATIONAL_AUTH_STRATEGY:               'auth';
 RELATIONAL_POST_PROCESSORS:             'postProcessors';
 
 DB_TIMEZONE:                            'timezone';
+QUOTE_IDENTIFIERS:                      'quoteIdentifiers';
 
 BRACE_OPEN:                             '{' -> pushMode(SPECIFICATION_ISLAND_MODE);
 
