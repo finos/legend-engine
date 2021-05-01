@@ -512,7 +512,7 @@ public class RelationalParseTreeWalker
     private MultiGrainFilter visitMultiGrainFilter(RelationalParserGrammar.MultiGrainFilterContext ctx, ScopeInfo scopeInfo)
     {
         MultiGrainFilter filter = new MultiGrainFilter();
-        filter._type = "multiGrainFilter";
+        filter._type = "multigrain";
         filter.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         filter.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         filter.operation = visitOperation(ctx.operation(), scopeInfo);

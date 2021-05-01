@@ -252,7 +252,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         if (!database.filters.isEmpty())
         {
             builder.append(nonEmpty ? "\n" : "");
-            builder.append(LazyIterate.collect(database.filters, filter -> getTabString(1) + (filter._type.equals("multiGrainFilter") ? "MultiGrainFilter " : "Filter ") + PureGrammarComposerUtility.convertIdentifier(filter.name) + "(" + HelperRelationalGrammarComposer.renderRelationalOperationElement(filter.operation, context) + ")").makeString("\n"));
+            builder.append(LazyIterate.collect(database.filters, filter -> getTabString(1) + (filter._type.equals("multigrain") ? "MultiGrainFilter " : "Filter ") + PureGrammarComposerUtility.convertIdentifier(filter.name) + "(" + HelperRelationalGrammarComposer.renderRelationalOperationElement(filter.operation, context) + ")").makeString("\n"));
             builder.append("\n");
         }
         builder.append(")");
