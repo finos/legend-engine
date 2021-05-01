@@ -69,6 +69,9 @@ public class RelationalDatabaseConnectionParseTreeWalker
         // timezone (optional)
         RelationalDatabaseConnectionParserGrammar.DbConnectionTimezoneContext timezoneCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dbConnectionTimezone(), "timezone", connectionValue.sourceInformation);
         connectionValue.timeZone = timezoneCtx != null ? timezoneCtx.TIMEZONE().getText() : null;
+        // quoteIdentifiers (optional)
+        RelationalDatabaseConnectionParserGrammar.DbQuoteIdentifiersContext quoteIdentifiersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dbQuoteIdentifiers(), "quoteIdentifiers", connectionValue.sourceInformation);
+        connectionValue.quoteIdentifiers = quoteIdentifiersContext != null ? Boolean.parseBoolean(quoteIdentifiersContext.BOOLEAN().getText()) : null;
         // datasource specification
         RelationalDatabaseConnectionParserGrammar.RelationalDBDatasourceSpecContext dspCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.relationalDBDatasourceSpec(), "specification", connectionValue.sourceInformation);
         connectionValue.datasourceSpecification = this.visitRelationalDatabaseConnectionDatasourceSpecification(dspCtx);
