@@ -771,6 +771,19 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  }\n" +
                 ")", "COMPILATION error at [88:31-100]: Can't find property 'missingEmbeddedProperty' in [Person, Any]"
         );
+
+        // Incorrect filter
+        test(MODEL + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~filter [model::relational::tests::dbInc]MissingFilter\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                ")", "COMPILATION error at [86:5-58]: Can't find filter 'MissingFilter' in database 'dbInc'"
+        );
     }
 
     @Test
