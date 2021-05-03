@@ -239,10 +239,10 @@ public class HelperRelationalBuilder
         return join;
     }
 
-    private static Filter getFilter(Database db, String _filterName)
+    private static Filter getFilter(Database db, String _filterName, SourceInformation sourceInformation)
     {
         Filter filter = db._filters().detect(join -> _filterName.equals(join._name()));
-        Assert.assertTrue(filter != null, () -> "Can't find filter '" + _filterName + "' in database '" + db.getName() + "'");
+        Assert.assertTrue(filter != null, () -> "Can't find filter '" + _filterName + "' in database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
         return filter;
     }
 
@@ -1226,7 +1226,7 @@ public class HelperRelationalBuilder
     public static org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.FilterMapping processFilterMapping(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping srcFilterMapping, Database ownerDb, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.FilterMapping filterMapping = new Root_meta_relational_mapping_FilterMapping_Impl("");
-        filterMapping._filter(getFilter(ownerDb, srcFilterMapping.filter.name));
+        filterMapping._filter(getFilter(ownerDb, srcFilterMapping.filter.name, srcFilterMapping.sourceInformation));
         if (!srcFilterMapping.joins.isEmpty())
         {
             filterMapping._joinTreeNode(buildElementWithJoinsJoinTreeNode(srcFilterMapping.joins, context));
