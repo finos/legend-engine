@@ -25,6 +25,8 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 
 import java.io.IOException;
+import java.util.Objects;
+import java.util.Scanner;
 
 public class TestGrammarRoundtrip
 {
@@ -39,6 +41,21 @@ public class TestGrammarRoundtrip
         public static void test(String code)
         {
             test(code, null);
+        }
+
+        public void testFrom(String code, String expectedProtocolPath)
+        {
+            String expectedProtocol = new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(expectedProtocolPath), "Can't find resource '" + expectedProtocolPath + "'"), "UTF-8").useDelimiter("\\A").next();
+            try
+            {
+                PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(code);
+                String parsedProtocol = objectMapper.writeValueAsString(modelData);
+                Assert.assertEquals(objectMapper.readTree(expectedProtocol), objectMapper.readTree(parsedProtocol));
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
 
         private static void test(String code, String message)
