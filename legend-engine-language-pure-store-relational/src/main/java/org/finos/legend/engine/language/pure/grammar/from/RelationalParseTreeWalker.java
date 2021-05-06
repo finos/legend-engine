@@ -1046,7 +1046,7 @@ public class RelationalParseTreeWalker
             RelationalParserGrammar.SinglePropertyMappingWithoutPlusContext propertyMappingCtx = ctx.singlePropertyMappingWithoutPlus();
             PropertyPointer propertyPointer = new PropertyPointer();
             propertyPointer.property = PureGrammarParserUtility.fromIdentifier(propertyMappingCtx.identifier());
-            propertyPointer._class = _class;
+            propertyPointer._class = _class == null ? "" : _class;
             propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(propertyMappingCtx.identifier());
             String sourceId = null;
             String targetId = null;
@@ -1111,6 +1111,7 @@ public class RelationalParseTreeWalker
     {
         RelationalClassMapping relationalClassMapping = new RelationalClassMapping();
         relationalClassMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        relationalClassMapping._class = "";
         relationalClassMapping.id = targetId;
         relationalClassMapping.root = false;
         relationalClassMapping.primaryKey = ctx.mappingPrimaryKey() != null

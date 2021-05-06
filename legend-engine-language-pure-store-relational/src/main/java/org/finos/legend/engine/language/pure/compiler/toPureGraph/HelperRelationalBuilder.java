@@ -927,7 +927,7 @@ public class HelperRelationalBuilder
 
     public static SetImplementation processRelationalClassMapping(RelationalClassMapping relationalClassMapping, CompileContext context, RelationalInstanceSetImplementation base, RootRelationalInstanceSetImplementation topParent, Mapping parent, MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings, RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping<Object>> enumerationMappings, MutableMap<String, TableAlias> aliasMap)
     {
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = relationalClassMapping._class != null ? context.resolveClass(relationalClassMapping._class, relationalClassMapping.classSourceInformation) : base._class();
+        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = relationalClassMapping._class != null && !relationalClassMapping._class.isEmpty() ? context.resolveClass(relationalClassMapping._class, relationalClassMapping.classSourceInformation) : base._class();
         RichIterable<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement> primaryKey = ListIterate.collect(relationalClassMapping.primaryKey, p -> processRelationalOperationElement(p, context, UnifiedMap.newMap(), FastList.newList()));
         MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping> localMappingProperties = ListIterate.select(relationalClassMapping.propertyMappings, p -> p.localMappingProperty != null);
         if (localMappingProperties.notEmpty())
@@ -1005,7 +1005,7 @@ public class HelperRelationalBuilder
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class getPropertyOwnerForRelationalPropertyMapping(CompileContext context, RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation immediateParent)
     {
-        if (propertyMapping.property._class != null)
+        if (propertyMapping.property._class != null && !propertyMapping.property._class.isEmpty())
         {
             return context.resolveClass(propertyMapping.property._class, propertyMapping.property.sourceInformation);
         }
@@ -1021,7 +1021,7 @@ public class HelperRelationalBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class extractPropertyOwner(CompileContext context, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping propertyMapping, PropertyMappingsImplementation immediateParent)
     {
-        if (propertyMapping.property._class != null)
+        if (propertyMapping.property._class != null && !propertyMapping.property._class.isEmpty())
         {
             return context.resolveClass(propertyMapping.property._class, propertyMapping.property.sourceInformation);
         }
@@ -1049,7 +1049,7 @@ public class HelperRelationalBuilder
         {
             id = firstParent._id() + "_" + propertyMapping.property.property;
         }
-        else if (propertyMapping.classMapping._class != null)
+        else if (propertyMapping.classMapping._class != null && !propertyMapping.classMapping._class.isEmpty())
         {
             id = HelperMappingBuilder.getClassMappingId(propertyMapping.classMapping, context);
         }
@@ -1066,7 +1066,7 @@ public class HelperRelationalBuilder
                 ._id(id)
                 ._setMappingOwner(topParent);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class;
-        if (propertyMapping.classMapping._class != null)
+        if (propertyMapping.classMapping._class != null && !propertyMapping.classMapping._class.isEmpty())
         {
             _class = context.resolveClass(propertyMapping.classMapping._class, propertyMapping.property.sourceInformation);
         }
@@ -1095,7 +1095,7 @@ public class HelperRelationalBuilder
             return ((InstanceSetImplementation) immediateParent)._mappingClass()._properties().detect(p -> p._name().equals(propertyName));
         }
         // case were class is not defined and the parent is an association mapping. search for property inside the asssociation
-        else if (immediateParent instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation && propertyMapping.property._class == null)
+        else if (immediateParent instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation && (propertyMapping.property._class == null || propertyMapping.property._class.isEmpty()))
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = ((AssociationImplementation) immediateParent)._association();
             Property property = association._properties().detect(p -> (propertyName.equals(p.getName())) || (isTypeTemporalMilestoned.apply(p._genericType()._rawType()) && edgePointPropertyName.equals(p.getName())));
