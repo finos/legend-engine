@@ -1,0 +1,21 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Class",
+  "content": {
+    "superTypes": [
+      "meta::pure::metamodel::type::Any"
+    ],
+    "package": "test::pure::tests::model::simple",
+    "_type": "class",
+    "name": "EntityWithAddress",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "address",
+        "type": "test::pure::tests::model::simple::Address"
+      }
+    ]
+  }
+}

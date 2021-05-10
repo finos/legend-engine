@@ -1,0 +1,16 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Enumeration",
+  "content": {
+    "package": "test::owl::tests::model",
+    "values": [
+      {
+        "value": "MALE"
+      },
+      {
+        "value": "FEMALE"
+      }
+    ],
+    "_type": "Enumeration",
+    "name": "GenderType"
+  }
+}

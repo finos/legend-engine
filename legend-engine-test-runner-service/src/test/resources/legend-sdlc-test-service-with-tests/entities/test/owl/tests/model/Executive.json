@@ -1,0 +1,29 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Class",
+  "content": {
+    "superTypes": [
+      "test::owl::tests::model::Professional"
+    ],
+    "package": "test::owl::tests::model",
+    "_type": "class",
+    "name": "Executive",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "organization",
+        "type": "test::owl::tests::model::Business"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "seniorityLevel",
+        "type": "test::owl::tests::model::OrgLevelType"
+      }
+    ]
+  }
+}

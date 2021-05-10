@@ -1,0 +1,26 @@
+{
+  "classifierPath": "meta::pure::metamodel::relationship::Association",
+  "content": {
+    "package": "test::pure::tests::model::simple",
+    "_type": "association",
+    "name": "Account_AccountPnl",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "account",
+        "type": "test::pure::tests::model::simple::Account"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "accountPnl",
+        "type": "test::pure::tests::model::simple::AccountPnl"
+      }
+    ]
+  }
+}

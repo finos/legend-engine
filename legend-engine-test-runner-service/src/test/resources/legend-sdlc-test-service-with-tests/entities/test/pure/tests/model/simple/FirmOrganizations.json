@@ -1,0 +1,25 @@
+{
+  "classifierPath": "meta::pure::metamodel::relationship::Association",
+  "content": {
+    "package": "test::pure::tests::model::simple",
+    "_type": "association",
+    "name": "FirmOrganizations",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "firm",
+        "type": "test::pure::tests::model::simple::Firm"
+      },
+      {
+        "multiplicity": {
+          "lowerBound": 0
+        },
+        "name": "organizations",
+        "type": "test::pure::tests::model::simple::Organization"
+      }
+    ]
+  }
+}

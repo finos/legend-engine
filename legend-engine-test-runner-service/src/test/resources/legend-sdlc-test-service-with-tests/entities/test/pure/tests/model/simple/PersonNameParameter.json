@@ -1,0 +1,29 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Class",
+  "content": {
+    "superTypes": [
+      "meta::pure::metamodel::type::Any"
+    ],
+    "package": "test::pure::tests::model::simple",
+    "_type": "class",
+    "name": "PersonNameParameter",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "lastNameFirst",
+        "type": "Boolean"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "nested",
+        "type": "test::pure::tests::model::simple::PersonNameParameterNested"
+      }
+    ]
+  }
+}

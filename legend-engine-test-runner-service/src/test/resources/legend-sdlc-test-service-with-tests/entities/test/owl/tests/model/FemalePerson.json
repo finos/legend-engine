@@ -1,0 +1,11 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Class",
+  "content": {
+    "superTypes": [
+      "test::owl::tests::model::Person"
+    ],
+    "package": "test::owl::tests::model",
+    "_type": "class",
+    "name": "FemalePerson"
+  }
+}

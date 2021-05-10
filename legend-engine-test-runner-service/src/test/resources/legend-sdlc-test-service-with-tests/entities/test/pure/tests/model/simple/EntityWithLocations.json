@@ -1,0 +1,112 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Class",
+  "content": {
+    "superTypes": [
+      "meta::pure::metamodel::type::Any"
+    ],
+    "qualifiedProperties": [
+      {
+        "name": "locationsByType",
+        "returnMultiplicity": {
+          "lowerBound": 0
+        },
+        "body": [
+          {
+            "fControl": "filter_T_MANY__Function_1__T_MANY_",
+            "function": "filter",
+            "_type": "func",
+            "parameters": [
+              {
+                "_type": "property",
+                "property": "locations",
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "this"
+                  }
+                ]
+              },
+              {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "fControl": "exists_T_MANY__Function_1__Boolean_1_",
+                    "function": "exists",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "types"
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "fControl": "is_Any_1__Any_1__Boolean_1_",
+                            "function": "is",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "type",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "l"
+                                  }
+                                ]
+                              },
+                              {
+                                "_type": "var",
+                                "name": "type"
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "type"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "l"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "_type": "var",
+            "name": "types",
+            "class": "test::pure::tests::model::simple::GeographicEntityType"
+          }
+        ],
+        "returnType": "test::pure::tests::model::simple::Location"
+      }
+    ],
+    "package": "test::pure::tests::model::simple",
+    "_type": "class",
+    "name": "EntityWithLocations",
+    "properties": [
+      {
+        "multiplicity": {
+          "lowerBound": 0
+        },
+        "name": "locations",
+        "type": "test::pure::tests::model::simple::Location"
+      }
+    ]
+  }
+}

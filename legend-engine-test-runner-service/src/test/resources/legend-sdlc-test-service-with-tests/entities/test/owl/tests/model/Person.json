@@ -1,0 +1,44 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Class",
+  "content": {
+    "superTypes": [
+      "meta::pure::metamodel::type::Any"
+    ],
+    "package": "test::owl::tests::model",
+    "_type": "class",
+    "name": "Person",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "firstName",
+        "type": "String"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "lastName",
+        "type": "String"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "gender",
+        "type": "test::owl::tests::model::GenderType"
+      },
+      {
+        "multiplicity": {
+          "lowerBound": 2
+        },
+        "name": "nicknames",
+        "type": "String"
+      }
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Class",
+  "content": {
+    "superTypes": [
+      "meta::pure::metamodel::type::Any"
+    ],
+    "package": "test::pure::tests::model::simple",
+    "_type": "class",
+    "name": "Order",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "id",
+        "type": "Integer"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "date",
+        "type": "StrictDate"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "quantity",
+        "type": "Float"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "settlementDateTime",
+        "type": "DateTime"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "pnl",
+        "type": "Float"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "pnlContact",
+        "type": "test::pure::tests::model::simple::Person"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "zeroPnl",
+        "type": "Boolean"
+      }
+    ]
+  }
+}

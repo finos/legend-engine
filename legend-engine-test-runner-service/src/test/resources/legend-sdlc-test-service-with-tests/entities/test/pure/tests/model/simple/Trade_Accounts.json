@@ -1,0 +1,25 @@
+{
+  "classifierPath": "meta::pure::metamodel::relationship::Association",
+  "content": {
+    "package": "test::pure::tests::model::simple",
+    "_type": "association",
+    "name": "Trade_Accounts",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "account",
+        "type": "test::pure::tests::model::simple::Account"
+      },
+      {
+        "multiplicity": {
+          "lowerBound": 0
+        },
+        "name": "trades",
+        "type": "test::pure::tests::model::simple::Trade"
+      }
+    ]
+  }
+}

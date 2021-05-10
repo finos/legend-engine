@@ -1,0 +1,25 @@
+{
+  "classifierPath": "meta::pure::metamodel::relationship::Association",
+  "content": {
+    "package": "test::owl::tests::model",
+    "_type": "association",
+    "name": "Person_Accounts",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "acctOwner",
+        "type": "test::owl::tests::model::Person"
+      },
+      {
+        "multiplicity": {
+          "lowerBound": 0
+        },
+        "name": "accounts",
+        "type": "test::pure::tests::model::simple::Account"
+      }
+    ]
+  }
+}
