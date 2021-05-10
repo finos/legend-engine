@@ -1,0 +1,29 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Class",
+  "content": {
+    "superTypes": [
+      "meta::pure::metamodel::type::Any"
+    ],
+    "package": "test::pure::mapping::modelToModel::test::shared::dest",
+    "_type": "class",
+    "name": "Product2Simple",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "name",
+        "type": "String"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "region",
+        "type": "test::pure::mapping::modelToModel::test::shared::dest::Region"
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "classifierPath": "meta::pure::metamodel::relationship::Association",
+  "content": {
+    "package": "test::pure::tests::model::simple",
+    "_type": "association",
+    "name": "FirmCEO",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "ceoFirm",
+        "type": "test::pure::tests::model::simple::Firm"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "ceo",
+        "type": "test::pure::tests::model::simple::Person"
+      }
+    ]
+  }
+}

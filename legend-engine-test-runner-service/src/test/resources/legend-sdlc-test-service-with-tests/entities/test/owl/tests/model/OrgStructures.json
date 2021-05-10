@@ -1,0 +1,25 @@
+{
+  "classifierPath": "meta::pure::metamodel::relationship::Association",
+  "content": {
+    "package": "test::owl::tests::model",
+    "_type": "association",
+    "name": "OrgStructures",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "parentOrg",
+        "type": "test::owl::tests::model::Organization"
+      },
+      {
+        "multiplicity": {
+          "lowerBound": 0
+        },
+        "name": "subOrgs",
+        "type": "test::owl::tests::model::Organization"
+      }
+    ]
+  }
+}

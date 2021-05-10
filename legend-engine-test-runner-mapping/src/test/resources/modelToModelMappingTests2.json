@@ -1,0 +1,411 @@
+{
+  "mappings": [
+    {
+      "package": "model::domain::inmemm2m::mapping",
+      "_type": "mapping",
+      "name": "m2mmapping",
+      "classMappings": [
+        {
+          "srcClass": "model::domain::inmemm2m::source::_Firm",
+          "root": true,
+          "_type": "pureInstance",
+          "propertyMappings": [
+            {
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "property": "name",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "_type": "var",
+                    "name": "src",
+                    "class": "model::domain::inmemm2m::source::_Firm"
+                  }
+                ]
+              },
+              "_type": "purePropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "model::domain::inmemm2m::target::Firm"
+              },
+              "source": "model_domain_inmemm2m_target_Firm",
+              "explodeProperty": false,
+              "target": ""
+            },
+            {
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "property": "employees",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "_type": "var",
+                    "name": "src",
+                    "class": "model::domain::inmemm2m::source::_Firm"
+                  }
+                ]
+              },
+              "_type": "purePropertyMapping",
+              "property": {
+                "property": "employees",
+                "class": "model::domain::inmemm2m::target::Firm"
+              },
+              "source": "model_domain_inmemm2m_target_Firm",
+              "explodeProperty": false,
+              "target": "model_domain_inmemm2m_target_Person"
+            }
+          ],
+          "id": "model_domain_inmemm2m_target_Firm",
+          "class": "model::domain::inmemm2m::target::Firm"
+        },
+        {
+          "srcClass": "model::domain::inmemm2m::source::_Person",
+          "root": true,
+          "_type": "pureInstance",
+          "propertyMappings": [
+            {
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "fControl": "plus_String_MANY__String_1_",
+                    "function": "plus",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "multiplicity": {
+                          "upperBound": 3,
+                          "lowerBound": 3
+                        },
+                        "values": [
+                          {
+                            "_type": "property",
+                            "property": "firstName",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "src"
+                              }
+                            ]
+                          },
+                          {
+                            "multiplicity": {
+                              "upperBound": 1,
+                              "lowerBound": 1
+                            },
+                            "values": [
+                              " "
+                            ],
+                            "_type": "string"
+                          },
+                          {
+                            "_type": "property",
+                            "property": "lastName",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "src"
+                              }
+                            ]
+                          }
+                        ],
+                        "_type": "collection"
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "_type": "var",
+                    "name": "src",
+                    "class": "model::domain::inmemm2m::source::_Person"
+                  }
+                ]
+              },
+              "_type": "purePropertyMapping",
+              "property": {
+                "property": "fullName",
+                "class": "model::domain::inmemm2m::target::Person"
+              },
+              "source": "model_domain_inmemm2m_target_Person",
+              "explodeProperty": false,
+              "target": ""
+            }
+          ],
+          "id": "model_domain_inmemm2m_target_Person",
+          "class": "model::domain::inmemm2m::target::Person"
+        }
+      ],
+      "tests": [
+        {
+          "inputData": [
+            {
+              "_type": "object",
+              "inputType": "JSON",
+              "sourceClass": "model::domain::inmemm2m::source::_Firm",
+              "data": "{\"name\":\"CompanyA\", \"employees\":[{\"firstName\":\"John\",\"lastName\":\"Smith\"}, {\"firstName\":\"Mark\",\"lastName\":\"Johnson\"}]}"
+            }
+          ],
+          "assert": {
+            "_type": "expectedOutputMappingTestAssert",
+            "expectedOutput": "{\"name\":\"CompanyA\",\"employees\":[{\"fullName\":\"John Smith\"},{\"fullName\":\"Mark Johnson_DoesNotExist\"}]}"
+          },
+          "query": {
+            "_type": "lambda",
+            "body": [
+              {
+                "fControl": "serialize_T_MANY__RootGraphFetchTree_1__String_1_",
+                "function": "serialize",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_",
+                    "function": "graphFetch",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "fControl": "getAll_Class_1__T_MANY_",
+                        "function": "getAll",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "fullPath": "model::domain::inmemm2m::target::Firm",
+                            "_type": "class"
+                          }
+                        ]
+                      },
+                      {
+                        "subTrees": [
+                          {
+                            "_type": "propertyGraphFetchTree",
+                            "property": "name"
+                          },
+                          {
+                            "subTrees": [
+                              {
+                                "_type": "propertyGraphFetchTree",
+                                "property": "fullName"
+                              }
+                            ],
+                            "_type": "propertyGraphFetchTree",
+                            "property": "employees"
+                          }
+                        ],
+                        "_type": "rootGraphFetchTree",
+                        "class": "model::domain::inmemm2m::target::Firm"
+                      }
+                    ]
+                  },
+                  {
+                    "subTrees": [
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "property": "name"
+                      },
+                      {
+                        "subTrees": [
+                          {
+                            "_type": "propertyGraphFetchTree",
+                            "property": "fullName"
+                          }
+                        ],
+                        "_type": "propertyGraphFetchTree",
+                        "property": "employees"
+                      }
+                    ],
+                    "_type": "rootGraphFetchTree",
+                    "class": "model::domain::inmemm2m::target::Firm"
+                  }
+                ]
+              }
+            ]
+          },
+          "name": "simpleTest"
+        }
+      ]
+    }
+  ],
+  "stores": [],
+  "origin": {
+    "sdlcInfo": {
+      "baseVersion": "65618",
+      "_type": "pure",
+      "version": "none",
+      "packageableElementPointers": []
+    },
+    "_type": "pointer",
+    "serializer": {
+      "name": "pure",
+      "version": "vX_X_X"
+    }
+  },
+  "domain": {
+    "associations": [
+      {
+        "package": "model::domain::inmemm2m::source",
+        "_type": "association",
+        "name": "_Firm__Person",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "firm",
+            "type": "model::domain::inmemm2m::source::_Firm"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "employees",
+            "type": "model::domain::inmemm2m::source::_Person"
+          }
+        ]
+      },
+      {
+        "package": "model::domain::inmemm2m::target",
+        "_type": "association",
+        "name": "Firm_Person",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "firm",
+            "type": "model::domain::inmemm2m::target::Firm"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "employees",
+            "type": "model::domain::inmemm2m::target::Person"
+          }
+        ]
+      }
+    ],
+    "enums": [],
+    "classes": [
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "model::domain::inmemm2m::source",
+        "_type": "class",
+        "name": "_Firm",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "model::domain::inmemm2m::source",
+        "_type": "class",
+        "name": "_Person",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "lastName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "model::domain::inmemm2m::target",
+        "_type": "class",
+        "name": "Firm",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "superTypes": [
+          "meta::pure::metamodel::type::Any"
+        ],
+        "package": "model::domain::inmemm2m::target",
+        "_type": "class",
+        "name": "Person",
+        "properties": [
+          {
+            "multiplicity": {
+              "upperBound": 1,
+              "lowerBound": 1
+            },
+            "name": "fullName",
+            "type": "String"
+          }
+        ]
+      }
+    ]
+  },
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  },
+  "services": []
+}

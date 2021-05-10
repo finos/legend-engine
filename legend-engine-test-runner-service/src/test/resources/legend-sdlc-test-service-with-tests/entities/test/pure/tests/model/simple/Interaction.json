@@ -1,0 +1,61 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Class",
+  "content": {
+    "superTypes": [
+      "meta::pure::metamodel::type::Any"
+    ],
+    "package": "test::pure::tests::model::simple",
+    "_type": "class",
+    "name": "Interaction",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "id",
+        "type": "String"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "source",
+        "type": "test::pure::tests::model::simple::Person"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "target",
+        "type": "test::pure::tests::model::simple::Person"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "active",
+        "type": "Boolean"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "time",
+        "type": "Integer"
+      },
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 1
+        },
+        "name": "longestInteractionBetweenSourceAndTarget",
+        "type": "Integer"
+      }
+    ]
+  }
+}

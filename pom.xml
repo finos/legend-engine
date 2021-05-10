@@ -55,6 +55,9 @@
         <module>legend-engine-language-pure-dsl-service-generation</module>
         <module>legend-engine-language-pure-dsl-service-execution</module>
         <module>legend-engine-language-pure-store-relational</module>
+        <module>legend-engine-test-runner-shared</module>
+        <module>legend-engine-test-runner-mapping</module>
+        <module>legend-engine-test-runner-service</module>
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-pure</module>
         <module>legend-engine-query-pure</module>
@@ -490,6 +493,21 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-runner-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-runner-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-runner-mapping</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -1,0 +1,190 @@
+{
+  "classifierPath": "meta::legend::service::metamodel::Service",
+  "content": {
+    "execution": {
+      "mapping": "test::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+      "func": {
+        "_type": "lambda",
+        "body": [
+          {
+            "fControl": "serialize_T_MANY__RootGraphFetchTree_1__String_1_",
+            "function": "serialize",
+            "_type": "func",
+            "parameters": [
+              {
+                "fControl": "graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_",
+                "function": "graphFetch",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "getAll_Class_1__T_MANY_",
+                    "function": "getAll",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "fullPath": "test::pure::mapping::modelToModel::test::shared::dest::Person",
+                        "_type": "class"
+                      }
+                    ]
+                  },
+                  {
+                    "subTrees": [
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "property": "firstName"
+                      },
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "property": "lastName"
+                      }
+                    ],
+                    "_type": "rootGraphFetchTree",
+                    "class": "test::pure::mapping::modelToModel::test::shared::dest::Person"
+                  }
+                ]
+              },
+              {
+                "subTrees": [
+                  {
+                    "_type": "propertyGraphFetchTree",
+                    "property": "firstName"
+                  },
+                  {
+                    "_type": "propertyGraphFetchTree",
+                    "property": "lastName"
+                  }
+                ],
+                "_type": "rootGraphFetchTree",
+                "class": "test::pure::mapping::modelToModel::test::shared::dest::Person"
+              }
+            ]
+          }
+        ]
+      },
+      "_type": "pureSingleExecution",
+      "runtime": {
+        "connections": [
+          {
+            "_type": "JsonModelConnection",
+            "class": "test::pure::mapping::modelToModel::test::shared::src::_S_Person",
+            "url": "executor:default",
+            "element": "ModelStore"
+          }
+        ]
+      }
+    },
+    "package": "test::legend::service::execution::test::m2m",
+    "test": {
+      "asserts": [
+        {
+          "assert": {
+            "_type": "lambda",
+            "body": [
+              {
+                "fControl": "and_Boolean_1__Boolean_1__Boolean_1_",
+                "function": "and",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                    "function": "equal",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "fControl": "size_Any_MANY__Integer_1_",
+                        "function": "size",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "values",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "res"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          1
+                        ],
+                        "_type": "integer"
+                      }
+                    ]
+                  },
+                  {
+                    "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                    "function": "equal",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "fControl": "cast_Any_m__T_1__T_m_",
+                        "function": "cast",
+                        "_type": "func",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "property": "values",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "res"
+                              }
+                            ]
+                          },
+                          {
+                            "fullPath": "String",
+                            "_type": "hackedClass"
+                          }
+                        ]
+                      },
+                      {
+                        "multiplicity": {
+                          "upperBound": 1,
+                          "lowerBound": 1
+                        },
+                        "values": [
+                          "[{\"firstName\":\"Pierre\",\"lastName\":\"DeBelen\"},{\"firstName\":\"Dave\",\"lastName\":\"Wathen\"}]"
+                        ],
+                        "_type": "string"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "multiplicity": {
+                  "upperBound": 1,
+                  "lowerBound": 1
+                },
+                "_type": "var",
+                "name": "res",
+                "class": "meta::pure::mapping::Result"
+              }
+            ]
+          }
+        }
+      ],
+      "data": "[{\"fullName\":\"Pierre DeBelen\"},{\"fullName\":\"Teddy Zhang\"}]",
+      "_type": "singleExecutionTest"
+    },
+    "documentation": "JsonModelConnection example M2M service",
+    "_type": "service",
+    "pattern": "\/simpleJson",
+    "autoActivateUpdates": true,
+    "name": "simpleFailingJsonService",
+    "owners": [
+      "debelp",
+      "harted"
+    ]
+  }
+}

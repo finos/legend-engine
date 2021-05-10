@@ -1,0 +1,43 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Enumeration",
+  "content": {
+    "package": "test::pure::tests::model::simple",
+    "values": [
+      {
+        "taggedValues": [
+          {
+            "tag": {
+              "profile": "meta::pure::profiles::doc",
+              "value": "doc"
+            },
+            "value": "A city, town, village, or other urban area."
+          }
+        ],
+        "value": "CITY"
+      },
+      {
+        "stereotypes": [
+          {
+            "profile": "meta::pure::profiles::doc",
+            "value": "deprecated"
+          }
+        ],
+        "value": "COUNTRY"
+      },
+      {
+        "taggedValues": [
+          {
+            "tag": {
+              "profile": "meta::pure::profiles::doc",
+              "value": "doc"
+            },
+            "value": "Any geographic entity other than a city or country."
+          }
+        ],
+        "value": "REGION"
+      }
+    ],
+    "_type": "Enumeration",
+    "name": "GeographicEntityType"
+  }
+}

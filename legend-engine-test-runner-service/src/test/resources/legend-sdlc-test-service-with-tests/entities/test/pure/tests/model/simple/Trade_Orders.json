@@ -1,0 +1,25 @@
+{
+  "classifierPath": "meta::pure::metamodel::relationship::Association",
+  "content": {
+    "package": "test::pure::tests::model::simple",
+    "_type": "association",
+    "name": "Trade_Orders",
+    "properties": [
+      {
+        "multiplicity": {
+          "upperBound": 1,
+          "lowerBound": 0
+        },
+        "name": "account",
+        "type": "test::pure::tests::model::simple::Account"
+      },
+      {
+        "multiplicity": {
+          "lowerBound": 0
+        },
+        "name": "orders",
+        "type": "test::pure::tests::model::simple::Order"
+      }
+    ]
+  }
+}

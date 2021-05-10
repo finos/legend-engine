@@ -1,0 +1,16 @@
+{
+  "classifierPath": "meta::pure::metamodel::type::Enumeration",
+  "content": {
+    "package": "test::pure::mapping::modelToModel::test::shared::dest",
+    "values": [
+      {
+        "value": "NewYork"
+      },
+      {
+        "value": "London"
+      }
+    ],
+    "_type": "Enumeration",
+    "name": "Region"
+  }
+}
