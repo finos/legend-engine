@@ -51,13 +51,24 @@
                                 </requireJavaVersion>
                                 <dependencyConvergence />
                                 <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
                                     <excludes>
+                                        <exclude>commons-logging</exclude>
+                                        <exclude>javax.mail</exclude>
+                                        <exclude>log4j:*:*:*:compile</exclude>
+                                        <exclude>org.slf4j:*:*:*:compile</exclude>
                                         <exclude>org.finos.legend.pure:*:*:*:compile</exclude>
                                         <exclude>org.finos.legend.pure:*:*:*:runtime</exclude>
                                     </excludes>
                                     <includes>
+                                        <!--only the specific included logging jars are allowed -->
+                                        <include>org.slf4j:jul-to-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-api:${slf4j.version}</include>
+                                        <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
                                         <include>org.finos.legend.pure:legend-pure-m4</include>
                                     </includes>
+
                                 </bannedDependencies>
                             </rules>
                         </configuration>

@@ -23,7 +23,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-pure-store-relational</artifactId>
-    <name>Legend Engine Language Pure Store Relational</name>
+    <name>Legend Engine - Language Pure - Store Relational</name>
 
     <build>
         <plugins>
@@ -132,6 +132,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-relational</artifactId>
+        </dependency>
+
         <!-- ENGINE -->
 
         <!-- ANTLR -->
@@ -158,10 +163,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
         <!-- JACKSON -->
 
         <!-- For String Manipulation -->
@@ -170,13 +171,6 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
         <!-- For String Manipulation -->
-
-        <!-- For BsonIgnore annotation -->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>bson</artifactId>
-        </dependency>
-        <!-- For BsonIgnore annotation -->
 
         <!-- TEST -->
         <dependency>

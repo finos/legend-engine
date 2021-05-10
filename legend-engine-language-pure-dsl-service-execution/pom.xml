@@ -23,7 +23,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-pure-dsl-service-execution</artifactId>
-    <name>Legend Engine Language Pure DSL Service - Execution</name>
+    <name>Legend Engine - Language Pure - DSL Service - Execution</name>
 
     <dependencies>
         <!--        LEGEND ENGINE -->
