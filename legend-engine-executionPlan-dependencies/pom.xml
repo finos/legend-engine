@@ -94,6 +94,14 @@
         </dependency>
         <!-- COMMONS CODEC -->
 
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
+
         <!-- Dependencies needed to compile generaated code -->
         <!-- JACKSON -->
         <dependency>

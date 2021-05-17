@@ -1316,7 +1316,7 @@ public class Library
             {
                 nextPos = s.indexOf(token, pos);
                 result.add(s.substring(pos, nextPos == -1 ? s.length() : nextPos));
-                pos = nextPos + 1;
+                pos = nextPos + token.length();
             }
             while (nextPos != -1 && pos < s.length());
         }
