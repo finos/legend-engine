@@ -48,6 +48,7 @@
         <module>legend-engine-language-pure-compiler-api</module>
         <module>legend-engine-language-pure-grammar</module>
         <module>legend-engine-language-pure-grammar-api</module>
+        <module>legend-engine-language-pure-store-relational-grammar-api</module>
         <module>legend-engine-language-pure-dsl-diagram</module>
         <module>legend-engine-language-pure-dsl-text</module>
         <module>legend-engine-language-pure-dsl-generation</module>
@@ -439,6 +440,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-grammar-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-store-relational-grammar-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
