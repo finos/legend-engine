@@ -37,6 +37,8 @@ import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.TransformGrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.TransformJsonToGrammar;
+import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.TransformRelationalOperationElementGrammarToJson;
+import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.TransformRelationalOperationElementJsonToGrammar;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -138,6 +140,8 @@ public class Server extends Application<ServerConfiguration>
         // Grammar
         environment.jersey().register(new TransformGrammarToJson());
         environment.jersey().register(new TransformJsonToGrammar());
+        environment.jersey().register(new TransformRelationalOperationElementGrammarToJson());
+        environment.jersey().register(new TransformRelationalOperationElementJsonToGrammar());
 
         // Compilation
         environment.jersey().register((DynamicFeature) (resourceInfo, context) -> context.register(new InflateInterceptor()));

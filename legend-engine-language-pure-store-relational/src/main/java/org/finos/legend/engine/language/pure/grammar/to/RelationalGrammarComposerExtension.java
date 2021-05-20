@@ -39,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 
 import java.util.List;
 import java.util.Set;
@@ -291,5 +292,9 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
     public List<Function3<Milestoning, Integer, PureGrammarComposerContext, String>> getExtraMilestoningComposers()
     {
         return Lists.mutable.with((specification, offset, context) -> HelperRelationalGrammarComposer.visitMilestoning(specification, offset, RelationalGrammarComposerContext.Builder.newInstance(context).build()));
+    }
+
+    public static String renderRelationalOperationElement(RelationalOperationElement operationElement) {
+        return HelperRelationalGrammarComposer.renderRelationalOperationElement(operationElement, RelationalGrammarComposerContext.Builder.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).build());
     }
 }

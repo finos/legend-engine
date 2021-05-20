@@ -522,7 +522,7 @@ public class RelationalParseTreeWalker
 
     // ----------------------------------------------- OPERATIONS -----------------------------------------------
 
-    private RelationalOperationElement visitOperation(RelationalParserGrammar.OperationContext ctx, ScopeInfo scopeInfo)
+    public RelationalOperationElement visitOperation(RelationalParserGrammar.OperationContext ctx, ScopeInfo scopeInfo)
     {
         if (ctx.dynamicFunctionOperation() != null)
         {
