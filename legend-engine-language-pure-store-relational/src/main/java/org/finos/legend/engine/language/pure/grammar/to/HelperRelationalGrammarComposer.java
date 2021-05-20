@@ -554,6 +554,7 @@ public class HelperRelationalGrammarComposer
             return "LocalH2\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     (spec.testDataSetupCsv != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "testDataSetupCSV: " + convertString(spec.testDataSetupCsv, true) + ";\n" : "") +
+                    (spec.testDataSetupSqls != null && !spec.testDataSetupSqls.isEmpty() ? context.getIndentationString() + getTabString(baseIndentation + 1) + "testDataSetupSqls: [\n" + ListIterate.collect(spec.testDataSetupSqls, s -> context.getIndentationString() + getTabString(baseIndentation + 2) + convertString(s, true)).makeString(",\n") + "\n"+context.getIndentationString() + getTabString(baseIndentation + 2) +"];\n" : "") +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         else if (_spec instanceof EmbeddedH2DatasourceSpecification)

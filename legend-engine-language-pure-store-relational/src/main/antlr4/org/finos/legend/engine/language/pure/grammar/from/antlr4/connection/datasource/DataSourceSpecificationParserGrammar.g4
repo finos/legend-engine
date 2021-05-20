@@ -15,11 +15,16 @@ identifier:                      VALID_STRING
 localH2DatasourceSpecification:             LOCAL_H2_DSP
                                                 BRACE_OPEN
                                                     (
-                                                        localH2DSPTestDataSetupCSV
+                                                        localH2DSPTestDataSetupCSV |
+                                                        localH2DSPTestDataSetupSQLS
                                                     )*
                                                 BRACE_CLOSE
 ;
 localH2DSPTestDataSetupCSV:                 LOCAL_H2_DSP_TEST_DATA_SETUP_CSV COLON STRING SEMI_COLON
+;
+localH2DSPTestDataSetupSQLS:                LOCAL_H2_DSP_TEST_DATA_SETUP_SQLS COLON sqlsArray SEMI_COLON
+;
+sqlsArray:                                  BRACKET_OPEN ( STRING (COMMA STRING)* )? BRACKET_CLOSE
 ;
 staticDatasourceSpecification:              STATIC_DSP
                                                 BRACE_OPEN
