@@ -98,8 +98,8 @@
         <h2.version>1.4.200</h2.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.21.0</legend.pure.version>
-        <legend.shared.version>0.10.0</legend.shared.version>
+        <legend.pure.version>1.22.0</legend.pure.version>
+        <legend.shared.version>0.11.1</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
