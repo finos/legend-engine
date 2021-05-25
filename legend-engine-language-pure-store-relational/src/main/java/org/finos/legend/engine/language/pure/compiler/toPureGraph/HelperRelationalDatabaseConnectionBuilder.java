@@ -47,11 +47,12 @@ public class HelperRelationalDatabaseConnectionBuilder
     public static void addDatabaseConnectionProperties(org.finos.legend.pure.m3.coreinstance.meta.relational.runtime.DatabaseConnection pureConnection, String element, SourceInformation elementSourceInformation, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.relational.runtime.DatabaseConnection connection = pureConnection._type(context.pureModel.getEnumValue("meta::relational::runtime::DatabaseType", connectionType));
+        connection._timeZone(timeZone);
+        connection._quoteIdentifiers(quoteIdentifiers);
+
         try
         {
             connection._element(HelperRelationalBuilder.resolveDatabase(element, elementSourceInformation, context));
-            connection._timeZone(timeZone);
-            connection._quoteIdentifiers(quoteIdentifiers);
         }
         catch (RuntimeException e)
         {
