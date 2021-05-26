@@ -56,8 +56,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.mappingTest.ObjectInputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.mappingTest.ObjectInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
@@ -134,7 +134,9 @@ public class MappingTestRunner
             {
                 throw new UnsupportedOperationException("Unsupported Pure mapping test input data type '" + objectInputData.inputType + '"');
             }
-        } else {
+        }
+        else
+        {
             connectionRegistrar.accept(getTestConnectionFromFactories(input));
         }
     }
@@ -165,7 +167,7 @@ public class MappingTestRunner
             List<JsonNode> actual = getResultValuesAsJson(actualResult);
             String rawActualJSON = objectMapper.writeValueAsString(actual);
 
-            List<JsonNode> expected = this.nodeToList(this.parseJsonString(getExpected()));
+            List<JsonNode> expected = this.nodeToList(this.parseJsonString(getExpected().replace("\\n","\n")));
             String rawExpectedJSON = objectMapper.writeValueAsString(expected);
 
             this.assertEquals(expected, actual);
@@ -310,7 +312,16 @@ public class MappingTestRunner
         }
         JsonNode jsonResult = getResultAsJson(result);
         JsonNode values = jsonResult.get("values");
-        return nodeToList(values);
+        if (values != null)
+        {
+            return nodeToList(values);
+        }
+        values = jsonResult.get("result");
+        if (values != null)
+        {
+            return nodeToList(values.get("rows"));
+        }
+        throw new RuntimeException("The system was not extract values from the Result");
     }
 
     private List<JsonNode> nodeToList(JsonNode node)

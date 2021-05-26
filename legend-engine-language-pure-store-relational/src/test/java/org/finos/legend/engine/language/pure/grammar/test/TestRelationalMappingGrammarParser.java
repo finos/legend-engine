@@ -81,4 +81,81 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                 "   }\n" +
                 ")", "PARSER error at [7:135-140]: Missing table or alias for column 'factor'");
     }
+
+    @Test
+    public void testMappingTestDataSQL()
+    {
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "   MappingTests\n" +
+                "   [\n" +
+                "      test2\n" +
+                "      (\n" +
+                "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                "         data: [" +
+                "                  <Relational, SQL, z::db, 'Drop table if exists PersonTable;Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\');Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>" +
+                "               ];\n" +
+                "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                "      )\n" +
+                "   ]" +
+                "\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "   MappingTests\n" +
+                "   [\n" +
+                "      test2\n" +
+                "      (\n" +
+                "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                "         data: [" +
+                "                  <Relational, RANDOM, a::S, 'Drop table if exists PersonTable;Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\');Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>" +
+                "               ];\n" +
+                "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                "      )\n" +
+                "   ]" +
+                "\n" +
+                ")\n", "PARSER error at [9:48-53]: Mapping test relational input data does not support format 'RANDOM'. Possible values: SQL, CSV");
+    }
+
+    @Test
+    public void testMappingTestDataCSV()
+    {
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "   MappingTests\n" +
+                "   [\n" +
+                "      test2\n" +
+                "      (\n" +
+                "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                "         data: [" +
+                "                  <Relational, CSV, z::db, '{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}'>" +
+                "               ];\n" +
+                "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                "      )\n" +
+                "   ]" +
+                "\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "   MappingTests\n" +
+                "   [\n" +
+                "      test2\n" +
+                "      (\n" +
+                "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                "         data: [" +
+                "                  <Relational, RANDOM, z::DB, '{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}'>" +
+                "               ];\n" +
+                "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                "      )\n" +
+                "   ]" +
+                "\n" +
+                ")\n", "PARSER error at [9:48-53]: Mapping test relational input data does not support format 'RANDOM'. Possible values: SQL, CSV");
+    }
+
 }
