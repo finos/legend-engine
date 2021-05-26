@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.mappingTest;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping;
 
-public enum ObjectInputType
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+
+public class ObjectInputData extends InputData
 {
-    JSON, XML;
+    public String sourceClass;
+    public String data;
+    public ObjectInputType inputType = ObjectInputType.JSON; // for backward compatibility, but in general, we should not default this to JSON
 }
