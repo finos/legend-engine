@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.22.5-SNAPSHOT</version>
+        <version>2.26.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-executionPlan-dependencies</artifactId>
@@ -40,11 +40,21 @@
                                 </requireJavaVersion>
                                 <dependencyConvergence />
                                 <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
                                     <excludes>
+                                        <exclude>log4j</exclude>
+                                        <exclude>org.slf4j</exclude>
+                                        <exclude>commons-logging</exclude>
+                                        <exclude>javax.mail</exclude>
                                         <exclude>org.finos.legend.pure:*:*:*:compile</exclude>
                                         <exclude>org.finos.legend.pure:*:*:*:runtime</exclude>
                                     </excludes>
                                     <includes>
+                                        <!--only the specific included logging jars are allowed -->
+                                        <include>org.slf4j:jul-to-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-api:${slf4j.version}</include>
+                                        <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
                                         <include>org.finos.legend.pure:legend-pure-m4</include>
                                     </includes>
                                 </bannedDependencies>
@@ -93,6 +103,14 @@
             <scope>runtime</scope>
         </dependency>
         <!-- COMMONS CODEC -->
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
 
         <!-- Dependencies needed to compile generaated code -->
         <!-- JACKSON -->

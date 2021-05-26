@@ -19,12 +19,12 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.22.5-SNAPSHOT</version>
+        <version>2.26.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-language-pure-dsl-service-generation</artifactId>
-    <name>Legend Engine Language Pure DSL Service - Generation</name>
+    <name>Legend Engine - Language Pure - DSL Service - Generation</name>
 
     <dependencies>
 

@@ -536,7 +536,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "Class model::Other\n" +
                 "{\n" +
                 "   name:String[1];\n" +
-                "}\n"+
+                "}\n" +
                 "###Relational\n" +
                 "Database model::db\n" +
                 "(\n" +
@@ -547,7 +547,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   Join myJoin(personTb.firm = otherTb.name)\n" +
                 "   Join selfJoin(otherTb.name = {target}.name)\n" +
                 "   Join otherJoin(otherTb.name = firmTb.name)\n" +
-                ")\n"+
+                ")\n" +
                 "###Mapping\n" +
                 "Mapping model::myMap\n" +
                 "(\n" +
@@ -653,7 +653,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "Class model::Other\n" +
                 "{\n" +
                 "   name:String[1];\n" +
-                "}\n"+
+                "}\n" +
                 "###Relational\n" +
                 "Database model::db\n" +
                 "(\n" +
@@ -663,7 +663,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   Table otherTb2(name VARCHAR(200))\n" +
                 "   Join myJoin(otherTb2.name = otherTb.name)\n" +
                 "   Join otherJoin(otherTb2.name = firmTb.name)\n" +
-                ")\n"+
+                ")\n" +
                 "###Mapping\n" +
                 "Mapping model::myMap\n" +
                 "(\n" +
@@ -692,7 +692,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "Class model::Other\n" +
                 "{\n" +
                 "   name:String[1];\n" +
-                "}\n"+
+                "}\n" +
                 "###Relational\n" +
                 "Database model::db\n" +
                 "(\n" +
@@ -702,7 +702,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   Table otherTb2(name VARCHAR(200))\n" +
                 "   Join myJoin(personTb.firm = otherTb.name)\n" +
                 "   Join otherJoin(otherTb2.name = firmTb.name)\n" +
-                ")\n"+
+                ")\n" +
                 "###Mapping\n" +
                 "Mapping model::myMap\n" +
                 "(\n" +
@@ -731,7 +731,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "Class model::Other\n" +
                 "{\n" +
                 "   name:String[1];\n" +
-                "}\n"+
+                "}\n" +
                 "###Relational\n" +
                 "Database model::db\n" +
                 "(\n" +
@@ -742,7 +742,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   Join myJoin(personTb.firm = otherTb.name)\n" +
                 "   Join selfJoin(otherTb.name = {target}.name)\n" +
                 "   Join otherJoin(otherTb2.name = firmTb.name)\n" +
-                ")\n"+
+                ")\n" +
                 "###Mapping\n" +
                 "Mapping model::myMap\n" +
                 "(\n" +
@@ -770,6 +770,73 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    )\n" +
                 "  }\n" +
                 ")", "COMPILATION error at [88:31-100]: Can't find property 'missingEmbeddedProperty' in [Person, Any]"
+        );
+
+        // Incorrect filter
+        test(MODEL + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~filter [model::relational::tests::dbInc]MissingFilter\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                ")", "COMPILATION error at [86:5-58]: Can't find filter 'MissingFilter' in database 'dbInc'"
+        );
+    }
+
+    @Test
+    public void testTestMapping()
+    {
+        test(MODEL + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "  MappingTests\n" +
+                "  [\n" +
+                "    test_1\n" +
+                "    (\n" +
+                "      query: |model::LegalEntity.all()->project([p|$p.name],['name']);\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        <Relational, SQL, model::relational::tests::dbInc, 'Drop table if exists personTable;Create Table personTable(id INT, firstName INT);Insert into PersonTable (id, firstName) values (1, \\'Doe\\;\\');Insert into PersonTable (id, lastName) values (2, \\'Doe2\\');'>\n" +
+                "      ];\n" +
+                "      assert: '[ {\\n  \"values\" : [ \"Doe;\" ]\\n}, {\\n  \"values\" : [ \"Wrong\" ]\\n} ]';\n" +
+                "    )\n" +
+                "  ]\n" +
+                ")"
+        );
+    }
+
+    @Test
+    public void testTestMappingError()
+    {
+        test(MODEL + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "  MappingTests\n" +
+                "  [\n" +
+                "    test_1\n" +
+                "    (\n" +
+                "      query: |model::LegalEntity.all()->project([p|$p.name],['name']);\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        <Relational, SQL, test::DB, 'Drop table if exists personTable;Create Table personTable(id INT, firstName INT);Insert into PersonTable (id, firstName) values (1, \\'Doe\\;\\');Insert into PersonTable (id, lastName) values (2, \\'Doe2\\');'>\n" +
+                "      ];\n" +
+                "      assert: '[ {\\n  \"values\" : [ \"Doe;\" ]\\n}, {\\n  \"values\" : [ \"Wrong\" ]\\n} ]';\n" +
+                "    )\n" +
+                "  ]\n" +
+                ")", "COMPILATION error at [95:9-242]: Can't find store 'test::DB'"
         );
     }
 

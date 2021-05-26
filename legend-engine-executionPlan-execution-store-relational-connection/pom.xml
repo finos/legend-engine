@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.22.5-SNAPSHOT</version>
+        <version>2.26.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-executionPlan-execution-store-relational-connection</artifactId>
@@ -53,6 +53,41 @@
                     <execution>
                         <goals>
                             <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <configuration>
+                            <rules>
+                                <dependencyConvergence />
+                                <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
+                                    <excludes>
+                                        <exclude>log4j</exclude>
+                                        <exclude>org.slf4j</exclude>
+                                        <exclude>commons-logging</exclude>
+                                        <exclude>javax.mail</exclude>
+                                        <exclude>org.finos.legend.pure:*</exclude>
+                                    </excludes>
+                                    <includes>
+                                        <!--only the specific included logging jars are allowed -->
+                                        <include>org.slf4j:jul-to-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-api:${slf4j.version}</include>
+                                        <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
+                                    </includes>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                        <goals>
+                            <goal>enforce</goal>
                         </goals>
                     </execution>
                 </executions>

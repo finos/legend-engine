@@ -77,19 +77,7 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
     @Test
     public void testLocalH2DatasourceConfiguration()
     {
-        // test sql field should not be in grammar
-        test("###Connection\n" +
-                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
-                "{\n" +
-                "  store: model::firm::Person;\n" +
-                "  type: H2;\n" +
-                "  specification: LocalH2 {\n" +
-                "    testDataSetupSqls: 'testCSV';\n" +
-                "  };\n" +
-                "  auth: DefaultH2;\n" +
-                "}\n\n", "PARSER error at [7:5-21]: Unexpected token");
-
-        //Missing field
+         //Duplicate field
         test("###Connection\n" +
                 "RelationalDatabaseConnection meta::mySimpleConnection\n" +
                 "{\n" +

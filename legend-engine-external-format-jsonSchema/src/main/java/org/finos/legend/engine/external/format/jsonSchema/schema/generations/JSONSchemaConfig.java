@@ -36,6 +36,8 @@ public class JSONSchemaConfig extends GenerationConfiguration
     public Boolean generateConstraintFunctionSchemas;
     @JsonProperty(value = "schemaSpecification")
     public String schemaSpecification;
+    @JsonProperty(value = "createSchemaCollection")
+    public Boolean createSchemaCollection;
 
 
 
@@ -77,8 +79,12 @@ public class JSONSchemaConfig extends GenerationConfiguration
                     break;
             }
         }
-
         generationConfiguration._scopeElements((RichIterable<? extends PackageableElement>) scopeElements);
+        if( createSchemaCollection != null)
+        {
+            generationConfiguration._createSchemaCollection(createSchemaCollection);
+        }
+
         return generationConfiguration;
     }
 }

@@ -50,6 +50,39 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
+    public void testDataSourceSpecConfigurationsWithSqls()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'ab',\n" +
+                "      'cd'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'ab'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+    }
+
+    @Test
     public void testRelationalDatabaseAuthConfigurations()
     {
         test("###Connection\n" +
@@ -120,4 +153,31 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "}\n");
     }
 
+    @Test
+    public void testRelationalDatabaseConnectionWithQuoteIdentifiers()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  quoteIdentifiers: false;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  quoteIdentifiers: true;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+    }
 }

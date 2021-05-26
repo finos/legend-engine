@@ -28,6 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
@@ -36,15 +37,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.TablePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 
 import java.util.List;
 import java.util.Set;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class RelationalGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
@@ -196,6 +198,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                         (relationalDatabaseConnection.element != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "store: " + relationalDatabaseConnection.element + ";\n") : "") +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "type: " + relationalDatabaseConnection.type.name() + ";\n" +
                         (relationalDatabaseConnection.timeZone != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "timezone: " + relationalDatabaseConnection.timeZone + ";\n") : "") +
+                        (relationalDatabaseConnection.quoteIdentifiers != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "quoteIdentifiers: " + relationalDatabaseConnection.quoteIdentifiers + ";\n") : "") +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "specification: " + specification + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "auth: " + authenticationStrategy + ";\n" +
                         (postProcessors != null
@@ -252,11 +255,25 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         if (!database.filters.isEmpty())
         {
             builder.append(nonEmpty ? "\n" : "");
-            builder.append(LazyIterate.collect(database.filters, filter -> getTabString(1) + (filter._type.equals("multiGrainFilter") ? "MultiGrainFilter " : "Filter ") + PureGrammarComposerUtility.convertIdentifier(filter.name) + "(" + HelperRelationalGrammarComposer.renderRelationalOperationElement(filter.operation, context) + ")").makeString("\n"));
+            builder.append(LazyIterate.collect(database.filters, filter -> getTabString(1) + (filter._type.equals("multigrain") ? "MultiGrainFilter " : "Filter ") + PureGrammarComposerUtility.convertIdentifier(filter.name) + "(" + HelperRelationalGrammarComposer.renderRelationalOperationElement(filter.operation, context) + ")").makeString("\n"));
             builder.append("\n");
         }
         builder.append(")");
         return builder.toString();
+    }
+
+    @Override
+    public List<Function2<InputData, PureGrammarComposerContext, String>> getExtraMappingTestInputDataComposers()
+    {
+        return Lists.mutable.with((inputData, context) ->
+        {
+            if (inputData instanceof RelationalInputData)
+            {
+                RelationalInputData relationalInputData = (RelationalInputData) inputData;
+                return "<Relational, " + relationalInputData.inputType + ", " + relationalInputData.database + ", "+ convertString(relationalInputData.data, false) + ">";
+            }
+            return null;
+        });
     }
 
     @Override
@@ -290,5 +307,9 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
     public List<Function3<Milestoning, Integer, PureGrammarComposerContext, String>> getExtraMilestoningComposers()
     {
         return Lists.mutable.with((specification, offset, context) -> HelperRelationalGrammarComposer.visitMilestoning(specification, offset, RelationalGrammarComposerContext.Builder.newInstance(context).build()));
+    }
+
+    public static String renderRelationalOperationElement(RelationalOperationElement operationElement) {
+        return HelperRelationalGrammarComposer.renderRelationalOperationElement(operationElement, RelationalGrammarComposerContext.Builder.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).build());
     }
 }
