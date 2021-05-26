@@ -18,6 +18,8 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.RelationalDatabaseConnectionLexerGrammar;
@@ -34,13 +36,16 @@ import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceS
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostProcessorParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostProcessorSpecificationSourceCode;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -48,6 +53,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -195,6 +202,38 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
             }
         });
     }
+
+    @Override
+    public Iterable<? extends MappingTestInputDataParser> getExtraMappingTestInputDataParsers()
+    {
+        return Lists.immutable.with(MappingTestInputDataParser.newParser("Relational", RelationalGrammarParserExtension::parseObjectInputData));
+    }
+
+    private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation sourceInformation)
+    {
+        SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
+        RelationalInputData relationalInputData = new RelationalInputData();
+        relationalInputData.sourceInformation = testInputDataSourceInformation;
+
+        try
+        {
+            if (inputDataContext.testInputFormat() == null)
+            {
+                throw new EngineException("Mapping test relational 'input type' is missing. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), testInputDataSourceInformation, EngineErrorType.PARSER);
+            }
+            relationalInputData.inputType = RelationalInputType.valueOf(inputDataContext.testInputFormat().getText());
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new EngineException("Mapping test relational input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
+        }
+
+        relationalInputData.database = inputDataContext.testInputSrc().getText();
+
+        relationalInputData.data = PureGrammarParserUtility.fromGrammarString(inputDataContext.testInputDataContent().STRING().getText(), false);
+        return relationalInputData;
+    }
+
 
     private AuthenticationStrategy parseAuthenticationStrategy(AuthenticationStrategySourceCode code, Function<AuthenticationStrategyParserGrammar, AuthenticationStrategy> func)
     {

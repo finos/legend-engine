@@ -99,9 +99,26 @@
             <artifactId>junit</artifactId>
             <scope>compile</scope>
         </dependency>
+
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-store-relational</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-execution-store-inMemory</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-execution-store-relational</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

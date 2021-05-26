@@ -272,7 +272,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "      )\n" +
                 "   ]" +
                 "\n" +
-                ")\n", "PARSER error at [10:26-44]: Mapping test object input data does not support format 'FUNK_UNKNOWN_FORMAT'");
+                ")\n", "PARSER error at [10:26-44]: Mapping test object input data does not support format 'FUNK_UNKNOWN_FORMAT'. Possible values: JSON, XML");
         // object input data with no format type
         test("Class model::domain::Source {}\n" +
                 "###Mapping\n" +
@@ -289,7 +289,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "      )\n" +
                 "   ]" +
                 "\n" +
-                ")\n", "PARSER error at [10:17-189]: Mapping test object input data format type is missing");
+                ")\n", "PARSER error at [10:17-189]: Mapping test object 'input type' is missing. Possible values: JSON, XML");
         // check data input type
         test("Class model::domain::Source {}\n" +
                 "###Mapping\n" +

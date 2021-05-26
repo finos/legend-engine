@@ -28,6 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
@@ -36,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.TablePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
@@ -44,8 +46,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import java.util.List;
 import java.util.Set;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class RelationalGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
@@ -259,6 +260,20 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         }
         builder.append(")");
         return builder.toString();
+    }
+
+    @Override
+    public List<Function2<InputData, PureGrammarComposerContext, String>> getExtraMappingTestInputDataComposers()
+    {
+        return Lists.mutable.with((inputData, context) ->
+        {
+            if (inputData instanceof RelationalInputData)
+            {
+                RelationalInputData relationalInputData = (RelationalInputData) inputData;
+                return "<Relational, " + relationalInputData.inputType + ", " + relationalInputData.database + ", "+ convertString(relationalInputData.data, false) + ">";
+            }
+            return null;
+        });
     }
 
     @Override

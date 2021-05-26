@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
@@ -57,8 +58,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.mappingTest.ObjectInputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.mappingTest.ObjectInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -204,7 +205,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         aggregationAwareClassMapping.root = ctx.STAR() != null;
         aggregationAwareClassMapping.extendsClassMappingId = ctx.superClassMappingId() != null ? ctx.superClassMappingId().getText() : null;
         aggregationAwareClassMapping.sourceInformation = parserInfo.sourceInformation;
-        walker.visitAggregationAwareMapping((AggregationAwareParserGrammar.AggregationAwareClassMappingContext)parserInfo.rootContext, aggregationAwareClassMapping);
+        walker.visitAggregationAwareMapping((AggregationAwareParserGrammar.AggregationAwareClassMappingContext) parserInfo.rootContext, aggregationAwareClassMapping);
         return aggregationAwareClassMapping;
     }
 
@@ -213,7 +214,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         SourceCodeParserInfo parserInfo = getAggregateSpecificationParserInfo(mappingElementSourceCode);
         AggregationAwareMappingParseTreeWalker walker = new AggregationAwareMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext, mappingElementSourceCode);
         AggregateSpecification aggregateSpecification = new AggregateSpecification();
-        walker.visitAggregateSpecification((AggregationAwareParserGrammar.AggregateSpecificationContext)parserInfo.rootContext, aggregateSpecification);
+        walker.visitAggregateSpecification((AggregationAwareParserGrammar.AggregateSpecificationContext) parserInfo.rootContext, aggregateSpecification);
         return aggregateSpecification;
     }
 
@@ -222,20 +223,20 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
         ObjectInputData objectInputData = new ObjectInputData();
         objectInputData.sourceInformation = testInputDataSourceInformation;
-        objectInputData.sourceClass = PureGrammarParserUtility.fromQualifiedName(inputDataContext.testInputSrc().qualifiedName().packagePath() == null ? Collections.emptyList() : inputDataContext.testInputSrc().qualifiedName().packagePath().identifier(), inputDataContext.testInputSrc().qualifiedName().identifier());
-        objectInputData.data = PureGrammarParserUtility.fromGrammarString(inputDataContext.testInputDataContent().STRING().getText(), false);
-        if (inputDataContext.testInputFormat() == null)
-        {
-            throw new EngineException("Mapping test object input data format type is missing", testInputDataSourceInformation, EngineErrorType.PARSER);
-        }
         try
         {
+            if (inputDataContext.testInputFormat() == null)
+            {
+                throw new EngineException("Mapping test object 'input type' is missing. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), testInputDataSourceInformation, EngineErrorType.PARSER);
+            }
             objectInputData.inputType = ObjectInputType.valueOf(inputDataContext.testInputFormat().getText());
         }
         catch (IllegalArgumentException e)
         {
-            throw new EngineException("Mapping test object input data does not support format '" + inputDataContext.testInputFormat().getText() + "'", sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
+            throw new EngineException("Mapping test object input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
         }
+        objectInputData.sourceClass = PureGrammarParserUtility.fromQualifiedName(inputDataContext.testInputSrc().qualifiedName().packagePath() == null ? Collections.emptyList() : inputDataContext.testInputSrc().qualifiedName().packagePath().identifier(), inputDataContext.testInputSrc().qualifiedName().identifier());
+        objectInputData.data = PureGrammarParserUtility.fromGrammarString(inputDataContext.testInputDataContent().STRING().getText(), false);
         return objectInputData;
     }
 
