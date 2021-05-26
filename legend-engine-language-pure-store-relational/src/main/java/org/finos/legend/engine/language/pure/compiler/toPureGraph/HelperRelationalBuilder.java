@@ -177,14 +177,14 @@ public class HelperRelationalBuilder
     private static final Predicate2<RelationalOperationElement, Object> COLUMN_NAME_PREDICATE = Predicates2.attributeEqual(column -> ((Column) column)._name());
     private static final Predicate2<NamedRelation, Object> NAMED_RELATION_NAME_PREDICATE = Predicates2.attributeEqual(NamedRelationAccessor::_name);
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database getDatabase(String fullPath, SourceInformation sourceInformation, CompileContext context)
+    public static Database getDatabase(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
         try
         {
             Store store = context.pureModel.getStore(fullPath, sourceInformation);
-            if (store instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database)
+            if (store instanceof Database)
             {
-                return (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
+                return (Database) store;
             }
             throw new RuntimeException("Store found but not a database");
         }
@@ -194,7 +194,7 @@ public class HelperRelationalBuilder
         }
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database resolveDatabase(String fullPath, SourceInformation sourceInformation, CompileContext context)
+    public static Database resolveDatabase(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
         return context.resolve(fullPath, sourceInformation, (String path) -> getDatabase(path, sourceInformation, context));
     }
@@ -208,7 +208,21 @@ public class HelperRelationalBuilder
 
     private static Join getJoin(Database db, String _joinName, SourceInformation sourceInformation)
     {
-        Join join = findJoin(db, _joinName);
+        Join join;
+        try
+        {
+            join = findJoin(db, _joinName);
+        }
+        catch (Exception e)
+        {
+            StringBuilder builder = new StringBuilder("Error finding join '").append(_joinName).append("' in database '").append(db.getName()).append("'");
+            String eMessage = e.getMessage();
+            if (eMessage != null)
+            {
+                builder.append(": ").append(eMessage);
+            }
+            throw new EngineException(builder.toString(), sourceInformation, EngineErrorType.COMPILATION, e);
+        }
         if (join == null)
         {
             throw new EngineException("Can't find join '" + _joinName + "' in database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
@@ -218,25 +232,31 @@ public class HelperRelationalBuilder
 
     private static Join findJoin(Database db, String _joinName)
     {
-        Join join = db._joins().detect(j -> _joinName.equals(j._name()));
-        if (join == null)
+        return findJoin(db, _joinName, Sets.mutable.empty());
+    }
+
+    private static Join findJoin(Database db, String _joinName, MutableSet<Database> visited)
+    {
+        if (visited.add(db))
         {
-            List<Join> includedJoins = Lists.mutable.empty();
-            db._includes().forEach(new Procedure<Store>()
+            // Check the DB itself
+            Join join = db._joins().detect(j -> _joinName.equals(j._name()));
+            if (join != null)
             {
-                @Override
-                public void value(Store each)
+                return join;
+            }
+
+            // If it's not there, check included joins
+            for (Store included : db._includes())
+            {
+                join = findJoin((Database) included, _joinName, visited);
+                if (join != null)
                 {
-                    Join subJoin = findJoin((Database) each, _joinName);
-                    if (subJoin != null && !includedJoins.contains(subJoin))
-                    {
-                        includedJoins.add(subJoin);
-                    }
+                    return join;
                 }
-            });
-            return includedJoins.isEmpty() ? null : includedJoins.get(0);
+            }
         }
-        return join;
+        return null;
     }
 
     private static Filter getFilter(Database db, String _filterName, SourceInformation sourceInformation)
@@ -288,10 +308,10 @@ public class HelperRelationalBuilder
         return table;
     }
 
-    private static Relation findRelation(org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database, final String schemaName, final String tableName, SourceInformation sourceInformation)
+    private static Relation findRelation(Database database, final String schemaName, final String tableName, SourceInformation sourceInformation)
     {
         MutableList<Relation> tables = Lists.mutable.empty();
-        for (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database db : getAllIncludedDBs(database))
+        for (Database db : getAllIncludedDBs(database))
         {
             Schema schema = db._schemas().selectWith(SCHEMA_NAME_PREDICATE, schemaName).toList().getFirst();
             if (schema != null)
@@ -335,50 +355,38 @@ public class HelperRelationalBuilder
 
     private static boolean schemaExists(Database database, String schemaName)
     {
-        return DEFAULT_SCHEMA_NAME.equals(schemaName) || schemaExists(Sets.mutable.<CoreInstance>empty(), database, schemaName);
+        return DEFAULT_SCHEMA_NAME.equals(schemaName) || schemaExists(Sets.mutable.empty(), database, schemaName);
     }
 
     private static boolean schemaExists(MutableSet<CoreInstance> visited, Database database, String schemaName)
     {
-        if (visited.add(database))
-        {
-            if (database._schemas().collect(SchemaAccessor::_name).contains(schemaName))
-            {
-                return true;
-            }
-            for (Store includedDB : database._includes().toList())
-            {
-                if (schemaExists(visited, (Database) includedDB, schemaName))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return visited.add(database) &&
+                (database._schemas().anySatisfy(s -> schemaName.equals(s._name())) ||
+                    database._includes().anySatisfy(incl -> schemaExists(visited, (Database) incl, schemaName)));
     }
 
-    private static SetIterable<Database> getAllIncludedDBs(org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database)
+    private static SetIterable<Database> getAllIncludedDBs(Database database)
     {
-        ListIterable<Database> includes = (ListIterable<Database>) database._includes().toList();
+        RichIterable<? extends Store> includes = database._includes();
         if (includes.isEmpty())
         {
             return Sets.immutable.with(database);
         }
-        MutableSet<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database> results = UnifiedSet.<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database>newSet(includes.size() + 1).with(database);
+        MutableSet<Database> results = UnifiedSet.<Database>newSet(includes.size() + 1).with(database);
         collectIncludedDBs(results, includes);
         return results;
     }
 
-    private static void collectIncludedDBs(MutableSet<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database> results, ListIterable<? extends CoreInstance> databases)
+    private static void collectIncludedDBs(MutableSet<Database> results, RichIterable<? extends CoreInstance> databases)
     {
-        for (CoreInstance db : databases)
+        databases.forEach(db ->
         {
-            if (results.add((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) db))
+            Database database = (Database) db;
+            if (results.add(database))
             {
-                ListIterable<? extends CoreInstance> includes = ((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) db)._includes().toList();
-                collectIncludedDBs(results, includes);
+                collectIncludedDBs(results, database._includes());
             }
-        }
+        });
     }
 
     private static Schema getSchema(Relation relation)
