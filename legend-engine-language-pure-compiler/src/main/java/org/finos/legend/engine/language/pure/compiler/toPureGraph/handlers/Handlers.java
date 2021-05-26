@@ -1026,6 +1026,7 @@ public class Handlers
         register("meta::pure::functions::math::olap::rank_Any_MANY__Map_1_", false, ps -> res("meta::pure::functions::collection::Map", "one"));
         register("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", false, ps -> res("meta::pure::functions::collection::Map", "one"));
         register("meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_", false, ps -> res("meta::pure::functions::collection::Map", "one"));
+        register("meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_", false, ps -> res("meta::pure::functions::collection::Map", "one"));
     }
 
     private void registerAggregations()
