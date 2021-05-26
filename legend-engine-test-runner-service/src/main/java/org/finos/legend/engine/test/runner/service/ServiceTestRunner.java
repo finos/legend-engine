@@ -126,6 +126,15 @@ public class ServiceTestRunner
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Tests And Run For MultiExecution Service").startActive(true))
             {
                 Map<String, Runtime> runtimeMap = ServiceTestGenerationHelper.buildMultiExecutionTestRuntime((PureMultiExecution)serviceExecution, (MultiExecutionTest) service.test, pureModelContextData, pureModel);
+                Map<String, MutableList<String>> sqlStatementsByKey = Maps.mutable.empty();
+                runtimeMap.forEach((key, runtime) ->
+                {
+                    MutableList<String> sql = extractSetUpSQLFromTestRuntime(runtime);
+                    if (sql != null)
+                    {
+                        sqlStatementsByKey.put(key, sql);
+                    }
+                });
                 CompositeExecutionPlan compositeExecutionPlan = ServiceTestGenerationHelper.buildCompositeExecutionTestPlan(service, runtimeMap, pureModel, pureVersion, PlanPlatform.JAVA, extensions, transformers);
                 Map<String, SingleExecutionPlan> plansByKey = compositeExecutionPlan.executionPlans;
                 for (SingleExecutionPlan plan : plansByKey.values())
@@ -137,7 +146,7 @@ public class ServiceTestRunner
                 {
                     SingleExecutionPlan executionPlan = plansByKey.get(es.key);
                     List<TestContainer> asserts = es.asserts;
-                    RichIterable<? extends String> sqls = extractSetUpSQLFromTestRuntime(runtimeMap.get(es.key));
+                    RichIterable<? extends String> sqls = sqlStatementsByKey.get(es.key);
                     RichServiceTestResult richServiceTestResult = executeTestAsserts(executionPlan, asserts, sqls, scope);
                     richServiceTestResult.setOptionalMultiExecutionKey(es.key);
                     results.add(richServiceTestResult);

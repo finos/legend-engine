@@ -1,9 +1,0 @@
-{
-  "classifierPath": "meta::servicestore::metamodel::ServiceStore",
-  "content": {
-    "docLink": "testSeviceConnection",
-    "package": "test::pure::functions::io::tests::http",
-    "_type": "serviceStore",
-    "name": "testService"
-  }
-}
