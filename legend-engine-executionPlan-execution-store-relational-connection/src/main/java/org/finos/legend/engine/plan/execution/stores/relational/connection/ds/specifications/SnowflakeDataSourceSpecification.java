@@ -64,7 +64,6 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         putIfNotEmpty(this.extraDatasourceProperties, "proxyHost", key.getProxyHost());
         putIfNotEmpty(this.extraDatasourceProperties, "proxyPort", key.getProxyPort());
         putIfNotEmpty(this.extraDatasourceProperties, "nonProxyHosts", key.getNonProxyHosts());
-        putIfNotEmpty(this.extraDatasourceProperties, "role", key.getRole());
     }
 
     private static void putIfNotEmpty(Properties connectionProperties, String propName, String propValue)

@@ -7,8 +7,6 @@ public class SnowflakeDatasourceSpecification extends DatasourceSpecification
     public String warehouseName;
     public String databaseName;
 
-    public String role;
-
     public String proxyHost;
     public String proxyPort;
     public String nonProxyHosts;

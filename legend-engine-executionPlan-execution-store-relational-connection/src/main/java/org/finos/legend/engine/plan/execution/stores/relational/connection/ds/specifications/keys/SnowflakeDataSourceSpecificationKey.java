@@ -24,7 +24,6 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     private final String region;
     private final String warehouseName;
     private final String databaseName;
-    private  String role;
 
     private String proxyHost;
     private String proxyPort;
@@ -62,13 +61,12 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return databaseName;
     }
 
-    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String role, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String cloudType)
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String cloudType)
     {
         this.accountName = accountName;
         this.region = region;
         this.warehouseName = warehouseName;
         this.databaseName = databaseName;
-        this.role = role;
 
         this.proxyHost = proxyHost;
         this.proxyPort = proxyPort;
@@ -108,12 +106,6 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     {
         return cloudType;
     }
-
-    public String getRole()
-    {
-        return role;
-    }
-
 
     @Override
     public String toString()
@@ -162,6 +154,6 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     @Override
     public int hashCode()
     {
-        return Objects.hash(accountName, region, warehouseName, databaseName, proxyHost, proxyHost, nonProxyHosts, accountType, region, organisation, role);
+        return Objects.hash(accountName, region, warehouseName, databaseName, proxyHost, proxyHost, nonProxyHosts, accountType, region, organisation);
     }
 }
