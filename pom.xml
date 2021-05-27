@@ -68,6 +68,8 @@
         <module>legend-engine-shared-javaCompiler</module>
         <module>legend-engine-server</module>
         <module>legend-engine-test-reports</module>
+        <module>legend-engine-extensions-collection-execution</module>
+        <module>legend-engine-extensions-collection-generation</module>
     </modules>
 
     <properties>
