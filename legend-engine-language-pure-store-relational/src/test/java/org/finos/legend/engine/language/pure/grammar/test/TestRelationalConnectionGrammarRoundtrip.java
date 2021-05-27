@@ -50,6 +50,39 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
+    public void testDataSourceSpecConfigurationsWithSqls()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'ab',\n" +
+                "      'cd'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'ab'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+    }
+
+    @Test
     public void testRelationalDatabaseAuthConfigurations()
     {
         test("###Connection\n" +

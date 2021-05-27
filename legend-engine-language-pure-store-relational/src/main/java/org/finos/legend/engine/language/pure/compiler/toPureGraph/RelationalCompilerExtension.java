@@ -42,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
@@ -49,6 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.DatabaseInstance;
@@ -218,15 +220,16 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 {
                     if (cm.mainSetImplementation instanceof RootRelationalClassMapping)
                     {
-                        RootRelationalClassMapping relationalClassMapping = (RootRelationalClassMapping)cm.mainSetImplementation;
+                        RootRelationalClassMapping relationalClassMapping = (RootRelationalClassMapping) cm.mainSetImplementation;
                         cm.propertyMappings = ListIterate.collect(relationalClassMapping.propertyMappings, x -> HelperRelationalBuilder.visitAggregationAwarePropertyMapping(x, relationalClassMapping.id));
                     }
                     for (AggregateSetImplementationContainer agg : cm.aggregateSetImplementations)
                     {
-                       if (agg.setImplementation instanceof RootRelationalClassMapping) {
-                           RootRelationalClassMapping relationalClassMapping = (RootRelationalClassMapping)agg.setImplementation;
-                           relationalClassMapping.propertyMappings.forEach(prop -> prop.source = relationalClassMapping.id );
-                       }
+                        if (agg.setImplementation instanceof RootRelationalClassMapping)
+                        {
+                            RootRelationalClassMapping relationalClassMapping = (RootRelationalClassMapping) agg.setImplementation;
+                            relationalClassMapping.propertyMappings.forEach(prop -> prop.source = relationalClassMapping.id);
+                        }
                     }
                 }
         );
@@ -242,15 +245,17 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     if (cm.mainSetImplementation instanceof RootRelationalClassMapping)
                     {
                         RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm.mainSetImplementation;
-                        HelperRelationalBuilder.processRootRelationalClassMapping((RootRelationalInstanceSetImplementation)asi._mainSetImplementation(), classMapping, context);
+                        HelperRelationalBuilder.processRootRelationalClassMapping((RootRelationalInstanceSetImplementation) asi._mainSetImplementation(), classMapping, context);
                     }
                     for (AggregateSetImplementationContainer agg : cm.aggregateSetImplementations)
                     {
-                        if (agg.setImplementation instanceof RootRelationalClassMapping) {
+                        if (agg.setImplementation instanceof RootRelationalClassMapping)
+                        {
                             RootRelationalClassMapping classMapping = (RootRelationalClassMapping) agg.setImplementation;
                             asi._aggregateSetImplementations().forEach(c -> {
-                                if (HelperRelationalBuilder.getClassMappingId(c._setImplementation()).equals(HelperMappingBuilder.getClassMappingId(classMapping, context))) {
-                                    HelperRelationalBuilder.processRootRelationalClassMapping((RootRelationalInstanceSetImplementation)c._setImplementation(), classMapping, context);
+                                if (HelperRelationalBuilder.getClassMappingId(c._setImplementation()).equals(HelperMappingBuilder.getClassMappingId(classMapping, context)))
+                                {
+                                    HelperRelationalBuilder.processRootRelationalClassMapping((RootRelationalInstanceSetImplementation) c._setImplementation(), classMapping, context);
                                 }
                             });
                         }
@@ -322,9 +327,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         relational._datasourceSpecification(datasource);
                         relational._authenticationStrategy(authenticationStrategy);
                         List<PostProcessorWithParameter> postProcessorWithParameters = ListIterate.collect(relationalDatabaseConnection.postProcessorWithParameter, p -> IRelationalCompilerExtension.process(
-                            p,
-                            ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraLegacyPostProcessors),
-                            context));
+                                p,
+                                ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraLegacyPostProcessors),
+                                context));
                         List<PostProcessorWithParameter> translatedForPlanGeneration = ListIterate.collect(pp, Pair::getTwo);
                         relational._queryPostProcessorsWithParameter(Lists.mutable.withAll(postProcessorWithParameters).withAll(translatedForPlanGeneration));
                         relational._postProcessors(ListIterate.collect(pp, Pair::getOne));
@@ -490,7 +495,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     public List<Function2<PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>>> getExtraConnectionPostProcessor()
     {
         return Lists.mutable.with((processor, context) -> {
-            if (processor instanceof MapperPostProcessor) {
+            if (processor instanceof MapperPostProcessor)
+            {
                 MapperPostProcessor mapper = (MapperPostProcessor) processor;
 
                 Root_meta_pure_alloy_connections_MapperPostProcessor p = HelperRelationalDatabaseConnectionBuilder.createMapperPostProcessor(mapper);
@@ -527,5 +533,17 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     public List<Function3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning, CompileContext, Multimap<String, Column>, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning>> getExtraMilestoningProcessors()
     {
         return Lists.mutable.with((spec, context, columnMap) -> HelperRelationalBuilder.visitMilestoning(spec, context, columnMap));
+    }
+
+    @Override
+    public List<Procedure2<InputData, CompileContext>> getExtraMappingTestInputDataProcessors()
+    {
+        return Collections.singletonList(((inputData, compileContext) -> {
+            if (inputData instanceof RelationalInputData)
+            {
+                RelationalInputData relationalInputData = (RelationalInputData)inputData;
+                compileContext.resolveStore(relationalInputData.database, relationalInputData.sourceInformation);
+            }
+        }));
     }
 }

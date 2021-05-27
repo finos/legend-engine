@@ -755,7 +755,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 2\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 2\"},\"source\":{\"number\":1,\"record\":\"{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}\"}}}';\n" +
                 "      )\n" +
                 "   ]\n" +
-                ")\n", "PARSER error at [13:10-67]: Mapping test object input data format type is missing");
+                ")\n", "PARSER error at [13:10-67]: Mapping test object 'input type' is missing. Possible values: JSON, XML");
         // missing class
         test("Class model::domain::Target\n" +
                 "{\n" +

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.datasource;
 
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
@@ -31,6 +32,10 @@ public class DataSourceSpecificationParseTreeWalker
         if (testDataSetupCSVCtx != null)
         {
             dsSpec.testDataSetupCsv = PureGrammarParserUtility.fromGrammarString(testDataSetupCSVCtx.STRING().getText(), true);
+        }
+        if (dbSpecCtx.localH2DSPTestDataSetupSQLS() != null && !dbSpecCtx.localH2DSPTestDataSetupSQLS().isEmpty())
+        {
+            dsSpec.testDataSetupSqls = ListIterate.collect(dbSpecCtx.localH2DSPTestDataSetupSQLS().get(0).sqlsArray().STRING(), ctx -> PureGrammarParserUtility.fromGrammarString(ctx.getText(), true));
         }
         return dsSpec;
     }

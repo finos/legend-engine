@@ -30,12 +30,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning;
@@ -73,6 +75,12 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtypes(FastList.newListWith(
                                 Tuples.pair(RootRelationalClassMapping.class, "relational"),
                                 Tuples.pair(RelationalClassMapping.class, "embedded")
+                        )).build(),
+                // Mapping Test InputData
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(InputData.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(RelationalInputData.class, "relational")
                         )).build(),
                 // Association mapping
                 ProtocolSubTypeInfo.Builder
