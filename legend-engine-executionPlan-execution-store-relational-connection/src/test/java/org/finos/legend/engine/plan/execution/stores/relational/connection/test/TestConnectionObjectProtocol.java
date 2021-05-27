@@ -19,19 +19,26 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.EmbeddedH2DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
+import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
+import org.finos.legend.engine.shared.core.vault.Vault;
 import org.h2.tools.Server;
 import org.junit.Test;
 
 import javax.security.auth.Subject;
+import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -42,7 +49,7 @@ public class TestConnectionObjectProtocol extends org.finos.legend.engine.plan.e
     @Override
     protected Subject getSubject()
     {
-        return SubjectTools.getLocalSubject();
+        return null;//SubjectTools.getLocalSubject();
     }
 
     @Test
@@ -74,6 +81,22 @@ public class TestConnectionObjectProtocol extends org.finos.legend.engine.plan.e
         testConnection(ds::getConnectionUsingSubject, "SELECT * FROM INFORMATION_SCHEMA.TABLES");
     }
 
+    @Test
+    public void testSnowflakePublicConnection() throws Exception
+    {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream("../legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/snowflake.properties"));
+        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
+
+        SnowflakeDataSourceSpecification ds =
+                new SnowflakeDataSourceSpecification(
+                        new SnowflakeDataSourceSpecificationKey("ki79827", "us-east-2", "LEGENDRO_WH", "KNOEMA_RENEWABLES_DATA_ATLAS"),
+                        new SnowflakeManager(),
+                        new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"),
+                        new RelationalExecutorInfo());
+        testConnection(ds::getConnectionUsingSubject, "select * from KNOEMA_RENEWABLES_DATA_ATLAS.RENEWABLES.DATASETS");
+    }
+
     protected void testConnection(Function<Subject, Connection> toDBConnection, String sqlExpression) throws Exception
     {
         // Kerberos
@@ -84,9 +107,9 @@ public class TestConnectionObjectProtocol extends org.finos.legend.engine.plan.e
         for (int i = 0; i < 10; i++)
         {
             result.add(executor.submit(() -> {
-                try(Connection connection = toDBConnection.valueOf(subject);
-                    Statement st = connection.createStatement();
-                    ResultSet resultSet = st.executeQuery(sqlExpression))
+                try (Connection connection = toDBConnection.valueOf(subject);
+                     Statement st = connection.createStatement();
+                     ResultSet resultSet = st.executeQuery(sqlExpression))
                 {
                     while (resultSet.next())
                     {

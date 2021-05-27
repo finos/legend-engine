@@ -49,6 +49,27 @@ embeddedH2DSPDirectory:                     DIRECTORY COLON STRING SEMI_COLON
 embeddedH2DSPAutoServerMode:                EMBEDDED_H2_DSP_AUTO_SERVER_MODE COLON BOOLEAN SEMI_COLON
 ;
 
+snowflakeDatasourceSpecification:           SNOWFLAKE
+                                                BRACE_OPEN
+                                                    (
+                                                        dbName
+                                                        | dbAccount
+                                                        | dbWarehouse
+                                                        | snowflakeRegion
+                                                    )*
+                                                BRACE_CLOSE
+;
+
+dbWarehouse:                                WAREHOUSE COLON STRING SEMI_COLON
+;
+
+dbAccount:                                  ACCOUNT COLON STRING SEMI_COLON
+;
+
+snowflakeRegion:                            REGION COLON STRING SEMI_COLON
+;
+
+
 // ----------------------------- SHARED -----------------------------
 
 dbPort:                                     PORT COLON INTEGER SEMI_COLON

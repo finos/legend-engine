@@ -143,7 +143,8 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtypes(FastList.newListWith(
                                 Tuples.pair(LocalH2DatasourceSpecification.class, "h2Local"),
                                 Tuples.pair(StaticDatasourceSpecification.class, "static"),
-                                Tuples.pair(EmbeddedH2DatasourceSpecification.class, "h2Embedded")
+                                Tuples.pair(EmbeddedH2DatasourceSpecification.class, "h2Embedded"),
+                                Tuples.pair(SnowflakeDatasourceSpecification.class, "snowflake")
                         )).build(),
 
                 // AuthenticationStrategy
@@ -152,7 +153,8 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtypes(FastList.newListWith(
                                 Tuples.pair(DefaultH2AuthenticationStrategy.class, "h2Default"),
                                 Tuples.pair(TestDatabaseAuthenticationStrategy.class, "test"),
-                                Tuples.pair(DelegatedKerberosAuthenticationStrategy.class, "delegatedKerberos")
+                                Tuples.pair(DelegatedKerberosAuthenticationStrategy.class, "delegatedKerberos"),
+                                Tuples.pair(SnowflakePublicAuthenticationStrategy.class, "snowflakePublic")
                                 )).build(),
 
                 //Post Processor

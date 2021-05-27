@@ -158,6 +158,14 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- Guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <!-- Guava -->
+
+
         <!-- POOLING -->
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -177,6 +185,11 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.snowflake</groupId>
+            <artifactId>snowflake-jdbc</artifactId>
+        </dependency>
+
         <!-- DRIVERS -->
 
         <!-- OPEN TRACING -->
