@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.mana
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.utils.DynamicPortGenerator;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -62,6 +63,15 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     staticDatasourceSpecification.host,
                     staticDatasourceSpecification.port,
                     staticDatasourceSpecification.databaseName);
+        }
+        else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
+        {
+            SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification)datasourceSpecification;
+            return new SnowflakeDataSourceSpecificationKey(
+                    snowflakeDatasourceSpecification.accountName,
+                    snowflakeDatasourceSpecification.region,
+                    snowflakeDatasourceSpecification.warehouseName,
+                    snowflakeDatasourceSpecification.databaseName);
         }
         return null;
     }

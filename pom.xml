@@ -97,6 +97,8 @@
         <!-- Databases -->
         <hikaricp.version>3.4.5</hikaricp.version>
         <h2.version>1.4.200</h2.version>
+        <snowflake.version>3.13.1</snowflake.version>
+
 
         <!-- Legend -->
         <legend.pure.version>1.23.0</legend.pure.version>
@@ -1304,6 +1306,11 @@
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${h2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.snowflake</groupId>
+                <artifactId>snowflake-jdbc</artifactId>
+                <version>${snowflake.version}</version>
             </dependency>
             <!-- Database -->
 

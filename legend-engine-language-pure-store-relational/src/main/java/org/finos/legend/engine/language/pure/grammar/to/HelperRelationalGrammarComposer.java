@@ -579,6 +579,19 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
+        else if (_spec instanceof SnowflakeDatasourceSpecification)
+        {
+            SnowflakeDatasourceSpecification spec = (SnowflakeDatasourceSpecification) _spec;
+            int baseIndentation = 1;
+            return "Snowflake\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "name: " + convertString(spec.databaseName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "account: " + convertString(spec.accountName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "warehouse: " + convertString(spec.warehouseName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "region: " + convertString(spec.region, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+
+        }
 
         return null;
     }
@@ -606,6 +619,20 @@ public class HelperRelationalGrammarComposer
                             : ""
                     );
         }
+        else if (_auth instanceof SnowflakePublicAuthenticationStrategy)
+        {
+            SnowflakePublicAuthenticationStrategy auth = (SnowflakePublicAuthenticationStrategy) _auth;
+            int baseIndentation = 1;
+            return "SnowflakePublic" +
+                            "\n" +
+                            context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                            context.getIndentationString() + getTabString(baseIndentation + 1) + "publicUserName: " + convertString(auth.publicUserName, true) + ";\n" +
+                            context.getIndentationString() + getTabString(baseIndentation + 1) + "privateKeyVaultReference: " + convertString(auth.privateKeyVaultReference, true) + ";\n" +
+                            context.getIndentationString() + getTabString(baseIndentation + 1) + "passPhraseVaultReference: " + convertString(auth.passPhraseVaultReference, true) + ";\n" +
+                            context.getIndentationString() + getTabString(baseIndentation) + "}";
+
+        }
+
         return null;
     }
 

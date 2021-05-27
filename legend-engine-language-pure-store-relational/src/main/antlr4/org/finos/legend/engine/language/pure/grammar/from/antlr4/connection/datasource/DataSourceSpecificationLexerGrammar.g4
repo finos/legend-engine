@@ -15,3 +15,8 @@ NAME:                                       'name';
 BRACKET_OPEN:                               '[';
 BRACKET_CLOSE:                              ']';
 
+
+SNOWFLAKE:                                  'Snowflake';
+ACCOUNT:                                    'account';
+WAREHOUSE:                                  'warehouse';
+REGION:                                     'region';

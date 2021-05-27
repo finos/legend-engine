@@ -27,10 +27,10 @@ import javax.sql.DataSource;
 
 public class SnowflakeDataSourceSpecification extends DataSourceSpecification
 {
-    public static String SNOWFLAKE_ACCOUNT_NAME = "alloy_snowflake_accountName";
-    public static String SNOWFLAKE_REGION = "alloy_snowflake_region";
-    public static String SNOWFLAKE_WAREHOUSE_NAME = "alloy_snowflake_warehouseName";
-    public static String SNOWFLAKE_DATABASE_NAME= "alloy_snowflake_databaseName";
+    public static String SNOWFLAKE_ACCOUNT_NAME = "legend_snowflake_accountName";
+    public static String SNOWFLAKE_REGION = "legend_snowflake_region";
+    public static String SNOWFLAKE_WAREHOUSE_NAME = "legend_snowflake_warehouseName";
+    public static String SNOWFLAKE_DATABASE_NAME= "legend_snowflake_databaseName";
 
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
