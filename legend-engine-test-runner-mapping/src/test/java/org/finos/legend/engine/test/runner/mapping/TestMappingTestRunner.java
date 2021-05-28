@@ -157,7 +157,7 @@ public class TestMappingTestRunner
                         "      query: |test::Person.all()->project([p|$p.lastName],['lastName']);\n" +
                         "      data:\n" +
                         "      [\n" +
-                        "        <Relational, SQL, test::DB, 'Drop table if exists PersonTable;Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>\n" +
+                        "        <Relational, SQL, test::DB, 'Drop table if exists PersonTable;\\nCreate Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\nInsert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\nInsert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>\n" +
                         "      ];\n" +
                         "      assert: '[ {\\n  \"values\" : [ \"Doe;\" ]\\n}, {\\n  \"values\" : [ \"Doe2\" ]\\n} ]';\n" +
                         "    )\n" +
@@ -220,7 +220,7 @@ public class TestMappingTestRunner
                         "      query: |test::Person.all()->project([p|$p.lastName],['lastName']);\n" +
                         "      data:\n" +
                         "      [\n" +
-                        "        <Relational, SQL, test::DB, 'Drop table if exists PersonTable;Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>\n" +
+                        "        <Relational, SQL, test::DB, 'Drop table if exists PersonTable;\\nCreate Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\nInsert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\nInsert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>\n" +
                         "      ];\n" +
                         "      assert: '[ {\\n  \"values\" : [ \"Doe;\" ]\\n}, {\\n  \"values\" : [ \"Wrong\" ]\\n} ]';\n" +
                         "    )\n" +

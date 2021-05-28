@@ -29,11 +29,11 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
             LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();
             if (relationalInputData.inputType == RelationalInputType.SQL)
             {
-                localH2DatasourceSpecification.testDataSetupSqls = Lists.mutable.of(relationalInputData.data.split("(?<!\\\\);")).collect(r -> r.replace("\\'","'").replace("\\;",";") + ";");
+                localH2DatasourceSpecification.testDataSetupSqls = Lists.mutable.of(relationalInputData.data.split("(?<!\\\\);")).collect(r -> r.replace("\\;",";") + ";");
             }
             else if (relationalInputData.inputType == RelationalInputType.CSV)
             {
-                localH2DatasourceSpecification.testDataSetupCsv = relationalInputData.data.replace("\\n","\n");
+                localH2DatasourceSpecification.testDataSetupCsv = relationalInputData.data;
             }
             else
             {

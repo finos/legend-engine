@@ -234,7 +234,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
 
         relationalInputData.database = inputDataContext.testInputSrc().getText();
 
-        relationalInputData.data = PureGrammarParserUtility.fromGrammarString(inputDataContext.testInputDataContent().STRING().getText(), false);
+        relationalInputData.data = PureGrammarParserUtility.fromGrammarString(inputDataContext.testInputDataContent().STRING().getText().replace("\\;","\\\\;"), true);
         return relationalInputData;
     }
 
