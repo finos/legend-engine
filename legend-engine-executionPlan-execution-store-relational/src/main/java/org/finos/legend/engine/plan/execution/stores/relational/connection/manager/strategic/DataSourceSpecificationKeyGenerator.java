@@ -71,7 +71,8 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     snowflakeDatasourceSpecification.accountName,
                     snowflakeDatasourceSpecification.region,
                     snowflakeDatasourceSpecification.warehouseName,
-                    snowflakeDatasourceSpecification.databaseName);
+                    snowflakeDatasourceSpecification.databaseName,
+                    snowflakeDatasourceSpecification.cloudType);
         }
         return null;
     }

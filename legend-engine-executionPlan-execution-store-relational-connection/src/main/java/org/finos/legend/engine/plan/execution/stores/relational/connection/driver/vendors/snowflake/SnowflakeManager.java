@@ -27,7 +27,8 @@ public class SnowflakeManager extends DatabaseManager
         String accountName = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME);
         String region = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION);
         String warehouse = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME);
-        return "jdbc:snowflake://" + accountName + "." + region + ".aws.snowflakecomputing.com/?warehouse=" + warehouse;
+        String cloudType = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE);
+        return "jdbc:snowflake://" + accountName + "." + region + "." + cloudType + ".snowflakecomputing.com/?warehouse=" + warehouse;
     }
 
     @Override

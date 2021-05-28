@@ -90,7 +90,7 @@ public class TestConnectionObjectProtocol extends org.finos.legend.engine.plan.e
 
         SnowflakeDataSourceSpecification ds =
                 new SnowflakeDataSourceSpecification(
-                        new SnowflakeDataSourceSpecificationKey("ki79827", "us-east-2", "LEGENDRO_WH", "KNOEMA_RENEWABLES_DATA_ATLAS"),
+                        new SnowflakeDataSourceSpecificationKey("ki79827", "us-east-2", "LEGENDRO_WH", "KNOEMA_RENEWABLES_DATA_ATLAS", "aws"),
                         new SnowflakeManager(),
                         new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"),
                         new RelationalExecutorInfo());

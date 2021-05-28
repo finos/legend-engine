@@ -24,13 +24,16 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     private final String region;
     private final String warehouseName;
     private final String databaseName;
+    private final String cloudType;
 
-    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName)
+
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType)
     {
         this.accountName = accountName;
         this.region = region;
         this.warehouseName = warehouseName;
         this.databaseName = databaseName;
+        this.cloudType = cloudType == null ? "privatelink" : cloudType;
     }
 
     public String getAccountName()
@@ -51,6 +54,11 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     public String getDatabaseName()
     {
         return databaseName;
+    }
+
+    public String getCloudType()
+    {
+        return cloudType;
     }
 
     @Override
