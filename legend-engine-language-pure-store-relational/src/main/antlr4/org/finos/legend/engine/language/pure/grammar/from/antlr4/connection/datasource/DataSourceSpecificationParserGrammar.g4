@@ -56,6 +56,7 @@ snowflakeDatasourceSpecification:           SNOWFLAKE
                                                         | dbAccount
                                                         | dbWarehouse
                                                         | snowflakeRegion
+                                                        | cloudType
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -69,6 +70,8 @@ dbAccount:                                  ACCOUNT COLON STRING SEMI_COLON
 snowflakeRegion:                            REGION COLON STRING SEMI_COLON
 ;
 
+cloudType:                                  CLOUDTYPE COLON STRING SEMI_COLON
+;
 
 // ----------------------------- SHARED -----------------------------
 

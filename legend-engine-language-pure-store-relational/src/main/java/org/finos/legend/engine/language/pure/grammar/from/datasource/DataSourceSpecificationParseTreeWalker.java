@@ -71,6 +71,12 @@ public class DataSourceSpecificationParseTreeWalker
         // region
         DataSourceSpecificationParserGrammar.SnowflakeRegionContext regionCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.snowflakeRegion(), "region", dsSpec.sourceInformation);
         dsSpec.region = PureGrammarParserUtility.fromGrammarString(regionCtx.STRING().getText(), true);
+        // cloudType
+        DataSourceSpecificationParserGrammar.CloudTypeContext cloudTypeCtx= PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.cloudType(), "cloudType", dsSpec.sourceInformation);
+        if (cloudTypeCtx != null)
+        {
+            dsSpec.cloudType = PureGrammarParserUtility.fromGrammarString(cloudTypeCtx.STRING().getText(), true);
+        }
         return dsSpec;
     }
 

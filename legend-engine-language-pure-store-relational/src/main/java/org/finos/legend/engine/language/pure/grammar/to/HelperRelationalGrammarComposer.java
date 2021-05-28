@@ -589,6 +589,7 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "account: " + convertString(spec.accountName, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "warehouse: " + convertString(spec.warehouseName, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "region: " + convertString(spec.region, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "cloudType: " + convertString(spec.cloudType, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
 
         }

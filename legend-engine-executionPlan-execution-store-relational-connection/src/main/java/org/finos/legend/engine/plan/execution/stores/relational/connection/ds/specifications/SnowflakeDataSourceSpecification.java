@@ -31,6 +31,7 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public static String SNOWFLAKE_REGION = "legend_snowflake_region";
     public static String SNOWFLAKE_WAREHOUSE_NAME = "legend_snowflake_warehouseName";
     public static String SNOWFLAKE_DATABASE_NAME= "legend_snowflake_databaseName";
+    public static String SNOWFLAKE_CLOUD_TYPE= "legend_snowflake_cloudType";
 
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
@@ -41,6 +42,7 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put(SNOWFLAKE_REGION, key.getRegion());
         this.extraDatasourceProperties.put(SNOWFLAKE_WAREHOUSE_NAME, key.getWarehouseName());
         this.extraDatasourceProperties.put(SNOWFLAKE_DATABASE_NAME, key.getDatabaseName());
+        this.extraDatasourceProperties.put(SNOWFLAKE_CLOUD_TYPE, key.getCloudType());
 
         this.extraDatasourceProperties.put("account", key.getAccountName());
         this.extraDatasourceProperties.put("warehouse", key.getWarehouseName());

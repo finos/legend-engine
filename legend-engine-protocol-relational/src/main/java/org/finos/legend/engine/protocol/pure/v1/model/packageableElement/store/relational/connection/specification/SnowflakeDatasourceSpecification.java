@@ -3,11 +3,10 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 public class SnowflakeDatasourceSpecification extends DatasourceSpecification
 {
     public String accountName;
-    public String accountType;
-
     public String region;
     public String warehouseName;
     public String databaseName;
+    public String cloudType;
 
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)

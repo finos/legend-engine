@@ -20,3 +20,4 @@ SNOWFLAKE:                                  'Snowflake';
 ACCOUNT:                                    'account';
 WAREHOUSE:                                  'warehouse';
 REGION:                                     'region';
+CLOUDTYPE:                                  'cloudType';

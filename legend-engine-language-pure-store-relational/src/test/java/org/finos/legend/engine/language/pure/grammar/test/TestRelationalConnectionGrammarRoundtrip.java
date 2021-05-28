@@ -112,6 +112,7 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "    account: 'account';\n" +
                 "    warehouse: 'warehouseName';\n" +
                 "    region: 'us-east2';\n" +
+                "    cloudType: 'aws';\n" +
                 "  };\n" +
                 "  auth: SnowflakePublic\n" +
                 "  {\n" +
