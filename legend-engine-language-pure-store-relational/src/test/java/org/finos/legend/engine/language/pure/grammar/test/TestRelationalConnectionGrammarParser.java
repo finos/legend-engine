@@ -54,6 +54,119 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
+    public void testSnowflakePublicAuth()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:3-15:4]: Field 'publicUserName' is required");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {" +
+                "       publicUserName: 'name';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:3-15:4]: Field 'privateKeyVaultReference' is required");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {" +
+                "       publicUserName: 'name';\n" +
+                "       privateKeyVaultReference : 'key';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:3-16:4]: Field 'passPhraseVaultReference' is required");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {" +
+                "       publicUserName: 'name';\n" +
+                "       publicUserName: 'name';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:3-16:4]: Field 'publicUserName' should be specified only once");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {" +
+                "       publicUserName: 'name';\n" +
+                "       privateKeyVaultReference : 'key';\n" +
+                "       privateKeyVaultReference : 'key';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:3-17:4]: Field 'privateKeyVaultReference' should be specified only once");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {" +
+                "       publicUserName: 'name';\n" +
+                "       privateKeyVaultReference : 'key';\n" +
+                "       passPhraseVaultReference : 'pass';\n" +
+                "       passPhraseVaultReference : 'pass';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:3-18:4]: Field 'passPhraseVaultReference' should be specified only once");
+    }
+
+    @Test
     public void testRelationalDatabaseConnection()
     {
         // Missing fields
@@ -77,7 +190,7 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
     @Test
     public void testLocalH2DatasourceConfiguration()
     {
-         //Duplicate field
+        //Duplicate field
         test("###Connection\n" +
                 "RelationalDatabaseConnection meta::mySimpleConnection\n" +
                 "{\n" +
@@ -162,7 +275,8 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                         "    }");
     }
 
-    private void testPostProcessor(String error, String ...postProcessors) {
+    private void testPostProcessor(String error, String... postProcessors)
+    {
         test("###Connection\n" +
                 "RelationalDatabaseConnection meta::mySimpleConnection\n" +
                 "{\n" +
