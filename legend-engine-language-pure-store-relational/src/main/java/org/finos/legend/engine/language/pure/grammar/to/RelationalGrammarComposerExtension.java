@@ -270,7 +270,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             if (inputData instanceof RelationalInputData)
             {
                 RelationalInputData relationalInputData = (RelationalInputData) inputData;
-                return "<Relational, " + relationalInputData.inputType + ", " + relationalInputData.database + ", "+ convertString(relationalInputData.data, false) + ">";
+                return "<Relational, " + relationalInputData.inputType + ", " + relationalInputData.database + ", "+ convertString(relationalInputData.data, true).replace("\\\\;","\\;") + ">";
             }
             return null;
         });
