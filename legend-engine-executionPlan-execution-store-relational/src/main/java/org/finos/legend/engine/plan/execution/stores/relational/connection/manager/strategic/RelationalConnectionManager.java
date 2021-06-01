@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
@@ -48,6 +49,7 @@ public class RelationalConnectionManager implements ConnectionManager
     private final ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey;
 
     private MutableList<AuthenticationStrategyVisitor<AuthenticationStrategyKey>> authenticationStrategyKeyVisitors;
+    private MutableList<AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy>> authenticationStrategyTrans;
     private MutableList<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>> dataSourceKeys;
     private MutableList<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>>> dataSourceTrans;
 
@@ -62,6 +64,10 @@ public class RelationalConnectionManager implements ConnectionManager
                 Lists.mutable.<AuthenticationStrategyVisitor<AuthenticationStrategyKey>>with(new AuthenticationStrategyKeyGenerator())
                 .withAll(extensions.collect(StrategicConnectionExtension::getExtraAuthenticationKeyGenerators));
 
+        this.authenticationStrategyTrans =
+                Lists.mutable.<AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy>>with(new AuthenticationStrategyTransformer(oauthProfiles))
+                        .withAll(extensions.collect(extension -> extension.getExtraAuthenticationStrategyTransformGenerators(oauthProfiles)));
+
         this.dataSourceKeys =
                 Lists.mutable.<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>>with(c -> new DataSourceSpecificationKeyGenerator(testDbPort, c))
                 .withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationKeyGenerators(testDbPort)));
@@ -71,7 +77,10 @@ public class RelationalConnectionManager implements ConnectionManager
                     (r, c) -> new DataSourceSpecificationTransformer(
                             relationalExecutorInfo,
                             c.getDataSourceSpecificationKey(),
-                            r.authenticationStrategy.accept(new AuthenticationStrategyTransformer(oauthProfiles)),
+                            ListIterate.collect(this.authenticationStrategyTrans, visitor -> r.authenticationStrategy.accept(visitor))
+                                    .select(Objects::nonNull)
+                                    .getFirstOptional()
+                                    .orElseThrow(() -> new UnsupportedOperationException("No transformer provided for Authentication Strategy - " + r.authenticationStrategy.getClass().getName())),
                             r)
                 ).withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationTransformerGenerators(oauthProfiles,relationalExecutorInfo)));
     }
