@@ -14,14 +14,11 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 @Deprecated
-public class HackedClass extends ValueSpecification
+public class HackedClass extends PackageableElementPtr
 {
-    public String fullPath;
-
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {

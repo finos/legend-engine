@@ -14,13 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-public class MappingInstance extends ValueSpecification
+public class MappingInstance extends PackageableElementPtr
 {
-    public String fullPath;
-
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
