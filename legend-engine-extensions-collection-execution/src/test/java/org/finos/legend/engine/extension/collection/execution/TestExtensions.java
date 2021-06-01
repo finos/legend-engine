@@ -18,6 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
+import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutorBuilder;
@@ -46,6 +47,12 @@ public class TestExtensions
                 .with(InMemoryStoreExecutorBuilder.class)
                 .with(RelationalStoreExecutorBuilder.class);
         assertHasExtensions(expectedExtensions, StoreExecutorBuilder.class);
+    }
+
+    @Test
+    public void testAbstractServicePlanExecutor()
+    {
+        Assert.assertNotNull(AbstractServicePlanExecutor.class);
     }
 
     private <T> void assertHasExtensions(Iterable<? extends Class<? extends T>> expectedExtensionClasses, Class<T> extensionClass)
