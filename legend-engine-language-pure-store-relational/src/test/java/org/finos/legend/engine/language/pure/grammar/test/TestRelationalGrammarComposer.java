@@ -74,7 +74,12 @@ public class TestRelationalGrammarComposer
                         "      query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
                         "      data:\n" +
                         "      [\n" +
-                        "        <Relational, SQL, aa::db, 'Drop table if exists PersonTable;\\nCreate Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\nInsert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\nInsert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>\n" +
+                        "        <Relational, SQL, aa::db, \n" +
+                        "          'Drop table if exists PersonTable;\\n'+\n" +
+                        "          'Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\n'+\n" +
+                        "          'Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\n'+\n" +
+                        "          'Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');\\n'\n" +
+                        "        >\n" +
                         "      ];\n" +
                         "      assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
                         "    )\n" +
@@ -102,7 +107,14 @@ public class TestRelationalGrammarComposer
                         "      query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
                         "      data:\n" +
                         "      [\n" +
-                        "        <Relational, CSV, aa::db, 'default\\nPersonTable\\nid,lastName\\n1,Doe;\\n2,Doe2\\n\\n\\n\\n'>\n" +
+                        "        <Relational, CSV, aa::db, \n" +
+                        "          'default\\n'+\n" +
+                        "          'PersonTable\\n'+\n" +
+                        "          'id,lastName\\n'+\n" +
+                        "          '1,Doe;\\n'+\n" +
+                        "          '2,Doe2\\n'+\n" +
+                        "          '\\n\\n\\n'\n" +
+                        "        >\n" +
                         "      ];\n" +
                         "      assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
                         "    )\n" +

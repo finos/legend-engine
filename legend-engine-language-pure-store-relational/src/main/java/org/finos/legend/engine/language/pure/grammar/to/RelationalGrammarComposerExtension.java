@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -38,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.TablePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
@@ -183,7 +185,8 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                         context);
 
                 List<String> postProcessorStrings = FastList.newList();
-                if (relationalDatabaseConnection.postProcessors != null && !relationalDatabaseConnection.postProcessors.isEmpty()) {
+                if (relationalDatabaseConnection.postProcessors != null && !relationalDatabaseConnection.postProcessors.isEmpty())
+                {
                     postProcessorStrings.addAll(ListIterate.collect(relationalDatabaseConnection.postProcessors, postProcessor -> IRelationalGrammarComposerExtension.process(
                             postProcessor,
                             ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraPostProcessorComposers),
@@ -270,7 +273,23 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             if (inputData instanceof RelationalInputData)
             {
                 RelationalInputData relationalInputData = (RelationalInputData) inputData;
-                return "<Relational, " + relationalInputData.inputType + ", " + relationalInputData.database + ", "+ convertString(relationalInputData.data, true).replace("\\\\;","\\;") + ">";
+                String data;
+                if (relationalInputData.inputType == RelationalInputType.SQL)
+                {
+                    MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(relationalInputData.data.replace("\n", "").split("(?<!\\\\);"));
+                    data = "\n" + lines.collect(l -> getTabString(5) + convertString(l + ";\n", true).replace("\\\\;", "\\;")).makeString("+\n");
+                }
+                else if (relationalInputData.inputType == RelationalInputType.CSV)
+                {
+                    MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(relationalInputData.data.split("\\n"));
+                    lines.add("\n\n");
+                    data = "\n" + lines.collect(l -> getTabString(5) + convertString(l + "\n", true)).makeString("+\n");
+                }
+                else
+                {
+                    data = relationalInputData.data;
+                }
+                return "<Relational, " + relationalInputData.inputType + ", " + relationalInputData.database + ", " + data + "\n" + getTabString(4) + ">";
             }
             return null;
         });
@@ -309,7 +328,8 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         return Lists.mutable.with((specification, offset, context) -> HelperRelationalGrammarComposer.visitMilestoning(specification, offset, RelationalGrammarComposerContext.Builder.newInstance(context).build()));
     }
 
-    public static String renderRelationalOperationElement(RelationalOperationElement operationElement) {
+    public static String renderRelationalOperationElement(RelationalOperationElement operationElement)
+    {
         return HelperRelationalGrammarComposer.renderRelationalOperationElement(operationElement, RelationalGrammarComposerContext.Builder.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).build());
     }
 }
