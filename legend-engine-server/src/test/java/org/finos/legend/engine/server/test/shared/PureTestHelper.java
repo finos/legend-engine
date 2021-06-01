@@ -35,6 +35,7 @@ import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
@@ -359,6 +360,9 @@ public class PureTestHelper
 
     public static CompiledExecutionSupport getClassLoaderExecutionSupport()
     {
+        ConsoleCompiled console = new ConsoleCompiled();
+        console.disable();
+
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
                 new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), new MetadataLazy(PureTestHelper.class.getClassLoader()), Sets.mutable.empty()),
@@ -366,7 +370,7 @@ public class PureTestHelper
                 new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), PureRepositoriesExternal.repositories(), null)),
                 null,
                 null,
-                new ConsoleCompiled(),
+                console,
                 new FunctionCache(),
                 new ClassCache(),
                 null,
@@ -400,12 +404,17 @@ public class PureTestHelper
             // See https://github.com/opentracing/opentracing-java/issues/170
             // See https://github.com/opentracing/opentracing-java/issues/364
             GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
+            String testName = PackageableElement.getUserPathForPackageableElement(this.coreInstance);
+            System.out.print("EXECUTING " + testName + " ... ");
+            long start = System.nanoTime();
             try
             {
                 method.invoke(null, this.executionSupport);
+                System.out.format("DONE (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
             }
-	    catch(InvocationTargetException e)
+	        catch(InvocationTargetException e)
             {
+                System.out.format("ERROR (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
                 throw e.getTargetException();
             }
         }
