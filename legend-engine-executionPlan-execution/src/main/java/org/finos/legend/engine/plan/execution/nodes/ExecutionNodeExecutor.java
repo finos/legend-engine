@@ -459,7 +459,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             GraphObjectsBatch graphObjectsBatch = this.executionState.graphObjectsBatch;
             List<?> parentObjects = graphObjectsBatch.getObjectsForNodeIndex(globalGraphFetchExecutionNode.parentIndex);
 
-            if (!parentObjects.isEmpty())
+            if ((parentObjects != null) && !parentObjects.isEmpty())
             {
                 globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
 
