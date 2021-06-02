@@ -130,6 +130,17 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     }
 
     @Override
+    public ValueSpecification visit(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr packageableElementPtr)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.context.resolvePackageableElement(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation);
+
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+                ._genericType(packageableElement._classifierGenericType())
+                ._multiplicity(this.context.pureModel.getMultiplicity("one"))
+                ._values(FastList.newListWith(packageableElement));
+    }
+
+    @Override
     public ValueSpecification visit(Whatever whatever)
     {
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")

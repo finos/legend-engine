@@ -28,21 +28,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variabl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.AnalyticsExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
-import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_PropertyGraphFetchTree_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_RootGraphFetchTree_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_router_analytics_AnalyticsExecutionContext_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
@@ -114,13 +107,15 @@ public class HelperValueSpecificationBuilder
         // for X.property. X is the first parameter
         processingContext.push("Processing property " + property);
         org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification firstParameter = parameters.get(0);
+        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processedParameters = ListIterate.collect(parameters, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicity;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification inferredVariable;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification result;
 
-        if (firstParameter instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum)
+        if (firstParameter instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum // Only for backward compatibility!
+            || (processedParameters.get(0)._genericType()._rawType().equals(context.pureModel.getType("meta::pure::metamodel::type::Enumeration"))))
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
             m.lowerBound = 1;
@@ -128,7 +123,7 @@ public class HelperValueSpecificationBuilder
             CString enumValue = new CString();
             enumValue.values = Lists.mutable.of(property);
             enumValue.multiplicity = m;
-            context.resolveEnumValue(((Enum) firstParameter).fullPath, enumValue.values.get(0), ((Enum) firstParameter).sourceInformation, sourceInformation); // validation to make sure the enum value can be found
+            context.resolveEnumValue(((PackageableElementPtr) firstParameter).fullPath, enumValue.values.get(0), firstParameter.sourceInformation, sourceInformation); // validation to make sure the enum value can be found
             AppliedFunction extractEnum = new AppliedFunction();
             extractEnum.function = "extractEnumValue";
             extractEnum.parameters = Lists.mutable.of(firstParameter, enumValue);
@@ -136,8 +131,6 @@ public class HelperValueSpecificationBuilder
         }
         else
         {
-            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processedParameters = ListIterate.collect(parameters, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));
-
             if (firstParameter instanceof Variable)
             {
                 inferredVariable = processingContext.getInferredVariable(((Variable) firstParameter).name);
