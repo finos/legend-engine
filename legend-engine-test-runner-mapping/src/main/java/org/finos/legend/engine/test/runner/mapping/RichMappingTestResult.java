@@ -16,8 +16,8 @@ package org.finos.legend.engine.test.runner.mapping;
 
 import java.util.Optional;
 
+import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.TestResult;
-import org.junit.ComparisonFailure;
 
 public class RichMappingTestResult
 {
@@ -43,7 +43,7 @@ public class RichMappingTestResult
         this.exception = null;
     }
 
-    public RichMappingTestResult(String mappingPath, String testName, ComparisonFailure c)
+    public RichMappingTestResult(String mappingPath, String testName, ComparisonError c)
     {
        this(mappingPath, testName, c.getExpected(), c.getActual());
        this.result = TestResult.FAILURE;
