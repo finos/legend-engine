@@ -34,11 +34,13 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                     ._name(service.name)
                     ._pattern(service.pattern)
                     ._owners(Lists.mutable.withAll(service.owners))
-                    ._documentation(service.documentation)
-                    ._execution(HelperServiceBuilder.processServiceExecution(service.execution, context))
-                    ._test(HelperServiceBuilder.processServiceTest(service.test, context, service.execution));
+                    ._documentation(service.documentation);
             pack._childrenAdd(pureService);
             return pureService;
+        }, (service, context) -> {
+            Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service)context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> c._name().equals(service.name));
+            pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context))
+                    ._test(HelperServiceBuilder.processServiceTest(service.test, context, service.execution));
         }));
     }
 }

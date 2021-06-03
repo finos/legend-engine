@@ -243,8 +243,11 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     {
         final org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name);
         this.context.pureModel.mappingsIndex.put(this.context.pureModel.buildPackageString(mapping._package, mapping.name), pureMapping);
+        GenericType mappingGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::mapping::Mapping"));
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(mapping._package);
-        pureMapping._name(mapping.name)._package(pack);
+        pureMapping._name(mapping.name)
+                   ._package(pack)
+                   ._classifierGenericType(mappingGenericType);
         pack._childrenAdd(pureMapping);
         return pureMapping;
     }
@@ -256,9 +259,6 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableRuntime._package);
         PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(packageableRuntime.name);
         pack._childrenAdd(stub);
-        // NOTE: the whole point of this processing is to put the Pure Runtime in an index
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, this.context);
-        this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), runtime);
         return stub;
     }
 

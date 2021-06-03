@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
+@Deprecated
 public class Class extends PackageableElementPtr
 {
     @Override

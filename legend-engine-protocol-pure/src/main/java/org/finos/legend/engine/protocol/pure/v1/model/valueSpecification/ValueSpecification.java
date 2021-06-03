@@ -31,8 +31,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.pat
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = Class.class, name = "class"),
         @JsonSubTypes.Type(value = PackageableElementPtr.class, name = "packageableElementPtr"),
+        @JsonSubTypes.Type(value = HackedClass.class, name = "hackedClass"),
         @JsonSubTypes.Type(value = EnumValue.class, name = "enumValue"),
         @JsonSubTypes.Type(value = Variable.class, name = "var"),
         @JsonSubTypes.Type(value = Lambda.class, name = "lambda"),
@@ -52,7 +52,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.pat
 
         @JsonSubTypes.Type(value = AggregateValue.class, name = "aggregateValue"),
         @JsonSubTypes.Type(value = Pair.class, name = "pair"),
-        @JsonSubTypes.Type(value = MappingInstance.class, name = "mappingInstance"),
         @JsonSubTypes.Type(value = RuntimeInstance.class, name = "runtimeInstance"),
         @JsonSubTypes.Type(value = ExecutionContextInstance.class, name = "executionContextInstance"),
         @JsonSubTypes.Type(value = PureList.class, name = "listInstance"),
@@ -72,11 +71,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.pat
         @JsonSubTypes.Type(value = TdsOlapAggregation.class, name = "tdsOlapAggregation"),
 
         // TO BE DELETED
+        @JsonSubTypes.Type(value = MappingInstance.class, name = "mappingInstance"),
         @JsonSubTypes.Type(value = AppliedQualifiedProperty.class, name = "qualifiedProperty"),
         @JsonSubTypes.Type(value = HackedUnit.class, name = "hackedUnit"),
-        @JsonSubTypes.Type(value = HackedClass.class, name = "hackedClass"),
         @JsonSubTypes.Type(value = Whatever.class, name = "whatever"),
         @JsonSubTypes.Type(value = UnknownAppliedFunction.class, name = "unknownFunc"),
+        @JsonSubTypes.Type(value = Class.class, name = "class"),
         @JsonSubTypes.Type(value = Enum.class, name = "enum")
 })
 // NOTE: due to plan generator producing duplicated _type field, we need to enable this
