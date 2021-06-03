@@ -412,7 +412,7 @@ public class PureTestHelper
                 method.invoke(null, this.executionSupport);
                 System.out.format("DONE (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
             }
-	        catch(InvocationTargetException e)
+	    catch(InvocationTargetException e)
             {
                 System.out.format("ERROR (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
                 throw e.getTargetException();
