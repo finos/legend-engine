@@ -196,7 +196,23 @@ public class PureModel implements IPureModel
             // Processing
 
             PureModelContextDataIndex pureModelContextDataIndex = index(pureModelContextData);
-            this.loadSectionIndices(pureModelContextDataIndex);
+
+            // First pass -> ensure all packageable elements are resolved as early as possible.
+            pureModelContextDataIndex.sectionIndices.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.profiles.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.enumerations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            this.extensions.sortExtraProcessors(pureModelContextDataIndex.otherElementsByProcessor.keysView()).forEach(p ->
+            {
+                MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pureModelContextDataIndex.otherElementsByProcessor.get(p);
+                elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            });
 
             this.loadTypes(pureModelContextDataIndex);
             long loadTypesFinished = System.currentTimeMillis();
@@ -369,25 +385,14 @@ public class PureModel implements IPureModel
 
     // ------------------------------------------ LOADER -----------------------------------------
 
-    private void loadSectionIndices(PureModelContextDataIndex pure)
-    {
-        pure.sectionIndices.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-    }
-
     private void loadTypes(PureModelContextDataIndex pure)
     {
-        // First pass
-        pure.profiles.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-        pure.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-        pure.enumerations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-        pure.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-        pure.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-
         // Second pass
         pure.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         pure.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
 
         // Process - associations / inheritance
+        // Need to move it with the other first pass processes
         pure.associations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
 
         // Third pass - milestoning
@@ -402,7 +407,6 @@ public class PureModel implements IPureModel
 
     private void loadStores(PureModelContextDataIndex pure)
     {
-        pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
         pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
         pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
@@ -411,7 +415,6 @@ public class PureModel implements IPureModel
 
     public void loadMappings(PureModelContextDataIndex pure)
     {
-        pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
@@ -420,9 +423,7 @@ public class PureModel implements IPureModel
     public void loadConnectionsAndRuntimes(PureModelContextDataIndex pure)
     {
         // Connections must be loaded before runtimes
-        pure.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
         pure.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
-        pure.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
         pure.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
     }
 
@@ -431,7 +432,6 @@ public class PureModel implements IPureModel
         this.extensions.sortExtraProcessors(pure.otherElementsByProcessor.keysView()).forEach(p ->
         {
             MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pure.otherElementsByProcessor.get(p);
-            elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
             elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
             elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
@@ -487,32 +487,32 @@ public class PureModel implements IPureModel
         packageableElement = getType_safe(fullPath);
         if (packageableElement != null)
         {
-            return  packageableElement;
+            return packageableElement;
         }
         packageableElement = getAssociation_safe(fullPath);
         if (packageableElement != null)
         {
-            return  packageableElement;
+            return packageableElement;
         }
         packageableElement = getProfile_safe(fullPath);
         if (packageableElement != null)
         {
-            return  packageableElement;
+            return packageableElement;
         }
         packageableElement = getConcreteFunctionDefinition_safe(fullPath);
         if (packageableElement != null)
         {
-            return  packageableElement;
+            return packageableElement;
         }
         packageableElement = getStore_safe(fullPath);
         if (packageableElement != null)
         {
-            return  packageableElement;
+            return packageableElement;
         }
         packageableElement = getMapping_safe(fullPath);
         if (packageableElement != null)
         {
-            return  packageableElement;
+            return packageableElement;
         }
         return null;
         // Should eventually consider (but would need to update Pure)

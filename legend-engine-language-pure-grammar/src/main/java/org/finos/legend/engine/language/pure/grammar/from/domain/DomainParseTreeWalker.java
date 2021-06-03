@@ -573,7 +573,7 @@ public class DomainParseTreeWalker
 
     private AppliedFunction newFunction(DomainParserGrammar.ExpressionInstanceContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class newClass = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class();
+        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr newClass = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
         newClass.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         List<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(ctx.expressionInstanceParserPropertyAssignment(), typeParametersNames, lambdaContext, addLines, space);
         Collection valueAssignments = new Collection();
@@ -1173,7 +1173,7 @@ public class DomainParseTreeWalker
             // Resolve the element full path, if we know it has a (all) function call after it, we will enforce that it is a class, otherwise, it is either an enumeration or a class.
             if (ctx.allOrFunction() != null)
             {
-                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class _class = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class();
+                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr _class = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
                 _class.fullPath = fullPath;
                 _class.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
                 instance = _class;
@@ -1241,9 +1241,9 @@ public class DomainParseTreeWalker
 
         // NOTE: no matter what instance turned out to be (either enumeration or class), we will take it as class here since only class allows function calling (e.g. `Person.all()`)
         List<ValueSpecification> parameters;
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class cl = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class();
-        cl.fullPath = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class) params.get(0)).fullPath;
-        cl.sourceInformation = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class) params.get(0)).sourceInformation;
+        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr cl = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
+        cl.fullPath = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr) params.get(0)).fullPath;
+        cl.sourceInformation = params.get(0).sourceInformation;
         appliedFunction.parameters = Lists.mutable.with(cl);
 
         if (ctx.allFunction() != null)

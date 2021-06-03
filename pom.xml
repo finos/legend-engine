@@ -103,7 +103,7 @@
 
 
         <!-- Legend -->
-        <legend.pure.version>1.23.0</legend.pure.version>
+        <legend.pure.version>1.24.0</legend.pure.version>
         <legend.shared.version>0.11.1</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -148,7 +148,7 @@
         <janino.version>3.1.0</janino.version>
         <hamcrest.core.version>1.3</hamcrest.core.version>
         <openjdk.jol.version>0.9</openjdk.jol.version>
-        <json-smart.version>2.4.2</json-smart.version>
+        <json-smart.version>2.4.5</json-smart.version>
 
 
         <!-- Plugin versions -->

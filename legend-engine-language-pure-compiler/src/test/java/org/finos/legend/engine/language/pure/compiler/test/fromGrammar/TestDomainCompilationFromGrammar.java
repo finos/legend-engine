@@ -702,6 +702,32 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testPackageableElementMismatchNotFoundWithGetAll()
+    {
+        test("Class test::B" +
+                "{" +
+                "   z(){test::A.all()->map(a|$a.nam)}:String[*];" +
+                "}", "COMPILATION error at [1:22-28]: Can't find the packageable element 'test::A'");
+    }
+
+    @Test
+    public void testPackageableElementMismatchWithGetAll()
+    {
+        test(  "###Pure\n" +
+                "Class test::A" +
+                "{ prop : String[1];" +
+                "}" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::MyMapping.all()->map(a|$a.nam)}:String[*];" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::MyMapping\n" +
+                "(\n" +
+                ")\n", "COMPILATION error at [2:70-75]: Can't find a match for function 'getAll(Mapping[1])'");
+    }
+
+    @Test
     public void testSortByLambdaInferenceWithClass()
     {
         test("Class test::A" +
