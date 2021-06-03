@@ -97,14 +97,14 @@ public class RelationalResultToPureFormatSerializer extends Serializer
         int rowCount = 0;
         try (Scope ignored = GlobalTracer.get().buildSpan("Relational Streaming: Fetch first row").startActive(true))
         {
-            if (relationalResult.resultSet.next())
+            if (!relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
             {
                 this.processRow(outputStream);
             }
         }
         try (Scope scope = GlobalTracer.get().buildSpan("Relational Streaming: remaining rows").startActive(true))
         {
-            while (relationalResult.resultSet.next())
+            while (!relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
             {
                 outputStream.write(b_comma);
                 this.processRow(outputStream);

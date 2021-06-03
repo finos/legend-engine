@@ -96,7 +96,7 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
         int rowCount = 0;
         try (Scope scope = GlobalTracer.get().buildSpan("Relational Streaming: Fetch first row").startActive(true))
         {
-            if (relationalResult.resultSet.next())
+            if (!relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
             {
                 processRow(outputStream);
                 rowCount++;
@@ -104,7 +104,7 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
         }
         try (Scope scope = GlobalTracer.get().buildSpan("Relational Streaming: remaining rows").startActive(true))
         {
-            while (relationalResult.resultSet.next())
+            while (!relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
             {
                 outputStream.write(b_comma);
                 processRow(outputStream);
