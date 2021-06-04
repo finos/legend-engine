@@ -8,6 +8,8 @@ public class SnowflakeDatasourceSpecification extends DatasourceSpecification
     public String databaseName;
     public String cloudType;
 
+    public Boolean quotedIdentifiersIgnoreCase;
+
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)
     {

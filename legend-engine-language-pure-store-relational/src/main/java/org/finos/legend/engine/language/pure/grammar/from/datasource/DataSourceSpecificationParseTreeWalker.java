@@ -77,6 +77,12 @@ public class DataSourceSpecificationParseTreeWalker
         {
             dsSpec.cloudType = PureGrammarParserUtility.fromGrammarString(cloudTypeCtx.STRING().getText(), true);
         }
+        //quotedIdentifiersIgnoreCase
+        DataSourceSpecificationParserGrammar.SnowflakeQuotedIdentifiersIgnoreCaseContext snowflakeQuotedIdentifiersIgnoreCaseCtx = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.snowflakeQuotedIdentifiersIgnoreCase(), "quotedIdentifiersIgnoreCase", dsSpec.sourceInformation);
+        if (snowflakeQuotedIdentifiersIgnoreCaseCtx != null)
+        {
+            dsSpec.quotedIdentifiersIgnoreCase = Boolean.parseBoolean(snowflakeQuotedIdentifiersIgnoreCaseCtx.BOOLEAN().getText());
+        }
         return dsSpec;
     }
 

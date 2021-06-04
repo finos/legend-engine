@@ -26,12 +26,12 @@ public class TDSBuilder extends Builder
 {
     public List<TDSColumn> columns;
 
-    public TDSBuilder(ExecutionNode node, List<String> columnLabels)
+    public TDSBuilder(ExecutionNode node, List<String> columnLabels, boolean isColumnLabelCaseSensitive)
     {
         this._type = "tdsBuilder";
         this.columns = columnLabels.stream().map(label ->
         {
-            TDSColumn c = ExecutionNodeTDSResultHelper.getTDSColumn(node, label);
+            TDSColumn c = ExecutionNodeTDSResultHelper.getTDSColumn(node, label, isColumnLabelCaseSensitive);
             return c.copyWithoutEnumMapping();
         }).collect(Collectors.toList());
     }

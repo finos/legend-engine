@@ -64,6 +64,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _snowflake._region(snowflakeDatasourceSpecification.region);
             _snowflake._warehouseName(snowflakeDatasourceSpecification.warehouseName);
             _snowflake._databaseName(snowflakeDatasourceSpecification.databaseName);
+            _snowflake._quotedIdentifiersIgnoreCase(snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase);
             return _snowflake;
         }
         return null;

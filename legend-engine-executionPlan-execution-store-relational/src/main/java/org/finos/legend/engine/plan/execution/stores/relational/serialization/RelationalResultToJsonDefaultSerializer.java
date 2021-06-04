@@ -75,7 +75,7 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
             streamCollection(stream, relationalResult.activities);
             stream.write(b_result);
             stream.write(b_sqlColumns);
-            streamCollection(stream, relationalResult.sqlColumns);
+            streamCollection(stream, relationalResult.getColumnListForSerializer());
             stream.write(b_rows);
             streamRows(stream);
             stream.write(b_end);

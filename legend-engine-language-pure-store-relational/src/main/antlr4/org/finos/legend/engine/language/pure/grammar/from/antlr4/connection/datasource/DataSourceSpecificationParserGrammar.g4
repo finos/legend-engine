@@ -57,6 +57,7 @@ snowflakeDatasourceSpecification:           SNOWFLAKE
                                                         | dbWarehouse
                                                         | snowflakeRegion
                                                         | cloudType
+                                                        | snowflakeQuotedIdentifiersIgnoreCase
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -71,6 +72,8 @@ snowflakeRegion:                            REGION COLON STRING SEMI_COLON
 ;
 
 cloudType:                                  CLOUDTYPE COLON STRING SEMI_COLON
+;
+snowflakeQuotedIdentifiersIgnoreCase:       QUOTED_IDENTIFIERS_IGNORE_CASE COLON BOOLEAN SEMI_COLON
 ;
 
 // ----------------------------- SHARED -----------------------------
