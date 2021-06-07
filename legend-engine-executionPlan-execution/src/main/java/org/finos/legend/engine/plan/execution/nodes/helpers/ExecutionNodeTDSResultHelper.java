@@ -30,23 +30,22 @@ public class ExecutionNodeTDSResultHelper
     }
 
     @JsonIgnore
-    public static TDSColumn getTDSColumn(ExecutionNode executionNode, String name)
+    public static TDSColumn getTDSColumn(ExecutionNode executionNode, String name, boolean isColumnNameCaseSensitive)
     {
         TDSResultType resultType = (TDSResultType) executionNode.resultType;
-        return ListIterate.select(resultType.tdsColumns, n -> n.name.equals(name)).getFirst();
+        return ListIterate.select(resultType.tdsColumns, n -> isColumnNameCaseSensitive ? n.name.equals(name) : n.name.equalsIgnoreCase(name)).getFirst();
     }
 
     @JsonIgnore
-    public static boolean isTDSColumnEnum(ExecutionNode executionNode, String name)
+    public static boolean isTDSColumnEnum(ExecutionNode executionNode, String name, boolean isColumnNameCaseSensitive)
     {
-        TDSColumn col = getTDSColumn(executionNode, name);
+        TDSColumn col = getTDSColumn(executionNode, name, isColumnNameCaseSensitive);
         return !col.enumMapping.isEmpty();
     }
 
     @JsonIgnore
-    public static Function<Object, Object> getTDSEnumTransformer(ExecutionNode executionNode, String name)
+    public static Function<Object, Object> getTDSEnumTransformer(ExecutionNode executionNode, String name, boolean isColumnNameCaseSensitive)
     {
-        return ExecutionNodeResultHelper.buildReverseEnumFunc(executionNode, getTDSColumn(executionNode, name).enumMapping);
-
+        return ExecutionNodeResultHelper.buildReverseEnumFunc(executionNode, getTDSColumn(executionNode, name, isColumnNameCaseSensitive).enumMapping);
     }
 }
