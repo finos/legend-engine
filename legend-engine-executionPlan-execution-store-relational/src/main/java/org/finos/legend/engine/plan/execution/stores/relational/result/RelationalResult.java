@@ -53,6 +53,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -79,6 +80,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     public final List<String> sqlColumns;
     private final List<String> temporaryTables;
     private final List<SQLResultColumn> resultColumns;
+    private List<String> columnListForSerializer;
 
     private final Connection connection;
     private final Statement statement;
@@ -126,8 +128,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             {
                 this.sqlColumns.add(this.resultSetMetaData.getColumnLabel(i));
             }
-
-            this.buildTransformersAndBuilder(node);
+            this.columnListForSerializer = this.sqlColumns;
+            this.buildTransformersAndBuilder(node, node.connection);
         }
         catch (Throwable e)
         {
@@ -161,9 +163,10 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             this.resultSetMetaData = sqlExecutionResult.getResultSetMetaData();
             this.columnCount = sqlExecutionResult.getColumnCount();
             this.sqlColumns = sqlExecutionResult.getColumnNames();
+            this.columnListForSerializer = this.sqlColumns;
             this.resultColumns = sqlExecutionResult.getSqlResultColumns();
             this.resultDBColumnsMetaData = new SQLResultDBColumnsMetaData(this.resultColumns, this.resultSetMetaData);
-            this.buildTransformersAndBuilder(node);
+            this.buildTransformersAndBuilder(node, sqlExecutionResult.getSQLExecutionNode().connection);
         }
         catch (Throwable e)
         {
@@ -180,21 +183,22 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
     }
 
-    private void buildTransformersAndBuilder(ExecutionNode node) throws SQLException
+    private void buildTransformersAndBuilder(ExecutionNode node, DatabaseConnection databaseConnection) throws SQLException
     {
+        boolean isDatabaseIdentifiersCaseSensitive = databaseConnection.accept(new DatabaseIdentifiersCaseSensitiveVisitor());
         if (ExecutionNodeTDSResultHelper.isResultTDS(node))
         {
             List<TransformerInput<Integer>> transformerInputs = Lists.mutable.empty();
             for (int columnIndex = 1; columnIndex <= this.columnCount; columnIndex++)
             {
-                TDSColumn c = ExecutionNodeTDSResultHelper.getTDSColumn(node, this.resultSetMetaData.getColumnLabel(columnIndex));
+                TDSColumn c = ExecutionNodeTDSResultHelper.getTDSColumn(node, this.resultSetMetaData.getColumnLabel(columnIndex), isDatabaseIdentifiersCaseSensitive);
                 transformerInputs.add(new TransformerInput<>(
                         columnIndex,
                         c.type,
                         (index) -> {
                             try
                             {
-                                return ExecutionNodeTDSResultHelper.isTDSColumnEnum(node, this.resultSetMetaData.getColumnLabel(index));
+                                return ExecutionNodeTDSResultHelper.isTDSColumnEnum(node, this.resultSetMetaData.getColumnLabel(index), isDatabaseIdentifiersCaseSensitive);
                             }
                             catch (Exception e)
                             {
@@ -204,7 +208,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                         (index) -> {
                             try
                             {
-                                return ExecutionNodeTDSResultHelper.getTDSEnumTransformer(node, this.resultSetMetaData.getColumnLabel(index));
+                                return ExecutionNodeTDSResultHelper.getTDSEnumTransformer(node, this.resultSetMetaData.getColumnLabel(index), isDatabaseIdentifiersCaseSensitive);
                             }
                             catch (Exception e)
                             {
@@ -214,7 +218,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 );
             }
             setTransformers.add(new SetImplTransformers(transformerInputs));
-            this.builder = new TDSBuilder(node, this.sqlColumns);
+            this.builder = new TDSBuilder(node, this.sqlColumns, isDatabaseIdentifiersCaseSensitive);
+            this.columnListForSerializer = ListIterate.collect(((TDSBuilder) this.builder).columns, col -> col.name);
         }
         else if (ExecutionNodeClassResultHelper.isClassResult(node))
         {
@@ -225,9 +230,9 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 for (int i = 1; i <= this.columnCount; i++)
                 {
                     final String colName = this.resultSetMetaData.getColumnLabel(i);
-                    PropertyInfo profiles = ListIterate.select(classMappingInfo.properties, p -> p.property.equals(colName)).getFirst();
+                    PropertyInfo profiles = ListIterate.select(classMappingInfo.properties, p -> isDatabaseIdentifiersCaseSensitive ? p.property.equals(colName) : p.property.equalsIgnoreCase(colName)).getFirst();
                     transformerInputs.add(new TransformerInput<>(
-                            colName,
+                            profiles != null ? profiles.property : colName,
                             resolveType(profiles, colName),
                             (colNameX) -> {
                                 try
@@ -364,6 +369,11 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     public List<SQLResultColumn> getSQLResultColumns()
     {
         return this.resultColumns;
+    }
+
+    public List<String> getColumnListForSerializer()
+    {
+        return this.columnListForSerializer;
     }
 
     public MutableList<Function<Object, Object>> getTransformers() throws SQLException

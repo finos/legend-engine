@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1;
 
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Maps;
@@ -23,11 +25,45 @@ import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 public class PureProtocolObjectMapperFactory
 {
+    public static <T extends MapperBuilder<?, ?>> T withPureProtocolExtensions(T mapperBuilder)
+    {
+        return withPureProtocolExtensions(mapperBuilder, (Predicate<? super String>) null);
+    }
+
+    public static <T extends MapperBuilder<?, ?>> T withPureProtocolExtensions(T mapperBuilder, Collection<String> excludedSubTypes)
+    {
+        return withPureProtocolExtensions(mapperBuilder, (excludedSubTypes == null) ? null : excludedSubTypes::contains);
+    }
+
+    public static <T extends MapperBuilder<?, ?>> T withPureProtocolExtensions(T mapperBuilder, Predicate<? super String> excludeSubType)
+    {
+        return withPureProtocolExtensions(mapperBuilder, MapperBuilder::addModule, MapperBuilder::registerSubtypes, excludeSubType);
+    }
+
     public static <T extends ObjectMapper> T withPureProtocolExtensions(T objectMapper)
+    {
+        return withPureProtocolExtensions(objectMapper, (Predicate<? super String>) null);
+    }
+
+    public static <T extends ObjectMapper> T withPureProtocolExtensions(T objectMapper, Collection<String> excludedSubTypes)
+    {
+        return withPureProtocolExtensions(objectMapper, (excludedSubTypes == null) ? null : excludedSubTypes::contains);
+    }
+
+    public static <T extends ObjectMapper> T withPureProtocolExtensions(T objectMapper, Predicate<? super String> excludeSubType)
+    {
+        return withPureProtocolExtensions(objectMapper, ObjectMapper::registerModule, ObjectMapper::registerSubtypes, excludeSubType);
+    }
+
+    private static <T> T withPureProtocolExtensions(T mapperOrBuilder, BiConsumer<? super T, ? super Module> addModule, BiConsumer<? super T, ? super NamedType> registerSubTypes, Predicate<? super String> excludeSubType)
     {
         PureProtocolExtensionLoader.logExtensionList();
         // register sub types
@@ -49,27 +85,35 @@ public class PureProtocolObjectMapperFactory
                                     "'. The default sub type for this class has already been registered as class '" + found.getDefaultSubType().getSimpleName() + "' by extension '" + protocolSubTypeInfoByExtension.get(found).getClass().getSimpleName() + "'");
                         }
                         superTypesWithDefaultRegisteredSubtype.put(info.getSuperType(), info);
-                        objectMapper.registerModule(info.registerDefaultSubType());
+                        addModule.accept(mapperOrBuilder, info.registerDefaultSubType());
                     }
                     // register sub types by type ID
                     info.getSubTypes().forEach(subType ->
                     {
-                        // verify that the default sub type is not already been registered by another extension, this will cause unexpected behavior
-                        if (registeredSubTypes.containsKey(subType.getOne()))
+                        if ((excludeSubType == null) || !excludeSubType.test(subType.getTwo()))
                         {
-                            ProtocolSubTypeInfo<?> found = registeredSubTypes.get(subType.getOne());
-                            throw new RuntimeException("Can't register sub type '" + subType.getOne().getSimpleName() + "' for class '" + info.getSuperType().getSimpleName() + "' in extension '" + extension.getClass().getSimpleName() +
-                                    "'. This sub type has already been registered by extension '" + protocolSubTypeInfoByExtension.get(found).getClass().getSimpleName() + "'");
+                            // verify that the default sub type is not already been registered by another extension, this will cause unexpected behavior
+                            if (registeredSubTypes.containsKey(subType.getOne()))
+                            {
+                                ProtocolSubTypeInfo<?> found = registeredSubTypes.get(subType.getOne());
+                                throw new RuntimeException("Can't register sub type '" + subType.getOne().getSimpleName() + "' for class '" + info.getSuperType().getSimpleName() + "' in extension '" + extension.getClass().getSimpleName() +
+                                        "'. This sub type has already been registered by extension '" + protocolSubTypeInfoByExtension.get(found).getClass().getSimpleName() + "'");
+                            }
+                            registeredSubTypes.put(subType.getOne(), info);
+                            registerSubTypes.accept(mapperOrBuilder, new NamedType(subType.getOne(), subType.getTwo()));
                         }
-                        registeredSubTypes.put(subType.getOne(), info);
-                        objectMapper.registerSubtypes(new NamedType(subType.getOne(), subType.getTwo()));
                     });
                 }));
-        return objectMapper;
+        return mapperOrBuilder;
     }
 
     public static ObjectMapper getNewObjectMapper()
     {
         return withPureProtocolExtensions(new ObjectMapper());
+    }
+
+    public static ObjectMapper getNewObjectMapper(Set<String> excludedSubTypes)
+    {
+        return withPureProtocolExtensions(new ObjectMapper(), excludedSubTypes);
     }
 }

@@ -194,7 +194,9 @@ public class DomainParseTreeWalker
         {
             List<ValueSpecification> expressions = ListIterate.collect(ctx.defaultValueExpressionsArray().defaultValueExpression(), this::visitDefaultValueExpression);
             defaultValue.value = this.collect(expressions, walkerSourceInformation.getSourceInformation(ctx));
-        } else {
+        }
+        else
+        {
             defaultValue.value = visitDefaultValueExpression(ctx);
         }
 
@@ -207,16 +209,18 @@ public class DomainParseTreeWalker
 
         if (ctx.instanceReference() != null)
         {
-            result =  this.instanceReference(ctx.instanceReference(), Lists.mutable.empty(), null, " ", false);
-        } else if (ctx.expressionInstance() != null)
+            result = this.instanceReference(ctx.instanceReference(), Lists.mutable.empty(), null, " ", false);
+        }
+        else if (ctx.expressionInstance() != null)
         {
             result = this.newFunction(ctx.expressionInstance(), Lists.mutable.empty(), null, false, " ");
-        } else if (ctx.instanceLiteralToken() != null)
+        }
+        else if (ctx.instanceLiteralToken() != null)
         {
             result = this.instanceLiteralToken(ctx.instanceLiteralToken(), false);
         }
 
-        if(ctx.propertyExpression() != null)
+        if (ctx.propertyExpression() != null)
         {
             result = this.propertyExpression(ctx.propertyExpression(), result, Lists.mutable.empty(), null, " ", false);
         }
@@ -314,7 +318,7 @@ public class DomainParseTreeWalker
         // NOTE: here we limit the property type to only primitive type, class, or enumeration
         property.type = ctx.propertyReturnType().type().getText();
         property.multiplicity = this.buildMultiplicity(ctx.propertyReturnType().multiplicity().multiplicityArgument());
-        property.defaultValue = ctx.defaultValue() == null ? null :  this.visitDefaultValue(ctx.defaultValue().defaultValueExpression());
+        property.defaultValue = ctx.defaultValue() == null ? null : this.visitDefaultValue(ctx.defaultValue().defaultValueExpression());
         property.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         property.propertyTypeSourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.propertyReturnType().type());
         return property;
@@ -569,7 +573,7 @@ public class DomainParseTreeWalker
 
     private AppliedFunction newFunction(DomainParserGrammar.ExpressionInstanceContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class newClass = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class();
+        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr newClass = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
         newClass.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         List<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(ctx.expressionInstanceParserPropertyAssignment(), typeParametersNames, lambdaContext, addLines, space);
         Collection valueAssignments = new Collection();
@@ -718,12 +722,10 @@ public class DomainParseTreeWalker
     private ValueSpecification propertyExpression(DomainParserGrammar.PropertyExpressionContext ctx, ValueSpecification result, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
     {
         List<ValueSpecification> parameters = new ArrayList<>();
-        boolean function = false;
         DomainParserGrammar.IdentifierContext property = ctx.identifier();
         ValueSpecification parameter;
         if (ctx.functionExpressionParameters() != null)
         {
-            function = true;
             DomainParserGrammar.FunctionExpressionParametersContext fepCtx = ctx.functionExpressionParameters();
             if (fepCtx.combinedExpression() != null)
             {
@@ -742,33 +744,8 @@ public class DomainParseTreeWalker
         }
         AppliedProperty appliedProperty = new AppliedProperty();
         appliedProperty.property = PureGrammarParserUtility.fromIdentifier(property);
-        if (!function)
-        {
-            appliedProperty.sourceInformation = walkerSourceInformation.getSourceInformation(property);
-            if (result instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class)
-            {
-                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class _class = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class();
-                _class.fullPath = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class) result).fullPath;
-                _class.sourceInformation = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class) result).sourceInformation;
-                appliedProperty.parameters = Lists.mutable.of(_class);
-            }
-            else if (result instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum)
-            {
-                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum _enum = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum();
-                _enum.fullPath = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum) result).fullPath;
-                _enum.sourceInformation = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum) result).sourceInformation;
-                appliedProperty.parameters = Lists.mutable.of(_enum);
-            }
-            else
-            {
-                appliedProperty.parameters = Lists.mutable.of(result).withAll(parameters);
-            }
-        }
-        else
-        {
-            appliedProperty.parameters = Lists.mutable.of(result).withAll(parameters);
-            appliedProperty.sourceInformation = walkerSourceInformation.getSourceInformation(property);
-        }
+        appliedProperty.sourceInformation = walkerSourceInformation.getSourceInformation(property);
+        appliedProperty.parameters = Lists.mutable.of(result).withAll(parameters);
         return appliedProperty;
     }
 
@@ -1196,7 +1173,7 @@ public class DomainParseTreeWalker
             // Resolve the element full path, if we know it has a (all) function call after it, we will enforce that it is a class, otherwise, it is either an enumeration or a class.
             if (ctx.allOrFunction() != null)
             {
-                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class _class = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class();
+                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr _class = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
                 _class.fullPath = fullPath;
                 _class.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
                 instance = _class;
@@ -1211,10 +1188,10 @@ public class DomainParseTreeWalker
             }
             else //Unknown or Enum
             {
-                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum _enum = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum();
-                _enum.fullPath = fullPath;
-                _enum.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-                instance = _enum;
+                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr packageElementPtr = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
+                packageElementPtr.fullPath = fullPath;
+                packageElementPtr.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+                instance = packageElementPtr;
             }
 
         }
@@ -1264,9 +1241,9 @@ public class DomainParseTreeWalker
 
         // NOTE: no matter what instance turned out to be (either enumeration or class), we will take it as class here since only class allows function calling (e.g. `Person.all()`)
         List<ValueSpecification> parameters;
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class cl = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class();
-        cl.fullPath = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class) params.get(0)).fullPath;
-        cl.sourceInformation = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class) params.get(0)).sourceInformation;
+        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr cl = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
+        cl.fullPath = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr) params.get(0)).fullPath;
+        cl.sourceInformation = params.get(0).sourceInformation;
         appliedFunction.parameters = Lists.mutable.with(cl);
 
         if (ctx.allFunction() != null)

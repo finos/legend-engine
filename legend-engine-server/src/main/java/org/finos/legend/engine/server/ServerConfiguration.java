@@ -21,8 +21,10 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.server.core.configuration.DeploymentConfiguration;
 import org.finos.legend.engine.server.core.configuration.OpenTracingConfiguration;
+import org.finos.legend.engine.server.core.configuration.VaultConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jConfiguration;
 
+import java.util.List;
 import java.util.Map;
 
 public class ServerConfiguration extends Configuration
@@ -33,6 +35,7 @@ public class ServerConfiguration extends Configuration
     public OpenTracingConfiguration opentracing;
     public Map<String, Integer> filterPriorities;
     public MetaDataServerConfiguration metadataserver;
+    public List<VaultConfiguration> vaults;
 
     public RelationalExecutionConfiguration relationalexecution;
     public TemporaryTestDbConfiguration temporarytestdb;

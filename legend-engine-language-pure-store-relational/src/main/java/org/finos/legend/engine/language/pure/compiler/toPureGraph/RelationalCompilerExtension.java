@@ -89,6 +89,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 (Database srcDatabase, CompileContext context) ->
                 {
                     org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name);
+
+                    database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                            ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")));
+
                     context.pureModel.storesIndex.put(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), database);
                     return database;
                 },

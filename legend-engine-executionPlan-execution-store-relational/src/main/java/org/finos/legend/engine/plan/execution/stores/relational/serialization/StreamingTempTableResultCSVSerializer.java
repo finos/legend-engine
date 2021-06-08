@@ -70,9 +70,7 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
         try
         {
             String connectionTimeZone = this.tempTableStreamingResult.getRelationalDatabaseTimeZone();
-            System.out.println("1."+connectionTimeZone);
             timeZone = connectionTimeZone == null ? TimeZone.getTimeZone("GMT").toString() : connectionTimeZone;
-            System.out.println("2."+TimeZone.getTimeZone("GMT").toString());
 
             final List<TempTableColumnMetaData> columns = this.tempTableStreamingResult.tempTableColumnMetaData;
             columnLabels = columns.stream().map(col -> col.column.label).collect(Collectors.toList());
@@ -217,7 +215,6 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
         Map var = Maps.mutable.with("dt", date);
         String template = "${GMTtoTZ(\"[" + this.timeZone + "]\" dt )}";
         String freeMarkerAlloyDateFunction = "<#function GMTtoTZ tz paramDate><#return (tz+\" \"+paramDate)?date.@alloyDate></#function>";
-        System.out.println("3."+template);
         return FreeMarkerExecutor.processRecursively(template, var, freeMarkerAlloyDateFunction);
     }
 

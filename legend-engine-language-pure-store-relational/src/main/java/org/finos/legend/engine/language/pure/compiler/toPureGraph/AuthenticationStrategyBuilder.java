@@ -39,6 +39,13 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
             return new Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl("")
                     ._serverPrincipal(((DelegatedKerberosAuthenticationStrategy) authenticationStrategy).serverPrincipal);
         }
+        else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
+        {
+            return new Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy_Impl("")
+                    ._publicUserName(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).publicUserName)
+                    ._privateKeyVaultReference(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).privateKeyVaultReference)
+                    ._passPhraseVaultReference(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).passPhraseVaultReference);
+        }
         return null;
     }
 }

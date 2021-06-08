@@ -23,29 +23,13 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.infer
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_Mapping_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_PackageableElement_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Profile_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Stereotype_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Tag_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Association_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enum_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enumeration_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Measure_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -259,8 +243,11 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     {
         final org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name);
         this.context.pureModel.mappingsIndex.put(this.context.pureModel.buildPackageString(mapping._package, mapping.name), pureMapping);
+        GenericType mappingGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::mapping::Mapping"));
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(mapping._package);
-        pureMapping._name(mapping.name)._package(pack);
+        pureMapping._name(mapping.name)
+                   ._package(pack)
+                   ._classifierGenericType(mappingGenericType);
         pack._childrenAdd(pureMapping);
         return pureMapping;
     }
@@ -272,9 +259,6 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableRuntime._package);
         PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(packageableRuntime.name);
         pack._childrenAdd(stub);
-        // NOTE: the whole point of this processing is to put the Pure Runtime in an index
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, this.context);
-        this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), runtime);
         return stub;
     }
 

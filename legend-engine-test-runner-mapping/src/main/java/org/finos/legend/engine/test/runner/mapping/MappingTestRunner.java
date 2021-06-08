@@ -60,12 +60,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
+import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.junit.Assert;
-import org.junit.ComparisonFailure;
 
 import javax.ws.rs.core.MediaType;
 
@@ -174,7 +173,7 @@ public class MappingTestRunner
 
             return new RichMappingTestResult(this.mappingPath, this.mappingTest.name, rawExpectedJSON, rawActualJSON);
         }
-        catch (ComparisonFailure c)
+        catch (ComparisonError c)
         {
             return new RichMappingTestResult(this.mappingPath, this.mappingTest.name, c);
         }
@@ -204,7 +203,18 @@ public class MappingTestRunner
 
     private void assertEquals(String expected, String actual)
     {
-        Assert.assertEquals(expected, actual);
+        if(isEquals(expected, actual)){
+            return;
+        }
+        throw new ComparisonError(expected, actual);
+    }
+
+    private boolean isEquals(String expected, String actual)
+    {
+        if(expected == null){
+            return actual == null;
+        }
+        return expected.equals(actual);
     }
 
     protected void assertEquals(JsonNode expected, JsonNode actual)

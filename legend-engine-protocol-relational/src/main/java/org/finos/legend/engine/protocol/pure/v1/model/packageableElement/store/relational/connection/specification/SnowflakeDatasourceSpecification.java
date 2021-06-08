@@ -6,16 +6,9 @@ public class SnowflakeDatasourceSpecification extends DatasourceSpecification
     public String region;
     public String warehouseName;
     public String databaseName;
-
-    public String role;
-
-    public String proxyHost;
-    public String proxyPort;
-    public String nonProxyHosts;
-
-    public String accountType;
-    public String organization;
     public String cloudType;
+
+    public Boolean quotedIdentifiersIgnoreCase;
 
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)

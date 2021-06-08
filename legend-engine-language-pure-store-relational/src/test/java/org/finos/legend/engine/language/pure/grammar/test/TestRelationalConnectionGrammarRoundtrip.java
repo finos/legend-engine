@@ -39,7 +39,7 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
         test("###Connection\n" +
                 "RelationalDatabaseConnection meta::mySimpleConnection\n" +
                 "{\n" +
-                "  store: model::firm::Person;\n" +
+                "  store: store::Store;\n" +
                 "  type: H2;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
@@ -88,13 +88,98 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
         test("###Connection\n" +
                 "RelationalDatabaseConnection meta::mySimpleConnection\n" +
                 "{\n" +
-                "  store: model::firm::Person;\n" +
+                "  store: store::Store;\n" +
                 "  type: H2;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
                 "    testDataSetupCSV: 'testCSV';\n" +
                 "  };\n" +
                 "  auth: DefaultH2;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testSnowflakeDatabaseASpecificationPublicAuth()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    cloudType: 'aws';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: H2;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'okilkol.asdasd';\n" +
+                "    warehouse: 'warehousename';\n" +
+                "    region: 'EMEA';\n" +
+                "    quotedIdentifiersIgnoreCase: true;\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: H2;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'okilkol.asdasd';\n" +
+                "    warehouse: 'warehousename';\n" +
+                "    region: 'EMEA';\n" +
+                "    quotedIdentifiersIgnoreCase: false;\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
                 "}\n");
     }
 

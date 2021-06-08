@@ -14,13 +14,11 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-public class Enum extends ValueSpecification
+@Deprecated
+public class Enum extends PackageableElementPtr
 {
-    public String fullPath;
-
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {

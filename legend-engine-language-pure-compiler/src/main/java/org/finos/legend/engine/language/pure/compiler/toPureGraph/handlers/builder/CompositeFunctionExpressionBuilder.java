@@ -47,6 +47,7 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
     @Override
     public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, CompileContext compileContext, ProcessingContext processingContext)
     {
+        List<ValueSpecification> resolvedParams = null;
         for (FunctionExpressionBuilder b : builders)
         {
             Pair<SimpleFunctionExpression, List<ValueSpecification>> res = b.buildFunctionExpression(parameters, openVariables, compileContext, processingContext);
@@ -54,8 +55,12 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
             {
                 return res;
             }
+            if (res.getTwo() != null)
+            {
+                resolvedParams = res.getTwo();
+            }
         }
-        return Tuples.pair(null, null);
+        return Tuples.pair(null, resolvedParams);
     }
 
     @Override

@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ArrayIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.RelationalDatabaseConnectionLexerGrammar;
@@ -150,6 +151,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseDataSourceSpecification(code, p -> walker.visitStaticDatasourceSpecification(code, p.staticDatasourceSpecification()));
                 case "EmbeddedH2":
                     return parseDataSourceSpecification(code, p -> walker.visitEmbeddedH2DatasourceSpecification(code, p.embeddedH2DatasourceSpecification()));
+                case "Snowflake":
+                    return parseDataSourceSpecification(code, p-> walker.visitSnowflakeDatasourceSpecification(code, p.snowflakeDatasourceSpecification()));
                 default:
                     return null;
             }
@@ -171,6 +174,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseAuthenticationStrategy(code, p -> walker.visitDelegatedKerberosAuthenticationStrategy(code, p.delegatedKerberosAuth()));
                 case "Test":
                     return parseAuthenticationStrategy(code, p -> walker.visitTestDatabaseAuthenticationStrategy(code, p.testDBAuth()));
+                case "SnowflakePublic":
+                    return parseAuthenticationStrategy(code, p -> walker.visitSnowflakePublicAuthenticationStrategy(code, p.snowflakePublicAuth()));
                 default:
                     return null;
             }
@@ -230,7 +235,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
 
         relationalInputData.database = inputDataContext.testInputSrc().getText();
 
-        relationalInputData.data = PureGrammarParserUtility.fromGrammarString(inputDataContext.testInputDataContent().STRING().getText(), false);
+        relationalInputData.data = ListIterate.collect(inputDataContext.testInputDataContent().STRING(), x->PureGrammarParserUtility.fromGrammarString(x.getText().replace("\\;","\\\\;"), true)).makeString("");
         return relationalInputData;
     }
 

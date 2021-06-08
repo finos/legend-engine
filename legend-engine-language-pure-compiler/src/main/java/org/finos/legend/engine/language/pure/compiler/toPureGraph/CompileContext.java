@@ -201,6 +201,16 @@ public class CompileContext
 
     // ------------------------------------------ ELEMENT RESOLVER -----------------------------------------
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(String fullPath)
+    {
+        return this.resolveType(fullPath, SourceInformation.getUnknownSourceInformation());
+    }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(String fullPath, SourceInformation sourceInformation)
+    {
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getPackageableElement(path, sourceInformation));
+    }
+
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type resolveType(String fullPath)
     {
         return this.resolveType(fullPath, SourceInformation.getUnknownSourceInformation());

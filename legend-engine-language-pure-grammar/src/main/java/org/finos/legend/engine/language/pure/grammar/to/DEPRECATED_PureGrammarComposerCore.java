@@ -59,38 +59,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ExecutionContextInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
@@ -614,6 +584,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Enum _enum)
     {
         return HelperValueSpecificationGrammarComposer.printFullPath(_enum.fullPath, this);
+    }
+
+    @Override
+    public String visit(PackageableElementPtr packageableElementPtr)
+    {
+        return HelperValueSpecificationGrammarComposer.printFullPath(packageableElementPtr.fullPath, this);
     }
 
     @Override

@@ -196,7 +196,23 @@ public class PureModel implements IPureModel
             // Processing
 
             PureModelContextDataIndex pureModelContextDataIndex = index(pureModelContextData);
-            this.loadSectionIndices(pureModelContextDataIndex);
+
+            // First pass -> ensure all packageable elements are resolved as early as possible.
+            pureModelContextDataIndex.sectionIndices.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.profiles.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.enumerations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            this.extensions.sortExtraProcessors(pureModelContextDataIndex.otherElementsByProcessor.keysView()).forEach(p ->
+            {
+                MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pureModelContextDataIndex.otherElementsByProcessor.get(p);
+                elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            });
 
             this.loadTypes(pureModelContextDataIndex);
             long loadTypesFinished = System.currentTimeMillis();
@@ -369,25 +385,14 @@ public class PureModel implements IPureModel
 
     // ------------------------------------------ LOADER -----------------------------------------
 
-    private void loadSectionIndices(PureModelContextDataIndex pure)
-    {
-        pure.sectionIndices.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-    }
-
     private void loadTypes(PureModelContextDataIndex pure)
     {
-        // First pass
-        pure.profiles.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-        pure.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-        pure.enumerations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-        pure.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-        pure.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-
         // Second pass
         pure.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         pure.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
 
         // Process - associations / inheritance
+        // Need to move it with the other first pass processes
         pure.associations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
 
         // Third pass - milestoning
@@ -402,7 +407,6 @@ public class PureModel implements IPureModel
 
     private void loadStores(PureModelContextDataIndex pure)
     {
-        pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
         pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
         pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
@@ -411,7 +415,6 @@ public class PureModel implements IPureModel
 
     public void loadMappings(PureModelContextDataIndex pure)
     {
-        pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
@@ -420,9 +423,7 @@ public class PureModel implements IPureModel
     public void loadConnectionsAndRuntimes(PureModelContextDataIndex pure)
     {
         // Connections must be loaded before runtimes
-        pure.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
         pure.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
-        pure.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
         pure.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
     }
 
@@ -431,7 +432,6 @@ public class PureModel implements IPureModel
         this.extensions.sortExtraProcessors(pure.otherElementsByProcessor.keysView()).forEach(p ->
         {
             MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pure.otherElementsByProcessor.get(p);
-            elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
             elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
             elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
@@ -468,6 +468,59 @@ public class PureModel implements IPureModel
 
     // ------------------------------------------ GETTER -----------------------------------------
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(String fullPath)
+    {
+        return getPackageableElement(fullPath, SourceInformation.getUnknownSourceInformation());
+
+    }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(String fullPath, SourceInformation sourceInformation)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = getPackageableElement_safe(fullPath);
+        Assert.assertTrue(packageableElement != null, () -> "Can't find the packageable element '" + addPrefixToTypeReference(fullPath) + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return packageableElement;
+    }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement_safe(String fullPath)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement;
+        packageableElement = getType_safe(fullPath);
+        if (packageableElement != null)
+        {
+            return packageableElement;
+        }
+        packageableElement = getAssociation_safe(fullPath);
+        if (packageableElement != null)
+        {
+            return packageableElement;
+        }
+        packageableElement = getProfile_safe(fullPath);
+        if (packageableElement != null)
+        {
+            return packageableElement;
+        }
+        packageableElement = getConcreteFunctionDefinition_safe(fullPath);
+        if (packageableElement != null)
+        {
+            return packageableElement;
+        }
+        packageableElement = getStore_safe(fullPath);
+        if (packageableElement != null)
+        {
+            return packageableElement;
+        }
+        packageableElement = getMapping_safe(fullPath);
+        if (packageableElement != null)
+        {
+            return packageableElement;
+        }
+        return null;
+        // Should eventually consider (but would need to update Pure)
+        //packageableElement = getRuntime_safe(fullPath);
+        //packageableElement = getConnection_safe(fullPath);
+    }
+
+
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type getType(String fullPath)
     {
         return getType(fullPath, SourceInformation.getUnknownSourceInformation());
@@ -475,44 +528,56 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type getType(String fullPath, SourceInformation sourceInformation)
     {
-        return this.typesIndex.getIfAbsentPut(addPrefixToTypeReference(fullPath),
-                () ->
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type type = getType_safe(fullPath);
+        Assert.assertTrue(type != null, () -> "Can't find type '" + addPrefixToTypeReference(fullPath) + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return type;
+    }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type getType_safe(String fullPath)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type type;
+        String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
+        // Search in the user graph (and cached types found subsequently in the Pure graph)
+        type = this.typesIndex.get(fullPathWithPrefix);
+        if (type == null)
+        {
+            // Search for system types in the Pure graph
+            try
+            {
+                type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Class", "Root::" + fullPath);
+            }
+            catch (Exception e)
+            {
+                try
                 {
-                    this.immutables.add(addPrefixToTypeReference(fullPath));
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type type = null;
+                    type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Enumeration", "Root::" + fullPath);
+                }
+                catch (Exception ee)
+                {
                     try
                     {
-                        type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Class", "Root::" + fullPath);
+                        type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Unit", "Root::" + fullPath);
                     }
-                    catch (Exception e)
+                    catch (Exception eee)
                     {
                         try
                         {
-                            type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Enumeration", "Root::" + fullPath);
+                            type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Measure", "Root::" + fullPath);
                         }
-                        catch (Exception ee)
+                        catch (Exception ignored)
                         {
-                            try
-                            {
-                                type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Unit", "Root::" + fullPath);
-                            }
-                            catch (Exception eee)
-                            {
-                                try
-                                {
-                                    type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Measure", "Root::" + fullPath);
-                                }
-                                catch (Exception ignored)
-                                {
-                                    // do nothing
-                                }
-                            }
+                            // do nothing
                         }
                     }
-                    Assert.assertTrue(type != null, () -> "Can't find type '" + addPrefixToTypeReference(fullPath) + "'", sourceInformation, EngineErrorType.COMPILATION);
-                    return type;
                 }
-        );
+            }
+            if (type != null)
+            {
+                this.immutables.add(fullPathWithPrefix);
+                this.typesIndex.put(fullPathWithPrefix, type);
+            }
+        }
+        return type;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getClass(String fullPath)
@@ -619,9 +684,14 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation(String fullPath, SourceInformation sourceInformation)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.associationsIndex.get(addPrefixToTypeReference(fullPath));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.getAssociation_safe(fullPath);
         Assert.assertTrue(association != null, () -> "Can't find association '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return association;
+    }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation_safe(String fullPath)
+    {
+        return this.associationsIndex.get(addPrefixToTypeReference(fullPath));
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile getProfile(String fullPath)
@@ -631,30 +701,45 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile getProfile(String fullPath, SourceInformation sourceInformation)
     {
-        return this.profilesIndex.getIfAbsentPut(fullPath,
-                () ->
-                {
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = null;
-                    try
-                    {
-                        profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + fullPath);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new EngineException("Can't find profile '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-                    }
-                    Assert.assertTrue(profile != null, () -> "Can't find profile '" + fullPath + "'");
-                    return profile;
-                }
-        );
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = getProfile_safe(fullPath);
+        Assert.assertTrue(profile != null, () -> "Can't find the profile '" + addPrefixToTypeReference(fullPath) + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return profile;
     }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile getProfile_safe(String fullPath)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = this.profilesIndex.get(fullPath);
+        if (profile == null)
+        {
+            try
+            {
+                profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + fullPath);
+            }
+            catch (Exception e)
+            {
+                //Do Nothing
+            }
+            if (profile != null)
+            {
+                this.profilesIndex.put(fullPath, profile);
+            }
+        }
+        return profile;
+    }
+
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> getConcreteFunctionDefinition(String fullPath, SourceInformation sourceInformation)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> func = this.functionsIndex.get(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> func = getConcreteFunctionDefinition_safe(fullPath);
         Assert.assertTrue(func != null, () -> "Can't find function '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return func;
     }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> getConcreteFunctionDefinition_safe(String fullPath)
+    {
+        return this.functionsIndex.get(fullPath);
+    }
+
 
     public Store getStore(String fullPath)
     {
@@ -663,10 +748,15 @@ public class PureModel implements IPureModel
 
     public Store getStore(String fullPath, SourceInformation sourceInformation)
     {
-        String updatedPath = packagePrefix(fullPath);
-        Store store = this.storesIndex.get(updatedPath);
-        Assert.assertTrue(store != null, () -> "Can't find store '" + updatedPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        Store store = getStore_safe(fullPath);
+        Assert.assertTrue(store != null, () -> "Can't find store '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return store;
+    }
+
+    public Store getStore_safe(String fullPath)
+    {
+        String updatedPath = packagePrefix(fullPath);
+        return this.storesIndex.get(updatedPath);
     }
 
     public Mapping getMapping(String fullPath)
@@ -676,11 +766,16 @@ public class PureModel implements IPureModel
 
     public Mapping getMapping(String fullPath, SourceInformation sourceInformation)
     {
-        String updatedPath = packagePrefix(fullPath);
-        Mapping resultMapping = this.mappingsIndex.get(updatedPath);
-        Assert.assertTrue(resultMapping != null, () -> "Can't find mapping '" + updatedPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        Mapping resultMapping = getMapping_safe(fullPath);
+        Assert.assertTrue(resultMapping != null, () -> "Can't find mapping '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return resultMapping;
     }
+
+    public Mapping getMapping_safe(String fullPath)
+    {
+        return this.mappingsIndex.get(packagePrefix(fullPath));
+    }
+
 
     public Runtime getRuntime(String fullPath)
     {
@@ -689,18 +784,26 @@ public class PureModel implements IPureModel
 
     public Runtime getRuntime(String fullPath, SourceInformation sourceInformation)
     {
-        String path = packagePrefix(fullPath);
-        Runtime runtime = this.runtimesIndex.get(path);
-        Assert.assertTrue(runtime != null, () -> "Can't find runtime '" + path + "'", sourceInformation, EngineErrorType.COMPILATION);
+        Runtime runtime = getRuntime_safe(fullPath);
+        Assert.assertTrue(runtime != null, () -> "Can't find runtime '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return runtime;
+    }
+
+    public Runtime getRuntime_safe(String fullPath)
+    {
+        return this.runtimesIndex.get(packagePrefix(fullPath));
     }
 
     public Connection getConnection(String fullPath, SourceInformation sourceInformation)
     {
-        String path = packagePrefix(fullPath);
-        Connection connection = this.connectionsIndex.get(path);
-        Assert.assertTrue(connection != null, () -> "Can't find connection '" + path + "'", sourceInformation, EngineErrorType.COMPILATION);
+        Connection connection = this.getConnection_safe(fullPath);
+        Assert.assertTrue(connection != null, () -> "Can't find connection '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return connection;
+    }
+
+    public Connection getConnection_safe(String fullPath)
+    {
+        return this.connectionsIndex.get(packagePrefix(fullPath));
     }
 
 

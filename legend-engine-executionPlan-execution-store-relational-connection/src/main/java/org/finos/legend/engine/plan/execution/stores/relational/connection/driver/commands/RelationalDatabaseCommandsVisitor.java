@@ -15,8 +15,10 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
 
 public interface RelationalDatabaseCommandsVisitor<T>
 {
+    T visit(SnowflakeCommands snowflakeCommands);
     T visit(H2Commands h2Commands);
 }

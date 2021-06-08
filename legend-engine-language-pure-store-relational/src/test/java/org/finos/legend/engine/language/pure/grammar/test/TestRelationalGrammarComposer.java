@@ -55,4 +55,72 @@ public class TestRelationalGrammarComposer
 
         Assert.assertEquals(expected, formatted);
     }
+
+    @Test
+    public void testMappingWithTestSQL() throws Exception
+    {
+        PureModelContextData context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("mappingWithTestsSQL.json")), PureModelContextData.class);
+        PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
+        String formatted = grammarTransformer.renderPureModelContextData(context);
+
+        String expected =
+                "###Mapping\n" +
+                        "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                        "(\n" +
+                        "  MappingTests\n" +
+                        "  [\n" +
+                        "    test2\n" +
+                        "    (\n" +
+                        "      query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        <Relational, SQL, aa::db, \n" +
+                        "          'Drop table if exists PersonTable;\\n'+\n" +
+                        "          'Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\n'+\n" +
+                        "          'Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\n'+\n" +
+                        "          'Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');\\n'\n" +
+                        "        >\n" +
+                        "      ];\n" +
+                        "      assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                        "    )\n" +
+                        "  ]\n" +
+                        ")\n";
+
+        Assert.assertEquals(expected, formatted);
+    }
+
+    @Test
+    public void testMappingWithTestCSV() throws Exception
+    {
+        PureModelContextData context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("mappingWithTestsCSV.json")), PureModelContextData.class);
+        PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
+        String formatted = grammarTransformer.renderPureModelContextData(context);
+
+        String expected =
+                "###Mapping\n" +
+                        "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                        "(\n" +
+                        "  MappingTests\n" +
+                        "  [\n" +
+                        "    test2\n" +
+                        "    (\n" +
+                        "      query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        <Relational, CSV, aa::db, \n" +
+                        "          'default\\n'+\n" +
+                        "          'PersonTable\\n'+\n" +
+                        "          'id,lastName\\n'+\n" +
+                        "          '1,Doe;\\n'+\n" +
+                        "          '2,Doe2\\n'+\n" +
+                        "          '\\n\\n\\n'\n" +
+                        "        >\n" +
+                        "      ];\n" +
+                        "      assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                        "    )\n" +
+                        "  ]\n" +
+                        ")\n";
+
+        Assert.assertEquals(expected, formatted);
+    }
 }
