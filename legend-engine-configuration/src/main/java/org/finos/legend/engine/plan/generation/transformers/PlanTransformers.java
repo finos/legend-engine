@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.generation.transformers;
 
 import org.eclipse.collections.api.RichIterable;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -22,16 +23,12 @@ import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class DevPlanTransformer implements PlanTransformer
+public class PlanTransformers implements PlanTransformer
 {
-    DevPlanTransformer()
-    {
-    }
-
     @Override
     public boolean supports(String version)
     {
-        return "vX_X_X".equals(version);
+        return PureClientVersions.versionAGreaterThanOrEqualsVersionB("v1_18_0", version);
     }
 
     @Override
@@ -39,7 +36,6 @@ public class DevPlanTransformer implements PlanTransformer
     {
         try
         {
-            //org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_executionPlan.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__RouterExtension_MANY__ExecutionPlan_1_()
             Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_executionPlan");
             Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__RouterExtension_MANY__ExecutionPlan_1_", Root_meta_pure_executionPlan_ExecutionPlan.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             return method.invoke(null, purePlan, extensions, executionSupport);
