@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.plan.execution.stores.relational.utils.DynamicPortGenerator;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 
 import io.opentracing.Scope;
 import org.eclipse.collections.api.RichIterable;

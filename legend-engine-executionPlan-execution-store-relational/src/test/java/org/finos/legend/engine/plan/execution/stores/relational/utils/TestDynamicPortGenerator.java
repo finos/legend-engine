@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.utils;
 
-import org.finos.legend.engine.plan.execution.stores.relational.utils.DynamicPortGenerator;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 

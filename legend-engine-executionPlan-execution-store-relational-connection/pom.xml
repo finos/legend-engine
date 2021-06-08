@@ -27,7 +27,7 @@
 
     <build>
         <plugins>
-            <!-- Block running the tests (They should only execute in TeamCity)-->
+            <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <dependencies>
@@ -40,12 +40,12 @@
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <includes>
-                        <include>**/DO_NOT_RUN_ANYTHING*.java</include>
+                        <include>**/*_local.java</include>
                     </includes>
                     <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
                 </configuration>
             </plugin>
-            <!-- Block running the tests  (They should only execute in TeamCity)-->
+            <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

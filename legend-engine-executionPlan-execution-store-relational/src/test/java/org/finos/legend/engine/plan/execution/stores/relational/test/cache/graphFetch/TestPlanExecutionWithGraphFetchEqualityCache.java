@@ -15,7 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test.cache.graphFetch;
 
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
-import org.finos.legend.engine.plan.execution.stores.relational.utils.DynamicPortGenerator;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.PlanExecutionContext;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
