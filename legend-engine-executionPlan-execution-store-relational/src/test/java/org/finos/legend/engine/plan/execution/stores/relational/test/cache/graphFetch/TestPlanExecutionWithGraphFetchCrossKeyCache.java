@@ -30,7 +30,7 @@ import org.finos.legend.engine.plan.execution.result.json.JsonStreamToPureFormat
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
-import org.finos.legend.engine.plan.execution.stores.relational.utils.DynamicPortGenerator;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.platform.PlanPlatform;

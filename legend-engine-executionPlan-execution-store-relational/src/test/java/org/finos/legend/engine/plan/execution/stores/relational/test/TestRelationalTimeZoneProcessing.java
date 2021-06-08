@@ -15,7 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test;
 
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
-import org.finos.legend.engine.plan.execution.stores.relational.utils.DynamicPortGenerator;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;

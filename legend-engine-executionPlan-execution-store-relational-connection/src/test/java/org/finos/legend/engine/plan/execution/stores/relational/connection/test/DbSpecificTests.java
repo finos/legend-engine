@@ -14,10 +14,20 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
+import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
 import javax.security.auth.Subject;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public abstract class DbSpecificTests
 {
@@ -25,4 +35,45 @@ public abstract class DbSpecificTests
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
     protected abstract Subject getSubject();
+
+    protected void testConnection(Function<Subject, Connection> toDBConnection, String sqlExpression) throws Exception
+    {
+        // Kerberos
+        Subject subject = getSubject();
+
+        ExecutorService executor = Executors.newFixedThreadPool(5);
+        MutableList<Future<Boolean>> result = FastList.newList();
+        for (int i = 0; i < 30; i++)
+        {
+            result.add(executor.submit(() -> {
+                try (Connection connection = toDBConnection.valueOf(subject);
+                     Statement st = connection.createStatement();
+                     ResultSet resultSet = st.executeQuery(sqlExpression))
+                {
+                    while (resultSet.next())
+                    {
+                        for (int i1 = 1; i1 < resultSet.getMetaData().getColumnCount() + 1; i1++)
+                        {
+                            System.out.println(resultSet.getMetaData().getColumnLabel(i1) + " = " + resultSet.getObject(i1));
+                        }
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }));
+        }
+        executor.shutdown();
+        executor.awaitTermination(100000, TimeUnit.MINUTES);
+
+        boolean res = true;
+        for (Future<Boolean> val : result)
+        {
+            res = res && val.get();
+        }
+        assert (res);
+    }
+
 }

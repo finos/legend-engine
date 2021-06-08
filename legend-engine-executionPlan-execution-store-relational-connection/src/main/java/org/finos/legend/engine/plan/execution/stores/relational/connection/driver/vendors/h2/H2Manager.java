@@ -40,7 +40,6 @@ public class H2Manager extends DatabaseManager
             String autoServerMode =  extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_AUTO_SERVER_MODE);
             return "jdbc:h2:file:" + dataDirectoryPath + "/" + databaseName + ";AUTO_SERVER=" + autoServerMode;
         }
-
         return "jdbc:h2:tcp://" + host + ":" + port + "/mem:" +databaseName;
     }
 

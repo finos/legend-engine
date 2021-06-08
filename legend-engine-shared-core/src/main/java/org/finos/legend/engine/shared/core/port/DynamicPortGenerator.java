@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.utils;
+package org.finos.legend.engine.shared.core.port;
 
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DynamicPortGenerator
 {
-    protected static final int MIN_TEST_PORT = 49152;
-    protected static final int MAX_TEST_PORT = 65535;
+    public static final int MIN_TEST_PORT = 49152;
+    public static final int MAX_TEST_PORT = 65535;
 
     private static final int NUMBER_OF_TRIES = 10;
     private static final AtomicInteger testPort = new AtomicInteger(MIN_TEST_PORT);

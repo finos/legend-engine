@@ -19,7 +19,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.utils.DynamicPortGenerator;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
 
@@ -50,9 +49,9 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
         else if (datasourceSpecification instanceof LocalH2DatasourceSpecification)
         {
             LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) datasourceSpecification;
-            if ((localH2DatasourceSpecification.testDataSetupCsv != null && !localH2DatasourceSpecification.testDataSetupCsv.isEmpty()) || (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty()))
+            if (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
             {
-                return new LocalH2DataSourceSpecificationKey(DynamicPortGenerator.generatePort(), "./data/test");
+                return new LocalH2DataSourceSpecificationKey(localH2DatasourceSpecification.testDataSetupSqls);
             }
             return new StaticDataSourceSpecificationKey("127.0.0.1", testDbPort, "testDB");
         }
@@ -66,7 +65,7 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
         }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
-            SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification)datasourceSpecification;
+            SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
             return new SnowflakeDataSourceSpecificationKey(
                     snowflakeDatasourceSpecification.accountName,
                     snowflakeDatasourceSpecification.region,

@@ -152,7 +152,7 @@ public abstract class DataSourceSpecification
         );
     }
 
-    private Connection getConnection(Subject subject, MutableList<CommonProfile> profiles, String principal, Function0<org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics> exec)
+    protected Connection getConnection(Subject subject, MutableList<CommonProfile> profiles, String principal, Function0<org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics> exec)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Get Connection").startActive(true))
         {
@@ -182,7 +182,7 @@ public abstract class DataSourceSpecification
         }
     }
 
-    protected DataSource buildDataSource(String host, int port, String databaseName, MutableList<CommonProfile> profiles)
+    protected HikariDataSource buildDataSource(String host, int port, String databaseName, MutableList<CommonProfile> profiles)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Create Pool").startActive(true))
         {

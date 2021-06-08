@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
-import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
@@ -31,12 +30,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
-import org.h2.tools.Server;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
 
 public class DataSourceSpecificationTransformer implements DatasourceSpecificationVisitor<DataSourceSpecification>
 {
@@ -65,42 +58,12 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
             LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) datasourceSpecification;
             if (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
             {
-                try
-                {
-                    Server s = AlloyH2Server.startServer(((LocalH2DataSourceSpecificationKey) key).getPort());
-
-                    LocalH2DataSourceSpecification dsSpec = new LocalH2DataSourceSpecification(
-                            (LocalH2DataSourceSpecificationKey) key,
-                            new H2Manager(),
-                            new TestDatabaseAuthenticationStrategy(),
-                            s,
-                            relationalExecutorInfo
-                    );
-
-                    if (!localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
-                    {
-                        try (Connection conn = dsSpec.getConnectionUsingSubject(null))
-                        {
-                            List<String> sqls = localH2DatasourceSpecification.testDataSetupSqls;
-                            for (String sql : sqls)
-                            {
-                                try (Statement statement = conn.createStatement())
-                                {
-                                    statement.executeUpdate(sql);
-                                }
-                                catch (SQLException e)
-                                {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }
-                    }
-                    return dsSpec;
-                }
-                catch (SQLException e)
-                {
-                    throw new RuntimeException("Error in executing in local H2 instance" + e.getMessage());
-                }
+                return new LocalH2DataSourceSpecification(
+                        (LocalH2DataSourceSpecificationKey) key,
+                        new H2Manager(),
+                        new TestDatabaseAuthenticationStrategy(),
+                        relationalExecutorInfo
+                );
             }
             else
             {
