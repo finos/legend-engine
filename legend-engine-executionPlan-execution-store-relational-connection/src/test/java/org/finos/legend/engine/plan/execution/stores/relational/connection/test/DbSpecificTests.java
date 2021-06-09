@@ -19,6 +19,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
+import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -31,6 +32,8 @@ public abstract class DbSpecificTests
 {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
+
+    protected abstract Subject getSubject();
 
     protected void testConnection(Connection connection, String sqlExpression) throws Exception
     {

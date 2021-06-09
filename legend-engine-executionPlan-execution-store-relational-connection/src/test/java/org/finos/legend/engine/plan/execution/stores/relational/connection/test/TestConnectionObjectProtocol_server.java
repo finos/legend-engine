@@ -32,10 +32,16 @@ import java.util.Properties;
 
 public class TestConnectionObjectProtocol_server extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
+    @Override
+    protected Subject getSubject()
+    {
+        return null;
+    }
+
     @Test
     public void testSnowflakePublicConnection_subject() throws Exception
     {
-        testSnowflakePublicConnection(c -> c.getConnectionUsingSubject(null));
+        testSnowflakePublicConnection(c -> c.getConnectionUsingSubject(getSubject()));
     }
 
     @Test
