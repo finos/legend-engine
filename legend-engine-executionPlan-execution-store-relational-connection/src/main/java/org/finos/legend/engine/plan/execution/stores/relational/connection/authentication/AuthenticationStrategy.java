@@ -68,7 +68,7 @@ public abstract class AuthenticationStrategy
 
     public String getAlternativePrincipal(MutableList<CommonProfile> profiles)
     {
-        return null;
+        return "_UNKNOWN_";
     }
 
     public abstract String getPassword();
