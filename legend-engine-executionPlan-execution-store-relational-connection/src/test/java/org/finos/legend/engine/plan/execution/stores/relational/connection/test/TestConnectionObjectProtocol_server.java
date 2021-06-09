@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
@@ -25,18 +27,24 @@ import org.junit.Test;
 
 import javax.security.auth.Subject;
 import java.io.FileInputStream;
+import java.sql.Connection;
 import java.util.Properties;
 
 public class TestConnectionObjectProtocol_server extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
-    @Override
-    protected Subject getSubject()
+    @Test
+    public void testSnowflakePublicConnection_subject() throws Exception
     {
-        return null;//SubjectTools.getLocalSubject();
+        testSnowflakePublicConnection(c -> c.getConnectionUsingSubject(null));
     }
 
     @Test
-    public void testSnowflakePublicConnection() throws Exception
+    public void testSnowflakePublicConnection_profile() throws Exception
+    {
+        testSnowflakePublicConnection(c -> c.getConnectionUsingProfiles(null));
+    }
+
+    private void testSnowflakePublicConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
     {
         Properties properties = new Properties();
         properties.load(new FileInputStream("../legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/snowflake.properties"));
@@ -48,6 +56,12 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
                         new SnowflakeManager(),
                         new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"),
                         new RelationalExecutorInfo());
-        testConnection(ds::getConnectionUsingSubject, "select * from KNOEMA_RENEWABLES_DATA_ATLAS.RENEWABLES.DATASETS");
+        try (Connection connection = toDBConnection.valueOf(ds))
+        {
+            testConnection(connection, "select * from KNOEMA_RENEWABLES_DATA_ATLAS.RENEWABLES.DATASETS");
+        }
+
     }
+
+
 }

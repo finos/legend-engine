@@ -14,13 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -34,20 +32,14 @@ public abstract class DbSpecificTests
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    protected abstract Subject getSubject();
-
-    protected void testConnection(Function<Subject, Connection> toDBConnection, String sqlExpression) throws Exception
+    protected void testConnection(Connection connection, String sqlExpression) throws Exception
     {
-        // Kerberos
-        Subject subject = getSubject();
-
         ExecutorService executor = Executors.newFixedThreadPool(5);
         MutableList<Future<Boolean>> result = FastList.newList();
         for (int i = 0; i < 30; i++)
         {
             result.add(executor.submit(() -> {
-                try (Connection connection = toDBConnection.valueOf(subject);
-                     Statement st = connection.createStatement();
+                try (Statement st = connection.createStatement();
                      ResultSet resultSet = st.executeQuery(sqlExpression))
                 {
                     while (resultSet.next())

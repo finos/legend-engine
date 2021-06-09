@@ -16,8 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.TestDatabaseAuthenticationStrategyKey;
-import org.eclipse.collections.api.list.MutableList;
-import org.pac4j.core.profile.CommonProfile;
 
 public class TestDatabaseAuthenticationStrategy extends DefaultH2AuthenticationStrategy
 {
@@ -25,11 +23,5 @@ public class TestDatabaseAuthenticationStrategy extends DefaultH2AuthenticationS
     public AuthenticationStrategyKey getKey()
     {
         return new TestDatabaseAuthenticationStrategyKey();
-    }
-
-    @Override
-    public String getAlternativePrincipal(MutableList<CommonProfile> profiles)
-    {
-        return "_UNKNOWN_";
     }
 }
