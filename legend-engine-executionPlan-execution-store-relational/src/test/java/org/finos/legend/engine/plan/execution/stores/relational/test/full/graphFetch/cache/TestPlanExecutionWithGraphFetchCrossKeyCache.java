@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.cache.graphFetch;
+package org.finos.legend.engine.plan.execution.stores.relational.test.full.graphFetch.cache;
 
 import com.google.common.cache.CacheBuilder;
 import org.eclipse.collections.impl.tuple.Tuples;

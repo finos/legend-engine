@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.cache.graphFetch;
+package org.finos.legend.engine.plan.execution.stores.relational.test.full.graphFetch.cache;
 
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;

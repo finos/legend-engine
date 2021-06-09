@@ -30,10 +30,16 @@ import java.sql.Connection;
 
 public class TestConnectionObjectProtocol_local extends DbSpecificTests
 {
+    @Override
+    protected Subject getSubject()
+    {
+        return null;
+    }
+
     @Test
     public void testLocalTestConnection_subject() throws Exception
     {
-        testLocalTestConnection(c -> c.getConnectionUsingSubject(null));
+        testLocalTestConnection(c -> c.getConnectionUsingSubject(getSubject()));
     }
 
     @Test
