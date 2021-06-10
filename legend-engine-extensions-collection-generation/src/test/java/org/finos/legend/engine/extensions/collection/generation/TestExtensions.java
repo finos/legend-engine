@@ -21,6 +21,8 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.junit.Assert;
@@ -74,6 +76,12 @@ public class TestExtensions
     public void testExpectedGrammarExtensionsArePresent()
     {
         assertHasExtensions(org.eclipse.collections.api.factory.Sets.mutable.withAll(EXPECTED_GRAMMAR_EXTENSIONS), PureGrammarParserExtension.class, false);
+    }
+
+    @Test
+    public void testPlanGeneratorExtensionArePresent()
+    {
+        assertHasExtensions(Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty().with(LegendPlanGeneratorExtension.class), PlanGeneratorExtension.class, true);
     }
 
     private <T> void assertHasExtensions(Iterable<? extends Class<? extends T>> expectedExtensionClasses, Class<T> extensionClass, boolean failOnAdditional)
