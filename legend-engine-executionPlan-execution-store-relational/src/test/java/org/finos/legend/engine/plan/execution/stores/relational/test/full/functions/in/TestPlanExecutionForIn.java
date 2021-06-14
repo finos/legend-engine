@@ -284,7 +284,6 @@ public class TestPlanExecutionForIn
             c = buildTestExecutor(port).getConnectionManager().getTestDatabaseConnection();
             s = c.createStatement();
 
-            s.execute("Create Schema default;");
             s.execute("Drop table if exists PERSON;");
             s.execute("Create Table PERSON(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL,birthTime TIMESTAMP NULL, PRIMARY KEY(fullName));");
             s.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P1','F1','A1','2020-12-12 20:00:00');");
