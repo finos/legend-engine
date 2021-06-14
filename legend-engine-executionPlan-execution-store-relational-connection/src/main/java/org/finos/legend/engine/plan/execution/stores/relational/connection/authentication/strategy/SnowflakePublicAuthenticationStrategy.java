@@ -8,6 +8,7 @@ import net.snowflake.client.jdbc.internal.org.bouncycastle.openssl.jcajce.JcaPEM
 import net.snowflake.client.jdbc.internal.org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.operator.InputDecryptorProvider;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.apache.commons.codec.binary.Base64;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -32,7 +33,6 @@ import java.security.Security;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Base64;
 import java.util.Properties;
 
 public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrategy
@@ -94,7 +94,6 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
         String privateKey = Vault.INSTANCE.getValue(privateKeyVaultReference);
         String passPhrase = Vault.INSTANCE.getValue(passPhraseVaultReference);
 
-        String originalPrivateKey = privateKey;
         if (!privateKey.startsWith("-----BEGIN ENCRYPTED PRIVATE KEY-----"))
         {
             privateKey = "-----BEGIN ENCRYPTED PRIVATE KEY-----\n" + Iterate.makeString(Splitter.fixedLength(64).split(privateKey), "\n") + "\n-----END ENCRYPTED PRIVATE KEY-----";
@@ -109,7 +108,10 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
 
                 if ("1.2.840.113549.1.5.3".equals(encryptedPrivateKeyInfo.getEncryptionAlgorithm().getAlgorithm().toString()))
                 {
-                    EncryptedPrivateKeyInfo pki = new EncryptedPrivateKeyInfo(Base64.getDecoder().decode(originalPrivateKey));
+                    String encryptedPrivateKeyString = privateKey;
+                    encryptedPrivateKeyString = encryptedPrivateKeyString.replace("-----BEGIN ENCRYPTED PRIVATE KEY-----", "");
+                    encryptedPrivateKeyString = encryptedPrivateKeyString.replace("-----END ENCRYPTED PRIVATE KEY-----", "");
+                    EncryptedPrivateKeyInfo pki = new EncryptedPrivateKeyInfo(Base64.decodeBase64(encryptedPrivateKeyString));
                     PBEKeySpec privateKeySpec = new PBEKeySpec(passPhrase.toCharArray());
                     SecretKeyFactory pbeKeyFactory = SecretKeyFactory.getInstance(pki.getAlgName());
                     PKCS8EncodedKeySpec encodedKeySpec = pki.getKeySpec(pbeKeyFactory.generateSecret(privateKeySpec));
