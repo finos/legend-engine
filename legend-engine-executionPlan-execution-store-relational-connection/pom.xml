@@ -210,6 +210,13 @@
         </dependency>
         <!-- COMMONS-LANG -->
 
+        <!-- COMMONS CODEC (Base64)-->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <!-- COMMONS CODEC -->
+
         <!-- LOGGING -->
         <dependency>
             <groupId>org.slf4j</groupId>
