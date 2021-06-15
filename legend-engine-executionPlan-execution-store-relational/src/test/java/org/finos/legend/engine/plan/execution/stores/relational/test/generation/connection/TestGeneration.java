@@ -50,6 +50,7 @@ public class TestGeneration
                         "                                           account: 'account';\n" +
                         "                                           warehouse: 'warehouseName';\n" +
                         "                                           region: 'us-east2';\n" +
+                        "                                           cloudType: 'aws';\n" +
                         "                                           quotedIdentifiersIgnoreCase : false;\n" +
                         "                                      };\n" +
                         "                       auth: SnowflakePublic\n" +
@@ -77,6 +78,8 @@ public class TestGeneration
                 core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()),
                 LegendPlanTransformers.transformers
         );
+
+        System.out.println(plan);
 
         ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().enable(SerializationFeature.INDENT_OUTPUT);;
         ExecutionPlan executionPlan = mapper.readValue(plan, ExecutionPlan.class);
@@ -126,6 +129,7 @@ public class TestGeneration
                         "        \"datasourceSpecification\" : {\n" +
                         "          \"_type\" : \"snowflake\",\n" +
                         "          \"accountName\" : \"account\",\n" +
+                        "          \"cloudType\" : \"aws\",\n" +
                         "          \"databaseName\" : \"test\",\n" +
                         "          \"quotedIdentifiersIgnoreCase\" : false,\n" +
                         "          \"region\" : \"us-east2\",\n" +

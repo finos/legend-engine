@@ -69,6 +69,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 ", region='" + region + '\'' +
                 ", warehouseName='" + warehouseName + '\'' +
                 ", databaseName='" + databaseName + '\'' +
+                ", cloudType='" + cloudType + '\'' +
                 '}';
     }
 
@@ -78,7 +79,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return "Snowflake_" +
                 "account:" + accountName + "_" +
                 "warehouse:" + warehouseName + "_" +
-                "db:" + databaseName;
+                "db:" + databaseName + "_" +
+                "cloudType:" + cloudType;
     }
 
     @Override
@@ -96,12 +98,13 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return Objects.equals(accountName, that.accountName) &&
                 Objects.equals(region, that.region) &&
                 Objects.equals(warehouseName, that.warehouseName) &&
-                Objects.equals(databaseName, that.databaseName);
+                Objects.equals(databaseName, that.databaseName) &&
+                Objects.equals(cloudType, that.cloudType);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(accountName, region, warehouseName, databaseName);
+        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType);
     }
 }

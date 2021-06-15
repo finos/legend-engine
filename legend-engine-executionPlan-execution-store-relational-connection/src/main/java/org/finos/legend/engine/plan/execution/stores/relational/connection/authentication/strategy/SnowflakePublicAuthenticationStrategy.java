@@ -94,6 +94,11 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
         String privateKey = Vault.INSTANCE.getValue(privateKeyVaultReference);
         String passPhrase = Vault.INSTANCE.getValue(passPhraseVaultReference);
 
+        if (privateKey == null || passPhrase == null)
+        {
+            throw new RuntimeException("Can't find the privateKey ("+privateKeyVaultReference+") or the passPhrase ("+passPhraseVaultReference+") in the vault");
+        }
+
         if (!privateKey.startsWith("-----BEGIN ENCRYPTED PRIVATE KEY-----"))
         {
             privateKey = "-----BEGIN ENCRYPTED PRIVATE KEY-----\n" + Iterate.makeString(Splitter.fixedLength(64).split(privateKey), "\n") + "\n-----END ENCRYPTED PRIVATE KEY-----";
