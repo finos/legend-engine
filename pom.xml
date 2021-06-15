@@ -103,8 +103,8 @@
 
 
         <!-- Legend -->
-        <legend.pure.version>1.27.0</legend.pure.version>
-        <legend.shared.version>0.11.1</legend.shared.version>
+        <legend.pure.version>1.28.0</legend.pure.version>
+        <legend.shared.version>0.12.0</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
