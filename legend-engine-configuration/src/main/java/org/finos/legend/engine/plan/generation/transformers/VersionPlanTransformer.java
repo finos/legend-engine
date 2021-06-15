@@ -32,7 +32,7 @@ public class VersionPlanTransformer implements PlanTransformer
     @Override
     public boolean supports(String version)
     {
-        return PureClientVersions.versionAGreaterThanOrEqualsVersionB(version, "v1_18_0");
+        return PureClientVersions.versionAGreaterThanOrEqualsVersionB(version, "v1_20_0");
     }
 
     @Override
@@ -40,9 +40,8 @@ public class VersionPlanTransformer implements PlanTransformer
     {
         try
         {
-            // TODO: FIXME! When v1_20_0 is released use version instead of hard coding to 'vX_X_X`
-            Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + "vX_X_X" + "_transfers_executionPlan");
-            Method method = cl.getMethod("Root_meta_protocols_pure_" + "vX_X_X" + "_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__RouterExtension_MANY__ExecutionPlan_1_", Root_meta_pure_executionPlan_ExecutionPlan.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_executionPlan");
+            Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__RouterExtension_MANY__ExecutionPlan_1_", Root_meta_pure_executionPlan_ExecutionPlan.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             return method.invoke(null, purePlan, extensions, executionSupport);
         }
         catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
