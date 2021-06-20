@@ -380,7 +380,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.append(isMappingContentEmpty ? "" : "\n");
             isMappingContentEmpty = false;
             builder.append(LazyIterate.collect(mapping.classMappings, classMapping -> getTabString() + (classMapping.root ? "*" : "")
-                    + classMapping._class + HelperMappingGrammarComposer.renderClassMappingId(classMapping) + classMapping.accept(this)).makeString("\n"));
+                    + classMapping._class + HelperMappingGrammarComposer.renderClassMappingId(classMapping)
+                    + (classMapping.extendsClassMappingId != null ? " extends " + HelperMappingGrammarComposer.renderMappingId(classMapping.extendsClassMappingId) : "")
+                    + classMapping.accept(this)).makeString("\n"));
             builder.append("\n");
         }
         if (!mapping.associationMappings.isEmpty())

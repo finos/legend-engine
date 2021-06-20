@@ -83,6 +83,37 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
     }
 
     @Test
+    public void testMappingInheritance()
+    {
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "   test::Class[id1] extends : Relational\n" +
+                "   {\n" +
+                "      prop: 1\n" +
+                "   }\n" +
+                ")", "PARSER error at [4:29]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "   test::Class[id1] extends []: Relational\n" +
+                "   {\n" +
+                "      prop: 1\n" +
+                "   }\n" +
+                ")", "PARSER error at [4:30]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "   test::Class[id1] extends [id2]: Relational\n" +
+                "   {\n" +
+                "      prop: 1\n" +
+                "   }\n" +
+                ")");
+    }
+
+    @Test
     public void testMappingTestDataSQL()
     {
         test("###Mapping\n" +
