@@ -62,6 +62,15 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
     @Override
     public SetImplementation visit(ClassMapping classMapping)
     {
+        if (classMapping.extendsClassMappingId != null)
+        {
+            String superSetId = classMapping.extendsClassMappingId;
+            SetImplementation superSet = HelperMappingBuilder.getAllClassMappings(parentMapping).detect(c -> c._id().equals(superSetId));
+            if (superSet == null)
+            {
+                throw new EngineException("Can't find extends class mapping '" + superSetId + "' in mapping '" + HelperModelBuilder.getElementFullPath(parentMapping, this.context.pureModel.getExecutionSupport()) + "'", classMapping.sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
         this.context.getCompilerExtensions().getExtraClassMappingSecondPassProcessors().forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
         return null;
     }

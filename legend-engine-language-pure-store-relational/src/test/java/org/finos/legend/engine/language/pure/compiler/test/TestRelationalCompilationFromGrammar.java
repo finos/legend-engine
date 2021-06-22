@@ -787,6 +787,39 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    public void testMappingInheritance()
+    {
+        test(MODEL + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::LegalEntity[entity]: Relational\n" +
+                "  {\n" +
+                "    name: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "  model::Firm[firm] extends [entity1]: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                ")", "COMPILATION error at [88:3-91:3]: Can't find extends class mapping 'entity1' in mapping 'model::myRelationalMapping'"
+        );
+
+        test(MODEL + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::LegalEntity[entity]: Relational\n" +
+                "  {\n" +
+                "    name: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "  model::Firm[firm] extends [entity]: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                ")");
+    }
+
+    @Test
     public void testTestMapping()
     {
         test(MODEL + DB_INC +
