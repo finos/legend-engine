@@ -54,6 +54,6 @@ public class PureClientVersions
 
     public static boolean versionAGreaterThanOrEqualsVersionB(String version1, String version2)
     {
-        return versionsSameCase.indexOf(version1) >= versionsSameCase.indexOf(version2);
+        return versionsSameCase.indexOf(version1.toLowerCase()) >= versionsSameCase.indexOf(version2.toLowerCase());
     }
 }
