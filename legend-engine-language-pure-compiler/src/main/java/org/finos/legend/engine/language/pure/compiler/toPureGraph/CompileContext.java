@@ -56,9 +56,9 @@ public class CompileContext
 
     private static final ImmutableSet<String> SPECIAL_TYPES = _Package.SPECIAL_TYPES;
     private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
-
+    private static final String META_PACKAGE_NAME = "meta";
     // NOTE: this list is taken from m3.pure in PURE
-    private static final ImmutableSet<String> AUTO_IMPORTS = Sets.immutable.with(
+    private static final ImmutableSet<String> META_IMPORTS = Sets.immutable.with(
             "meta::pure::metamodel",
             "meta::pure::metamodel::type",
             "meta::pure::metamodel::type::generics",
@@ -101,7 +101,7 @@ public class CompileContext
     public static class Builder
     {
         private final PureModel pureModel;
-        private ImmutableSet<String> imports = AUTO_IMPORTS;
+        private ImmutableSet<String> imports = META_IMPORTS;
 
         public Builder(PureModel pureModel)
         {
@@ -132,7 +132,7 @@ public class CompileContext
             // so system elements will always be resolved no matter what.
             if (section instanceof ImportAwareCodeSection)
             {
-                this.imports = AUTO_IMPORTS.newWithAll(((ImportAwareCodeSection) section).imports);
+                this.imports = META_IMPORTS.newWithAll(((ImportAwareCodeSection) section).imports);
             }
             return this;
         }
@@ -393,12 +393,14 @@ public class CompileContext
     {
         // First do an optimistic check in the current handler to see if the function we are finding is available
         // so we don't waste time going through all of the auto-imports
-        if (functionHandlerMap.containsKey(functionName))
+        String extractedFunctionName = extractMetaFunctionName(functionName);
+
+        if (functionHandlerMap.containsKey(extractedFunctionName))
         {
-            return functionHandlerMap.get(functionName);
+            return functionHandlerMap.get(extractedFunctionName);
         }
 
-        MutableMap<String, FunctionExpressionBuilder> results = searchImports(functionName, functionHandlerMap::get);
+        MutableMap<String, FunctionExpressionBuilder> results = searchImports(extractedFunctionName, functionHandlerMap::get);
         switch (results.size())
         {
             case 0:
@@ -417,6 +419,21 @@ public class CompileContext
                 throw new EngineException(results.keysView().makeString("Can't resolve the builder for function '" + functionName + "' - multiple matches found [", ", ", "]"), sourceInformation, EngineErrorType.COMPILATION);
             }
         }
+    }
+
+    private String extractMetaFunctionName(String functionName)
+    {
+        String extractedFunctionName = functionName;
+        if(functionName.contains(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
+        {
+            String packageName = functionName.substring(0, functionName.lastIndexOf(this.PACKAGE_SEPARATOR));
+            String name = functionName.substring(functionName.lastIndexOf(this.PACKAGE_SEPARATOR) + this.PACKAGE_SEPARATOR.length());
+            if(this.META_IMPORTS.contains(packageName))
+            {
+                extractedFunctionName = name;
+            }
+        }
+        return extractedFunctionName;
     }
 
     private <T> MutableMap<String, T> searchImports(String name, Function<String, T> resolver)

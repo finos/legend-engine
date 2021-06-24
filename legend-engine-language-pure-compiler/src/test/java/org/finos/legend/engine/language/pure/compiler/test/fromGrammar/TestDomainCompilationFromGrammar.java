@@ -124,6 +124,28 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testMetaFunctionExecutionWithFullPath()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->meta::pure::functions::math::max();"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
+    public void testMetaFunctionExecutionWithoutFullPath()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
     public void testCycleClassSuperType()
     {
         test("Class test::A extends test::A\n" +

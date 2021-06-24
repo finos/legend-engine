@@ -664,4 +664,15 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                         "}\n"
         );
     }
+
+    @Test
+    public void testMetaFunctionExecutionWithFullPath()
+    {
+        String code =
+                "function example::somethingElse(input: Integer[1]): Any[0..1]\n" +
+                        "{\n"+
+                        "   [1, $input]->meta::pure::functions::math::max()\n"+
+                        "}\n";
+        test(code);
+    }
 }
