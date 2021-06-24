@@ -73,8 +73,6 @@
     </modules>
 
     <properties>
-        <project.version>${project.version}</project.version>
-
         <sonar.projectKey>legend-engine</sonar.projectKey>
         <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
         <sonar.organization>finos</sonar.organization>
