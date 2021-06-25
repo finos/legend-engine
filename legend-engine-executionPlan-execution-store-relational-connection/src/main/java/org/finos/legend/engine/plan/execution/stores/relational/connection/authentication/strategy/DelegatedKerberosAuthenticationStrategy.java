@@ -21,7 +21,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
@@ -64,7 +63,7 @@ public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenti
     @Override
     public String getLogin()
     {
-        return SubjectTools.getCurrentUsername();
+        return null;
     }
 
     @Override
