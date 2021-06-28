@@ -58,7 +58,7 @@ public abstract class DataSourceSpecification
     protected static final int HIKARICP_MAX_POOL_SIZE = 100;
     protected static final int HIKARICP_MIN_IDLE = 0;
 
-    protected org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key;
+    protected org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey datasourceKey;
     private DatabaseManager databaseManager;
     private AuthenticationStrategy authenticationStrategy;
     protected Properties extraDatasourceProperties;
@@ -73,7 +73,7 @@ public abstract class DataSourceSpecification
 
     protected DataSourceSpecification(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
     {
-        this.key = key;
+        this.datasourceKey = key;
         this.databaseManager = databaseManager;
         this.authenticationStrategy = authenticationStrategy;
         this.extraDatasourceProperties = new Properties();
@@ -82,12 +82,17 @@ public abstract class DataSourceSpecification
 
         synchronized (DataSourceSpecification.class)
         {
-            String instanceKey = key.toString();
+            String instanceKey = buildInstanceKey();
             dataSourceSpecifications.put(instanceKey, this);
             this.extraDatasourceProperties.put(DATASOURCE_SPEC_INSTANCE, instanceKey);
         }
         MetricsHandler.observeCount("datastore specifications");
         LOGGER.info("Create new {}", this);
+    }
+
+    private String buildInstanceKey()
+    {
+        return this.datasourceKey.shortId()+"_"+this.authenticationStrategy.getKey().shortId();
     }
 
     protected abstract DataSource buildDataSource(MutableList<CommonProfile> profiles);
@@ -187,10 +192,11 @@ public abstract class DataSourceSpecification
         try (Scope scope = GlobalTracer.get().buildSpan("Create Pool").startActive(true))
         {
             Properties properties = new Properties();
-            String poolName = "DBPool_" + this.key.shortId() + "_" + this.authenticationStrategy.getKey().shortId() + "_" + (SubjectTools.getCurrentUsername() != null ? SubjectTools.getCurrentUsername() : this.authenticationStrategy.getAlternativePrincipal(profiles));
+            String poolName = "DBPool_" + this.datasourceKey.shortId() + "_" + this.authenticationStrategy.getKey().shortId() + "_" + (SubjectTools.getCurrentUsername() != null ? SubjectTools.getCurrentUsername() : this.authenticationStrategy.getAlternativePrincipal(profiles));
             properties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy));
             properties.putAll(this.extraDatasourceProperties);
 
+            properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_KEY,  this.authenticationStrategy.getKey().shortId());
             properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_PROFILE_BY_POOL, poolName);
             // The profiles are associated with the Pool as the Pool can create connections by itself in its own threads.
             AuthenticationStrategy.registerProfilesByPool(poolName, profiles);
@@ -282,7 +288,8 @@ public abstract class DataSourceSpecification
     {
         return "DataSourceSpecification[" +
                 this.getClass().getSimpleName() + "," +
-                this.key + "," +
+                this.datasourceKey.shortId() + "," +
+                this.authenticationStrategy.getKey().shortId()+"," +
                 super.toString() + "]";
     }
 }
