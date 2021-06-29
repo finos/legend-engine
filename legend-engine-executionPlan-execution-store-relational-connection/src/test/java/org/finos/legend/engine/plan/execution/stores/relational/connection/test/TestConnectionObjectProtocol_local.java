@@ -73,7 +73,7 @@ public class TestConnectionObjectProtocol_local extends DbSpecificTests
         Assert.assertNotEquals(connectionOne.getMetaData().getUserName(), connectionTwo.getMetaData().getUserName());
 
 
-        DataSourceSpecification dsThree = buildLocalDataSourceSpecification(new OtherTestDatabaseAuthenticationStrategy("mockuser2", "mockPass2"));
+        DataSourceSpecification dsThree = buildLocalDataSourceSpecification(new OtherTestDatabaseAuthenticationStrategy("mockuser", "mockPass"));
         Connection connectionThree= dsThree.getConnectionUsingSubject(getSubject());
         Assert.assertNotEquals(connectionThree.getMetaData().getUserName(),connectionOne.getMetaData().getUserName());
         Assert.assertEquals(connectionThree.getMetaData().getUserName(),connectionTwo.getMetaData().getUserName());
