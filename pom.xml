@@ -70,6 +70,7 @@
         <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
+        <module>legend-engine-language-store-relational-connection-api</module>
     </modules>
 
     <properties>
@@ -448,6 +449,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-store-relational-grammar-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-store-relational-connection-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
