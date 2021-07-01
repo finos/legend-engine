@@ -14,7 +14,7 @@ import static org.finos.legend.engine.language.pure.compiler.test.TestCompilatio
 public class TestRelationalConnectionCompilationRoundtrip
 {
     @Test
-    public void testSConnectionPropertiesPropagatedToCompiledGraph()
+    public void testConnectionPropertiesPropagatedToCompiledGraph()
     {
         Pair<PureModelContextData, PureModel> compiledGraph = test(TestRelationalCompilationFromGrammar.DB_INC +
                 "###Connection\n" +

@@ -20,6 +20,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
@@ -66,6 +67,16 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         this.tableName = tableName;
         this.databaseTimeZone = databaseTimeZone;
         this.ingestionMethod = null;
+    }
+
+    @Override
+    public Boolean visit(SnowflakeCommands snowflakeCommands)
+    {
+        if (ingestionMethod == null)
+        {
+            ingestionMethod = snowflakeCommands.getDefaultIngestionMethod();
+        }
+        throw new UnsupportedOperationException("not yet implemented");
     }
 
     @Override

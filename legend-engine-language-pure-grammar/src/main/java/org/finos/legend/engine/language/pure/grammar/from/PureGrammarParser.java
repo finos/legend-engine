@@ -159,7 +159,7 @@ public class PureGrammarParser
                         ? "Unsupported syntax"
                         : e instanceof NullPointerException ? "An exception of type 'NullPointerException' occurred, please notify developer" : e.getMessage();
                 LOGGER.error(new LogInfo(null, LoggingEventType.GRAMMAR_PARSING_ERROR, message).toString(), e);
-                throw new EngineException(message, sectionSourceInformation, EngineErrorType.PARSER);
+                throw new EngineException(message, sectionSourceInformation, EngineErrorType.PARSER, e);
             }
         }
         // create default section for empty section

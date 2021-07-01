@@ -14,15 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DefaultH2AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DelegatedKerberosAuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.TestDatabaseAuthenticationStrategyKey;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 
 public class AuthenticationStrategyKeyGenerator implements AuthenticationStrategyVisitor<AuthenticationStrategyKey>
 {
@@ -40,6 +34,15 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
         else if(authenticationStrategy instanceof DefaultH2AuthenticationStrategy)
         {
             return new DefaultH2AuthenticationStrategyKey();
+        }
+        else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
+        {
+            SnowflakePublicAuthenticationStrategy snowflakeDatasourceSpecification = (SnowflakePublicAuthenticationStrategy) authenticationStrategy;
+            return new SnowflakePublicAuthenticationStrategyKey(
+                    snowflakeDatasourceSpecification.privateKeyVaultReference,
+                    snowflakeDatasourceSpecification.passPhraseVaultReference,
+                    snowflakeDatasourceSpecification.publicUserName
+            );
         }
         return null;
     }

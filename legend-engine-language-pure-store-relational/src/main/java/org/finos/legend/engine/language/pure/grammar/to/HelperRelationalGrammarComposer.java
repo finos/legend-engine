@@ -23,47 +23,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.TableNameMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.InlineEmbeddedPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.OtherwiseEmbeddedRelationalPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.ColumnMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.View;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.BigInt;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Binary;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Bit;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Char;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Date;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Decimal;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Numeric;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Real;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SmallInt;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.TinyInt;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.VarChar;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Varbinary;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.ElementWithJoins;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.JoinPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LiteralList;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.*;
 
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
+
+import java.lang.Float;
+import java.lang.Double;
+import java.lang.Integer;
 
 public class HelperRelationalGrammarComposer
 {
@@ -554,7 +529,7 @@ public class HelperRelationalGrammarComposer
             return "LocalH2\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     (spec.testDataSetupCsv != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "testDataSetupCSV: " + convertString(spec.testDataSetupCsv, true) + ";\n" : "") +
-                    (spec.testDataSetupSqls != null && !spec.testDataSetupSqls.isEmpty() ? context.getIndentationString() + getTabString(baseIndentation + 1) + "testDataSetupSqls: [\n" + ListIterate.collect(spec.testDataSetupSqls, s -> context.getIndentationString() + getTabString(baseIndentation + 2) + convertString(s, true)).makeString(",\n") + "\n"+context.getIndentationString() + getTabString(baseIndentation + 2) +"];\n" : "") +
+                    (spec.testDataSetupSqls != null && !spec.testDataSetupSqls.isEmpty() ? context.getIndentationString() + getTabString(baseIndentation + 1) + "testDataSetupSqls: [\n" + ListIterate.collect(spec.testDataSetupSqls, s -> context.getIndentationString() + getTabString(baseIndentation + 2) + convertString(s, true)).makeString(",\n") + "\n" + context.getIndentationString() + getTabString(baseIndentation + 2) + "];\n" : "") +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         else if (_spec instanceof EmbeddedH2DatasourceSpecification)
@@ -578,6 +553,21 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "host: " + convertString(spec.host, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
+        else if (_spec instanceof SnowflakeDatasourceSpecification)
+        {
+            SnowflakeDatasourceSpecification spec = (SnowflakeDatasourceSpecification) _spec;
+            int baseIndentation = 1;
+            return "Snowflake\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "name: " + convertString(spec.databaseName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "account: " + convertString(spec.accountName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "warehouse: " + convertString(spec.warehouseName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "region: " + convertString(spec.region, true) + ";\n" +
+                    (spec.cloudType != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "cloudType: " + convertString(spec.cloudType, true) + ";\n" : "") +
+                    (spec.quotedIdentifiersIgnoreCase != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "quotedIdentifiersIgnoreCase: " + spec.quotedIdentifiersIgnoreCase + ";\n" : "") +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+
         }
 
         return null;
@@ -606,6 +596,20 @@ public class HelperRelationalGrammarComposer
                             : ""
                     );
         }
+        else if (_auth instanceof SnowflakePublicAuthenticationStrategy)
+        {
+            SnowflakePublicAuthenticationStrategy auth = (SnowflakePublicAuthenticationStrategy) _auth;
+            int baseIndentation = 1;
+            return "SnowflakePublic" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "publicUserName: " + convertString(auth.publicUserName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "privateKeyVaultReference: " + convertString(auth.privateKeyVaultReference, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "passPhraseVaultReference: " + convertString(auth.passPhraseVaultReference, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+
+        }
+
         return null;
     }
 

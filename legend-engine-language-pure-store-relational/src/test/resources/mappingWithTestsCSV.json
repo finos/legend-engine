@@ -1,0 +1,209 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "mapping",
+      "associationMappings": [],
+      "classMappings": [],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "simpleModelMapping",
+      "package": "meta::pure::mapping::modelToModel::test::simple",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 16,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "tests": [
+        {
+          "assert": {
+            "_type": "expectedOutputMappingTestAssert",
+            "expectedOutput": "{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}",
+            "sourceInformation": {
+              "endColumn": 311,
+              "endLine": 13,
+              "sourceId": "",
+              "startColumn": 7,
+              "startLine": 13
+            }
+          },
+          "inputData": [
+            {
+              "_type": "relational",
+              "data": "default\nPersonTable\nid,lastName\n1,Doe;\n2,Doe2\n\n\n\n",
+              "database": "aa::db",
+              "inputType": "CSV",
+              "sourceInformation": {
+                "endColumn": 287,
+                "endLine": 11,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 11
+              }
+            }
+          ],
+          "name": "test2",
+          "query": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "serialize",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "graphFetchChecked",
+                    "parameters": [
+                      {
+                        "_type": "func",
+                        "function": "getAll",
+                        "parameters": [
+                          {
+                            "_type": "class",
+                            "fullPath": "model::domain::Target",
+                            "sourceInformation": {
+                              "endColumn": 35,
+                              "endLine": 8,
+                              "sourceId": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                              "startColumn": 15,
+                              "startLine": 8
+                            }
+                          }
+                        ],
+                        "sourceInformation": {
+                          "endColumn": 41,
+                          "endLine": 8,
+                          "sourceId": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                          "startColumn": 36,
+                          "startLine": 8
+                        }
+                      },
+                      {
+                        "_type": "rootGraphFetchTree",
+                        "class": "model::domain::Target",
+                        "sourceInformation": {
+                          "endColumn": 84,
+                          "endLine": 8,
+                          "sourceId": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                          "startColumn": 64,
+                          "startLine": 8
+                        },
+                        "subTrees": [
+                          {
+                            "_type": "propertyGraphFetchTree",
+                            "parameters": [],
+                            "property": "name",
+                            "sourceInformation": {
+                              "endColumn": 89,
+                              "endLine": 8,
+                              "sourceId": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                              "startColumn": 86,
+                              "startLine": 8
+                            },
+                            "subTrees": []
+                          }
+                        ]
+                      }
+                    ],
+                    "sourceInformation": {
+                      "endColumn": 60,
+                      "endLine": 8,
+                      "sourceId": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                      "startColumn": 44,
+                      "startLine": 8
+                    }
+                  },
+                  {
+                    "_type": "rootGraphFetchTree",
+                    "class": "model::domain::Target",
+                    "sourceInformation": {
+                      "endColumn": 128,
+                      "endLine": 8,
+                      "sourceId": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                      "startColumn": 108,
+                      "startLine": 8
+                    },
+                    "subTrees": [
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "parameters": [],
+                        "property": "name",
+                        "sourceInformation": {
+                          "endColumn": 133,
+                          "endLine": 8,
+                          "sourceId": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                          "startColumn": 130,
+                          "startLine": 8
+                        },
+                        "subTrees": []
+                      }
+                    ]
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 104,
+                  "endLine": 8,
+                  "sourceId": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                  "startColumn": 96,
+                  "startLine": 8
+                }
+              }
+            ],
+            "parameters": [],
+            "sourceInformation": {
+              "endColumn": 137,
+              "endLine": 8,
+              "sourceId": "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+              "startColumn": 14,
+              "startLine": 8
+            }
+          },
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 14,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 6
+          }
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping"
+          ],
+          "imports": [],
+          "parserName": "Mapping",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 18,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 2
+          }
+        }
+      ]
+    }
+  ]
+}

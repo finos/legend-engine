@@ -14,37 +14,30 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys;
 
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 
+import java.util.List;
 import java.util.Objects;
 
 public class LocalH2DataSourceSpecificationKey implements DataSourceSpecificationKey
 {
-    private final String databaseName;
-    private final int port;
+    private final List<String> testDataSetupSqls;
 
-    public LocalH2DataSourceSpecificationKey(int port, String databaseName)
+    public LocalH2DataSourceSpecificationKey(List<String> testDataSetupSqls)
     {
-        this.port = port;
-        this.databaseName = databaseName;
+        this.testDataSetupSqls = testDataSetupSqls;
     }
 
-    public String getDatabaseName()
+    public List<String> getTestDataSetupSqls()
     {
-        return databaseName;
-    }
-
-    public int getPort()
-    {
-        return port;
+        return this.testDataSetupSqls;
     }
 
     @Override
     public String shortId()
     {
-        return "LocalH2_" +
-                "port:" + port + "_" +
-                "db:" + databaseName;
+        return "LocalH2_testDataSetupSqls:" + ListIterate.collect(testDataSetupSqls, v -> v.substring(0, Math.min(v.length(), 30))+ System.identityHashCode(v)).makeString("");
     }
 
     @Override
@@ -59,13 +52,12 @@ public class LocalH2DataSourceSpecificationKey implements DataSourceSpecificatio
             return false;
         }
         LocalH2DataSourceSpecificationKey that = (LocalH2DataSourceSpecificationKey) o;
-        return port == that.port &&
-                Objects.equals(databaseName, that.databaseName);
+        return  Objects.equals(testDataSetupSqls, that.testDataSetupSqls);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(databaseName, port);
+        return Objects.hash(testDataSetupSqls);
     }
 }

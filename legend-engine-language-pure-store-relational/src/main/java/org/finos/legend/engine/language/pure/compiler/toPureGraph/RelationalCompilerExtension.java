@@ -36,6 +36,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
@@ -89,6 +90,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 (Database srcDatabase, CompileContext context) ->
                 {
                     org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name);
+
+                    database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                            ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")));
+
                     context.pureModel.storesIndex.put(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), database);
                     return database;
                 },
@@ -403,6 +408,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList((handlers) ->
                 Lists.mutable.with(
                         new FunctionHandlerDispatchBuilderInfo("meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && handlers.isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Database".equals(ps.get(0)._genericType()._rawType()._name())) && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && handlers.isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name()))),
+                        new FunctionHandlerDispatchBuilderInfo("meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && handlers.isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Database".equals(ps.get(0)._genericType()._rawType()._name())) && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && handlers.isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name()))),
                         new FunctionHandlerDispatchBuilderInfo("meta::relational::milestoning::unknownDefaultBusinessDate__Date_1_", (List<ValueSpecification> ps) -> ps.size() == 0)
                 ));
     }
@@ -418,6 +424,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         new FunctionHandlerRegistrationInfo(null,
                                 handlers.h("meta::pure::tds::tableToTDS_Table_1__TableTDS_1_", false, ps -> handlers.res("meta::relational::mapping::TableTDS", "one"))
                         ),
+                        new FunctionHandlerRegistrationInfo(null,
+                                handlers.h("meta::pure::tds::viewToTDS_View_1__TableTDS_1_", false, ps -> handlers.res("meta::relational::mapping::TableTDS", "one"))
+                        ),
                         new FunctionHandlerRegistrationInfo(Lists.mutable.with(2, 0),
                                 // meta::pure::tds::project(tds:meta::relational::mapping::TableTDS[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
                                 handlers.h("meta::pure::tds::project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> handlers.typeOne(ps.get(0), "TableTDS"))
@@ -427,6 +436,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         ),
                         new FunctionHandlerRegistrationInfo(null,
                                 handlers.h("meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_", false, ps -> handlers.res("meta::relational::metamodel::relation::Table", "one"))
+                        ),
+                        new FunctionHandlerRegistrationInfo(null,
+                                handlers.h("meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_", false, ps -> handlers.res("meta::relational::metamodel::relation::View", "one"))
                         )
                 ));
     }
@@ -468,10 +480,16 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_",
                     "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_"
             ));
-            registerElementForPathToElement.value("meta::protocols::pure::vX_X_X::extension", Lists.mutable.with(
-                    "getRelationalExtension_String_1__SerializerExtension_1_"
-            ));
-        });
+
+            PureClientVersions.versions.forEach(v -> {
+                if (PureClientVersions.versionAGreaterThanOrEqualsVersionB(v, "v1_20_0"))
+                {
+                    registerElementForPathToElement.value("meta::protocols::pure::"+v+"::extension", Lists.mutable.with(
+                            "getRelationalExtension_String_1__SerializerExtension_1_"
+                    ));
+                }
+            });
+         });
     }
 
     @Override

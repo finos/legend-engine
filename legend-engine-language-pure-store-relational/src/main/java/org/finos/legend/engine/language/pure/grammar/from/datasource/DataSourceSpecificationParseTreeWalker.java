@@ -19,6 +19,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtili
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
 public class DataSourceSpecificationParseTreeWalker
@@ -39,6 +40,7 @@ public class DataSourceSpecificationParseTreeWalker
         }
         return dsSpec;
     }
+
     public EmbeddedH2DatasourceSpecification visitEmbeddedH2DatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.EmbeddedH2DatasourceSpecificationContext dbSpecCtx) {
         EmbeddedH2DatasourceSpecification dsSpec = new EmbeddedH2DatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
@@ -51,6 +53,36 @@ public class DataSourceSpecificationParseTreeWalker
         // autoServerMode
         DataSourceSpecificationParserGrammar.EmbeddedH2DSPAutoServerModeContext autoServerModeCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.embeddedH2DSPAutoServerMode(), "autoServerMode", dsSpec.sourceInformation);
         dsSpec.autoServerMode = Boolean.parseBoolean(autoServerModeCtx.BOOLEAN().getText());
+        return dsSpec;
+    }
+
+    public SnowflakeDatasourceSpecification visitSnowflakeDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.SnowflakeDatasourceSpecificationContext dbSpecCtx) {
+        SnowflakeDatasourceSpecification dsSpec = new SnowflakeDatasourceSpecification();
+        dsSpec.sourceInformation = code.getSourceInformation();
+        // databaseName
+        DataSourceSpecificationParserGrammar.DbNameContext databaseNameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
+        dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(databaseNameCtx.STRING().getText(), true);
+        // account
+        DataSourceSpecificationParserGrammar.DbAccountContext accountCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbAccount(), "account", dsSpec.sourceInformation);
+        dsSpec.accountName = PureGrammarParserUtility.fromGrammarString(accountCtx.STRING().getText(), true);
+        // warehouse
+        DataSourceSpecificationParserGrammar.DbWarehouseContext warehouseCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbWarehouse(), "warehouse", dsSpec.sourceInformation);
+        dsSpec.warehouseName = PureGrammarParserUtility.fromGrammarString(warehouseCtx.STRING().getText(), true);
+        // region
+        DataSourceSpecificationParserGrammar.SnowflakeRegionContext regionCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.snowflakeRegion(), "region", dsSpec.sourceInformation);
+        dsSpec.region = PureGrammarParserUtility.fromGrammarString(regionCtx.STRING().getText(), true);
+        // cloudType
+        DataSourceSpecificationParserGrammar.CloudTypeContext cloudTypeCtx= PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.cloudType(), "cloudType", dsSpec.sourceInformation);
+        if (cloudTypeCtx != null)
+        {
+            dsSpec.cloudType = PureGrammarParserUtility.fromGrammarString(cloudTypeCtx.STRING().getText(), true);
+        }
+        //quotedIdentifiersIgnoreCase
+        DataSourceSpecificationParserGrammar.SnowflakeQuotedIdentifiersIgnoreCaseContext snowflakeQuotedIdentifiersIgnoreCaseCtx = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.snowflakeQuotedIdentifiersIgnoreCase(), "quotedIdentifiersIgnoreCase", dsSpec.sourceInformation);
+        if (snowflakeQuotedIdentifiersIgnoreCaseCtx != null)
+        {
+            dsSpec.quotedIdentifiersIgnoreCase = Boolean.parseBoolean(snowflakeQuotedIdentifiersIgnoreCaseCtx.BOOLEAN().getText());
+        }
         return dsSpec;
     }
 

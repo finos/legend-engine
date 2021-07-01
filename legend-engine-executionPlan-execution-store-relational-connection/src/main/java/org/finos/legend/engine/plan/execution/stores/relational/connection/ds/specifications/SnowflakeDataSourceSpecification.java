@@ -22,20 +22,17 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.eclipse.collections.api.list.MutableList;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.util.Optional;
 import java.util.Properties;
 import javax.sql.DataSource;
 
 public class SnowflakeDataSourceSpecification extends DataSourceSpecification
 {
-    public static String SNOWFLAKE_ACCOUNT_NAME = "alloy_snowflake_accountName";
-    public static String SNOWFLAKE_REGION = "alloy_snowflake_region";
-    public static String SNOWFLAKE_WAREHOUSE_NAME = "alloy_snowflake_warehouseName";
-    public static String SNOWFLAKE_DATABASE_NAME= "alloy_snowflake_databaseName";
+    public static String SNOWFLAKE_ACCOUNT_NAME = "legend_snowflake_accountName";
+    public static String SNOWFLAKE_REGION = "legend_snowflake_region";
+    public static String SNOWFLAKE_WAREHOUSE_NAME = "legend_snowflake_warehouseName";
+    public static String SNOWFLAKE_DATABASE_NAME= "legend_snowflake_databaseName";
+    public static String SNOWFLAKE_CLOUD_TYPE= "legend_snowflake_cloudType";
 
-    public static String SNOWFLAKE_ACCOUNT_TYPE_NAME = "accountType";
-    public static String SNOWFLAKE_ORGANISATION_NAME = "organisation";
-    public static String SNOWFLAKE_CLOUD_TYPE_NAME = "cloudType";
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
     {
@@ -45,30 +42,12 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put(SNOWFLAKE_REGION, key.getRegion());
         this.extraDatasourceProperties.put(SNOWFLAKE_WAREHOUSE_NAME, key.getWarehouseName());
         this.extraDatasourceProperties.put(SNOWFLAKE_DATABASE_NAME, key.getDatabaseName());
+        this.extraDatasourceProperties.put(SNOWFLAKE_CLOUD_TYPE, key.getCloudType());
 
         this.extraDatasourceProperties.put("account", key.getAccountName());
         this.extraDatasourceProperties.put("warehouse", key.getWarehouseName());
         this.extraDatasourceProperties.put("db", key.getDatabaseName());
         this.extraDatasourceProperties.put("ocspFailOpen", true);
-
-        StringBuilder accountType = new StringBuilder();
-        Optional.ofNullable(key.getAccountType()).ifPresent(x -> accountType.append(x.toString()));
-        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_ACCOUNT_TYPE_NAME, accountType.toString());
-        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_ORGANISATION_NAME, key.getOrganisation());
-        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_CLOUD_TYPE_NAME, key.getCloudType());
-
-        if (key.getProxyHost() != null)
-        {
-            this.extraDatasourceProperties.put("useProxy", true);
-        }
-        putIfNotEmpty(this.extraDatasourceProperties, "proxyHost", key.getProxyHost());
-        putIfNotEmpty(this.extraDatasourceProperties, "proxyPort", key.getProxyPort());
-        putIfNotEmpty(this.extraDatasourceProperties, "nonProxyHosts", key.getNonProxyHosts());
-    }
-
-    private static void putIfNotEmpty(Properties connectionProperties, String propName, String propValue)
-    {
-        Optional.ofNullable(propValue).ifPresent(x -> connectionProperties.put(propName, propValue));
     }
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
@@ -80,10 +59,5 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
     {
         return this.buildDataSource(null, -1, null, profiles);
-    }
-
-    public Properties getConnectionProperties()
-    {
-        return this.extraDatasourceProperties;
     }
 }

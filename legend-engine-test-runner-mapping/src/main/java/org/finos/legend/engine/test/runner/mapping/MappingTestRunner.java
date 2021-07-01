@@ -16,14 +16,7 @@ package org.finos.legend.engine.test.runner.mapping;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -60,12 +53,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
+import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.junit.Assert;
-import org.junit.ComparisonFailure;
 
 import javax.ws.rs.core.MediaType;
 
@@ -120,14 +112,14 @@ public class MappingTestRunner
             {
                 JsonModelConnection jsonModelConnection = new JsonModelConnection();
                 jsonModelConnection._class = objectInputData.sourceClass;
-                jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + "," + objectInputData.data;
+                jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes());
                 connectionRegistrar.accept(jsonModelConnection);
             }
             else if (ObjectInputType.XML.equals(objectInputData.inputType))
             {
                 XmlModelConnection xmlModelConnection = new XmlModelConnection();
                 xmlModelConnection._class = objectInputData.sourceClass;
-                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + "," + objectInputData.data;
+                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes());
                 connectionRegistrar.accept(xmlModelConnection);
             }
             else
@@ -174,7 +166,7 @@ public class MappingTestRunner
 
             return new RichMappingTestResult(this.mappingPath, this.mappingTest.name, rawExpectedJSON, rawActualJSON);
         }
-        catch (ComparisonFailure c)
+        catch (ComparisonError c)
         {
             return new RichMappingTestResult(this.mappingPath, this.mappingTest.name, c);
         }
@@ -204,7 +196,18 @@ public class MappingTestRunner
 
     private void assertEquals(String expected, String actual)
     {
-        Assert.assertEquals(expected, actual);
+        if(isEquals(expected, actual)){
+            return;
+        }
+        throw new ComparisonError(expected, actual);
+    }
+
+    private boolean isEquals(String expected, String actual)
+    {
+        if(expected == null){
+            return actual == null;
+        }
+        return expected.equals(actual);
     }
 
     protected void assertEquals(JsonNode expected, JsonNode actual)

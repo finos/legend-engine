@@ -656,7 +656,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      )\n" +
                 "   ]" +
                 "\n" +
-                ")\n", "COMPILATION error at [9:18-38]: Can't find type 'model::domain::Target'");
+                ")\n", "COMPILATION error at [9:18-38]: Can't find the packageable element 'model::domain::Target'");
     }
 
     @Test

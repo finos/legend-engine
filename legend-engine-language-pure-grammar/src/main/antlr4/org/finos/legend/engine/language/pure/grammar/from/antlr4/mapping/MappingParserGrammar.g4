@@ -107,5 +107,5 @@ testInputFormat:                identifier
 ;
 testInputSrc:                   qualifiedName
 ;
-testInputDataContent:           STRING
+testInputDataContent:           STRING ('+' STRING)*
 ;

@@ -25,6 +25,7 @@ import io.prometheus.client.CollectorRegistry;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
@@ -53,6 +54,8 @@ import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
 import org.finos.legend.engine.server.core.api.Memory;
+import org.finos.legend.engine.server.core.configuration.PropertyVaultConfiguration;
+import org.finos.legend.engine.server.core.configuration.VaultConfiguration;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
@@ -62,6 +65,8 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
+import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
+import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
@@ -71,9 +76,8 @@ import org.slf4j.Logger;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.ServiceLoader;
+import java.io.FileInputStream;
+import java.util.*;
 
 public class Server extends Application<ServerConfiguration>
 {
@@ -111,6 +115,8 @@ public class Server extends Application<ServerConfiguration>
     @Override
     public void run(ServerConfiguration serverConfiguration, Environment environment)
     {
+        loadVaults(serverConfiguration.vaults);
+
         this.environment = environment;
         DeploymentStateAndVersions.DEPLOYMENT_MODE = serverConfiguration.deployment.mode;
 
@@ -164,6 +170,28 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new CatchAllExceptionMapper());
 
         enableCors(environment);
+    }
+
+    private void loadVaults(List<VaultConfiguration> vaultConfigurations)
+    {
+        if (vaultConfigurations != null)
+        {
+            ListIterate.forEach(vaultConfigurations, (v) -> {
+                if (v instanceof PropertyVaultConfiguration)
+                {
+                    try
+                    {
+                        Properties properties = new Properties();
+                        properties.load(new FileInputStream(((PropertyVaultConfiguration) v).location));
+                        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
+                    }
+                    catch (Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        }
     }
 
     public void shutDown() throws Exception

@@ -124,6 +124,28 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testMetaFunctionExecutionWithFullPath()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->meta::pure::functions::math::max();"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
+    public void testMetaFunctionExecutionWithoutFullPath()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
     public void testCycleClassSuperType()
     {
         test("Class test::A extends test::A\n" +
@@ -291,7 +313,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         test("Class <<NoProfile.NoKey>> test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
-                "}\n", "COMPILATION error at [1:9-17]: Can't find profile 'NoProfile'");
+                "}\n", "COMPILATION error at [1:9-17]: Can't find the profile 'NoProfile'");
     }
 
     @Test
@@ -438,14 +460,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "   name : String[*];\n" +
                         "   xza(z:String[1]){ok}:String[1];\n" +
                         "}\n",
-                "COMPILATION error at [4:21-22]: Can't find type 'ok'");
+                "COMPILATION error at [4:21-22]: Can't find the packageable element 'ok'");
         test("Class test::A\n" +
                 "[" +
                 "   ok" +
                 "]" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [2:5-6]: Can't find type 'ok'");
+                "}", "COMPILATION error at [2:5-6]: Can't find the packageable element 'ok'");
         test("Class test::b\n" +
                 "{\n" +
                 "   names : String[*];\n" +
@@ -456,7 +478,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [5:5-11]: Can't find type 'test::a'");
+                "}", "COMPILATION error at [5:5-11]: Can't find the packageable element 'test::a'");
         test("Class test::b\n" +
                 "{\n" +
                 "   names : String[*];\n" +
@@ -477,7 +499,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   name : String[*];\n" +
                 "   xza(z:String[1]){ok.a}:String[1];\n" +
-                "}\n", "COMPILATION error at [4:21-22]: Can't find enumeration 'ok'");
+                "}\n", "COMPILATION error at [4:21-22]: Can't find the packageable element 'ok'");
         test("Enum test::b\n" +
                 "{\n" +
                 "   names" +
@@ -499,7 +521,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [5:5-11]: Can't find enumeration 'test::b'");
+                "}", "COMPILATION error at [5:13]: Can't find property 'c' in class 'meta::pure::metamodel::type::Class'");
     }
 
     @Test
@@ -699,6 +721,32 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{" +
                 "   z(){test::A.all()->map(a|$a.nam)}:String[*];" +
                 "}", "COMPILATION error at [1:81-83]: Can't find property 'nam' in class 'test::A'");
+    }
+
+    @Test
+    public void testPackageableElementMismatchNotFoundWithGetAll()
+    {
+        test("Class test::B" +
+                "{" +
+                "   z(){test::A.all()->map(a|$a.nam)}:String[*];" +
+                "}", "COMPILATION error at [1:22-28]: Can't find the packageable element 'test::A'");
+    }
+
+    @Test
+    public void testPackageableElementMismatchWithGetAll()
+    {
+        test(  "###Pure\n" +
+                "Class test::A" +
+                "{ prop : String[1];" +
+                "}" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::MyMapping.all()->map(a|$a.nam)}:String[*];" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::MyMapping\n" +
+                "(\n" +
+                ")\n", "COMPILATION error at [2:70-75]: Can't find a match for function 'getAll(Mapping[1])'");
     }
 
     @Test

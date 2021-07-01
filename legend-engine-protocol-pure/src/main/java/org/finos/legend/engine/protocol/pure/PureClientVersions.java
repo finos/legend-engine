@@ -20,8 +20,8 @@ import org.eclipse.collections.impl.utility.ArrayIterate;
 
 public class PureClientVersions
 {
-    public static ImmutableList<String> versions = Lists.immutable.with("v1_0_0", "v1_1_0", "v1_2_0", "v1_3_0", "v1_4_0", "v1_5_0", "v1_6_0", "v1_7_0", "v1_8_0", "v1_9_0", "v1_10_0", "v1_11_0", "v1_12_0", "v1_13_0", "v1_14_0", "v1_15_0", "v1_16_0", "v1_17_0", "v1_18_0", "v1_19_0", "vX_X_X");
-    public static ImmutableList<String> versionsSameCase = Lists.immutable.with("v1_0_0", "v1_1_0", "v1_2_0", "v1_3_0", "v1_4_0", "v1_5_0", "v1_6_0", "v1_7_0", "v1_8_0", "v1_9_0", "v1_10_0", "v1_11_0", "v1_12_0", "v1_13_0", "v1_14_0", "v1_15_0", "v1_16_0", "v1_17_0", "v1_18_0", "v1_19_0", "vx_x_x");
+    public static ImmutableList<String> versions = Lists.immutable.with("v1_0_0", "v1_1_0", "v1_2_0", "v1_3_0", "v1_4_0", "v1_5_0", "v1_6_0", "v1_7_0", "v1_8_0", "v1_9_0", "v1_10_0", "v1_11_0", "v1_12_0", "v1_13_0", "v1_14_0", "v1_15_0", "v1_16_0", "v1_17_0", "v1_18_0", "v1_19_0", "v1_20_0", "vX_X_X");
+    public static ImmutableList<String> versionsSameCase = Lists.immutable.with("v1_0_0", "v1_1_0", "v1_2_0", "v1_3_0", "v1_4_0", "v1_5_0", "v1_6_0", "v1_7_0", "v1_8_0", "v1_9_0", "v1_10_0", "v1_11_0", "v1_12_0", "v1_13_0", "v1_14_0", "v1_15_0", "v1_16_0", "v1_17_0", "v1_18_0", "v1_19_0", "v1_20_0", "vx_x_x");
 
     static
     {
@@ -54,6 +54,6 @@ public class PureClientVersions
 
     public static boolean versionAGreaterThanOrEqualsVersionB(String version1, String version2)
     {
-        return versionsSameCase.indexOf(version1) >= versionsSameCase.indexOf(version2);
+        return versionsSameCase.indexOf(version1.toLowerCase()) >= versionsSameCase.indexOf(version2.toLowerCase());
     }
 }

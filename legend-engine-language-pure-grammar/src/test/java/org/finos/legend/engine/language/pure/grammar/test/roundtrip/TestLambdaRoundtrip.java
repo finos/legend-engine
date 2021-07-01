@@ -14,18 +14,23 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class TestLambdaRoundtrip
 {
+    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
     @Test
     public void testLambdaWithBodyWithNonStringTokenOnly()
     {
-        testLambda("|ok");
+        testLambda("|a::X");
     }
 
     @Test
@@ -484,7 +489,18 @@ public class TestLambdaRoundtrip
 
     private void testLambda(String string)
     {
-        Assert.assertEquals(string, new DomainParser().parseLambda(string, "").accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
+        Lambda postJSON_lambda;
+        try
+        {
+            Lambda lambda = new DomainParser().parseLambda(string, "");
+            String json = objectMapper.writeValueAsString(lambda);
+            postJSON_lambda = objectMapper.readValue(json, Lambda.class);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        Assert.assertEquals(string, postJSON_lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
     }
 
     private void testLambdaWithFormat(String string, String toCompare, PureGrammarComposerContext.RenderStyle renderStyle)

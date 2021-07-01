@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.26.1-SNAPSHOT</version>
+        <version>2.35.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-executionPlan-execution-store-relational-connection</artifactId>
@@ -27,7 +27,7 @@
 
     <build>
         <plugins>
-            <!-- Block running the tests (They should only execute in TeamCity)-->
+            <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <dependencies>
@@ -40,12 +40,12 @@
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <includes>
-                        <include>**/DO_NOT_RUN_ANYTHING*.java</include>
+                        <include>**/*_local.java</include>
                     </includes>
                     <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
                 </configuration>
             </plugin>
-            <!-- Block running the tests  (They should only execute in TeamCity)-->
+            <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -158,6 +158,14 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- Guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <!-- Guava -->
+
+
         <!-- POOLING -->
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -177,6 +185,11 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.snowflake</groupId>
+            <artifactId>snowflake-jdbc</artifactId>
+        </dependency>
+
         <!-- DRIVERS -->
 
         <!-- OPEN TRACING -->
@@ -196,6 +209,13 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
         <!-- COMMONS-LANG -->
+
+        <!-- COMMONS CODEC (Base64)-->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <!-- COMMONS CODEC -->
 
         <!-- LOGGING -->
         <dependency>

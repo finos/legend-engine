@@ -1465,7 +1465,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             RelationalGraphObjectsBatch relationalGraphObjectsBatch = new RelationalGraphObjectsBatch(this.executionState.graphObjectsBatch);
             List<?> parentObjects = relationalGraphObjectsBatch.getObjectsForNodeIndex(node.parentIndex);
 
-            if (!parentObjects.isEmpty())
+            if ((parentObjects != null) && !parentObjects.isEmpty())
             {
                 GraphFetchTree nodeSubTree = node.graphFetchTree;
 
@@ -1518,6 +1518,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     for (Object parentObject : parentsToDeepFetch)
                     {
                         this.addKeyRowToRealizedRelationalResult(parentObject, crossKeyGetters, parentRealizedRelationalResult);
+                        parentToChildMap.put(parentObject, new ArrayList<>());
                     }
 
                     this.executionState.addResult(node.parentTempTableName, parentRealizedRelationalResult);

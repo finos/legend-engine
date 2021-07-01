@@ -83,6 +83,37 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
     }
 
     @Test
+    public void testMappingInheritance()
+    {
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "   test::Class[id1] extends : Relational\n" +
+                "   {\n" +
+                "      prop: 1\n" +
+                "   }\n" +
+                ")", "PARSER error at [4:29]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "   test::Class[id1] extends []: Relational\n" +
+                "   {\n" +
+                "      prop: 1\n" +
+                "   }\n" +
+                ")", "PARSER error at [4:30]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "   test::Class[id1] extends [id2]: Relational\n" +
+                "   {\n" +
+                "      prop: 1\n" +
+                "   }\n" +
+                ")");
+    }
+
+    @Test
     public void testMappingTestDataSQL()
     {
         test("###Mapping\n" +
@@ -94,7 +125,7 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                 "      (\n" +
                 "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
                 "         data: [" +
-                "                  <Relational, SQL, z::db, 'Drop table if exists PersonTable;Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\');Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>" +
+                "                  <Relational, SQL, z::db, 'Drop table if exists PersonTable;\\nCreate Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\nInsert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\nInsert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>" +
                 "               ];\n" +
                 "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
                 "      )\n" +
@@ -111,7 +142,7 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                 "      (\n" +
                 "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
                 "         data: [" +
-                "                  <Relational, RANDOM, a::S, 'Drop table if exists PersonTable;Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\');Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>" +
+                "                  <Relational, RANDOM, a::S, 'Drop table if exists PersonTable;\\nCreate Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\nInsert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\nInsert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>" +
                 "               ];\n" +
                 "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
                 "      )\n" +
@@ -132,7 +163,7 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                 "      (\n" +
                 "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
                 "         data: [" +
-                "                  <Relational, CSV, z::db, '{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}'>" +
+                "                  <Relational, CSV, z::db, 'default\\nPersonTable\\nid,lastName\\n1,Doe;\\n2,Doe2\\n\\n\\n\\n'>" +
                 "               ];\n" +
                 "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
                 "      )\n" +
@@ -149,7 +180,7 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                 "      (\n" +
                 "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
                 "         data: [" +
-                "                  <Relational, RANDOM, z::DB, '{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}'>" +
+                "                  <Relational, RANDOM, z::DB, 'default\\nPersonTable\\nid,lastName\\n1,Doe;\\n2,Doe2\\n\\n\\n\\n'>" +
                 "               ];\n" +
                 "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
                 "      )\n" +
