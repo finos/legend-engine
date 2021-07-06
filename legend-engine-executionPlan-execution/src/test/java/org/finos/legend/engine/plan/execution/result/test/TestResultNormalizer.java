@@ -52,4 +52,16 @@ public class TestResultNormalizer
         String normalized = (String) ResultNormalizer.normalizeToSql(date, "IST");
         Assert.assertEquals("2020-01-01 12:00:00.345678", normalized);
     }
+
+    @Test
+    public void testStringNormalization()
+    {
+        String inputToQuote = "'String Value'";
+        String inputToQuoteNormalized = (String) ResultNormalizer.normalizeToSql(inputToQuote);
+        Assert.assertEquals("\'String Value\'", inputToQuoteNormalized);
+
+        String inputWithBackslash = "Value\\,String";
+        String inputWithBackslashNormalized = (String) ResultNormalizer.normalizeToSql(inputWithBackslash);
+        Assert.assertEquals("Value\\\\,String", inputWithBackslashNormalized);
+    }
 }

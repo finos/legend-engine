@@ -71,7 +71,7 @@ public class ResultNormalizer
 
         if (o instanceof String)
         {
-            return ((String) o).replace("'", "\'");
+            return ((String) o).replace("'", "\'").replace("\\", "\\\\");
         }
 
         if(o instanceof IReferencedObject)
