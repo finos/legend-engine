@@ -100,6 +100,7 @@ public class RelationalResultToPureFormatSerializer extends Serializer
             if (!relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
             {
                 this.processRow(outputStream);
+                rowCount++;
             }
         }
         try (Scope scope = GlobalTracer.get().buildSpan("Relational Streaming: remaining rows").startActive(true))
@@ -108,6 +109,7 @@ public class RelationalResultToPureFormatSerializer extends Serializer
             {
                 outputStream.write(b_comma);
                 this.processRow(outputStream);
+                rowCount++;
             }
             scope.span().setTag("rowCount", rowCount);
             if (relationalResult.topSpan != null)
