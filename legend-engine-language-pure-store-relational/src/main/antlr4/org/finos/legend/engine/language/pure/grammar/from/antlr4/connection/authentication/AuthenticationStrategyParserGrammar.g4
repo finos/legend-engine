@@ -12,6 +12,8 @@ identifier:                      VALID_STRING
 
 // ----------------------------- RELATIONAL DATABASE CONNECTION AUTH STRATEGY -----------------------------
 
+deltaLakeAuth:                          DELTALAKE_AUTH
+;
 defaultH2Auth:                          H2_DEFAULT_AUTH
 ;
 testDBAuth:                             TEST_DB_AUTH

@@ -47,6 +47,10 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
         {
             return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DefaultH2AuthenticationStrategy();
         }
+        else if (authenticationStrategy instanceof DeltaLakeAuthenticationStrategy)
+        {
+            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DeltaLakeAuthenticationStrategy();
+        }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {
             SnowflakePublicAuthenticationStrategy snowflakePublicAuthenticationStrategy = (SnowflakePublicAuthenticationStrategy)authenticationStrategy;

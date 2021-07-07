@@ -17,10 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.datasource;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
 
 public class DataSourceSpecificationParseTreeWalker
 {
@@ -53,6 +50,18 @@ public class DataSourceSpecificationParseTreeWalker
         // autoServerMode
         DataSourceSpecificationParserGrammar.EmbeddedH2DSPAutoServerModeContext autoServerModeCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.embeddedH2DSPAutoServerMode(), "autoServerMode", dsSpec.sourceInformation);
         dsSpec.autoServerMode = Boolean.parseBoolean(autoServerModeCtx.BOOLEAN().getText());
+        return dsSpec;
+    }
+
+    public DeltaLakeDatasourceSpecification visitDeltaLakeDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.DeltaLakeDatasourceSpecificationContext dbSpecCtx) {
+        DeltaLakeDatasourceSpecification dsSpec = new DeltaLakeDatasourceSpecification();
+        dsSpec.sourceInformation = code.getSourceInformation();
+        DataSourceSpecificationParserGrammar.ShardContext shardCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.shard(), "shard", dsSpec.sourceInformation);
+        dsSpec.shard = PureGrammarParserUtility.fromGrammarString(shardCtx.STRING().getText(), true);
+        DataSourceSpecificationParserGrammar.HttpPathContext httpCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.httpPath(), "httpPath", dsSpec.sourceInformation);
+        dsSpec.httpPath = PureGrammarParserUtility.fromGrammarString(httpCtx.STRING().getText(), true);
+        DataSourceSpecificationParserGrammar.TokenContext tokenCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.token(), "token", dsSpec.sourceInformation);
+        dsSpec.token = PureGrammarParserUtility.fromGrammarString(tokenCtx.STRING().getText(), true);
         return dsSpec;
     }
 

@@ -554,6 +554,17 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
+        else if (_spec instanceof DeltaLakeDatasourceSpecification)
+        {
+            DeltaLakeDatasourceSpecification spec = (DeltaLakeDatasourceSpecification) _spec;
+            int baseIndentation = 1;
+            return "DeltaLake\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "shard: " + convertString(spec.shard, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "httpPath: " + convertString(spec.httpPath, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "token: " + convertString(spec.token, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
         else if (_spec instanceof SnowflakeDatasourceSpecification)
         {
             SnowflakeDatasourceSpecification spec = (SnowflakeDatasourceSpecification) _spec;
@@ -595,6 +606,14 @@ public class HelperRelationalGrammarComposer
                             context.getIndentationString() + getTabString(baseIndentation) + "}")
                             : ""
                     );
+        }
+        else if (_auth instanceof DeltaLakeAuthenticationStrategy)
+        {
+            int baseIndentation = 1;
+            return "DeltaLake" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         else if (_auth instanceof SnowflakePublicAuthenticationStrategy)
         {

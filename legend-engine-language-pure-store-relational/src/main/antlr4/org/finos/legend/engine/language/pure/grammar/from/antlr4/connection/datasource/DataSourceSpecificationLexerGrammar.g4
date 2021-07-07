@@ -22,3 +22,8 @@ WAREHOUSE:                                  'warehouse';
 REGION:                                     'region';
 CLOUDTYPE:                                  'cloudType';
 QUOTED_IDENTIFIERS_IGNORE_CASE:             'quotedIdentifiersIgnoreCase';
+
+DELTALAKE:                                  'DeltaLake';
+SHARD:                                      'shard';
+HTTP_PATH:                                  'httpPath';
+TOKEN:                                      'token';

@@ -27,6 +27,13 @@ public class AuthenticationStrategyParseTreeWalker
         return authStrategy;
     }
 
+    public DeltaLakeAuthenticationStrategy visitDeltaLakeAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.DeltaLakeAuthContext deltaLakePublicAuth)
+    {
+        DeltaLakeAuthenticationStrategy authStrategy = new DeltaLakeAuthenticationStrategy();
+        authStrategy.sourceInformation = code.getSourceInformation();
+        return authStrategy;
+    }
+
     public TestDatabaseAuthenticationStrategy visitTestDatabaseAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.TestDBAuthContext authCtx)
     {
         TestDatabaseAuthenticationStrategy authStrategy = new TestDatabaseAuthenticationStrategy();
@@ -57,7 +64,5 @@ public class AuthenticationStrategyParseTreeWalker
         AuthenticationStrategyParserGrammar.SnowflakePublicAuthPassPhraseVaultRefContext snowflakePublicAuthPassPhraseVaultRef = PureGrammarParserUtility.validateAndExtractRequiredField(snowflakePublicAuth.snowflakePublicAuthPassPhraseVaultRef(), "passPhraseVaultReference", code.getSourceInformation());
         snowflakePublicAuthenticationStrategy.passPhraseVaultReference = PureGrammarParserUtility.fromGrammarString(snowflakePublicAuthPassPhraseVaultRef.STRING().getText(), true);
         return snowflakePublicAuthenticationStrategy;
-
-
     }
 }
