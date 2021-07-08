@@ -54,7 +54,6 @@ deltaLakeDatasourceSpecification:           DELTALAKE
                                                     (
                                                         shard
                                                         | httpPath
-                                                        | token
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -64,10 +63,6 @@ shard:                                     SHARD COLON STRING SEMI_COLON
 
 httpPath:                                  HTTP_PATH COLON STRING SEMI_COLON
 ;
-
-token:                                     TOKEN COLON STRING SEMI_COLON
-;
-
 
 snowflakeDatasourceSpecification:           SNOWFLAKE
                                                 BRACE_OPEN

@@ -41,7 +41,8 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
         }
         else if (authenticationStrategy instanceof DeltaLakeAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_DeltaLakeAuthenticationStrategy_Impl("");
+            return new Root_meta_pure_alloy_connections_alloy_authentication_DeltaLakeAuthenticationStrategy_Impl("")
+                    ._apiToken(((DeltaLakeAuthenticationStrategy) authenticationStrategy).apiToken);
         }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {

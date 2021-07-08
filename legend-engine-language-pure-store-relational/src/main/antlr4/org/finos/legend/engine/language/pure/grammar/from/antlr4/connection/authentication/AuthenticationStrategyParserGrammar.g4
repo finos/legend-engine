@@ -13,7 +13,16 @@ identifier:                      VALID_STRING
 // ----------------------------- RELATIONAL DATABASE CONNECTION AUTH STRATEGY -----------------------------
 
 deltaLakeAuth:                          DELTALAKE_AUTH
+                                            BRACE_OPEN
+                                                (
+                                                    deltaLakeApiToken
+                                                )*
+                                            BRACE_CLOSE
 ;
+
+deltaLakeApiToken:                      DELTALAKE_AUTH_TOKEN COLON STRING SEMI_COLON
+;
+
 defaultH2Auth:                          H2_DEFAULT_AUTH
 ;
 testDBAuth:                             TEST_DB_AUTH

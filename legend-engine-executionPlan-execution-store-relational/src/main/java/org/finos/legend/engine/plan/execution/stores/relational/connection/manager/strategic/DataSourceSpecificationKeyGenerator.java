@@ -69,8 +69,7 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
             DeltaLakeDatasourceSpecification staticDatasourceSpecification = (DeltaLakeDatasourceSpecification) datasourceSpecification;
             return new DeltaLakeDataSourceSpecificationKey(
                     staticDatasourceSpecification.shard,
-                    staticDatasourceSpecification.httpPath,
-                    staticDatasourceSpecification.token);
+                    staticDatasourceSpecification.httpPath);
         }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {

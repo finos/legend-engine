@@ -4,9 +4,6 @@ public class DeltaLakeDatasourceSpecification extends DatasourceSpecification
 {
     public String shard;
     public String httpPath;
-    public String token;
-
-    public Boolean quotedIdentifiersIgnoreCase;
 
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)

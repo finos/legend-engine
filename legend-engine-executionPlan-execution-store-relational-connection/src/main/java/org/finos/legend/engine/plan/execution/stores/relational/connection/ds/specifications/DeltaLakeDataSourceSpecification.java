@@ -30,7 +30,6 @@ public class DeltaLakeDataSourceSpecification extends DataSourceSpecification
 
     public static String DELTALAKE_SHARD = "legend_deltalake_shard";
     public static String DELTALAKE_HTTP_PATH = "legend_deltalake_http_path";
-    public static String DELTALAKE_API_TOKEN = "legend_deltalake_api_token";
 
     public DeltaLakeDataSourceSpecification(DeltaLakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
     {
@@ -38,10 +37,8 @@ public class DeltaLakeDataSourceSpecification extends DataSourceSpecification
 
         this.extraDatasourceProperties.put(DELTALAKE_SHARD, key.getShard());
         this.extraDatasourceProperties.put(DELTALAKE_HTTP_PATH, key.getHttpPath());
-        this.extraDatasourceProperties.put(DELTALAKE_API_TOKEN, key.getToken());
         this.extraDatasourceProperties.put("shard", key.getShard());
         this.extraDatasourceProperties.put("httpPath", key.getHttpPath());
-        this.extraDatasourceProperties.put("token", key.getToken());
     }
 
     public DeltaLakeDataSourceSpecification(DeltaLakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)

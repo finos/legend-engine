@@ -22,13 +22,11 @@ public class DeltaLakeDataSourceSpecificationKey implements DataSourceSpecificat
 {
     private final String shard;
     private final String httpPath;
-    private final String token;
 
-    public DeltaLakeDataSourceSpecificationKey(String shard, String httpPath, String token)
+    public DeltaLakeDataSourceSpecificationKey(String shard, String httpPath)
     {
         this.shard = shard;
         this.httpPath = httpPath;
-        this.token = token;
     }
 
     public String getShard()
@@ -41,18 +39,12 @@ public class DeltaLakeDataSourceSpecificationKey implements DataSourceSpecificat
         return httpPath;
     }
 
-    public String getToken()
-    {
-        return token;
-    }
-
     @Override
     public String toString()
     {
         return "DeltaLakeDataSourceSpecificationKey{" +
                 "shard='" + shard + '\'' +
                 "httpPath='" + httpPath + '\'' +
-                "token='" + token + '\'' +
                 '}';
     }
 
@@ -61,8 +53,7 @@ public class DeltaLakeDataSourceSpecificationKey implements DataSourceSpecificat
     {
         return "DeltaLake_" +
                 "shard:" + shard + "_" +
-                "httpPath:" + httpPath + "_" +
-                "token:" + token;
+                "httpPath:" + httpPath;
     }
 
     @Override
@@ -77,12 +68,12 @@ public class DeltaLakeDataSourceSpecificationKey implements DataSourceSpecificat
             return false;
         }
         DeltaLakeDataSourceSpecificationKey that = (DeltaLakeDataSourceSpecificationKey) o;
-        return Objects.equals(shard, that.shard) && Objects.equals(httpPath, that.httpPath) && Objects.equals(token, that.token);
+        return Objects.equals(shard, that.shard) && Objects.equals(httpPath, that.httpPath);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(shard, httpPath, token);
+        return Objects.hash(shard, httpPath);
     }
 }

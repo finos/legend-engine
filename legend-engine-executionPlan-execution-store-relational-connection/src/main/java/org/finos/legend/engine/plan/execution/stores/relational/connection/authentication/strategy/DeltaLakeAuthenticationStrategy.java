@@ -18,8 +18,12 @@ import java.util.Properties;
 
 public class DeltaLakeAuthenticationStrategy extends AuthenticationStrategy
 {
-    public DeltaLakeAuthenticationStrategy()
+
+    private final String apiToken;
+
+    public DeltaLakeAuthenticationStrategy(String apiToken)
     {
+        this.apiToken = apiToken;
     }
 
     @Override
@@ -37,30 +41,33 @@ public class DeltaLakeAuthenticationStrategy extends AuthenticationStrategy
 
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
+        Properties connectionProperties = new Properties();
+        connectionProperties.putAll(properties);
+        connectionProperties.put("apiToken", this.apiToken);
         return Tuples.pair(url, properties);
     }
 
     @Override
     public String getAlternativePrincipal(MutableList<CommonProfile> profiles)
     {
-        return "static_user";
+        return "token";
     }
 
     @Override
     public AuthenticationStrategyKey getKey()
     {
-        return new DeltaLakeAuthenticationStrategyKey();
+        return new DeltaLakeAuthenticationStrategyKey(this.apiToken);
     }
 
     @Override
     public String getLogin()
     {
-        return "unused";
+        return "token";
     }
 
     @Override
     public String getPassword()
     {
-        return "unused";
+        return this.apiToken;
     }
 }

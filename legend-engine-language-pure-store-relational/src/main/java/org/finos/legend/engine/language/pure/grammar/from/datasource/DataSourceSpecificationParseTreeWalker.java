@@ -60,8 +60,6 @@ public class DataSourceSpecificationParseTreeWalker
         dsSpec.shard = PureGrammarParserUtility.fromGrammarString(shardCtx.STRING().getText(), true);
         DataSourceSpecificationParserGrammar.HttpPathContext httpCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.httpPath(), "httpPath", dsSpec.sourceInformation);
         dsSpec.httpPath = PureGrammarParserUtility.fromGrammarString(httpCtx.STRING().getText(), true);
-        DataSourceSpecificationParserGrammar.TokenContext tokenCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.token(), "token", dsSpec.sourceInformation);
-        dsSpec.token = PureGrammarParserUtility.fromGrammarString(tokenCtx.STRING().getText(), true);
         return dsSpec;
     }
 

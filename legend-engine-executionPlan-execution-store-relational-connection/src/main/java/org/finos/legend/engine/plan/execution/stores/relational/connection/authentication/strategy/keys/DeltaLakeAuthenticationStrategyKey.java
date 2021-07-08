@@ -18,13 +18,15 @@ import java.util.Objects;
 
 public class DeltaLakeAuthenticationStrategyKey implements AuthenticationStrategyKey
 {
+    private final String apiToken;
 
-    public static final String TYPE = "DeltaLake";
-
-    private long randomValue = System.nanoTime();
-
-    public DeltaLakeAuthenticationStrategyKey()
+    public DeltaLakeAuthenticationStrategyKey(String apiToken)
     {
+        this.apiToken = apiToken;
+    }
+
+    public String getApiToken() {
+        return this.apiToken;
     }
 
     @Override
@@ -39,25 +41,26 @@ public class DeltaLakeAuthenticationStrategyKey implements AuthenticationStrateg
             return false;
         }
         DeltaLakeAuthenticationStrategyKey that = (DeltaLakeAuthenticationStrategyKey) o;
-        return Objects.equals(randomValue, that.randomValue);
+        return Objects.equals(apiToken, that.apiToken);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(randomValue);
+        return Objects.hash(apiToken);
     }
 
     @Override
     public String shortId()
     {
         return "type:" + type() +
-                "_randomValue:" + randomValue;
+                "_token:" + apiToken;
     }
 
     @Override
     public String type()
     {
-        return TYPE;
+        return "DeltaLake";
     }
 }
+

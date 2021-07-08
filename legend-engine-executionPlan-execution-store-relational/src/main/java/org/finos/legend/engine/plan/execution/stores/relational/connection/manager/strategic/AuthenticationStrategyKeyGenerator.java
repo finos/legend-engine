@@ -36,7 +36,10 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
         }
         else if (authenticationStrategy instanceof DeltaLakeAuthenticationStrategy)
         {
-            return new DeltaLakeAuthenticationStrategyKey();
+            DeltaLakeAuthenticationStrategy deltaLakeSpecification = (DeltaLakeAuthenticationStrategy) authenticationStrategy;
+            return new DeltaLakeAuthenticationStrategyKey(
+                    deltaLakeSpecification.apiToken
+            );
         }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {

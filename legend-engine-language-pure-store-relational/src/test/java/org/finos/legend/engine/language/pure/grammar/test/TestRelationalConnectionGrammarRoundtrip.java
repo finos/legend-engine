@@ -45,10 +45,10 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  {\n" +
                 "    shard: 'shard';\n" +
                 "    httpPath: 'httpPath';\n" +
-                "    token: 'token';\n" +
                 "  };\n" +
                 "  auth: DeltaLake\n" +
                 "  {\n" +
+                "    apiToken: 'token';\n" +
                 "  };\n" +
                 "}\n");
     }

@@ -72,8 +72,7 @@ public class TestGrammarRoundtrip
                 throw new RuntimeException(e);
             }
             PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
-            String rendered = grammarTransformer.renderPureModelContextData(modelData);
-            Assert.assertEquals(message, code, rendered);
+            Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelData));
         }
 
         public static void testFormatWithoutSectionIndex(String code, String unformattedCode)

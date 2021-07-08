@@ -21,3 +21,4 @@ SNOWFLAKE_AUTH_PASSPHRASE_VAULT_REFERENCE:  'passPhraseVaultReference';
 SNOWFLAKE_AUTH_PUBLIC_USERNAME:             'publicUserName';
 
 DELTALAKE_AUTH:                             'DeltaLake';
+DELTALAKE_AUTH_TOKEN:                       'apiToken';
