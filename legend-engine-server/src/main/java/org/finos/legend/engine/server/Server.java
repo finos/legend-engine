@@ -42,7 +42,7 @@ import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElem
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.TransformRelationalOperationElementJsonToGrammar;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
-import org.finos.legend.engine.language.pure.store.relational.connection.api.DatabaseBuilderApi;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlan;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
@@ -151,7 +151,7 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new TransformRelationalOperationElementJsonToGrammar());
 
         // Relational
-        environment.jersey().register(new DatabaseBuilderApi(modelManager, relationalStoreExecutor));
+        environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));
 
         // Compilation
         environment.jersey().register((DynamicFeature) (resourceInfo, context) -> context.register(new InflateInterceptor()));
