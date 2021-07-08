@@ -453,6 +453,25 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testFunctionWithExpressionInParameter()
+    {
+        test("Class test::A\n" +
+                "[\n" +
+                "  constraint1\n" +
+                "  (" +
+                "    ~externalId: 'ext ID'\n" +
+                "    ~function: greaterThanEqual($this.start, $this.end-1000)\n" +
+                "    ~enforcementLevel: Warn\n" +
+                "    ~message: $this.start + ' should be greater or equal ' + $this.end\n" +
+                "  )\n" +
+                "]\n" +
+                "{\n" +
+                "  start: Integer[1];\n" +
+                "  end: Integer[1];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testFunctionOrLambdaWithUnknownToken()
     {
         test("Class test::A\n" +
