@@ -44,7 +44,7 @@ public class DeltaLakeAuthenticationStrategy extends AuthenticationStrategy
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
         connectionProperties.put("apiToken", this.apiToken);
-        return Tuples.pair(url, properties);
+        return Tuples.pair(url, connectionProperties);
     }
 
     @Override

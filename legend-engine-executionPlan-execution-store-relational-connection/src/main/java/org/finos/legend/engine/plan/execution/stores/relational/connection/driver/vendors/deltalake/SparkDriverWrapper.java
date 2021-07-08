@@ -28,7 +28,7 @@ public class SparkDriverWrapper implements Driver
     @Override
     public boolean acceptsURL(String url)
     {
-        return false;
+        return url.startsWith("jdbc:spark://");
     }
 
     @Override
