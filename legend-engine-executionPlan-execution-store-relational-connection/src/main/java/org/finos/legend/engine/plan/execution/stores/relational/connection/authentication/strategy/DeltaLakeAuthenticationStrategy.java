@@ -19,6 +19,7 @@ import java.util.Properties;
 public class DeltaLakeAuthenticationStrategy extends AuthenticationStrategy
 {
 
+    public static String DELTALAKE_TOKEN = "legend_deltalake_token";
     private final String apiToken;
 
     public DeltaLakeAuthenticationStrategy(String apiToken)
@@ -43,7 +44,7 @@ public class DeltaLakeAuthenticationStrategy extends AuthenticationStrategy
     {
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        connectionProperties.put("apiToken", this.apiToken);
+        connectionProperties.put(DELTALAKE_TOKEN, this.apiToken);
         return Tuples.pair(url, connectionProperties);
     }
 

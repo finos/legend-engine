@@ -1,9 +1,15 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.deltalake;
 
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DeltaLakeAuthenticationStrategy;
+
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+/**
+ * For some reason, SparkJDBC42Driver does not extend [java.sql.Driver], resulting in class cast exception in the legend
+ * DriverWrapper. We created that wrapper class the connects to DeltaLake through DriverManager instead of Driver.connect
+ */
 public class SparkDriverWrapper implements Driver
 {
 
@@ -22,7 +28,7 @@ public class SparkDriverWrapper implements Driver
     @Override
     public Connection connect(String url, Properties info) throws SQLException
     {
-        return DriverManager.getConnection(url, "token", info.getProperty("apiToken"));
+        return DriverManager.getConnection(url, "token", info.getProperty(DeltaLakeAuthenticationStrategy.DELTALAKE_TOKEN));
     }
 
     @Override
