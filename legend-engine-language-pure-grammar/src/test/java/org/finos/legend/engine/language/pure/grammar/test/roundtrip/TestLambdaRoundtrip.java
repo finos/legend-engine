@@ -238,6 +238,12 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testLambdaWithAllVersions()
+    {
+        testLambda("|Person.allVersions()");
+    }
+
+    @Test
     public void testLambdaWithLambdaWithEnumWithPackage()
     {
         testLambda("|a::b::MyEnum.ok");
