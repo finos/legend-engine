@@ -41,9 +41,9 @@ public class StaticDataSourceSpecification extends DataSourceSpecification
     protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
     {
         return this.buildDataSource(
-                ((StaticDataSourceSpecificationKey)this.key).getHost(),
-                ((StaticDataSourceSpecificationKey)this.key).getPort(),
-                ((StaticDataSourceSpecificationKey)this.key).getDatabaseName(),
+                ((StaticDataSourceSpecificationKey)this.datasourceKey).getHost(),
+                ((StaticDataSourceSpecificationKey)this.datasourceKey).getPort(),
+                ((StaticDataSourceSpecificationKey)this.datasourceKey).getDatabaseName(),
                 profiles
         );
     }
