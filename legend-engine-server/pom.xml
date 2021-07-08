@@ -93,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-store-relational-connection-api</artifactId>
+            <artifactId>legend-engine-executionPlan-execution-store-relational-connection-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

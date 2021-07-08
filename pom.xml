@@ -70,7 +70,7 @@
         <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
-        <module>legend-engine-language-store-relational-connection-api</module>
+        <module>legend-engine-executionPlan-execution-store-relational-connection-api</module>
     </modules>
 
     <properties>
@@ -111,7 +111,7 @@
         <jackson.version>2.10.5</jackson.version>
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
         <mongodb.version>3.12.8</mongodb.version>
-        <hibernate-validator.version>5.4.2.Final</hibernate-validator.version>
+        <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
         <log4j.version>1.2.17</log4j.version>
         <slf4j.version>1.7.25</slf4j.version>
         <jaxrs.version>2.0.1</jaxrs.version>
@@ -453,7 +453,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-language-store-relational-connection-api</artifactId>
+                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
