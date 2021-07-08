@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.api;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -63,7 +64,7 @@ public class ExecutePlan
     @POST
     @Path("executePlan")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executePlan(@Context HttpServletRequest request, ExecutionPlan execPlan, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executePlan(@Context HttpServletRequest request, ExecutionPlan execPlan, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 

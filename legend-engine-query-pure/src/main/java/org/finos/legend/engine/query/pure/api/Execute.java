@@ -18,6 +18,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function0;
@@ -92,7 +93,7 @@ public class Execute
     @ApiOperation(value = "Execute a Pure query (function) in the context of a Mapping and a Runtime. Full Interactive and Semi Interactive modes are supported by giving the appropriate PureModelContext (respectively PureModelDataContext and PureModelContextComposite). Production executions need to use the Service interface.")
     @Path("execute")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response execute(@Context HttpServletRequest request, ExecuteInput executeInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response execute(@Context HttpServletRequest request, ExecuteInput executeInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
@@ -117,7 +118,7 @@ public class Execute
     @Path("generatePlan")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name="generate plan")
-    public Response generatePlan(@Context HttpServletRequest request, ExecuteInput executeInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generatePlan(@Context HttpServletRequest request, ExecuteInput executeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
