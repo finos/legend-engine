@@ -18,6 +18,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
@@ -66,7 +67,7 @@ public class JSONSchemaGenerationService
     @Path("jsonSchema")
     @ApiOperation(value = "Generates JSON schema for a given class and transitive dependencies")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateJSONSchema(GenerateJSONSchemaInput generateJSONSchemaInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generateJSONSchema(GenerateJSONSchemaInput generateJSONSchemaInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateJSONSchemaInput.model instanceof PureModelContextData;

@@ -18,6 +18,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -56,7 +57,7 @@ public class TransformJsonToGrammar
     @Path("transformJsonToGrammar")
     @ApiOperation(value = "Generates Pure language text from Pure protocol JSON")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response transformJsonToGrammar(JsonToGrammarInput jsonInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response transformJsonToGrammar(JsonToGrammarInput jsonInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))

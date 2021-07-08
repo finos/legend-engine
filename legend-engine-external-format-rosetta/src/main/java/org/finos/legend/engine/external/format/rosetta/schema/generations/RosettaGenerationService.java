@@ -18,6 +18,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
@@ -63,7 +64,7 @@ public class RosettaGenerationService
     @Path("rosetta")
     @ApiOperation(value = "Generates Rosetta classes from PureModel")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateCdm(RosettaGenerationInput generateCdmInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generateCdm(RosettaGenerationInput generateCdmInput, @ApiParam(hidden = true)  @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateCdmInput.model instanceof PureModelContextData;
