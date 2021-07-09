@@ -4,19 +4,14 @@
 
 ___
 
-With origins in academia and the open-source community, Databricks was founded in 2013 by the original 
-creators of Apache Spark™, Delta Lake and MLflow. Built on a modern 
-[Lakehouse](https://databricks.com/product/data-lakehouse) architecture in the cloud, Databricks 
-combines the best of data warehouses and data lakes to offer an open and unified platform for data and AI. 
-
-By integrating the Legend Framework into a Lakehouse architecture, Databricks and FINOS bring the best of open data 
-standard and open source technologies together into one platform, improving data exchange across the financial 
-services industry, supporting key organizations in their digital transformation and finally unifying business and 
-technologies after decades of organizational struggles.
+Part of the Linux foundation, [Delta Lake](https://delta.io/) is an open source storage layer that brings reliability to data lakes. 
+Delta Lake provides ACID transactions, scalable metadata handling, and unifies streaming and batch data processing. 
+Running on top of your existing data lake and fully compatible with the Apache Spark APIs, Delta brings the best of both 
+data warehousing and data lakes functionalities into one unified platform. 
 
 ### Usage
 
-We start by creating a new database source of type `DeltaLake`, providing both a Datasource specification and authentication.
+Create a new database source of type `DeltaLake`, providing both a Datasource specification and authentication.
 For JDBC connection details, please refer to your databricks environment and create a personal access token as per below screenshot.
 
 ![endpoint](images/endpoint_jdbc.png)
@@ -34,11 +29,11 @@ the comfort of the legend studio interface.
 
 Spark JDBC driver is not OSS and as such not available through maven central. Please download JDBC driver from Databricks
 [website](https://databricks.com/spark/jdbc-drivers-download) and extract jar file to a specific location.
-We start the legend engine by appending our classpath with `SparkJDBC42.jar`.
+Start the legend engine by appending classpath with `/path/to/SparkJDBC42.jar`.
 
 ```shell script
 java -cp \
-  SparkJDBC42.jar:legend-engine-server/target/legend-engine-server-2.35.2-SNAPSHOT-shaded.jar \
+  /path/to/SparkJDBC42.jar:legend-engine-server/target/legend-engine-server-2.35.2-SNAPSHOT-shaded.jar \
   org.finos.legend.engine.server.Server \
   server \
   config.json

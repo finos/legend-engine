@@ -7,21 +7,23 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
- * For some reason, SparkJDBC42Driver does not extend [java.sql.Driver], resulting in class cast exception in the legend
- * DriverWrapper. We created that wrapper class the connects to DeltaLake through DriverManager instead of Driver.connect
+ * SparkJDBC42Driver does not extend [java.sql.Driver], resulting in class cast exception in the legend DriverWrapper.
+ * We created that wrapper class to connects to DeltaLake through [java.sql.DriverManager] instead of Driver.connect
  */
 public class SparkDriverWrapper implements Driver
 {
 
     public static String DRIVER_CLASSNAME = "com.simba.spark.spark.jdbc.SparkJDBC42Driver";
 
-    public SparkDriverWrapper() throws ClassNotFoundException
+    public SparkDriverWrapper() throws SQLException
     {
-        // Loading driver, making sure we have it on classpath
-       try {
+        // Loading driver, making sure we have spark driver on classpath
+       try
+       {
            Class.forName(DRIVER_CLASSNAME).getDeclaredConstructor().newInstance();
-       } catch (Exception e) {
-           throw new ClassNotFoundException("Could not find driver [" + DRIVER_CLASSNAME + "] on classpath");
+       } catch (Exception e)
+       {
+           throw new SQLException("Could not find driver [" + DRIVER_CLASSNAME + "] on classpath");
        }
     }
 
@@ -41,7 +43,8 @@ public class SparkDriverWrapper implements Driver
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info)
     {
         DriverPropertyInfo[] retVal;
-        if (url == null || url.isEmpty()) {
+        if (url == null || url.isEmpty())
+        {
             retVal = new DriverPropertyInfo[1];
             retVal[0] = new DriverPropertyInfo("apiToken", null);
             retVal[0].description = "API token";
@@ -65,7 +68,7 @@ public class SparkDriverWrapper implements Driver
     @Override
     public boolean jdbcCompliant()
     {
-        return false;
+        return true;
     }
 
     @Override
