@@ -1,6 +1,6 @@
 ## Delta Lake Integration
 
-**Combining best of open data standards with open source technologies**
+*Combining best of open data standards with open source technologies*
 
 ___
 
