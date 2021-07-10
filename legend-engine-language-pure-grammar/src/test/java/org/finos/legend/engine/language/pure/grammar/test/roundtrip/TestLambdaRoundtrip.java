@@ -301,22 +301,33 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testRenderingEmptyCollectionInPrettyRendering()
+    {
+        testLambdaWithFormat("|Person.all()->project([])",
+            "|Person.all()\n" +
+                "  ->project\n" +
+                "    (\n" +
+                "      []\n" +
+                "    )", PureGrammarComposerContext.RenderStyle.PRETTY);
+    }
+
+    @Test
     public void testLambdaWithProjectWithColInPrettyRendering()
     {
         testLambdaWithFormat("|Person.all()->filter(f|$f.name->startsWith('ok') && (true || 3 == 4))->project([col(p|$p.name, 'ok')])",
                 "|Person.all()\n" +
-                        "   ->filter\n" +
-                        "    (\n" +
-                        "      f|$f.name->startsWith('ok') &&\n" +
-                        "         (true ||\n" +
-                        "         (3 == 4))\n" +
-                        "    )\n" +
-                        "   ->project\n" +
-                        "    (\n" +
-                        "      [\n" +
-                        "        col(p|$p.name, 'ok')\n" +
-                        "      ]\n" +
-                        "    )", PureGrammarComposerContext.RenderStyle.PRETTY);
+                    "  ->filter\n" +
+                    "    (\n" +
+                    "      f|$f.name->startsWith('ok') &&\n" +
+                    "        (true ||\n" +
+                    "        (3 == 4))\n" +
+                    "    )\n" +
+                    "  ->project\n" +
+                    "    (\n" +
+                    "      [\n" +
+                    "        col(p|$p.name, 'ok')\n" +
+                    "      ]\n" +
+                    "    )", PureGrammarComposerContext.RenderStyle.PRETTY);
     }
 
     @Test
@@ -324,19 +335,19 @@ public class TestLambdaRoundtrip
     {
         testLambdaWithFormat("|Person.all()->filter(f|$f.name->startsWith('ok') && (true || 3 == 4))->project([col(p|$p.name, 'ok'), col(p|$p.name, 'ok2')])",
                 "|Person.all()\n" +
-                        "   ->filter\n" +
-                        "    (\n" +
-                        "      f|$f.name->startsWith('ok') &&\n" +
-                        "         (true ||\n" +
-                        "         (3 == 4))\n" +
-                        "    )\n" +
-                        "   ->project\n" +
-                        "    (\n" +
-                        "      [\n" +
-                        "        col(p|$p.name, 'ok'), \n" +
-                        "        col(p|$p.name, 'ok2')\n" +
-                        "      ]\n" +
-                        "    )", PureGrammarComposerContext.RenderStyle.PRETTY);
+                    "  ->filter\n" +
+                    "    (\n" +
+                    "      f|$f.name->startsWith('ok') &&\n" +
+                    "        (true ||\n" +
+                    "        (3 == 4))\n" +
+                    "    )\n" +
+                    "  ->project\n" +
+                    "    (\n" +
+                    "      [\n" +
+                    "        col(p|$p.name, 'ok'), \n" +
+                    "        col(p|$p.name, 'ok2')\n" +
+                    "      ]\n" +
+                    "    )", PureGrammarComposerContext.RenderStyle.PRETTY);
     }
 
     @Test
@@ -344,8 +355,8 @@ public class TestLambdaRoundtrip
     {
         testLambdaWithFormat("|if($this.id == 'testing',|'test',|'nonTest')",
                 "|if($this.id == 'testing', \n" +
-                        "   |'test', \n" +
-                        "   |'nonTest'\n" +
+                        "  |'test', \n" +
+                        "  |'nonTest'\n" +
                         ")", PureGrammarComposerContext.RenderStyle.PRETTY);
     }
 
@@ -368,7 +379,7 @@ public class TestLambdaRoundtrip
                 "{|\n" +
                         "  let businessDate = now();\n" +
                         "  model::domain::referenceData::account::FirmAccount.all($businessDate)\n" +
-                        "     ->groupBy\n" +
+                        "    ->groupBy\n" +
                         "      (\n" +
                         "        [\n" +
                         "          x|$x.trader($businessDate).lastName, \n" +
@@ -407,7 +418,7 @@ public class TestLambdaRoundtrip
                 "{|\n" +
                         "  let businessDate = now();\n" +
                         "  model::domain::referenceData::account::FirmAccount.all(%latest)\n" +
-                        "     ->groupBy\n" +
+                        "    ->groupBy\n" +
                         "      (\n" +
                         "        [\n" +
                         "          x|$x.trader(%latest).lastName, \n" +
@@ -445,27 +456,27 @@ public class TestLambdaRoundtrip
                         "       );\n" +
                         "}",
                 "{|</BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>let businessDate = <span class='pureGrammar-function'>now</span>();</BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-package'>model::domain::referenceData::account::</span><span class='pureGrammar-packageableElement'>FirmAccount</span>.<span class='pureGrammar-function'>all</span>(%latest)</BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>groupBy</span></BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>(</BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>lastName</span>, </BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>firstName</span>, </BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>isActive</span></BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>], </BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>kerberos</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>uniqueValueOnly</span>()), </BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>age</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>average</span>())</BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>], </BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Last Name'</span>, </BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/First Name'</span>, </BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Is Active'</span>, </BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Kerberos Distinct Value'</span></BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>]</BR>\n" +
-                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>);</BR>\n" +
-                        "}", PureGrammarComposerContext.RenderStyle.PRETTY_HTML);
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>let businessDate = <span class='pureGrammar-function'>now</span>();</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-package'>model::domain::referenceData::account::</span><span class='pureGrammar-packageableElement'>FirmAccount</span>.<span class='pureGrammar-function'>all</span>(%latest)</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>groupBy</span></BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>(</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>lastName</span>, </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>firstName</span>, </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>isActive</span></BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>], </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>kerberos</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>uniqueValueOnly</span>()), </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>age</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>average</span>())</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>], </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Last Name'</span>, </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/First Name'</span>, </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Is Active'</span>, </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Kerberos Distinct Value'</span></BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>]</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>);</BR>\n" +
+                    "}", PureGrammarComposerContext.RenderStyle.PRETTY_HTML);
     }
 
     @Test
