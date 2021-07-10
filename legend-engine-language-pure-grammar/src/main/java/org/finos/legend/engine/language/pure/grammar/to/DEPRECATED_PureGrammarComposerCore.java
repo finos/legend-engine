@@ -653,13 +653,23 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return parameters.get(0).accept(this) + "." + HelperValueSpecificationGrammarComposer.renderFunctionName("all", this) + "(" + LazyIterate.collect(parameters.subList(1, parameters.size()), v -> v.accept(this)).makeString(", ") + ")";
         }
-        if (function.equals("getAllVersions"))
+        else if (function.equals("getAllVersions"))
         {
             return parameters.get(0).accept(this) + "." + HelperValueSpecificationGrammarComposer.renderFunctionName("allVersions", this) + "(" + LazyIterate.collect(parameters.subList(1, parameters.size()), v -> v.accept(this)).makeString(", ") + ")";
         }
         else if (function.equals("letFunction"))
         {
             return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).values.get(0)) + " = " + parameters.get(1).accept(this);
+        }
+        else if (function.equals("new"))
+        {
+            List<ValueSpecification> values = ((Collection) parameters.get(parameters.size() - 1)).values;
+            String rendered = Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ");
+            return "^" + parameters.get(0).accept(this) + "(" + rendered + ")";
+        }
+        else if (function.equals("not"))
+        {
+            return "!(" + parameters.get(0).accept(this) + ")";
         }
         else if (HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) != null)
         {
@@ -685,12 +695,6 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                         (this.returnChar()) + ")";
             }
             return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" + LazyIterate.collect(parameters, p -> p.accept(this)).makeString(", ") + ")";
-        }
-        else if (function.equals("new"))
-        {
-            List<ValueSpecification> values = ((Collection) parameters.get(parameters.size() - 1)).values;
-            String rendered = Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ");
-            return "^" + parameters.get(0).accept(this) + "(" + rendered + ")";
         }
         return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, shiftedTransformer, this, this);
     }
