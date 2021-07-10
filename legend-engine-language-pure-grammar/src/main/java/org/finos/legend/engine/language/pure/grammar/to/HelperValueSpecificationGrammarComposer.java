@@ -67,8 +67,6 @@ public class HelperValueSpecificationGrammarComposer
         SPECIAL_INFIX.put("or", "||");
     }
 
-    public static final MutableSet<String> FN_PREFIX = Sets.mutable.with("if", "col", "agg");
-
     public static final MutableSet<String> NEXT_LINE_FN = Sets.mutable.with("filter", "project", "and", "or", "groupBy", "sort");
 
     private static boolean isPrimitiveValue(ValueSpecification valueSpecification) {
@@ -104,6 +102,15 @@ public class HelperValueSpecificationGrammarComposer
             else if (isPrimitiveValue(firstArgument)) {
                 return renderFunctionName(functionName, transformer) + "(" + firstArgument.accept(transformer) + ")";
             }
+        }
+        // This is to accommodate for cases where the first parameter is a lambda, such as agg(), col(),
+        // it would be wrong to use `->` syntax, e.g. `$x|x.prop1->col()`
+        if (firstArgument instanceof Lambda) {
+            return renderFunctionName(functionName, transformer) + "("
+                + (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")
+                + ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build()))
+                .makeString("," + (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " "))
+                + (toCreateNewLine ? transformer.returnChar() + transformer.getIndentationString() : "") + ")";
         }
         return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
             + renderFunctionName(functionName, transformer) + "("
