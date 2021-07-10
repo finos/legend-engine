@@ -141,6 +141,9 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String renderCollection(List<?> values, org.eclipse.collections.api.block.function.Function<Object, String> func, DEPRECATED_PureGrammarComposerCore transformer)
     {
+        if (values.isEmpty()) {
+            return "[]";
+        }
         return "[" + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")
                 + LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : ""))
                 + (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "") + "]";
