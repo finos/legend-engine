@@ -58,7 +58,7 @@ public class TestLambdaPrettyRendering
                     "  (3 == 4))\n" +
                     ")->project(\n" +
                     "  [\n" +
-                    "    col(p|$p.name, 'ok'), \n" +
+                    "    col(p|$p.name, 'ok'),\n" +
                     "    col(p|$p.name, 'ok2')\n" +
                     "  ]\n" +
                     ")", PureGrammarComposerContext.RenderStyle.PRETTY);
@@ -68,10 +68,11 @@ public class TestLambdaPrettyRendering
     public void testLambdaWithIfInPrettyRendering()
     {
         testLambda("|if($this.id == 'testing',|'test',|'nonTest')",
-                "|if($this.id == 'testing', \n" +
-                        "  |'test', \n" +
-                        "  |'nonTest'\n" +
-                        ")", PureGrammarComposerContext.RenderStyle.PRETTY);
+                "|if(\n" +
+                    "  $this.id == 'testing',\n" +
+                    "  |'test',\n" +
+                    "  |'nonTest'\n" +
+                    ")", PureGrammarComposerContext.RenderStyle.PRETTY);
     }
 
     @Test
@@ -94,15 +95,15 @@ public class TestLambdaPrettyRendering
                     "  let businessDate = now();\n" +
                     "  model::domain::referenceData::account::FirmAccount.all($businessDate)->groupBy(\n" +
                     "    [\n" +
-                    "      x|$x.trader($businessDate).lastName, \n" +
-                    "      x|$x.trader($businessDate).firstName, \n" +
+                    "      x|$x.trader($businessDate).lastName,\n" +
+                    "      x|$x.trader($businessDate).firstName,\n" +
                     "      x|$x.trader($businessDate).isActive\n" +
-                    "    ], \n" +
-                    "    [agg(x|$x.trader($businessDate).kerberos, y|$y->uniqueValueOnly())], \n" +
+                    "    ],\n" +
+                    "    [agg(x|$x.trader($businessDate).kerberos, y|$y->uniqueValueOnly())],\n" +
                     "    [\n" +
-                    "      'Trader/Last Name', \n" +
-                    "      'Trader/First Name', \n" +
-                    "      'Trader/Is Active', \n" +
+                    "      'Trader/Last Name',\n" +
+                    "      'Trader/First Name',\n" +
+                    "      'Trader/Is Active',\n" +
                     "      'Trader/Kerberos Distinct Value'\n" +
                     "    ]\n" +
                     "  );\n" +
@@ -129,18 +130,18 @@ public class TestLambdaPrettyRendering
                     "  let businessDate = now();\n" +
                     "  model::domain::referenceData::account::FirmAccount.all(%latest)->groupBy(\n" +
                     "    [\n" +
-                    "      x|$x.trader(%latest).lastName, \n" +
-                    "      x|$x.trader(%latest).firstName, \n" +
+                    "      x|$x.trader(%latest).lastName,\n" +
+                    "      x|$x.trader(%latest).firstName,\n" +
                     "      x|$x.trader(%latest).isActive\n" +
-                    "    ], \n" +
+                    "    ],\n" +
                     "    [\n" +
-                    "      agg(x|$x.trader(%latest).kerberos, y|$y->uniqueValueOnly()), \n" +
+                    "      agg(x|$x.trader(%latest).kerberos, y|$y->uniqueValueOnly()),\n" +
                     "      agg(x|$x.trader(%latest).age, y|$y->average())\n" +
-                    "    ], \n" +
+                    "    ],\n" +
                     "    [\n" +
-                    "      'Trader/Last Name', \n" +
-                    "      'Trader/First Name', \n" +
-                    "      'Trader/Is Active', \n" +
+                    "      'Trader/Last Name',\n" +
+                    "      'Trader/First Name',\n" +
+                    "      'Trader/Is Active',\n" +
                     "      'Trader/Kerberos Distinct Value'\n" +
                     "    ]\n" +
                     "  );\n" +
@@ -167,18 +168,18 @@ public class TestLambdaPrettyRendering
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>let businessDate = <span class='pureGrammar-function'>now</span>();</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-package'>model::domain::referenceData::account::</span><span class='pureGrammar-packageableElement'>FirmAccount</span>.<span class='pureGrammar-function'>all</span>(%latest)<span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>groupBy</span>(</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>lastName</span>, </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>firstName</span>, </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>lastName</span>,</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>firstName</span>,</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>isActive</span></BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>], </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>],</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>kerberos</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>uniqueValueOnly</span>()), </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>kerberos</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>uniqueValueOnly</span>()),</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>age</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>average</span>())</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>], </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>],</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Last Name'</span>, </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/First Name'</span>, </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Is Active'</span>, </BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Last Name'</span>,</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/First Name'</span>,</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Is Active'</span>,</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Kerberos Distinct Value'</span></BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>]</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>);</BR>\n" +
@@ -193,8 +194,8 @@ public class TestLambdaPrettyRendering
             "  (true ||\n" +
             "  (3 == 4))\n" +
             ")->groupBy(\n" +
-            "  [], \n" +
-            "  [agg(x|$x.lastName, x|$x->distinct()->someFunc(true, 'someString', 90) + $x.lastName)], \n" +
+            "  [],\n" +
+            "  [agg(x|$x.lastName, x|$x->distinct()->someFunc(true, 'someString', 90) + $x.lastName)],\n" +
             "  ['LastName']\n" +
             ")->distinct()->sort(\n" +
             "  [asc('LastName')]\n" +

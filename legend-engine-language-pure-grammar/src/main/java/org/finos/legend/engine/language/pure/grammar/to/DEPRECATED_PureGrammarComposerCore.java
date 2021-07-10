@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.domain.StrictTimeParseTreeWalker;
@@ -59,8 +60,39 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ExecutionContextInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
@@ -73,7 +105,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 
 public final class DEPRECATED_PureGrammarComposerCore implements
         PackageableElementVisitor<String>,
@@ -680,20 +711,16 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             {
                 return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, this);
             }
-            String first = HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(0), this) + " " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function);
-            return first + (toCreateNewLine ? this.returnChar() + this.indentationString : " ") + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
+            String firstArgumentText = HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(0), this) + " " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function);
+            return firstArgumentText + (toCreateNewLine ? this.returnChar() + this.indentationString : " ") + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
         }
-        else if (HelperValueSpecificationGrammarComposer.FN_PREFIX.contains(function))
+        else if ("if".equals(function))
         {
-            // TODO extends this for other functions?
-            if ("if".equals(function) && this.isRenderingPretty())
-            {
-                return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" + parameters.get(0).accept(this) + ", " +
-                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1))) + parameters.get(1).accept(this) + ", " +
-                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1))) + parameters.get(2).accept(this) +
-                        (this.returnChar()) + ")";
-            }
-            return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" + LazyIterate.collect(parameters, p -> p.accept(this)).makeString(", ") + ")";
+            return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" +
+                (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "") +
+                ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build()))
+                    .makeString("," + (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")) +
+                (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(0)) : "") + ")";
         }
         return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, this);
     }

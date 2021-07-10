@@ -37,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLa
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PathElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PropertyPathElement;
 
@@ -87,31 +88,29 @@ public class HelperValueSpecificationGrammarComposer
     {
         List<ValueSpecification> parameters = appliedFunction.parameters;
         String functionName = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
-        if (!parameters.isEmpty())
+        if (parameters.isEmpty())
         {
-            ValueSpecification firstArgument = parameters.get(0);
-            List<ValueSpecification> otherArguments = parameters.subList(1, parameters.size());
-            String firstArgumentText = firstArgument.accept(transformer);
+            return renderFunctionName(functionName, transformer) + "()";
+        }
+        ValueSpecification firstArgument = parameters.get(0);
+        List<ValueSpecification> otherArguments = parameters.subList(1, parameters.size());
+
+        if (otherArguments.size() == 0)
+        {
             if (firstArgument instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null)
             {
-                return functionName + "(" + firstArgumentText + ")";
+                return functionName + "(" + firstArgument.accept(transformer) + ")";
             }
-            else if (otherArguments.size() == 0 &&  isPrimitiveValue(firstArgument)) {
-                return functionName + "(" + firstArgumentText + ")";
+            else if (isPrimitiveValue(firstArgument)) {
+                return renderFunctionName(functionName, transformer) + "(" + firstArgument.accept(transformer) + ")";
             }
-            String functionText = firstArgumentText + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
-                + renderFunctionName(functionName, transformer) + "("
-                + (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "");
-            if (otherArguments.size() == 0) {
-                functionText += ")";
-            } else {
-                functionText += ListIterate.collect(otherArguments, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build()))
-                    .makeString(", " + (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : ""))
-                    + (toCreateNewLine ? transformer.returnChar() + transformer.getIndentationString() : "") + ")";
-            }
-            return functionText;
         }
-        return renderFunctionName(functionName, transformer) + "()";
+        return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
+            + renderFunctionName(functionName, transformer) + "("
+            + (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") +
+            ListIterate.collect(otherArguments, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build()))
+                .makeString("," + (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " "))
+            + (toCreateNewLine ? transformer.returnChar() + transformer.getIndentationString() : "") + ")";
     }
 
     public static String renderFunctionName(String name, DEPRECATED_PureGrammarComposerCore transformer)
@@ -174,7 +173,7 @@ public class HelperValueSpecificationGrammarComposer
         boolean toCreateNewLine = values.size() == 1;
         return "[" +
             (toCreateNewLine ? "" : (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")) +
-            LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")) +
+            LazyIterate.collect(values, func).makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " ")) +
             (toCreateNewLine ? "" : (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "")) +
             "]";
     }
