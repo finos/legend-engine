@@ -68,7 +68,7 @@ public class HelperValueSpecificationGrammarComposer
 
     public static final MutableSet<String> FN_PREFIX = Sets.mutable.with("if", "col", "agg");
 
-    public static final MutableSet<String> NEXT_LINE_FN = Sets.mutable.with("filter", "project", "and", "or", "groupBy");
+    public static final MutableSet<String> NEXT_LINE_FN = Sets.mutable.with("filter", "project", "and", "or", "groupBy", "sort");
 
     private static boolean isPrimitiveValue(ValueSpecification valueSpecification) {
         return (valueSpecification instanceof CString ||
@@ -83,7 +83,7 @@ public class HelperValueSpecificationGrammarComposer
         );
     }
 
-    public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore shiftedTransformer, DEPRECATED_PureGrammarComposerCore topParameterTransformer, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<ValueSpecification> parameters = appliedFunction.parameters;
         String functionName = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
@@ -91,23 +91,25 @@ public class HelperValueSpecificationGrammarComposer
         {
             ValueSpecification firstArgument = parameters.get(0);
             List<ValueSpecification> otherArguments = parameters.subList(1, parameters.size());
-            String top = firstArgument.accept(topParameterTransformer);
+            String firstArgumentText = firstArgument.accept(transformer);
             if (firstArgument instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null)
             {
-                return functionName + "(" + top + ")";
+                return functionName + "(" + firstArgumentText + ")";
             }
             else if (otherArguments.size() == 0 &&  isPrimitiveValue(firstArgument)) {
-                return functionName + "(" + top + ")";
+                return functionName + "(" + firstArgumentText + ")";
             }
-            return top + (toCreateNewLine ? shiftedTransformer.returnChar() + shiftedTransformer.getIndentationString() : "") + (shiftedTransformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (shiftedTransformer.isRenderingHTML() ? "</span>" : "")
-                    + renderFunctionName(functionName, transformer)
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1)) : "") + "("
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(2)) : "")
-
-                // TODO: check if this list is empty -> `func()` form
-                + ListIterate.collect(otherArguments, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(shiftedTransformer).withIndentation(getTabSize(2)).build()))
-                                 .makeString(", " + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(2)) : ""))
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1)) : "") + ")";
+            String functionText = firstArgumentText + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
+                + renderFunctionName(functionName, transformer) + "("
+                + (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "");
+            if (otherArguments.size() == 0) {
+                functionText += ")";
+            } else {
+                functionText += ListIterate.collect(otherArguments, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build()))
+                    .makeString(", " + (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : ""))
+                    + (toCreateNewLine ? transformer.returnChar() + transformer.getIndentationString() : "") + ")";
+            }
+            return functionText;
         }
         return renderFunctionName(functionName, transformer) + "()";
     }
@@ -119,14 +121,14 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String possiblyAddParenthesis(String function, ValueSpecification param, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        if (function.equals("and") || function.equals("or"))
+        if ("and".equals(function) || "or".equals(function))
         {
             if (param instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) param).function) != null)
             {
                 return "(" + param.accept(transformer) + ")";
             }
         }
-        else if ("divide".equals(function) || "times".equals(function) || "plus".equals(function) || "minus".equals(function))
+        else if ("plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function))
         {
             if (isLowerPrecedenceFunction(param, function))
             {
@@ -169,10 +171,11 @@ public class HelperValueSpecificationGrammarComposer
         if (values.isEmpty()) {
             return "[]";
         }
+        boolean toCreateNewLine = values.size() == 1;
         return "[" +
-            (values.size() == 1 ? "" : (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")) +
+            (toCreateNewLine ? "" : (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")) +
             LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")) +
-            (values.size() == 1 ? "" : (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "")) +
+            (toCreateNewLine ? "" : (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "")) +
             "]";
     }
 

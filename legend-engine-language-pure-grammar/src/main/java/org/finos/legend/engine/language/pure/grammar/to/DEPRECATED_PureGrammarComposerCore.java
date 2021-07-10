@@ -647,56 +647,55 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         String function = appliedFunction.function;
         List<ValueSpecification> parameters = appliedFunction.parameters;
         boolean toCreateNewLine = this.isRenderingPretty() && HelperValueSpecificationGrammarComposer.NEXT_LINE_FN.contains(function);
-        DEPRECATED_PureGrammarComposerCore shiftedTransformer = toCreateNewLine ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this;
 
-        if (function.equals("getAll"))
+        if ("getAll".equals(function))
         {
             return parameters.get(0).accept(this) + "." + HelperValueSpecificationGrammarComposer.renderFunctionName("all", this) + "(" + LazyIterate.collect(parameters.subList(1, parameters.size()), v -> v.accept(this)).makeString(", ") + ")";
         }
-        else if (function.equals("getAllVersions"))
+        else if ("getAllVersions".equals(function))
         {
             return parameters.get(0).accept(this) + "." + HelperValueSpecificationGrammarComposer.renderFunctionName("allVersions", this) + "(" + LazyIterate.collect(parameters.subList(1, parameters.size()), v -> v.accept(this)).makeString(", ") + ")";
         }
-        else if (function.equals("letFunction"))
+        else if ("letFunction".equals(function))
         {
             return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).values.get(0)) + " = " + parameters.get(1).accept(this);
         }
-        else if (function.equals("new"))
+        else if ("new".equals(function))
         {
             List<ValueSpecification> values = ((Collection) parameters.get(parameters.size() - 1)).values;
             String rendered = Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ");
             return "^" + parameters.get(0).accept(this) + "(" + rendered + ")";
         }
-        else if (function.equals("not"))
+        else if ("not".equals(function))
         {
             return "!(" + parameters.get(0).accept(this) + ")";
         }
         else if (HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) != null)
         {
-            if (parameters.get(0) instanceof Collection && (function.equals("plus") || function.equals("minus") || function.equals("times")))
+            if (parameters.get(0) instanceof Collection && ("plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function)))
             {
                 return LazyIterate.collect(((Collection) parameters.get(0)).values, v -> HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, v, this)).makeString(" " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) + " ");
             }
             if (parameters.size() == 1)
             {
-                return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, this, shiftedTransformer, this);
+                return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, this);
             }
             String first = HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(0), this) + " " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function);
-            return first + (toCreateNewLine ? this.returnChar() + shiftedTransformer.indentationString : " ") + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
+            return first + (toCreateNewLine ? this.returnChar() + this.indentationString : " ") + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
         }
         else if (HelperValueSpecificationGrammarComposer.FN_PREFIX.contains(function))
         {
             // TODO extends this for other functions?
-            if (function.equals("if") && shiftedTransformer.isRenderingPretty())
+            if ("if".equals(function) && this.isRenderingPretty())
             {
                 return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" + parameters.get(0).accept(this) + ", " +
-                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1))) + parameters.get(1).accept(this) + ", " +
-                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1))) + parameters.get(2).accept(this) +
+                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1))) + parameters.get(1).accept(this) + ", " +
+                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1))) + parameters.get(2).accept(this) +
                         (this.returnChar()) + ")";
             }
             return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" + LazyIterate.collect(parameters, p -> p.accept(this)).makeString(", ") + ")";
         }
-        return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, shiftedTransformer, this, this);
+        return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, this);
     }
 
     @Override
