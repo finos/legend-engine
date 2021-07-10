@@ -61,25 +61,28 @@ public class HelperValueSpecificationGrammarComposer
 
     public static final MutableSet<String> NEXT_LINE_FN = Sets.mutable.with("filter", "project", "and", "or", "groupBy");
 
-    public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore shiftedTransformer, DEPRECATED_PureGrammarComposerCore topParameterTransfomer, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore shiftedTransformer, DEPRECATED_PureGrammarComposerCore topParameterTransformer, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<ValueSpecification> parameters = appliedFunction.parameters;
         String function = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
         if (!parameters.isEmpty())
+        // TODO: if length === 1 and firstParam is primitive (i.e. CString, CInteger, etc.) -> use `func(...)` form
         {
             ValueSpecification firstParameter = parameters.get(0);
-            String top = firstParameter.accept(topParameterTransfomer);
+            String top = firstParameter.accept(topParameterTransformer);
             if (function.equals("not") || firstParameter instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstParameter).function) != null)
             {
                 return function + "(" + top + ")";
             }
             return top + (toCreateNewLine ? shiftedTransformer.returnChar() + shiftedTransformer.getIndentationString() : "") + (shiftedTransformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (shiftedTransformer.isRenderingHTML() ? "</span>" : "")
                     + renderFunctionName(function, transformer)
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 1) : "") + "("
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3) : "")
-                    + ListIterate.collect(parameters.subList(1, parameters.size()), p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(shiftedTransformer).withIndentation(3).build()))
-                                 .makeString(", " + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3) : ""))
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 1) : "") + ")";
+                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1)) : "") + "("
+                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(2)) : "")
+
+                // TODO: check if this list is empty -> `func()` form
+                + ListIterate.collect(parameters.subList(1, parameters.size()), p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(shiftedTransformer).withIndentation(getTabSize(2)).build()))
+                                 .makeString(", " + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(2)) : ""))
+                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1)) : "") + ")";
         }
         return renderFunctionName(function, transformer) + "()";
     }
@@ -138,8 +141,8 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String renderCollection(List<?> values, org.eclipse.collections.api.block.function.Function<Object, String> func, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return "[" + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, 2) : "")
-                + LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, 2) : ""))
+        return "[" + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")
+                + LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : ""))
                 + (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "") + "]";
     }
 

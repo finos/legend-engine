@@ -73,6 +73,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 
 public final class DEPRECATED_PureGrammarComposerCore implements
         PackageableElementVisitor<String>,
@@ -621,8 +622,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         boolean addCR = lambda.body.size() > 1;
         return (addWrapper ? "{" : "")
                 + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
-                + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) : "")
-                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2))
+                + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
+                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)))
                 + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
     }
 
@@ -646,7 +647,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         String function = appliedFunction.function;
         List<ValueSpecification> parameters = appliedFunction.parameters;
         boolean toCreateNewLine = this.isRenderingPretty() && HelperValueSpecificationGrammarComposer.NEXT_LINE_FN.contains(function);
-        DEPRECATED_PureGrammarComposerCore shiftedTransformer = toCreateNewLine ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(3).build() : this;
+        DEPRECATED_PureGrammarComposerCore shiftedTransformer = toCreateNewLine ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this;
 
         if (function.equals("getAll"))
         {
@@ -679,8 +680,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             if (function.equals("if") && shiftedTransformer.isRenderingPretty())
             {
                 return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" + parameters.get(0).accept(this) + ", " +
-                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3)) + parameters.get(1).accept(this) + ", " +
-                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3)) + parameters.get(2).accept(this) +
+                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1))) + parameters.get(1).accept(this) + ", " +
+                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1))) + parameters.get(2).accept(this) +
                         (this.returnChar()) + ")";
             }
             return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" + LazyIterate.collect(parameters, p -> p.accept(this)).makeString(", ") + ")";
@@ -804,12 +805,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         String subTreeString = "";
         if (rootGraphFetchTree.subTrees != null && !rootGraphFetchTree.subTrees.isEmpty())
         {
-            subTreeString = rootGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
+            subTreeString = rootGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
         }
         return "#{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
+                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
                 subTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
-                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
+                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
                 this.indentationString + "}#";
     }
 
@@ -826,8 +827,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         if (propertyGraphFetchTree.subTrees != null && !propertyGraphFetchTree.subTrees.isEmpty())
         {
             subTreeString = "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-                    propertyGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
-                    DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) + "}";
+                    propertyGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
+                    DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}";
         }
 
         String parametersString = "";
@@ -842,7 +843,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             subTypeString = "->subType(@" + HelperValueSpecificationGrammarComposer.printFullPath(propertyGraphFetchTree.subType, this) + ")";
         }
 
-        return DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) + aliasString + propertyGraphFetchTree.property + parametersString + subTypeString + subTreeString;
+        return DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + aliasString + propertyGraphFetchTree.property + parametersString + subTypeString + subTreeString;
     }
 
     @Override
