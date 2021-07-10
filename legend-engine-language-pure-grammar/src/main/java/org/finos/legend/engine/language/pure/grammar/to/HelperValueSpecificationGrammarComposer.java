@@ -64,18 +64,18 @@ public class HelperValueSpecificationGrammarComposer
     public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore shiftedTransformer, DEPRECATED_PureGrammarComposerCore topParameterTransformer, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<ValueSpecification> parameters = appliedFunction.parameters;
-        String function = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
+        String functionName = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
         if (!parameters.isEmpty())
         // TODO: if length === 1 and firstParam is primitive (i.e. CString, CInteger, etc.) -> use `func(...)` form
         {
             ValueSpecification firstParameter = parameters.get(0);
             String top = firstParameter.accept(topParameterTransformer);
-            if (function.equals("not") || firstParameter instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstParameter).function) != null)
+            if (functionName.equals("not") || firstParameter instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstParameter).function) != null)
             {
-                return function + "(" + top + ")";
+                return functionName + "(" + top + ")";
             }
             return top + (toCreateNewLine ? shiftedTransformer.returnChar() + shiftedTransformer.getIndentationString() : "") + (shiftedTransformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (shiftedTransformer.isRenderingHTML() ? "</span>" : "")
-                    + renderFunctionName(function, transformer)
+                    + renderFunctionName(functionName, transformer)
                     + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1)) : "") + "("
                     + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(2)) : "")
 
@@ -84,7 +84,7 @@ public class HelperValueSpecificationGrammarComposer
                                  .makeString(", " + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(2)) : ""))
                     + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1)) : "") + ")";
         }
-        return renderFunctionName(function, transformer) + "()";
+        return renderFunctionName(functionName, transformer) + "()";
     }
 
     public static String renderFunctionName(String name, DEPRECATED_PureGrammarComposerCore transformer)
@@ -144,9 +144,11 @@ public class HelperValueSpecificationGrammarComposer
         if (values.isEmpty()) {
             return "[]";
         }
-        return "[" + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")
-                + LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : ""))
-                + (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "") + "]";
+        return "[" +
+            (values.size() == 1 ? "" : (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")) +
+            LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "")) +
+            (values.size() == 1 ? "" : (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "")) +
+            "]";
     }
 
     public static String renderDecimal(BigDecimal b, DEPRECATED_PureGrammarComposerCore transformer)
