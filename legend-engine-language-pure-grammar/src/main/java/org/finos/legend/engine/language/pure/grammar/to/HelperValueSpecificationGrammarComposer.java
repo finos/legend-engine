@@ -28,6 +28,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PathElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PropertyPathElement;
 
@@ -61,17 +70,33 @@ public class HelperValueSpecificationGrammarComposer
 
     public static final MutableSet<String> NEXT_LINE_FN = Sets.mutable.with("filter", "project", "and", "or", "groupBy");
 
+    private static boolean isPrimitiveValue(ValueSpecification valueSpecification) {
+        return (valueSpecification instanceof CString ||
+            valueSpecification instanceof CBoolean ||
+            valueSpecification instanceof CInteger ||
+            valueSpecification instanceof CFloat ||
+            valueSpecification instanceof CDecimal ||
+            valueSpecification instanceof CDateTime ||
+            valueSpecification instanceof CStrictDate ||
+            valueSpecification instanceof CStrictTime ||
+            valueSpecification instanceof CLatestDate
+        );
+    }
+
     public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore shiftedTransformer, DEPRECATED_PureGrammarComposerCore topParameterTransformer, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<ValueSpecification> parameters = appliedFunction.parameters;
         String functionName = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
         if (!parameters.isEmpty())
-        // TODO: if length === 1 and firstParam is primitive (i.e. CString, CInteger, etc.) -> use `func(...)` form
         {
-            ValueSpecification firstParameter = parameters.get(0);
-            String top = firstParameter.accept(topParameterTransformer);
-            if (functionName.equals("not") || firstParameter instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstParameter).function) != null)
+            ValueSpecification firstArgument = parameters.get(0);
+            List<ValueSpecification> otherArguments = parameters.subList(1, parameters.size());
+            String top = firstArgument.accept(topParameterTransformer);
+            if (firstArgument instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null)
             {
+                return functionName + "(" + top + ")";
+            }
+            else if (otherArguments.size() == 0 &&  isPrimitiveValue(firstArgument)) {
                 return functionName + "(" + top + ")";
             }
             return top + (toCreateNewLine ? shiftedTransformer.returnChar() + shiftedTransformer.getIndentationString() : "") + (shiftedTransformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (shiftedTransformer.isRenderingHTML() ? "</span>" : "")
@@ -80,7 +105,7 @@ public class HelperValueSpecificationGrammarComposer
                     + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(2)) : "")
 
                 // TODO: check if this list is empty -> `func()` form
-                + ListIterate.collect(parameters.subList(1, parameters.size()), p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(shiftedTransformer).withIndentation(getTabSize(2)).build()))
+                + ListIterate.collect(otherArguments, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(shiftedTransformer).withIndentation(getTabSize(2)).build()))
                                  .makeString(", " + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(2)) : ""))
                     + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, getTabSize(1)) : "") + ")";
         }

@@ -198,13 +198,8 @@ public class TestLambdaRoundtrip
     @Test
     public void testLambdaWithNot()
     {
-        testLambda("|not(true && false)");
-    }
-
-    @Test
-    public void testLambdaWithNotEquals()
-    {
-        testLambda("|not(true == false)");
+        testLambda("|!(true == false)");
+        testLambda("|not(true == false)", "|!(true == false)");
     }
 
     @Test
@@ -301,195 +296,16 @@ public class TestLambdaRoundtrip
     }
 
     @Test
-    public void testRenderingEmptyCollectionInPrettyRendering()
-    {
-        testLambdaWithFormat("|Person.all()->project([])",
-            "|Person.all()\n" +
-                "  ->project\n" +
-                "    (\n" +
-                "      []\n" +
-                "    )", PureGrammarComposerContext.RenderStyle.PRETTY);
-    }
-
-    @Test
-    public void testLambdaWithProjectWithColInPrettyRendering()
-    {
-        testLambdaWithFormat("|Person.all()->filter(f|$f.name->startsWith('ok') && (true || 3 == 4))->project([col(p|$p.name, 'ok')])",
-                "|Person.all()\n" +
-                    "  ->filter\n" +
-                    "    (\n" +
-                    "      f|$f.name->startsWith('ok') &&\n" +
-                    "        (true ||\n" +
-                    "        (3 == 4))\n" +
-                    "    )\n" +
-                    "  ->project\n" +
-                    "    (\n" +
-                    "      [\n" +
-                    "        col(p|$p.name, 'ok')\n" +
-                    "      ]\n" +
-                    "    )", PureGrammarComposerContext.RenderStyle.PRETTY);
-    }
-
-    @Test
-    public void testLambdaWithProjectWithColsInPrettyRendering()
-    {
-        testLambdaWithFormat("|Person.all()->filter(f|$f.name->startsWith('ok') && (true || 3 == 4))->project([col(p|$p.name, 'ok'), col(p|$p.name, 'ok2')])",
-                "|Person.all()\n" +
-                    "  ->filter\n" +
-                    "    (\n" +
-                    "      f|$f.name->startsWith('ok') &&\n" +
-                    "        (true ||\n" +
-                    "        (3 == 4))\n" +
-                    "    )\n" +
-                    "  ->project\n" +
-                    "    (\n" +
-                    "      [\n" +
-                    "        col(p|$p.name, 'ok'), \n" +
-                    "        col(p|$p.name, 'ok2')\n" +
-                    "      ]\n" +
-                    "    )", PureGrammarComposerContext.RenderStyle.PRETTY);
-    }
-
-    @Test
-    public void testLambdaWithIfInPrettyRendering()
-    {
-        testLambdaWithFormat("|if($this.id == 'testing',|'test',|'nonTest')",
-                "|if($this.id == 'testing', \n" +
-                        "  |'test', \n" +
-                        "  |'nonTest'\n" +
-                        ")", PureGrammarComposerContext.RenderStyle.PRETTY);
-    }
-
-    @Test
-    public void testLambdaWithGroupByInPrettyRendering()
-    {
-        testLambdaWithFormat("{|\n" +
-                        "   let businessDate = now();\n" +
-                        "   model::domain::referenceData::account::FirmAccount.all($businessDate)\n" +
-                        "       ->groupBy([x | $x.trader($businessDate).lastName,\n" +
-                        "                  x | $x.trader($businessDate).firstName,\n" +
-                        "                  x | $x.trader($businessDate).isActive],\n" +
-                        "                 [agg(x | $x.trader($businessDate).kerberos, y | $y->uniqueValueOnly())],\n" +
-                        "                 ['Trader/Last Name',\n" +
-                        "                  'Trader/First Name',\n" +
-                        "                  'Trader/Is Active',\n" +
-                        "                  'Trader/Kerberos Distinct Value']\n" +
-                        "       );\n" +
-                        "}",
-                "{|\n" +
-                        "  let businessDate = now();\n" +
-                        "  model::domain::referenceData::account::FirmAccount.all($businessDate)\n" +
-                        "    ->groupBy\n" +
-                        "      (\n" +
-                        "        [\n" +
-                        "          x|$x.trader($businessDate).lastName, \n" +
-                        "          x|$x.trader($businessDate).firstName, \n" +
-                        "          x|$x.trader($businessDate).isActive\n" +
-                        "        ], \n" +
-                        "        [\n" +
-                        "          agg(x|$x.trader($businessDate).kerberos, y|$y->uniqueValueOnly())\n" +
-                        "        ], \n" +
-                        "        [\n" +
-                        "          'Trader/Last Name', \n" +
-                        "          'Trader/First Name', \n" +
-                        "          'Trader/Is Active', \n" +
-                        "          'Trader/Kerberos Distinct Value'\n" +
-                        "        ]\n" +
-                        "      );\n" +
-                        "}", PureGrammarComposerContext.RenderStyle.PRETTY);
-    }
-
-    @Test
-    public void testLambdaWithGroupByWithLatestInPrettyRendering()
-    {
-        testLambdaWithFormat("{|\n" +
-                        "   let businessDate = now();\n" +
-                        "   model::domain::referenceData::account::FirmAccount.all(%latest)\n" +
-                        "       ->groupBy([x | $x.trader(%latest).lastName,\n" +
-                        "                  x | $x.trader(%latest).firstName,\n" +
-                        "                  x | $x.trader(%latest).isActive],\n" +
-                        "                 [agg(x | $x.trader(%latest).kerberos, y | $y->uniqueValueOnly()),agg(x | $x.trader(%latest).age, y | $y->average())],\n" +
-                        "                 ['Trader/Last Name',\n" +
-                        "                  'Trader/First Name',\n" +
-                        "                  'Trader/Is Active',\n" +
-                        "                  'Trader/Kerberos Distinct Value']\n" +
-                        "       );\n" +
-                        "}",
-                "{|\n" +
-                        "  let businessDate = now();\n" +
-                        "  model::domain::referenceData::account::FirmAccount.all(%latest)\n" +
-                        "    ->groupBy\n" +
-                        "      (\n" +
-                        "        [\n" +
-                        "          x|$x.trader(%latest).lastName, \n" +
-                        "          x|$x.trader(%latest).firstName, \n" +
-                        "          x|$x.trader(%latest).isActive\n" +
-                        "        ], \n" +
-                        "        [\n" +
-                        "          agg(x|$x.trader(%latest).kerberos, y|$y->uniqueValueOnly()), \n" +
-                        "          agg(x|$x.trader(%latest).age, y|$y->average())\n" +
-                        "        ], \n" +
-                        "        [\n" +
-                        "          'Trader/Last Name', \n" +
-                        "          'Trader/First Name', \n" +
-                        "          'Trader/Is Active', \n" +
-                        "          'Trader/Kerberos Distinct Value'\n" +
-                        "        ]\n" +
-                        "      );\n" +
-                        "}", PureGrammarComposerContext.RenderStyle.PRETTY);
-    }
-
-    @Test
-    public void testLambdaWithGroupByWithLatestInPrettyHTMLRendering()
-    {
-        testLambdaWithFormat("{|\n" +
-                        "   let businessDate = now();\n" +
-                        "   model::domain::referenceData::account::FirmAccount.all(%latest)\n" +
-                        "       ->groupBy([x | $x.trader(%latest).lastName,\n" +
-                        "                  x | $x.trader(%latest).firstName,\n" +
-                        "                  x | $x.trader(%latest).isActive],\n" +
-                        "                 [agg(x | $x.trader(%latest).kerberos, y | $y->uniqueValueOnly()),agg(x | $x.trader(%latest).age, y | $y->average())],\n" +
-                        "                 ['Trader/Last Name',\n" +
-                        "                  'Trader/First Name',\n" +
-                        "                  'Trader/Is Active',\n" +
-                        "                  'Trader/Kerberos Distinct Value']\n" +
-                        "       );\n" +
-                        "}",
-                "{|</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>let businessDate = <span class='pureGrammar-function'>now</span>();</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-package'>model::domain::referenceData::account::</span><span class='pureGrammar-packageableElement'>FirmAccount</span>.<span class='pureGrammar-function'>all</span>(%latest)</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>groupBy</span></BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>(</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>lastName</span>, </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>firstName</span>, </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>isActive</span></BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>], </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>kerberos</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>uniqueValueOnly</span>()), </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>age</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>average</span>())</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>], </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Last Name'</span>, </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/First Name'</span>, </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Is Active'</span>, </BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Kerberos Distinct Value'</span></BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>]</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>);</BR>\n" +
-                    "}", PureGrammarComposerContext.RenderStyle.PRETTY_HTML);
-    }
-
-    @Test
     public void testAppliedFunctionWithParametersUsingInfixOperations()
     {
-        testLambda("|'data1' + toString('data1'->someTransformation::fn() + 1)");
+        testLambda("|'data1' + toString(someTransformation::fn('data1') + 1)");
     }
 
     @Test
     public void testFunctionNameWithRichIdentifier()
     {
-        testLambda("|'data1'->someTransformation::fn() + 1");
-        testLambda("|'data1'->someTransformation::fn::'special function 1'() + 1");
+        testLambda("|someTransformation::fn('data1') + 1");
+        testLambda("|someTransformation::fn::'special function 1'('data1') + 1");
     }
 
     @Test
@@ -504,12 +320,39 @@ public class TestLambdaRoundtrip
         testLambda("|$this.'1@3'->isEmpty()");
     }
 
-    private void testLambda(String string)
+    @Test
+    public void testRenderingFunctionExpressionWithSinglePrimitiveArgument()
+    {
+        testLambda("|sort('car')");
+        testLambda("|reverse(true)");
+        testLambda("|reverse(false)");
+        testLambda("|abs(4)");
+        testLambda("|abs(4.0)");
+        testLambda("|round(4.04)");
+        testLambda("|someDateFn(%9999-12-30)");
+        testLambda("|someDateFn(%9999-12-30T19:00:00.0000)");
+
+        testLambda("|'car'->sort()", "|sort('car')");
+        testLambda("|true->reverse()", "|reverse(true)");
+        testLambda("|false->reverse()", "|reverse(false)");
+        testLambda("|4->abs()", "|abs(4)");
+        testLambda("|4.0->abs()", "|abs(4.0)");
+        testLambda("|4.04->round()", "|round(4.04)");
+        testLambda("|%9999-12-30->someDateFn()", "|someDateFn(%9999-12-30)");
+        testLambda("|%9999-12-30T19:00:00.0000->someDateFn()", "|someDateFn(%9999-12-30T19:00:00.0000)");
+    }
+
+    private static void testLambda(String text)
+    {
+        testLambda(text, text);
+    }
+
+    private static void testLambda(String text, String formattedText)
     {
         Lambda postJSON_lambda;
         try
         {
-            Lambda lambda = new DomainParser().parseLambda(string, "");
+            Lambda lambda = new DomainParser().parseLambda(text, "");
             String json = objectMapper.writeValueAsString(lambda);
             postJSON_lambda = objectMapper.readValue(json, Lambda.class);
         }
@@ -517,11 +360,6 @@ public class TestLambdaRoundtrip
         {
             throw new RuntimeException(e);
         }
-        Assert.assertEquals(string, postJSON_lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
-    }
-
-    private void testLambdaWithFormat(String string, String toCompare, PureGrammarComposerContext.RenderStyle renderStyle)
-    {
-        Assert.assertEquals(toCompare, new DomainParser().parseLambda(string, "").accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle).build()));
+        Assert.assertEquals(formattedText, postJSON_lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
     }
 }
