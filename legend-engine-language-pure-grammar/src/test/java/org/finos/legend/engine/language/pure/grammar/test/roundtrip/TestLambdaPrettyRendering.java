@@ -41,10 +41,14 @@ public class TestLambdaPrettyRendering
         testLambda("|Person.all()->filter(f|$f.name->startsWith('ok') && (true || 3 == 4))->project([col(p|$p.name, 'ok')])",
                 "|Person.all()->filter(\n" +
                     "  f|$f.name->startsWith('ok') &&\n" +
-                    "  (true ||\n" +
-                    "  (3 == 4))\n" +
+                    "    (true || (3 == 4))\n" +
                     ")->project(\n" +
-                    "  [col(p|$p.name, 'ok')]\n" +
+                    "  [\n" +
+                    "    col(\n" +
+                    "      p|$p.name,\n" +
+                    "      'ok'\n" +
+                    "    )\n" +
+                    "  ]\n" +
                     ")", PureGrammarComposerContext.RenderStyle.PRETTY);
     }
 
@@ -54,12 +58,17 @@ public class TestLambdaPrettyRendering
         testLambda("|Person.all()->filter(f|$f.name->startsWith('ok') && (true || 3 == 4))->project([col(p|$p.name, 'ok'), col(p|$p.name, 'ok2')])",
                 "|Person.all()->filter(\n" +
                     "  f|$f.name->startsWith('ok') &&\n" +
-                    "  (true ||\n" +
-                    "  (3 == 4))\n" +
+                    "    (true || (3 == 4))\n" +
                     ")->project(\n" +
                     "  [\n" +
-                    "    col(p|$p.name, 'ok'),\n" +
-                    "    col(p|$p.name, 'ok2')\n" +
+                    "    col(\n" +
+                    "      p|$p.name,\n" +
+                    "      'ok'\n" +
+                    "    ),\n" +
+                    "    col(\n" +
+                    "      p|$p.name,\n" +
+                    "      'ok2'\n" +
+                    "    )\n" +
                     "  ]\n" +
                     ")", PureGrammarComposerContext.RenderStyle.PRETTY);
     }
@@ -99,7 +108,12 @@ public class TestLambdaPrettyRendering
                     "      x|$x.trader($businessDate).firstName,\n" +
                     "      x|$x.trader($businessDate).isActive\n" +
                     "    ],\n" +
-                    "    [agg(x|$x.trader($businessDate).kerberos, y|$y->uniqueValueOnly())],\n" +
+                    "    [\n" +
+                    "      agg(\n" +
+                    "        x|$x.trader($businessDate).kerberos,\n" +
+                    "        y|$y->uniqueValueOnly()\n" +
+                    "      )\n" +
+                    "    ],\n" +
                     "    [\n" +
                     "      'Trader/Last Name',\n" +
                     "      'Trader/First Name',\n" +
@@ -135,8 +149,14 @@ public class TestLambdaPrettyRendering
                     "      x|$x.trader(%latest).isActive\n" +
                     "    ],\n" +
                     "    [\n" +
-                    "      agg(x|$x.trader(%latest).kerberos, y|$y->uniqueValueOnly()),\n" +
-                    "      agg(x|$x.trader(%latest).age, y|$y->average())\n" +
+                    "      agg(\n" +
+                    "        x|$x.trader(%latest).kerberos,\n" +
+                    "        y|$y->uniqueValueOnly()\n" +
+                    "      ),\n" +
+                    "      agg(\n" +
+                    "        x|$x.trader(%latest).age,\n" +
+                    "        y|$y->average()\n" +
+                    "      )\n" +
                     "    ],\n" +
                     "    [\n" +
                     "      'Trader/Last Name',\n" +
@@ -173,8 +193,14 @@ public class TestLambdaPrettyRendering
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>isActive</span></BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>],</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>kerberos</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>uniqueValueOnly</span>()),</BR>\n" +
-                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>age</span>, <span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>average</span>())</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>kerberos</span>,</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>uniqueValueOnly</span>()</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>),</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>trader</span>(%latest).<span class=pureGrammar-property>age</span>,</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>average</span>()</BR>\n" +
+                    "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>)</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>],</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Last Name'</span>,</BR>\n" +
@@ -191,14 +217,24 @@ public class TestLambdaPrettyRendering
     {
         testLambda("|test::Person.all()->filter(\n" +
             "  f|$f.name->startsWith('ok') &&\n" +
-            "  (true ||\n" +
-            "  (3 == 4))\n" +
+            "    (true || (3 == 4))\n" +
             ")->groupBy(\n" +
             "  [],\n" +
-            "  [agg(x|$x.lastName, x|$x->distinct()->someFunc(true, 'someString', 90) + $x.lastName)],\n" +
+            "  [\n" +
+            "    agg(\n" +
+            "      x|$x.lastName,\n" +
+            "      x|$x->distinct()->someFunc(\n" +
+            "        true,\n" +
+            "        'someString',\n" +
+            "        90\n" +
+            "      ) + $x.lastName\n" +
+            "    )\n" +
+            "  ],\n" +
             "  ['LastName']\n" +
             ")->distinct()->sort(\n" +
-            "  [asc('LastName')]\n" +
+            "  [\n" +
+            "    asc('LastName')\n" +
+            "  ]\n" +
             ")->take(30)", PureGrammarComposerContext.RenderStyle.PRETTY);
     }
 

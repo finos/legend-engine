@@ -677,7 +677,6 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         String function = appliedFunction.function;
         List<ValueSpecification> parameters = appliedFunction.parameters;
-        boolean toCreateNewLine = this.isRenderingPretty() && HelperValueSpecificationGrammarComposer.NEXT_LINE_FN.contains(function);
 
         if ("getAll".equals(function))
         {
@@ -694,8 +693,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         else if ("new".equals(function))
         {
             List<ValueSpecification> values = ((Collection) parameters.get(parameters.size() - 1)).values;
-            String rendered = Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ");
-            return "^" + parameters.get(0).accept(this) + "(" + rendered + ")";
+            return "^" + parameters.get(0).accept(this) + "(" + Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ") + ")";
         }
         else if ("not".equals(function))
         {
@@ -703,16 +701,25 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         else if (HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) != null)
         {
+            // handle arithmetic operators that we might need to add parenthesis to force precedence
             if (parameters.get(0) instanceof Collection && ("plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function)))
             {
                 return LazyIterate.collect(((Collection) parameters.get(0)).values, v -> HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, v, this)).makeString(" " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) + " ");
             }
-            if (parameters.size() == 1)
+            // for this case, we will render function name 'and()', 'or()', etc. instead of trying to swap out to use infix operators like '&&', '||', etc.
+            else if (parameters.size() == 1)
             {
-                return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, this);
+                return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, this);
             }
-            String firstArgumentText = HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(0), this) + " " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function);
-            return firstArgumentText + (toCreateNewLine ? this.returnChar() + this.indentationString : " ") + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
+            // NOTE: we only handle case when there are 2 parameters because that is the expected form for infix operators
+            boolean toCreateNewLine = this.isRenderingPretty() &&
+                !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(0)) &&
+                !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(1));
+            return HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(0), this)
+                + " "
+                + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function)
+                + (toCreateNewLine ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")
+                + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
         }
         else if ("if".equals(function))
         {
@@ -722,7 +729,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                     .makeString("," + (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")) +
                 (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(0)) : "") + ")";
         }
-        return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, this);
+        return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, this);
     }
 
     @Override
