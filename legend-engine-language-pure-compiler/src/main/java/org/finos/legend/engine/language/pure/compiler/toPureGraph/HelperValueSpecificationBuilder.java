@@ -165,12 +165,6 @@ public class HelperValueSpecificationBuilder
                 throw new UnsupportedOperationException("Unhandled property: " + foundProperty);
             }
 
-            // FIXME: remove this when we cleanup the extension method designed specifically for flatdata
-            Type finalInferredType = inferredType;
-            LazyIterate.flatCollect(context.getCompilerExtensions().getExtensions(), CompilerExtension::DEPRECATED_getExtraInferredTypeProcessors).forEach(processor -> processor.value(
-                    finalInferredType, firstParameter, context, processingContext, parameters, property, genericType, processedParameters
-            ));
-
             if (!inferredVariable._multiplicity().getName().equals("PureOne")) // autoMap
             {
                 processingContext.push("Building Automap for  " + property);

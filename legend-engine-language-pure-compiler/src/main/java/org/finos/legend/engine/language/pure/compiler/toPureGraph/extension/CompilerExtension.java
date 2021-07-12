@@ -119,15 +119,6 @@ public interface CompilerExtension
         void value(T1 var1, T2 var2, T3 var3, T4 var4, T5 var5, T6 var6, T7 var7, T8 var8);
     }
 
-    /**
-     * FIXME: to be removed
-     */
-    @Deprecated
-    default List<Procedure8<Type, ValueSpecification, CompileContext, ProcessingContext, List<ValueSpecification>, String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType, MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>>> DEPRECATED_getExtraInferredTypeProcessors()
-    {
-        return Collections.emptyList();
-    }
-
     // MISC
 
     default List<Procedure2<PackageableElement, MutableMap<String, String>>> getExtraStoreStatBuilders()

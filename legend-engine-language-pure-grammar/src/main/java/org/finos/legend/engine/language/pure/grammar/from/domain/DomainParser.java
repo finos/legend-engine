@@ -95,14 +95,19 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return (Lambda) walker.concreteFunctionDefinition(((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext).elementDefinition(0).functionDefinition());
     }
 
-    // FIXME: to remove walker context when we remove inference for flat-data column type
-    public ValueSpecification parseCombinedExpression(String code, ParseTreeWalkerSourceInformation combinedExpressionWalkerSourceInformation, PureGrammarParserContext parserContext, String flatDataRecordTypeSource)
+    public ValueSpecification parseCombinedExpression(String code, ParseTreeWalkerSourceInformation combinedExpressionWalkerSourceInformation, PureGrammarParserContext parserContext)
+    {
+        return parseCombinedExpression(code, combinedExpressionWalkerSourceInformation, parserContext, false);
+    }
+
+    // TODO PropertyBracketExpression is deprecated.  Remove method once all use has been addressed
+    public ValueSpecification parseCombinedExpression(String code, ParseTreeWalkerSourceInformation combinedExpressionWalkerSourceInformation, PureGrammarParserContext parserContext, boolean allowPropertyBracketExpression)
     {
         List<String> typeParametersNames = new ArrayList<>();
         DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext("");
         ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(combinedExpressionWalkerSourceInformation).build();
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(code, null, walkerSourceInformation, false);
-        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, flatDataRecordTypeSource);
+        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, allowPropertyBracketExpression);
         return walker.combinedExpression(((DomainParserGrammar) sectionParserInfo.parser).combinedExpression(), "line", typeParametersNames, lambdaContext, "", true, false);
     }
 }

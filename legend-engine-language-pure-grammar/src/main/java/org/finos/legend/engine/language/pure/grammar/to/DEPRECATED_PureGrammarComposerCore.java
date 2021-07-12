@@ -94,8 +94,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
      * hence omitting the `$` symbol preceding the variable.
      */
     private final boolean isVariableInFunctionSignature;
-    // FIXME: remove this when we remove inference for flat-data column
-    private final boolean isFlatDataMappingProcessingModeEnabled;
+    // TODO PropertyBracketExpression is deprecated.  Remove flag and related processing once all use has been addressed
+    private final boolean isPropertyBracketExpressionModeEnabled;
 
     private int baseTabLevel = 1;
 
@@ -105,7 +105,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.renderStyle = builder.renderStyle;
         this.isVariableInFunctionSignature = builder.isVariableInFunctionSignature;
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
-        this.isFlatDataMappingProcessingModeEnabled = builder.isFlatDataMappingProcessingModeEnabled;
+        this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
     }
 
     public int getBaseTabLevel() {
@@ -136,9 +136,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return isVariableInFunctionSignature;
     }
 
-    public boolean isFlatDataMappingProcessingModeEnabled()
+    public boolean isPropertyBracketExpressionModeEnabled()
     {
-        return isFlatDataMappingProcessingModeEnabled;
+        return isPropertyBracketExpressionModeEnabled;
     }
 
     public static class Builder
@@ -147,7 +147,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         private PureGrammarComposerContext.RenderStyle renderStyle = PureGrammarComposerContext.RenderStyle.STANDARD;
         private boolean isValueSpecificationExternalParameter = false;
         private boolean isVariableInFunctionSignature = false;
-        private boolean isFlatDataMappingProcessingModeEnabled = false;
+        private boolean isPropertyBracketExpressionModeEnabled = false;
 
         private Builder()
         {
@@ -161,7 +161,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.renderStyle = grammarTransformer.renderStyle;
             builder.isVariableInFunctionSignature = grammarTransformer.isVariableInFunctionSignature;
             builder.isValueSpecificationExternalParameter = grammarTransformer.isValueSpecificationExternalParameter;
-            builder.isFlatDataMappingProcessingModeEnabled = grammarTransformer.isFlatDataMappingProcessingModeEnabled;
+            builder.isPropertyBracketExpressionModeEnabled = grammarTransformer.isPropertyBracketExpressionModeEnabled;
             return builder;
         }
 
@@ -172,7 +172,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.renderStyle = context.getRenderStyle();
             builder.isVariableInFunctionSignature = context.isVariableInFunctionSignature();
             builder.isValueSpecificationExternalParameter = context.isValueSpecificationExternalParameter();
-            builder.isFlatDataMappingProcessingModeEnabled = context.isFlatDataMappingProcessingModeEnabled();
+            builder.isPropertyBracketExpressionModeEnabled = context.isPropertyBracketExpressionModeEnabled();
             return builder;
         }
 
@@ -199,9 +199,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             return this;
         }
 
-        public Builder withFlatDataMappingProcessingModeEnabled()
+        public Builder withPropertyBracketExpressionModeEnabled()
         {
-            this.isFlatDataMappingProcessingModeEnabled = true;
+            this.isPropertyBracketExpressionModeEnabled = true;
             return this;
         }
 
@@ -699,7 +699,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         String propertyOwner = appliedProperty.parameters.get(0).accept(this);
         StringBuilder stringBuilder = new StringBuilder(propertyOwner);
-        if (this.isFlatDataMappingProcessingModeEnabled && propertyOwner.equals("$src"))
+        if (this.isPropertyBracketExpressionModeEnabled && propertyOwner.equals("$src"))
         {
             stringBuilder.append(appliedProperty.parameters.subList(1, appliedProperty.parameters.size()).stream().map(l -> l.accept(this)).collect(Collectors.joining(", ", "[", "]")));
         }
