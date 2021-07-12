@@ -34,6 +34,26 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
+    public void testDeltaLakeDatabaseConnection()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: DeltaLake;\n" +
+                "  specification: DeltaLake\n" +
+                "  {\n" +
+                "    shard: 'shard';\n" +
+                "    httpPath: 'httpPath';\n" +
+                "  };\n" +
+                "  auth: DeltaLake\n" +
+                "  {\n" +
+                "    apiToken: 'token';\n" +
+                "  };\n" +
+                "}\n");
+    }
+
+    @Test
     public void testDataSourceSpecConfigurations()
     {
         test("###Connection\n" +
