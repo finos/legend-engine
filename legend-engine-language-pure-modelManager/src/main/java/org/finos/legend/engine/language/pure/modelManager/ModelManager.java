@@ -57,7 +57,7 @@ public class ModelManager
     //-------------------------------------------------------------------------------------------------
     public static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    public final Cache<PureModelContext, PureModel> pureModelCache = CacheBuilder.newBuilder().softValues().expireAfterWrite(24, TimeUnit.HOURS).build();
+    public final Cache<PureModelContext, PureModel> pureModelCache = CacheBuilder.newBuilder().softValues().expireAfterAccess(30, TimeUnit.MINUTES).build();
     private final DeploymentMode deploymentMode;
     private final MutableList<ModelLoader> modelLoaders;
 
