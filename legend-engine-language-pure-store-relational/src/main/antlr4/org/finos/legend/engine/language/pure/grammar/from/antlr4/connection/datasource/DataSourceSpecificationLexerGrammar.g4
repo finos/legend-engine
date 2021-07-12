@@ -22,3 +22,7 @@ WAREHOUSE:                                  'warehouse';
 REGION:                                     'region';
 CLOUDTYPE:                                  'cloudType';
 QUOTED_IDENTIFIERS_IGNORE_CASE:             'quotedIdentifiersIgnoreCase';
+
+BIGQUERY_DSP:                               'BigQuery';
+PROJECT:                                    'projectId';
+DATASET:                                    'defaultDataset';

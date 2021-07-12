@@ -76,6 +76,18 @@ cloudType:                                  CLOUDTYPE COLON STRING SEMI_COLON
 snowflakeQuotedIdentifiersIgnoreCase:       QUOTED_IDENTIFIERS_IGNORE_CASE COLON BOOLEAN SEMI_COLON
 ;
 
+bigQueryDatasourceSpecification:            BIGQUERY_DSP
+                                                BRACE_OPEN
+                                                    (
+                                                        projectId
+                                                        | defaultDataset
+                                                    )*
+                                                BRACE_CLOSE
+;
+projectId:                                    PROJECT COLON STRING SEMI_COLON
+;
+defaultDataset:                                    DATASET COLON STRING SEMI_COLON
+;
 // ----------------------------- SHARED -----------------------------
 
 dbPort:                                     PORT COLON INTEGER SEMI_COLON
