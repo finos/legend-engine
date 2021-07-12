@@ -19,6 +19,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.deltalake.DeltaLakeCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
@@ -75,6 +76,16 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         if (ingestionMethod == null)
         {
             ingestionMethod = snowflakeCommands.getDefaultIngestionMethod();
+        }
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    @Override
+    public Boolean visit(DeltaLakeCommands deltaLakeCommands)
+    {
+        if (ingestionMethod == null)
+        {
+            ingestionMethod = deltaLakeCommands.getDefaultIngestionMethod();
         }
         throw new UnsupportedOperationException("not yet implemented");
     }

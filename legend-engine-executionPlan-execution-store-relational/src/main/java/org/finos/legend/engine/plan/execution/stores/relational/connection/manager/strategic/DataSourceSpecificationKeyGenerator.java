@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DeltaLakeDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
@@ -62,6 +63,13 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     staticDatasourceSpecification.host,
                     staticDatasourceSpecification.port,
                     staticDatasourceSpecification.databaseName);
+        }
+        else if (datasourceSpecification instanceof DeltaLakeDatasourceSpecification)
+        {
+            DeltaLakeDatasourceSpecification staticDatasourceSpecification = (DeltaLakeDatasourceSpecification) datasourceSpecification;
+            return new DeltaLakeDataSourceSpecificationKey(
+                    staticDatasourceSpecification.shard,
+                    staticDatasourceSpecification.httpPath);
         }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {

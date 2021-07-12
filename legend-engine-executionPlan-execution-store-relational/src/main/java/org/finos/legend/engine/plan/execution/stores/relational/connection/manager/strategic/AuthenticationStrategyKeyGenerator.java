@@ -16,7 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.mana
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 
 public class AuthenticationStrategyKeyGenerator implements AuthenticationStrategyVisitor<AuthenticationStrategyKey>
 {
@@ -34,6 +33,13 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
         else if(authenticationStrategy instanceof DefaultH2AuthenticationStrategy)
         {
             return new DefaultH2AuthenticationStrategyKey();
+        }
+        else if (authenticationStrategy instanceof DeltaLakeAuthenticationStrategy)
+        {
+            DeltaLakeAuthenticationStrategy deltaLakeSpecification = (DeltaLakeAuthenticationStrategy) authenticationStrategy;
+            return new DeltaLakeAuthenticationStrategyKey(
+                    deltaLakeSpecification.apiToken
+            );
         }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {

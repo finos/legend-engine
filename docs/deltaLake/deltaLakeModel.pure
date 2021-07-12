@@ -1,0 +1,92 @@
+###Service
+Service fire::runtime::person
+{
+  pattern: '/afba9651-e49e-4092-8b82-fc7b6617bc1b';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |fire::entities::person.all()->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
+    mapping: fire::mapping::person;
+    runtime: fire::runtime::delta;
+  }
+  test: Single
+  {
+    data: '';
+    asserts:
+    [
+    ];
+  }
+}
+
+
+###Relational
+Database fire::database::person
+(
+  Schema fire
+  (
+    Table PERSON
+    (
+      FIRSTNAME VARCHAR(200) PRIMARY KEY,
+      LASTNAME VARCHAR(200)
+    )
+  )
+)
+
+
+###Pure
+Class fire::entities::person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+
+###Mapping
+Mapping fire::mapping::person
+(
+  *fire::entities::person: Relational
+  {
+    ~primaryKey
+    (
+      [fire::database::person]fire.PERSON.FIRSTNAME
+    )
+    ~mainTable [fire::database::person]fire.PERSON
+    firstName: [fire::database::person]fire.PERSON.FIRSTNAME,
+    lastName: [fire::database::person]fire.PERSON.LASTNAME
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection fire::database::delta
+{
+  store: fire::database::person;
+  type: DeltaLake;
+  specification: DeltaLake
+  {
+    shard: 'shard.databricks.com:443/default';
+    httpPath: '/sql/1.0/endpoints/XXXXXXXXX';
+  };
+  auth: DeltaLake
+  {
+    apiToken: 'XXXXXXXXXXXXXXXXXXXXXX';
+  };
+}
+
+
+###Runtime
+Runtime fire::runtime::delta
+{
+  mappings:
+  [
+    fire::mapping::person
+  ];
+  connections:
+  [
+    fire::database::person:
+    [
+      connection_1: fire::database::delta
+    ]
+  ];
+}

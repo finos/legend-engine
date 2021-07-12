@@ -56,6 +56,14 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _static._databaseName(staticDatasourceSpecification.databaseName);
             return _static;
         }
+        else if(datasourceSpecification instanceof DeltaLakeDatasourceSpecification)
+        {
+            DeltaLakeDatasourceSpecification staticDatasourceSpecification = (DeltaLakeDatasourceSpecification) datasourceSpecification;
+            Root_meta_pure_alloy_connections_alloy_specification_DeltaLakeDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_DeltaLakeDatasourceSpecification_Impl("");
+            _static._shard(staticDatasourceSpecification.shard);
+            _static._httpPath(staticDatasourceSpecification.httpPath);
+            return _static;
+        }
         else if(datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
             SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
