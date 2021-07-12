@@ -18,6 +18,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
@@ -62,7 +63,7 @@ public class ProtobufGenerationService
     @Path("protobuf")
     @ApiOperation(value = "Generates Protobuf for a given class and transitive dependencies")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateProtobuf(ProtobufGenerationInput generateProtobufInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generateProtobuf(ProtobufGenerationInput generateProtobufInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateProtobufInput.model instanceof PureModelContextData;

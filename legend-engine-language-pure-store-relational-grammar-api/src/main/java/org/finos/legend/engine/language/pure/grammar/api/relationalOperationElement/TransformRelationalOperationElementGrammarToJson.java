@@ -5,6 +5,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.ParserError;
 import org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension;
@@ -43,7 +44,7 @@ public class TransformRelationalOperationElementGrammarToJson
     @Path("transformRelationalOperationElementGrammarToJson")
     @ApiOperation(value = "Generates Pure protocol JSON from Pure language text for relational operation elements")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response transformRelationalOperationElementGrammarToJson(RelationalOperationElementGrammarToJsonInput input, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response transformRelationalOperationElementGrammarToJson(RelationalOperationElementGrammarToJsonInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformRelationalOperationElementGrammarToJson").startActive(true))

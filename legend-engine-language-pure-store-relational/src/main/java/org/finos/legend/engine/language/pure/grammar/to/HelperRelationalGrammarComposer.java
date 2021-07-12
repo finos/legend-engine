@@ -448,11 +448,15 @@ public class HelperRelationalGrammarComposer
                 PureGrammarComposerUtility.convertIdentifier(filterMapping.filter.name);
     }
 
-    public static String renderAbstractRelationalPropertyMapping(PropertyMapping propertyMapping, RelationalGrammarComposerContext context)
+    private static boolean checkNullOrEmpty(String string) {
+        return string == null || string.isEmpty();
+    }
+
+    public static String renderAbstractRelationalPropertyMapping(PropertyMapping propertyMapping, RelationalGrammarComposerContext context, Boolean renderSourceId)
     {
         if (propertyMapping instanceof RelationalPropertyMapping)
         {
-            return renderRelationalPropertyMapping((RelationalPropertyMapping) propertyMapping, context);
+            return renderRelationalPropertyMapping((RelationalPropertyMapping) propertyMapping, context, renderSourceId);
         }
         else if (propertyMapping instanceof EmbeddedRelationalPropertyMapping)
         {
@@ -465,11 +469,11 @@ public class HelperRelationalGrammarComposer
         return unsupported(propertyMapping.getClass(), "relational property mapping type");
     }
 
-    private static String renderRelationalPropertyMapping(RelationalPropertyMapping relationalPropertyMapping, RelationalGrammarComposerContext context)
+    private static String renderRelationalPropertyMapping(RelationalPropertyMapping relationalPropertyMapping, RelationalGrammarComposerContext context, Boolean renderSourceId)
     {
         String propertyString = context.getIndentationString() + (relationalPropertyMapping.localMappingProperty != null
                 ? ("+" + PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.property.property) + ": " + relationalPropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(relationalPropertyMapping.localMappingProperty.multiplicity) + "]")
-                : PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.property.property) + (relationalPropertyMapping.target == null || relationalPropertyMapping.target.isEmpty() ? "" : "[" + relationalPropertyMapping.target + "]")
+                : PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.property.property) + (checkNullOrEmpty(relationalPropertyMapping.target) ? "" : "[" +  (renderSourceId ? (checkNullOrEmpty(relationalPropertyMapping.source) ? "" : (relationalPropertyMapping.source + ",")) : "") + relationalPropertyMapping.target + "]")
         ) + ": ";
         String enumMappingValue = relationalPropertyMapping.enumMappingId != null ? "EnumerationMapping " + PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.enumMappingId) + ": " : "";
         return propertyString + enumMappingValue + renderRelationalOperationElement(relationalPropertyMapping.relationalOperation, context);
@@ -487,7 +491,7 @@ public class HelperRelationalGrammarComposer
         if (!embeddedRelationalPropertyMapping.classMapping.propertyMappings.isEmpty())
         {
             RelationalGrammarComposerContext indentedContext = RelationalGrammarComposerContext.Builder.newInstance(context).withIndentation(2).build();
-            builder.append(LazyIterate.collect(embeddedRelationalPropertyMapping.classMapping.propertyMappings, propertyMapping -> renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext)).makeString(",\n"));
+            builder.append(LazyIterate.collect(embeddedRelationalPropertyMapping.classMapping.propertyMappings, propertyMapping -> renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext, false)).makeString(",\n"));
             builder.append("\n");
         }
         builder.append(context.getIndentationString()).append(")");
@@ -507,7 +511,7 @@ public class HelperRelationalGrammarComposer
         if (!otherwiseEmbeddedRelationalPropertyMapping.classMapping.propertyMappings.isEmpty())
         {
             RelationalGrammarComposerContext indentedContext = RelationalGrammarComposerContext.Builder.newInstance(context).withIndentation(2).build();
-            builder.append(LazyIterate.collect(otherwiseEmbeddedRelationalPropertyMapping.classMapping.propertyMappings, propertyMapping -> renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext)).makeString(",\n"));
+            builder.append(LazyIterate.collect(otherwiseEmbeddedRelationalPropertyMapping.classMapping.propertyMappings, propertyMapping -> renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext, false)).makeString(",\n"));
             builder.append("\n");
         }
         builder.append(context.getIndentationString()).append(") Otherwise (").append(renderOtherwisePropertyMapping(otherwiseEmbeddedRelationalPropertyMapping.otherwisePropertyMapping, context)).append(")");

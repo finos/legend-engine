@@ -126,7 +126,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 if (!rootRelationalClassMapping.propertyMappings.isEmpty())
                 {
                     RelationalGrammarComposerContext indentedContext = RelationalGrammarComposerContext.Builder.newInstance(ctx).withIndentation(4).build();
-                    builder.append(LazyIterate.collect(rootRelationalClassMapping.propertyMappings, propertyMapping -> HelperRelationalGrammarComposer.renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext)).makeString(",\n"));
+                    builder.append(LazyIterate.collect(rootRelationalClassMapping.propertyMappings, propertyMapping -> HelperRelationalGrammarComposer.renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext, false)).makeString(",\n"));
                     builder.append("\n");
                 }
                 appendTabString(builder).append("}");
@@ -153,7 +153,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 if (!relationalAssociationMapping.propertyMappings.isEmpty())
                 {
                     RelationalGrammarComposerContext indentedContext = RelationalGrammarComposerContext.Builder.newInstance(ctx).withIndentation(6).build();
-                    associationMappingBuilder.append(LazyIterate.collect(relationalAssociationMapping.propertyMappings, propertyMapping -> HelperRelationalGrammarComposer.renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext)).makeString(",\n"));
+                    associationMappingBuilder.append(LazyIterate.collect(relationalAssociationMapping.propertyMappings, propertyMapping -> HelperRelationalGrammarComposer.renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext, true)).makeString(",\n"));
                     associationMappingBuilder.append("\n");
                 }
                 associationMappingBuilder.append(PureGrammarComposerUtility.getTabString(2)).append(")\n").append(getTabString()).append("}");

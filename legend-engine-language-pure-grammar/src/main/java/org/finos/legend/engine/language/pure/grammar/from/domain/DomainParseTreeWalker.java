@@ -1253,7 +1253,8 @@ public class DomainParseTreeWalker
         }
         else if (ctx.allVersionsFunction() != null)
         {
-            throw new EngineException(ctx.allVersionsFunction().getText() + " is not supported", walkerSourceInformation.getSourceInformation(ctx.allVersionsFunction()), EngineErrorType.PARSER);
+            appliedFunction.function = "getAllVersions";
+            return appliedFunction;
         }
         else if (ctx.allVersionsInRangeFunction() != null)
         {

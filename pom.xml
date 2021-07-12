@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>2.35.2-SNAPSHOT</version>
+    <version>2.36.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -70,6 +70,7 @@
         <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
+        <module>legend-engine-executionPlan-execution-store-relational-connection-api</module>
     </modules>
 
     <properties>
@@ -97,11 +98,11 @@
         <!-- Databases -->
         <hikaricp.version>3.4.5</hikaricp.version>
         <h2.version>1.4.200</h2.version>
-        <snowflake.version>3.13.1</snowflake.version>
+        <snowflake.version>3.13.5</snowflake.version>
 
 
         <!-- Legend -->
-        <legend.pure.version>1.29.1-SNAPSHOT</legend.pure.version>
+        <legend.pure.version>1.30.0</legend.pure.version>
         <legend.shared.version>0.12.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -110,7 +111,7 @@
         <jackson.version>2.10.5</jackson.version>
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
         <mongodb.version>3.12.8</mongodb.version>
-        <hibernate-validator.version>5.4.2.Final</hibernate-validator.version>
+        <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
         <log4j.version>1.2.17</log4j.version>
         <slf4j.version>1.7.25</slf4j.version>
         <jaxrs.version>2.0.1</jaxrs.version>
@@ -448,6 +449,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-store-relational-grammar-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
