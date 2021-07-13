@@ -14,33 +14,15 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
-import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
-
-import java.util.Map;
 
 public class PureGrammarParserContext
 {
     private final PureGrammarParserExtensions extensions;
 
-    /**
-     * flatDataRecordTypeFieldFuncMap holds a map of flat data record types to
-     * another map of its corresponding field names' mapped to property function names.
-     * This is used when building the flat data mapping transform function
-     * <p>
-     * TODO: this is very hacky and should be removed, potentially by using generic for flat data Column type
-     */
-    public final Map<String, Map<String, String>> flatDataRecordTypeFieldFuncMap;
-
     public PureGrammarParserContext(PureGrammarParserExtensions extensions)
     {
-        this(extensions, Maps.mutable.empty());
-    }
-
-    public PureGrammarParserContext(PureGrammarParserExtensions extensions, Map<String, Map<String, String>> flatDataRecordTypeFieldFuncMap)
-    {
         this.extensions = extensions;
-        this.flatDataRecordTypeFieldFuncMap = flatDataRecordTypeFieldFuncMap;
     }
 
     public PureGrammarParserExtensions getPureGrammarParserExtensions()
