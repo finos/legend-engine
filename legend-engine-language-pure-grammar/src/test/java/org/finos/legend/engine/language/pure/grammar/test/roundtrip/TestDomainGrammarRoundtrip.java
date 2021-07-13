@@ -344,7 +344,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function withPath::f(s: Integer[1]): String[1]\n" +
                 "{\n" +
-                "   'ok'->println();\n" +
+                "   println('ok');\n" +
                 "   'a';\n" +
                 "}\n");
 
@@ -389,7 +389,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   'ok'->println()\n" +
+                "   println('ok')\n" +
                 "}\n");
     }
 
@@ -597,7 +597,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "\n" +
                 "function <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} f(s: goes2[1], s1: goes2[1]): goes2[1]\n" +
                 "{\n" +
-                "   'ok'->println()\n" +
+                "   println('ok')\n" +
                 "}\n");
     }
 
