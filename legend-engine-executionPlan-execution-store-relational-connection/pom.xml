@@ -41,6 +41,7 @@
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <includes>
                         <include>**/*_local.java</include>
+                        <include>**/*DataSourceSpecificationTest.java</include>
                     </includes>
                     <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
                 </configuration>
