@@ -190,7 +190,11 @@
             <groupId>net.snowflake</groupId>
             <artifactId>snowflake-jdbc</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.amazon.redshift</groupId>
+            <artifactId>redshift-jdbc42</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- DRIVERS -->
 
         <!-- OPEN TRACING -->
@@ -237,6 +241,10 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-relational</artifactId>
         </dependency>
         <!-- Test -->
     </dependencies>

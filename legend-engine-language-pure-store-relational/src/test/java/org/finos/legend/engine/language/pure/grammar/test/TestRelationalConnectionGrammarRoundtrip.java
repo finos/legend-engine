@@ -99,6 +99,29 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
+    public void testRedshiftDatabaseASpecificationPublicAuth() {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: model::relational::tests::dbInc;\n" +
+                "  type: Redshift;\n" +
+                "  specification: Redshift\n" +
+                "  {\n" +
+                "    clusterName: 'cluster-name';\n" +
+                "    clusterID: 'cluster-id';\n" +
+                "    name: 'dev';\n" +
+                "    port: 5439;\n" +
+                "    region: US_EAST_2;\n" +
+                "  };\n" +
+                "  auth: UserPassword\n" +
+                "  {\n" +
+                "    userName: 'username';\n" +
+                "    passwordVaultReference: 'password';\n" +
+                "  };\n" +
+                "}\n");
+    }
+
+    @Test
     public void testSnowflakeDatabaseASpecificationPublicAuth()
     {
         test("###Connection\n" +

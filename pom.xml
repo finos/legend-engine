@@ -101,10 +101,11 @@
         <hikaricp.version>3.4.5</hikaricp.version>
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
+        <redshift.version>2.0.0.4</redshift.version>
 
 
         <!-- Legend -->
-        <legend.pure.version>1.31.0</legend.pure.version>
+        <legend.pure.version>1.29.1-SNAPSHOT</legend.pure.version>
         <legend.shared.version>0.12.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -1337,6 +1338,11 @@
                 <artifactId>snowflake-jdbc</artifactId>
                 <version>${snowflake.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.amazon.redshift</groupId>
+                <artifactId>redshift-jdbc42</artifactId>
+                <version>${redshift.version}</version>
+            </dependency>
             <!-- Database -->
 
             <dependency>
@@ -1376,6 +1382,10 @@
             <id>ossrh-releases</id>
             <name>OSSRH Public Releases Group</name>
             <url>https://oss.sonatype.org/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>redshift</id>
+            <url>https://repo1.maven.org/maven2</url>
         </repository>
     </repositories>
     <profiles>
