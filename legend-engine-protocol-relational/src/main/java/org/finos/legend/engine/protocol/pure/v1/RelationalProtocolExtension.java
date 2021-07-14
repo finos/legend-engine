@@ -145,6 +145,7 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(StaticDatasourceSpecification.class, "static"),
                                 Tuples.pair(EmbeddedH2DatasourceSpecification.class, "h2Embedded"),
                                 Tuples.pair(SnowflakeDatasourceSpecification.class, "snowflake"),
+                                Tuples.pair(RedshiftDatasourceSpecification.class, "redshift"),
                                 Tuples.pair(BigQueryDatasourceSpecification.class, "bigQuery")
                         )).build(),
 
@@ -156,6 +157,7 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(TestDatabaseAuthenticationStrategy.class, "test"),
                                 Tuples.pair(DelegatedKerberosAuthenticationStrategy.class, "delegatedKerberos"),
                                 Tuples.pair(SnowflakePublicAuthenticationStrategy.class, "snowflakePublic"),
+                                Tuples.pair(UserPasswordAuthenticationStrategy.class, "userPassword"),
                                 Tuples.pair(GCPApplicationDefaultCredentialsAuthenticationStrategy.class, "gcpApplicationDefaultCredentials")
                                 )).build(),
 

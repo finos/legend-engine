@@ -37,6 +37,21 @@ snowflakePublicAuth:                    SNOWFLAKE_PUBLIC_AUTH
                                             BRACE_CLOSE
 ;
 
+userPasswordAuth:                       USER_PASSWORD
+                                            BRACE_OPEN
+                                                (
+                                                    userName
+                                                    | passwordVaultReference
+                                                )*
+                                            BRACE_CLOSE
+;
+
+userName:                               USER_NAME COLON STRING SEMI_COLON
+;
+
+passwordVaultReference:                 PASSWORD_VAULT_REFERENCE COLON STRING SEMI_COLON
+;
+
 snowflakePublicAuthKeyVaultRef:         SNOWFLAKE_AUTH_KEY_VAULT_REFERENCE COLON STRING SEMI_COLON
 ;
 

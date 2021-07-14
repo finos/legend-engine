@@ -14,9 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection;
 
-public enum DatabaseType
+public enum Region
 {
-    DB2, H2, MemSQL, Sybase, SybaseIQ, Composite, Postgres, SqlServer, Hive,
-    Snowflake, Presto,
-    BigQuery, Redshift
+    US_EAST_1, US_EAST_2, US_WEST_1, US_WEST_2, AF_SOUTH_1, AP_EAST_1 , AP_SOUTH_1, AP_NORTHEAST_1, AP_NORTHEAST_2,
+    AP_NORTHEAST_3, AP_SOUTHEAST_1, AP_SOUTHEAST_2, CA_CENTRAL_1, EU_CENTRAL_1, EU_WEST_1, EU_WEST_2, EU_WEST_3,
+    EU_SOUTH_1, EU_NORTH_1, ME_SOUTH_1, SA_EAST_1, US_GOV_EAST_1, US_GOV_WEST_1;
+
+    @Override
+    public  String toString(){
+        return this.name().toLowerCase().replace("_","-");
+    }
 }

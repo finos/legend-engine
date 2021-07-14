@@ -583,6 +583,20 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
 
+        else if (_spec instanceof RedshiftDatasourceSpecification)
+        {
+            RedshiftDatasourceSpecification spec = (RedshiftDatasourceSpecification) _spec;
+            int baseIndentation = 1;
+            return "Redshift\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "clusterName: " + convertString(spec.clusterName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "clusterID: " + convertString(spec.clusterID, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "name: " + convertString(spec.databaseName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "region: " + spec.region.name() + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+
+        }
         return null;
     }
 
@@ -620,7 +634,17 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "privateKeyVaultReference: " + convertString(auth.privateKeyVaultReference, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "passPhraseVaultReference: " + convertString(auth.passPhraseVaultReference, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
-
+        }
+        else if (_auth instanceof UserPasswordAuthenticationStrategy)
+        {
+            UserPasswordAuthenticationStrategy auth = (UserPasswordAuthenticationStrategy) _auth;
+            int baseIndentation = 1;
+            return "UserPassword" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "userName: " + convertString(auth.userName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "passwordVaultReference: " + convertString(auth.passwordVaultReference, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         else if (_auth instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
         {
