@@ -44,6 +44,14 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
                     snowflakeDatasourceSpecification.publicUserName
             );
         }
+        else if (authenticationStrategy instanceof UserPasswordAuthenticationStrategy)
+        {
+            UserPasswordAuthenticationStrategy userPasswordAuthenticationStrategy = (UserPasswordAuthenticationStrategy) authenticationStrategy;
+            return new UserPasswordAuthenticationStrategyKey(
+                    userPasswordAuthenticationStrategy.userName,
+                    userPasswordAuthenticationStrategy.passwordVaultReference
+            );
+        }
         else if(authenticationStrategy instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy GCPApplicationDefaultCredentialsAuthenticationStrategy = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)authenticationStrategy;
