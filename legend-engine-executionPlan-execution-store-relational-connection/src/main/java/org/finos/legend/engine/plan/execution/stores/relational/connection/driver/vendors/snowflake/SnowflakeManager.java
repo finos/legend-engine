@@ -26,9 +26,8 @@ public class SnowflakeManager extends DatabaseManager
         Assert.assertTrue(extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME) != null, () -> SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME + " is not set");
         String accountName = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME);
         String region = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION);
-        String warehouse = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME);
         String cloudType = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE);
-        return "jdbc:snowflake://" + accountName + "." + region + "." + cloudType + ".snowflakecomputing.com/?warehouse=" + warehouse;
+        return "jdbc:snowflake://" + accountName + "." + region + "." + cloudType + ".snowflakecomputing.com";
     }
 
     @Override
