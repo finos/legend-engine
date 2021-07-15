@@ -68,6 +68,14 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _snowflake._quotedIdentifiersIgnoreCase(snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase);
             return _snowflake;
         }
+        else if(datasourceSpecification instanceof BigQueryDatasourceSpecification)
+        {
+            BigQueryDatasourceSpecification bigQueryDatasourceSpecification = (BigQueryDatasourceSpecification) datasourceSpecification;
+            Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification _bigquery = new Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification_Impl("");
+            _bigquery._projectId(bigQueryDatasourceSpecification.projectId);
+            _bigquery._defaultDataset(bigQueryDatasourceSpecification.defaultDataset);
+            return _bigquery;
+        }
         return null;
     }
 }

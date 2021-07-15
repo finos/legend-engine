@@ -571,7 +571,16 @@ public class HelperRelationalGrammarComposer
                     (spec.cloudType != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "cloudType: " + convertString(spec.cloudType, true) + ";\n" : "") +
                     (spec.quotedIdentifiersIgnoreCase != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "quotedIdentifiersIgnoreCase: " + spec.quotedIdentifiersIgnoreCase + ";\n" : "") +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
-
+        }
+        else if (_spec instanceof BigQueryDatasourceSpecification)
+        {
+            BigQueryDatasourceSpecification spec = (BigQueryDatasourceSpecification) _spec;
+            int baseIndentation = 1;
+            return "BigQuery\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "projectId: " + convertString(spec.projectId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "defaultDataset: " + convertString(spec.defaultDataset, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
 
         return null;
@@ -613,7 +622,11 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
 
         }
-
+        else if (_auth instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
+        {
+            GCPApplicationDefaultCredentialsAuthenticationStrategy auth = (GCPApplicationDefaultCredentialsAuthenticationStrategy) _auth;
+            return "GCPApplicationDefaultCredentials";
+        }
         return null;
     }
 

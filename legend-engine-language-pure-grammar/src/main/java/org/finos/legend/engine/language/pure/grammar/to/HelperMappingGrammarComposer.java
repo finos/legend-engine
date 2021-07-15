@@ -35,9 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 
 import java.util.Objects;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class HelperMappingGrammarComposer
 {
