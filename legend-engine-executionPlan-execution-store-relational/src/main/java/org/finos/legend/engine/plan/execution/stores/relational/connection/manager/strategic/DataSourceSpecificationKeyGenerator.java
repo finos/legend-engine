@@ -72,7 +72,8 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     snowflakeDatasourceSpecification.region,
                     snowflakeDatasourceSpecification.warehouseName,
                     snowflakeDatasourceSpecification.databaseName,
-                    snowflakeDatasourceSpecification.cloudType);
+                    snowflakeDatasourceSpecification.cloudType,
+                    connection.quoteIdentifiers);
         }
         else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {

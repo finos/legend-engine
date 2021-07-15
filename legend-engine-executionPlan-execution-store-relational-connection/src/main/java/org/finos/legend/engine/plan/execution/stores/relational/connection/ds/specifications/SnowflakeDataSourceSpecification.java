@@ -32,21 +32,26 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public static String SNOWFLAKE_WAREHOUSE_NAME = "legend_snowflake_warehouseName";
     public static String SNOWFLAKE_DATABASE_NAME= "legend_snowflake_databaseName";
     public static String SNOWFLAKE_CLOUD_TYPE= "legend_snowflake_cloudType";
+    public static String SNOWFLAKE_QUOTE_IDENTIFIERS= "legend_snowflake_quoteIdentifiers";
 
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
     {
         super(key, databaseManager, authenticationStrategy, extraUserProperties, relationalExecutorInfo);
 
+        String warehouseName = updateSnowflakeIdentifiers(key.getWarehouseName(), key.getQuoteIdentifiers());
+        String databaseName  = updateSnowflakeIdentifiers(key.getDatabaseName(), key.getQuoteIdentifiers());
+
         this.extraDatasourceProperties.put(SNOWFLAKE_ACCOUNT_NAME, key.getAccountName());
         this.extraDatasourceProperties.put(SNOWFLAKE_REGION, key.getRegion());
-        this.extraDatasourceProperties.put(SNOWFLAKE_WAREHOUSE_NAME, key.getWarehouseName());
-        this.extraDatasourceProperties.put(SNOWFLAKE_DATABASE_NAME, key.getDatabaseName());
+        this.extraDatasourceProperties.put(SNOWFLAKE_WAREHOUSE_NAME, warehouseName);
+        this.extraDatasourceProperties.put(SNOWFLAKE_DATABASE_NAME, databaseName);
         this.extraDatasourceProperties.put(SNOWFLAKE_CLOUD_TYPE, key.getCloudType());
+        this.extraDatasourceProperties.put(SNOWFLAKE_QUOTE_IDENTIFIERS, key.getQuoteIdentifiers());
 
         this.extraDatasourceProperties.put("account", key.getAccountName());
-        this.extraDatasourceProperties.put("warehouse", key.getWarehouseName());
-        this.extraDatasourceProperties.put("db", key.getDatabaseName());
+        this.extraDatasourceProperties.put("warehouse", warehouseName);
+        this.extraDatasourceProperties.put("db", databaseName);
         this.extraDatasourceProperties.put("ocspFailOpen", true);
     }
 
@@ -59,5 +64,14 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
     {
         return this.buildDataSource(null, -1, null, profiles);
+    }
+
+    public static String updateSnowflakeIdentifiers(String identifier, boolean quoteIdentifiers)
+    {
+        if (quoteIdentifiers && identifier != null && !(identifier.startsWith("\"") && identifier.endsWith("\"")))
+        {
+            identifier = "\"" + identifier + "\"";
+        }
+        return identifier;
     }
 }
