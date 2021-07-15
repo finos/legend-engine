@@ -80,8 +80,8 @@ public class DomainParseTreeWalker
 
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext parserContext;
+    private final boolean allowPropertyBracketExpression;
     private ImportAwareCodeSection section;
-    private String flatDataRecordTypeSource;
 
     /**
      * This constructor is used for standard M3Walker when we see ###Pure.
@@ -91,17 +91,15 @@ public class DomainParseTreeWalker
         this.walkerSourceInformation = walkerSourceInformation;
         this.parserContext = parserContext;
         this.section = section;
+        this.allowPropertyBracketExpression = false;
     }
 
-    /**
-     * This constructor is used when processing flat data.
-     * NOTE: not sure if maintaining a flat data record type source like this is a good idea
-     */
-    public DomainParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, String flatDataRecordTypeSource)
+    // TODO PropertyBracketExpression is deprecated.  Remove parameter once all use has been addressed
+    public DomainParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, boolean allowPropertyBracketExpression)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.parserContext = parserContext;
-        this.flatDataRecordTypeSource = flatDataRecordTypeSource;
+        this.allowPropertyBracketExpression = allowPropertyBracketExpression;
     }
 
     public void visitDefinition(DomainParserGrammar.DefinitionContext ctx, Consumer<PackageableElement> elementConsumer)
@@ -669,18 +667,14 @@ public class DomainParseTreeWalker
                 {
                     result = propertyExpression(pfCtx.propertyExpression(), result, typeParametersNames, lambdaContext, space, addLines);
                 }
+                // TODO PropertyBracketExpression is deprecated.  Remove else if clause once all use has been addressed
                 else if (pfCtx.propertyBracketExpression() != null)
                 {
-                    String columnName = pfCtx.propertyBracketExpression().INTEGER() != null ? pfCtx.propertyBracketExpression().INTEGER().getText() : PureGrammarParserUtility.fromGrammarString(pfCtx.propertyBracketExpression().STRING().getText(), true);
-                    if (this.flatDataRecordTypeSource == null)
+                    if (!allowPropertyBracketExpression)
                     {
                         throw new EngineException("Bracket operation is not supported", walkerSourceInformation.getSourceInformation(pfCtx.propertyBracketExpression()), EngineErrorType.PARSER);
                     }
                     String getPropertyName = "oneString";
-                    if (this.parserContext.flatDataRecordTypeFieldFuncMap.get(this.flatDataRecordTypeSource) != null && this.parserContext.flatDataRecordTypeFieldFuncMap.get(this.flatDataRecordTypeSource).get(columnName) != null)
-                    {
-                        getPropertyName = this.parserContext.flatDataRecordTypeFieldFuncMap.get(this.flatDataRecordTypeSource).get(columnName);
-                    }
                     parameters = new ArrayList<>();
                     AppliedProperty appliedProperty = new AppliedProperty();
                     appliedProperty.property = getPropertyName;

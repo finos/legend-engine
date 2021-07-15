@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.dependencies.domain.flatdata;
+package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
-import java.util.List;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
 
-public interface RawFlatData
+public interface ExecutionPlanJavaCompilerExtension
 {
-    long getNumber();
-
-    long getLineNumber();
-
-    String getRecord();
-
-    List<RawFlatDataValue> getRecordValues();
+    ClassPathFilter getExtraClassPathFilter();
 }

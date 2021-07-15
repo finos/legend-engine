@@ -99,7 +99,7 @@ public class PureInstanceClassMappingParseTreeWalker {
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
         ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
-        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, this.parserContext, null);
+        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, this.parserContext);
         // add source parameter
         Lambda lambda = new Lambda();
         lambda.body = new ArrayList<>();
