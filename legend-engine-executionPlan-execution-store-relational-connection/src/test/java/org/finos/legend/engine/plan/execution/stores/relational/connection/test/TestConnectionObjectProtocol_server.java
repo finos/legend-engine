@@ -24,7 +24,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.RedshiftDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.Region;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Test;
@@ -82,13 +81,13 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
     private void testRedshiftConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
     {
         Properties properties = new Properties();
-        properties.load(new FileInputStream("../legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/redshift.properties"));
+        properties.load(getClass().getResourceAsStream("redshift.properties"));
         Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
 
         RedshiftDataSourceSpecification ds =
                 new RedshiftDataSourceSpecification(
                         new RedshiftDataSourceSpecificationKey(
-                                "clusterName", "clusterID", "dev", 5439, Region.US_EAST_2),
+                                "clusterID", "clusterName", "dev", 5439, "region"),
                         new org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager(),
                         new UserPasswordAuthenticationStrategy("username","password"),
                         new RelationalExecutorInfo());

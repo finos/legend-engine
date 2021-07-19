@@ -16,7 +16,7 @@ public class DataSourceIdentifiersCaseSensitiveVisitor implements DatasourceSpec
         }
         else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
         {
-//            documentaion link : https://docs.aws.amazon.com/redshift/latest/dg/r_names.html
+//            documentation link : https://docs.aws.amazon.com/redshift/latest/dg/r_names.html
             return false;
         }
         return null;

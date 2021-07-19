@@ -16,36 +16,34 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.Region;
-
 import java.util.Objects;
 
 public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificationKey
 {
-    private final String clusterName;
     private final String clusterID;
+    private final String clusterName;
     private final String databaseName;
     private final int port;
-    private final Region region;
+    private final String region;
 
 
-    public RedshiftDataSourceSpecificationKey(String clusterName, String clusterID, String databaseName, int port, Region region)
+    public RedshiftDataSourceSpecificationKey(String clusterID, String clusterName, String databaseName, int port, String region)
     {
-        this.clusterName = clusterName;
         this.clusterID = clusterID;
+        this.clusterName = clusterName;
         this.databaseName = databaseName;
         this.port = port;
         this.region = region;
     }
 
-    public String getClusterName()
-    {
-        return clusterName;
-    }
-
     public String getClusterID()
     {
         return clusterID;
+    }
+
+    public String getClusterName()
+    {
+        return clusterName;
     }
 
     public String getDatabaseName()
@@ -58,7 +56,7 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
         return port;
     }
 
-    public Region getRegion()
+    public String getRegion()
     {
         return region;
     }
@@ -67,11 +65,11 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
     public String toString()
     {
         return "RedshiftDataSourceSpecificationKey{" +
-                "clusterName='" + clusterName + '\'' +
-                ", clusterID='" + clusterID + '\'' +
+                "clusterID='" + clusterID + '\'' +
+                ", clusterName='" + clusterName + '\'' +
                 ", databaseName='" + databaseName + '\'' +
                 ", port='" + port + '\'' +
-                ", region='" + region.name() + '\'' +
+                ", region='" + region + '\'' +
                 '}';
     }
 
@@ -79,11 +77,11 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
     public String shortId()
     {
         return "Redshift_" +
-                "clusterName:" + clusterName + "_" +
                 "clusterID:" + clusterID + "_" +
+                "clusterName:" + clusterName + "_" +
                 "databaseName:" + databaseName + "_" +
                 "port:" + port + "_" +
-                "region:" + region.name();
+                "region:" + region;
     }
 
     @Override
@@ -98,8 +96,8 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
             return false;
         }
         RedshiftDataSourceSpecificationKey that = (RedshiftDataSourceSpecificationKey) o;
-        return Objects.equals(clusterName, that.clusterName) &&
-                Objects.equals(clusterID, that.clusterID) &&
+        return Objects.equals(clusterID, that.clusterID) &&
+                Objects.equals(clusterName, that.clusterName) &&
                 Objects.equals(databaseName, that.databaseName) &&
                 Objects.equals(port, that.port) &&
                 Objects.equals(region, that.region);
@@ -108,6 +106,6 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
     @Override
     public int hashCode()
     {
-        return Objects.hash(clusterName, clusterID, databaseName, port, region);
+        return Objects.hash(clusterID, clusterName, databaseName, port, region);
     }
 }

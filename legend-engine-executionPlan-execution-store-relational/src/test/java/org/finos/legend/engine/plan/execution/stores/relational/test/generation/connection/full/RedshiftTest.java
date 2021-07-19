@@ -1,4 +1,4 @@
-package org.finos.legend.engine.plan.execution.stores.relational.test.full.functions.in;
+package org.finos.legend.engine.plan.execution.stores.relational.test.generation.connection.full;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -7,7 +7,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
@@ -24,7 +23,6 @@ import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
-import org.h2.tools.Server;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -43,7 +41,6 @@ import static org.finos.legend.engine.plan.execution.stores.relational.TestExecu
 
 public class RedshiftTest
 {
-//    private static Server server;
     private static PlanExecutor planExecutor;
 
     private static final String LOGICAL_MODEL = "###Pure\n" +
@@ -96,11 +93,11 @@ public class RedshiftTest
             "          type: Redshift;\n" +
             "          specification: Redshift\n" +
             "          {\n" +
-            "            clusterName: 'clusterName';\n" +
             "            clusterID: 'clusterID';\n" +
+            "            clusterName: 'clusterName';\n" +
             "            name: 'dev';\n" +
             "            port: 5439;\n" +
-            "            region: US_EAST_2;\n" +
+            "            region: 'region';\n" +
             "          };\n" +
             "          auth: UserPassword\n" +
             "          {\n" +
@@ -140,8 +137,6 @@ public class RedshiftTest
             Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
 
             int port = DynamicPortGenerator.generatePort();
-//            server = AlloyH2Server.startServer(port);
-//            insertData(port);
             planExecutor = PlanExecutor.newPlanExecutor(Relational.build(port));
             System.out.println("Finished setup");
         }

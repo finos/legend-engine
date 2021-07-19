@@ -72,11 +72,11 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
         {
             RedshiftDatasourceSpecification redshiftDatasourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
             Root_meta_pure_alloy_connections_alloy_specification_RedshiftDatasourceSpecification _redshift = new Root_meta_pure_alloy_connections_alloy_specification_RedshiftDatasourceSpecification_Impl("");
-            _redshift._clusterName(redshiftDatasourceSpecification.clusterName);
             _redshift._clusterID(redshiftDatasourceSpecification.clusterID);
+            _redshift._clusterName(redshiftDatasourceSpecification.clusterName);
             _redshift._databaseName(redshiftDatasourceSpecification.databaseName);
             _redshift._port(redshiftDatasourceSpecification.port);
-            _redshift._region(context.pureModel.getEnumValue("meta::pure::alloy::connections::alloy::specification::Region",redshiftDatasourceSpecification.region.name()));
+            _redshift._region(redshiftDatasourceSpecification.region);
             return _redshift;
         }
         else if(datasourceSpecification instanceof BigQueryDatasourceSpecification)

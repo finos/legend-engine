@@ -242,10 +242,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-relational</artifactId>
-        </dependency>
         <!-- Test -->
     </dependencies>
 </project>

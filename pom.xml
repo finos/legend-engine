@@ -1383,10 +1383,6 @@
             <name>OSSRH Public Releases Group</name>
             <url>https://oss.sonatype.org/content/repositories/releases/</url>
         </repository>
-        <repository>
-            <id>redshift</id>
-            <url>https://repo1.maven.org/maven2</url>
-        </repository>
     </repositories>
     <profiles>
         <profile>
