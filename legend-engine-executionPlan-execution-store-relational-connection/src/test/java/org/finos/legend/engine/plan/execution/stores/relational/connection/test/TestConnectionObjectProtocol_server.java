@@ -87,9 +87,9 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
         RedshiftDataSourceSpecification ds =
                 new RedshiftDataSourceSpecification(
                         new RedshiftDataSourceSpecificationKey(
-                                "clusterID", "clusterName", "dev", 5439, "region"),
+                                "dev", "endpoint", 5439),
                         new org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager(),
-                        new UserPasswordAuthenticationStrategy("username","password"),
+                        new UserPasswordAuthenticationStrategy("userName","password"),
                         new RelationalExecutorInfo());
         ;
         try (Connection connection = toDBConnection.valueOf(ds))

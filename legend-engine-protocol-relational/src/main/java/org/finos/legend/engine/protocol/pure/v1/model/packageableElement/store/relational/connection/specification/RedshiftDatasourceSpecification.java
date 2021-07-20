@@ -16,11 +16,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 
 public class RedshiftDatasourceSpecification extends DatasourceSpecification
 {
-    public String clusterID;
-    public String clusterName;
     public String databaseName;
+    public String endpoint;
     public int port;
-    public String region;
 
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)

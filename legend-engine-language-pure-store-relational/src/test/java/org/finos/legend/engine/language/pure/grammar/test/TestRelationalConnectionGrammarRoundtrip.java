@@ -107,11 +107,9 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  type: Redshift;\n" +
                 "  specification: Redshift\n" +
                 "  {\n" +
-                "    clusterID: 'cluster-id';\n" +
-                "    clusterName: 'cluster-name';\n" +
                 "    name: 'dev';\n" +
+                "    endpoint: 'endpoint';\n" +
                 "    port: 5439;\n" +
-                "    region: 'region';\n" +
                 "  };\n" +
                 "  auth: UserPassword\n" +
                 "  {\n" +

@@ -35,10 +35,8 @@ public class RedshiftManager extends DatabaseManager
     @Override
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
-        String clusterName = extraUserDataSourceProperties.getProperty(RedshiftDataSourceSpecification.REDSHIFT_CLUSTER_NAME);
-        String clusterID = extraUserDataSourceProperties.getProperty(RedshiftDataSourceSpecification.REDSHIFT_CLUSTER_ID);
-        String region = extraUserDataSourceProperties.getProperty(RedshiftDataSourceSpecification.REDSHIFT_REGION);
-        return String.format("jdbc:redshift://%1$s.%2$s.%3$s.redshift.amazonaws.com:%4$d/%5$s", clusterName, clusterID, region, port, databaseName);
+        String endpoint = extraUserDataSourceProperties.getProperty(RedshiftDataSourceSpecification.REDSHIFT_ENDPOINT);
+        return String.format("jdbc:redshift://%1$s:%2$d/%3$s", endpoint, port, databaseName);
     }
 
     @Override

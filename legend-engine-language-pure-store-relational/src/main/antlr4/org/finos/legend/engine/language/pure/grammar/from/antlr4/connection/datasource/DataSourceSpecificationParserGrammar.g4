@@ -65,22 +65,14 @@ snowflakeDatasourceSpecification:           SNOWFLAKE
 redshiftDatasourceSpecification:            REDSHIFT
                                                 BRACE_OPEN
                                                     (
-                                                        clusterID
-                                                        | clusterName
-                                                        | dbName
+                                                        dbName
+                                                        | redshiftEndpoint
                                                         | dbPort
-                                                        | redshiftRegion
                                                     )*
                                                 BRACE_CLOSE
 ;
 
-clusterName:                                CLUSTERNAME COLON STRING SEMI_COLON
-;
-
-clusterID:                                  CLUSTERID COLON STRING SEMI_COLON
-;
-
-redshiftRegion:                             REGION COLON STRING SEMI_COLON
+redshiftEndpoint:                           ENDPOINT COLON STRING SEMI_COLON
 ;
 
 

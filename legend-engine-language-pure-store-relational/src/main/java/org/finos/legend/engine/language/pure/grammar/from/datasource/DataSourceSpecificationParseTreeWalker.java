@@ -91,21 +91,16 @@ public class DataSourceSpecificationParseTreeWalker
     public RedshiftDatasourceSpecification visitRedshiftDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.RedshiftDatasourceSpecificationContext dbSpecCtx) {
         RedshiftDatasourceSpecification dsSpec = new RedshiftDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
-        // clusterID
-        DataSourceSpecificationParserGrammar.ClusterIDContext clusterIDCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.clusterID(), "clusterID", dsSpec.sourceInformation);
-        dsSpec.clusterID = PureGrammarParserUtility.fromGrammarString(clusterIDCtx.STRING().getText(), true);
-        // clusterName
-        DataSourceSpecificationParserGrammar.ClusterNameContext clusterNameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.clusterName(), "clusterName", dsSpec.sourceInformation);
-        dsSpec.clusterName = PureGrammarParserUtility.fromGrammarString(clusterNameCtx.STRING().getText(), true);
         // database name
         DataSourceSpecificationParserGrammar.DbNameContext nameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
         dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(nameCtx.STRING().getText(), true);
+        // endpoint
+        DataSourceSpecificationParserGrammar.RedshiftEndpointContext endpointCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.redshiftEndpoint(), "endpoint", dsSpec.sourceInformation);
+        dsSpec.endpoint = PureGrammarParserUtility.fromGrammarString(endpointCtx.STRING().getText(), true);
         // port
         DataSourceSpecificationParserGrammar.DbPortContext portCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbPort(), "port", dsSpec.sourceInformation);
         dsSpec.port = Integer.parseInt(portCtx.INTEGER().getText());
-        // region
-        DataSourceSpecificationParserGrammar.RedshiftRegionContext regionCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.redshiftRegion(), "region", dsSpec.sourceInformation);
-        dsSpec.region = PureGrammarParserUtility.fromGrammarString(regionCtx.STRING().getText(), true);
+
         return dsSpec;
     }
 

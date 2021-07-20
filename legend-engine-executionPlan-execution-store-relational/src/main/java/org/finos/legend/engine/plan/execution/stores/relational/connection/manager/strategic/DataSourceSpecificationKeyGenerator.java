@@ -80,11 +80,9 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
         {
             RedshiftDatasourceSpecification redshiftDatasourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
             return new RedshiftDataSourceSpecificationKey(
-                    redshiftDatasourceSpecification.clusterID,
-                    redshiftDatasourceSpecification.clusterName,
                     redshiftDatasourceSpecification.databaseName,
-                    redshiftDatasourceSpecification.port,
-                    redshiftDatasourceSpecification.region);
+                    redshiftDatasourceSpecification.endpoint,
+                    redshiftDatasourceSpecification.port);
         }
         else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {

@@ -24,8 +24,7 @@ CLOUDTYPE:                                  'cloudType';
 QUOTED_IDENTIFIERS_IGNORE_CASE:             'quotedIdentifiersIgnoreCase';
 
 REDSHIFT:                                   'Redshift';
-CLUSTERNAME:                                'clusterName';
-CLUSTERID:                                  'clusterID';
+ENDPOINT:                                   'endpoint';
 
 
 BIGQUERY_DSP:                               'BigQuery';
