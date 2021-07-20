@@ -46,7 +46,7 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
     @Override
     public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, CompileContext compileContext, ProcessingContext processingContext)
     {
-        if (test(handlers.handlers.get(0).getFunc(), parameters, compileContext.pureModel))
+        if (test(handlers.handlers.get(0).getFunc(), parameters, compileContext.pureModel, processingContext))
         {
             List<ValueSpecification> newParameters = parametersInference.update(parameters, openVariables, compileContext, processingContext);
             return Tuples.pair(this.handlers.buildFunctionExpressionGraph(newParameters, openVariables, compileContext, processingContext), newParameters);

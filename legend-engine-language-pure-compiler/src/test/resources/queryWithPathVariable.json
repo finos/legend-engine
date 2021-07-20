@@ -1,0 +1,431 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Person",
+      "originalMilestonedProperties": [],
+      "package": "test",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "propertyTypeSourceInformation": {
+            "endColumn": 18,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 13,
+            "startLine": 5
+          },
+          "sourceInformation": {
+            "endColumn": 22,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 5
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "age",
+          "propertyTypeSourceInformation": {
+            "endColumn": 14,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 6
+          },
+          "sourceInformation": {
+            "endColumn": 18,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 6
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "Integer"
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 7,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 3
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "letFunction",
+          "parameters": [
+            {
+              "_type": "string",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [
+                "path"
+              ]
+            },
+            {
+              "_type": "path",
+              "path": [
+                {
+                  "_type": "propertyPath",
+                  "parameters": [],
+                  "property": "firstName",
+                  "sourceInformation": {
+                    "endColumn": 61,
+                    "endLine": 11,
+                    "sourceId": "",
+                    "startColumn": 52,
+                    "startLine": 11
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 38,
+                "endLine": 11,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 11
+              },
+              "startType": "test::Person"
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 38,
+            "endLine": 11,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 11
+          }
+        },
+        {
+          "_type": "func",
+          "function": "isNotEmpty",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "filter",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "project",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "getAll",
+                      "parameters": [
+                        {
+                          "_type": "packageableElementPtr",
+                          "fullPath": "test::Person",
+                          "sourceInformation": {
+                            "endColumn": 14,
+                            "endLine": 12,
+                            "sourceId": "",
+                            "startColumn": 3,
+                            "startLine": 12
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 20,
+                        "endLine": 12,
+                        "sourceId": "",
+                        "startColumn": 15,
+                        "startLine": 12
+                      }
+                    },
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "sourceInformation": {
+                        "endColumn": 37,
+                        "endLine": 12,
+                        "sourceId": "",
+                        "startColumn": 31,
+                        "startLine": 12
+                      },
+                      "values": [
+                        {
+                          "_type": "var",
+                          "name": "path",
+                          "sourceInformation": {
+                            "endColumn": 36,
+                            "endLine": 12,
+                            "sourceId": "",
+                            "startColumn": 32,
+                            "startLine": 12
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 29,
+                    "endLine": 12,
+                    "sourceId": "",
+                    "startColumn": 23,
+                    "startLine": 12
+                  }
+                },
+                {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "func",
+                      "function": "and",
+                      "parameters": [
+                        {
+                          "_type": "func",
+                          "function": "greaterThan",
+                          "parameters": [
+                            {
+                              "_type": "property",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "r",
+                                  "sourceInformation": {
+                                    "endColumn": 51,
+                                    "endLine": 12,
+                                    "sourceId": "",
+                                    "startColumn": 50,
+                                    "startLine": 12
+                                  }
+                                },
+                                {
+                                  "_type": "string",
+                                  "multiplicity": {
+                                    "lowerBound": 1,
+                                    "upperBound": 1
+                                  },
+                                  "sourceInformation": {
+                                    "endColumn": 68,
+                                    "endLine": 12,
+                                    "sourceId": "",
+                                    "startColumn": 64,
+                                    "startLine": 12
+                                  },
+                                  "values": [
+                                    "age"
+                                  ]
+                                }
+                              ],
+                              "property": "getInteger",
+                              "sourceInformation": {
+                                "endColumn": 62,
+                                "endLine": 12,
+                                "sourceId": "",
+                                "startColumn": 53,
+                                "startLine": 12
+                              }
+                            },
+                            {
+                              "_type": "integer",
+                              "multiplicity": {
+                                "lowerBound": 1,
+                                "upperBound": 1
+                              },
+                              "sourceInformation": {
+                                "endColumn": 74,
+                                "endLine": 12,
+                                "sourceId": "",
+                                "startColumn": 73,
+                                "startLine": 12
+                              },
+                              "values": [
+                                30
+                              ]
+                            }
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 74,
+                            "endLine": 12,
+                            "sourceId": "",
+                            "startColumn": 71,
+                            "startLine": 12
+                          }
+                        },
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "r",
+                              "sourceInformation": {
+                                "endColumn": 80,
+                                "endLine": 12,
+                                "sourceId": "",
+                                "startColumn": 79,
+                                "startLine": 12
+                              }
+                            },
+                            {
+                              "_type": "string",
+                              "multiplicity": {
+                                "lowerBound": 1,
+                                "upperBound": 1
+                              },
+                              "sourceInformation": {
+                                "endColumn": 96,
+                                "endLine": 12,
+                                "sourceId": "",
+                                "startColumn": 92,
+                                "startLine": 12
+                              },
+                              "values": [
+                                "age"
+                              ]
+                            }
+                          ],
+                          "property": "isNotNull",
+                          "sourceInformation": {
+                            "endColumn": 90,
+                            "endLine": 12,
+                            "sourceId": "",
+                            "startColumn": 82,
+                            "startLine": 12
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 77,
+                        "endLine": 12,
+                        "sourceId": "",
+                        "startColumn": 76,
+                        "startLine": 12
+                      }
+                    }
+                  ],
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "r"
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 97,
+                    "endLine": 12,
+                    "sourceId": "",
+                    "startColumn": 49,
+                    "startLine": 12
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 46,
+                "endLine": 12,
+                "sourceId": "",
+                "startColumn": 41,
+                "startLine": 12
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 110,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 101,
+            "startLine": 12
+          }
+        }
+      ],
+      "name": "blah",
+      "package": "test",
+      "parameters": [
+        {
+          "_type": "var",
+          "class": "test::Person",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "p",
+          "sourceInformation": {
+            "endColumn": 37,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 21,
+            "startLine": 9
+          }
+        }
+      ],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "Boolean",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 13,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 9
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "test::Person",
+            "test::blah"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 15,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 2
+          }
+        }
+      ]
+    }
+  ]
+}

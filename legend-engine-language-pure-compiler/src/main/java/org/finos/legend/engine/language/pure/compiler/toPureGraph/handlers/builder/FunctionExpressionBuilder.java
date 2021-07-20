@@ -17,10 +17,13 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.buil
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
@@ -38,22 +41,34 @@ public abstract class FunctionExpressionBuilder
 
     public abstract String getFunctionName();
 
-    public boolean test(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> func, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, PureModel pureModel)
+    public boolean test(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> func, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, PureModel pureModel, ProcessingContext processingContext)
     {
         RichIterable<? extends VariableExpression> vars = ((FunctionType) func._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters();
+
+        if (func._functionName().equals("letFunction"))
+        {
+            vars = FastList.newListWith(vars.getFirst(), (VariableExpression) processingContext.getInferredVariable(((CString) parameters.get(0)).values.get(0)));
+        }
+
         if (vars.size() == parameters.size())
         {
-            return vars.zip(parameters).injectInto(true, (a, b) -> a && comp(b.getOne(), b.getTwo(), pureModel));
+            return vars.zip(parameters).injectInto(true, (a, b) -> a && comp(b.getOne(), b.getTwo(), pureModel, processingContext));
         }
         return false;
     }
 
-    private boolean comp(VariableExpression vv, org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification vs, PureModel pureModel)
+    private boolean comp(VariableExpression vv, org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification vs, PureModel pureModel, ProcessingContext processingContext)
     {
         boolean isSignatureFunction = vv._genericType()._rawType() != null && Type.subTypeOf(vv._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport());
-        boolean isParamFunction = vs instanceof Lambda || vs instanceof Path || (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof Lambda || v instanceof Path));
+        boolean isParamFunction = vs instanceof Lambda || vs instanceof Path || isVariableSubtypeOfFunction(vs, processingContext, pureModel) || (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof Lambda || v instanceof Path   || isVariableSubtypeOfFunction(v, processingContext, pureModel)));
+
         boolean isParamEmpty = vs instanceof Collection && ((Collection) vs).values.isEmpty();
         return isParamEmpty || (isSignatureFunction && isParamFunction) || (!isSignatureFunction && !isParamFunction);
+    }
+
+    private boolean isVariableSubtypeOfFunction(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
+    {
+        return (valueSpecification instanceof Variable && Type.subTypeOf(processingContext.getInferredVariable(((Variable) valueSpecification).name)._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport()));
     }
 
     public abstract MutableList<FunctionHandler> handlers();
