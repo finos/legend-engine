@@ -19,5 +19,5 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.S
 
 public interface StoreStreamReaderBuilder
 {
-    IStoreStreamReader newStoreStreamReader(String url, Store flatData);
+    IStoreStreamReader newStoreStreamReader(String url, Store store);
 }

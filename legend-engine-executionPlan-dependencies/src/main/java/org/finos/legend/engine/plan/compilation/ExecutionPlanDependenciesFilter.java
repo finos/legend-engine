@@ -26,10 +26,10 @@ import java.util.stream.Collectors;
 public class ExecutionPlanDependenciesFilter implements ClassPathFilter
 {
     private static final Collection<Class<?>> DEPENDENCY_CLASSES =
-            GeneratePureConfig.PURE_TO_JAVA_CLASSES.values().stream()
-                    .map(ExecutionPlanDependenciesFilter::expandClass)
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toSet());
+            GeneratePureConfig.MAIN_DEPENDENCIES.values().stream()
+                                                .map(ExecutionPlanDependenciesFilter::expandClass)
+                                                .flatMap(Collection::stream)
+                                                .collect(Collectors.toSet());
     private static final Set<String> DEPENDENCY_PACKAGES = DEPENDENCY_CLASSES.stream()
             .map(Class::getPackage)
             .map(Package::getName)

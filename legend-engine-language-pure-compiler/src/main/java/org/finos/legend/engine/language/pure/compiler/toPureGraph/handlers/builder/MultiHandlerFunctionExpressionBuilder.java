@@ -53,7 +53,7 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     @Override
     public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<ValueSpecification> parameters, MutableList<String> openVariables, CompileContext compileContext, ProcessingContext processingContext)
     {
-        if (test(handlers.get(0).getFunc(), parameters, compileContext.pureModel))
+        if (test(handlers.get(0).getFunc(), parameters, compileContext.pureModel, processingContext))
         {
             List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processed = parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(compileContext, openVariables, processingContext))).collect(Collectors.toList());
             return Tuples.pair(buildFunctionExpressionGraph(processed, openVariables, compileContext, processingContext), processed);
