@@ -181,11 +181,10 @@ public class TestFreemarker
     public static String renderCollectionWithDefaultTemplate()
     {
         return "<#function renderCollectionWithDefaultValue collection separator prefix suffix defaultValue>" +
-                "<#assign result = []>" +
-                "<#list collection as c>" +
-                "<#assign result += [prefix + c + suffix]>" +
-                "</#list>" +
-                "<#return result?join(separator, defaultValue)>" +
+                "<#if collection?size == 0>" +
+                "<#return defaultValue>"+
+                "</#if>" +
+                "<#return prefix + result?join(suffix + separator + prefix) + suffix>" +
                 "</#function>";
     }
 
