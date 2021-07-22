@@ -37,6 +37,9 @@ public class UserPasswordAuthenticationStrategy extends AuthenticationStrategy
     private final String userName;
     private final String passwordVaultReference;
 
+    private static final String USER = "user";
+    private static final String PASSWORD = "password";
+
     public UserPasswordAuthenticationStrategy(String userName, String passwordVaultReference)
     {
         this.userName = userName;
@@ -60,8 +63,8 @@ public class UserPasswordAuthenticationStrategy extends AuthenticationStrategy
     {
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        connectionProperties.put("user", this.userName);
-        connectionProperties.put("password", getAccountPassword(this.passwordVaultReference));
+        connectionProperties.put(USER, this.userName);
+        connectionProperties.put(PASSWORD, getAccountPassword(this.passwordVaultReference));
         return Tuples.pair(url, connectionProperties);
     }
 

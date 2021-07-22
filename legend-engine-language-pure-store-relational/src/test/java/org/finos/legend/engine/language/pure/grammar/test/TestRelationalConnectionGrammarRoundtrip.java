@@ -99,7 +99,7 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
-    public void testRedshiftDatabaseASpecificationPublicAuth() {
+    public void testRedshiftDatabaseSpecificationPublicAuth() {
         test("###Connection\n" +
                 "RelationalDatabaseConnection simple::H2Connection\n" +
                 "{\n" +
