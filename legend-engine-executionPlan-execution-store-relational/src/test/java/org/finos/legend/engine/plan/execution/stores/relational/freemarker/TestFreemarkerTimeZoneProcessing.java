@@ -44,7 +44,7 @@ public class TestFreemarkerTimeZoneProcessing
                 "<#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue>"+
                 "<#assign result = [] />"+
                 "<#list collection as c>"+
-                "<#assign result = [prefix + (timeZone+\" \"+c)?date.@alloyDate + suffix]> + result"+
+                "<#assign result = [prefix + (timeZone+\" \"+c)?date.@alloyDate + suffix] + result>"+
                 "</#list>"+
                 "<#return result?reverse?join(separator, defaultValue)>"+
                 "</#function>";
