@@ -177,7 +177,7 @@ public class TestGeneration
                         "    \"name\" : \"pure\",\n" +
                         "    \"version\" : \"vX_X_X\"\n" +
                         "  },\n" +
-                        "  \"templateFunctions\" : [ \"<#function renderCollection collection separator prefix suffix defaultValue><#assign result = []><#list collection as c><#assign result += [prefix + c + suffix]></#list><#return result?join(separator, defaultValue)></#function>\", \"<#function collectionSize collection> <#return collection?size?c> </#function>\" ]\n" +
+                        "  \"templateFunctions\" : [ \"<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>\", \"<#function collectionSize collection> <#return collection?size?c> </#function>\" ]\n" +
                         "}".replaceAll("\n",""), writer.toString());
     }
 
@@ -317,7 +317,7 @@ public class TestGeneration
                         "    \"name\" : \"pure\",\n" +
                         "    \"version\" : \"vX_X_X\"\n" +
                         "  },\n" +
-                        "  \"templateFunctions\" : [ \"<#function renderCollection collection separator prefix suffix defaultValue><#assign result = []><#list collection as c><#assign result += [prefix + c + suffix]></#list><#return result?join(separator, defaultValue)></#function>\", \"<#function collectionSize collection> <#return collection?size?c> </#function>\" ]\n" +
+                        "  \"templateFunctions\" : [ \"<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>\", \"<#function collectionSize collection> <#return collection?size?c> </#function>\" ]\n" +
                         "}".replaceAll("\n",""), writer.toString());
     }
 }

@@ -184,7 +184,7 @@ public class TestFreemarker
                 "<#if collection?size == 0>" +
                 "<#return defaultValue>"+
                 "</#if>" +
-                "<#return prefix + result?join(suffix + separator + prefix) + suffix>" +
+                "<#return prefix + collection?join(suffix + separator + prefix) + suffix>" +
                 "</#function>";
     }
 
