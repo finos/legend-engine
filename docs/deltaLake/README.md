@@ -38,3 +38,4 @@ java -cp \
   server \
   config.json
 ```
+
