@@ -1,0 +1,48 @@
+{
+  "origin": {
+    "sdlcInfo": {
+      "baseVersion": "-1",
+      "_type": "pure",
+      "version": "none",
+      "packageableElementPointers": [
+        {
+          "path": "domainModel::migration::test::account1",
+          "type": "PACKAGE"
+        }
+      ]
+    },
+    "_type": "pointer",
+    "serializer": {
+      "name": "pure",
+      "version": "vX_X_X"
+    }
+  },
+  "elements": [
+    {
+      "package": "domainModel::migration::test::account",
+      "_type": "function",
+      "name": "getRowsResult__Any_MANY_",
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "body": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "values": [
+            1
+          ],
+          "_type": "integer"
+        }
+      ],
+      "returnType": "meta::pure::metamodel::type::Any"
+    }
+  ],
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

@@ -357,6 +357,27 @@ public class TestJsonToGrammarApi
 
     }
 
+    @Test
+    public void testFunctionNameWithoutParameters()
+    {
+        String expected =
+                "function domainModel::migration::test::account::getRowsResult(): meta::pure::metamodel::type::Any[*]\n" +
+                        "{\n" +
+                        "   1\n" +
+                        "}\n";
+        testModelFromProtocol(expected, "simpleFunctionWithoutParameters.json");
+    }
+
+    @Test
+    public void testFunctionNameWithParameters()
+    {
+        String expected ="function domainModel::migration::test::account::getRowsResult(a: String[1]): meta::pure::metamodel::type::Any[*]\n" +
+                "{\n" +
+                "   1\n" +
+                "}\n";
+        testModelFromProtocol(expected, "simpleFunctionWithParameters.json");
+    }
+
     private void testMappingFromProtocol(String expected, String protocolPath)
     {
         try

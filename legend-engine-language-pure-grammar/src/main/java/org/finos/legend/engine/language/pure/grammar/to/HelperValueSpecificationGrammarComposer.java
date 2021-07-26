@@ -285,9 +285,9 @@ public class HelperValueSpecificationGrammarComposer
 
     private static String getFunctionSignature(Function function)
     {
-        return "_" + LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
+        String functionSignature  = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
-
+        return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;
     }
 
     private static String getParameterSignature(Variable p)
