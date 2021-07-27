@@ -15,11 +15,13 @@
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
 import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.List;
 
 /* Work in progress, do not use */
@@ -114,4 +116,14 @@ public interface ServiceRunner
      * @param outputStream output stream to which serialized result needs to be written
      */
     void run(List<Object> args, Identity identity, OperationalContext operationalContext, SerializationFormat serializationFormat, OutputStream outputStream);
+
+    /**
+     * Get the list of valid graph fetch cross association keys for the service
+     *
+     * @return valid graph fetch cross association keys list
+     */
+    default List<GraphFetchCrossAssociationKeys> getGraphFetchCrossAssociationKeys()
+    {
+        return Collections.emptyList();
+    }
 }

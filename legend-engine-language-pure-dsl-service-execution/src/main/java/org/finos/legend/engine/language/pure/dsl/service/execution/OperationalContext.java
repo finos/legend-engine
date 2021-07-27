@@ -16,8 +16,17 @@ package org.finos.legend.engine.language.pure.dsl.service.execution;
 
 /* Work in progress, do not use */
 
+import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
+
+import java.util.List;
+import java.util.Map;
+
 public class OperationalContext
 {
+    private Map<GraphFetchCrossAssociationKeys, ExecutionCache<GraphFetchCacheKey, List<Object>>> graphFetchCrossAssociationKeysCacheConfig;
+
     private OperationalContext()
     {
 
@@ -26,5 +35,16 @@ public class OperationalContext
     public static OperationalContext newInstance()
     {
         return new OperationalContext();
+    }
+
+    public OperationalContext withGraphFetchCrossAssociationKeysCacheConfig(Map<GraphFetchCrossAssociationKeys, ExecutionCache<GraphFetchCacheKey, List<Object>>> cacheConfig)
+    {
+        this.graphFetchCrossAssociationKeysCacheConfig = cacheConfig;
+        return this;
+    }
+
+    public Map<GraphFetchCrossAssociationKeys, ExecutionCache<GraphFetchCacheKey, List<Object>>> getGraphFetchCrossAssociationKeysCacheConfig()
+    {
+        return this.graphFetchCrossAssociationKeysCacheConfig;
     }
 }
