@@ -101,7 +101,7 @@ public class PureModel implements IPureModel
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
-    private static final MetadataLazy METADATA_LAZY = new MetadataLazy(PureModel.class.getClassLoader());
+    private static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader());
     private final CompiledExecutionSupport executionSupport;
     private final DeploymentMode deploymentMode;
     private final PureModelProcessParameter pureModelProcessParameter;
