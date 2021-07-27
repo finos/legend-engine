@@ -23,6 +23,16 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -1343,6 +1353,32 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         return isLeapYear(this.year);
     }
 
+    public LocalDate toLocalDate()
+    {
+        if (!hasDay())
+        {
+            throw new IllegalStateException("Cannot convert PureDate without day to LocalDate");
+        }
+        return LocalDate.of(year, month, day);
+    }
+
+    public Instant toInstant()
+    {
+        if (!hasDay())
+        {
+            throw new IllegalStateException("Cannot convert PureDate without day to Instant");
+        }
+        return LocalDateTime.of(
+                year,
+                month,
+                day,
+                hasHour() ? hour : 0,
+                hasMinute() ? minute : 0,
+                hasSecond() ? second : 0,
+                hasSubsecond() ? Integer.parseInt((subsecond+"000000000").substring(0, 9)): 0
+        ).atZone(ZoneId.of("UTC")).toInstant();
+    }
+
     private static void appendTwoDigitInt(Appendable appendable, int integer)
     {
         appendZeroPaddedInt(appendable, integer, 2);
@@ -1428,6 +1464,44 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
             }
         }
         return newDate;
+    }
+
+    public static PureDate fromTemporal(Temporal date, int precision)
+    {
+        ZonedDateTime inUtc;
+        if (date instanceof Instant)
+        {
+            inUtc = ZonedDateTime.ofInstant((Instant) date, ZoneOffset.UTC);
+        }
+        else if (date instanceof ZonedDateTime)
+        {
+            inUtc = ((ZonedDateTime) date).withZoneSameInstant(ZoneOffset.UTC);
+        }
+        else if (date instanceof OffsetDateTime)
+        {
+            inUtc = ((OffsetDateTime) date).toZonedDateTime();
+        }
+        else if (date instanceof LocalDateTime)
+        {
+            inUtc = ((LocalDateTime) date).atZone(ZoneOffset.UTC);
+        }
+        else if (date instanceof LocalDate)
+        {
+            inUtc = ((LocalDate) date).atStartOfDay(ZoneOffset.UTC);
+        }
+        else if (date instanceof Year)
+        {
+            inUtc = ((Year) date).atDay(1).atStartOfDay(ZoneOffset.UTC);
+        }
+        else if (date instanceof YearMonth)
+        {
+            inUtc = ((YearMonth) date).atDay(1).atStartOfDay(ZoneOffset.UTC);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Cannot convert from " + date.getClass().getSimpleName());
+        }
+        return fromCalendar(GregorianCalendar.from(inUtc), precision, new PureDate());
     }
 
     public static PureDate fromDate(Date date)
