@@ -21,6 +21,7 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileManager;
@@ -91,6 +92,7 @@ public class EngineJavaCompiler
 
     public EngineJavaCompiler compile(Iterable<? extends StringJavaSource> javaSources) throws JavaCompileException
     {
+        MetricsHandler.observeCount("Java compilation");
         compile(this.compiler, this.javaVersion, javaSources, this.memoryFileManager);
         this.memoryClassLoader = parent == null ?
                 new MemoryClassLoader(this.memoryFileManager, Thread.currentThread().getContextClassLoader()) :

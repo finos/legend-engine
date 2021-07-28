@@ -26,6 +26,12 @@
     <name>Legend Engine - Shared - Java Compiler</name>
 
     <dependencies>
+        <!-- LEGEND -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
+        <!-- LEGEND -->
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
