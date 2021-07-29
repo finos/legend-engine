@@ -39,6 +39,7 @@ public class FunctionHandler
     private final String functionName;
     private final ReturnInference returnInference;
     private Dispatch dispatch;
+    private final int parametersSize;
 
     FunctionHandler(PureModel pureModel, String name, boolean isNative, ReturnInference returnInference)
     {
@@ -58,6 +59,7 @@ public class FunctionHandler
         this.functionName = func._functionName();
         this.returnInference = returnInference;
         this.dispatch = dispatch;
+        this.parametersSize = ((FunctionType) func._classifierGenericType()._typeArguments().getAny()._rawType())._parameters().size();
     }
 
     public SimpleFunctionExpression process(List<ValueSpecification> vs)
@@ -113,5 +115,10 @@ public class FunctionHandler
     public String getFullName()
     {
         return this.fullName;
+    }
+
+    public int getParametersSize()
+    {
+        return this.parametersSize;
     }
 }
