@@ -329,7 +329,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>11</version>
+                                    <version>[11.0.10,12)</version>
                                 </requireJavaVersion>
                                 <dependencyConvergence />
                                 <bannedDependencies>
