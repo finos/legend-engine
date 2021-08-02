@@ -72,21 +72,26 @@ public class PureGrammarParser
         return new PureGrammarParser(PureGrammarParserExtensions.fromAvailableExtensions());
     }
 
+    public PureModelContextData parseModel(String code, boolean returnSourceInfo)
+    {
+        return this.parse(code, this.parsers, returnSourceInfo);
+    }
+
     public PureModelContextData parseModel(String code)
     {
-        return this.parse(code, this.parsers);
+        return this.parse(code, this.parsers, true);
     }
 
-    public Lambda parseLambda(String code, String lambdaId)
+    public Lambda parseLambda(String code, String lambdaId, boolean returnSourceInfo)
     {
-        return new DomainParser().parseLambda(code, lambdaId);
+        return new DomainParser().parseLambda(code, lambdaId, returnSourceInfo);
     }
 
-    private PureModelContextData parse(String code, DEPRECATED_PureGrammarParserLibrary parserLibrary)
+    private PureModelContextData parse(String code, DEPRECATED_PureGrammarParserLibrary parserLibrary, boolean returnSourceInfo)
     {
         String fullCode = DEFAULT_SECTION_BEGIN + code;
         PureGrammarParserContext parserContext = new PureGrammarParserContext(this.extensions);
-        ParseTreeWalkerSourceInformation walkerSourceInformation = ParseTreeWalkerSourceInformation.DEFAULT_WALKER_SOURCE_INFORMATION();
+        ParseTreeWalkerSourceInformation walkerSourceInformation = ParseTreeWalkerSourceInformation.DEFAULT_WALKER_SOURCE_INFORMATION(returnSourceInfo);
         // init the parser
         ParserErrorListener errorListener = new ParserErrorListener(walkerSourceInformation);
         CodeLexerGrammar lexer = new CodeLexerGrammar(CharStreams.fromString(fullCode));
@@ -103,16 +108,16 @@ public class PureGrammarParser
         // in the consumer, we should ensure this does not leak and gets persisted to SDLC or Services per se
         sectionIndex.name = "SectionIndex";
         sectionIndex._package = "__internal__";
-        sectionIndex.sections = ListIterate.collect(parser.definition().section(), sectionCtx -> this.visitSection(sectionCtx, parserLibrary, walkerSourceInformation, parserContext, builder::addElement));
+        sectionIndex.sections = ListIterate.collect(parser.definition().section(), sectionCtx -> this.visitSection(sectionCtx, parserLibrary, walkerSourceInformation, parserContext, builder::addElement, returnSourceInfo));
         return builder.withElement(sectionIndex).build();
     }
 
-    private Section visitSection(CodeParserGrammar.SectionContext ctx, DEPRECATED_PureGrammarParserLibrary parserLibrary, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, Consumer<PackageableElement> elementConsumer)
+    private Section visitSection(CodeParserGrammar.SectionContext ctx, DEPRECATED_PureGrammarParserLibrary parserLibrary, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, Consumer<PackageableElement> elementConsumer, boolean returnSourceInfo)
     {
         String parserName = ctx.SECTION_START().getText().substring(4); // the prefix is `\n###` hence 4 characters
         SourceInformation parserNameSourceInformation = walkerSourceInformation.getSourceInformation(ctx.SECTION_START().getSymbol());
         int lineOffset = ctx.SECTION_START().getSymbol().getLine() - 2; // since the CODE_BLOCK_START is `\n###` we have to subtract 1 more line than usual
-        ParseTreeWalkerSourceInformation sectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder("", lineOffset, 0).build();
+        ParseTreeWalkerSourceInformation sectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder("", lineOffset, 0).withReturnSourceInfo(returnSourceInfo).build();
         SourceInformation sectionSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.sectionContent() != null)
         {

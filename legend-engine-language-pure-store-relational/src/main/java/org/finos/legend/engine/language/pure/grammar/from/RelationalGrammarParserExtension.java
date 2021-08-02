@@ -331,10 +331,10 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         return new SourceCodeParserInfo(connectionValueSourceCode.code, input, connectionValueSourceCode.sourceInformation, connectionValueSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 
-    public static RelationalOperationElement parseRelationalOperationElement(String code)
+    public static RelationalOperationElement parseRelationalOperationElement(String code, boolean returnSourceInfo)
     {
         CharStream input = CharStreams.fromString(code);
-        ParseTreeWalkerSourceInformation parseTreeWalkerSourceInformation= new ParseTreeWalkerSourceInformation.Builder("", 0, 0).build();
+        ParseTreeWalkerSourceInformation parseTreeWalkerSourceInformation= new ParseTreeWalkerSourceInformation.Builder("", 0, 0).withReturnSourceInfo(returnSourceInfo).build();
         ParserErrorListener errorListener = new ParserErrorListener(parseTreeWalkerSourceInformation);
         RelationalLexerGrammar lexer = new RelationalLexerGrammar(input);
         lexer.removeErrorListeners();
