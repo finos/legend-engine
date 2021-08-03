@@ -48,7 +48,7 @@ public class OperationalContext
         return this;
     }
 
-    public Map<GraphFetchCrossAssociationKeys, ExecutionCache<GraphFetchCacheKey, List<Object>>> getGraphFetchCrossAssociationKeysCacheConfig()
+    Map<GraphFetchCrossAssociationKeys, ExecutionCache<GraphFetchCacheKey, List<Object>>> getGraphFetchCrossAssociationKeysCacheConfig()
     {
         return this.graphFetchCrossAssociationKeysCacheConfig;
     }

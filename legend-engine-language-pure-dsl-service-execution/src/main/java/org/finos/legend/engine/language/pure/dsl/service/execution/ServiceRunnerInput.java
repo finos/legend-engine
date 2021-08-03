@@ -47,7 +47,7 @@ public class ServiceRunnerInput
         return this;
     }
 
-    public List<Object> getArgs()
+    List<Object> getArgs()
     {
         return this.args;
     }
@@ -78,7 +78,7 @@ public class ServiceRunnerInput
         return this;
     }
 
-    public StreamProvider getConnectionInput()
+    StreamProvider getConnectionInput()
     {
         return this.connectionInput;
     }
@@ -94,7 +94,7 @@ public class ServiceRunnerInput
         return this;
     }
 
-    public Identity getIdentity()
+    Identity getIdentity()
     {
         return this.identity;
     }
@@ -105,7 +105,7 @@ public class ServiceRunnerInput
         return this;
     }
 
-    public OperationalContext getOperationalContext()
+    OperationalContext getOperationalContext()
     {
         return this.operationalContext;
     }
@@ -116,7 +116,7 @@ public class ServiceRunnerInput
         return this;
     }
 
-    public SerializationFormat getSerializationFormat()
+    SerializationFormat getSerializationFormat()
     {
         return this.serializationFormat;
     }
