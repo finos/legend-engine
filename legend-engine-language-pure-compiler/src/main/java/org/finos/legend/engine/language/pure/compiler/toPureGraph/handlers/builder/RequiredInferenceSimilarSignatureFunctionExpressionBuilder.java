@@ -26,6 +26,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 import java.util.List;
+import java.util.Optional;
 
 public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends FunctionExpressionBuilder
 {
@@ -35,12 +36,29 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
     public RequiredInferenceSimilarSignatureFunctionExpressionBuilder(ParametersInference parametersInference, FunctionHandler[] handlers, PureModel pureModel)
     {
         this.parametersInference = parametersInference;
-        this.handlers = new MultiHandlerFunctionExpressionBuilder(handlers, pureModel);
+        this.handlers = new MultiHandlerFunctionExpressionBuilder(pureModel, handlers);
     }
 
     public String getFunctionName()
     {
         return this.handlers.getFunctionName();
+    }
+
+    @Override
+    public void addFunctionHandler(FunctionHandler functionHandler)
+    {
+        handlers.addFunctionHandler(functionHandler);
+    }
+
+    @Override
+    public Boolean supportFunctionHandler(FunctionHandler handler)
+    {
+        return this.handlers.supportFunctionHandler(handler);
+    }
+
+    @Override
+    public Optional<Integer> getParametersSize() {
+        return handlers.getParametersSize();
     }
 
     @Override

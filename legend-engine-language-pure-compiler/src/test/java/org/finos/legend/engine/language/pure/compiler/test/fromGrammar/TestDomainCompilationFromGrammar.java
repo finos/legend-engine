@@ -109,8 +109,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "function anything::somethingelse(a:String[1]):String[1]" +
                 "{" +
                 "   'hiiii'" +
-                "}\n", "COMPILATION error at [10:1-67]: Duplicated element 'anything::somethingelse'"
-        );
+                "}\n");
         // Measure
         test(initialGraph +
                 "###Pure\n" +
@@ -143,6 +142,76 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "   [1,$input]->max();"+
                         "}\n";
         test(code);
+    }
+
+    @Test
+    public void testUserDefinedFunctionWithTheSameNameButDifferentSignatureExecutionWithImports()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger():Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+"###Pure\n"+
+                        "import example::*;\n"+
+                        "function example::test::go():Any[0..1]\n" +
+                        "{\n"+
+                        "   testMaxInteger(1);"+
+                        "   testMaxInteger();"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
+    public void testUserDefinedFunctionWithTheSameNameButDifferentSignatureExecution()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger(input: Number[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger(f: Float[1], d: Float[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1, $f, $d]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger():Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+
+                        "function example::test::testMaxInteger():Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+
+                        "function example::test::go():Any[0..1]\n" +
+                        "{\n"+
+                        "   example::testMaxInteger(1);"+
+                        "   example::testMaxInteger();"+
+                        "   example::test::testMaxInteger();"+
+                        "   example::testMaxInteger(1.0, 1.123);"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
+    public void testUserDefinedFunctionWithTheSameSignature()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n";
+        test(code,"COMPILATION error at [4:1-6:17]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
     }
 
     @Test
