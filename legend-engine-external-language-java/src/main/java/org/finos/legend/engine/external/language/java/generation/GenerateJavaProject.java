@@ -52,7 +52,7 @@ public abstract class GenerateJavaProject
         ClassLoader classLoader = Pure.class.getClassLoader();
         this.executionSupport = new CompiledExecutionSupport(
                 new JavaCompilerState(null, classLoader),
-                new CompiledProcessorSupport(classLoader, new MetadataLazy(classLoader), Sets.mutable.empty()),
+                new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader), Sets.mutable.empty()),
                 null,
                 new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
                         CodeRepository.newPlatformCodeRepository(),
