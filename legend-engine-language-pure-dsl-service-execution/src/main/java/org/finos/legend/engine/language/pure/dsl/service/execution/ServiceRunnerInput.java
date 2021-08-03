@@ -17,13 +17,10 @@ package org.finos.legend.engine.language.pure.dsl.service.execution;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.IdentityFactory;
-import org.finos.legend.engine.shared.core.url.StreamProvider;
 
 import javax.security.auth.Subject;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /* Work in progress, do not use */
@@ -31,7 +28,6 @@ import java.util.Objects;
 public class ServiceRunnerInput
 {
     private List<Object> args = Collections.emptyList();
-    private StreamProvider connectionInput = null;
     private Identity identity = null;
     private OperationalContext operationalContext = OperationalContext.newInstance();
     private SerializationFormat serializationFormat = SerializationFormat.DEFAULT;
@@ -50,37 +46,6 @@ public class ServiceRunnerInput
     List<Object> getArgs()
     {
         return this.args;
-    }
-
-    public ServiceRunnerInput withConnectionInput(String stringInput)
-    {
-        return this.withConnectionInput(AbstractServicePlanExecutor.newStreamProvider(Objects.requireNonNull(stringInput, "stringInput must not be null")));
-    }
-
-    public ServiceRunnerInput withConnectionInput(byte[] byteArrayInput)
-    {
-        return this.withConnectionInput(AbstractServicePlanExecutor.newStreamProvider(Objects.requireNonNull(byteArrayInput, "byteArrayInput must not be null")));
-    }
-
-    public ServiceRunnerInput withConnectionInput(InputStream streamInput)
-    {
-        return this.withConnectionInput(AbstractServicePlanExecutor.newStreamProvider(Objects.requireNonNull(streamInput, "streamInput must not be null")));
-    }
-
-    public ServiceRunnerInput withConnectionInput(Map<String, ? extends InputStream> multiStreamInput)
-    {
-        return this.withConnectionInput(AbstractServicePlanExecutor.newStreamProvider(Objects.requireNonNull(multiStreamInput, "multiStreamInput must not be null")));
-    }
-
-    public ServiceRunnerInput withConnectionInput(StreamProvider connectionInput)
-    {
-        this.connectionInput = Objects.requireNonNull(connectionInput, "connectionInput must not be null");
-        return this;
-    }
-
-    StreamProvider getConnectionInput()
-    {
-        return this.connectionInput;
     }
 
     public ServiceRunnerInput withIdentity(Subject subject)
