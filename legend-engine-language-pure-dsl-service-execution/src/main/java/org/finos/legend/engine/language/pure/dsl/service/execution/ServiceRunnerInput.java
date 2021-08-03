@@ -36,7 +36,7 @@ public class ServiceRunnerInput
     private OperationalContext operationalContext = OperationalContext.newInstance();
     private SerializationFormat serializationFormat = SerializationFormat.DEFAULT;
 
-    public ServiceRunnerInput newInstance()
+    public static ServiceRunnerInput newInstance()
     {
         return new ServiceRunnerInput();
     }
