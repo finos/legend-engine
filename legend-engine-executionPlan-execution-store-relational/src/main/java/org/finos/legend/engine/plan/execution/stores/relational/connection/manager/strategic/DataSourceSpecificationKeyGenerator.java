@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DeltaLakeDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
@@ -79,7 +80,15 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     snowflakeDatasourceSpecification.region,
                     snowflakeDatasourceSpecification.warehouseName,
                     snowflakeDatasourceSpecification.databaseName,
-                    snowflakeDatasourceSpecification.cloudType);
+                    snowflakeDatasourceSpecification.cloudType,
+                    connection.quoteIdentifiers);
+        }
+        else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
+        {
+            BigQueryDatasourceSpecification bigQueryDatasourceSpecification = (BigQueryDatasourceSpecification) datasourceSpecification;
+            return new BigQueryDataSourceSpecificationKey(
+                    bigQueryDatasourceSpecification.projectId,
+                    bigQueryDatasourceSpecification.defaultDataset);
         }
         return null;
     }

@@ -17,7 +17,12 @@ package org.finos.legend.engine.language.pure.grammar.from.datasource;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DeltaLakeDatasourceSpecification;
 
 public class DataSourceSpecificationParseTreeWalker
 {
@@ -105,6 +110,18 @@ public class DataSourceSpecificationParseTreeWalker
         // database name
         DataSourceSpecificationParserGrammar.DbNameContext nameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
         dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(nameCtx.STRING().getText(), true);
+        return dsSpec;
+    }
+
+    public BigQueryDatasourceSpecification visitBigQueryDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.BigQueryDatasourceSpecificationContext dbSpecCtx) {
+        BigQueryDatasourceSpecification dsSpec = new BigQueryDatasourceSpecification();
+        dsSpec.sourceInformation = code.getSourceInformation();
+        // project id
+        DataSourceSpecificationParserGrammar.ProjectIdContext projectIdCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.projectId(), "projectId", dsSpec.sourceInformation);
+        dsSpec.projectId = PureGrammarParserUtility.fromGrammarString(projectIdCtx.STRING().getText(), true);
+        // default dataset
+        DataSourceSpecificationParserGrammar.DefaultDatasetContext defaultDatasetCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.defaultDataset(), "defaultDataset", dsSpec.sourceInformation);
+        dsSpec.defaultDataset = PureGrammarParserUtility.fromGrammarString(defaultDatasetCtx.STRING().getText(), true);
         return dsSpec;
     }
 }

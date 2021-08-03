@@ -19,7 +19,6 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.primitive.LongList;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
@@ -42,11 +41,11 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class TestMetaDataServer
 {
@@ -66,7 +65,7 @@ public class TestMetaDataServer
         this.server = new Server(port);
         CompiledExecutionSupport executionSupport = new CompiledExecutionSupport(
                 new JavaCompilerState(null, TestMetaDataServer.class.getClassLoader()),
-                new CompiledProcessorSupport(TestMetaDataServer.class.getClassLoader(), new MetadataLazy(TestMetaDataServer.class.getClassLoader()), Sets.mutable.empty()),
+                new CompiledProcessorSupport(TestMetaDataServer.class.getClassLoader(), MetadataLazy.fromClassLoader(TestMetaDataServer.class.getClassLoader()), Sets.mutable.empty()),
                 null,
                 new CodeStorage()
                 {

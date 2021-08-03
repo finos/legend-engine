@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.*;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
 
 public class AuthenticationStrategyKeyGenerator implements AuthenticationStrategyVisitor<AuthenticationStrategyKey>
@@ -49,6 +50,11 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
                     snowflakeDatasourceSpecification.passPhraseVaultReference,
                     snowflakeDatasourceSpecification.publicUserName
             );
+        }
+        else if(authenticationStrategy instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy GCPApplicationDefaultCredentialsAuthenticationStrategy = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)authenticationStrategy;
+            return new GCPApplicationDefaultCredentialsAuthenticationStrategyKey();
         }
         return null;
     }

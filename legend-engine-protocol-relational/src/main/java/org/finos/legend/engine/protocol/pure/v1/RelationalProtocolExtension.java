@@ -144,8 +144,9 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(LocalH2DatasourceSpecification.class, "h2Local"),
                                 Tuples.pair(StaticDatasourceSpecification.class, "static"),
                                 Tuples.pair(EmbeddedH2DatasourceSpecification.class, "h2Embedded"),
-                                Tuples.pair(DeltaLakeDatasourceSpecification.class, "deltaLake"),
-                                Tuples.pair(SnowflakeDatasourceSpecification.class, "snowflake")
+                                Tuples.pair(SnowflakeDatasourceSpecification.class, "snowflake"),
+                                Tuples.pair(BigQueryDatasourceSpecification.class, "bigQuery"),
+                                Tuples.pair(DeltaLakeDatasourceSpecification.class, "deltaLake")
                         )).build(),
 
                 // AuthenticationStrategy
@@ -155,8 +156,9 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(DefaultH2AuthenticationStrategy.class, "h2Default"),
                                 Tuples.pair(TestDatabaseAuthenticationStrategy.class, "test"),
                                 Tuples.pair(DelegatedKerberosAuthenticationStrategy.class, "delegatedKerberos"),
-                                Tuples.pair(DeltaLakeAuthenticationStrategy.class, "deltaLake"),
-                                Tuples.pair(SnowflakePublicAuthenticationStrategy.class, "snowflakePublic")
+                                Tuples.pair(SnowflakePublicAuthenticationStrategy.class, "snowflakePublic"),
+                                Tuples.pair(GCPApplicationDefaultCredentialsAuthenticationStrategy.class, "gcpApplicationDefaultCredentials"),
+                                Tuples.pair(DeltaLakeAuthenticationStrategy.class, "deltaLake")
                                 )).build(),
 
                 //Post Processor

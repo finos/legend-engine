@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.domain.StrictTimeParseTreeWalker;
@@ -59,8 +60,39 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ExecutionContextInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
@@ -94,8 +126,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
      * hence omitting the `$` symbol preceding the variable.
      */
     private final boolean isVariableInFunctionSignature;
-    // FIXME: remove this when we remove inference for flat-data column
-    private final boolean isFlatDataMappingProcessingModeEnabled;
+    // TODO PropertyBracketExpression is deprecated.  Remove flag and related processing once all use has been addressed
+    private final boolean isPropertyBracketExpressionModeEnabled;
 
     private int baseTabLevel = 1;
 
@@ -105,7 +137,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.renderStyle = builder.renderStyle;
         this.isVariableInFunctionSignature = builder.isVariableInFunctionSignature;
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
-        this.isFlatDataMappingProcessingModeEnabled = builder.isFlatDataMappingProcessingModeEnabled;
+        this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
     }
 
     public int getBaseTabLevel() {
@@ -136,9 +168,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return isVariableInFunctionSignature;
     }
 
-    public boolean isFlatDataMappingProcessingModeEnabled()
+    public boolean isPropertyBracketExpressionModeEnabled()
     {
-        return isFlatDataMappingProcessingModeEnabled;
+        return isPropertyBracketExpressionModeEnabled;
     }
 
     public static class Builder
@@ -147,7 +179,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         private PureGrammarComposerContext.RenderStyle renderStyle = PureGrammarComposerContext.RenderStyle.STANDARD;
         private boolean isValueSpecificationExternalParameter = false;
         private boolean isVariableInFunctionSignature = false;
-        private boolean isFlatDataMappingProcessingModeEnabled = false;
+        private boolean isPropertyBracketExpressionModeEnabled = false;
 
         private Builder()
         {
@@ -161,7 +193,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.renderStyle = grammarTransformer.renderStyle;
             builder.isVariableInFunctionSignature = grammarTransformer.isVariableInFunctionSignature;
             builder.isValueSpecificationExternalParameter = grammarTransformer.isValueSpecificationExternalParameter;
-            builder.isFlatDataMappingProcessingModeEnabled = grammarTransformer.isFlatDataMappingProcessingModeEnabled;
+            builder.isPropertyBracketExpressionModeEnabled = grammarTransformer.isPropertyBracketExpressionModeEnabled;
             return builder;
         }
 
@@ -172,7 +204,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.renderStyle = context.getRenderStyle();
             builder.isVariableInFunctionSignature = context.isVariableInFunctionSignature();
             builder.isValueSpecificationExternalParameter = context.isValueSpecificationExternalParameter();
-            builder.isFlatDataMappingProcessingModeEnabled = context.isFlatDataMappingProcessingModeEnabled();
+            builder.isPropertyBracketExpressionModeEnabled = context.isPropertyBracketExpressionModeEnabled();
             return builder;
         }
 
@@ -199,9 +231,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             return this;
         }
 
-        public Builder withFlatDataMappingProcessingModeEnabled()
+        public Builder withPropertyBracketExpressionModeEnabled()
         {
-            this.isFlatDataMappingProcessingModeEnabled = true;
+            this.isPropertyBracketExpressionModeEnabled = true;
             return this;
         }
 
@@ -621,8 +653,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         boolean addCR = lambda.body.size() > 1;
         return (addWrapper ? "{" : "")
                 + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
-                + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) : "")
-                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2))
+                + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
+                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)))
                 + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
     }
 
@@ -645,53 +677,59 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         String function = appliedFunction.function;
         List<ValueSpecification> parameters = appliedFunction.parameters;
-        boolean toCreateNewLine = this.isRenderingPretty() && HelperValueSpecificationGrammarComposer.NEXT_LINE_FN.contains(function);
-        DEPRECATED_PureGrammarComposerCore shiftedTransformer = toCreateNewLine ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(3).build() : this;
 
-        if (function.equals("getAll"))
+        if ("getAll".equals(function))
         {
             return parameters.get(0).accept(this) + "." + HelperValueSpecificationGrammarComposer.renderFunctionName("all", this) + "(" + LazyIterate.collect(parameters.subList(1, parameters.size()), v -> v.accept(this)).makeString(", ") + ")";
         }
-        if (function.equals("getAllVersions"))
+        else if ("getAllVersions".equals(function))
         {
             return parameters.get(0).accept(this) + "." + HelperValueSpecificationGrammarComposer.renderFunctionName("allVersions", this) + "(" + LazyIterate.collect(parameters.subList(1, parameters.size()), v -> v.accept(this)).makeString(", ") + ")";
         }
-        else if (function.equals("letFunction"))
+        else if ("letFunction".equals(function))
         {
             return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).values.get(0)) + " = " + parameters.get(1).accept(this);
         }
+        else if ("new".equals(function))
+        {
+            List<ValueSpecification> values = ((Collection) parameters.get(parameters.size() - 1)).values;
+            return "^" + parameters.get(0).accept(this) + "(" + Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ") + ")";
+        }
+        else if ("not".equals(function))
+        {
+            return "!(" + parameters.get(0).accept(this) + ")";
+        }
         else if (HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) != null)
         {
-            if (parameters.get(0) instanceof Collection && (function.equals("plus") || function.equals("minus") || function.equals("times")))
+            // handle arithmetic operators that we might need to add parenthesis to force precedence
+            if (parameters.get(0) instanceof Collection && ("plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function)))
             {
                 return LazyIterate.collect(((Collection) parameters.get(0)).values, v -> HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, v, this)).makeString(" " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) + " ");
             }
-            if (parameters.size() == 1)
+            // for this case, we will render function name 'and()', 'or()', etc. instead of trying to swap out to use infix operators like '&&', '||', etc.
+            else if (parameters.size() == 1)
             {
-                return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, this, shiftedTransformer, this);
+                return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, this);
             }
-            String first = HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(0), this) + " " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function);
-            return first + (toCreateNewLine ? this.returnChar() + shiftedTransformer.indentationString : " ") + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
+            // NOTE: we only handle case when there are 2 parameters because that is the expected form for infix operators
+            boolean toCreateNewLine = this.isRenderingPretty() &&
+                !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(0)) &&
+                !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(1));
+            return HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(0), this)
+                + " "
+                + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function)
+                + (toCreateNewLine ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")
+                + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
         }
-        else if (HelperValueSpecificationGrammarComposer.FN_PREFIX.contains(function))
+        else if ("if".equals(function))
         {
-            // TODO extends this for other functions?
-            if (function.equals("if") && shiftedTransformer.isRenderingPretty())
-            {
-                return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" + parameters.get(0).accept(this) + ", " +
-                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3)) + parameters.get(1).accept(this) + ", " +
-                        (this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3)) + parameters.get(2).accept(this) +
-                        (this.returnChar()) + ")";
-            }
-            return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" + LazyIterate.collect(parameters, p -> p.accept(this)).makeString(", ") + ")";
+            return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" +
+                (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "") +
+                ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build()))
+                    .makeString("," + (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")) +
+                (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(0)) : "") + ")";
         }
-        else if (function.equals("new"))
-        {
-            List<ValueSpecification> values = ((Collection) parameters.get(parameters.size() - 1)).values;
-            String rendered = Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ");
-            return "^" + parameters.get(0).accept(this) + "(" + rendered + ")";
-        }
-        return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, toCreateNewLine, shiftedTransformer, this, this);
+        return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, this);
     }
 
     @Override
@@ -699,7 +737,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         String propertyOwner = appliedProperty.parameters.get(0).accept(this);
         StringBuilder stringBuilder = new StringBuilder(propertyOwner);
-        if (this.isFlatDataMappingProcessingModeEnabled && propertyOwner.equals("$src"))
+        if (this.isPropertyBracketExpressionModeEnabled && propertyOwner.equals("$src"))
         {
             stringBuilder.append(appliedProperty.parameters.subList(1, appliedProperty.parameters.size()).stream().map(l -> l.accept(this)).collect(Collectors.joining(", ", "[", "]")));
         }
@@ -804,12 +842,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         String subTreeString = "";
         if (rootGraphFetchTree.subTrees != null && !rootGraphFetchTree.subTrees.isEmpty())
         {
-            subTreeString = rootGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
+            subTreeString = rootGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
         }
         return "#{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
+                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
                 subTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
-                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
+                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
                 this.indentationString + "}#";
     }
 
@@ -826,8 +864,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         if (propertyGraphFetchTree.subTrees != null && !propertyGraphFetchTree.subTrees.isEmpty())
         {
             subTreeString = "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-                    propertyGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(2).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
-                    DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) + "}";
+                    propertyGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
+                    DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}";
         }
 
         String parametersString = "";
@@ -842,7 +880,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             subTypeString = "->subType(@" + HelperValueSpecificationGrammarComposer.printFullPath(propertyGraphFetchTree.subType, this) + ")";
         }
 
-        return DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 2) + aliasString + propertyGraphFetchTree.property + parametersString + subTypeString + subTreeString;
+        return DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + aliasString + propertyGraphFetchTree.property + parametersString + subTypeString + subTreeString;
     }
 
     @Override

@@ -94,4 +94,46 @@ public class TestCompilationFromGrammar
                 "  $test->match([ a:MyTest[1]|$a ]);\n" +
                 "}", "PARSER error at [6:1-7]: Unexpected token");
     }
+
+    @Test
+    public void testCompilePathVariable()
+    {
+        TestCompilationFromGrammarTestSuite.test("Class test::Person\n" +
+                "{\n" +
+                "  firstName:String[1];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::usePath(p:test::Person[1]):Boolean[1]\n" +
+                "{\n" +
+                "  let path = #/test::Person/firstName#;\n" +
+                "  test::Person.all()->project($path)->filter(r|$r.getInteger('age') > 30 && $r.isNotNull('age'))->isNotEmpty();\n" +
+                "}", null);
+    }
+
+    @Test
+    public void testCompilePathVariableMultipleAssignments()
+    {
+        TestCompilationFromGrammarTestSuite.test("Class test::Person\n" +
+                "{\n" +
+                "  firstName:String[1];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::usePath(p:test::Person[1]):Boolean[1]\n" +
+                "{\n" +
+                "  let path = #/test::Person/firstName#;\n" +
+                "  let x = $path;\n" +
+                "  test::Person.all()->project($x)->filter(r|$r.getInteger('age') > 30 && $r.isNotNull('age'))->isNotEmpty();\n" +
+                "}", null);
+    }
+
+    @Test
+    public void testCompileLambdaVariable()
+    {
+        TestCompilationFromGrammarTestSuite.test("function test::func(): Any[*]\n" +
+                "{\n" +
+                "  let s = {| 'sample string'}; $s->eval();\n" +
+                "} ", null);
+    }
 }

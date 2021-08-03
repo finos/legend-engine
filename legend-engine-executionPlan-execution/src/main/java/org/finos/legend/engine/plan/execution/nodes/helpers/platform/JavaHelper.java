@@ -15,11 +15,14 @@
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.compilation.ExecutionPlanDependenciesFilter;
 import org.codehaus.commons.compiler.CompileException;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.CompositeClassPathFilter;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
@@ -89,7 +92,9 @@ public class JavaHelper
 
     private static EngineJavaCompiler createNewJavaCompiler()
     {
-        return new EngineJavaCompiler(JavaVersion.JAVA_8, new ExecutionPlanDependenciesFilter());
+        List<ClassPathFilter> filters = Lists.mutable.of(new ExecutionPlanDependenciesFilter());
+        ExecutionPlanJavaCompilerExtensionLoader.extensions().forEach(ext -> filters.add(ext.getExtraClassPathFilter()));
+        return new EngineJavaCompiler(JavaVersion.JAVA_8, new CompositeClassPathFilter(filters));
     }
 
     private static EngineJavaCompiler compilePlanFast(SingleExecutionPlan singleExecutionPlan) throws JavaCompileException, IOException, CompileException

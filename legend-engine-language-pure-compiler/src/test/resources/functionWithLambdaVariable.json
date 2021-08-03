@@ -1,0 +1,140 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "letFunction",
+          "parameters": [
+            {
+              "_type": "string",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [
+                "s"
+              ]
+            },
+            {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "string",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "sourceInformation": {
+                    "endColumn": 18,
+                    "endLine": 5,
+                    "sourceId": "",
+                    "startColumn": 14,
+                    "startLine": 5
+                  },
+                  "values": [
+                    "boo"
+                  ]
+                }
+              ],
+              "parameters": [],
+              "sourceInformation": {
+                "endColumn": 19,
+                "endLine": 5,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 5
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 5
+          }
+        },
+        {
+          "_type": "func",
+          "function": "eval",
+          "parameters": [
+            {
+              "_type": "var",
+              "name": "s",
+              "sourceInformation": {
+                "endColumn": 23,
+                "endLine": 5,
+                "sourceId": "",
+                "startColumn": 22,
+                "startLine": 5
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 29,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 26,
+            "startLine": 5
+          }
+        }
+      ],
+      "name": "funcx",
+      "package": "test",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "returnType": "Any",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 6,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 3
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "test::funcx"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 8,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 2
+          }
+        }
+      ]
+    }
+  ]
+}

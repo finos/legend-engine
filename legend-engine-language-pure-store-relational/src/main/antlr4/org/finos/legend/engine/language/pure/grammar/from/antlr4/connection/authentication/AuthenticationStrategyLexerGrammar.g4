@@ -20,5 +20,9 @@ SNOWFLAKE_AUTH_KEY_VAULT_REFERENCE:         'privateKeyVaultReference';
 SNOWFLAKE_AUTH_PASSPHRASE_VAULT_REFERENCE:  'passPhraseVaultReference';
 SNOWFLAKE_AUTH_PUBLIC_USERNAME:             'publicUserName';
 
+PROJECT:                                                    'projectId';
+DATASET:                                                    'defaultDataset';
+GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH:                   'GCPApplicationDefaultCredentials';
+
 DELTALAKE_AUTH:                             'DeltaLake';
 DELTALAKE_AUTH_TOKEN:                       'apiToken';

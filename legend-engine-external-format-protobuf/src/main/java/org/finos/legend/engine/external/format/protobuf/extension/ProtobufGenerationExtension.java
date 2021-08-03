@@ -77,7 +77,7 @@ public class ProtobufGenerationExtension implements GenerationExtension
             @Override
             public List<GenerationProperty> getProperties(PureModel pureModel)
             {
-                return FileGenerationDescription.extractGenerationProperties(core_external_format_protobuf_integration.Root_meta_external_format_protobuf_schema_generation_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
+                return FileGenerationDescription.extractGenerationProperties(core_external_format_protobuf_integration.Root_meta_external_format_protobuf_generation_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
             }
         };
     }

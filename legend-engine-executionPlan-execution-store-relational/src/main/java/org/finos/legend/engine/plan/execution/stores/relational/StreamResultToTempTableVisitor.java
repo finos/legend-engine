@@ -19,6 +19,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.deltalake.DeltaLakeCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
@@ -169,6 +170,12 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             streamResultToNewTarget(((RelationalResult) result).resultSet, connection, tableName, 100);
         }
         return true;
+    }
+
+    @Override
+    public Boolean visit(BigQueryCommands bigQueryCommands)
+    {
+        throw new UnsupportedOperationException("not yet implemented");
     }
 
     private boolean checkedExecute(Statement statement, String sql)

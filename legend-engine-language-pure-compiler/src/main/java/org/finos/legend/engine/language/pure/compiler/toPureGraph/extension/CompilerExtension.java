@@ -40,6 +40,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -119,15 +121,6 @@ public interface CompilerExtension
         void value(T1 var1, T2 var2, T3 var3, T4 var4, T5 var5, T6 var6, T7 var7, T8 var8);
     }
 
-    /**
-     * FIXME: to be removed
-     */
-    @Deprecated
-    default List<Procedure8<Type, ValueSpecification, CompileContext, ProcessingContext, List<ValueSpecification>, String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType, MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>>> DEPRECATED_getExtraInferredTypeProcessors()
-    {
-        return Collections.emptyList();
-    }
-
     // MISC
 
     default List<Procedure2<PackageableElement, MutableMap<String, String>>> getExtraStoreStatBuilders()
@@ -154,6 +147,11 @@ public interface CompilerExtension
      * Needed to register paths for `pathToElement` to work on old graph
      */
     default List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> getExtraExecutionOptionProcessors()
     {
         return Collections.emptyList();
     }

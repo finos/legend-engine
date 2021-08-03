@@ -1090,9 +1090,32 @@ public class Handlers
         register(handlers);
     }
 
+
+    public void register(UserDefinedFunctionHandler handler)
+    {
+        String functionName = handler.getFunctionName();
+        boolean functionRegisteredByName = isFunctionRegisteredByName(handler);
+        if (!functionRegisteredByName)
+        {
+            map.put(functionName, new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler));
+        }
+        else {
+            Assert.assertFalse(isFunctionRegisteredBySignature(handler, functionRegisteredByName), () -> "Function '" + handler.getFunctionSignature() + "' is already registered");
+            FunctionExpressionBuilder builder = map.get(functionName);
+            if (builder.supportFunctionHandler(handler))
+            {
+                builder.addFunctionHandler(handler);
+            }
+            else {
+                this.addFunctionHandler(handler, builder);
+            }
+        }
+        map.get(functionName).handlers().forEach(this::mayReplace);
+    }
+
     private void register(FunctionHandler... handlers)
     {
-        MultiHandlerFunctionExpressionBuilder handler = new MultiHandlerFunctionExpressionBuilder(handlers, this.pureModel);
+        MultiHandlerFunctionExpressionBuilder handler = new MultiHandlerFunctionExpressionBuilder(this.pureModel, handlers);
         Assert.assertTrue(map.get(handler.getFunctionName()) == null, () -> "Function '" + handler.getFunctionName() + "' is already registered");
         Arrays.stream(handlers).forEach(this.pureModel::loadModelFromFunctionHandler);
         for (FunctionHandler h : handlers)
@@ -1175,6 +1198,40 @@ public class Handlers
         return new TypeAndMultiplicity(this.pureModel.getGenericType(type), mul);
     }
 
+    private boolean isFunctionRegisteredByName(UserDefinedFunctionHandler handler)
+    {
+        return map.containsKey(handler.getFunctionName());
+    }
+
+    private boolean isFunctionRegisteredBySignature(UserDefinedFunctionHandler handler, Boolean isFunctionNameAlreadyRegistered)
+    {
+        return isFunctionNameAlreadyRegistered && map.get(handler.getFunctionName()).handlers().stream().anyMatch(val->val.getFunctionSignature().equals(handler.getFunctionSignature()));
+    }
+
+    public void addFunctionHandler(FunctionHandler handler, FunctionExpressionBuilder builder)
+    {
+        if (builder instanceof MultiHandlerFunctionExpressionBuilder)
+        {
+            addFunctionHandler(handler, (MultiHandlerFunctionExpressionBuilder) builder);
+        }
+        else
+        {
+            addFunctionHandler(handler, (CompositeFunctionExpressionBuilder) builder);
+        }
+    }
+
+    private void addFunctionHandler(FunctionHandler handler, MultiHandlerFunctionExpressionBuilder multiHandlerFunctionExpressionBuilder)
+    {
+        MultiHandlerFunctionExpressionBuilder multiHandler = new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler);
+        CompositeFunctionExpressionBuilder compositeFunctionExpressionBuilder = new CompositeFunctionExpressionBuilder(new MultiHandlerFunctionExpressionBuilder[]{multiHandlerFunctionExpressionBuilder, multiHandler});
+        map.put(handler.getFunctionName(), compositeFunctionExpressionBuilder);
+    }
+
+    private void addFunctionHandler(FunctionHandler handler, CompositeFunctionExpressionBuilder compositeFunctionExpressionBuilder)
+    {
+        compositeFunctionExpressionBuilder.getBuilders().add(new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler));
+
+    }
 
     // --------------------------------------------- Function expression builder ----------------------------------
 
@@ -1197,7 +1254,7 @@ public class Handlers
     public MultiHandlerFunctionExpressionBuilder m(FunctionHandler... handlers)
     {
         Arrays.stream(handlers).forEach(this.pureModel::loadModelFromFunctionHandler);
-        return new MultiHandlerFunctionExpressionBuilder(handlers, this.pureModel);
+        return new MultiHandlerFunctionExpressionBuilder(this.pureModel, handlers);
     }
 
     public CompositeFunctionExpressionBuilder m(FunctionExpressionBuilder... builders)

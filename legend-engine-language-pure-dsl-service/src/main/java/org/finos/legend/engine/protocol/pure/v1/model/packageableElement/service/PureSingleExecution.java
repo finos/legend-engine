@@ -14,13 +14,17 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
+
+import java.util.List;
 
 public class PureSingleExecution extends PureExecution
 {
     // TODO: maybe it's better to have MappingPointer (with source information) instead of just the mapping string here
     public String mapping;
     public Runtime runtime;
+    public List<ExecutionOption> executionOptions;
     public SourceInformation mappingSourceInformation;
 }

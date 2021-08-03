@@ -30,13 +30,14 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBuilder
 {
     MutableList<FunctionHandler> handlers;
 
-    public MultiHandlerFunctionExpressionBuilder(FunctionHandler[] handlers, PureModel pureModel)
+    public MultiHandlerFunctionExpressionBuilder(PureModel pureModel, FunctionHandler... handlers)
     {
         this.handlers = FastList.newListWith(handlers);
         MutableList<String> names = this.handlers.collect(FunctionHandler::getFunctionName).distinct();
@@ -51,9 +52,27 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     }
 
     @Override
+    public void addFunctionHandler(FunctionHandler handler)
+    {
+        handlers.add(handler);
+    }
+
+    @Override
+    public Boolean supportFunctionHandler(FunctionHandler handler)
+    {
+        return this.getParametersSize().isPresent() && this.getParametersSize().get() == handler.getParametersSize();
+    }
+
+    @Override
+    public Optional<Integer> getParametersSize()
+    {
+        return Optional.of(handlers.get(0).getParametersSize());
+    }
+
+    @Override
     public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<ValueSpecification> parameters, MutableList<String> openVariables, CompileContext compileContext, ProcessingContext processingContext)
     {
-        if (test(handlers.get(0).getFunc(), parameters, compileContext.pureModel))
+        if (test(handlers.get(0).getFunc(), parameters, compileContext.pureModel, processingContext))
         {
             List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processed = parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(compileContext, openVariables, processingContext))).collect(Collectors.toList());
             return Tuples.pair(buildFunctionExpressionGraph(processed, openVariables, compileContext, processingContext), processed);

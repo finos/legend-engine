@@ -51,6 +51,10 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
                     ._privateKeyVaultReference(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).privateKeyVaultReference)
                     ._passPhraseVaultReference(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).passPhraseVaultReference);
         }
+        else if (authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
+        {
+            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl("");
+        }
         return null;
     }
 }
