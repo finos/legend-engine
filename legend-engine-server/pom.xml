@@ -113,6 +113,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-application-query</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-service</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -318,6 +322,14 @@
             <artifactId>commons-io</artifactId>
         </dependency>
         <!-- COMMONS IO -->
+
+
+        <!-- MONGODB -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+        </dependency>
+        <!-- MONGODB -->
 
         <!-- LOG -->
         <dependency>
