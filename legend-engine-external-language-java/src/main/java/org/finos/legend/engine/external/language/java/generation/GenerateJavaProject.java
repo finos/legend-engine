@@ -52,7 +52,7 @@ public abstract class GenerateJavaProject
         ClassLoader classLoader = Pure.class.getClassLoader();
         this.executionSupport = new CompiledExecutionSupport(
                 new JavaCompilerState(null, classLoader),
-                new CompiledProcessorSupport(classLoader, new MetadataLazy(classLoader), Sets.mutable.empty()),
+                new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader), Sets.mutable.empty()),
                 null,
                 new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
                         CodeRepository.newPlatformCodeRepository(),
@@ -73,9 +73,9 @@ public abstract class GenerateJavaProject
         Root_meta_java_metamodel_project_Project project = doExecute(executionSupport);
 
         Root_meta_java_metamodel_project_ProjectDirectory javaDir = project._root()
-                                                                           ._subdirectories().select(sd -> sd._name().equals("src")).getFirst()
-                                                                           ._subdirectories().select(sd -> sd._name().equals("main")).getFirst()
-                                                                           ._subdirectories().select(sd -> sd._name().equals("java")).getFirst();
+                                                                           ._subdirectories().detect(sd -> "src".equals(sd._name()))
+                                                                           ._subdirectories().detect(sd -> "main".equals(sd._name()))
+                                                                           ._subdirectories().detect(sd -> "java".equals(sd._name()));
         javaDir._subdirectories().forEach(dir -> processDir(dir, Paths.get(outputDirectory)));
     }
 
