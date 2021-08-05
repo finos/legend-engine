@@ -1,0 +1,23 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": [
+    {
+      "name": "Acme Inc.",
+      "ranking": 2
+    },
+    {
+      "name": "Globex Corp",
+      "ranking": null
+    },
+    {
+      "name": "Widget Engineering",
+      "ranking": 1
+    },
+    {
+      "name": "Allied British Plastics",
+      "ranking": 39
+    }
+  ]
+}

@@ -114,10 +114,21 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
             IInMemoryRootGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
 
             childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.pm, this.executionState));
-
-            Iterator<?> sourceObjectsIterator = childResult instanceof StoreStreamReadingResult ?
-                    ((StoreStreamReadingResult<?>) childResult).getObjectsIterator() :
-                    ((StreamingObjectResult<?>) childResult).getObjectStream().iterator();
+            Iterator<?> sourceObjectsIterator;
+            if (childResult instanceof StoreStreamReadingResult)
+            {
+                StoreStreamReadingResult<?> storeStreamReadingResult = (StoreStreamReadingResult) childResult;
+                sourceObjectsIterator = storeStreamReadingResult.getObjectsIterator();
+            }
+            else if (childResult instanceof StreamingObjectResult)
+            {
+                StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult) childResult;
+                sourceObjectsIterator = streamingObjectResult.getObjectStream().iterator();
+            }
+            else
+            {
+                throw new IllegalStateException("Unsupported result type: " + childResult.getClass().getSimpleName());
+            }
 
             AtomicLong batchIndex = new AtomicLong(0L);
 

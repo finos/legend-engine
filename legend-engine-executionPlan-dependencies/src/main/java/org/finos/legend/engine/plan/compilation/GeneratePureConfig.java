@@ -399,14 +399,70 @@ public class GeneratePureConfig
     {
         javaClasses.values().forEach(JavaClass::computeDependencies);
         Output out = new Output();
+        // Splits to avoid checkstyle error
+        out.lineOut("// Copy" + "right " + LocalDate.now().getYear() + " Goldman Sachs");
+        out.lineOut("//");
+        out.lineOut("// Licensed under the Apache License, Version 2.0 (the \"License\");");
+        out.lineOut("// you may not use this file except in compliance with the License.");
+        out.lineOut("// You may obtain a copy of the License at");
+        out.lineOut("//");
+        out.lineOut("//      http://www.apache.org" + "/licenses/LICENSE-2.0");
+        out.lineOut("//");
+        out.lineOut("// Unless required by applicable law or agreed to in writing, software");
+        out.lineOut("// distributed under the License is distributed on an \"AS IS\" BASIS,");
+        out.lineOut("// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.");
+        out.lineOut("// See the License for the specific language governing permissions and");
+        out.lineOut("// limitations under the License.");
+        out.lineOut("");
+
         if (extensionName == null)
         {
-            mainHeader(out);
+            out.lineOut("/*");
+            out.lineOut(" * Generated main configuration: see " + GeneratePureConfig.class.getCanonicalName());
+            out.lineOut(" */");
         }
         else
         {
-            extensionHeader(out);
+            out.lineOut("/*");
+            out.lineOut(" * Generated extension " + extensionName + " class definitions: see " + extensionClass.getCanonicalName());
+            out.lineOut(" */");
         }
+
+        out.lineOut("");
+        out.lineOut("import " + purePackage + "*;");
+        out.lineOut("import meta::java::generation::convention::*;");
+        out.lineOut("import meta::java::metamodel::factory::*;");
+        out.lineOut("");
+
+        if (!classes.isEmpty())
+        {
+            classes.forEach(c -> c.accept(out));
+            out.lineOut("");
+        }
+
+        if (extensionName == null)
+        {
+            out.lineOut("function " + purePackage + "applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::router::extension::RouterExtension[*]):Conventions[1]");
+        }
+        else
+        {
+            out.lineOut("/*");
+            out.lineOut(" * This function should be assigned to the router extension:");
+            out.lineOut(" *");
+            out.lineOut(" *     plan_javaRuntime_enginePlatformDependencies_conventions = " + purePackage + "extendJavaEngineDependencies_Conventions_1__Conventions_1_");
+            out.lineOut(" */");
+            out.lineOut("function " + purePackage + "extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]");
+        }
+        out.lineOut("{");
+        out.indent();
+
+        if (!predefinedJavaClasses.isEmpty())
+        {
+            out.lineOut("");
+            predefinedJavaClasses.values().forEach(p -> p.declaration(out));
+        }
+
+        out.lineOut("");
 
         List<JavaClass> pending = new ArrayList<>(javaClasses.values());
         while (!pending.isEmpty())
@@ -429,8 +485,6 @@ public class GeneratePureConfig
             out.finishLine(";");
             out.lineOut("");
             out.lineOut("$extensions.plan_javaRuntime_enginePlatformDependencies_conventions->fold({e,b|$e->eval($b)}, $res);");
-            out.outdent();
-            out.lineOut("}");
         }
         else
         {
@@ -439,76 +493,12 @@ public class GeneratePureConfig
             providedTypes.forEach(pt -> pt.accept(out));
             out.outdent();
             out.finishLine(";");
-            out.outdent();
-            out.lineOut("},");
         }
+
+        out.outdent();
+        out.lineOut("}");
 
         return out.toString();
-    }
-
-    private void mainHeader(Output out)
-    {
-        // Splits to avoid checkstyle error
-        out.lineOut("// Copy" + "right " + LocalDate.now().getYear() + " Goldman Sachs");
-        out.lineOut("//");
-        out.lineOut("// Licensed under the Apache License, Version 2.0 (the \"License\");");
-        out.lineOut("// you may not use this file except in compliance with the License.");
-        out.lineOut("// You may obtain a copy of the License at");
-        out.lineOut("//");
-        out.lineOut("//      http://www.apache.org" + "/licenses/LICENSE-2.0");
-        out.lineOut("//");
-        out.lineOut("// Unless required by applicable law or agreed to in writing, software");
-        out.lineOut("// distributed under the License is distributed on an \"AS IS\" BASIS,");
-        out.lineOut("// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.");
-        out.lineOut("// See the License for the specific language governing permissions and");
-        out.lineOut("// limitations under the License.");
-        out.lineOut("");
-        out.lineOut("/*");
-        out.lineOut(" * Generated main configuration: see " + GeneratePureConfig.class.getCanonicalName());
-        out.lineOut(" */");
-        out.lineOut("");
-        out.lineOut("import " + PURE_PACKAGE + "*;");
-        out.lineOut("import meta::java::generation::convention::*;");
-        out.lineOut("import meta::java::metamodel::factory::*;");
-        out.lineOut("");
-        classes.forEach(c -> c.accept(out));
-        out.lineOut("");
-        out.lineOut("function " + PURE_PACKAGE + "applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::router::extension::RouterExtension[*]):Conventions[1]");
-        out.lineOut("{");
-        out.indent();
-    }
-
-    private void extensionHeader(Output out)
-    {
-        out.lineOut("import meta::java::generation::convention::*;");
-        out.lineOut("import meta::java::metamodel::factory::*;");
-        out.lineOut("");
-        if (!classes.isEmpty())
-        {
-            out.lineOut("/*");
-            out.lineOut(" * Generated extension " + extensionName + " class definitions: see " + extensionClass.getCanonicalName());
-            out.lineOut(" */");
-            classes.forEach(c -> c.accept(out));
-            out.lineOut("");
-        }
-        out.lineOut("");
-        out.indent();
-        out.indent();
-        out.lineOut("plan_javaRuntime_enginePlatformDependencies_conventions =");
-        out.indent();
-        out.lineOut("{conventions : Conventions[1] |");
-        out.indent();
-        out.lineOut("/*");
-        out.lineOut(" * Generated extension " + extensionName + " configuration: see " + extensionClass.getCanonicalName());
-        out.lineOut(" */");
-
-        if (!predefinedJavaClasses.isEmpty())
-        {
-            out.lineOut("");
-            predefinedJavaClasses.values().forEach(p -> p.declaration(out));
-        }
-
-        out.lineOut("");
     }
 
     private static class Output

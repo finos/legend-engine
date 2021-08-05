@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.fixprotocol.org/FIXML-5-0-SP2" targetNamespace="http://www.fixprotocol.org/FIXML-5-0-SP2" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xs:include schemaLocation="fixml-application-impl-5-0-SP2_.xsd"/>
+  <xs:include schemaLocation="fixml-businessreject-impl-5-0-SP2_.xsd"/>
+  <xs:include schemaLocation="fixml-network-impl-5-0-SP2_.xsd"/>
+  <xs:include schemaLocation="fixml-usermanagement-impl-5-0-SP2_.xsd"/>
+</xs:schema>

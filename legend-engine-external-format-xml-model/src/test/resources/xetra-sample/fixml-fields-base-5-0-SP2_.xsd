@@ -1,0 +1,3219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.fixprotocol.org/FIXML-5-0-SP2" targetNamespace="http://www.fixprotocol.org/FIXML-5-0-SP2" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xs:include schemaLocation="fixml-datatypes-5-0-SP2_.xsd"/>
+  <xs:simpleType name="Currency_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Identifies currency used for price. Absence of this field is interpreted as the default for the security. It is recommended that systems provide the currency value whenever possible. See &amp;quot;Appendix 6-A: Valid Currency Codes&amp;quot; for information on obtaining valid values.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="Currency" tag="15" datatype="Currency" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Currency"/>
+  </xs:simpleType>
+  <xs:simpleType name="SettlCurrency_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SettlCurrency" tag="120" datatype="Currency" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Currency"/>
+  </xs:simpleType>
+  <xs:simpleType name="DepositType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="DepositType" tag="28890" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Auslandskassenverein"/>
+        <x:EnumDoc value="2" desc="Girosammelverwahrung"/>
+        <x:EnumDoc value="3" desc="Streifbandverwahrung"/>
+        <x:EnumDoc value="4" desc="Wertpapierrechnung"/>
+        <x:EnumDoc value="5" desc="NCSC via T2S (NCSC-T)"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DecaySplit_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="DecaySplit" tag="25144" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Month"/>
+        <x:EnumDoc value="3" desc="Quarter"/>
+        <x:EnumDoc value="6" desc="Season"/>
+        <x:EnumDoc value="12" desc="Year"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="12"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentAuctionType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="InstrmtAuctTyp" tag="31803" datatype="int" ComponentType="Field" StdAbrev="InstrmtAuctTyp" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Default"/>
+        <x:EnumDoc value="1" desc="SingleAuction"/>
+        <x:EnumDoc value="2" desc="SpecialAuction"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AccruedInterestCalculationMethod_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="CouponDayCount" tag="1950" datatype="int" ComponentType="Field" StdAbrev="CpnDayCnt" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Basis30360"/>
+        <x:EnumDoc value="3" desc="M30360"/>
+        <x:EnumDoc value="6" desc="Act360"/>
+        <x:EnumDoc value="7" desc="Act365Fixed"/>
+        <x:EnumDoc value="8" desc="ActActAFB"/>
+        <x:EnumDoc value="9" desc="ActActIcma"/>
+        <x:EnumDoc value="11" desc="ActActIsda"/>
+        <x:EnumDoc value="14" desc="Act365L"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="9"/>
+      <xs:enumeration value="11"/>
+      <xs:enumeration value="14"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CouponType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="CouponType" tag="1946" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Zero"/>
+        <x:EnumDoc value="2" desc="FixedRate"/>
+        <x:EnumDoc value="3" desc="FloatingRate"/>
+        <x:EnumDoc value="4" desc="Structured"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FlatIndicator_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="FlatIndicator" tag="25170" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="NoFlat"/>
+        <x:EnumDoc value="2" desc="Flat"/>
+        <x:EnumDoc value="3" desc="XFlat"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="WarrantType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="WarrantTYpe" tag="30762" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Call"/>
+        <x:EnumDoc value="2" desc="Put"/>
+        <x:EnumDoc value="3" desc="Range"/>
+        <x:EnumDoc value="4" desc="Certificate"/>
+        <x:EnumDoc value="5" desc="Other"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityIDSource_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified.
+100+ are reserved for private security identifications
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityIDSource" tag="22" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="CUSIP"/>
+        <x:EnumDoc value="2" desc="SEDOL"/>
+        <x:EnumDoc value="3" desc="QUIK"/>
+        <x:EnumDoc value="4" desc="ISIN number"/>
+        <x:EnumDoc value="5" desc="RIC code"/>
+        <x:EnumDoc value="6" desc="ISO Currency Code"/>
+        <x:EnumDoc value="7" desc="ISO Country Code"/>
+        <x:EnumDoc value="8" desc="Exchange Symbol"/>
+        <x:EnumDoc value="9" desc="Consolidated Tape Association (CTA) Symbol (SIAC CTS/CQS line format)"/>
+        <x:EnumDoc value="A" desc="Bloomberg Symbol"/>
+        <x:EnumDoc value="B" desc="Wertpapier"/>
+        <x:EnumDoc value="C" desc="Dutch"/>
+        <x:EnumDoc value="D" desc="Valoren"/>
+        <x:EnumDoc value="E" desc="Sicovam"/>
+        <x:EnumDoc value="F" desc="Belgian"/>
+        <x:EnumDoc value="G" desc="&quot;Common&quot; (Clearstream and Euroclear)"/>
+        <x:EnumDoc value="H" desc="Clearing House / Clearing Organization"/>
+        <x:EnumDoc value="I" desc="ISDA/FpML Product Specification (XML in EncodedSecurityDesc)"/>
+        <x:EnumDoc value="J" desc="Option Price Reporting Authority"/>
+        <x:EnumDoc value="K" desc="ISDA/FpML Product URL (URL in SecurityID)"/>
+        <x:EnumDoc value="L" desc="Letter of Credit"/>
+        <x:EnumDoc value="M" desc="Marketplace-assigned Identifier"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="9"/>
+      <xs:enumeration value="A"/>
+      <xs:enumeration value="B"/>
+      <xs:enumeration value="C"/>
+      <xs:enumeration value="D"/>
+      <xs:enumeration value="E"/>
+      <xs:enumeration value="F"/>
+      <xs:enumeration value="G"/>
+      <xs:enumeration value="H"/>
+      <xs:enumeration value="I"/>
+      <xs:enumeration value="J"/>
+      <xs:enumeration value="K"/>
+      <xs:enumeration value="L"/>
+      <xs:enumeration value="M"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingSecurityIDSource_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified.
+100+ are reserved for private security identifications
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityIDSource" tag="30305" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="CUSIP"/>
+        <x:EnumDoc value="2" desc="SEDOL"/>
+        <x:EnumDoc value="3" desc="QUIK"/>
+        <x:EnumDoc value="4" desc="ISIN number"/>
+        <x:EnumDoc value="5" desc="RIC code"/>
+        <x:EnumDoc value="6" desc="ISO Currency Code"/>
+        <x:EnumDoc value="7" desc="ISO Country Code"/>
+        <x:EnumDoc value="8" desc="Exchange Symbol"/>
+        <x:EnumDoc value="9" desc="Consolidated Tape Association (CTA) Symbol (SIAC CTS/CQS line format)"/>
+        <x:EnumDoc value="A" desc="Bloomberg Symbol"/>
+        <x:EnumDoc value="B" desc="Wertpapier"/>
+        <x:EnumDoc value="C" desc="Dutch"/>
+        <x:EnumDoc value="D" desc="Valoren"/>
+        <x:EnumDoc value="E" desc="Sicovam"/>
+        <x:EnumDoc value="F" desc="Belgian"/>
+        <x:EnumDoc value="G" desc="&quot;Common&quot; (Clearstream and Euroclear)"/>
+        <x:EnumDoc value="H" desc="Clearing House / Clearing Organization"/>
+        <x:EnumDoc value="I" desc="ISDA/FpML Product Specification (XML in EncodedSecurityDesc)"/>
+        <x:EnumDoc value="J" desc="Option Price Reporting Authority"/>
+        <x:EnumDoc value="K" desc="ISDA/FpML Product URL (URL in SecurityID)"/>
+        <x:EnumDoc value="L" desc="Letter of Credit"/>
+        <x:EnumDoc value="M" desc="Marketplace-assigned Identifier"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="9"/>
+      <xs:enumeration value="A"/>
+      <xs:enumeration value="B"/>
+      <xs:enumeration value="C"/>
+      <xs:enumeration value="D"/>
+      <xs:enumeration value="E"/>
+      <xs:enumeration value="F"/>
+      <xs:enumeration value="G"/>
+      <xs:enumeration value="H"/>
+      <xs:enumeration value="I"/>
+      <xs:enumeration value="J"/>
+      <xs:enumeration value="K"/>
+      <xs:enumeration value="L"/>
+      <xs:enumeration value="M"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingInstrumentSecurityIDSource_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified.
+            100+ are reserved for private security identifications
+      </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityIDSource" tag="305" datatype="String" ComponentType="Field" StdAbrev="Src" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="M" desc="Marketplace-assigned Identifier"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="M"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Security identifier value of SecurityIDSource (22) type (e.g. CUSIP, SEDOL, ISIN, etc). Requires SecurityIDSource.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityID" tag="48" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingSecurityID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Security identifier value of SecurityIDSource (22) type (e.g. CUSIP, SEDOL, ISIN, etc). Requires SecurityIDSource.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="UnderlyingSecurityID" tag="30309" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingInstrumentSecurityID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Identifies the reference Security value of SecurityIDSource (22) type. Requires SecurityIDSource.</xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="UnderlyingSecurityID" tag="309" datatype="String" ComponentType="Field" StdAbrev="ID" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityDesc_t">
+    <xs:annotation>
+      <xs:documentation>Can be used to provide an optional textual description for a financial instrument.</xs:documentation>
+      <xs:appinfo>
+        <xs:Xref Protocol="FIX" name="SecurityDesc" ComponentType="Field" Tag="107" Type="String" AbbrName="Desc"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="SenderCompID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Assigned value used to identify firm sending message.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SenderCompID" tag="49" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="TransactTime_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Timestamp when the business transaction represented by the message occurred.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="TransactTime" tag="60" datatype="UTCTimestamp" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="UTCTimestamp"/>
+  </xs:simpleType>
+  <xs:simpleType name="EffectiveBusinessDate_t">
+    <xs:annotation>
+      <xs:documentation>Current trading date.</xs:documentation>
+      <xs:appinfo>
+        <xs:Xref Protocol="FIX" name="EffectiveBusinessDate" ComponentType="Field" Tag="2400" Type="LocalMktDate" AbbrName="EfctvBizDt"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="LocalMktDate"/>
+  </xs:simpleType>
+  <xs:simpleType name="RoundLot_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+         Minimum Tradable Unit.
+
+         </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="RoundLot" tag="561" datatype="Qty" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Qty"/>
+  </xs:simpleType>
+  <xs:simpleType name="MinTradeVol_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+         Minimum Order Qty.
+
+         </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MinTradeVol" tag="562" datatype="Qty" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Qty"/>
+  </xs:simpleType>
+  <xs:simpleType name="IssueDate_t">
+    <xs:annotation>
+      <xs:documentation>The date on which a bond is issuer.</xs:documentation>
+      <xs:appinfo>
+        <xs:Xref Protocol="FIX" name="IssueDate" ComponentType="Field" Tag="225" Type="LocalMktDate" AbbrName="Issued"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="LocalMktDate"/>
+  </xs:simpleType>
+  <xs:simpleType name="NextEffectiveBusinessDate_t">
+    <xs:annotation>
+      <xs:documentation>Next trading date.</xs:documentation>
+      <xs:appinfo>
+        <xs:Xref Protocol="FIX" name="NextEffectiveBusinessDate" ComponentType="Field" Tag="28871" Type="LocalMktDate" AbbrName="NxtEfctvBizDt"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="LocalMktDate"/>
+  </xs:simpleType>
+  <xs:simpleType name="PrevTradeDate_t">
+    <xs:annotation>
+      <xs:documentation>Previous Business Date</xs:documentation>
+      <xs:appinfo>
+        <xs:Xref Protocol="FIX" name="PrevTradeDate" ComponentType="Field" Tag="28839" Type="LocalMktDate" AbbrName="PrevTrdDt"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="LocalMktDate"/>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingPrevClosePx_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Previous closing price of security.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="UnderlyingPrevClosePx" tag="28843" datatype="Price" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Indicates type of security. Security type enumerations are grouped by Product(460) field value. NOTE: Additional values may be used by mutual agreement of the counterparties.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityType" tag="167" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="?" desc="Wildcard entry for use on Security Definition Request"/>
+        <x:EnumDoc value="ABS" desc="Asset-backed Securities"/>
+        <x:EnumDoc value="AMENDED" desc="Amended &amp; Restated"/>
+        <x:EnumDoc value="AN" desc="Other Anticipation Notes (BAN, GAN, etc.)"/>
+        <x:EnumDoc value="BA" desc="Bankers Acceptance"/>
+        <x:EnumDoc value="BDN" desc="Bank Depository Note"/>
+        <x:EnumDoc value="BN" desc="Bank Notes"/>
+        <x:EnumDoc value="BOND" desc="Bond"/>
+        <x:EnumDoc value="BOX" desc="Bill Of Exchanges"/>
+        <x:EnumDoc value="BRADY" desc="Brady Bond"/>
+        <x:EnumDoc value="BRIDGE" desc="Bridge Loan"/>
+        <x:EnumDoc value="BUYSELL" desc="Buy Sellback"/>
+        <x:EnumDoc value="CAMM" desc="Canadian Money Markets"/>
+        <x:EnumDoc value="CAN" desc="Canadian Treasury Notes"/>
+        <x:EnumDoc value="CASH" desc="Cash"/>
+        <x:EnumDoc value="CB" desc="Convertible Bond"/>
+        <x:EnumDoc value="CD" desc="Certificate Of Deposit"/>
+        <x:EnumDoc value="CDS" desc="Credit Default Swap"/>
+        <x:EnumDoc value="CL" desc="Call Loans"/>
+        <x:EnumDoc value="CMB" desc="Canadian Mortgage Bonds"/>
+        <x:EnumDoc value="CMBS" desc="Corp. Mortgage-backed Securities"/>
+        <x:EnumDoc value="CMO" desc="Collateralized Mortgage Obligation"/>
+        <x:EnumDoc value="COFO" desc="Certificate Of Obligation"/>
+        <x:EnumDoc value="COFP" desc="Certificate Of Participation"/>
+        <x:EnumDoc value="CORP" desc="Corporate Bond"/>
+        <x:EnumDoc value="CP" desc="Commercial Paper"/>
+        <x:EnumDoc value="CPP" desc="Corporate Private Placement"/>
+        <x:EnumDoc value="CS" desc="Common Stock"/>
+        <x:EnumDoc value="CTB" desc="Canadian Treasury Bills"/>
+        <x:EnumDoc value="DEFLTED" desc="Defaulted"/>
+        <x:EnumDoc value="DINP" desc="Debtor In Possession"/>
+        <x:EnumDoc value="DN" desc="Deposit Notes"/>
+        <x:EnumDoc value="DUAL" desc="Dual Currency"/>
+        <x:EnumDoc value="ETC" desc="Exchange Traded Commodity"/>
+        <x:EnumDoc value="ETF" desc="Exchange Traded Fund"/>
+        <x:EnumDoc value="ETN" desc="Exchange Traded Note"/>
+        <x:EnumDoc value="EUCD" desc="Euro Certificate Of Deposit"/>
+        <x:EnumDoc value="EUCORP" desc="Euro Corporate Bond"/>
+        <x:EnumDoc value="EUCP" desc="Euro Commercial Paper"/>
+        <x:EnumDoc value="EUFRN" desc="Euro Corporate Floating Rate Notes"/>
+        <x:EnumDoc value="EUSOV" desc="Euro Sovereigns *"/>
+        <x:EnumDoc value="EUSUPRA" desc="Euro Supranational Coupons *"/>
+        <x:EnumDoc value="FAC" desc="Federal Agency Coupon"/>
+        <x:EnumDoc value="FADN" desc="Federal Agency Discount Note"/>
+        <x:EnumDoc value="FOR" desc="Foreign Exchange Contract"/>
+        <x:EnumDoc value="FORWARD" desc="Forward"/>
+        <x:EnumDoc value="FRN" desc="US Corporate Floating Rate Notes"/>
+        <x:EnumDoc value="FUN" desc="Investment Fund"/>
+        <x:EnumDoc value="FUT" desc="Future"/>
+        <x:EnumDoc value="FXFWD" desc="FX Forward"/>
+        <x:EnumDoc value="FXNDF" desc="Non-deliverable forward"/>
+        <x:EnumDoc value="FXSPOT" desc="FX Spot"/>
+        <x:EnumDoc value="FXSWAP" desc="FX Swap"/>
+        <x:EnumDoc value="GO" desc="General Obligation Bonds"/>
+        <x:EnumDoc value="IET" desc="IOETTE Mortgage"/>
+        <x:EnumDoc value="IRS" desc="Interest Rate Swap"/>
+        <x:EnumDoc value="LOFC" desc="Letter Of Credit"/>
+        <x:EnumDoc value="LQN" desc="Liquidity Note"/>
+        <x:EnumDoc value="MATURED" desc="Matured"/>
+        <x:EnumDoc value="MBS" desc="Mortgage-backed Securities"/>
+        <x:EnumDoc value="MF" desc="Mutual Fund"/>
+        <x:EnumDoc value="MIO" desc="Mortgage Interest Only"/>
+        <x:EnumDoc value="MLEG" desc="Multileg Instrument"/>
+        <x:EnumDoc value="MPO" desc="Mortgage Principal Only"/>
+        <x:EnumDoc value="MPP" desc="Mortgage Private Placement"/>
+        <x:EnumDoc value="MPT" desc="Miscellaneous Pass-through"/>
+        <x:EnumDoc value="MT" desc="Mandatory Tender"/>
+        <x:EnumDoc value="MTN" desc="Medium Term Notes"/>
+        <x:EnumDoc value="NONE" desc="No Security Type"/>
+        <x:EnumDoc value="ONITE" desc="Overnight"/>
+        <x:EnumDoc value="OOC" desc="Options on Combo"/>
+        <x:EnumDoc value="OOF" desc="Options on Futures"/>
+        <x:EnumDoc value="OOP" desc="Options on Physical - use not recommended"/>
+        <x:EnumDoc value="OPT" desc="Option"/>
+        <x:EnumDoc value="OTHER" desc="Other"/>
+        <x:EnumDoc value="PEF" desc="Private Export Funding *"/>
+        <x:EnumDoc value="PFAND" desc="Pfandbriefe *"/>
+        <x:EnumDoc value="PN" desc="Promissory Note"/>
+        <x:EnumDoc value="PROV" desc="Canadian Provincial Bonds"/>
+        <x:EnumDoc value="PS" desc="Preferred Stock"/>
+        <x:EnumDoc value="PZFJ" desc="Plazos Fijos"/>
+        <x:EnumDoc value="RAN" desc="Revenue Anticipation Note"/>
+        <x:EnumDoc value="REPLACD" desc="Replaced"/>
+        <x:EnumDoc value="REPO" desc="Repurchase"/>
+        <x:EnumDoc value="RETIRED" desc="Retired"/>
+        <x:EnumDoc value="REV" desc="Revenue Bonds"/>
+        <x:EnumDoc value="RVLV" desc="Revolver Loan"/>
+        <x:EnumDoc value="RVLVTRM" desc="Revolver/Term Loan"/>
+        <x:EnumDoc value="SECLOAN" desc="Securities Loan"/>
+        <x:EnumDoc value="SECPLEDGE" desc="Securities Pledge"/>
+        <x:EnumDoc value="SLQN" desc="Secured Liquidity Note"/>
+        <x:EnumDoc value="SPCLA" desc="Special Assessment"/>
+        <x:EnumDoc value="SPCLO" desc="Special Obligation"/>
+        <x:EnumDoc value="SPCLT" desc="Special Tax"/>
+        <x:EnumDoc value="SR" desc="Subscription Right"/>
+        <x:EnumDoc value="STN" desc="Short Term Loan Note"/>
+        <x:EnumDoc value="STRUCT" desc="Structured Notes"/>
+        <x:EnumDoc value="SUPRA" desc="USD Supranational Coupons *"/>
+        <x:EnumDoc value="SWING" desc="Swing Line Facility"/>
+        <x:EnumDoc value="TAN" desc="Tax Anticipation Note"/>
+        <x:EnumDoc value="TARP" desc="Trade At Reference Price"/>
+        <x:EnumDoc value="TAXA" desc="Tax Allocation"/>
+        <x:EnumDoc value="TB" desc="Treasury Bill - non US"/>
+        <x:EnumDoc value="TBA" desc="To Be Announced"/>
+        <x:EnumDoc value="TBILL" desc="US Treasury Bill"/>
+        <x:EnumDoc value="TBOND" desc="US Treasury Bond"/>
+        <x:EnumDoc value="TCAL" desc="Principal Strip Of A Callable Bond Or Note"/>
+        <x:EnumDoc value="TD" desc="Time Deposit"/>
+        <x:EnumDoc value="TECP" desc="Tax Exempt Commercial Paper"/>
+        <x:EnumDoc value="TERM" desc="Term Loan"/>
+        <x:EnumDoc value="TINT" desc="Interest Strip From Any Bond Or Note"/>
+        <x:EnumDoc value="TIPS" desc="Treasury Inflation Protected Securities"/>
+        <x:EnumDoc value="TLQN" desc="Term Liquidity Note"/>
+        <x:EnumDoc value="TMCP" desc="Taxable Municipal CP"/>
+        <x:EnumDoc value="TNOTE" desc="US Treasury Note"/>
+        <x:EnumDoc value="TPRN" desc="Principal Strip From A Non-Callable Bond Or Note"/>
+        <x:EnumDoc value="TRAN" desc="Tax Revenue Anticipation Note"/>
+        <x:EnumDoc value="TRF" desc="Total Return Futures"/>
+        <x:EnumDoc value="UST" desc="US Treasury Note (Deprecated Value Use TNOTE)"/>
+        <x:EnumDoc value="USTB" desc="US Treasury Bill (Deprecated Value Use TBILL)"/>
+        <x:EnumDoc value="VAR" desc="Variance Futures"/>
+        <x:EnumDoc value="VRDN" desc="Variable Rate Demand Note"/>
+        <x:EnumDoc value="WAR" desc="Warrant"/>
+        <x:EnumDoc value="WITHDRN" desc="Withdrawn"/>
+        <x:EnumDoc value="XCN" desc="Extended Comm Note"/>
+        <x:EnumDoc value="XLINKD" desc="Indexed Linked"/>
+        <x:EnumDoc value="YANK" desc="Yankee Corporate Bond"/>
+        <x:EnumDoc value="YCD" desc="Yankee Certificate Of Deposit"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="?"/>
+      <xs:enumeration value="ABS"/>
+      <xs:enumeration value="AMENDED"/>
+      <xs:enumeration value="AN"/>
+      <xs:enumeration value="BA"/>
+      <xs:enumeration value="BDN"/>
+      <xs:enumeration value="BN"/>
+      <xs:enumeration value="BOND"/>
+      <xs:enumeration value="BOX"/>
+      <xs:enumeration value="BRADY"/>
+      <xs:enumeration value="BRIDGE"/>
+      <xs:enumeration value="BUYSELL"/>
+      <xs:enumeration value="CAMM"/>
+      <xs:enumeration value="CAN"/>
+      <xs:enumeration value="CASH"/>
+      <xs:enumeration value="CB"/>
+      <xs:enumeration value="CD"/>
+      <xs:enumeration value="CDS"/>
+      <xs:enumeration value="CL"/>
+      <xs:enumeration value="CMB"/>
+      <xs:enumeration value="CMBS"/>
+      <xs:enumeration value="CMO"/>
+      <xs:enumeration value="COFO"/>
+      <xs:enumeration value="COFP"/>
+      <xs:enumeration value="CORP"/>
+      <xs:enumeration value="CP"/>
+      <xs:enumeration value="CPP"/>
+      <xs:enumeration value="CS"/>
+      <xs:enumeration value="CTB"/>
+      <xs:enumeration value="DEFLTED"/>
+      <xs:enumeration value="DINP"/>
+      <xs:enumeration value="DN"/>
+      <xs:enumeration value="DUAL"/>
+      <xs:enumeration value="ETC"/>
+      <xs:enumeration value="ETF"/>
+      <xs:enumeration value="ETN"/>
+      <xs:enumeration value="EUCD"/>
+      <xs:enumeration value="EUCORP"/>
+      <xs:enumeration value="EUCP"/>
+      <xs:enumeration value="EUFRN"/>
+      <xs:enumeration value="EUSOV"/>
+      <xs:enumeration value="EUSUPRA"/>
+      <xs:enumeration value="FAC"/>
+      <xs:enumeration value="FADN"/>
+      <xs:enumeration value="FOR"/>
+      <xs:enumeration value="FORWARD"/>
+      <xs:enumeration value="FRN"/>
+      <xs:enumeration value="FUN"/>
+      <xs:enumeration value="FUT"/>
+      <xs:enumeration value="FXFWD"/>
+      <xs:enumeration value="FXNDF"/>
+      <xs:enumeration value="FXSPOT"/>
+      <xs:enumeration value="FXSWAP"/>
+      <xs:enumeration value="GO"/>
+      <xs:enumeration value="IET"/>
+      <xs:enumeration value="IRS"/>
+      <xs:enumeration value="LOFC"/>
+      <xs:enumeration value="LQN"/>
+      <xs:enumeration value="MATURED"/>
+      <xs:enumeration value="MBS"/>
+      <xs:enumeration value="MF"/>
+      <xs:enumeration value="MIO"/>
+      <xs:enumeration value="MLEG"/>
+      <xs:enumeration value="MPO"/>
+      <xs:enumeration value="MPP"/>
+      <xs:enumeration value="MPT"/>
+      <xs:enumeration value="MT"/>
+      <xs:enumeration value="MTN"/>
+      <xs:enumeration value="NONE"/>
+      <xs:enumeration value="ONITE"/>
+      <xs:enumeration value="OOC"/>
+      <xs:enumeration value="OOF"/>
+      <xs:enumeration value="OOP"/>
+      <xs:enumeration value="OPT"/>
+      <xs:enumeration value="OTHER"/>
+      <xs:enumeration value="PEF"/>
+      <xs:enumeration value="PFAND"/>
+      <xs:enumeration value="PN"/>
+      <xs:enumeration value="PROV"/>
+      <xs:enumeration value="PS"/>
+      <xs:enumeration value="PZFJ"/>
+      <xs:enumeration value="RAN"/>
+      <xs:enumeration value="REPLACD"/>
+      <xs:enumeration value="REPO"/>
+      <xs:enumeration value="RETIRED"/>
+      <xs:enumeration value="REV"/>
+      <xs:enumeration value="RVLV"/>
+      <xs:enumeration value="RVLVTRM"/>
+      <xs:enumeration value="SECLOAN"/>
+      <xs:enumeration value="SECPLEDGE"/>
+      <xs:enumeration value="SLQN"/>
+      <xs:enumeration value="SPCLA"/>
+      <xs:enumeration value="SPCLO"/>
+      <xs:enumeration value="SPCLT"/>
+      <xs:enumeration value="SR"/>
+      <xs:enumeration value="STN"/>
+      <xs:enumeration value="STRUCT"/>
+      <xs:enumeration value="SUPRA"/>
+      <xs:enumeration value="SWING"/>
+      <xs:enumeration value="TAN"/>
+      <xs:enumeration value="TARP"/>
+      <xs:enumeration value="TAXA"/>
+      <xs:enumeration value="TB"/>
+      <xs:enumeration value="TBA"/>
+      <xs:enumeration value="TBILL"/>
+      <xs:enumeration value="TBOND"/>
+      <xs:enumeration value="TCAL"/>
+      <xs:enumeration value="TD"/>
+      <xs:enumeration value="TECP"/>
+      <xs:enumeration value="TERM"/>
+      <xs:enumeration value="TINT"/>
+      <xs:enumeration value="TIPS"/>
+      <xs:enumeration value="TLQN"/>
+      <xs:enumeration value="TMCP"/>
+      <xs:enumeration value="TNOTE"/>
+      <xs:enumeration value="TPRN"/>
+      <xs:enumeration value="TRAN"/>
+      <xs:enumeration value="TRF"/>
+      <xs:enumeration value="UST"/>
+      <xs:enumeration value="USTB"/>
+      <xs:enumeration value="VAR"/>
+      <xs:enumeration value="VRDN"/>
+      <xs:enumeration value="WAR"/>
+      <xs:enumeration value="WITHDRN"/>
+      <xs:enumeration value="XCN"/>
+      <xs:enumeration value="XLINKD"/>
+      <xs:enumeration value="YANK"/>
+      <xs:enumeration value="YCD"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MaturityMonthYear_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Can be used with standardized derivatives vs. the MaturityDate (54) field. Month and Year of the maturity (used for standardized futures and options).
+Format:
+YYYYMM (e.g. 199903)
+YYYYMMDD (e.g. 20030323)
+YYYYMMwN (e.g. 200303w) for week
+A specific date or can be appended to the MaturityMonthYear. For instance, if multiple standard products exist that mature in the same Year and Month, but actually mature at a different time, a value can be appended, such as &amp;quot;w&amp;quot; or &amp;quot;w2&amp;quot; to indicate week as opposed to week 2 expiration. Likewise, the date (0-3) can be appended to indicate a specific expiration (maturity date).
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MaturityMonthYear" tag="200" datatype="MonthYear" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="MonthYear"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContractMonthYear_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Can be used with standardized derivatives vs. the ContractDate (30866) field. Month and Year of the contract start.
+Format:
+YYYYMM (e.g. 199903)
+YYYYMMDD (e.g. 20030323)
+YYYYMMwN (e.g. 200303w) for week
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ContractMonthYear" tag="32340" datatype="MonthYear" ComponentType="Field" StdAbrev="CntrctMY" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="MonthYear"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContractCycleType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ContractCycleType" tag="30865" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Daily"/>
+        <x:EnumDoc value="2" desc="Weekly"/>
+        <x:EnumDoc value="3" desc="Monthly"/>
+        <x:EnumDoc value="4" desc="Quarterly"/>
+        <x:EnumDoc value="5" desc="SemiAnnually"/>
+        <x:EnumDoc value="6" desc="Yearly"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ContractDisplayInstruction_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ContractCycleType" tag="25186" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="None"/>
+        <x:EnumDoc value="1" desc="Date"/>
+        <x:EnumDoc value="2" desc="Month"/>
+        <x:EnumDoc value="3" desc="Permanent"/>
+        <x:EnumDoc value="4" desc="Quarter"/>
+        <x:EnumDoc value="5" desc="Season"/>
+        <x:EnumDoc value="6" desc="Week"/>
+        <x:EnumDoc value="7" desc="Year"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ContractWeek_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Can be used with standardized derivatives vs. Week of the contract start.
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ContractWeek" tag="25187" datatype="int" ComponentType="Field" StdAbrev="CntrctW" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContractWeekYear_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ContractWeekYear" tag="25188" datatype="int" ComponentType="Field" StdAbrev="CntrctWY" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContractQuarter_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ContractQuarter" tag="25189" datatype="int" ComponentType="Field" StdAbrev="CntrctQ" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PutOrCall_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Indicates whether an option contract is a put or call
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PutOrCall" tag="201" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Put"/>
+        <x:EnumDoc value="1" desc="Call"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="StrikePrice_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Strike Price for an Option.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="StrikePrice" tag="202" datatype="Price" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="OrigStrikePrice_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Strike Price for an Option.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="OrigStrikePrice" tag="2578" datatype="Price" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="StrikePricePrecision_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Strike Price Number of Decimals
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="StrikePricePrecision" tag="2577" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentPricePrecision_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Instrument Price Number of Decimals
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="InstrumentPricePrecision" tag="2576" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="LowExercisePriceOptionIndicator_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LowExercisePriceOptionIndicator" tag="2574" datatype="Boolean" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Boolean"/>
+  </xs:simpleType>
+  <xs:simpleType name="ValuationMethod_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ValuationMethod" tag="1197" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="CFICode_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="CFICode" tag="461" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="SettlMethod_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SettlMethod" tag="1193" datatype="char" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="char"/>
+  </xs:simpleType>
+  <xs:simpleType name="SettlSubMethod_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SettlSubMethod" tag="2579" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="Symbol_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="Symbol" tag="55" datatype="string" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="OptAttribute_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Provided to support versioning of option contracts as a result of corporate actions or events. Use of this field is defined by counterparty agreement or market conventions.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="OptAttribute" tag="206" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContractGenerationNumber_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ContractGenerationNumber" tag="25034" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityExchange_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Market used to help identify a security.
+Valid values:
+See &amp;quot;Appendix 6-C&amp;quot;
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityExchange" tag="207" datatype="Exchange" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Exchange"/>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingSecurityExchange_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Market used to help identify a security.
+Valid values:
+See &amp;quot;Appendix 6-C&amp;quot;
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityExchange" tag="30308" datatype="Exchange" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Exchange"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContractMultiplier_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Specifies the ratio or multiply factor to convert from &amp;quot;nominal&amp;quot; units (e.g. contracts) to total units (e.g. shares) (e.g. 1.0, 100, 1000, etc). Applicable For Fixed Income, Convertible Bonds, Derivatives, etc.
+In general quantities for all calsses should be expressed in the basic unit of the instrument, e.g. shares for equities, norminal or par amount for bonds, currency for foreign exchange. When quantity is expressed in contracts, e.g. financing transactions and bond trade reporting, ContractMutliplier should contain the number of units in one contract and can be omitted if the multiplier is the default amount for the instrument, i.e. 1,000 par of bonds, 1,000,000 par for financing transactions.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ContractMultiplier" tag="231" datatype="float" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketDepth_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Depth of market for Book Snapshot / Incremental updates
+0 - full book depth
+1 - top of book
+2 and above - book depth (number of levels)
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketDepth" tag="264" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketDepthTimeInterval_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketDepthTimeInterval" tag="2563" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="MDRecoveryTimeInterval_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MDRecoveryTimeInterval" tag="2565" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityAltID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Alternate Security identifier value for this security of SecurityAltIDSource (456) type (e.g. CUSIP, SEDOL, ISIN, etc). Requires SecurityAltIDSource.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityAltID" tag="455" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityAltIDSource_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Identifies class or source of the SecurityAltID (455) value. Required if SecurityAltID is specified.
+Valid values:
+Same valid values as the SecurityIDSource (22) field
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityAltIDSource" tag="456" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="CUSIP"/>
+        <x:EnumDoc value="2" desc="SEDOL"/>
+        <x:EnumDoc value="3" desc="QUIK"/>
+        <x:EnumDoc value="4" desc="ISIN number"/>
+        <x:EnumDoc value="5" desc="RIC code"/>
+        <x:EnumDoc value="6" desc="ISO Currency Code"/>
+        <x:EnumDoc value="7" desc="ISO Country Code"/>
+        <x:EnumDoc value="8" desc="Exchange Symbol"/>
+        <x:EnumDoc value="9" desc="Consolidated Tape Association (CTA) Symbol (SIAC CTS/CQS line format)"/>
+        <x:EnumDoc value="A" desc="Bloomberg Symbol"/>
+        <x:EnumDoc value="B" desc="Wertpapier"/>
+        <x:EnumDoc value="C" desc="Dutch"/>
+        <x:EnumDoc value="D" desc="Valoren"/>
+        <x:EnumDoc value="E" desc="Sicovam"/>
+        <x:EnumDoc value="F" desc="Belgian"/>
+        <x:EnumDoc value="G" desc="&quot;Common&quot; (Clearstream and Euroclear)"/>
+        <x:EnumDoc value="H" desc="Clearing House / Clearing Organization"/>
+        <x:EnumDoc value="I" desc="ISDA/FpML Product Specification (XML in EncodedSecurityDesc)"/>
+        <x:EnumDoc value="J" desc="Option Price Reporting Authority"/>
+        <x:EnumDoc value="K" desc="ISDA/FpML Product URL (URL in SecurityID)"/>
+        <x:EnumDoc value="L" desc="Letter of Credit"/>
+        <x:EnumDoc value="M" desc="Marketplace-assigned Identifier"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="9"/>
+      <xs:enumeration value="A"/>
+      <xs:enumeration value="B"/>
+      <xs:enumeration value="C"/>
+      <xs:enumeration value="D"/>
+      <xs:enumeration value="E"/>
+      <xs:enumeration value="F"/>
+      <xs:enumeration value="G"/>
+      <xs:enumeration value="H"/>
+      <xs:enumeration value="I"/>
+      <xs:enumeration value="J"/>
+      <xs:enumeration value="K"/>
+      <xs:enumeration value="L"/>
+      <xs:enumeration value="M"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MaturityDate_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Date of maturity.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MaturityDate" tag="541" datatype="LocalMktDate" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="LocalMktDate"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContractDate_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Date of contract start.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ContractDate" tag="30866" datatype="LocalMktDate" ComponentType="Field" StdAbrev="CntrctDt" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="LocalMktDate"/>
+  </xs:simpleType>
+  <xs:simpleType name="PreviousCouponPaymentDate_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Date of maturity.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PrevCpnPymntDt" tag="28895" datatype="LocalMktDate" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="LocalMktDate"/>
+  </xs:simpleType>
+  <xs:simpleType name="CouponPaymentDate_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Date of maturity.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="CpnPmt" tag="224" datatype="LocalMktDate" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="LocalMktDate"/>
+  </xs:simpleType>
+  <xs:simpleType name="LegPrice_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Price for leg of a multileg
+See Price (44) field for description
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LegPrice" tag="566" datatype="Price" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="MatchType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            The point in the matching process at which this trade was matched.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MatchType" tag="574" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="One-Party Trade Report (privately negotiated trade)"/>
+        <x:EnumDoc value="2" desc="Two-Party Trade Report (privately negotiated trade)"/>
+        <x:EnumDoc value="3" desc="Confirmed Trade Report (reporting from recognized markets)"/>
+        <x:EnumDoc value="4" desc="Auto-match"/>
+        <x:EnumDoc value="5" desc="Cross Auction"/>
+        <x:EnumDoc value="6" desc="Counter-Order Selection"/>
+        <x:EnumDoc value="7" desc="Call Auction"/>
+        <x:EnumDoc value="8" desc="Issuing/Buy Back Auction"/>
+        <x:EnumDoc value="A1" desc="Exact match on Trade Date, Stock Symbol, Quantity, Price, Trade Type, and Special Trade Indicator plus four badges and execution time (within two-minute window)"/>
+        <x:EnumDoc value="A2" desc="Exact match on Trade Date, Stock Symbol, Quantity, Price, Trade Type, and Special Trade Indicator, plus four badges"/>
+        <x:EnumDoc value="A3" desc="Exact match on Trade Date, Stock Symbol, Quantity, Price, Trade Type, and Special Trade Indicator, plus two badges and execution time (within two-minute window)"/>
+        <x:EnumDoc value="A4" desc="Exact match on Trade Date, Stock Symbol, Quantity, Price, Trade Type, and Special Trade Indicator, plus two badges"/>
+        <x:EnumDoc value="A5" desc="Exact match on Trade Date, Stock Symbol, Quantity, Price, TradeType, and Special Trade Indicator plus execution time (within two-minute window)"/>
+        <x:EnumDoc value="AQ" desc="Compared records resulting from stamped advisories or specialist accepts/pair-offs"/>
+        <x:EnumDoc value="M1" desc="Exact match on Trade Date, Stock Symbol, Quantity, Price, Trade Type, and Special Trade Indicator minus badges And times: ACT M1 match"/>
+        <x:EnumDoc value="M2" desc="Summarized match minus badges and times: ACT M2 Match"/>
+        <x:EnumDoc value="M3" desc="ACT Accepted Trade"/>
+        <x:EnumDoc value="M4" desc="ACT Default Trade"/>
+        <x:EnumDoc value="M5" desc="ACT Default After M2"/>
+        <x:EnumDoc value="M6" desc="ACT M6 Match"/>
+        <x:EnumDoc value="MT" desc="OCS Locked In: Non-ACT"/>
+        <x:EnumDoc value="S1" desc="Summarized match using A1 exact match criteria except quantity is summaried"/>
+        <x:EnumDoc value="S2" desc="Summarized match using A2 exact match criteria except quantity is summarized"/>
+        <x:EnumDoc value="S3" desc="Summarized match using A3 exact match criteria except quantity is summarized"/>
+        <x:EnumDoc value="S4" desc="Summarized match using A4 exact match criteria except quantity is summarized"/>
+        <x:EnumDoc value="S5" desc="Summarized match using A5 exact match criteria except quantity is summarized"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="A1"/>
+      <xs:enumeration value="A2"/>
+      <xs:enumeration value="A3"/>
+      <xs:enumeration value="A4"/>
+      <xs:enumeration value="A5"/>
+      <xs:enumeration value="AQ"/>
+      <xs:enumeration value="M1"/>
+      <xs:enumeration value="M2"/>
+      <xs:enumeration value="M3"/>
+      <xs:enumeration value="M4"/>
+      <xs:enumeration value="M5"/>
+      <xs:enumeration value="M6"/>
+      <xs:enumeration value="MT"/>
+      <xs:enumeration value="S1"/>
+      <xs:enumeration value="S2"/>
+      <xs:enumeration value="S3"/>
+      <xs:enumeration value="S4"/>
+      <xs:enumeration value="S5"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="LegSecurityID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Multileg instrument&amp;apos;s individual security&amp;apos;s SecurityID.
+See SecurityID (48) field for description
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LegSecurityID" tag="602" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="LegSecurityIDSource_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Multileg instrument&amp;apos;s individual security&amp;apos;s SecurityIDSource.
+See SecurityIDSource (22) field for description
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LegSecurityIDSource" tag="603" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="CUSIP"/>
+        <x:EnumDoc value="2" desc="SEDOL"/>
+        <x:EnumDoc value="3" desc="QUIK"/>
+        <x:EnumDoc value="4" desc="ISIN number"/>
+        <x:EnumDoc value="5" desc="RIC code"/>
+        <x:EnumDoc value="6" desc="ISO Currency Code"/>
+        <x:EnumDoc value="7" desc="ISO Country Code"/>
+        <x:EnumDoc value="8" desc="Exchange Symbol"/>
+        <x:EnumDoc value="9" desc="Consolidated Tape Association (CTA) Symbol (SIAC CTS/CQS line format)"/>
+        <x:EnumDoc value="A" desc="Bloomberg Symbol"/>
+        <x:EnumDoc value="B" desc="Wertpapier"/>
+        <x:EnumDoc value="C" desc="Dutch"/>
+        <x:EnumDoc value="D" desc="Valoren"/>
+        <x:EnumDoc value="E" desc="Sicovam"/>
+        <x:EnumDoc value="F" desc="Belgian"/>
+        <x:EnumDoc value="G" desc="&quot;Common&quot; (Clearstream and Euroclear)"/>
+        <x:EnumDoc value="H" desc="Clearing House / Clearing Organization"/>
+        <x:EnumDoc value="I" desc="ISDA/FpML Product Specification (XML in EncodedSecurityDesc)"/>
+        <x:EnumDoc value="J" desc="Option Price Reporting Authority"/>
+        <x:EnumDoc value="K" desc="ISDA/FpML Product URL (URL in SecurityID)"/>
+        <x:EnumDoc value="L" desc="Letter of Credit"/>
+        <x:EnumDoc value="M" desc="Marketplace-assigned Identifier"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="9"/>
+      <xs:enumeration value="A"/>
+      <xs:enumeration value="B"/>
+      <xs:enumeration value="C"/>
+      <xs:enumeration value="D"/>
+      <xs:enumeration value="E"/>
+      <xs:enumeration value="F"/>
+      <xs:enumeration value="G"/>
+      <xs:enumeration value="H"/>
+      <xs:enumeration value="I"/>
+      <xs:enumeration value="J"/>
+      <xs:enumeration value="K"/>
+      <xs:enumeration value="L"/>
+      <xs:enumeration value="M"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="LegSymbol_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Product identifier of the leg instrument.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LegSymbol" tag="600" datatype="String" ComponentType="Field" StdAbrev="Sym" QualifiedAbbrev="Sym"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="QuotingStartTime_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Quoting Period start time in human readable format.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="QuotingStartTime" tag="30341" datatype="String" ComponentType="Field" StdAbrev="QuotStartTm" QualifiedAbbrev="QuotStartTm"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="QuotingEndTime_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Quoting Period end time in human readable format.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="QuotingEndTime" tag="30345" datatype="String" ComponentType="Field" StdAbrev="QuotEndTm" QualifiedAbbrev="QuotEndTm"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="ULSymbol_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Underlying symbol of bond
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="UnderlyingSymbol" tag="311" datatype="String" ComponentType="Field" StdAbrev="Sym" QualifiedAbbrev="Sym"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="LegRatioMultiplier_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Common integer multiple of the option legs for Option Volatility Strategies.</xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LegRatioMultiplier" tag="28900" datatype="int" ComponentType="Field" StdAbrev="RatioMult" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="LegRatioQty_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The ratio of quantity for this individual leg relative to the entire multileg security.</xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LegRatioQty" tag="623" datatype="float" ComponentType="Field" StdAbrev="RatioQty" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="LegSecurityType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            The type of an individual leg (multileg security).
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LegSecurityType" tag="609" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="MLEG" desc="Part of a multi-leg instrument"/>
+        <x:EnumDoc value="ULEG" desc="Underlying leg"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MLEG"/>
+      <xs:enumeration value="ULEG"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TrdType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            The side of this individual leg (multileg security).
+See Side (54) field for description and values
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="TrdType" tag="828" datatype="xs:integer" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Regular Trade"/>
+        <x:EnumDoc value="1" desc="Block"/>
+        <x:EnumDoc value="12" desc="EFS"/>
+        <x:EnumDoc value="50" desc="Portfolio compressed trade"/>
+        <x:EnumDoc value="54" desc="OTC"/>
+        <x:EnumDoc value="1000" desc="VOLA"/>
+        <x:EnumDoc value="1001" desc="EFP Fin"/>
+        <x:EnumDoc value="1002" desc="EFP Idx"/>
+        <x:EnumDoc value="1004" desc="Block TAM"/>
+        <x:EnumDoc value="1005" desc="LIS"/>
+        <x:EnumDoc value="1006" desc="Xetra Eurex Enlight triggered trade"/>
+        <x:EnumDoc value="1007" desc="Block QTPIP"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="12"/>
+      <xs:enumeration value="50"/>
+      <xs:enumeration value="54"/>
+      <xs:enumeration value="1000"/>
+      <xs:enumeration value="1001"/>
+      <xs:enumeration value="1002"/>
+      <xs:enumeration value="1004"/>
+      <xs:enumeration value="1005"/>
+      <xs:enumeration value="1006"/>
+      <xs:enumeration value="1007"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="LegSide_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            The side of this individual leg (multileg security).
+See Side (54) field for description and values
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LegSide" tag="624" datatype="char" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Buy"/>
+        <x:EnumDoc value="2" desc="Sell"/>
+        <x:EnumDoc value="3" desc="Buy minus"/>
+        <x:EnumDoc value="4" desc="Sell plus"/>
+        <x:EnumDoc value="5" desc="Sell short"/>
+        <x:EnumDoc value="6" desc="Sell short exempt"/>
+        <x:EnumDoc value="7" desc="Undisclosed (valid for IOI and List Order messages only)"/>
+        <x:EnumDoc value="8" desc="Cross (orders where counterparty is an exchange, valid for all messages except IOIs)"/>
+        <x:EnumDoc value="9" desc="Cross short"/>
+        <x:EnumDoc value="A" desc="Cross short exempt"/>
+        <x:EnumDoc value="B" desc="&quot;As Defined&quot; (for use with multileg instruments)"/>
+        <x:EnumDoc value="C" desc="&quot;Opposite&quot; (for use with multileg instruments)"/>
+        <x:EnumDoc value="D" desc="Subscribe (e.g. CIV)"/>
+        <x:EnumDoc value="E" desc="Redeem (e.g. CIV)"/>
+        <x:EnumDoc value="F" desc="Lend (FINANCING - identifies direction of collateral)"/>
+        <x:EnumDoc value="G" desc="Borrow (FINANCING - identifies direction of collateral)"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="char">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="9"/>
+      <xs:enumeration value="A"/>
+      <xs:enumeration value="B"/>
+      <xs:enumeration value="C"/>
+      <xs:enumeration value="D"/>
+      <xs:enumeration value="E"/>
+      <xs:enumeration value="F"/>
+      <xs:enumeration value="G"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MinBidSize_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Used to indicate a minimum quantity for a bid. If this field is used the BidSize (134) field is interpreted as the maximum bid size
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MinBidSize" tag="647" datatype="Qty" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Qty"/>
+  </xs:simpleType>
+  <xs:simpleType name="MinOfferSize_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Used to indicate a minimum quantity for an offer. If this field is used the OfferSize (135) field is interpreted as the maximum offer size.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MinOfferSize" tag="648" datatype="Qty" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Qty"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecuritySubType_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Sub-type qualification/identification of the SecurityType. As an example for SecurityType(167)=&amp;quot;REPO&amp;quot;, the SecuritySubType=&amp;quot;General Collateral&amp;quot; can be used to further specify the type of REPO.
+If SecuritySubType is used then SecurityType is required.
+For SecurityType=&amp;quot;MLEG&amp;quot; a name of the option or futures strategy name can be specified, such as &amp;quot;Calendar&amp;quot;, &amp;quot;Vertical&amp;quot;, &amp;quot;Butterfly&amp;quot;.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecuritySubType" tag="762" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="EventType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Code to represent the type of event
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="EventType" tag="865" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Put"/>
+        <x:EnumDoc value="2" desc="Call"/>
+        <x:EnumDoc value="3" desc="Tender"/>
+        <x:EnumDoc value="4" desc="Sinking Fund Call"/>
+        <x:EnumDoc value="5" desc="Activation"/>
+        <x:EnumDoc value="6" desc="Inactiviation"/>
+        <x:EnumDoc value="7" desc="Last Eligible Trade Date"/>
+        <x:EnumDoc value="8" desc="Swap Start Date"/>
+        <x:EnumDoc value="9" desc="Swap End Date"/>
+        <x:EnumDoc value="10" desc="Swap Roll Date"/>
+        <x:EnumDoc value="11" desc="Swap Next Start Date"/>
+        <x:EnumDoc value="12" desc="Swap Next Roll Date"/>
+        <x:EnumDoc value="13" desc="First Delivery Date"/>
+        <x:EnumDoc value="14" desc="Last Delivery Date"/>
+        <x:EnumDoc value="15" desc="Initial Inventory Due Date"/>
+        <x:EnumDoc value="16" desc="Final Inventory Due Date"/>
+        <x:EnumDoc value="17" desc="First Intent Date"/>
+        <x:EnumDoc value="18" desc="Last Intent Date"/>
+        <x:EnumDoc value="19" desc="Position Removal Date"/>
+        <x:EnumDoc value="28" desc="TotalTradingDuration"/>
+        <x:EnumDoc value="29" desc="CurrentTradingDuration"/>
+        <x:EnumDoc value="99" desc="Other"/>
+        <x:EnumDoc value="100" desc="First Eligible Trade Date"/>
+        <x:EnumDoc value="101" desc="Capital Adjustment Date"/>
+        <x:EnumDoc value="102" desc="Dividend Payment Date"/>
+        <x:EnumDoc value="115" desc="Final Settlement Reference Date"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="9"/>
+      <xs:enumeration value="10"/>
+      <xs:enumeration value="11"/>
+      <xs:enumeration value="12"/>
+      <xs:enumeration value="13"/>
+      <xs:enumeration value="14"/>
+      <xs:enumeration value="15"/>
+      <xs:enumeration value="16"/>
+      <xs:enumeration value="17"/>
+      <xs:enumeration value="18"/>
+      <xs:enumeration value="19"/>
+      <xs:enumeration value="28"/>
+      <xs:enumeration value="29"/>
+      <xs:enumeration value="99"/>
+      <xs:enumeration value="100"/>
+      <xs:enumeration value="101"/>
+      <xs:enumeration value="102"/>
+      <xs:enumeration value="115"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentPartyIDSource_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="Src" tag="1050" datatype="string" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="D" desc="Proprietary"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="D"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentPartyRole_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="Src" tag="1051" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="21" desc="Clearing Organization"/>
+        <x:EnumDoc value="66" desc="Market Maker"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:enumeration value="21"/>
+      <xs:enumeration value="66"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentPartyRoleQualifier_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="Qual" tag="2378" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="20" desc="Designated Sponsor"/>
+        <x:EnumDoc value="21" desc="Specialist"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:enumeration value="20"/>
+      <xs:enumeration value="21"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="InstrAttribType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="Typ" tag="871" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="100" desc="Minimum Reserve Order Quantity"/>
+        <x:EnumDoc value="101" desc="Minimum Display Quantity"/>
+        <x:EnumDoc value="102" desc="Issuer Name"/>
+        <x:EnumDoc value="103" desc="Issuer Number"/>
+        <x:EnumDoc value="104" desc="Market Type"/>
+        <x:EnumDoc value="105" desc="Market Type Supplement"/>
+        <x:EnumDoc value="106" desc="Reporting Market"/>
+        <x:EnumDoc value="107" desc="Settlement Calendar"/>
+        <x:EnumDoc value="108" desc="Product Assignment Group"/>
+        <x:EnumDoc value="109" desc="Product Assignment Group Description"/>
+        <x:EnumDoc value="110" desc="Domestic Indicator"/>
+        <x:EnumDoc value="111" desc="Pre Trade LIS Value"/>
+        <x:EnumDoc value="112" desc="Illiquid As Defined By Exchange"/>
+        <x:EnumDoc value="113" desc="Market Making Obligation"/>
+        <x:EnumDoc value="114" desc="Liquid As Defined By Regulator"/>
+        <x:EnumDoc value="115" desc="Eligible For Stressed Market Conditions"/>
+        <x:EnumDoc value="116" desc="Eligible For Systematic Internaliser"/>
+        <x:EnumDoc value="117" desc="Multi CCP-eligible"/>
+        <x:EnumDoc value="118" desc="Pool Factor"/>
+        <x:EnumDoc value="119" desc="Indexation Coefficient"/>
+        <x:EnumDoc value="120" desc="Trading on Terms of Issue"/>
+        <x:EnumDoc value="121" desc="Issuer Business Unit"/>
+        <x:EnumDoc value="122" desc="Allow Knock Out"/>
+        <x:EnumDoc value="123" desc="Has Passive Liquidity Protection"/>
+        <x:EnumDoc value="124" desc="Passive Liquidity Protection Deferral Time"/>
+        <x:EnumDoc value="125" desc="Warrant Strike"/>
+        <x:EnumDoc value="126" desc="Reporting Market TES"/>
+        <x:EnumDoc value="127" desc="Liquidity Provider User Group"/>
+        <x:EnumDoc value="128" desc="Specialist User Group"/>
+        <x:EnumDoc value="129" desc="Liquidity Class"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="100"/>
+      <xs:enumeration value="101"/>
+      <xs:enumeration value="102"/>
+      <xs:enumeration value="103"/>
+      <xs:enumeration value="104"/>
+      <xs:enumeration value="105"/>
+      <xs:enumeration value="106"/>
+      <xs:enumeration value="107"/>
+      <xs:enumeration value="108"/>
+      <xs:enumeration value="109"/>
+      <xs:enumeration value="110"/>
+      <xs:enumeration value="111"/>
+      <xs:enumeration value="112"/>
+      <xs:enumeration value="113"/>
+      <xs:enumeration value="114"/>
+      <xs:enumeration value="115"/>
+      <xs:enumeration value="116"/>
+      <xs:enumeration value="117"/>
+      <xs:enumeration value="118"/>
+      <xs:enumeration value="119"/>
+      <xs:enumeration value="120"/>
+      <xs:enumeration value="121"/>
+      <xs:enumeration value="122"/>
+      <xs:enumeration value="123"/>
+      <xs:enumeration value="124"/>
+      <xs:enumeration value="125"/>
+      <xs:enumeration value="126"/>
+      <xs:enumeration value="127"/>
+      <xs:enumeration value="128"/>
+      <xs:enumeration value="129"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="EventDate_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Date of event
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="EventDate" tag="866" datatype="LocalMktDate" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="LocalMktDate"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrAttribVal_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Date of event
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="Val" tag="872" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="LastFragment_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Indicates whether this message is the last in a sequence of messages for those messages that support fragmentation, such as Allocation Instruction, Mass Quote, Security List, Derivative Security List
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="LastFragment" tag="893" datatype="Boolean" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="N" desc="Not Last Message"/>
+        <x:EnumDoc value="Y" desc="Last Message"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Boolean">
+      <xs:enumeration value="N"/>
+      <xs:enumeration value="Y"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MinPriceIncrement_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Minimum price increase for a given exchange-traded Instrument
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MinPriceIncrement" tag="969" datatype="float" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="CouponRate_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Coupon rate of the bond.
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="CouponRate" tag="223" datatype="float" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="MinPriceIncrementClearing_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Minimum price increase for a given exchange-traded Instrument
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MinPriceIncrementClearing" tag="28888" datatype="float" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityUpdateAction_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityUpdateAction" tag="980" datatype="char" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="A" desc="Add"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="char">
+      <xs:enumeration value="A"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MDBookType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Describes the type of book for which the feed is intended. Used when multiple feeds are provided over the same connection
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MDBookType" tag="1021" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="2" desc="Price Depth"/>
+        <x:EnumDoc value="3" desc="Order Depth"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MDFeedType_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Describes a class of service for a given data feed, ie Regular and Market Maker, Bandwidth Intensive or Bandwidth Conservative
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MDFeedType" tag="1022" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="Issuer_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Name of security issuer.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="Issuer" tag="106" datatype="String" ComponentType="Field" StdAbrev="Issr" QualifiedAbbrev="Issr"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="MatchAlgorithm_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            The types of algorithm used to match orders in a specific security. Possilbe value types are FIFO, Allocation, Pro-rata, Lead Market Maker, Currency Calender.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MatchAlgorithm" tag="1142" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="ImpliedMarketIndicator_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Indicates that an implied market should be created for either the legs of a multi-leg instrument (Implied-in) or for the multi-leg instrument based on the existence of the legs (Implied-out). Determination as to whether implied markets should be created is generally done at the level of the multi-leg instrument. Commonly used in listed derivatives.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ImpliedMarketIndicator" tag="1144" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Not implied"/>
+        <x:EnumDoc value="1" desc="Implied-in - The existence of a multi-leg instrument is implied by the legs of that instrument"/>
+        <x:EnumDoc value="2" desc="Implied-out - The existence of the underlying legs are implied by the multi-leg instrument"/>
+        <x:EnumDoc value="3" desc="Both Implied-in and Implied-out"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PostTradeAnonymity_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ImpliedMarketIndicator" tag="28876" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Disabled"/>
+        <x:EnumDoc value="1" desc="Enabled"/>
+        <x:EnumDoc value="2" desc="Central Counterparty"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PriceType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PriceType" tag="423" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Percent"/>
+        <x:EnumDoc value="2" desc="Shares"/>
+        <x:EnumDoc value="22" desc="Points"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="22"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MinPriceIncrementAmount_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Minimum price increment amount associated with the MinPriceIncrement ( tag 969). For listed derivatives, the value can be calculated by multiplying MinPriceIncrement by ContractValueFactor(231).
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MinPriceIncrementAmount" tag="1146" datatype="Amt" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Amt"/>
+  </xs:simpleType>
+  <xs:simpleType name="RefTickTableID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="RefTickTblID" tag="1787" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="UnitOfMeasure_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="UOM" tag="996" datatype="string" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentPartyID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ID" tag="1019" datatype="string" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="SettlementBusinessDays_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SettlBizDays" tag="28878" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="ExerciseStyle_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Type of exercise of a derivatives security
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ExerciseStyle" tag="1194" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="European"/>
+        <x:EnumDoc value="1" desc="American"/>
+        <x:EnumDoc value="2" desc="Bermuda"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AssetType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Type of asset of an EEX instrument
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="AssetType" tag="1940" datatype="char" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Emission Allowances"/>
+        <x:EnumDoc value="1" desc="Other"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="char">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AssetSubType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Sub-type of asset of an EEX instrument
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="AssetSubType" tag="29831" datatype="char" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="EUAE"/>
+        <x:EnumDoc value="1" desc="CERE"/>
+        <x:EnumDoc value="2" desc="ERUE"/>
+        <x:EnumDoc value="3" desc="EUAA"/>
+        <x:EnumDoc value="4" desc="Other"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="char">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TickRuleID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="TickRuleID" tag="28887" datatype="int" ComponentType="Field" StdAbrev="TickRuleID" QualifiedAbbrev="TickRuleID"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="StartTickPriceRange_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Starting price range for specified tick increment
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="StartTickPriceRange" tag="1206" datatype="Price" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="EndTickPriceRange_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Ending price range for the specified tick increment
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="EndTickPriceRange" tag="1207" datatype="Price" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="TickIncrement_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Tick increment for stated price range. Specifies the valid price increments at which a security can be quoted and traded
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="TickIncrement" tag="1208" datatype="Price" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="ProductComplex_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Identifies an entire suite of products for a given market. In Futures this may be &amp;quot;interest rates&amp;quot;, &amp;quot;agricultural&amp;quot;, &amp;quot;equity indexes&amp;quot;, etc.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ProductComplex" tag="1227" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Simple Instrument"/>
+        <x:EnumDoc value="2" desc="Standard Option Strategy"/>
+        <x:EnumDoc value="3" desc="Non Standard Option Strategy"/>
+        <x:EnumDoc value="4" desc="Volatility Strategy"/>
+        <x:EnumDoc value="5" desc="Futures Spread"/>
+        <x:EnumDoc value="6" desc="Inter-Product Spread"/>
+        <x:EnumDoc value="7" desc="Standard Futures Strategy"/>
+        <x:EnumDoc value="8" desc="Pack and Bundle"/>
+        <x:EnumDoc value="9" desc="Strip"/>
+        <x:EnumDoc value="10" desc="Flexible Instrument"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="9"/>
+      <xs:enumeration value="10"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FlexProductEligibilityIndicator_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Used to indicate if a product or group of product supports the creation of flexible securities
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="FlexProductEligibilityIndicator" tag="1242" datatype="Boolean" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Boolean"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Identifies the market segment
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketSegmentID" tag="1300" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingInstrumentMarketSegmentID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Identifies the referenced market segment</xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketSegmentID" tag="31300" datatype="String" ComponentType="Field" StdAbrev="MktSegID" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="RelatedMarketSegmentID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Type of relationship to root level market segment
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="RelatedMarketSegmentID" tag="2546" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentScopeOperator_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="InstrumentScopeOperator" tag="1535" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Include"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentRelationship_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Specifies the type of market segment relationship.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketSegmentRelationship" tag="2547" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="100" desc="Cash Leg For Volatility Strategies"/>
+        <x:EnumDoc value="101" desc="Target product for decaying product"/>
+        <x:EnumDoc value="102" desc="BTRF Bucket"/>
+        <x:EnumDoc value="103" desc="EBB Bucket"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="100"/>
+      <xs:enumeration value="101"/>
+      <xs:enumeration value="102"/>
+      <xs:enumeration value="103"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MarketID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Identifies the Market
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketID" tag="1301" datatype="Exchange" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Exchange"/>
+  </xs:simpleType>
+  <xs:simpleType name="ParentMktSegmID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Reference to a parent Market Segment. See MarketSegmentID(1300)
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ParentMktSegmID" tag="1325" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="MultilegModel_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Specifies the type of multileg order.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MultilegModel" tag="1377" datatype="int" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Predefined Multileg Security"/>
+        <x:EnumDoc value="1" desc="User-defined Multileg Security"/>
+        <x:EnumDoc value="2" desc="User-defined, Non-Securitized, Multileg"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentDesc_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Description or name of Market Segment
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketSegmentDesc" tag="1396" datatype="String" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="PartitionID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PartitionID" tag="5948" datatype="int" ComponentType="Field" StdAbrev="PartID" QualifiedAbbrev="PartID"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  
+  <xs:simpleType name="NegotiationDuration_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="NegotiationDuration" tag="5948" datatype="int" ComponentType="Field" StdAbrev="NegDur" QualifiedAbbrev="NegDur"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  
+  <xs:simpleType name="MaxOffsetExpireTime_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MaxOffsetExpireTime" tag="5948" datatype="int" ComponentType="Field" StdAbrev="MaxOfstRFQExpireTm" QualifiedAbbrev="MaxOfstRFQExpireTm"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  
+  <xs:simpleType name="OffsetSTPEffectiveTime_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="OffsetSTPEffectiveTime" tag="5948" datatype="int" ComponentType="Field" StdAbrev="OfstSTPEfctvTm" QualifiedAbbrev="OfstSTPEfctvTm"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  
+  
+  <xs:simpleType name="MarketSegmentSymbol_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketSegmentSymbol" tag="7177" datatype="String" ComponentType="Field" StdAbrev="Sym" QualifiedAbbrev="Sym"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketSegmentType" tag="2543" datatype="String" ComponentType="Field" StdAbrev="MktSegTyp" QualifiedAbbrev="MktSegTyp"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Pool"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentSubType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketSegmentSubType" tag="2545" datatype="String" ComponentType="Field" StdAbrev="MktSegSubTyp" QualifiedAbbrev="MktSegSubTyp"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Inter-Product Spread"/>
+        <x:EnumDoc value="2" desc="BTRF Bucket"/>
+        <x:EnumDoc value="3" desc="EBB Bucket"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingSymbol_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="UnderlyingSymbol" tag="30311" datatype="String" ComponentType="Field" StdAbrev="Sym" QualifiedAbbrev="Sym"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegment_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketSegment" tag="7703" datatype="String" ComponentType="Field" StdAbrev="MktSeg" QualifiedAbbrev="MktSeg"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="PrimaryServiceLocationID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PrimaryServiceLocationID" tag="2567" datatype="String" ComponentType="Field" StdAbrev="SvcLctnID1" QualifiedAbbrev="SvcLctnID1"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="PrimaryServiceLocationSubID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PrimaryServiceLocationSubID" tag="28591" datatype="String" ComponentType="Field" StdAbrev="MDSvcLctnSubID1" QualifiedAbbrev="MDSvcLctnSubID1"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecondaryServiceLocationID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecondaryServiceLocationID" tag="2568" datatype="String" ComponentType="Field" StdAbrev="SvcLctnID2" QualifiedAbbrev="SvcLctnID2"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecondaryServiceLocationSubID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecondaryServiceLocationSubID" tag="28593" datatype="String" ComponentType="Field" StdAbrev="MDSvcLctnSubID2" QualifiedAbbrev="MDSvcLctnSubID2"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityStatus_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Used for derivatives. Denotes the current state of the Instrument.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityStatus" tag="965" datatype="String" ComponentType="Field" StdAbrev="Status" QualifiedAbbrev="Status"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Active"/>
+        <x:EnumDoc value="2" desc="Inactive"/>
+        <x:EnumDoc value="10" desc="Published"/>
+        <x:EnumDoc value="11" desc="Pending Deletion"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="10"/>
+      <xs:enumeration value="11"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentStatus_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            Status of market segment.
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketSegmentStatus" tag="2542" datatype="int" ComponentType="Field" StdAbrev="MktSegStat" QualifiedAbbrev="MktSegStat"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Active"/>
+        <x:EnumDoc value="3" desc="Published"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PriceRangeRuleID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PriceRangeRuleID" tag="2556" datatype="int" ComponentType="Field" StdAbrev="PxRngRuleID" QualifiedAbbrev="PxRngRuleID"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="PriceRangeValue_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PriceRangeValue" tag="2553" datatype="Price" ComponentType="Field" StdAbrev="PxRngValu" QualifiedAbbrev="PxRngValu"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="PriceRangePercentage_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PriceRangePercentage" tag="2554" datatype="Percentage" ComponentType="Field" StdAbrev="PxRngPctg" QualifiedAbbrev="PxRngPctg"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Percentage"/>
+  </xs:simpleType>
+  <xs:simpleType name="FastMarketPercentage_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="FastMarketPercentage" tag="2557" datatype="float" ComponentType="Field" StdAbrev="FastMktPctg" QualifiedAbbrev="FastMktPctg"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="StartPriceRange_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="StartPriceRange" tag="2551" datatype="Price" ComponentType="Field" StdAbrev="StartPxRng" QualifiedAbbrev="StartPxRng"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="EndPriceRange_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="EndPriceRange" tag="2552" datatype="Price" ComponentType="Field" StdAbrev="EndPxRng" QualifiedAbbrev="EndPxRng"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="QuoteSideIndicator_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="QuoteSideIndicator" tag="2559" datatype="String" ComponentType="Field" StdAbrev="QuotSideInd" QualifiedAbbrev="QuotSideInd"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc=""/>
+        <x:EnumDoc value="1" desc=""/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="QuoteSideModelType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="QuoteSideModelType" tag="28898" datatype="String" ComponentType="Field" StdAbrev="QuotSideModelTyp" QualifiedAbbrev="QuotSideModelTyp"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Single Sided Quote not supported"/>
+        <x:EnumDoc value="1" desc="Single Sided Quote supported"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AuctionType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="AuctionType" tag="1803" datatype="String" ComponentType="Field" StdAbrev="AuctTyp" QualifiedAbbrev="AuctTyp"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="100" desc="Any auction"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PriorSettlPrice_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="PriSetPx" tag="734" datatype="Price" ComponentType="Field" StdAbrev="PriSetPx" QualifiedAbbrev="PriSetPx"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="SettlPrice_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SetPx" tag="730" datatype="Price" ComponentType="Field" StdAbrev="SetPx" QualifiedAbbrev="SetPx"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="BusinessDayType_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="BusinessDayType" tag="2581" datatype="String" ComponentType="Field" StdAbrev="BizDayTyp" QualifiedAbbrev="BizDayTyp"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="5" desc="Preceding Day"/>
+        <x:EnumDoc value="1" desc="Current Day"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ClearingPriceOffset_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ClearingPriceOffset" tag="2582" datatype="Price" ComponentType="Field" StdAbrev="ClrPxOfst" QualifiedAbbrev="ClrPxOfst"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="VegaMultiplier_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="VegaMultiplier" tag="2583" datatype="int" ComponentType="Field" StdAbrev="VegaMult" QualifiedAbbrev="VegaMult"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+        </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AnnualTradingBusinessDays_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="AnnualTradingBusinessDays" tag="2584" datatype="int" ComponentType="Field" StdAbrev="AnnlTrdgBizDays" QualifiedAbbrev="AnnlTrdgBizDays"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+        </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TotalTradingBusinessDays_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="TotalTradingBusinessDays" tag="2585" datatype="int" ComponentType="Field" StdAbrev="TotTrdgBizDays" QualifiedAbbrev="TotTrdgBizDays"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+        </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TradingBusinessDays_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="TradingBusinessDays" tag="2586" datatype="int" ComponentType="Field" StdAbrev="TrdgBizDays" QualifiedAbbrev="TrdgBizDays"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+        </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AnnualCalendarDays_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="AnnualCalendarDays" tag="28881" datatype="int" ComponentType="Field" StdAbrev="AnnlClndrDays" QualifiedAbbrev="AnnlClndrDays"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+        </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="RemainingCalendarDays_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="RemainingCalendarDays" tag="28880" datatype="int" ComponentType="Field" StdAbrev="RemClndrDays" QualifiedAbbrev="RemClndrDays"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+        </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="StandardVariance_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="StandardVariance" tag="2588" datatype="Price" ComponentType="Field" StdAbrev="StdVarnc" QualifiedAbbrev="StdVarnc"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="RelatedClosePrice_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="RelatedClosePrice" tag="2589" datatype="Price" ComponentType="Field" StdAbrev="SettlPrc" QualifiedAbbrev="SettlPrc"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="RealizedVariance_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="RealizedVariance" tag="2587" datatype="Price" ComponentType="Field" StdAbrev="RlsdVarnc" QualifiedAbbrev="RlsdVarnc"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="InterestRate_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="RiskFreeRate" tag="1190" datatype="Price" ComponentType="Field" StdAbrev="RFR" QualifiedAbbrev="RFR"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="DiscountFactor_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="DiscountFactor" tag="1592" datatype="Price" ComponentType="Field" StdAbrev="DiscFctr" QualifiedAbbrev="DiscFctr"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="ARMVM_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="AccumulatedReturnModifiedVariationMargin" tag="2591" datatype="Price" ComponentType="Field" StdAbrev="ARMVM" QualifiedAbbrev="ARMVM"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="OvernightInterestRate_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="OvernightInterestRate" tag="2590" datatype="Price" ComponentType="Field" StdAbrev="ONIntRt" QualifiedAbbrev="ONIntRt"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="Volatility_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="Volatility" tag="1188" datatype="Price" ComponentType="Field" StdAbrev="Vol" QualifiedAbbrev="Vol"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="CurrentPaymentParameter_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="CurrentPaymentParameter" tag="28883" datatype="Price" ComponentType="Field" StdAbrev="CurPmtPrm" QualifiedAbbrev="CurPmtPrm"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="AccruedPaymentParameter_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="AccruedPaymentParameter" tag="28884" datatype="Price" ComponentType="Field" StdAbrev="AcrdPmtPrm" QualifiedAbbrev="AcrdPmtPrm"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="CurrentCollectionParameter_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="CurrentCollectionParameter" tag="28885" datatype="Price" ComponentType="Field" StdAbrev="CurColtnPrm" QualifiedAbbrev="CurColtnPrm"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="AccruedCollectionParameter_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="AccruedCollectionParameter" tag="28886" datatype="Price" ComponentType="Field" StdAbrev="AcrdColtnPrm" QualifiedAbbrev="AcrdColtnPrm"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="RelatedIndexValue_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="RelatedIndexValue" tag="28882" datatype="Price" ComponentType="Field" StdAbrev="RelNdxVal" QualifiedAbbrev="RelNdxVal"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="ClearingSettlPrice_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ClearingSettlPrice" tag="2528" datatype="Price" ComponentType="Field" StdAbrev="SetPx" QualifiedAbbrev="SetPx"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="Price"/>
+  </xs:simpleType>
+  <xs:simpleType name="CalculationMethod_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="CalculationMethod" tag="28866" datatype="String" ComponentType="Field" StdAbrev="CalcMeth" QualifiedAbbrev="CalcMeth"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="0" desc="Automatic"/>
+        <x:EnumDoc value="1" desc="Manual"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FastMarketIndicator_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="FastMarketIndicator" tag="2447" datatype="int" ComponentType="Field" StdAbrev="FastMktInd" QualifiedAbbrev="FastMktInd"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="ClosedBookIndicator_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="ClosedBookIndicator" tag="28874" datatype="int" ComponentType="Field" StdAbrev="ClsdBkInd" QualifiedAbbrev="ClsdBkInd"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketImbalanceIndicator_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketImbalanceIndicator" tag="28875" datatype="int" ComponentType="Field" StdAbrev="MktImbalInd" QualifiedAbbrev="MktImbalInd"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="TradingSessionId_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="TradingSessionID" tag="336" datatype="String" ComponentType="Field" StdAbrev="SesID" QualifiedAbbrev="SesID"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="1" desc="Day"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TradingSessionSubId_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="TradingSessionSubID" tag="625" datatype="String" ComponentType="Field" StdAbrev="SesID" QualifiedAbbrev="SesID"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <x:EnumDoc value="3" desc="Continuous"/>
+        <x:EnumDoc value="6" desc="ScheduledIntradayAuction"/>
+        <x:EnumDoc value="8" desc="AnyAuction"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="103"/>
+      <xs:enumeration value="104"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="NoFlexProductEligibilities_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="NoFlexProductEligibilities" tag="2560" datatype="NumInGroup" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="FlexProductEligibilityComplex_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="FlexProductEligibilityComplex" tag="2561" datatype="int" ComponentType="Field" StdAbrev="FlexProdEligCmplx" QualifiedAbbrev="FlexProdEligCmplx"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="USApproval_enum_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="USApproval" tag="9543" datatype="String" ComponentType="Field" StdAbrev="USApprvl" QualifiedAbbrev="USApprvl"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+        <x:EnumDoc value="None" desc="None"/>
+        <x:EnumDoc value="CFTC" desc="CFTC"/>
+        <x:EnumDoc value="SEC" desc="SEC"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="None"/>
+      <xs:enumeration value="CFTC"/>
+      <xs:enumeration value="SEC"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="NoPriceRangeRules_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="NoPriceRangeRules" tag="20001" datatype="NumInGroup" ComponentType="Field" StdAbrev="" QualifiedAbbrev=""/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="TargetProductID_t">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        
+        </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="TargetProductID" tag="2556" datatype="int" ComponentType="Field" StdAbrev="TargetProductID" QualifiedAbbrev="TargetProductID"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+</xs:schema>

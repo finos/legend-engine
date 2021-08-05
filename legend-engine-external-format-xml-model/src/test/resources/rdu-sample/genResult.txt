@@ -1,0 +1,454 @@
+>>>test::gen::BasicsContractType
+Class test::gen::BasicsContractType
+{
+  {meta::pure::profiles::doc.doc = 'ActiveFlag'} actFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'DayNumber'} dayNum: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'WeekNumber'} wkNum: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'MonthCode'} mnthCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'YearCode'} yrCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ContractSize'} ctrSz: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'SettlementType'} settleTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'PointValue'} pntVal: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'FirstTradeDate'} frstTrdDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'LastTradeDate'} lstTrdDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExpirationDate'} expDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExerciseStartDate'} exrcsStrtDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'SettlementDate'} settleDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'SettlementFixingDate'} settleFixDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'FirstDeliveryDate'} frstDlvryDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'Last Delivery Date'} lstDlvryDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'NameLong'} name: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ISO 10962 (International Organization for Standardization) code 10962:2015 which represents a standard classification of the features of a security. The first character represents the category of the security, the second character represents the group of the security, and the third through sixth characters represent the attributes of the security.'} cfiCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'CFICode'} cfi: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'CallPutIndicator'} cpInd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExerciseStyleType'} exrcsStylTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'StrikePrice'} strikePx: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'OptionAcceleratedExpirationDate'} optAclrtdExpDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'AccrualStartDate'} accrlStrtDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'AccrualEndDate'} accrlEndDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'FlexFlag'} flexFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ParentAssetType'} prntAssetTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'AssetType'} assetTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'VendorAssetType'} vndrAssetTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'FirstNoticeDate'} frstNtcDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'LastNoticeDate'} lstNtcDt: test::gen::DateType[0..1];
+  {meta::pure::profiles::doc.doc = 'NoOfLegs'} numOfLegs: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'StrategyType'} strtgyTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Low Exercise Price Option Flag'} lepoFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ContractTradingStatus'} trdStsTp: test::gen::StringType[0..1];
+}
+
+>>>test::gen::BasicsLegType
+Class test::gen::BasicsLegType
+{
+  {meta::pure::profiles::doc.doc = 'LegNumber'} num: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'LegBuySellIndicator'} bsInd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'LegQuantity'} qty: test::gen::DecimalType[0..1];
+}
+
+>>>test::gen::BasicsProductSessionType
+Class test::gen::BasicsProductSessionType
+{
+  {meta::pure::profiles::doc.doc = 'Identifies the session to which the product definition record applies. Possible values are: Day, Night or Continuous'} sesTp: test::gen::StringType[1];
+  {meta::pure::profiles::doc.doc = 'TradingHours'} trdHr: test::gen::StringType[0..1];
+}
+
+>>>test::gen::BasicsProductTradeLineType
+Class test::gen::BasicsProductTradeLineType
+{
+  {meta::pure::profiles::doc.doc = 'Exchange code of the segment in where the security is trading.'} exchCd: test::gen::StringType[1];
+  {meta::pure::profiles::doc.doc = 'Identifies the venue to which the product definition record applies. Possible values are: Electronic, Pit, OTC or Composite.'} segTp: test::gen::StringType[0..1];
+}
+
+>>>test::gen::BasicsProductType
+Class test::gen::BasicsProductType
+{
+  {meta::pure::profiles::doc.doc = 'Name'} name: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ActiveFlag'} actFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ProductType'} prdTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'FlexEligibleFlag'} flexElgblFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ProductExchangeCode'} exchCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TradeCountryCode'} trdCtyCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ClearingCurrencyCode'} clrngCcyCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TradeCurrencyCode'} trdCcyCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'FlagTradeCurrencyMajor'} trdCcyMajorFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'MeasurementUnitCode'} msrmntUntCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TickSizeNumerator'} tckSzNmrtr: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'TickSizeDenominator'} tckSzDnmntr: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'RoundLotSize'} roundLotSz: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'MaxOrderSize'} maxOrdSz: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'SpotMonthPositionLimit'} spotMnthPosLmt: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'MonthPositionLimit'} mnthPosLmt: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'AllMonthsPositionLimit'} allMnthPosLmt: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'BlockTradeEligibleFlag'} blckTrdElgblFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExchangeReportingLevel'} exchRptngLvl: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'CFTCReportingLevel'} cftcRptngLvl: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'ProductDayNumber'} dayNum: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'ProductWeekNumber'} wkNum: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'OptionOnFutureFlag'} oofFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'StrikePriceCurrencyCode'} strikePxCcyCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'StrikePriceDisplayDecimal'} strikePxDsplyDec: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'PennyPilotProgramFlag'} pppFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ValuationMethodType'} vltnMthdTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ProductTradingStatus'} trdStsTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Yes/No Flag, identifying whether the trading venue is identified as a regulated market by the US Commoditiy Futures Trading Commission (CFTC)'} cftcRegFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'UnderlyingRelationshpsType'} undlRltnsTp: test::gen::StringType[0..1];
+}
+
+>>>test::gen::BasicsProductUnderlierType
+Class test::gen::BasicsProductUnderlierType
+{
+  {meta::pure::profiles::doc.doc = 'Name'} name: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ParentAssetType'} prntAssetTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'AssetType'} assetTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExchangeCode'} exchCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'SegmentMIC'} sMic: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'OperatingMIC'} oMic: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Quantity'} qty: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'AllocationPercentage'} allctnPct: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'ESMACommodityBaseCode'} esmaCmdtyBseCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ESMACommodityDetailCode'} esmaCmdtyDtlCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'LegNumber'} legNum: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Trade Currency'} trdCcyCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Grader'} cmdtyGrdr: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Grade'} cmdtyGrd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Pricing Reference'} prcngRef: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Maturity Date'} matDt: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Coupon Rate'} cpnRt: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Vintage'} vntg: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Incoterms'} shpngTrms: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Transportation Method'} trnsprtMthd: test::gen::StringType[0..1];
+}
+
+>>>test::gen::BasicsSessionType
+Class test::gen::BasicsSessionType
+{
+  {meta::pure::profiles::doc.doc = 'Identifies the segment (venue) of the contract\'s trading line. Possible values are: Day, Night or Continuous.'} sesTp: test::gen::StringType[1];
+  {meta::pure::profiles::doc.doc = 'ActiveFlag'} actFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'BlockTradeMinSize'} blckTrdMinSz: test::gen::DecimalType[0..1];
+}
+
+>>>test::gen::BasicsTradeLineType
+Class test::gen::BasicsTradeLineType
+{
+  {meta::pure::profiles::doc.doc = 'SegmentType'} segTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExchangeCode'} exchCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Vendor Exchange code of the segment where the security is trading.'} vndrExchCd: test::gen::StringType[*];
+  {meta::pure::profiles::doc.doc = 'SegmentMIC'} sMic: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'OperatingMIC'} oMic: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ActiveFlag'} actFl: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ListingCycleType'} lstngCycleTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TickSize'} tckSz: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'TickValue'} tckVal: test::gen::DecimalType[0..1];
+  {meta::pure::profiles::doc.doc = 'TradeLineTradingStatus'} trdStsTp: test::gen::StringType[0..1];
+}
+
+>>>test::gen::BasicsUnderlierType
+Class test::gen::BasicsUnderlierType
+{
+  {meta::pure::profiles::doc.doc = 'Name'} name: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ParentAssetType'} prntAssetTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'AssetType'} assetTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'VendorAssetType'} vndrAssetTp: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExchangeCode'} exchCd: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'SegmentMIC'} sMic: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'OperatingMIC'} oMic: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Leg Number'} legNum: test::gen::StringType[0..1];
+}
+
+>>>test::gen::ContractType
+Class test::gen::ContractType
+{
+  {meta::pure::profiles::doc.doc = 'Generic attributes of contract'} basics: test::gen::BasicsContractType[0..1];
+  {meta::pure::profiles::doc.doc = 'Generic identifiers of contract'} ids: test::gen::IdsContractType[0..1];
+  {meta::pure::profiles::doc.doc = 'Proprietary attributes of contract'} props: test::gen::PropsContractType[0..1];
+  {meta::pure::profiles::doc.doc = 'Strategy legs container'} legs: test::gen::LegType[*];
+  {meta::pure::profiles::doc.doc = 'Underlyings container'} underliers: test::gen::UnderlierType[*];
+  {meta::pure::profiles::doc.doc = 'Trading lines container'} tradeLines: test::gen::TradeLineType[*];
+  {meta::pure::profiles::doc.doc = 'Mifid attributes of Contract'} mifids: test::gen::MifidsContractType[0..1];
+  {meta::pure::profiles::doc.doc = 'NcaMifid attributes of underlying'} ncaMifids: test::gen::NcaMifidNcaMifidsContractType[*];
+  {meta::pure::profiles::doc.doc = 'NcaMifid attributes of underlying'} rpRngMifids: test::gen::RpRngMifidRpRngMifidsContractType[*];
+}
+
+>>>test::gen::DateType
+Class test::gen::DateType
+{
+  source: String[0..1];
+  origValue: StrictDate[0..1];
+  comment: String[0..1];
+  value: StrictDate[1];
+}
+
+>>>test::gen::DecimalType
+Class test::gen::DecimalType
+{
+  source: String[0..1];
+  origValue: Decimal[0..1];
+  comment: String[0..1];
+  value: Decimal[1];
+}
+
+>>>test::gen::DerivativeData
+Class test::gen::DerivativeData
+{
+  {meta::pure::profiles::doc.doc = 'Common header information'} header: test::gen::HeaderType[1];
+  {meta::pure::profiles::doc.doc = 'Product level'} product: test::gen::ProductType[*];
+  {meta::pure::profiles::doc.doc = 'Derivative trailer information'} trailer: test::gen::DerivativeTrailerType[1];
+}
+
+>>>test::gen::DerivativeTrailerType
+Class {meta::pure::profiles::doc.doc = 'Derivative trailer information'} test::gen::DerivativeTrailerType extends test::gen::TrailerType
+{
+  {meta::pure::profiles::doc.doc = 'CountProducts'} cntPrd: Integer[1];
+  {meta::pure::profiles::doc.doc = 'CountContracts'} cntCtr: Integer[1];
+}
+
+>>>test::gen::ExceptionType
+Class test::gen::ExceptionType
+[
+  c1_values: $this.type->in(['INFO', 'WARN', 'ERROR'])
+]
+{
+  type: String[1];
+  value: String[1];
+}
+
+>>>test::gen::ExpiredDateType
+Class test::gen::ExpiredDateType extends test::gen::StringType
+{
+  expiredDt: DateTime[0..1];
+}
+
+>>>test::gen::HeaderType
+Class {meta::pure::profiles::doc.doc = 'Common header information'} test::gen::HeaderType
+{
+  paramInfo: test::gen::ParamInfoType[0..1];
+  fileIdentifier: String[0..1];
+  dateGenerated: DateTime[0..1];
+}
+
+>>>test::gen::IdsContractType
+Class test::gen::IdsContractType
+{
+  {meta::pure::profiles::doc.doc = 'OCCSymbol'} occSym: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ISIN'} isin: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'BBG_ID_BB_UNIQUE'} bbgIdBbUnique: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Alternative Instrument Identifier (Aii)'} aiiCode: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'BBG_TICKER'} bbgTicker: test::gen::StringType[0..1];
+}
+
+>>>test::gen::IdsLegType
+Class test::gen::IdsLegType
+{
+  {meta::pure::profiles::doc.doc = '"An RDU internally generated ID (18 characters) that represents a unique security. Example of an XRF security RDU ID is: XRFISE000123456789."'} rduSecId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExchangePrefix'} exchPrfx: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Ticker'} ticker: test::gen::StringType[0..1];
+}
+
+>>>test::gen::IdsProductSessionType
+Class test::gen::IdsProductSessionType
+{
+  {meta::pure::profiles::doc.doc = 'RICRoot'} ricRoot: test::gen::StringType[0..1];
+}
+
+>>>test::gen::IdsProductTradeLineType
+Class test::gen::IdsProductTradeLineType
+{
+  {meta::pure::profiles::doc.doc = 'ExchPrefix'} exchPrfx: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExchPrefixCall'} exchPrfxCall: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ExchPrefixPut'} exchPrfxPut: test::gen::StringType[0..1];
+}
+
+>>>test::gen::IdsProductType
+Class test::gen::IdsProductType
+{
+  {meta::pure::profiles::doc.doc = '"An RDU internally generated ID that represents a unique ETD product. The ID is generated based on the exchange product prefix, but separate RDU Product IDs are allocated when for a given exchange product prefix different basic types of ETDs are included (e.g. Option, Futures and Strategies). For example: In cases in which within a single combination of exchange , product prefix and basic ETD type, there are still multiple different ETD subtypes required to uniquely identify a particular product (e.g. Options on a monthly future vs Options on a 3 month strip of monthly futures, refer to ICE product prefix AF1, with clearing code AF1, https://www.theice.com/products/32419671/ICE-Futures-Richards-Bay-Coal-Early-122-days-Single-Expiry-Option), separate RDU Product IDs will be allocated and all these RDU product ID\'s will have the same RDU ProductGroup Id."'} rduPrdId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ClearingCode'} clrngCd: test::gen::StringType[0..1];
+}
+
+>>>test::gen::IdsProductUnderlierType
+Class test::gen::IdsProductUnderlierType
+{
+  {meta::pure::profiles::doc.doc = '"An RDU internally generated ID (18 characters) that represents a unique security. Example of an XRF security RDU ID is: XRFISE000123456789."'} rduSecId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = '"An RDU internally generated ID that represents a unique ETD product. The ID is generated based on the exchange product prefix, but separate RDU Product IDs are allocated when for a given exchange product prefix different basic types of ETDs are included (e.g. Option, Futures and Strategies). For example: In cases in which within a single combination of exchange , product prefix and basic ETD type, there are still multiple different ETD subtypes required to uniquely identify a particular product (e.g. Options on a monthly future vs Options on a 3 month strip of monthly futures, refer to ICE product prefix AF1, with clearing code AF1, https://www.theice.com/products/32419671/ICE-Futures-Richards-Bay-Coal-Early-122-days-Single-Expiry-Option), separate RDU Product IDs will be allocated and all these RDU product ID\'s will have the same RDU ProductGroup Id."'} rduPrdId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ISIN'} isin: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'CUSIP Global Service sequentially generated CUSIP number (9-character) assigned for each strike price, for U.S. and Canadian listed equity, ETF and Index options. The CUSIP International Numbering System (CINS) number is a 9-character alphanumeric identifier that employs the same 9 characters as CUSIP, but also contains a letter of the alphabet in the first position signifying the issuer\'s country or geographic region. A private placement number (PPN) is a number assigned by S&P\'s CUSIP Service Bureau that is issued for a security that is not traded on the public markets.'} cusip: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'SEDOL'} sedol: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Ticker'} ticker: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'RIC'} ric: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'BBG_ID_BB_GLOBAL'} bbgIdBbGlobal: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'BBG_COMPOSITE_ID_BB_GLOBAL'} bbgCompositeIdBbGlobal: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'BBG_ID_BB_UNIQUE'} bbgIdBbUnique: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TR_AssetID'} trAssetId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TR_QuoteID'} trQuoteId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'RDU Ticker'} rduTicker: test::gen::StringType[0..1];
+}
+
+>>>test::gen::IdsSessionType
+Class test::gen::IdsSessionType
+{
+  {meta::pure::profiles::doc.doc = 'RIC'} ric: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TR_AssetID'} trAssetId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TR_QuoteID'} trQuoteId: test::gen::StringType[0..1];
+}
+
+>>>test::gen::IdsTradeLineType
+Class test::gen::IdsTradeLineType
+{
+  {meta::pure::profiles::doc.doc = '"An RDU internally generated ID (18 characters) that represents a unique security. Example of an XRF security RDU ID is: XRFISE000123456789."'} rduSecId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'RDU_SecurityID_Expired'} rduSecIdExp: test::gen::ExpiredDateType[*];
+  {meta::pure::profiles::doc.doc = '"An RDU internally generated ID (18 characters) that represents a unique security segment. Example of an XRF security segment RDU ID is: XRFISG000123456789."'} rduSegId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'RDU_SegmentID_Expired'} rduSegIdExp: test::gen::ExpiredDateType[*];
+  {meta::pure::profiles::doc.doc = 'BBG_ID_BB_GLOBAL'} bbgIdBbGlobal: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Ticker'} ticker: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'BBG_COMPOSITE_ID_BB_GLOBAL'} bbgCompositeIdBbGlobal: test::gen::StringType[0..1];
+}
+
+>>>test::gen::IdsUnderlierType
+Class test::gen::IdsUnderlierType
+{
+  {meta::pure::profiles::doc.doc = '"An RDU internally generated ID (18 characters) that represents a unique security. Example of an XRF security RDU ID is: XRFISE000123456789."'} rduSecId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Ticker'} ticker: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'ISIN'} isin: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'CUSIP Global Service sequentially generated CUSIP number (9-character) assigned for each strike price, for U.S. and Canadian listed equity, ETF and Index options. The CUSIP International Numbering System (CINS) number is a 9-character alphanumeric identifier that employs the same 9 characters as CUSIP, but also contains a letter of the alphabet in the first position signifying the issuer\'s country or geographic region. A private placement number (PPN) is a number assigned by S&P\'s CUSIP Service Bureau that is issued for a security that is not traded on the public markets.'} cusip: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'RIC'} ric: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'BBG_ID_BB_GLOBAL'} bbgIdBbGlobal: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'BBG_ID_BB_UNIQUE'} bbgIdBbUnique: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TR_AssetID'} trAssetId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'TR_QuoteID'} trQuoteId: test::gen::StringType[0..1];
+  {meta::pure::profiles::doc.doc = 'Underlying Exchange Prefix'} exchPrfx: test::gen::StringType[0..1];
+}
+
+>>>test::gen::LegType
+Class test::gen::LegType
+{
+  {meta::pure::profiles::doc.doc = 'Generic attributes of strategy leg'} basics: test::gen::BasicsLegType[0..1];
+  {meta::pure::profiles::doc.doc = 'Generic identifiers of strategy leg'} ids: test::gen::IdsLegType[0..1];
+}
+
+>>>test::gen::MifidsContractType
+Class test::gen::MifidsContractType
+{
+}
+
+>>>test::gen::MifidsProductType
+Class test::gen::MifidsProductType
+{
+}
+
+>>>test::gen::MifidsProductUnderlierType
+Class test::gen::MifidsProductUnderlierType
+{
+}
+
+>>>test::gen::NcaMifidNcaMifidsContractType
+Class test::gen::NcaMifidNcaMifidsContractType
+{
+}
+
+>>>test::gen::ParamInfoType
+Class test::gen::ParamInfoType
+[
+  c1_values: $this.fullOrDelta->forAll(x: String[1]|$x->in(['FULL', 'DELTA']))
+]
+{
+  assetTypeFilter: String[*];
+  regionFilter: String[*];
+  exchangeFilter: String[*];
+  securityFilter: String[0..1];
+  fullOrDelta: String[0..1];
+}
+
+>>>test::gen::ProductType
+Class test::gen::ProductType
+{
+  {meta::pure::profiles::doc.doc = 'Generic attributes of product'} basics: test::gen::BasicsProductType[0..1];
+  {meta::pure::profiles::doc.doc = 'Generic identifiers of product'} ids: test::gen::IdsProductType[0..1];
+  {meta::pure::profiles::doc.doc = 'Proprietary attributes of product'} props: test::gen::PropsProductType[0..1];
+  {meta::pure::profiles::doc.doc = 'Underlyings container'} underliers: test::gen::UnderlierProductType[*];
+  {meta::pure::profiles::doc.doc = 'Trading lines container'} tradeLines: test::gen::TradeLineProductType[*];
+  {meta::pure::profiles::doc.doc = ''} undLEs: test::gen::UndLeundlEsProductType[*];
+  {meta::pure::profiles::doc.doc = ''} mifids: test::gen::MifidsProductType[0..1];
+  {meta::pure::profiles::doc.doc = 'Contracts container'} contracts: test::gen::ContractType[*];
+}
+
+>>>test::gen::PropsContractType
+Class test::gen::PropsContractType
+{
+}
+
+>>>test::gen::PropsProductType
+Class test::gen::PropsProductType
+{
+}
+
+>>>test::gen::RpRngMifidRpRngMifidsContractType
+Class test::gen::RpRngMifidRpRngMifidsContractType
+{
+}
+
+>>>test::gen::SessionProductType
+Class test::gen::SessionProductType
+{
+  {meta::pure::profiles::doc.doc = 'Generic attributes of session'} basics: test::gen::BasicsProductSessionType[0..1];
+  {meta::pure::profiles::doc.doc = 'Generic identifiers of session'} ids: test::gen::IdsProductSessionType[0..1];
+}
+
+>>>test::gen::SessionType
+Class test::gen::SessionType
+{
+  {meta::pure::profiles::doc.doc = 'Generic attributes of session'} basics: test::gen::BasicsSessionType[0..1];
+  {meta::pure::profiles::doc.doc = 'Generic identifiers of session'} ids: test::gen::IdsSessionType[0..1];
+}
+
+>>>test::gen::StringType
+Class test::gen::StringType
+{
+  source: String[0..1];
+  origValue: String[0..1];
+  comment: String[0..1];
+  value: String[1];
+}
+
+>>>test::gen::TradeLineProductType
+Class test::gen::TradeLineProductType
+{
+  {meta::pure::profiles::doc.doc = 'Generic attributes of trading line'} basics: test::gen::BasicsProductTradeLineType[0..1];
+  {meta::pure::profiles::doc.doc = 'Generic identifiers of trading line'} ids: test::gen::IdsProductTradeLineType[0..1];
+  {meta::pure::profiles::doc.doc = 'Sessions container'} sessions: test::gen::SessionProductType[*];
+}
+
+>>>test::gen::TradeLineType
+Class test::gen::TradeLineType
+{
+  {meta::pure::profiles::doc.doc = 'Generic attributes of contract trading line'} basics: test::gen::BasicsTradeLineType[0..1];
+  {meta::pure::profiles::doc.doc = 'Generic identifiers of contract trading line'} ids: test::gen::IdsTradeLineType[0..1];
+  {meta::pure::profiles::doc.doc = 'Sessions container'} sessions: test::gen::SessionType[*];
+}
+
+>>>test::gen::TrailerType
+Class {meta::pure::profiles::doc.doc = 'Common trailer information'} test::gen::TrailerType
+{
+  exceptions: test::gen::ExceptionType[*];
+  numberOfElements: Integer[0..1];
+}
+
+>>>test::gen::UndLeundlEsProductType
+Class test::gen::UndLeundlEsProductType
+{
+}
+
+>>>test::gen::UnderlierProductType
+Class test::gen::UnderlierProductType
+{
+  {meta::pure::profiles::doc.doc = 'Generic attributes of underlying'} basics: test::gen::BasicsProductUnderlierType[0..1];
+  {meta::pure::profiles::doc.doc = 'Generic identifiers of underlying'} ids: test::gen::IdsProductUnderlierType[0..1];
+  {meta::pure::profiles::doc.doc = 'Mifid identifiers of underlying'} mifids: test::gen::MifidsProductUnderlierType[0..1];
+}
+
+>>>test::gen::UnderlierType
+Class test::gen::UnderlierType
+{
+  {meta::pure::profiles::doc.doc = 'Generic attributes of underlyings'} basics: test::gen::BasicsUnderlierType[0..1];
+  {meta::pure::profiles::doc.doc = 'Generic identifiers of underlyings'} ids: test::gen::IdsUnderlierType[0..1];
+}

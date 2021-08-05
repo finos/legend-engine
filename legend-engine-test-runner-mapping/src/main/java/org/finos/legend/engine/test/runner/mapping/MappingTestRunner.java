@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -94,7 +94,7 @@ public class MappingTestRunner
 
     public void setupTestData()
     {
-        ConnectionVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection> connectionVisitor = new ConnectionBuilder(this.pureModel.getContext());
+        ConnectionVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection> connectionVisitor = new ConnectionFirstPassBuilder(this.pureModel.getContext());
         this.buildTestConnection(conn -> this.runtime._connectionsAdd(conn.accept(connectionVisitor)));
     }
 
