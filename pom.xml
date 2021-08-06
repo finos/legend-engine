@@ -67,6 +67,7 @@
         <module>legend-engine-test-runner-service</module>
         <module>legend-engine-configuration</module>
         <module>legend-engine-protocol</module>
+        <module>legend-engine-protocol-generation</module>
         <module>legend-engine-protocol-pure</module>
         <module>legend-engine-protocol-relational</module>
         <module>legend-engine-protocol-graphQL</module>
@@ -108,8 +109,8 @@
 
 
         <!-- Legend -->
-        <legend.pure.version>1.32.0</legend.pure.version>
-        <legend.shared.version>0.14.0</legend.shared.version>
+        <legend.pure.version>1.33.0</legend.pure.version>
+        <legend.shared.version>0.15.0</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -475,6 +476,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

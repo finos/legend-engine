@@ -17,12 +17,12 @@ package org.finos.legend.engine.language.graphQL.grammar.to;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.protocol.graphQL.v1.Definition;
-import org.finos.legend.engine.protocol.graphQL.v1.DefinitionVisitor;
-import org.finos.legend.engine.protocol.graphQL.v1.Document;
-import org.finos.legend.engine.protocol.graphQL.v1.executable.*;
-import org.finos.legend.engine.protocol.graphQL.v1.typeSystem.*;
-import org.finos.legend.engine.protocol.graphQL.v1.value.*;
+import org.finos.legend.engine.protocol.graphQL.Definition;
+import org.finos.legend.engine.protocol.graphQL.DefinitionVisitor;
+import org.finos.legend.engine.protocol.graphQL.Document;
+import org.finos.legend.engine.protocol.graphQL.executable.*;
+import org.finos.legend.engine.protocol.graphQL.typeSystem.*;
+import org.finos.legend.engine.protocol.graphQL.value.*;
 
 import java.util.List;
 
@@ -83,6 +83,18 @@ public class GraphQLGrammarComposer
             }
 
             @Override
+            public String visit(ExecutableDefinition val)
+            {
+                return null;
+            }
+
+            @Override
+            public String visit(TypeSystemDefinition val)
+            {
+                return null;
+            }
+
+            @Override
             public String visit(FragmentDefinition fragmentDefinition)
             {
                 return "fragment " + fragmentDefinition.name + " {\n" + renderSelectionSet(fragmentDefinition.selectionSet, "  ") + "\n}";
@@ -110,6 +122,12 @@ public class GraphQLGrammarComposer
             public String visit(SchemaDefinition schemaDefinition)
             {
                 return "schema {\n" + ListIterate.collect(schemaDefinition.rootOperationTypeDefinitions, r -> "  " + r.operationType + " : " + r.type).makeString("\n") + "\n}";
+            }
+
+            @Override
+            public String visit(Type val)
+            {
+                return null;
             }
         });
     }
@@ -157,6 +175,7 @@ public class GraphQLGrammarComposer
 
     private String renderArgumentDefinitions(List<InputValueDefinition> argumentDefinitions)
     {
+        System.out.println(argumentDefinitions);
         return (argumentDefinitions.isEmpty() ? "" : "(" + ListIterate.collect(argumentDefinitions, this::renderInputValueDefinition).makeString(", ") + ")");
     }
 
@@ -185,6 +204,12 @@ public class GraphQLGrammarComposer
             public String visit(NullValue nullValue)
             {
                 return "null";
+            }
+
+            @Override
+            public String visit(ObjectValue val)
+            {
+                return null;
             }
 
             @Override
