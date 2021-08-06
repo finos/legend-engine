@@ -101,7 +101,7 @@ public class ParseTreeWalkerSourceInformation
 
     public SourceInformation getSourceInformation(ParserRuleContext parserRuleContext)
     {
-        return returnSourceInfo ? getSourceInformation(this.sourceId, parserRuleContext.getStart(), parserRuleContext.getStop(), this.lineOffset, this.columnOffset): null;
+        return  getSourceInformation(this.sourceId, parserRuleContext.getStart(), parserRuleContext.getStop(), this.lineOffset, this.columnOffset);
     }
 
     public SourceInformation getSourceInformation(Token token)
@@ -114,14 +114,16 @@ public class ParseTreeWalkerSourceInformation
         return getSourceInformation(this.sourceId, startToken, endToken, this.lineOffset, this.columnOffset);
     }
 
-    private SourceInformation getSourceInformation(String sourceId, Token startToken, Token endToken, int lineOffset, int columnOffset)
-    {
-        // NOTE: column offset should only apply to the first line (see the example and note in `columnOffset` attribute above)
-        int startLine = startToken.getLine() + lineOffset;
-        int startColumn = startToken.getCharPositionInLine() + 1 + (startToken.getLine() == 1 ? columnOffset : 0);
-        int endLine = endToken.getLine() + lineOffset;
-        int endColumn = endToken.getCharPositionInLine() + endToken.getText().length() + (endToken.getLine() == 1 ? columnOffset : 0);
-        return new SourceInformation(sourceId, startLine, startColumn, endLine, endColumn);
+    private SourceInformation getSourceInformation(String sourceId, Token startToken, Token endToken, int lineOffset, int columnOffset) {
+        if (returnSourceInfo) {
+            // NOTE: column offset should only apply to the first line (see the example and note in `columnOffset` attribute above)
+            int startLine = startToken.getLine() + lineOffset;
+            int startColumn = startToken.getCharPositionInLine() + 1 + (startToken.getLine() == 1 ? columnOffset : 0);
+            int endLine = endToken.getLine() + lineOffset;
+            int endColumn = endToken.getCharPositionInLine() + endToken.getText().length() + (endToken.getLine() == 1 ? columnOffset : 0);
+            return new SourceInformation(sourceId, startLine, startColumn, endLine, endColumn);
+        }
+        return null;
     }
 
     public static class Builder
