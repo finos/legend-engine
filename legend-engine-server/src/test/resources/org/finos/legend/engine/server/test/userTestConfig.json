@@ -64,5 +64,11 @@
   },
   "relationalexecution": {
     "tempPath": "/tmp/"
+  },
+  "query": {
+    "mongoUrl": "127.0.0.1",
+    "mongoPort": 27017,
+    "mongoDatabase": "local",
+    "mongoCollection": "query"
   }
 }

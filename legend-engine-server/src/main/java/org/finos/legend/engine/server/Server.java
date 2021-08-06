@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.server;
 
+import com.mongodb.MongoClient;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.forms.MultiPartBundle;
@@ -42,14 +43,15 @@ import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElem
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.TransformRelationalOperationElementJsonToGrammar;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlan;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.application.query.api.QueryAPI;
 import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
@@ -78,7 +80,11 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
 import java.io.FileInputStream;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.ServiceLoader;
 
 public class Server extends Application<ServerConfiguration>
 {
@@ -100,7 +106,7 @@ public class Server extends Application<ServerConfiguration>
         {
             @Override
             protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(
-                    ServerConfiguration configuration)
+                ServerConfiguration configuration)
             {
                 return configuration.swagger;
             }
@@ -169,6 +175,9 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
         environment.jersey().register(new ExecutePlan(planExecutor));
 
+        // Query
+        environment.jersey().register(new QueryAPI(new MongoClient(serverConfiguration.query.mongoUrl, serverConfiguration.query.mongoPort).getDatabase(serverConfiguration.query.mongoDatabase), serverConfiguration.query.mongoCollection));
+
         // Global
         environment.jersey().register(new JsonInformationExceptionMapper());
         environment.jersey().register(new CatchAllExceptionMapper());
@@ -180,7 +189,8 @@ public class Server extends Application<ServerConfiguration>
     {
         if (vaultConfigurations != null)
         {
-            ListIterate.forEach(vaultConfigurations, (v) -> {
+            ListIterate.forEach(vaultConfigurations, (v) ->
+            {
                 if (v instanceof PropertyVaultConfiguration)
                 {
                     try

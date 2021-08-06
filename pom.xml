@@ -71,6 +71,7 @@
         <module>legend-engine-protocol-pure</module>
         <module>legend-engine-protocol-relational</module>
         <module>legend-engine-protocol-graphQL</module>
+        <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
         <module>legend-engine-shared-core</module>
         <module>legend-engine-shared-javaCompiler</module>
@@ -171,6 +172,8 @@
         <maven.checkstyle.plugin.version>3.1.1</maven.checkstyle.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
+        <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
+        <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
     </properties>
 
     <scm>
@@ -255,6 +258,16 @@
                     <groupId>org.antlr</groupId>
                     <artifactId>antlr4-maven-plugin</artifactId>
                     <version>${antlr.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${exec.maven.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${build-helper.maven.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -617,6 +630,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-store-relational</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-application-query</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->
@@ -1230,6 +1248,11 @@
                 <version>${mongodb.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongo-java-driver</artifactId>
+                <version>${mongodb.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>${hibernate-validator.version}</version>
@@ -1414,6 +1437,7 @@
             <url>https://oss.sonatype.org/content/repositories/releases/</url>
         </repository>
     </repositories>
+
     <profiles>
         <profile>
             <id>docker</id>
