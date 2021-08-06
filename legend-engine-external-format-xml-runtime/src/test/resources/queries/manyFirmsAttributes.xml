@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<world>
+    <continent name="North America">
+        <firms>
+            <firm name="Acme Inc." ranking="2"/>
+            <firm name="Globex Corp"/>
+        </firms>
+    </continent>
+    <continent name="Europe">
+        <firms>
+            <firm name="Widget Engineering" ranking="1"/>
+            <firm name="Allied British Plastics" ranking="39"/>
+        </firms>
+    </continent>
+</world>

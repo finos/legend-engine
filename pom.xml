@@ -39,9 +39,14 @@
         <module>legend-engine-executionPlan-execution-store-relational-connection</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection-api</module>
         <module>legend-engine-external-shared</module>
+        <module>legend-engine-external-shared-format-model</module>
         <module>legend-engine-external-shared-format-runtime</module>
-        <module>legend-engine-external-format-flatdata-runtime</module>
+        <module>legend-engine-external-format-flatdata-model</module>
         <module>legend-engine-external-format-flatdata-shared</module>
+        <module>legend-engine-external-format-flatdata-runtime</module>
+        <module>legend-engine-external-format-xml-model</module>
+        <module>legend-engine-external-format-xml-runtime</module>
+        <module>legend-engine-external-format-xml-shared</module>
         <module>legend-engine-external-format-avro</module>
         <module>legend-engine-external-format-jsonSchema</module>
         <module>legend-engine-external-format-rosetta</module>
@@ -68,6 +73,9 @@
         <module>legend-engine-configuration</module>
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-generation</module>
+        <module>legend-engine-protocol-external-format-flatdata</module>
+        <module>legend-engine-protocol-external-format-xml</module>
+        <module>legend-engine-protocol-external-shared-format</module>
         <module>legend-engine-protocol-pure</module>
         <module>legend-engine-protocol-relational</module>
         <module>legend-engine-protocol-graphQL</module>
@@ -508,6 +516,21 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-external-shared-format</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-external-format-flatdata</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-external-format-xml</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-protocol-relational</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -583,13 +606,29 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-shared-format-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-shared-format-model</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-shared-format-runtime</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-shared-format-runtime</artifactId>
+                <version>${project.version}</version>
                 <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-flatdata-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -600,6 +639,21 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-format-flatdata-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-xml-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-xml-runtime</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-xml-shared</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

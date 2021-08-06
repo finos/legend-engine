@@ -92,6 +92,11 @@ public interface CompilerExtension
         return Collections.emptyList();
     }
 
+    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
     default List<Procedure2<InputData, CompileContext>> getExtraMappingTestInputDataProcessors()
     {
         return Collections.emptyList();

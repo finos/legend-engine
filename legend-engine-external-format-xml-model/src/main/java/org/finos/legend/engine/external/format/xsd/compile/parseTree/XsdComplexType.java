@@ -1,0 +1,48 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.external.format.xsd.compile.parseTree;
+
+import org.finos.legend.engine.external.format.xsd.compile.parseTree.visit.XsdObjectVisitor;
+
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class XsdComplexType extends XsdAnyType
+{
+    public String name;
+    public QName ref;
+    public XsdParticle particle;
+    public XsdContentModel contentModel;
+    public List<XsdAttributeItem> attributeItems = new ArrayList<>();
+    public XsdAnyAttribute anyAttribute;
+    public Boolean _abstract;
+    public Boolean mixed;
+    public List<XsdDerivationType> block = new ArrayList<>();
+    public List<XsdDerivationType> _final = new ArrayList<>();
+
+    @Override
+    public void accept(XsdObjectVisitor visitor)
+    {
+        visitor.visitBefore(this);
+        Optional.ofNullable(annotation).ifPresent(a -> a.accept(visitor));
+        Optional.ofNullable(contentModel).ifPresent(a -> a.accept(visitor));
+        Optional.ofNullable(particle).ifPresent(a -> a.accept(visitor));
+        attributeItems.forEach(ai -> ai.accept(visitor));
+        Optional.ofNullable(anyAttribute).ifPresent(a -> a.accept(visitor));
+        visitor.visitAfter(this);
+    }
+}

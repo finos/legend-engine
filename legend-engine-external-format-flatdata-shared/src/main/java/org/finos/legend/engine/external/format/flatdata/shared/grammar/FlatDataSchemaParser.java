@@ -240,7 +240,7 @@ public class FlatDataSchemaParser
         int startLine = parserRuleContext.getStart().getLine();
         int startColumn = parserRuleContext.getStart().getCharPositionInLine() + 1;
         int endLine = parserRuleContext.getStop().getLine();
-        int endColumn = parserRuleContext.getStop().getCharPositionInLine() + parserRuleContext.getStop().getText().length();
+        int endColumn = parserRuleContext.getStop().getCharPositionInLine() + ("<EOF>".equals(parserRuleContext.getStop().getText()) ? 1 : parserRuleContext.getStop().getText().length());
         return new FlatDataSchemaParseException(message, startLine, startColumn, endLine, endColumn);
     }
 

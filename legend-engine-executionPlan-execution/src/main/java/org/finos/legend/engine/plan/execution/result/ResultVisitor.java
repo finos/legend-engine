@@ -28,4 +28,9 @@ public interface ResultVisitor<T>
     T visit(ConstantResult constantResult);
 
     T visit(MultiResult multiResult);
+
+    default T visit(StreamingResult multiResult)
+    {
+        throw new UnsupportedOperationException("Not supported");
+    }
 }

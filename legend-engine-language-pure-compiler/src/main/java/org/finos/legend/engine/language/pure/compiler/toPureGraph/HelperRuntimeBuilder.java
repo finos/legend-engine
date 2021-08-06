@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
@@ -69,8 +70,16 @@ public class HelperRuntimeBuilder
         ListIterate.forEach(pureRuntime._connections().toList(), connection ->
         {
             Store store = getConnectionStore(connection);
-            String storePath = HelperModelBuilder.getElementFullPath(store, context.pureModel.getExecutionSupport());
-            mappedStores.remove(storePath);
+            // TODO Identify binding store as ModelStore better than this
+            if (store instanceof Root_meta_external_shared_format_binding_Binding)
+            {
+                mappedStores.remove("ModelStore");
+            }
+            else
+            {
+                String storePath = HelperModelBuilder.getElementFullPath(store, context.pureModel.getExecutionSupport());
+                mappedStores.remove(storePath);
+            }
         });
         // NOTE: this check for relational will be breaking as we start migrating to EngineRuntime, this is a good check, but we should assess its impact
         // hence, maybe we should relax this to a warning
@@ -142,7 +151,11 @@ public class HelperRuntimeBuilder
         });
         // convert EngineRuntime with connection as a map indexes by store to Pure runtime which only contains an array of connections
         org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
-        ListIterate.forEach(connections, connection -> pureRuntime._connectionsAdd(connection.accept(new ConnectionBuilder(context))));
+        ListIterate.forEach(connections, connection -> {
+            final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
+            connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
+            pureRuntime._connectionsAdd(pureConnection);
+        });
         // verify runtime mapping coverage
         checkRuntimeMappingCoverage(pureRuntime, mappings, context, engineRuntime.sourceInformation);
         return pureRuntime;
@@ -158,7 +171,7 @@ public class HelperRuntimeBuilder
         {
             LegacyRuntime legacyRuntime = (LegacyRuntime) runtime;
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
-            ListIterate.forEach(legacyRuntime.connections, connection -> pureRuntime._connectionsAdd(connection.accept(new ConnectionBuilder(context))));
+            ListIterate.forEach(legacyRuntime.connections, connection -> pureRuntime._connectionsAdd(connection.accept(new ConnectionFirstPassBuilder(context))));
             return pureRuntime;
         }
         if (runtime instanceof EngineRuntime)

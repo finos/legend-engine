@@ -231,6 +231,8 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
+        final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = this.context.pureModel.getConnection(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), packageableConnection.sourceInformation);
+        packageableConnection.connectionValue.accept(new ConnectionSecondPassBuilder(this.context, pureConnection));
         return null;
     }
 

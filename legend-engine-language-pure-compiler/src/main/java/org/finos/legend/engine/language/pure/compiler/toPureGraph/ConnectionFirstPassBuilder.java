@@ -37,11 +37,11 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 
 import java.util.Objects;
 
-public class ConnectionBuilder implements ConnectionVisitor<Connection>
+public class ConnectionFirstPassBuilder implements ConnectionVisitor<Connection>
 {
     private final CompileContext context;
 
-    public ConnectionBuilder(CompileContext context)
+    public ConnectionFirstPassBuilder(CompileContext context)
     {
         this.context = context;
     }
