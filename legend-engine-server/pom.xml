@@ -323,14 +323,6 @@
         </dependency>
         <!-- COMMONS IO -->
 
-
-        <!-- MONGODB -->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-        </dependency>
-        <!-- MONGODB -->
-
         <!-- LOG -->
         <dependency>
             <groupId>org.slf4j</groupId>
