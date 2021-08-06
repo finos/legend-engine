@@ -40,10 +40,7 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -60,7 +57,7 @@ public class TransformGrammarToJson
     @Path("transformGrammarToJson")
     @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response transformGrammarToJson(GrammarToJsonInput grammarInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response transformGrammarToJson(GrammarToJsonInput grammarInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue ("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
@@ -73,7 +70,7 @@ public class TransformGrammarToJson
             {
                 try
                 {
-                    Lambda lambda = parser.parseLambda(value, key);
+                    Lambda lambda = parser.parseLambda(value, key, returnSourceInfo);
                     lambdas.put(key, lambda);
                 }
                 catch (Exception e)
@@ -99,7 +96,7 @@ public class TransformGrammarToJson
             {
                 try
                 {
-                    symmetricResult.modelDataContext = parser.parseModel(grammarInput.code);
+                    symmetricResult.modelDataContext = parser.parseModel(grammarInput.code, returnSourceInfo);
                 }
                 catch (Exception e)
                 {

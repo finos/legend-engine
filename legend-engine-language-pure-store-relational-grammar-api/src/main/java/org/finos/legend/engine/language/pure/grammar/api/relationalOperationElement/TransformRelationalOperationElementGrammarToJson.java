@@ -26,6 +26,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -44,7 +45,7 @@ public class TransformRelationalOperationElementGrammarToJson
     @Path("transformRelationalOperationElementGrammarToJson")
     @ApiOperation(value = "Generates Pure protocol JSON from Pure language text for relational operation elements")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response transformRelationalOperationElementGrammarToJson(RelationalOperationElementGrammarToJsonInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response transformRelationalOperationElementGrammarToJson(RelationalOperationElementGrammarToJsonInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformRelationalOperationElementGrammarToJson").startActive(true))
@@ -56,7 +57,7 @@ public class TransformRelationalOperationElementGrammarToJson
             {
                 try
                 {
-                    RelationalOperationElement operation = RelationalGrammarParserExtension.parseRelationalOperationElement(value);
+                    RelationalOperationElement operation = RelationalGrammarParserExtension.parseRelationalOperationElement(value, returnSourceInfo);
                     operations.put(key, operation);
                 }
                 catch (Exception e)
