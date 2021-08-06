@@ -33,13 +33,6 @@
         </dependency>
         <!-- ENGINE -->
 
-        <!-- Required to support Configuration -->
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-core</artifactId>
-        </dependency>
-        <!-- Required to support Configuration -->
-
         <!-- JACKSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
