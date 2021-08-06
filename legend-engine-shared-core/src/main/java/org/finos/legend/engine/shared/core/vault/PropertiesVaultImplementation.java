@@ -4,7 +4,7 @@ import java.util.Properties;
 
 public class PropertiesVaultImplementation implements VaultImplementation
 {
-    private Properties properties;
+    private final Properties properties;
 
     public PropertiesVaultImplementation(Properties properties)
     {
