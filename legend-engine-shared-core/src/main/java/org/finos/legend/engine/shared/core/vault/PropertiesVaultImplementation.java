@@ -16,4 +16,10 @@ public class PropertiesVaultImplementation implements VaultImplementation
     {
         return properties.getProperty(vaultKey);
     }
+
+    @Override
+    public boolean hasValue(String vaultKey)
+    {
+        return properties.containsKey(vaultKey);
+    }
 }

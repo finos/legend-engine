@@ -16,8 +16,6 @@ package org.finos.legend.engine.server;
 
 import io.dropwizard.Configuration;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
-import org.finos.legend.engine.application.query.api.QueryAPI;
-import org.finos.legend.engine.application.query.configuration.QueryAPIConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
@@ -40,6 +38,5 @@ public class ServerConfiguration extends Configuration
     public List<VaultConfiguration> vaults;
 
     public RelationalExecutionConfiguration relationalexecution;
-    public QueryAPIConfiguration query;
     public TemporaryTestDbConfiguration temporarytestdb;
 }
