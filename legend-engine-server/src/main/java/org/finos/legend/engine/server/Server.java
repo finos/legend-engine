@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.server;
 
-import com.mongodb.MongoClient;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.forms.MultiPartBundle;
@@ -29,6 +28,8 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.finos.legend.engine.application.query.api.QueryAPI;
+import org.finos.legend.engine.application.query.configuration.QueryAPIConfiguration;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
@@ -51,7 +52,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
-import org.finos.legend.engine.application.query.api.QueryAPI;
 import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
@@ -176,7 +176,7 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new ExecutePlan(planExecutor));
 
         // Query
-        environment.jersey().register(new QueryAPI(new MongoClient(serverConfiguration.query.mongoUrl, serverConfiguration.query.mongoPort).getDatabase(serverConfiguration.query.mongoDatabase), serverConfiguration.query.mongoCollection));
+        environment.jersey().register(new QueryAPI(QueryAPIConfiguration.getMongoDBClient()));
 
         // Global
         environment.jersey().register(new JsonInformationExceptionMapper());

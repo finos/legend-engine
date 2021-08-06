@@ -7,7 +7,7 @@ public class Vault
 {
     public static Vault INSTANCE = new Vault();
 
-    private MutableList<VaultImplementation> implementations = Lists.mutable.empty();
+    private final MutableList<VaultImplementation> implementations = Lists.mutable.empty();
 
     private Vault()
     {
@@ -23,4 +23,8 @@ public class Vault
         return this.implementations.collect(i -> i.getValue(key)).getFirst();
     }
 
+    public boolean hasValue(String key)
+    {
+        return !this.implementations.select(i -> i.hasValue(key)).isEmpty();
+    }
 }
