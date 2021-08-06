@@ -25,6 +25,58 @@
     <artifactId>legend-engine-protocol-graphQL</artifactId>
     <name>Legend Engine - Protocol - GraphQL</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includePluginDependencies>true</includePluginDependencies>
+                    <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
+                    <arguments>
+                        <argument>meta::external::query::graphQL::metamodel</argument>
+                        <argument>org.finos.legend.engine.protocol.graphQL</argument>
+                        <argument>${project.build.directory}/generated-sources/</argument>
+                    </arguments>
+                    <classpathScope>test</classpathScope>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-protocol-generation</artifactId>
+                        <version>2.38.1-SNAPSHOT</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/target/generated-sources/</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <!-- TEST -->
         <dependency>

@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.graphQL.grammar.test.roundtrip;
 
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.graphQL.grammar.to.GraphQLGrammarComposer;
-import org.finos.legend.engine.protocol.graphQL.v1.Document;
+import org.finos.legend.engine.protocol.graphQL.Document;
 import org.junit.Assert;
 import org.junit.Test;
 
