@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -54,18 +55,24 @@ public class TestFlatDataSerialize
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         serializer.writeData(stream);
 
-        Assert.assertEquals(resourceAsString("queries/peopleWithExactHeadings.csv"), stream.toString());
+        String expected = resourceAsString("queries/peopleWithExactHeadings.csv");
+        Assert.assertEquals(normalizeLineBreaks(expected), normalizeLineBreaks(stream.toString()));
     }
 
     private String resourceAsString(String path)
     {
         try
         {
-            return new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(path), "Failed to get resource " + path).toURI())));
+            return new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(path), "Failed to get resource " + path).toURI())), StandardCharsets.UTF_8);
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private String normalizeLineBreaks(String string)
+    {
+        return string.replaceAll("\\R", "\n");
     }
 }

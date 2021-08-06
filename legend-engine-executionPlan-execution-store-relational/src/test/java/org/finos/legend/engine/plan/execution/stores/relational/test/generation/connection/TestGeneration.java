@@ -79,14 +79,12 @@ public class TestGeneration
                 LegendPlanTransformers.transformers
         );
 
-        System.out.println(plan);
-
-        ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().enable(SerializationFeature.INDENT_OUTPUT);;
+        ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().enable(SerializationFeature.INDENT_OUTPUT);
         ExecutionPlan executionPlan = mapper.readValue(plan, ExecutionPlan.class);
         StringWriter writer = new StringWriter();
         mapper.writeValue(writer, executionPlan);
 
-        Assert.assertEquals(
+        assertGeneratedStringEquals(
                 "{\n" +
                         "  \"_type\" : \"simple\",\n" +
                         "  \"authDependent\" : false,\n" +
@@ -178,7 +176,7 @@ public class TestGeneration
                         "    \"version\" : \"vX_X_X\"\n" +
                         "  },\n" +
                         "  \"templateFunctions\" : [ \"<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>\", \"<#function collectionSize collection> <#return collection?size?c> </#function>\" ]\n" +
-                        "}".replaceAll("\n",""), writer.toString());
+                        "}", writer.toString());
     }
 
     @Test
@@ -228,12 +226,12 @@ public class TestGeneration
                 LegendPlanTransformers.transformers
         );
 
-        ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().enable(SerializationFeature.INDENT_OUTPUT);;
+        ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().enable(SerializationFeature.INDENT_OUTPUT);
         ExecutionPlan executionPlan = mapper.readValue(plan, ExecutionPlan.class);
         StringWriter writer = new StringWriter();
         mapper.writeValue(writer, executionPlan);
 
-        Assert.assertEquals(
+        assertGeneratedStringEquals(
                 "{\n" +
                         "  \"_type\" : \"simple\",\n" +
                         "  \"authDependent\" : false,\n" +
@@ -318,6 +316,16 @@ public class TestGeneration
                         "    \"version\" : \"vX_X_X\"\n" +
                         "  },\n" +
                         "  \"templateFunctions\" : [ \"<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>\", \"<#function collectionSize collection> <#return collection?size?c> </#function>\" ]\n" +
-                        "}".replaceAll("\n",""), writer.toString());
+                        "}", writer.toString());
+    }
+
+    private static void assertGeneratedStringEquals(String expected, String actual)
+    {
+        Assert.assertEquals(normalizeLineBreaks(expected), normalizeLineBreaks(actual));
+    }
+
+    private static String normalizeLineBreaks(String string)
+    {
+        return string.replaceAll("\\R", "\n");
     }
 }
