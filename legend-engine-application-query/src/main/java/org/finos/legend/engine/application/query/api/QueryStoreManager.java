@@ -87,7 +87,7 @@ public class QueryStoreManager
         }
         return LazyIterate.collect(this.getQueryCollection()
             .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
-            .projection(Projections.include("id", "name", "projectId", "versionId"))
+            .projection(Projections.include("id", "name", "projectId", "versionId", "groupId", "artifactId", "owner"))
             .limit(limit == null ? 0 : limit), QueryStoreManager::documentToQuery).toList();
     }
 

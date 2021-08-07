@@ -79,22 +79,28 @@ public class TestQueryStoreManager
     public void testGetLightQueries() throws Exception
     {
         String currentUser = "testUser";
-        Query fullQuery = createTestQuery("1", "query1", currentUser);
-        fullQuery.content = "some content";
-        queryStoreManager.createQuery(fullQuery, currentUser);
+        Query newQuery = createTestQuery("1", "query1", currentUser);
+        newQuery.projectId = "projectId";
+        newQuery.groupId = "groupId";
+        newQuery.artifactId = "artifactId";
+        newQuery.versionId = "versionId";
+        newQuery.mapping = "mapping";
+        newQuery.runtime = "runtime";
+        newQuery.content = "content";
+        queryStoreManager.createQuery(newQuery, currentUser);
         List<Query> queries = queryStoreManager.getQueries(null, null, false, currentUser);
         Assert.assertEquals(1, queries.size());
         Assert.assertEquals("{" +
-            "\"artifactId\":null," +
+            "\"artifactId\":\"artifactId\"," +
             "\"content\":null," +
-            "\"groupId\":null," +
+            "\"groupId\":\"groupId\"," +
             "\"id\":\"1\"," +
             "\"mapping\":null," +
             "\"name\":\"query1\"," +
-            "\"owner\":null," +
-            "\"projectId\":null," +
+            "\"owner\":\"testUser\"," +
+            "\"projectId\":\"projectId\"," +
             "\"runtime\":null," +
-            "\"versionId\":null" +
+            "\"versionId\":\"versionId\"" +
             "}", objectMapper.writeValueAsString(queries.get(0)));
     }
 
