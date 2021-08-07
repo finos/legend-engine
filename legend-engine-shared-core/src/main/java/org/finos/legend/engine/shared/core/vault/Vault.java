@@ -18,6 +18,11 @@ public class Vault
         this.implementations.add(vaultImplementation);
     }
 
+    public void unregisterImplementation(VaultImplementation vaultImplementation)
+    {
+        this.implementations.remove(vaultImplementation);
+    }
+
     public String getValue(String key)
     {
         return this.implementations.collect(i -> i.getValue(key)).getFirst();
