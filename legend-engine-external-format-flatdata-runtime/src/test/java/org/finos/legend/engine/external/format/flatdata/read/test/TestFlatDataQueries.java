@@ -25,6 +25,9 @@ import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -182,13 +185,16 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
     private String resourceAsString(String path)
     {
+        byte[] bytes;
         try
         {
-            return new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(path), "Failed to get resource " + path).toURI())));
+            bytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(path), "Failed to get resource " + path).toURI()));
         }
-        catch (Exception e)
+        catch (IOException | URISyntaxException e)
         {
             throw new RuntimeException(e);
         }
+        String string = new String(bytes, StandardCharsets.UTF_8);
+        return string.replaceAll("\\R", "\n");
     }
 }
