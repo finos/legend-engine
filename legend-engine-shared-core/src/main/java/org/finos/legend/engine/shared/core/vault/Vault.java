@@ -3,6 +3,8 @@ package org.finos.legend.engine.shared.core.vault;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
+import java.util.Objects;
+
 public class Vault
 {
     public static Vault INSTANCE = new Vault();
@@ -25,7 +27,7 @@ public class Vault
 
     public String getValue(String key)
     {
-        return this.implementations.collect(i -> i.getValue(key)).getFirst();
+        return this.implementations.collect(i -> i.getValue(key)).select(Objects::nonNull).getLast();
     }
 
     public boolean hasValue(String key)
