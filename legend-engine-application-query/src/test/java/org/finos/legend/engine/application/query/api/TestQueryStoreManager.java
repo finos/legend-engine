@@ -80,7 +80,6 @@ public class TestQueryStoreManager
     {
         String currentUser = "testUser";
         Query newQuery = createTestQuery("1", "query1", currentUser);
-        newQuery.projectId = "projectId";
         newQuery.groupId = "groupId";
         newQuery.artifactId = "artifactId";
         newQuery.versionId = "versionId";
@@ -98,7 +97,6 @@ public class TestQueryStoreManager
             "\"mapping\":null," +
             "\"name\":\"query1\"," +
             "\"owner\":\"testUser\"," +
-            "\"projectId\":\"projectId\"," +
             "\"runtime\":null," +
             "\"versionId\":\"versionId\"" +
             "}", objectMapper.writeValueAsString(queries.get(0)));
@@ -149,7 +147,6 @@ public class TestQueryStoreManager
     {
         String currentUser = "testUser";
         Query newQuery = createTestQuery("1", "query1", currentUser);
-        newQuery.projectId = "projectId";
         newQuery.groupId = "groupId";
         newQuery.artifactId = "artifactId";
         newQuery.versionId = "versionId";
@@ -167,7 +164,6 @@ public class TestQueryStoreManager
             "\"mapping\":\"mapping\"," +
             "\"name\":\"query1\"," +
             "\"owner\":\"" + currentUser + "\"," +
-            "\"projectId\":\"projectId\"," +
             "\"runtime\":\"runtime\"," +
             "\"versionId\":\"versionId\"" +
             "}", objectMapper.writeValueAsString(queryStoreManager.getQuery("1")));

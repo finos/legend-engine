@@ -16,7 +16,7 @@ package org.finos.legend.engine.application.query.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
@@ -57,7 +57,6 @@ public class QueryStoreManager
         Query query = new Query();
         query.id = document.getString("id");
         query.name = document.getString("name");
-        query.projectId = document.getString("projectId");
         query.groupId = document.getString("groupId");
         query.artifactId = document.getString("artifactId");
         query.versionId = document.getString("versionId");
@@ -87,7 +86,7 @@ public class QueryStoreManager
         }
         return LazyIterate.collect(this.getQueryCollection()
             .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
-            .projection(Projections.include("id", "name", "projectId", "versionId", "groupId", "artifactId", "owner"))
+            .projection(Projections.include("id", "name", "versionId", "groupId", "artifactId", "owner"))
             .limit(limit == null ? 0 : limit), QueryStoreManager::documentToQuery).toList();
     }
 

@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.application.query.api;
 
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
@@ -43,11 +43,11 @@ import javax.ws.rs.core.Response;
 @Api(tags = "Application - Query")
 @Path("pure/v1/query")
 @Produces(MediaType.APPLICATION_JSON)
-public class QueryAPI
+public class ApplicationQuery
 {
     private final QueryStoreManager queryStoreManager;
 
-    public QueryAPI(MongoClient mongoClient)
+    public ApplicationQuery(MongoClient mongoClient)
     {
         this.queryStoreManager = new QueryStoreManager(mongoClient);
     }

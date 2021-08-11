@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.application.query.utils;
 
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 
@@ -30,7 +30,7 @@ public class TestMongoClientProvider
     {
         this.mongoServer = new MongoServer(new MemoryBackend());
         InetSocketAddress socketAddress = mongoServer.bind();
-        this.mongoClient = new MongoClient(new ServerAddress(socketAddress));
+        this.mongoClient = MongoClients.create("mongodb://" + socketAddress.getHostName() + ":" + socketAddress.getPort());
     }
 
     public void cleanUp()
