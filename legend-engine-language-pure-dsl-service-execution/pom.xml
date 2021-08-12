@@ -27,7 +27,6 @@
 
     <dependencies>
         <!--        LEGEND ENGINE -->
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
@@ -42,7 +41,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-execution</artifactId>
         </dependency>
-
         <!--        LEGEND ENGINE -->
     </dependencies>
 </project>
