@@ -72,12 +72,21 @@ public class ExecutePlan
         {
             if (execPlan instanceof SingleExecutionPlan)
             {
+                System.out.println("poiuy executionplan");
+                System.out.println(execPlan);
+
                 LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
                 // Assume that the input exec plan has no variables
+                System.out.println("poiuy execute time after");
                 Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles);
+                System.out.println(result);
+
+
                 try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
                 {
                     LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
+                    System.out.println("poiuy executionplan result efforts");
+
                     return ResultManager.manageResult(profiles, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
                 }
             }

@@ -41,6 +41,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
+import org.finos.legend.engine.shared.core.api.model.ExecuteInputEID;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -70,23 +71,21 @@ import static org.finos.legend.engine.plan.execution.api.result.ResultManager.ma
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "Pure - Execution")
-@Path("pure/v1/execution")
+@Path("pure/v1/executionEIB")
 @Produces(MediaType.APPLICATION_JSON)
-public class Execute
+public class ExecuteEIBCustom
 {
-
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private final ModelManager modelManager;
     private final PlanExecutor planExecutor;
     private Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> extensions;
     private MutableList<PlanTransformer> transformers;
 
-    public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> extensions, MutableList<PlanTransformer> transformers)
+    public ExecuteEIBCustom(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> extensions, MutableList<PlanTransformer> transformers)
     {
-        System.out.println("??????????????????? execute");
+        System.out.println("Making executeEIDCustom");
         this.modelManager = modelManager;
         this.planExecutor = planExecutor;
-        System.out.println(planExecutor);
 
         this.extensions = extensions;
         this.transformers = transformers;
@@ -94,36 +93,33 @@ public class Execute
     }
 
     @POST
-    @ApiOperation(value = "Execute a Pure query (function) in the context of a Mapping and a Runtime. Full Interactive and Semi Interactive modes are supported by giving the appropriate PureModelContext (respectively PureModelDataContext and PureModelContextComposite). Production executions need to use the Service interface.")
-    @Path("execute")
+    @ApiOperation(value = "Execute a Pure EIB query (function) in the context of a Mapping and a Runtime. Full Interactive and Semi Interactive modes are supported by giving the appropriate PureModelContext (respectively PureModelDataContext and PureModelContextComposite). Production executions need to use the Service interface.")
+    @Path("executeEIB")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response execute(@Context HttpServletRequest request, ExecuteInput executeInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeEIBCustom(@Context HttpServletRequest request, ExecuteInputEID executeInputEID, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        System.out.println("Beginnig????? execute");
-        System.out.println(request);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
         {
-            String clientVersion = executeInput.clientVersion == null ? PureClientVersions.latest : executeInput.clientVersion;
-
-            System.out.println("????? execute trying mapping");
-            System.out.println(executeInput.mapping);
-            System.out.println(executeInput.runtime);
+            String clientVersion = executeInputEID.clientVersion == null ? PureClientVersions.latest : executeInputEID.clientVersion;
 
 
+            System.out.println("Going to try custom EID with string: ");
+            System.out.println(executeInputEID.eidString);
 
-            return exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, Lists.fixedSize.<Variable>empty(), pureModel.getContext()),
-                    () -> modelManager.loadModel(executeInput.model, clientVersion, profiles, null),
+
+            return exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(executeInputEID.function.body, Lists.fixedSize.<Variable>empty(), pureModel.getContext()),
+                    () -> modelManager.loadModel(executeInputEID.model, clientVersion, profiles, null),
                     this.planExecutor,
-                    executeInput.mapping,
-                    executeInput.runtime,
-                    executeInput.context,
+                    executeInputEID.eidString,
+                    executeInputEID.mapping,
+                    executeInputEID.runtime,
+                    executeInputEID.context,
                     clientVersion,
                     profiles, request.getRemoteUser(), format);
         }
         catch (Exception ex)
         {
-            System.out.println("it's an execute error qwerty");
             return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
     }
@@ -132,19 +128,19 @@ public class Execute
     @Path("generatePlan")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name="generate plan")
-    public Response generatePlan(@Context HttpServletRequest request, ExecuteInput executeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generatePlan(@Context HttpServletRequest request, ExecuteInput executeInputEID, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
         {
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_START, "").toString());
-            String clientVersion = executeInput.clientVersion == null ? PureClientVersions.latest : executeInput.clientVersion;
-            PureModel pureModel = modelManager.loadModel(executeInput.model, clientVersion, profiles, null);
-            LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, Lists.fixedSize.empty(), pureModel.getContext());
-            Mapping mapping = executeInput.mapping == null ? null : pureModel.getMapping(executeInput.mapping);
-            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(executeInput.runtime, pureModel.getContext());
-            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInput.context, pureModel.getContext());
+            String clientVersion = executeInputEID.clientVersion == null ? PureClientVersions.latest : executeInputEID.clientVersion;
+            PureModel pureModel = modelManager.loadModel(executeInputEID.model, clientVersion, profiles, null);
+            LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(executeInputEID.function.body, Lists.fixedSize.empty(), pureModel.getContext());
+            Mapping mapping = executeInputEID.mapping == null ? null : pureModel.getMapping(executeInputEID.mapping);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(executeInputEID.runtime, pureModel.getContext());
+            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInputEID.context, pureModel.getContext());
             String plan = PlanGenerator.generateExecutionPlanAsString(lambda, mapping, runtime, context, pureModel, clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_STOP, (double)System.currentTimeMillis() - start).toString());
             MetricsHandler.observe("generate plan", start, System.currentTimeMillis());
@@ -157,16 +153,18 @@ public class Execute
         }
     }
 
-    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format)
+    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String eidString, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format)
     {
         try
         {
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
             PureModel pureModel = pureModelFunc.value();
-            System.out.println("Execute trying map generator time");
+            System.out.println("EIDCustom exec");
 
-            SingleExecutionPlan plan = PlanGenerator.generateExecutionPlanWithTrace(functionFunc.valueOf(pureModel),
+            SingleExecutionPlan plan = PlanGenerator.generateExecutionPlanWithTraceEID(
+                    eidString,
+                    functionFunc.valueOf(pureModel),
                     mapping == null ? null : pureModel.getMapping(mapping),
                     HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
                     HelperValueSpecificationBuilder.processExecutionContext(context, pureModel.getContext()),
@@ -177,13 +175,17 @@ public class Execute
                     this.extensions.apply(pureModel),
                     this.transformers
             );
+            System.out.println("eibcustom ?v2 executeagainn trying mapping plan generator time");
 
 
-            System.out.println("This is the one plan Executor!!!");
+            System.out.println("eibcustom THIS IS THE ONE!!!!!!!!!!!!!!!!!!!!!!!!!");
             System.out.println(planExecutor);
 
-            Result result = planExecutor.execute(plan, Maps.mutable.empty(), user, pm);
-            System.out.println("Execute has finished with (relational) result");
+//            poiuy
+            Result result = planExecutor.executeEID(eidString, plan, Maps.mutable.empty(), user, pm);
+
+//            Result result = planExecutor.executeEID(eidString, plan, Maps.mutable.empty(), user, pm);
+            System.out.println("eibcustom ? result is this ");
             System.out.println(result);
             LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double)System.currentTimeMillis() - start).toString());
             MetricsHandler.observe("execute", start, System.currentTimeMillis());

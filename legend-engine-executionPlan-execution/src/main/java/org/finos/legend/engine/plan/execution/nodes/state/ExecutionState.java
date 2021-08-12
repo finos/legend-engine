@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
@@ -61,6 +62,8 @@ public class ExecutionState
     private final Map<StoreType, StoreExecutionState> states = new EnumMap<>(StoreType.class);
 
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutors;
+    public final List<Function4<ExecutionNode, String, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutorsEID;
+
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraSequenceNodeExecutors;
 
     public ExecutionState(ExecutionState state)
@@ -83,6 +86,8 @@ public class ExecutionState
         state.states.forEach((storeType, storeExecutionState) -> this.states.put(storeType, storeExecutionState.copy()));
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
+        this.extraNodeExecutorsEID = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutorsEID);
+
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
     }
 
@@ -98,6 +103,7 @@ public class ExecutionState
         extraStates.forEach(storeExecutionState -> this.states.put(storeExecutionState.getStoreState().getStoreType(), storeExecutionState));
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
+        this.extraNodeExecutorsEID = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutorsEID);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
     }
 

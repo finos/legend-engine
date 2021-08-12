@@ -76,6 +76,15 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
     public void testRedshiftConnection_profile() throws Exception
     {
         testRedshiftConnection(c -> c.getConnectionUsingProfiles(null));
+//        testRedshiftConnection(RedshiftDatasourceSpecification(databaseName = 'dev', port = 5439,
+//                endpoint = 'lab.cqzp3tj1qpzo.us-east-2.redshift.amazonaws.com'));
+//
+//       b, datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification:
+//        :RedshiftDatasourceSpecification(databaseName = 'dev', port = 5439,
+//            endpoint = 'lab.cqzp3tj1qpzo.us-east-2.redshift.amazonaws.com'),
+//            authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::UserPasswordAuthenticationStrategy(passwordVaultReference = 'rEdShiFt528491!', userName = 'awsuser'),
+//            type = $dbType -> cast(@DatabaseType));,
+
     }
 
     private void testRedshiftConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
@@ -87,9 +96,9 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
         RedshiftDataSourceSpecification ds =
                 new RedshiftDataSourceSpecification(
                         new RedshiftDataSourceSpecificationKey(
-                                "dev", "endpoint", 5439),
+                                "dev", "lab.cqzp3tj1qpzo.us-east-2.redshift.amazonaws.com", 5439),
                         new org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager(),
-                        new UserPasswordAuthenticationStrategy("userName","password"),
+                        new UserPasswordAuthenticationStrategy("awsuser","08r3EB28DF9B8757AAD75A6F8FC20B7713EF!"),
                         new RelationalExecutorInfo());
         ;
         try (Connection connection = toDBConnection.valueOf(ds))

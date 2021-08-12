@@ -55,7 +55,30 @@ public class PlanGenerator
 
     public static SingleExecutionPlan generateExecutionPlanWithTrace(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, Iterable<? extends CommonProfile> profiles, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
+        System.out.println("? executeagain tryng mapping plan generator time2");
+
         Root_meta_pure_executionPlan_ExecutionPlan plan = generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, null, extensions);
+
+        return transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions, transformers);
+    }
+
+    public static SingleExecutionPlan generateExecutionPlanWithTraceEID(String eidString, LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, Iterable<? extends CommonProfile> profiles, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
+    {
+        System.out.println("?111111111111111 executeagain tryng mapping plan generator time2 with eidString");
+        System.out.println(eidString);
+
+
+        System.out.println(mapping);
+        System.out.println(platform);
+        System.out.println(extensions);
+//        mapping = null;
+//        platform = null;
+//        extensions = null;
+//        context = null;
+
+        Root_meta_pure_executionPlan_ExecutionPlan plan = generateExecutionPlanAsPureEID(eidString, l, mapping, pureRuntime, context, pureModel, platform, null, extensions);
+
+
         return transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions, transformers);
     }
 
@@ -70,12 +93,46 @@ public class PlanGenerator
         }
     }
 
+    public static Root_meta_pure_executionPlan_ExecutionPlan generateExecutionPlanAsPureEID(String eidString, LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
+    {
+        try (Scope scope = GlobalTracer.get().buildSpan("Generate Plan").startActive(true))
+        {
+            Root_meta_pure_executionPlan_ExecutionPlan plan;
+            System.out.println("? executeagain trying mapping plan generator timeee");
+            if (mapping == null)
+            {
+                System.out.println("mapping null");
+                plan = context == null ?
+                        core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__RouterExtension_MANY__ExecutionPlan_1_(l, extensions, pureModel.getExecutionSupport())
+                        : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__ExecutionContext_1__RouterExtension_MANY__ExecutionPlan_1_(l, context, extensions, pureModel.getExecutionSupport());
+            }
+            else
+            {
+                System.out.println("mappin notg null");
+
+                plan = context == null ?
+                        core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, pureModel.getExecutionSupport())
+                        : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, pureModel.getExecutionSupport());
+            }
+            if (platform != null)
+            {
+                System.out.println("platforn not null");
+
+                plan = platform.bindPlan(plan, planId, pureModel, extensions);
+            }
+            scope.span().log(String.valueOf(LoggingEventType.PLAN_GENERATED));
+            System.out.println("The plan is ");
+            System.out.println(plan);
+            return plan;
+        }
+    }
+
     public static Root_meta_pure_executionPlan_ExecutionPlan generateExecutionPlanAsPure(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Generate Plan").startActive(true))
         {
             Root_meta_pure_executionPlan_ExecutionPlan plan;
-
+            System.out.println("? executeagain trying mapping plan generator timeee");
             if (mapping == null)
             {
                 plan = context == null ?
@@ -96,6 +153,10 @@ public class PlanGenerator
                 plan = platform.bindPlan(plan, planId, pureModel, extensions);
             }
             scope.span().log(String.valueOf(LoggingEventType.PLAN_GENERATED));
+
+            System.out.println("The plan2 is ");
+            System.out.println(plan);
+
             return plan;
         }
     }

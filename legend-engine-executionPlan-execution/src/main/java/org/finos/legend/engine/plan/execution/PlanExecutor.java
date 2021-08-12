@@ -143,6 +143,7 @@ public class PlanExecutor
     // TODO: Build a user friendly API
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, PlanExecutionContext planExecutionContext)
     {
+        System.out.println("stuff: plan executor test");
         SingleExecutionPlan singleExecutionPlan = executionPlan.getSingleExecutionPlan(params);
         try
         {
@@ -160,8 +161,17 @@ public class PlanExecutor
         }
     }
 
+    public Result executeEID(String stringEID, SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles)
+    {
+        System.out.println("stuff!!: plan execute");
+
+        return executeEID(stringEID, executionPlan, buildDefaultExecutionState(executionPlan, vars), user, profiles);
+    }
+
     public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles)
     {
+        System.out.println("stuff!!: plan execute");
+
         return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars), user, profiles);
     }
 
@@ -169,6 +179,24 @@ public class PlanExecutor
     {
         return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, profiles);
     }
+    public Result executeEID(String eidString, SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, MutableList<CommonProfile> profiles)
+    {
+        System.out.println("in system executeEID now continuing further...");
+        EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, profiles);
+        try (JavaHelper.ThreadContextClassLoaderScope scope = (engineJavaCompiler == null) ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
+        {
+            // set up the state
+            if (singleExecutionPlan.authDependent)
+            {
+                state.setAuthUser((singleExecutionPlan.kerberos == null) ? user : singleExecutionPlan.kerberos);
+            }
+            singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
+
+            // execute
+            return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(eidString, profiles, state));
+        }
+    }
+
 
     public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, MutableList<CommonProfile> profiles)
     {

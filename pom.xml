@@ -105,7 +105,7 @@
 
 
         <!-- Legend -->
-        <legend.pure.version>1.31.0</legend.pure.version>
+        <legend.pure.version>1.31.1-SNAPSHOT</legend.pure.version>
         <legend.shared.version>0.12.0</legend.shared.version>
 
         <!-- Dependency versions -->

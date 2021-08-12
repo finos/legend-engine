@@ -86,9 +86,18 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
     private final MutableList<CommonProfile> profiles;
     private final ExecutionState executionState;
+    private final String eidString;
 
     public ExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
+        this.eidString = "eid not happening";
+        this.profiles = profiles;
+        this.executionState = executionState;
+    }
+
+    public ExecutionNodeExecutor(String eidString, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        this.eidString = eidString;
         this.profiles = profiles;
         this.executionState = executionState;
     }
@@ -96,19 +105,34 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(ExecutionNode executionNode)
     {
-        return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
+        System.out.println("one of these is the visit 5");
+        System.out.println("going to try to pass in eid sting which is ");
+        System.out.println(eidString);
+
+        if (eidString == "eid not happening"){
+            System.out.println("There is not we are trying to do go normal route");
+            return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unnoosupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
+        }
+        else {
+            System.out.println("There is eid we are trying to do go eid route");
+            return this.executionState.extraNodeExecutorsEID.stream().map(executor -> executor.value(executionNode, eidString, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unnoosupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
+
+        }
+
     }
 
     @Deprecated
     @Override
     public Result visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode)
     {
+        System.out.println("one of these is the visit 6");
         return graphFetchM2MExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
     }
 
     @Override
     public Result visit(ErrorExecutionNode errorExecutionNode)
     {
+        System.out.println("one of these is the visit 7");
         Result payload = (errorExecutionNode.executionNodes() == null || errorExecutionNode.executionNodes().isEmpty()) ? null : errorExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.profiles, this.executionState)).realizeInMemory();
         return new ErrorResult(1, errorExecutionNode.message, payload);
     }
@@ -116,6 +140,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(MultiResultSequenceExecutionNode multiResultSequenceExecutionNode)
     {
+        System.out.println("one of these is the visit 8");
         Map<String, Result> subResults = Maps.mutable.empty();
         Result last = null;
         for (ExecutionNode n : multiResultSequenceExecutionNode.executionNodes())
@@ -140,6 +165,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(FunctionParametersValidationNode functionParametersValidationNode)
     {
+        System.out.println("one of these is the visit 9");
         FunctionParametersParametersValidation.validate(Lists.immutable.withAll(functionParametersValidationNode.functionParameters), this.executionState);
         return new ConstantResult(true);
     }
@@ -147,6 +173,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(AllocationExecutionNode allocationExecutionNode)
     {
+        System.out.println("one of these is the visit 10");
         String varName = allocationExecutionNode.varName;
         Result result = allocationExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.profiles, new ExecutionState(this.executionState).varName(varName)));
 //        if (!(r instanceof ConstantResult) && !(r instanceof RelationalResult) && !(r instanceof StreamingObjectResult))
@@ -169,6 +196,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(PureExpressionPlatformExecutionNode pureExpressionPlatformExecutionNode)
     {
+        System.out.println("one of these is the visit 11");
         if (!(pureExpressionPlatformExecutionNode.implementation instanceof JavaPlatformImplementation))
         {
             throw new RuntimeException("Only Java implementations are currently supported, found: " + pureExpressionPlatformExecutionNode.implementation);
@@ -228,6 +256,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(ConstantExecutionNode constantExecutionNode)
     {
+        System.out.println("one of these is the visit 1");
         return new ConstantResult(constantExecutionNode.values());
     }
 
@@ -235,6 +264,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(FreeMarkerConditionalExecutionNode freeMarkerConditionalExecutionNode)
     {
+        System.out.println("one of these is the visit 2");
         String conditionalExpression = freeMarkerConditionalExecutionNode.freeMarkerBooleanExpression;
         String processedBooleanValue = FreeMarkerExecutor.process(conditionalExpression, this.executionState);
         boolean isConditionSatisfied = Boolean.parseBoolean(processedBooleanValue);
@@ -256,13 +286,16 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(AggregationAwareExecutionNode aggregationAwareExecutionNode)
     {
-        return aggregationAwareExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.Relational).getVisitor(this.profiles, this.executionState));
+        System.out.println("one of these is the visit 3");
+
+        return aggregationAwareExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.Relational).getVisitor(this.eidString, this.profiles, this.executionState));
     }
 
     @Deprecated
     @Override
     public Result visit(GraphFetchExecutionNode graphFetchExecutionNode)
     {
+        System.out.println("one of these is the visit 4");
         final Span topSpan = GlobalTracer.get().activeSpan();
         try (Scope ignored1 = GlobalTracer.get().buildSpan("Graph Query: Execute").startActive(true))
         {
@@ -398,6 +431,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(GlobalGraphFetchExecutionNode globalGraphFetchExecutionNode)
     {
+        System.out.println("one of these is the visit ooooooo");
         final Span topSpan = GlobalTracer.get().activeSpan();
         final boolean isGraphRoot = globalGraphFetchExecutionNode.parentIndex == null;
 
@@ -476,30 +510,35 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode)
     {
+        System.out.println("one of these is the visit ooooooo");
         return storeStreamReadingExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
     }
 
     @Override
     public Result visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
     {
+        System.out.println("one of these is the visit ooooooo");
         return inMemoryRootGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
     }
 
     @Override
     public Result visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode)
     {
+        System.out.println("one of these is the visit ooooooo");
         return inMemoryPropertyGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
     }
 
     @Override
     public Result visit(LocalGraphFetchExecutionNode localGraphFetchExecutionNode)
     {
+        System.out.println("one of these is the visit ooooooo");
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
     public Result visit(SequenceExecutionNode sequenceExecutionNode)
     {
+        System.out.println("one of these is the visit ooooooo");
         Result last = null;
         for (ExecutionNode node : sequenceExecutionNode.executionNodes())
         {

@@ -27,5 +27,7 @@ public interface StoreExecutionState
 
     ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState);
 
+    ExecutionNodeVisitor<Result> getVisitor(String eidString, MutableList<CommonProfile> profiles, ExecutionState executionState);
+
     StoreExecutionState copy();
 }

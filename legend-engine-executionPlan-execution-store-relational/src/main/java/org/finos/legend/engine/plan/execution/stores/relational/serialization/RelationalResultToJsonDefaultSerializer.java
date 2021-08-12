@@ -75,11 +75,32 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
             streamCollection(stream, relationalResult.activities);
             stream.write(b_result);
             stream.write(b_sqlColumns);
-            streamCollection(stream, relationalResult.getColumnListForSerializer());
-            stream.write(b_rows);
-            streamRows(stream);
+            System.out.println("helloooooooooo");
+            System.out.println("nada nada");
+            System.out.println(b_sqlColumns);
+            System.out.println(relationalResult.getColumnListForSerializer());
+            if (relationalResult.getColumnListForSerializer().size() == 0) {
+                System.out.println("nono");
+            }
+            else {
+                System.out.println("start attempt");
+                streamCollection(stream, relationalResult.getColumnListForSerializer());
+                System.out.println("end attempt");
+                stream.write(b_rows);
+                System.out.println("end attempt2");
+                streamRows(stream);
+                System.out.println("end attempt3");
+
+            }
+
+            System.out.println("end attempt4");
+
             stream.write(b_end);
+            System.out.println("end attempt5");
+
             stream.write(b_endResult);
+            System.out.println("end attempt6");
+
         }
         catch (Exception e)
         {
@@ -94,10 +115,17 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
     private void streamRows(OutputStream outputStream) throws Exception
     {
         int rowCount = 0;
+        System.out.println("streaming   ros time");
+
+
+
         try (Scope scope = GlobalTracer.get().buildSpan("Relational Streaming: Fetch first row").startActive(true))
         {
             if (!relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
             {
+                System.out.println("eib hmmmm2");
+
+                System.out.println(outputStream);
                 processRow(outputStream);
                 rowCount++;
             }
@@ -120,12 +148,18 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
 
     private void processRow(OutputStream outputStream) throws IOException, SQLException
     {
+        System.out.println("eib hm");
+        System.out.println(b_values);
         outputStream.write(b_values);
 
         MutableList<Function<Object, Object>> transformers = relationalResult.getTransformers();
+        System.out.println("eib hm does not finish error here relationalrssult finish getting transformer?");
+
 
         for (int i = 1; i <= relationalResult.columnCount - 1; i++)
         {
+            System.out.println("eib hm2");
+
             objectMapper.writeValue(outputStream, transformers.get(i - 1).valueOf(relationalResult.getValue(i)));
             outputStream.write(b_comma);
         }
@@ -136,8 +170,11 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
 
     private void streamCollection(OutputStream outputStream, List collection) throws IOException
     {
+        System.out.println("stream collection attempt eid");
         for (int i = 0; i < collection.size() - 1; i++)
         {
+            System.out.println("eib hm3");
+
             objectMapper.writeValue(outputStream, collection.get(i));
             outputStream.write(b_comma);
         }

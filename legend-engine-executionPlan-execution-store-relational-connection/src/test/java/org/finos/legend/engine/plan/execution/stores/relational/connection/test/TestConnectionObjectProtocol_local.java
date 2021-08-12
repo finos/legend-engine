@@ -110,6 +110,7 @@ public class TestConnectionObjectProtocol_local extends DbSpecificTests
         @Override
         public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
         {
+            System.out.println("poiy");
             properties.put("pro1",this.login);
             properties.put("token",this.token);
 

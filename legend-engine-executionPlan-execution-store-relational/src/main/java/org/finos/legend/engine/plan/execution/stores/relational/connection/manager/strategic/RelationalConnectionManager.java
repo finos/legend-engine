@@ -123,6 +123,8 @@ public class RelationalConnectionManager implements ConnectionManager
         datasourceSpecification.host = "127.0.0.1";
         datasourceSpecification.port = testDbPort;
 
+        System.out.println("qwerty relational gettestbase connectoin");
+
         RelationalDatabaseConnection testConnection = new RelationalDatabaseConnection();
         testConnection.datasourceSpecification = datasourceSpecification;
         testConnection.authenticationStrategy = new TestDatabaseAuthenticationStrategy();

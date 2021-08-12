@@ -96,6 +96,7 @@ public class RelationalExecutor
 
     public RelationalExecutor(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration)
     {
+        System.out.println("beginning stuff: relationalexecutor");
         this.relationalExecutorInfo = new RelationalExecutorInfo();
         this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, this.relationalExecutorInfo);
         this.relationalExecutionConfiguration = relationalExecutionConfiguration;
@@ -114,6 +115,10 @@ public class RelationalExecutor
 
     public ConnectionManagerSelector getConnectionManager()
     {
+        System.out.println("beginning stuff: connectionmanager");
+        System.out.println(connectionManager);
+
+
         return this.connectionManager;
     }
 
@@ -218,19 +223,28 @@ public class RelationalExecutor
         return null;
     }
 
-    public Result execute(SQLExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public Result execute(SQLExecutionNode node, String eidString, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         Connection connectionManagerConnection;
         String databaseTimeZone = node.getDatabaseTimeZone() == null ? DEFAULT_DB_TIME_ZONE : node.getDatabaseTimeZone();
         String databaseType = node.getDatabaseTypeName();
         List<String> tempTableList = FastList.newList();
 
+        System.out.println("stuff: exeucute node things");
+
         Span span = GlobalTracer.get().activeSpan();
+
+
         connectionManagerConnection = getConnection(node, profiles, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
         if (span != null)
         {
             span.log("Connection acquired");
         }
+
+        System.out.println("stuff: connectinmnanagerconnection happened");
+        System.out.println(connectionManagerConnection);
+
+
 
         this.prepareForSQLExecution(node, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState);
 
@@ -239,7 +253,20 @@ public class RelationalExecutor
             return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
         }
 
-        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
+        System.out.println("stuff: sqlexecutionresult happenin");
+        System.out.println(eidString);
+
+        if (eidString != null)
+        {
+            System.out.println("There is an EIDString so we carry this out");
+            return new SQLExecutionResult(eidString, executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
+        }
+        else {
+            System.out.println("There is null EIDString do the normal sql execute content");
+            return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
+
+        }
+
     }
 
     private void prepareForSQLExecution(ExecutionNode node, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState)
