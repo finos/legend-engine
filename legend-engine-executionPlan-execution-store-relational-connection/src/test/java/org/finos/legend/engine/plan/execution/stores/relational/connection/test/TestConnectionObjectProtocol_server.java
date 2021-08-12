@@ -98,7 +98,7 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
                         new RedshiftDataSourceSpecificationKey(
                                 "dev", "lab.cqzp3tj1qpzo.us-east-2.redshift.amazonaws.com", 5439),
                         new org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager(),
-                        new UserPasswordAuthenticationStrategy("awsuser","08r3EB28DF9B8757AAD75A6F8FC20B7713EF!"),
+                        new UserPasswordAuthenticationStrategy("awsuser","9841Msifan278?78!"),
                         new RelationalExecutorInfo());
         ;
         try (Connection connection = toDBConnection.valueOf(ds))

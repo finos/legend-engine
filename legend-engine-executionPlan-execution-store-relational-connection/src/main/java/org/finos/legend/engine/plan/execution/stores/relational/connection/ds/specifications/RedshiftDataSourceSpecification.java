@@ -50,6 +50,7 @@ public class RedshiftDataSourceSpecification extends DataSourceSpecification
     @Override
     protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
     {
+
         return this.buildDataSource(null, (int)this.extraDatasourceProperties.get(REDSHIFT_PORT), (String)this.extraDatasourceProperties.get(REDSHIFT_DATABASE_NAME), profiles);
     }
 }

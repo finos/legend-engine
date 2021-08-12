@@ -162,13 +162,14 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
         try
         {
+            System.out.println("NORMAL ROUTE: relationalresult, sqlexecution result");
+
             this.connection = sqlExecutionResult.getConnection();
 
             this.statement = connection.createStatement();
             this.resultSet = sqlExecutionResult.getResultSet();
 
             this.executedSQl = sqlExecutionResult.getExecutedSql();
-            System.out.println("Connection result happening, getStatusEIB");
             this.statusEIB = sqlExecutionResult.getstatusEIB();
             this.resultSetMetaData = sqlExecutionResult.getResultSetMetaData();
             this.columnCount = sqlExecutionResult.getColumnCount();

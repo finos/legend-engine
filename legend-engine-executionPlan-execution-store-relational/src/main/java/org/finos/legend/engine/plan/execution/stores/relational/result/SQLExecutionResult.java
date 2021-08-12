@@ -69,33 +69,17 @@ public class SQLExecutionResult extends Result
     public SQLExecutionResult(String eidString, List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
         super("success", activities);
-
-
+        System.out.println("---SQLEXECUTIONRESULT EIB ROUTE");
         this.SQLExecutionNode = SQLExecutionNode;
         this.databaseType = databaseType;
         this.databaseTimeZone = databaseTimeZone;
         this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));
         this.temporaryTables = temporaryTables;
-
         this.topSpan = topSpan;
-
         try
         {
-
-            System.out.println("eidString that we should only be executing ");
-            System.out.println(eidString);
             this.connection = connection;
             this.statement = connection.createStatement();
-
-            System.out.println("");
-            System.out.print("SQLExecutionresult... Testing database type: ");
-            System.out.print(databaseType);
-            System.out.print("...");
-            System.out.println("");
-
-            System.out.println(connection);
-            System.out.println("The statement is");
-            System.out.println(this.statement);
 
             long start = System.currentTimeMillis();
             String sql = eidString;
@@ -107,16 +91,13 @@ public class SQLExecutionResult extends Result
             this.statement.execute(sql);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double)System.currentTimeMillis() - start).toString());
             this.executedSql = sql;
-
             resultSet = null;
             columnCount = 1;
             sqlResultColumns = null;
             resultSetMetaData = null;
-
             statusEIB = true;
 
-
-            System.out.println("sqlexecutionesult contents finshed");
+            System.out.println("sqlexecutionesult contents finshedx222");
 
         }
         catch (Throwable e)
@@ -146,6 +127,8 @@ public class SQLExecutionResult extends Result
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
         super("success", activities);
+
+        System.out.println("---SQLEXECUTIONRESULT NORMAL ROUTE");
 
         this.SQLExecutionNode = SQLExecutionNode;
         this.databaseType = databaseType;

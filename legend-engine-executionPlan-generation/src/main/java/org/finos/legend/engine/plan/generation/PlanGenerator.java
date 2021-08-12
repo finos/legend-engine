@@ -67,20 +67,18 @@ public class PlanGenerator
         System.out.println("?111111111111111 executeagain tryng mapping plan generator time2 with eidString");
         System.out.println(eidString);
 
+        Root_meta_pure_executionPlan_ExecutionPlan plan = generateExecutionPlanAsPureEID(eidString, l, mapping, pureRuntime, context, pureModel, platform, null, extensions);
 
         System.out.println(mapping);
         System.out.println(platform);
+
+
         System.out.println(extensions);
-//        mapping = null;
-//        platform = null;
-//        extensions = null;
-//        context = null;
-
-        Root_meta_pure_executionPlan_ExecutionPlan plan = generateExecutionPlanAsPureEID(eidString, l, mapping, pureRuntime, context, pureModel, platform, null, extensions);
-
-
         return transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions, transformers);
     }
+
+
+    //????WHERE
 
     public static SingleExecutionPlan transformExecutionPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, String clientVersion, Iterable<? extends CommonProfile> profiles, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
@@ -101,23 +99,18 @@ public class PlanGenerator
             System.out.println("? executeagain trying mapping plan generator timeee");
             if (mapping == null)
             {
-                System.out.println("mapping null");
                 plan = context == null ?
                         core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__RouterExtension_MANY__ExecutionPlan_1_(l, extensions, pureModel.getExecutionSupport())
                         : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__ExecutionContext_1__RouterExtension_MANY__ExecutionPlan_1_(l, context, extensions, pureModel.getExecutionSupport());
             }
             else
             {
-                System.out.println("mappin notg null");
-
                 plan = context == null ?
                         core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, pureModel.getExecutionSupport())
                         : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, pureModel.getExecutionSupport());
             }
             if (platform != null)
             {
-                System.out.println("platforn not null");
-
                 plan = platform.bindPlan(plan, planId, pureModel, extensions);
             }
             scope.span().log(String.valueOf(LoggingEventType.PLAN_GENERATED));

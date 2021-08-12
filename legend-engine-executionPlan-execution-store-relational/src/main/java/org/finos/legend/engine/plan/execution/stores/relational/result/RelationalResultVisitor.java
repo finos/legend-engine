@@ -22,6 +22,9 @@ public interface RelationalResultVisitor<T> extends ResultVisitor<T>
 
     T visit(VoidRelationalResult voidRelationalResult);
 
+    T visit(SQLEIDResult voidRelationalResult);
+
+
     T visit(RealizedRelationalResult realizedRelationalResult);
 
     T visit(RelationalResult relationalResult);

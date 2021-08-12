@@ -107,7 +107,7 @@ public class PureTestHelper
                         "  \"authenticationStrategy\" : {\n" +
                         "    \"_type\" : \"userPassword\",\n" +
                         "    \"userName\" : \"awsuser\",\n" +
-                        "    \"passwordVaultReference\" : \"08r3EB28DF9B8757AAD75A6F8FC20B7713EF!\"\n" +
+                        "    \"passwordVaultReference\" : \"9841Msifan278?78!\"\n" +
                         "  },\n" +
                         "  \"datasourceSpecification\" : {\n" +
                         "    \"_type\" : \"redshift\",\n" +
@@ -200,7 +200,7 @@ public class PureTestHelper
                         "  \"authenticationStrategy\" : {\n" +
                         "    \"_type\" : \"userPassword\",\n" +
                         "    \"userName\" : \"awsuser\",\n" +
-                        "    \"passwordVaultReference\" : \"08r3EB28DF9B8757AAD75A6F8FC20B7713EF!\"\n" +
+                        "    \"passwordVaultReference\" : \"9841Msifan278?78!\"\n" +
                         "  },\n" +
                         "  \"datasourceSpecification\" : {\n" +
                         "    \"_type\" : \"redshift\",\n" +
