@@ -32,17 +32,12 @@ public class Test_Engine_UsingPureClient extends TestSuite
                     CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
 
-
-//                               suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::databaseTestPattern::functionsTestSingle", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::databaseTestPattern", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-
-//           suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::databaseTestPattern", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-//   suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::legend::test::handlers", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                   suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::databaseTestPattern::functions", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+//                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::databaseTestPattern", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 
 //                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::legend::test::handlers", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 //                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::legend::test::model", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     return suite;
                 });
-        //qwerty
     }
 }
