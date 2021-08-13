@@ -1,9 +1,9 @@
 Proposed Refactoring 
 ===================
 
-- Move all auth, database "specification" classes into store-relational-connection 
-- Move all auth "implementation" classes into store-relational-connection-auth-xxxxx
-- Move all database "implementation" classes into store-relational-connection-database-yyyy
+- Move all auth, database "specification" classes from store-relational and into store-relational-connection 
+- Move all auth "implementation" classes from store-relational and into store-relational-connection-auth-xxxxx
+- Move all database "implementation" classes from store-relational and into store-relational-connection-database-yyyy
 - Remove default "extension" classes (e.g AuthenticationStrategyTransformer) from store-relational-connection 
 
 Module : store-relational 
