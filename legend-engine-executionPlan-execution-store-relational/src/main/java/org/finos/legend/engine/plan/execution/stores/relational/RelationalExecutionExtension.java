@@ -38,7 +38,6 @@ public class RelationalExecutionExtension implements ExecutionExtension
     @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
-        System.out.println("getting extra node executors");
         return Collections.singletonList(((executionNode, profiles, executionState) ->
         {
             if (executionNode instanceof RelationalBlockExecutionNode
@@ -58,8 +57,6 @@ public class RelationalExecutionExtension implements ExecutionExtension
     @Override
     public List<Function4<ExecutionNode, String, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutorsEID()
     {
-        System.out.println("getting extra node executors");
-        System.out.println("with this string");
         return Collections.singletonList(((executionNode, String, profiles, executionState) ->
         {
             if (executionNode instanceof RelationalBlockExecutionNode

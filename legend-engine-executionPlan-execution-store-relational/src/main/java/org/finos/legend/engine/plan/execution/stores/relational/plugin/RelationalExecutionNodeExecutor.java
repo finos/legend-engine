@@ -211,9 +211,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 scope.span().setTag("databaseType", relationalExecutionNode.getDatabaseTypeName());
                 scope.span().setTag("sql", relationalExecutionNode.sqlQuery());
 
-                System.out.println("stuff: rleational execution node executor");
                 Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalExecutionNode, this.profiles, this.executionState);
-               System.out.println(result);
                 if (result instanceof RelationalResult)
                 {
                     scope.span().setTag("executedSql", ((RelationalResult) result).executedSQl);
@@ -228,19 +226,14 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         else if (executionNode instanceof SQLExecutionNode)
         {
 
-            System.out.println("execution node over here");
-            System.out.println(executionNode);
-            System.out.println(this.eidString);
 
             if (this.eidString == null) {
-                System.out.println("NORMAL ROUTE -Null eidString go normal route");
 
                 SQLExecutionNode SQLExecutionNode = (SQLExecutionNode) executionNode;
                 this.executionState.topSpan = GlobalTracer.get().activeSpan();
                 try (Scope scope = GlobalTracer.get().buildSpan("Relational DB Execution").startActive(true)) {
                     scope.span().setTag("databaseType", SQLExecutionNode.getDatabaseTypeName());
                     scope.span().setTag("sql", SQLExecutionNode.sqlQuery());
-                    System.out.println("string??? STRING????");
                     Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(SQLExecutionNode, profiles, executionState);
                     if (result instanceof SQLExecutionResult)
                     {
@@ -250,15 +243,12 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 }
             }
             else {
-                System.out.println("EID ROUTE - eidString not null it's ");
                 SQLExecutionNode SQLExecutionNode = (SQLExecutionNode) executionNode;
                 this.executionState.topSpan = GlobalTracer.get().activeSpan();
                 try (Scope scope = GlobalTracer.get().buildSpan("Relational DB Execution").startActive(true)) {
                     scope.span().setTag("databaseType", SQLExecutionNode.getDatabaseTypeName());
                     scope.span().setTag("sql", SQLExecutionNode.sqlQuery());
-                    System.out.println("string??? STRING????");
-                    System.out.println(this.eidString);
-                    Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(SQLExecutionNode, eidString, profiles, executionState);
+                   Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(SQLExecutionNode, eidString, profiles, executionState);
                     if (result instanceof SQLExecutionResult) {
                         scope.span().setTag("executedSql", ((SQLExecutionResult) result).getExecutedSql());
                     }
@@ -302,9 +292,6 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 return relationalTdsResult;
             }
             catch (ClassCastException e) {
-                System.out.println("ok error for resulting result try this instead?");
-//                sqlEIDResult = (SQLEIDResult) this.visit((SQLExecutionNode) relationalTdsInstantiationExecutionNode.executionNodes.get(0));
-
                 Result res =  new ConstantResult("success");
                 return res;
             }
@@ -362,7 +349,6 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             SQLExecutionResult sqlExecutionResult = null;
             try
             {
-                System.out.println("stuff: rleational2 execution node executor");
 
                 sqlExecutionResult = (SQLExecutionResult) this.visit((SQLExecutionNode) node.executionNodes.get(0));
                 return new RelationalResult(sqlExecutionResult, node);
@@ -382,7 +368,6 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             SQLExecutionResult sqlExecutionResult = null;
             try
             {
-                System.out.println("stuff: rleational3 execution node executor");
 
                 sqlExecutionResult = (SQLExecutionResult) this.visit((SQLExecutionNode) node.executionNodes.get(0));
                 RelationalResult relationalPrimitiveResult = new RelationalResult(sqlExecutionResult, node);

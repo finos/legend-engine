@@ -83,9 +83,6 @@ public class SQLExecutionResult extends Result
 
             long start = System.currentTimeMillis();
             String sql = eidString;
-
-            System.out.println("SQL is : ");
-            System.out.println(sql);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
 
             this.statement.execute(sql);
@@ -96,8 +93,6 @@ public class SQLExecutionResult extends Result
             sqlResultColumns = null;
             resultSetMetaData = null;
             statusEIB = true;
-
-            System.out.println("sqlexecutionesult contents finshedx222");
 
         }
         catch (Throwable e)
@@ -142,21 +137,14 @@ public class SQLExecutionResult extends Result
             this.connection = connection;
             this.statement = connection.createStatement();
 
-            System.out.println("");
-            System.out.print("SQLExecutionresult... Testing database type: ");
-            System.out.print(databaseType);
-            System.out.print("...");
-            System.out.println("");
 
             long start = System.currentTimeMillis();
             String sql = ((RelationalExecutionActivity) activities.get(activities.size() - 1)).sql;
 
-            System.out.println("Only sql to be executed is : ");
-            System.out.println(sql);
+
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
 
             this.resultSet = this.statement.executeQuery(sql);
-            System.out.println(resultSet);
             statusEIB = false;
 
 

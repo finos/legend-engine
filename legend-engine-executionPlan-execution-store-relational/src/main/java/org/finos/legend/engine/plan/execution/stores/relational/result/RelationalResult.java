@@ -179,7 +179,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             this.resultDBColumnsMetaData = new SQLResultDBColumnsMetaData(this.resultColumns, this.resultSetMetaData);
 
             if (sqlExecutionResult.getstatusEIB() == true) {
-                System.out.println("Skipping building tansformers from result since this is ExecuteInDatabase");
+               //Skipping building tansformers from result since this is ExecuteInDatabase
             }
             else {
                 this.buildTransformersAndBuilder(node, sqlExecutionResult.getSQLExecutionNode().connection);
@@ -395,7 +395,6 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
     public MutableList<Function<Object, Object>> getTransformers() throws SQLException
     {
-        System.out.println("eib test get transformer");
         return this.setTransformers.size() == 1 ? this.setTransformers.get(0).transformers : this.setTransformers.get(this.resultSet.getInt("u_type")).transformers;
     }
 

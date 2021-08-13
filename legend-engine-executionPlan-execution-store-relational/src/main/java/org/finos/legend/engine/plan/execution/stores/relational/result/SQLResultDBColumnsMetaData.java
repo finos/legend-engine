@@ -29,11 +29,9 @@ public class SQLResultDBColumnsMetaData
 
     SQLResultDBColumnsMetaData(List<SQLResultColumn> resultColumns, ResultSetMetaData rsMetaData) throws SQLException
     {
-        System.out.println("result column time");
 
         System.out.println(resultColumns);
         if (resultColumns == null) {
-            System.out.println("result column null time");
             sqlResultColumns = null;
             dbMetaDataType = null;
         }

@@ -58,8 +58,6 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     @Override
     public ExecutionNodeVisitor<Result> getVisitor(String eidString, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        System.out.println("hello hello it is i the eid string");
-        System.out.println(eidString);
         return new RelationalExecutionNodeExecutor(eidString, executionState, profiles);
     }
 

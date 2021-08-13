@@ -163,15 +163,11 @@ public class PlanExecutor
 
     public Result executeEID(String stringEID, SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles)
     {
-        System.out.println("stuff!!: plan execute");
-
         return executeEID(stringEID, executionPlan, buildDefaultExecutionState(executionPlan, vars), user, profiles);
     }
 
     public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles)
     {
-        System.out.println("stuff!!: plan execute");
-
         return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars), user, profiles);
     }
 

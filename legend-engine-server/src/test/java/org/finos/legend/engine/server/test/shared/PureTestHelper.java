@@ -524,11 +524,9 @@ public class PureTestHelper
             // See https://github.com/opentracing/opentracing-java/issues/364
             GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
             String testName = PackageableElement.getUserPathForPackageableElement(this.coreInstance);
-            System.out.print("EXECUTING " + testName + " ... ");
             long start = System.nanoTime();
             try
             {
-//                System.out.println("qerty running test");
                 method.invoke(null, this.executionSupport);
                 System.out.format("DONE (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
             }

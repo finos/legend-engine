@@ -83,7 +83,6 @@ public class ExecuteEIBCustom
 
     public ExecuteEIBCustom(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> extensions, MutableList<PlanTransformer> transformers)
     {
-        System.out.println("Making executeEIDCustom");
         this.modelManager = modelManager;
         this.planExecutor = planExecutor;
 
@@ -102,11 +101,6 @@ public class ExecuteEIBCustom
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
         {
             String clientVersion = executeInputEID.clientVersion == null ? PureClientVersions.latest : executeInputEID.clientVersion;
-
-
-            System.out.println("Going to try custom EID with string: ");
-            System.out.println(executeInputEID.eidString);
-
 
             return exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(executeInputEID.function.body, Lists.fixedSize.<Variable>empty(), pureModel.getContext()),
                     () -> modelManager.loadModel(executeInputEID.model, clientVersion, profiles, null),
@@ -160,7 +154,6 @@ public class ExecuteEIBCustom
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
             PureModel pureModel = pureModelFunc.value();
-            System.out.println("EIDCustom exec");
 
             SingleExecutionPlan plan = PlanGenerator.generateExecutionPlanWithTraceEID(
                     eidString,
@@ -175,19 +168,9 @@ public class ExecuteEIBCustom
                     this.extensions.apply(pureModel),
                     this.transformers
             );
-            System.out.println("eibcustom ?v2 executeagainn trying mapping plan generator time");
 
-
-            System.out.println("eibcustom THIS IS THE ONE!!!!!!!!!!!!!!!!!!!!!!!!!");
-            System.out.println(planExecutor);
-
-//            poiuy
             Result result = planExecutor.executeEID(eidString, plan, Maps.mutable.empty(), user, pm);
-
-//            Result result = planExecutor.executeEID(eidString, plan, Maps.mutable.empty(), user, pm);
-            System.out.println("eibcustom ? result is this ");
-            System.out.println(result);
-            LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double)System.currentTimeMillis() - start).toString());
+   LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double)System.currentTimeMillis() - start).toString());
             MetricsHandler.observe("execute", start, System.currentTimeMillis());
             try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
             {

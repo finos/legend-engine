@@ -91,7 +91,6 @@ public class RelationalExecutor
 
     public RelationalExecutor(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration)
     {
-        System.out.println("beginning stuff: relationalexecutor");
         this.relationalExecutorInfo = new RelationalExecutorInfo();
         this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, this.relationalExecutorInfo);
         this.relationalExecutionConfiguration = relationalExecutionConfiguration;
@@ -110,9 +109,6 @@ public class RelationalExecutor
 
     public ConnectionManagerSelector getConnectionManager()
     {
-        System.out.println("beginning stuff: connectionmanager");
-        System.out.println(connectionManager);
-
 
         return this.connectionManager;
     }
@@ -134,9 +130,6 @@ public class RelationalExecutor
         this.prepareForSQLExecution(node, connectionManagerConnection, databaseTimeZone, databaseTypeName, tempTableList, profiles, executionState);
 
 
-        System.out.println("node information over here");
-        System.out.println(node);
-        System.out.println(node.getDataTypeResultType());
         if (executionState.inAllocation)
         {
             if ((ExecutionNodeTDSResultHelper.isResultTDS(node) || (ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node))) && !executionState.transformAllocation)
@@ -224,7 +217,6 @@ public class RelationalExecutor
 
     public Result execute(SQLExecutionNode node, String eidString, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-
         System.out.println("ONLY EID ROUTE");
         Connection connectionManagerConnection;
         Span span = GlobalTracer.get().activeSpan();
@@ -234,18 +226,13 @@ public class RelationalExecutor
             span.log("Connection acquired");
         }
 
-        System.out.println("stuff: connectinmnanagerconnection happened");
-        System.out.println(connectionManagerConnection);
 
         if (node.isResultVoid())
         {
             return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
         }
 
-        System.out.println("stuff: how to make node.isresultvoid() sqlexecutionresult happenin");
-        System.out.println(eidString);
-            System.out.println("There is an EIDString so we carry this ou....");
-        return new SQLEIDResult(eidString, connectionManagerConnection, profiles);
+       return new SQLEIDResult(eidString, connectionManagerConnection, profiles);
     }
 
     public Result execute(SQLExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
@@ -257,7 +244,6 @@ public class RelationalExecutor
         String databaseType = node.getDatabaseTypeName();
         List<String> tempTableList = FastList.newList();
 
-        System.out.println("stuff: exeucute node things");
 
         Span span = GlobalTracer.get().activeSpan();
 
@@ -268,8 +254,6 @@ public class RelationalExecutor
             span.log("Connection acquired");
         }
 
-        System.out.println("stuff: connectinmnanagerconnection happened");
-        System.out.println(connectionManagerConnection);
 
 
 
@@ -280,9 +264,7 @@ public class RelationalExecutor
             return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
         }
 
-        System.out.println("stuff: how to make node.isresultvoid() sqlexecutionresult happenin");
 
-            System.out.println("There is null EIDString do the normal sql execute content");
             return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
 
 

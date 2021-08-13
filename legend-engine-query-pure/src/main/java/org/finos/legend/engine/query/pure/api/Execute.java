@@ -100,16 +100,9 @@ public class Execute
     public Response execute(@Context HttpServletRequest request, ExecuteInput executeInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        System.out.println("Beginnig????? execute");
-        System.out.println(request);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
         {
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.latest : executeInput.clientVersion;
-
-            System.out.println("????? execute trying mapping");
-            System.out.println(executeInput.mapping);
-            System.out.println(executeInput.runtime);
-
 
 
             return exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, Lists.fixedSize.<Variable>empty(), pureModel.getContext()),
