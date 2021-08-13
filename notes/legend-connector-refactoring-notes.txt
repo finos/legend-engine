@@ -1,0 +1,83 @@
+Proposed Refactoring 
+===================
+
+- Move all auth, database "specification" classes into store-relational-connection 
+- Move all auth "implementation" classes into store-relational-connection-auth-xxxxx
+- Move all database "implementation" classes into store-relational-connection-database-yyyy
+- Remove default "extension" classes (e.g AuthenticationStrategyTransformer) from store-relational-connection 
+
+Module : store-relational 
+
+Module : store-relational-connection
+
+- AuthStrategyKey 
+- AuthStrategy
+- DataSourceSpecificationKey
+- DataSourceSpecification 
+- DatabaseManager 
+- DriverWrapper
+- RelationalDatabaseCommands
+- RelationalDatabaseCommandsVisitor
+- StrategicConnectionExtension
+- ConnectionExtension 
+- RelationalStoreExecutorExtension
+
+Module : store-relational-connection-auth-userpass 
+
+- UserPassAuthStrategyKey
+- UserPassAuthStrategyKeyGenerator (via a StrategicConnectionExtension) 
+- UserPassAuthStrategy
+- UserPassAuthStrategyTransformer (via a StrategicConnectionExtension)
+
+Module : store-relational-connection-database-snowflake 
+
+- SnowflakeDataSourceSpecificationKeyGenerator (via a StrategicConnectionExtension) 
+- SnowflakeDataSourceSpecificationTransformer (via a StrategicConnectionExtension) 
+- SnowflakeManager (via a ConnectionExtension)
+- SnowflakeDriverWrapper
+- SnowflakeDatabaseCommands
+
+Gotchas 
+===================
+
+1/ StrategicConnectionExtension is not fine grained 
+
+An implementation of StrategicConnectionExtension has to provide both auth and datasource classes. 
+But in the proposed refactoring, the auth module cannot provide datasource classes and vice versa. 
+
+Tactical solution : Return nulls and skip nulls in RelationalExecutionManager 
+
+2/ RelationalDatabaseCommandsVisitor 
+
+Visitor is defined with concrete visit methods which introduces a dependency cycle (store-relational-connection -> store-relational-connection-database-snowflake -> relational-connection)
+
+public interface RelationalDatabaseCommandsVisitor<T>
+{
+    T visit(SnowflakeCommands snowflakeCommands);
+    T visit(H2Commands h2Commands);
+    T visit(BigQueryCommands bigQueryCommands);
+}
+
+Solution : Remove the RelationalDatabaseCommandsVisitor. Replace with additional methods on DatabaseManager.
+i.e We are already in the context of a DatabaseManager. Why not ask the DatabaseManager to do stuff.
+
+Instead of ...
+
+       databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalExecutionConfiguration, connectionManagerConnection, res, tempTableName, databaseTimeZone));
+ 
+.. we do 
+
+	databaseManager.relationalDatabaseSupport().prepareTempTable(RelationalExecutionConfig )
+	databaseManager.relationalDatabaseSupport().doSomethingElse(...)
+
+However, this introduces another dependency cycle : store-relational depends on relational-connection, relational-connection depends on store-relational (via the dependency on RelationalExecutionConfig) 
+
+Solution : Break the dependency by introducing new config type in relational-connection
+
+3/ What about StaticDataSourceSpecification which is not specific to a database type ?
+
+
+Questions                                                                  
+===================
+
+1/ Singleton RelationalStoreExecutorExtension 
