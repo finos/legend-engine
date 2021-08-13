@@ -64,10 +64,6 @@ public class UserPasswordAuthenticationStrategy extends AuthenticationStrategy
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
         connectionProperties.put(USER, this.userName);
-//        System.out.println(properties);
-        System.out.println("Redshift user password authentication test");
-//        System.out.println(this.passwordVaultReference);
-
         connectionProperties.put(PASSWORD, this.passwordVaultReference);
 
         //if uses getaccountpassword, throws error
@@ -96,9 +92,6 @@ public class UserPasswordAuthenticationStrategy extends AuthenticationStrategy
 
     private String getAccountPassword(String passwordVaultReference)
     {
-
-        System.out.println("private account password times");
-        System.out.println(passwordVaultReference);
         return Vault.INSTANCE.getValue(passwordVaultReference);
     }
 }
