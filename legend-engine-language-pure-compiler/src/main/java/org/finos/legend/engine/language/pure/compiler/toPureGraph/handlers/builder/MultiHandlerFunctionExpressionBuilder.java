@@ -30,13 +30,14 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBuilder
 {
     MutableList<FunctionHandler> handlers;
 
-    public MultiHandlerFunctionExpressionBuilder(FunctionHandler[] handlers, PureModel pureModel)
+    public MultiHandlerFunctionExpressionBuilder(PureModel pureModel, FunctionHandler... handlers)
     {
         this.handlers = FastList.newListWith(handlers);
         MutableList<String> names = this.handlers.collect(FunctionHandler::getFunctionName).distinct();
@@ -48,6 +49,24 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     public String getFunctionName()
     {
         return handlers.get(0).getFunctionName();
+    }
+
+    @Override
+    public void addFunctionHandler(FunctionHandler handler)
+    {
+        handlers.add(handler);
+    }
+
+    @Override
+    public Boolean supportFunctionHandler(FunctionHandler handler)
+    {
+        return this.getParametersSize().isPresent() && this.getParametersSize().get() == handler.getParametersSize();
+    }
+
+    @Override
+    public Optional<Integer> getParametersSize()
+    {
+        return Optional.of(handlers.get(0).getParametersSize());
     }
 
     @Override

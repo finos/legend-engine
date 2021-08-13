@@ -12,3 +12,5 @@
 .project
 /legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/snowflake.properties
 /legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/redshift.properties
+/legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/query.properties
+/legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userLocalConfig.json

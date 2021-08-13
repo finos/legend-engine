@@ -1,0 +1,1288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:der="http://smartstreamrdu.com/derivatives" xmlns="http://smartstreamrdu.com/derivatives" 	targetNamespace="http://smartstreamrdu.com/derivatives" version="4.11">
+    <xs:include schemaLocation="commons.xsd" />
+    <xs:annotation>
+        <xs:documentation>RDU Derivative Distribution Format</xs:documentation>
+    </xs:annotation>
+    <xs:element name="DerivativeData">
+        <xs:annotation>
+            <xs:documentation>Root element for derivative reference data</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Header" type="HeaderType">
+                    <xs:annotation>
+                        <xs:documentation>Common header information</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="Product" type="ProductType" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>Product level</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="Trailer" type="DerivativeTrailerType">
+                    <xs:annotation>
+                        <xs:documentation>Derivative trailer information</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="ProductType">
+        <xs:sequence>
+            <xs:element name="Basics" type="BasicsProductType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic attributes of product</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ids" type="IdsProductType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic identifiers of product</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Props" type="PropsProductType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Proprietary attributes of product</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Underliers" type="UnderliersProductType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Underlyings container</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TradeLines" type="TradeLinesProductType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Trading lines container</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="UndLEs" type="UNDLEsProductType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Mifids" type="MifidsProductType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Contracts" type="ContractsType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Contracts container</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="BasicsProductType">
+        <xs:sequence>
+            <xs:element name="Name" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Name</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ActFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ActiveFlag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PrdTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ProductType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="FlexElgblFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>FlexEligibleFlag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExchCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ProductExchangeCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrdCtyCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TradeCountryCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ClrngCcyCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ClearingCurrencyCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrdCcyCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TradeCurrencyCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrdCcyMajorFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>FlagTradeCurrencyMajor</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MsrmntUntCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>MeasurementUnitCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TckSzNmrtr" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TickSizeNumerator</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TckSzDnmntr" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TickSizeDenominator</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="RoundLotSz" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>RoundLotSize</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MaxOrdSz" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>MaxOrderSize</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="SpotMnthPosLmt" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SpotMonthPositionLimit</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MnthPosLmt" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>MonthPositionLimit</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AllMnthPosLmt" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>AllMonthsPositionLimit</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BlckTrdElgblFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BlockTradeEligibleFlag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExchRptngLvl" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExchangeReportingLevel</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="CftcRptngLvl" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>CFTCReportingLevel</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="DayNum" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ProductDayNumber</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="WkNum" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ProductWeekNumber</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="OofFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>OptionOnFutureFlag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="StrikePxCcyCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>StrikePriceCurrencyCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="StrikePxDsplyDec" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>StrikePriceDisplayDecimal</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PPPFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>PennyPilotProgramFlag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="VltnMthdTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ValuationMethodType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrdStsTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ProductTradingStatus</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="CftcRegFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Yes/No Flag, identifying whether the trading venue is identified as a regulated market by the US Commoditiy Futures Trading Commission (CFTC)</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="UndlRltnsTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>UnderlyingRelationshpsType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdsProductType">
+        <xs:sequence>
+            <xs:element name="RduPrdId" type="StringType" minOccurs="0" nillable="true">
+                <xs:annotation>
+                    <xs:documentation>"An RDU internally generated ID that represents a unique ETD product.
+                        The ID is generated based on the exchange product prefix, but separate RDU Product IDs are allocated when for a given exchange product prefix different basic types of ETDs are included (e.g. Option, Futures and Strategies).
+                        For example: In cases in which within a single combination of exchange , product prefix and basic ETD type,  there are still multiple different ETD subtypes required to uniquely identify a particular product (e.g. Options on a monthly future vs Options on a 3 month strip of monthly futures, refer to ICE product prefix AF1, with clearing code AF1, https://www.theice.com/products/32419671/ICE-Futures-Richards-Bay-Coal-Early-122-days-Single-Expiry-Option), separate RDU Product IDs will be allocated and all these RDU product ID's will have the same RDU ProductGroup Id."
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ClrngCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ClearingCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PropsProductType">
+        <xs:sequence />
+    </xs:complexType>
+    <xs:complexType name="UnderliersProductType">
+        <xs:sequence>
+            <xs:element name="Underlier" type="UnderlierProductType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Underlying level</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="UnderlierProductType">
+        <xs:sequence>
+            <xs:element name="Basics" type="BasicsProductUnderlierType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic attributes of underlying</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ids" type="IdsProductUnderlierType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic identifiers of underlying</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Mifids" type="MifidsProductUnderlierType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Mifid identifiers of underlying
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="BasicsProductUnderlierType">
+        <xs:sequence>
+            <xs:element name="Name" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Name</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PrntAssetTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ParentAssetType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AssetTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>AssetType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExchCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExchangeCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="SMic" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SegmentMIC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="OMic" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>OperatingMIC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Qty" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Quantity</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AllctnPct" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>AllocationPercentage</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="EsmaCmdtyBseCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ESMACommodityBaseCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="EsmaCmdtyDtlCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ESMACommodityDetailCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="LegNum" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>LegNumber</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrdCcyCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Trade Currency</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="CmdtyGrdr" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Grader</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="CmdtyGrd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Grade</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PrcngRef" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Pricing Reference</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MatDt" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Maturity Date</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="CpnRt" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Coupon Rate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Vntg" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Vintage</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ShpngTrms" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Incoterms</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrnsprtMthd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Transportation Method</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdsProductUnderlierType">
+        <xs:sequence>
+            <xs:element name="RduSecId" type="StringType" minOccurs="0" nillable="true">
+                <xs:annotation>
+                    <xs:documentation>"An RDU internally generated ID (18 characters) that represents a unique security.
+                        Example of an XRF security RDU ID is: XRFISE000123456789."
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="RduPrdId" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>"An RDU internally generated ID that represents a unique ETD product.
+                        The ID is generated based on the exchange product prefix, but separate RDU Product IDs are allocated when for a given exchange product prefix different basic types of ETDs are included (e.g. Option, Futures and Strategies).
+                        For example: In cases in which within a single combination of exchange , product prefix and basic ETD type,  there are still multiple different ETD subtypes required to uniquely identify a particular product (e.g. Options on a monthly future vs Options on a 3 month strip of monthly futures, refer to ICE product prefix AF1, with clearing code AF1, https://www.theice.com/products/32419671/ICE-Futures-Richards-Bay-Coal-Early-122-days-Single-Expiry-Option), separate RDU Product IDs will be allocated and all these RDU product ID's will have the same RDU ProductGroup Id."
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Isin" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ISIN</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Cusip" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation><xs:documentation>CUSIP Global Service sequentially generated CUSIP number (9-character) assigned for each strike price, for U.S. and Canadian listed equity, ETF and Index options.
+                        The CUSIP International Numbering System (CINS) number is a 9-character alphanumeric identifier that employs the same 9 characters as CUSIP, but also contains a letter of the alphabet in the first position signifying the issuer's country or geographic region.
+                        A private placement number (PPN) is a number assigned by S&amp;P's CUSIP Service Bureau that is issued for a security that is not traded on the public markets. </xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Sedol" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SEDOL</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ticker" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Ticker</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ric" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>RIC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BbgIdBbGlobal" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BBG_ID_BB_GLOBAL</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BbgCompositeIdBbGlobal" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BBG_COMPOSITE_ID_BB_GLOBAL</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BbgIdBbUnique" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BBG_ID_BB_UNIQUE</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrAssetId" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TR_AssetID</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrQuoteId" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TR_QuoteID</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="RduTicker" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>RDU Ticker</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TradeLinesProductType">
+        <xs:sequence>
+            <xs:element name="TradeLine" type="TradeLineProductType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Trading line level: Uniquely Identified by Combination of RduPrdId + ExchCd + SegTp</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TradeLineProductType">
+        <xs:sequence>
+            <xs:element name="Basics" type="BasicsProductTradeLineType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic attributes of trading line</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ids" type="IdsProductTradeLineType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic identifiers of trading line</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Sessions" type="SessionsProductType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Sessions container</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="BasicsProductTradeLineType">
+        <xs:sequence>
+            <xs:element name="ExchCd" type="StringType" minOccurs="1" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Exchange code of the segment in where the security is trading.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="SegTp" type="StringType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Identifies the venue to which the product definition record applies. Possible values are: Electronic, Pit, OTC or Composite.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdsProductTradeLineType">
+        <xs:sequence>
+            <xs:element name="ExchPrfx" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExchPrefix</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExchPrfxCall" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExchPrefixCall</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExchPrfxPut" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExchPrefixPut</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SessionsProductType">
+        <xs:sequence>
+            <xs:element name="Session" type="SessionProductType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Session level: Uniquely Identified by Combination of RduPrdId + ExchCd + SegTp + SesTp
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SessionProductType">
+        <xs:sequence>
+            <xs:element name="Basics" type="BasicsProductSessionType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic attributes of session</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ids" type="IdsProductSessionType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic identifiers of session</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="BasicsProductSessionType">
+        <xs:sequence>
+            <xs:element name="SesTp" type="StringType" minOccurs="1" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Identifies the session to which the product definition record applies. Possible values are: Day, Night or Continuous
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrdHr" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TradingHours</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdsProductSessionType">
+        <xs:sequence>
+            <xs:element name="RicRoot" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>RICRoot</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ContractsType">
+        <xs:sequence>
+            <xs:element name="Contract" type="ContractType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Contract level</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ContractType">
+        <xs:sequence>
+            <xs:element name="Basics" type="BasicsContractType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic attributes of contract</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ids" type="IdsContractType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic identifiers of contract</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Props" type="PropsContractType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Proprietary attributes of contract</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Legs" type="LegsType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Strategy legs container</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Underliers" type="UnderliersType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Underlyings container</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TradeLines" type="TradeLinesType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Trading lines container</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Mifids" type="MifidsContractType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Mifid attributes of Contract
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="NcaMifids" type="NcaMifidsContractType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>NcaMifid attributes of underlying
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="RpRngMifids" type="RpRngMifidsContractType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>NcaMifid attributes of underlying
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="BasicsContractType">
+        <xs:sequence>
+            <xs:element name="ActFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ActiveFlag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="DayNum" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>DayNumber</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="WkNum" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>WeekNumber</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MnthCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>MonthCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="YrCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>YearCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="CtrSz" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ContractSize</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="SettleTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SettlementType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PntVal" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>PointValue</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="FrstTrdDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>FirstTradeDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="LstTrdDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>LastTradeDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExpDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExpirationDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExrcsStrtDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExerciseStartDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="SettleDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SettlementDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="SettleFixDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SettlementFixingDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="FrstDlvryDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>FirstDeliveryDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="LstDlvryDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Last Delivery Date</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Name" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>NameLong</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="CFICd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ISO 10962 (International Organization for
+                        Standardization) code 10962:2015 which represents a standard
+                        classification of the features of a security. The first character
+                        represents the category of the security, the second character
+                        represents the group of the security, and the third through sixth
+                        characters represent the attributes of the security.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="CFI" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>CFICode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="CPInd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>CallPutIndicator</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExrcsStylTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExerciseStyleType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="StrikePx" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>StrikePrice</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="OptAclrtdExpDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>OptionAcceleratedExpirationDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AccrlStrtDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>AccrualStartDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AccrlEndDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>AccrualEndDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="FlexFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>FlexFlag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PrntAssetTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ParentAssetType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AssetTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>AssetType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="VndrAssetTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>VendorAssetType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="FrstNtcDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>FirstNoticeDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="LstNtcDt" type="DateType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>LastNoticeDate</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="NumOfLegs" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>NoOfLegs</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="StrtgyTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>StrategyType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="LepoFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Low Exercise Price Option Flag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrdStsTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ContractTradingStatus</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdsContractType">
+        <xs:sequence>
+            <xs:element name="OccSym" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>OCCSymbol</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Isin" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ISIN</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BbgIdBbUnique" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BBG_ID_BB_UNIQUE</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AiiCode" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Alternative Instrument Identifier (Aii)</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BbgTicker" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BBG_TICKER</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PropsContractType">
+        <xs:sequence />
+    </xs:complexType>
+    <xs:complexType name="LegsType">
+        <xs:sequence>
+            <xs:element name="Leg" type="LegType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Strategy leg of contract</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="LegType">
+        <xs:sequence>
+            <xs:element name="Basics" type="BasicsLegType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic attributes of strategy leg</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ids" type="IdsLegType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic identifiers of strategy leg</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="BasicsLegType">
+        <xs:sequence>
+            <xs:element name="Num" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>LegNumber</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BSInd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>LegBuySellIndicator</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Qty" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>LegQuantity</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdsLegType">
+        <xs:sequence>
+            <xs:element name="RduSecId" type="StringType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>"An RDU internally generated ID (18 characters) that represents a unique security.
+                        Example of an XRF security RDU ID is: XRFISE000123456789."
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExchPrfx" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExchangePrefix</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ticker" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Ticker</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="UnderliersType">
+        <xs:sequence>
+            <xs:element name="Underlier" type="UnderlierType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Underlying level</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="UnderlierType">
+        <xs:sequence>
+            <xs:element name="Basics" type="BasicsUnderlierType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic attributes of underlyings </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ids" type="IdsUnderlierType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic identifiers of underlyings </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="BasicsUnderlierType">
+        <xs:sequence>
+            <xs:element name="Name" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Name</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PrntAssetTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ParentAssetType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AssetTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>AssetType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="VndrAssetTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>VendorAssetType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExchCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExchangeCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="SMic" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SegmentMIC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="OMic" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>OperatingMIC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="LegNum" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Leg Number</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdsUnderlierType">
+        <xs:sequence>
+            <xs:element name="RduSecId" type="StringType" minOccurs="0" nillable="true" >
+                <xs:annotation>
+                    <xs:documentation>"An RDU internally generated ID (18 characters) that represents a unique security.
+                        Example of an XRF security RDU ID is: XRFISE000123456789."
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ticker" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Ticker</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Isin" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation><xs:documentation>ISIN</xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Cusip" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation><xs:documentation>CUSIP Global Service sequentially generated CUSIP number (9-character) assigned for each strike price, for U.S. and Canadian listed equity, ETF and Index options.
+                        The CUSIP International Numbering System (CINS) number is a 9-character alphanumeric identifier that employs the same 9 characters as CUSIP, but also contains a letter of the alphabet in the first position signifying the issuer's country or geographic region.
+                        A private placement number (PPN) is a number assigned by S&amp;P's CUSIP Service Bureau that is issued for a security that is not traded on the public markets. </xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ric" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>RIC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BbgIdBbGlobal" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BBG_ID_BB_GLOBAL</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BbgIdBbUnique" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BBG_ID_BB_UNIQUE</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrAssetId" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TR_AssetID</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrQuoteId" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TR_QuoteID</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExchPrfx" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Underlying Exchange Prefix</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TradeLinesType">
+        <xs:sequence>
+            <xs:element name="TradeLine" type="TradeLineType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Trading line of contract</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TradeLineType">
+        <xs:sequence>
+            <xs:element name="Basics" type="BasicsTradeLineType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic attributes of contract trading line </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ids" type="IdsTradeLineType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic identifiers of contract trading line </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Sessions" type="SessionsType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Sessions container</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="BasicsTradeLineType">
+        <xs:sequence>
+            <xs:element name="SegTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SegmentType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExchCd" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ExchangeCode</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="VndrExchCd" type="StringType" nillable="true" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Vendor Exchange code of the segment  where the security is trading.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="SMic" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SegmentMIC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="OMic" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>OperatingMIC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ActFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ActiveFlag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="LstngCycleTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ListingCycleType</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TckSz" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TickSize</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TckVal" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TickValue</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrdStsTp" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TradeLineTradingStatus</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdsTradeLineType">
+        <xs:sequence>
+            <xs:element name="RduSecId" type="StringType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>"An RDU internally generated ID (18 characters) that represents a unique security.
+                        Example of an XRF security RDU ID is: XRFISE000123456789."
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="RduSecIdExp" type="ExpiredDateType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>RDU_SecurityID_Expired</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="RduSegId" type="StringType" minOccurs="0" nillable="true" >
+                <xs:annotation>
+                    <xs:documentation>"An RDU internally generated ID (18 characters) that represents a unique security segment.
+                        Example of an XRF security segment RDU ID is: XRFISG000123456789."
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="RduSegIdExp" type="ExpiredDateType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>RDU_SegmentID_Expired</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BbgIdBbGlobal" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BBG_ID_BB_GLOBAL</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ticker" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Ticker</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BbgCompositeIdBbGlobal" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BBG_COMPOSITE_ID_BB_GLOBAL</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SessionsType">
+        <xs:sequence>
+            <xs:element name="Session" type="SessionType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Session level : Session level: Uniquely Identified by Combination of RduSegId + SesTp</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SessionType">
+        <xs:sequence>
+            <xs:element name="Basics" type="BasicsSessionType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic attributes of session</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Ids" type="IdsSessionType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Generic identifiers of session</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="BasicsSessionType">
+        <xs:sequence>
+            <xs:element name="SesTp" type="StringType" minOccurs="1" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Identifies the segment (venue) of the contract's trading line. Possible values are: Day, Night or Continuous.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ActFl" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ActiveFlag</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BlckTrdMinSz" type="DecimalType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>BlockTradeMinSize</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdsSessionType">
+        <xs:sequence>
+            <xs:element name="Ric" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>RIC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrAssetId" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TR_AssetID</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TrQuoteId" type="StringType" nillable="true" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>TR_QuoteID</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DerivativeTrailerType">
+        <xs:annotation>
+            <xs:documentation>Derivative trailer information</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="TrailerType">
+                <xs:attribute name="CntPrd" type="xs:int" use="required">
+                    <xs:annotation>
+                        <xs:documentation>CountProducts</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="CntCtr" type="xs:int" use="required">
+                    <xs:annotation>
+                        <xs:documentation>CountContracts</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="UNDLEsProductType">
+        <xs:sequence>
+            <xs:element name="UndLE" type="UndLEUNDLEsProductType"
+                        minOccurs="0" maxOccurs="unbounded">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="UndLEUNDLEsProductType">
+        <xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MifidsProductType">
+        <xs:sequence>
+
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MifidsProductUnderlierType">
+        <xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MifidsContractType">
+        <xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="NcaMifidsContractType">
+        <xs:sequence>
+            <xs:element name="NcaMifid" type="NcaMifidNcaMifidsContractType"
+                        minOccurs="0" maxOccurs="unbounded">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RpRngMifidsContractType">
+        <xs:sequence>
+            <xs:element name="RpRngMifid" type="RpRngMifidRpRngMifidsContractType"
+                        minOccurs="0" maxOccurs="unbounded">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="NcaMifidNcaMifidsContractType">
+        <xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RpRngMifidRpRngMifidsContractType">
+        <xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

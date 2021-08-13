@@ -344,7 +344,7 @@ public class PureTestHelper
     {
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
-                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), new MetadataLazy(PureTestHelper.class.getClassLoader()), Sets.mutable.empty()),
+                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), MetadataLazy.fromClassLoader(PureTestHelper.class.getClassLoader()), Sets.mutable.empty()),
                 null,
                 new CodeStorage()
                 {
@@ -485,7 +485,7 @@ public class PureTestHelper
 
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
-                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), new MetadataLazy(PureTestHelper.class.getClassLoader()), Sets.mutable.empty()),
+                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), MetadataLazy.fromClassLoader(PureTestHelper.class.getClassLoader()), Sets.mutable.empty()),
                 null,
                 new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), PureRepositoriesExternal.repositories(), null)),
                 null,

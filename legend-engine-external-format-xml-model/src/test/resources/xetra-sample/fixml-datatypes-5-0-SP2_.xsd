@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.fixprotocol.org/FIXML-5-0-SP2" targetNamespace="http://www.fixprotocol.org/FIXML-5-0-SP2" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xs:simpleType name="Length">
+    <xs:annotation>
+      <xs:documentation>
+                 int field representing the length in bytes. Value must be positive.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:nonNegativeInteger"/>
+  </xs:simpleType>
+  <xs:simpleType name="SeqNum">
+    <xs:annotation>
+      <xs:documentation>
+                 int field representing a message sequence number. Value must be positive.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:positiveInteger"/>
+  </xs:simpleType>
+  <xs:simpleType name="Qty">
+    <xs:annotation>
+      <xs:documentation>
+                 float field capable of storing either a whole number (no decimal places) of &amp;quot;shares&amp;quot; (securities denominated in whole units) or a decimal value containing decimal places for non-share quantity asset classes (securities denominated in fractional units).
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="Price">
+    <xs:annotation>
+      <xs:documentation>
+                 float field representing a price. Note the number of decimal places may vary. For certain asset classes prices may be negative values. For example, prices for options strategies can be negative under certain market conditions. Refer to Volume 7: FIX Usage by Product for asset classes that support negative price values.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="PriceOffset">
+    <xs:annotation>
+      <xs:documentation>
+                 float field representing a price offset, which can be mathematically added to a &amp;quot;Price&amp;quot;. Note the number of decimal places may vary and some fields such as LastForwardPoints may be negative.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="Amt">
+    <xs:annotation>
+      <xs:documentation>
+                 float field typically representing a Price times a Qty
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="Percentage">
+    <xs:annotation>
+      <xs:documentation>
+                 float field representing a percentage (e.g. 0.05 represents 5% and 0.9525 represents 95.25%). Note the number of decimal places may vary.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="char">
+    <xs:annotation>
+      <xs:documentation>
+                 Single character value, can include any alphanumeric character or punctuation except the delimiter. All char fields are case sensitive (i.e. m != M).
+The following fields are based on char.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value=".{1}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Boolean">
+    <xs:annotation>
+      <xs:documentation>
+                 char field containing one of two values:
+&amp;apos;Y&amp;apos; = True/Yes
+&amp;apos;N&amp;apos; = False/No
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[YN]{1}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MultipleCharValue">
+    <xs:annotation>
+      <xs:documentation>
+                 string field containing one or more space delimited single character values (e.g. |18=2 A F| ).
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Za-z0-9](\s[A-Za-z0-9])*"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MultipleStringValue">
+    <xs:annotation>
+      <xs:documentation>
+                 string field containing one or more space delimited multiple character values (e.g. |277=AV AN A| ).
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value=".+(\s.+)*"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Country">
+    <xs:annotation>
+      <xs:documentation>
+                 string field representing a country using ISO 3166 Country code (2 character) values (see Appendix 6-B).
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value=".{2}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Currency">
+    <xs:annotation>
+      <xs:documentation>
+                 string field representing a currency type using ISO 4217 Currency code (3 character) values (see Appendix 6-A).
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value=".{3}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Exchange">
+    <xs:annotation>
+      <xs:documentation>
+                 string field representing a market or exchange using ISO 10383 Market Identifier Code (MIC) values (see&amp;quot;Appendix 6-C).
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value=".*"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MonthYear">
+    <xs:annotation>
+      <xs:documentation>
+                 string field representing month of a year. An optional day of the month can be appended or an optional week code.
+Valid formats:
+YYYYMM
+YYYYMMDD
+YYYYMMWW
+Valid values:
+YYYY = 0000-9999; MM = 01-12; DD = 01-31; WW = w1, w2, w3, w4, w5.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\d{4}(0|1)\d([0-3wW]\d)?"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="UTCTimestamp">
+    <xs:annotation>
+      <xs:documentation>
+                 string field representing Time/date combination represented in UTC (Universal Time Coordinated, also known as &amp;quot;GMT&amp;quot;) in either YYYYMMDD-HH:MM:SS (whole seconds) or YYYYMMDD-HH:MM:SS.sss (milliseconds) format, colons, dash, and period required.
+Valid values:
+* YYYY = 0000-9999, MM = 01-12, DD = 01-31, HH = 00-23, MM = 00-59, SS = 00-60 (60 only if UTC leap second) (without milliseconds).
+* YYYY = 0000-9999, MM = 01-12, DD = 01-31, HH = 00-23, MM = 00-59, SS = 00-60 (60 only if UTC leap second), sss=000-999 (indicating milliseconds).
+Leap Seconds: Note that UTC includes corrections for leap seconds, which are inserted to account for slowing of the rotation of the earth. Leap second insertion is declared by the International Earth Rotation Service (IERS) and has, since 1972, only occurred on the night of Dec. 31 or Jun 30. The IERS considers March 31 and September 30 as secondary dates for leap second insertion, but has never utilized these dates. During a leap second insertion, a UTCTimestamp field may read &amp;quot;19981231-23:59:59&amp;quot;, &amp;quot;19981231-23:59:60&amp;quot;, &amp;quot;19990101-00:00:00&amp;quot;. (see http://tycho.usno.navy.mil/leapsec.html)
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:dateTime"/>
+  </xs:simpleType>
+  <xs:simpleType name="UTCTimeOnly">
+    <xs:annotation>
+      <xs:documentation>
+                 string field representing Time-only represented in UTC (Universal Time Coordinated, also known as &amp;quot;GMT&amp;quot;) in either HH:MM:SS (whole seconds) or HH:MM:SS.sss (milliseconds) format, colons, and period required. This special-purpose field is paired with UTCDateOnly to form a proper UTCTimestamp for bandwidth-sensitive messages.
+Valid values:
+HH = 00-23, MM = 00-60 (60 only if UTC leap second), SS = 00-59. (without milliseconds)
+HH = 00-23, MM = 00-59, SS = 00-60 (60 only if UTC leap second), sss=000-999 (indicating milliseconds).
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:time"/>
+  </xs:simpleType>
+  <xs:simpleType name="UTCDateOnly">
+    <xs:annotation>
+      <xs:documentation>
+                 string field representing Date represented in UTC (Universal Time Coordinated, also known as &amp;quot;GMT&amp;quot;) in YYYYMMDD format. This special-purpose field is paired with UTCTimeOnly to form a proper UTCTimestamp for bandwidth-sensitive messages.
+Valid values:
+YYYY = 0000-9999, MM = 01-12, DD = 01-31.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:date"/>
+  </xs:simpleType>
+  <xs:simpleType name="LocalMktDate">
+    <xs:annotation>
+      <xs:documentation>
+                 string field represening a Date of Local Market (as oppose to UTC) in YYYYMMDD format. This is the &amp;quot;normal&amp;quot; date field used by the FIX Protocol.
+Valid values:
+YYYY = 0000-9999, MM = 01-12, DD = 01-31.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:date"/>
+  </xs:simpleType>
+  <xs:simpleType name="TZTimeOnly">
+    <xs:annotation>
+      <xs:documentation>
+                 string field representing the time represented based on ISO 8601. This is the time with a UTC offset to allow identification of local time and timezone of that time.
+Format is HH:MM[:SS][Z | [ + | - hh[:mm]]] where HH = 00-23 hours, MM = 00-59 minutes, SS = 00-59 seconds, hh = 01-12 offset hours, mm = 00-59 offset minutes.
+Example: 07:39Z is 07:39 UTC
+Example: 02:39-05 is five hours behind UTC, thus Eastern Time
+Example: 15:39+08 is eight hours ahead of UTC, Hong Kong/Singapore time
+Example: 13:09+05:30 is 5.5 hours ahead of UTC, India time
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:time"/>
+  </xs:simpleType>
+  <xs:simpleType name="TZTimestamp">
+    <xs:annotation>
+      <xs:documentation>
+                 string field representing a time/date combination representing local time with an offset to UTC to allow identification of local time and timezone offset of that time. The representation is based on ISO 8601.
+Format is YYYYMMDD-HH:MM:SS[Z | [ + | - hh[:mm]]] where YYYY = 0000 to 9999, MM = 01-12, DD = 01-31 HH = 00-23 hours, MM = 00-59 minutes, SS = 00-59 seconds, hh = 01-12 offset hours, mm = 00-59 offset minutes
+Example: 20060901-07:39Z is 07:39 UTC on 1st of September 2006
+Example: 20060901-02:39-05 is five hours behind UTC, thus Eastern Time on 1st of September 2006
+Example: 20060901-15:39+08 is eight hours ahead of UTC, Hong Kong/Singapore time on 1st of September 2006
+Example: 20060901-13:09+05:30 is 5.5 hours ahead of UTC, India time on 1st of September 2006
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:dateTime"/>
+  </xs:simpleType>
+  <xs:simpleType name="data">
+    <xs:annotation>
+      <xs:documentation>
+                 string field containing raw data with no format or content restrictions. Data fields are always immediately preceded by a length field. The length field should specify the number of bytes of the value of the data field (up to but not including the terminating SOH).
+Caution: the value of one of these fields may contain the delimiter (SOH) character. Note that the value specified for this field should be followed by the delimiter (SOH) character as all fields are terminated with an &amp;quot;SOH&amp;quot;.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="Tenor">
+    <xs:annotation>
+      <xs:documentation>
+                 used to allow the expression of FX standard tenors in addition to the base valid enumerations defined for the field that uses this pattern data type. This pattern data type is defined as follows:
+Dx = tenor expression for &amp;quot;days&amp;quot;, e.g. &amp;quot;D5&amp;quot;, where &amp;quot;x&amp;quot; is any integer &amp;gt; 0
+Mx = tenor expression for &amp;quot;months&amp;quot;, e.g. &amp;quot;M3&amp;quot;, where &amp;quot;x&amp;quot; is any integer &amp;gt; 0
+Wx = tenor expression for &amp;quot;weeks&amp;quot;, e.g. &amp;quot;W13&amp;quot;, where &amp;quot;x&amp;quot; is any integer &amp;gt; 0
+Yx = tenor expression for &amp;quot;years&amp;quot;, e.g. &amp;quot;Y1&amp;quot;, where &amp;quot;x&amp;quot; is any integer &amp;gt; 0
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[DMWY](\d)+"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Reserved100Plus">
+    <xs:annotation>
+      <xs:documentation>
+                 Values &amp;quot;100&amp;quot; and above are reserved for bilaterally agreed upon user defined enumerations.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="Reserved1000Plus">
+    <xs:annotation>
+      <xs:documentation>
+                 Values &amp;quot;1000&amp;quot; and above are reserved for bilaterally agreed upon user defined enumerations.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="Reserved4000Plus">
+    <xs:annotation>
+      <xs:documentation>
+                 Values &amp;quot;4000&amp;quot; and above are reserved for bilaterally agreed upon user defined enumerations.
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="XMLData">
+    <xs:annotation>
+      <xs:documentation>
+                 Contains an XML document raw data with no format or content restrictions. XMLData fields are always immediately preceded by a length field. The length field should specify the number of bytes of the value of the data field (up to but not including the terminating SOH).
+
+            </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+</xs:schema>

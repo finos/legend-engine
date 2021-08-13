@@ -40,6 +40,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -86,6 +88,11 @@ public interface CompilerExtension
     }
 
     default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Connection>> getExtraConnectionValueProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
     {
         return Collections.emptyList();
     }
@@ -145,6 +152,11 @@ public interface CompilerExtension
      * Needed to register paths for `pathToElement` to work on old graph
      */
     default List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> getExtraExecutionOptionProcessors()
     {
         return Collections.emptyList();
     }

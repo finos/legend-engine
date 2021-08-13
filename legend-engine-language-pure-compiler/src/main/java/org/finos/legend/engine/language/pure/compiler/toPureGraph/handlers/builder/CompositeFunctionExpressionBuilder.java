@@ -27,6 +27,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilder
 {
@@ -42,6 +44,30 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
     public String getFunctionName()
     {
         return this.builders.get(0).getFunctionName();
+    }
+
+    public List<FunctionExpressionBuilder> getBuilders()
+    {
+        return this.builders;
+    }
+
+    @Override
+    public void addFunctionHandler(FunctionHandler handler)
+    {
+        List<FunctionExpressionBuilder> target = this.builders.stream().filter(f->f.getParametersSize().isPresent() && f.getParametersSize().get() == handler.getParametersSize()).collect(Collectors.toList());
+        target.get(0).handlers().add(handler);
+    }
+
+    @Override
+    public Boolean supportFunctionHandler(FunctionHandler handler)
+    {
+        List<FunctionExpressionBuilder> target = this.builders.stream().filter(f->f.getParametersSize().isPresent() && f.getParametersSize().get() == handler.getParametersSize()).collect(Collectors.toList());
+        return !target.isEmpty();
+    }
+
+    @Override
+    public Optional<Integer> getParametersSize() {
+        return Optional.empty();
     }
 
     @Override

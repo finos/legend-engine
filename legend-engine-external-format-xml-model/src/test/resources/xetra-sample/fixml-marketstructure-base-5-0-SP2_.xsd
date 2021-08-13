@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.fixprotocol.org/FIXML-5-0-SP2" targetNamespace="http://www.fixprotocol.org/FIXML-5-0-SP2" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xs:include schemaLocation="fixml-components-impl-5-0-SP2_.xsd"/>
+  <xs:group name="MarketDefinitionElements">
+    <xs:sequence>
+      <xs:element name="Undly" type="Underlying_Block_t" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="RelatedMktSeg" type="RelatedMktSeg_Block_t" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="InstrmtScope" type="InstrmtScope_Block_t" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="MtchRules" type="MatchRules_Block_t" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="FlexProdEligs" type="FlexProdEligs_Block_t" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="BaseTrdgRules" type="BaseTrdgRules_Block_t" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="MDFeedTyps" type="MarketDataFeedTypes_Block_t" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="MarketDefinitionAttributes">
+    <xs:attribute name="MktID" type="MarketID_t" use="required"/>
+    <xs:attribute name="MktSegID" type="MarketSegmentID_t" use="required"/>
+    <xs:attribute name="MktSeg" type="MarketSegment_t" use="required"/>
+    <xs:attribute name="MarketSegmentDesc" type="MarketSegmentDesc_t" use="optional"/>
+    <xs:attribute name="Sym" type="MarketSegmentSymbol_t" use="optional"/>
+    <xs:attribute name="ParentMktSegmID" type="ParentMktSegmID_t" use="optional"/>
+    <xs:attribute name="Ccy" type="Currency_t" use="optional"/>
+    <xs:attribute name="MktSegStat" type="MarketSegmentStatus_t" use="optional"/>
+    <xs:attribute name="USApprvl" type="USApproval_t" use="optional"/>
+    <xs:attribute name="PartID" type="PartitionID_t" use="optional"/>
+    <xs:attribute name="NegDur" type="NegotiationDuration_t" use="optional"/>
+    <xs:attribute name="MaxOfstRFQExpireTm" type="MaxOffsetExpireTime_t" use="optional"/>
+    <xs:attribute name="OfstSTPEfctvTm" type="OffsetSTPEffectiveTime_t" use="optional"/>
+    <xs:attribute name="EfctvBizDt" type="EffectiveBusinessDate_t" use="required"/>
+    <xs:attribute name="NxtEfctvBizDt" type="NextEffectiveBusinessDate_t" use="required"/>
+    <xs:attribute name="MktSegTyp" type="MarketSegmentType_t" use="optional"/>
+    <xs:attribute name="MktSegSubTyp" type="MarketSegmentSubType_t" use="optional"/>
+    <xs:attribute name="DecaySplit" type="DecaySplit_t" use="optional"/>
+  </xs:attributeGroup>
+  <xs:complexType name="MarketDefinition_message_t" final="#all">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+                The Market Definition message is used to respond to Market Definition Request. In a subscription, it will be used to provide the initial snapshot of the information requested. Subsequent updates are provided by the Market Definition Update Report.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="MarketDefinition" ComponentType="Message"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="Abstract_message_t">
+        <xs:sequence>
+          <xs:group ref="MarketDefinitionElements"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="MarketDefinitionAttributes"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="MktDef" type="MarketDefinition_message_t" substitutionGroup="Message" final="#all"/>
+</xs:schema>

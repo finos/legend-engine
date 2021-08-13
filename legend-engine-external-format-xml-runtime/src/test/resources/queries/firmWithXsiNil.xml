@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<firm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <name>Acme Co.</name>
+    <ranking>2</ranking>
+    <addresses>
+        <addressUse addressType="Headquarters">
+            <address>
+                <firstLine>1207 Pineview Drive</firstLine>
+                <city>Marshall</city>
+                <region>Minnesota</region>
+                <country>USA</country>
+                <position latitude="44.44813578527556" longitude="-95.82086758913208" />
+            </address>
+        </addressUse>
+        <addressUse addressType="Regional Office">
+            <address>
+                <firstLine>Suite 15</firstLine>
+                <secondLine>315 Stuart Street</secondLine>
+                <city>Pittsburgh</city>
+                <region>Pennsylvania</region>
+                <country>USA</country>
+                <position latitude="40.441913576497356" longitude="-80.01281609619811" />
+            </address>
+        </addressUse>
+    </addresses>
+    <employees>
+        <employee>
+            <firstName>Jason</firstName>
+            <lastName>Schlichting</lastName>
+            <dateOfBirth>1968-03-05</dateOfBirth>
+            <isAlive>true</isAlive>
+            <heightInMeters>1.82</heightInMeters>
+            <addresses>
+                <addressUse  xsi:nil="true"/>
+                <addressUse addressType="Holiday">
+                    <address>
+                        <firstLine>Appartment 31</firstLine>
+                        <secondLine>3788 Levy Court</secondLine>
+                        <city>Worcester</city>
+                        <region>Massachusetts</region>
+                        <country>USA</country>
+                    </address>
+                </addressUse>
+            </addresses>
+        </employee>
+        <employee>
+            <firstName>Nancy</firstName>
+            <lastName>Fraher</lastName>
+            <dateOfBirth>1970-12-13</dateOfBirth>
+            <isAlive>false</isAlive>
+            <heightInMeters>1.71</heightInMeters>
+            <addresses>
+                <addressUse addressType="Home">
+                    <address>
+                        <firstLine>3220 Northwest Boulevard</firstLine>
+                        <city>Rochelle Park</city>
+                        <region>New Jersey</region>
+                        <country>USA</country>
+                    </address>
+                </addressUse>
+            </addresses>
+        </employee>
+    </employees>
+</firm>

@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://test.com/Person"
+           targetNamespace="http://test.com/Person" version="1">
+    <xs:include schemaLocation="complex.xsd"/>
+    <xs:complexType name="Firm">
+        <xs:sequence>
+            <xs:element name="employees" type="Person" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
