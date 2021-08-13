@@ -6,6 +6,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_RedshiftDatasourceSpecification_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_UserPasswordAuthenticationStrategy_Impl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,5 +39,45 @@ public class TestRelationalConnectionCompilationRoundtrip
 
         Assert.assertTrue(quoteIdentifiers);
         Assert.assertEquals("dummyPrincipal", serverPrincipal);
+    }
+
+    @Test
+    public void testRedshiftConnectionPropertiesPropagatedToCompiledGraph()
+    {
+        Pair<PureModelContextData, PureModel> compiledGraph = test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: model::relational::tests::dbInc;\n" +
+                "  type: Redshift;\n" +
+                "  specification: Redshift\n" +
+                "  {\n" +
+                "    name: 'dev';\n" +
+                "    endpoint: 'endpoint';\n" +
+                "    port: 5439;\n" +
+                "  };\n" +
+                "  auth: UserPassword\n" +
+                "  {\n" +
+                "    userName: 'username';\n" +
+                "    passwordVaultReference: 'password';\n" +
+                "  };\n" +
+                "}\n");
+        Root_meta_pure_alloy_connections_RelationalDatabaseConnection connection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) compiledGraph.getTwo().getConnection("simple::H2Connection", SourceInformation.getUnknownSourceInformation());
+
+        //dataSourceSpecification
+        String databaseName = ((Root_meta_pure_alloy_connections_alloy_specification_RedshiftDatasourceSpecification_Impl) connection._datasourceSpecification())._databaseName();
+        String endpoint = ((Root_meta_pure_alloy_connections_alloy_specification_RedshiftDatasourceSpecification_Impl) connection._datasourceSpecification())._endpoint();
+        long port = ((Root_meta_pure_alloy_connections_alloy_specification_RedshiftDatasourceSpecification_Impl) connection._datasourceSpecification())._port();
+
+        Assert.assertEquals("dev", databaseName);
+        Assert.assertEquals("endpoint", endpoint);
+        Assert.assertEquals(5439, port);
+
+        //authenticationStrategy
+        String userName = ((Root_meta_pure_alloy_connections_alloy_authentication_UserPasswordAuthenticationStrategy_Impl) connection._authenticationStrategy())._userName();
+        String passwordVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserPasswordAuthenticationStrategy_Impl) connection._authenticationStrategy())._passwordVaultReference();
+
+        Assert.assertEquals("username", userName);
+        Assert.assertEquals("password", passwordVaultReference);
     }
 }

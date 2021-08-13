@@ -17,9 +17,12 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import org.eclipse.collections.api.block.function.Function;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.UserPasswordAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.RedshiftDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.RedshiftDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
@@ -69,5 +72,39 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
 
     }
 
+    @Test
+    public void testRedshiftConnection_profile() throws Exception
+    {
+        testRedshiftConnection(c -> c.getConnectionUsingProfiles(null));
+//        testRedshiftConnection(RedshiftDatasourceSpecification(databaseName = 'dev', port = 5439,
+//                endpoint = 'lab.cqzp3tj1qpzo.us-east-2.redshift.amazonaws.com'));
+//
+//       b, datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification:
+//        :RedshiftDatasourceSpecification(databaseName = 'dev', port = 5439,
+//            endpoint = 'lab.cqzp3tj1qpzo.us-east-2.redshift.amazonaws.com'),
+//            authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::UserPasswordAuthenticationStrategy(passwordVaultReference = 'rEdShiFt528491!', userName = 'awsuser'),
+//            type = $dbType -> cast(@DatabaseType));,
+
+    }
+
+    private void testRedshiftConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
+    {
+        Properties properties = new Properties();
+        properties.load(getClass().getResourceAsStream("redshift.properties"));
+        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
+
+        RedshiftDataSourceSpecification ds =
+                new RedshiftDataSourceSpecification(
+                        new RedshiftDataSourceSpecificationKey(
+                                "dev", "lab.cqzp3tj1qpzo.us-east-2.redshift.amazonaws.com", 5439),
+                        new org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager(),
+                        new UserPasswordAuthenticationStrategy("awsuser",System.getenv("redshiftPassword")),
+                        new RelationalExecutorInfo());
+        ;
+        try (Connection connection = toDBConnection.valueOf(ds))
+        {
+            testConnection(connection, "SELECT * FROM INFORMATION_SCHEMA.TABLES");
+        }
+    }
 
 }

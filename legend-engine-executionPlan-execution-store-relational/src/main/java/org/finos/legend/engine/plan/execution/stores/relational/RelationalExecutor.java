@@ -43,12 +43,7 @@ import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
-import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.VoidRelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.*;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
@@ -218,13 +213,10 @@ public class RelationalExecutor
         return null;
     }
 
-    public Result execute(SQLExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    //Route where Execute EID takes where only eidString is the SQL being executed
+    public Result execute(SQLExecutionNode node, String eidString, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         Connection connectionManagerConnection;
-        String databaseTimeZone = node.getDatabaseTimeZone() == null ? DEFAULT_DB_TIME_ZONE : node.getDatabaseTimeZone();
-        String databaseType = node.getDatabaseTypeName();
-        List<String> tempTableList = FastList.newList();
-
         Span span = GlobalTracer.get().activeSpan();
         connectionManagerConnection = getConnection(node, profiles, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
         if (span != null)
@@ -232,16 +224,34 @@ public class RelationalExecutor
             span.log("Connection acquired");
         }
 
+        if (node.isResultVoid())
+        {
+            return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
+        }
+       return new SQLEIDResult(eidString, connectionManagerConnection, profiles);
+    }
+
+    //Route where Normal Execute takes place
+    public Result execute(SQLExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        Connection connectionManagerConnection;
+        String databaseTimeZone = node.getDatabaseTimeZone() == null ? DEFAULT_DB_TIME_ZONE : node.getDatabaseTimeZone();
+        String databaseType = node.getDatabaseTypeName();
+        List<String> tempTableList = FastList.newList();
+        Span span = GlobalTracer.get().activeSpan();
+        connectionManagerConnection = getConnection(node, profiles, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
+        if (span != null)
+        {
+            span.log("Connection acquired");
+        }
         this.prepareForSQLExecution(node, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState);
 
         if (node.isResultVoid())
         {
             return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
         }
-
-        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
+            return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
     }
-
     private void prepareForSQLExecution(ExecutionNode node, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         String sqlQuery;

@@ -86,9 +86,18 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
     private final MutableList<CommonProfile> profiles;
     private final ExecutionState executionState;
+    private final String eidString;
 
     public ExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
+        this.eidString = "NA-EID";
+        this.profiles = profiles;
+        this.executionState = executionState;
+    }
+
+    public ExecutionNodeExecutor(String eidString, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        this.eidString = eidString;
         this.profiles = profiles;
         this.executionState = executionState;
     }
@@ -96,7 +105,13 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(ExecutionNode executionNode)
     {
-        return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
+        if (eidString == "NA-EID"){
+            return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unnoosupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
+        }
+        else {
+            return this.executionState.extraNodeExecutorsEID.stream().map(executor -> executor.value(executionNode, eidString, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unnoosupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
+        }
+
     }
 
     @Deprecated
@@ -256,7 +271,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(AggregationAwareExecutionNode aggregationAwareExecutionNode)
     {
-        return aggregationAwareExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.Relational).getVisitor(this.profiles, this.executionState));
+        return aggregationAwareExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.Relational).getVisitor(this.eidString, this.profiles, this.executionState));
     }
 
     @Deprecated

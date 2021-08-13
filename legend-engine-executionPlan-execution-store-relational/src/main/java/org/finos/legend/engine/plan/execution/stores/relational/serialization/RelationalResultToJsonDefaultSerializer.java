@@ -75,11 +75,17 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
             streamCollection(stream, relationalResult.activities);
             stream.write(b_result);
             stream.write(b_sqlColumns);
-            streamCollection(stream, relationalResult.getColumnListForSerializer());
-            stream.write(b_rows);
-            streamRows(stream);
+           if (relationalResult.getColumnListForSerializer().size() == 0) {
+               //We do not write this if it is empty, resulting from executeEID function
+            }
+            else {
+                streamCollection(stream, relationalResult.getColumnListForSerializer());
+                stream.write(b_rows);
+                streamRows(stream);
+            }
             stream.write(b_end);
             stream.write(b_endResult);
+
         }
         catch (Exception e)
         {
@@ -94,6 +100,10 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
     private void streamRows(OutputStream outputStream) throws Exception
     {
         int rowCount = 0;
+        System.out.println("streaming   ros time");
+
+
+
         try (Scope scope = GlobalTracer.get().buildSpan("Relational Streaming: Fetch first row").startActive(true))
         {
             if (!relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
@@ -120,12 +130,16 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
 
     private void processRow(OutputStream outputStream) throws IOException, SQLException
     {
+        System.out.println("eib hm");
+        System.out.println(b_values);
         outputStream.write(b_values);
 
         MutableList<Function<Object, Object>> transformers = relationalResult.getTransformers();
 
+
         for (int i = 1; i <= relationalResult.columnCount - 1; i++)
         {
+
             objectMapper.writeValue(outputStream, transformers.get(i - 1).valueOf(relationalResult.getValue(i)));
             outputStream.write(b_comma);
         }
@@ -138,6 +152,7 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
     {
         for (int i = 0; i < collection.size() - 1; i++)
         {
+
             objectMapper.writeValue(outputStream, collection.get(i));
             outputStream.write(b_comma);
         }

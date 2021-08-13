@@ -209,6 +209,11 @@ public abstract class DataSourceSpecification
             jdbcConfig.setJdbcUrl(this.databaseManager.buildURL(host, port, databaseName, properties, this.authenticationStrategy));
             jdbcConfig.setConnectionTimeout(authenticationStrategy.getConnectionTimeout());
             jdbcConfig.setUsername(authenticationStrategy.getLogin());
+
+            System.out.println("password things");
+            System.out.println(authenticationStrategy.getPassword());
+
+            System.out.println(authenticationStrategy.getPassword());
             jdbcConfig.setPassword(authenticationStrategy.getPassword());
             jdbcConfig.addDataSourceProperty("cachePrepStmts", false);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSize", 0);

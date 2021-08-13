@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalGraphFetchExecutionNode;
+import org.finos.legend.engine.shared.core.function.Function4;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Collections;
@@ -48,6 +49,25 @@ public class RelationalExecutionExtension implements ExecutionExtension
             )
             {
                 return executionNode.accept(executionState.getStoreExecutionState(StoreType.Relational).getVisitor(profiles, executionState));
+            }
+            return null;
+        }));
+    }
+
+    @Override
+    public List<Function4<ExecutionNode, String, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutorsEID()
+    {
+        return Collections.singletonList(((executionNode, String, profiles, executionState) ->
+        {
+            if (executionNode instanceof RelationalBlockExecutionNode
+                    || executionNode instanceof CreateAndPopulateTempTableExecutionNode
+                    || executionNode instanceof SQLExecutionNode
+                    || executionNode instanceof RelationalExecutionNode
+                    || executionNode instanceof RelationalInstantiationExecutionNode
+                    || executionNode instanceof RelationalGraphFetchExecutionNode
+            )
+            {
+                return executionNode.accept(executionState.getStoreExecutionState(StoreType.Relational).getVisitor(String, profiles, executionState));
             }
             return null;
         }));

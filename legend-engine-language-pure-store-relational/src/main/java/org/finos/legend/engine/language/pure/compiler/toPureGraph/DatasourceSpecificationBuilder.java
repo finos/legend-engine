@@ -68,6 +68,15 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _snowflake._quotedIdentifiersIgnoreCase(snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase);
             return _snowflake;
         }
+        else if(datasourceSpecification instanceof RedshiftDatasourceSpecification)
+        {
+            RedshiftDatasourceSpecification redshiftDatasourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
+            Root_meta_pure_alloy_connections_alloy_specification_RedshiftDatasourceSpecification _redshift = new Root_meta_pure_alloy_connections_alloy_specification_RedshiftDatasourceSpecification_Impl("");
+            _redshift._databaseName(redshiftDatasourceSpecification.databaseName);
+            _redshift._endpoint(redshiftDatasourceSpecification.endpoint);
+            _redshift._port(redshiftDatasourceSpecification.port);
+            return _redshift;
+        }
         else if(datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {
             BigQueryDatasourceSpecification bigQueryDatasourceSpecification = (BigQueryDatasourceSpecification) datasourceSpecification;

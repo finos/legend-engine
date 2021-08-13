@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.shared.core.function.Function4;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
@@ -28,6 +29,11 @@ import java.util.List;
 public interface ExecutionExtension
 {
     default List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function4<ExecutionNode, String, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutorsEID()
     {
         return Collections.emptyList();
     }

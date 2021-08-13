@@ -62,6 +62,20 @@ snowflakeDatasourceSpecification:           SNOWFLAKE
                                                 BRACE_CLOSE
 ;
 
+redshiftDatasourceSpecification:            REDSHIFT
+                                                BRACE_OPEN
+                                                    (
+                                                        dbName
+                                                        | redshiftEndpoint
+                                                        | dbPort
+                                                    )*
+                                                BRACE_CLOSE
+;
+
+redshiftEndpoint:                           ENDPOINT COLON STRING SEMI_COLON
+;
+
+
 dbWarehouse:                                WAREHOUSE COLON STRING SEMI_COLON
 ;
 

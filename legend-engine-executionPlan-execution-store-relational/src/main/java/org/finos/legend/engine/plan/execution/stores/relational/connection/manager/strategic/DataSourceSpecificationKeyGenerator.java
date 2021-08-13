@@ -19,6 +19,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.RedshiftDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
@@ -74,6 +75,14 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     snowflakeDatasourceSpecification.databaseName,
                     snowflakeDatasourceSpecification.cloudType,
                     connection.quoteIdentifiers);
+        }
+        else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
+        {
+            RedshiftDatasourceSpecification redshiftDatasourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
+            return new RedshiftDataSourceSpecificationKey(
+                    redshiftDatasourceSpecification.databaseName,
+                    redshiftDatasourceSpecification.endpoint,
+                    redshiftDatasourceSpecification.port);
         }
         else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {

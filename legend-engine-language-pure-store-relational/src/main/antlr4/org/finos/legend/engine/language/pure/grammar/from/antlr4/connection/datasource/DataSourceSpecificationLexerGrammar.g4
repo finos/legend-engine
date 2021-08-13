@@ -23,6 +23,10 @@ REGION:                                     'region';
 CLOUDTYPE:                                  'cloudType';
 QUOTED_IDENTIFIERS_IGNORE_CASE:             'quotedIdentifiersIgnoreCase';
 
+REDSHIFT:                                   'Redshift';
+ENDPOINT:                                   'endpoint';
+
+
 BIGQUERY_DSP:                               'BigQuery';
 PROJECT:                                    'projectId';
 DATASET:                                    'defaultDataset';

@@ -45,6 +45,11 @@ public class InMemoryStoreExecutionState implements StoreExecutionState
     }
 
     @Override
+    public ExecutionNodeVisitor<Result> getVisitor(String eidString, MutableList<CommonProfile> profiles, ExecutionState executionState) {
+        return new InMemoryExecutionNodeExecutor(profiles, executionState);
+    }
+
+    @Override
     public StoreExecutionState copy()
     {
         return new InMemoryStoreExecutionState(this.state);

@@ -160,6 +160,11 @@ public class PlanExecutor
         }
     }
 
+    public Result executeEID(String stringEID, SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles)
+    {
+        return executeEID(stringEID, executionPlan, buildDefaultExecutionState(executionPlan, vars), user, profiles);
+    }
+
     public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles)
     {
         return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars), user, profiles);
@@ -168,6 +173,22 @@ public class PlanExecutor
     public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
     {
         return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, profiles);
+    }
+    public Result executeEID(String eidString, SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, MutableList<CommonProfile> profiles)
+    {
+        EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, profiles);
+        try (JavaHelper.ThreadContextClassLoaderScope scope = (engineJavaCompiler == null) ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
+        {
+            // set up the state
+            if (singleExecutionPlan.authDependent)
+            {
+                state.setAuthUser((singleExecutionPlan.kerberos == null) ? user : singleExecutionPlan.kerberos);
+            }
+            singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
+
+            // execute
+            return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(eidString, profiles, state));
+        }
     }
 
     public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, MutableList<CommonProfile> profiles)

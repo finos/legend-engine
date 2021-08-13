@@ -115,11 +115,12 @@
         <hikaricp.version>3.4.5</hikaricp.version>
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
+        <redshift.version>2.0.0.4</redshift.version>
 
 
         <!-- Legend -->
-        <legend.pure.version>1.33.0</legend.pure.version>
-        <legend.shared.version>0.15.0</legend.shared.version>
+        <legend.pure.version>1.31.1-SNAPSHOT</legend.pure.version>
+        <legend.shared.version>0.12.0</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -1455,6 +1456,11 @@
                 <groupId>net.snowflake</groupId>
                 <artifactId>snowflake-jdbc</artifactId>
                 <version>${snowflake.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazon.redshift</groupId>
+                <artifactId>redshift-jdbc42</artifactId>
+                <version>${redshift.version}</version>
             </dependency>
             <!-- Database -->
 

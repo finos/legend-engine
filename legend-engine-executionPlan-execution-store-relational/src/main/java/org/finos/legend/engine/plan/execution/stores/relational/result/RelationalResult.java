@@ -88,12 +88,12 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     public ResultSetMetaData resultSetMetaData;
     public String executedSQl;
     public int columnCount;
-
     private final String databaseType;
     private final String databaseTimeZone;
 
     public Span topSpan;
 
+    private final boolean statusEIB;
     private final SQLResultDBColumnsMetaData resultDBColumnsMetaData;
 
     public MutableList<SetImplTransformers> setTransformers = Lists.mutable.empty();
@@ -121,6 +121,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             this.resultSetMetaData = resultSet.getMetaData();
             this.columnCount = this.resultSetMetaData.getColumnCount();
             this.resultColumns = sqlResultColumns;
+            this.statusEIB = true;
             this.resultDBColumnsMetaData = new SQLResultDBColumnsMetaData(this.resultColumns, this.resultSetMetaData);
 
             this.sqlColumns = Lists.mutable.ofInitialCapacity(this.columnCount);
@@ -160,13 +161,19 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             this.statement = connection.createStatement();
             this.resultSet = sqlExecutionResult.getResultSet();
             this.executedSQl = sqlExecutionResult.getExecutedSql();
+            this.statusEIB = sqlExecutionResult.getstatusEIB();
             this.resultSetMetaData = sqlExecutionResult.getResultSetMetaData();
             this.columnCount = sqlExecutionResult.getColumnCount();
             this.sqlColumns = sqlExecutionResult.getColumnNames();
             this.columnListForSerializer = this.sqlColumns;
             this.resultColumns = sqlExecutionResult.getSqlResultColumns();
             this.resultDBColumnsMetaData = new SQLResultDBColumnsMetaData(this.resultColumns, this.resultSetMetaData);
-            this.buildTransformersAndBuilder(node, sqlExecutionResult.getSQLExecutionNode().connection);
+            if (sqlExecutionResult.getstatusEIB() == true) {
+               //Skipping building tansformers from result since this is ExecuteInDatabase EID function
+            }
+            else {
+                this.buildTransformersAndBuilder(node, sqlExecutionResult.getSQLExecutionNode().connection);
+            }
         }
         catch (Throwable e)
         {

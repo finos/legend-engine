@@ -22,14 +22,25 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.list.primitive.LongList;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.UserPasswordAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.RedshiftDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.RedshiftDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.RelationalConnectionManager;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.server.Server;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
+import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.pure.configuration.PureRepositoriesExternal;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
@@ -53,17 +64,25 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.IdBuild
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+import org.junit.Assert;
 import org.junit.Ignore;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.Properties;
 
 public class PureTestHelper
 {
     private static final ThreadLocal<ServersState> state = new ThreadLocal<>();
+
+    private static RelationalDatabaseConnection redshifttest;
 
     public static boolean initClientVersionIfNotAlreadySet(String defaultClientVersion)
     {
@@ -85,8 +104,7 @@ public class PureTestHelper
     }
 
     @Ignore
-    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder)
-    {
+    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder){
         boolean shouldCleanUp = init.value();
         TestSuite suite = suiteBuilder.value();
         if (shouldCleanUp)
@@ -126,6 +144,51 @@ public class PureTestHelper
         int relationalDBPort = 1100 + (int) (Math.random() * 30000);
 
         // Relational
+        RelationalConnectionManager redshiftManager = new RelationalConnectionManager(22, Lists.mutable.empty(), ConcurrentHashMap.newMap(), new RelationalExecutorInfo());
+        String redshiftConnectionStr =
+                "{\n" +
+                        "  \"_type\": \"RelationalDatabaseConnection\",\n" +
+                        "  \"type\": \"Redshift\",\n" +
+                        "  \"authenticationStrategy\" : {\n" +
+                        "    \"_type\" : \"userPassword\",\n" +
+                        "    \"userName\" : \"awsuser\",\n" +
+                        "    \"passwordVaultReference\" : \"" +  System.getenv("redshiftPassword") + "\"\n" +
+                        "  },\n" +
+                        "  \"datasourceSpecification\" : {\n" +
+                        "    \"_type\" : \"redshift\",\n" +
+                        "    \"databaseName\" : \"dev\",\n" +
+                        "    \"endpoint\" : \"lab.cqzp3tj1qpzo.us-east-2.redshift.amazonaws.com\",\n" +
+                        "    \"port\" : \"5439\"\n" +
+                        "  }\n" +
+                        "}";
+
+        RelationalDatabaseConnection connectionSpec = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(redshiftConnectionStr, RelationalDatabaseConnection.class);
+        redshifttest = connectionSpec;
+        try(Connection connection = redshiftManager.getDataSourceSpecification(connectionSpec).getConnectionUsingSubject(null)) {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("Drop table if exists PersonNameParameterTest;");
+                statement.execute("Create Table PersonNameParameterTest(id INT, lastNameFirst VARCHAR(200), title VARCHAR(200));");
+                statement.execute("insert into PersonNameParameterTest (id, lastNameFirst, title) values (1, \'true\', \'eee\');");
+                statement.execute("Drop table if exists dataTable;");
+                statement.execute("Create Table dataTable( int1 INTEGER PRIMARY KEY,string1 VARCHAR(200),string2 VARCHAR(200),string3 VARCHAR(200),string2float  VARCHAR(200),string2Decimal VARCHAR(200),string2Integer  VARCHAR(200),string2date  VARCHAR(200),stringDateFormat VARCHAR(12),stringDateTimeFormat VARCHAR(32),dateTime TIMESTAMP,float1 Float,stringUserDefinedDateFormat VARCHAR(7),stringToInt VARCHAR(5),alphaNumericString VARCHAR(15));");
+                statement.execute("insert into dataTable (int1, string1, string2, string3, dateTime, float1,string2float,string2Decimal,string2date,stringDateFormat,stringDateTimeFormat,stringUserDefinedDateFormat, stringToInt, alphaNumericString ) values (1, \'Joe\', \' Bloggs \', 10, \'2003-07-19 05:00:00\', 1.1,\'123.456\',\'123.450021\', \'2016-06-23 00:00:00.123\',\'2016-06-23\',\'2016-06-23 13:00:00.123\', \'NOV1995\', \'33\', \'loremipsum33\' )");
+                statement.execute("insert into dataTable (int1, string1, string2, string3, dateTime, float1,string2float,string2Decimal,string2date,stringDateFormat,stringDateTimeFormat,stringUserDefinedDateFormat, stringToInt, alphaNumericString ) values (2, \'Mrs\', \'Smith\', 11, \'2003-07-20 02:00:00\', 1.8,\'100.001\', \'0100.009\',\'2016-06-23 00:00:00.345\',\'2016-02-23\',\'2016-02-23 23:00:00.1345\', \'NOV1995\', \'42\', \'lorem42ipsum\')");
+                statement.execute("Drop table if exists tradeTable;");
+                statement.execute("Create Table tradeTable(id INT, prodid INT, accountId INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP);");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (1, 1, 1, 25, \'2014-12-01\', \'2014-12-02 21:00:00\');");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (2, 1, 2, 320, \'2014-12-01\',\'2014-12-02 21:00:00\');");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (3, 2, 1, 11, \'2014-12-01\', \'2014-12-02 21:00:00\');");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (4, 2, 2, 23, \'2014-12-02\', \'2014-12-03 21:00:00\');");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (5, 2, 1, 32, \'2014-12-02\', \'2014-12-03 21:00:00\');");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (6, 3, 1, 27, \'2014-12-03\', \'2014-12-04 21:00:00\');");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (7, 3, 1, 44, \'2014-12-03\', \'2014-12-04 15:22:23.123456789\');");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (8, 3, 2, 22, \'2014-12-04\', \'2014-12-05 21:00:00\');");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (9, 3, 2, 45, \'2014-12-04\', \'2014-12-05 21:00:00\');");
+                statement.execute("insert into tradeTable (id, prodid, accountId, quantity, tradeDate) values (10, 3, 2, 38, \'2014-12-04\');");
+                System.out.println("Setup finished");
+            }
+        }
+
         org.h2.tools.Server h2Server = AlloyH2Server.startServer(relationalDBPort);
         System.out.println("H2 database started on port:" + relationalDBPort);
 
@@ -153,7 +216,8 @@ public class PureTestHelper
         System.setProperty("legend.test.server.port", String.valueOf(engineServerPort));
         System.out.println("Pure client configured to reach engine server");
 
-        return new ServersState(server, metadataServer, h2Server);
+        return new ServersState(null, null , null);
+//        return new ServersState(server, metadataServer, h2Server);
     }
 
     private static boolean hasTestStereotypeWithValue(CoreInstance node, String value, ProcessorSupport processorSupport)
@@ -405,7 +469,6 @@ public class PureTestHelper
             // See https://github.com/opentracing/opentracing-java/issues/364
             GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
             String testName = PackageableElement.getUserPathForPackageableElement(this.coreInstance);
-            System.out.print("EXECUTING " + testName + " ... ");
             long start = System.nanoTime();
             try
             {
@@ -414,7 +477,7 @@ public class PureTestHelper
             }
 	    catch(InvocationTargetException e)
             {
-                System.out.format("ERROR (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
+                System.out.format("ERROR qwerty (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
                 throw e.getTargetException();
             }
         }

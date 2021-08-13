@@ -47,6 +47,7 @@ public class SQLExecutionResult extends Result
 
     private final org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode SQLExecutionNode;
     private final String databaseType;
+    private final boolean statusEIB;
     private final String databaseTimeZone;
     private final Calendar calendar;
     private final List<String> temporaryTables;
@@ -85,6 +86,7 @@ public class SQLExecutionResult extends Result
             String sql = ((RelationalExecutionActivity) activities.get(activities.size() - 1)).sql;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.resultSet = this.statement.executeQuery(sql);
+            statusEIB = false;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double)System.currentTimeMillis() - start).toString());
             this.executedSql = sql;
 
@@ -130,6 +132,11 @@ public class SQLExecutionResult extends Result
     public String getDatabaseType()
     {
         return this.databaseType;
+    }
+
+    public boolean getstatusEIB()
+    {
+        return this.statusEIB;
     }
 
     public String getDatabaseTimeZone()

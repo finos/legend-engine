@@ -59,6 +59,13 @@ public class PlanGenerator
         return transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions, transformers);
     }
 
+    public static SingleExecutionPlan generateExecutionPlanWithTraceEID(String eidString, LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, Iterable<? extends CommonProfile> profiles, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
+    {
+        Root_meta_pure_executionPlan_ExecutionPlan plan = generateExecutionPlanAsPureEID(eidString, l, mapping, pureRuntime, context, pureModel, platform, null, extensions);
+
+        return transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions, transformers);
+    }
+
     public static SingleExecutionPlan transformExecutionPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, String clientVersion, Iterable<? extends CommonProfile> profiles, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Serialize plan to JSON").startActive(true))
@@ -70,12 +77,37 @@ public class PlanGenerator
         }
     }
 
+    public static Root_meta_pure_executionPlan_ExecutionPlan generateExecutionPlanAsPureEID(String eidString, LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
+    {
+        try (Scope scope = GlobalTracer.get().buildSpan("Generate Plan").startActive(true))
+        {
+            Root_meta_pure_executionPlan_ExecutionPlan plan;
+            if (mapping == null)
+            {
+                plan = context == null ?
+                        core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__RouterExtension_MANY__ExecutionPlan_1_(l, extensions, pureModel.getExecutionSupport())
+                        : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__ExecutionContext_1__RouterExtension_MANY__ExecutionPlan_1_(l, context, extensions, pureModel.getExecutionSupport());
+            }
+            else
+            {
+                plan = context == null ?
+                        core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, pureModel.getExecutionSupport())
+                        : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, pureModel.getExecutionSupport());
+            }
+            if (platform != null)
+            {
+                plan = platform.bindPlan(plan, planId, pureModel, extensions);
+            }
+            scope.span().log(String.valueOf(LoggingEventType.PLAN_GENERATED));
+            return plan;
+        }
+    }
+
     public static Root_meta_pure_executionPlan_ExecutionPlan generateExecutionPlanAsPure(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Generate Plan").startActive(true))
         {
             Root_meta_pure_executionPlan_ExecutionPlan plan;
-
             if (mapping == null)
             {
                 plan = context == null ?

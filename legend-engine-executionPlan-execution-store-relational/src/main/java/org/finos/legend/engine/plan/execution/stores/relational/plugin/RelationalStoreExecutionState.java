@@ -50,9 +50,15 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     }
 
     @Override
-    public ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState) {
+        String eidString = null;
+        return new RelationalExecutionNodeExecutor(eidString, executionState, profiles);
+    }
+
+    @Override
+    public ExecutionNodeVisitor<Result> getVisitor(String eidString, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        return new RelationalExecutionNodeExecutor(executionState, profiles);
+        return new RelationalExecutionNodeExecutor(eidString, executionState, profiles);
     }
 
     @Override
