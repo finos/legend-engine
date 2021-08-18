@@ -95,7 +95,7 @@ public class QueryStoreManager
         List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), QueryStoreManager::documentToQuery).toList();
         if (matchingQueries.size() > 1)
         {
-            throw new IllegalStateException("Found multiple query with ID '" + queryId + "'");
+            throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");
         }
         else if (matchingQueries.size() == 0)
         {
@@ -127,7 +127,7 @@ public class QueryStoreManager
         }
         if (matchingQueries.size() > 1)
         {
-            throw new IllegalStateException("Found multiple query with ID '" + queryId + "'");
+            throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");
         }
         else if (matchingQueries.size() == 0)
         {
@@ -151,7 +151,7 @@ public class QueryStoreManager
         List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), QueryStoreManager::documentToQuery).toList();
         if (matchingQueries.size() > 1)
         {
-            throw new IllegalStateException("Found multiple query with ID '" + queryId + "'");
+            throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");
         }
         else if (matchingQueries.size() == 0)
         {
