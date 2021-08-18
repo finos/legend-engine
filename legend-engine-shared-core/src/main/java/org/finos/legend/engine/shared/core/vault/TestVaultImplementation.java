@@ -12,18 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.application.query.model;
+package org.finos.legend.engine.shared.core.vault;
 
-public class Query
+import java.util.HashMap;
+import java.util.Map;
+
+public class TestVaultImplementation implements VaultImplementation
 {
-    public String id;
-    public String name;
-    public String groupId;
-    public String artifactId;
-    public String versionId;
-    public String mapping;
-    public String runtime;
-    public String content;
-    // We make it clear that we only allow a single owner
-    public String owner;
+    Map<String, String> values = new HashMap<>();
+
+    @Override
+    public String getValue(String key)
+    {
+        return this.values.get(key);
+    }
+
+    @Override
+    public boolean hasValue(String key)
+    {
+        return this.values.containsKey(key);
+    }
+
+    public void setValue(String key, String value)
+    {
+        this.values.put(key, value);
+    }
 }

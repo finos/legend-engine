@@ -127,6 +127,7 @@
         <jackson.version>2.10.5</jackson.version>
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
         <mongodb.version>3.12.8</mongodb.version>
+        <test.mongodb.version>1.38.0</test.mongodb.version>
         <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
         <log4j.version>1.2.17</log4j.version>
         <slf4j.version>1.7.25</slf4j.version>
@@ -1311,6 +1312,21 @@
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
                 <version>${mongodb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.bwaldvogel</groupId>
+                <artifactId>mongo-java-server</artifactId>
+                <version>${test.mongodb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.bwaldvogel</groupId>
+                <artifactId>mongo-java-server-core</artifactId>
+                <version>${test.mongodb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.bwaldvogel</groupId>
+                <artifactId>mongo-java-server-memory-backend</artifactId>
+                <version>${test.mongodb.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
