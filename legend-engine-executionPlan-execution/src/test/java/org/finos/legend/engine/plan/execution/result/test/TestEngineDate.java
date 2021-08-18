@@ -67,6 +67,17 @@ public class TestEngineDate
     }
 
     @Test
+    public void testFromZonedDateTimeString()
+    {
+        assertLegendDate("2020-07-14 15:04:01", PureDate.newPureDate(2020, 7, 14, 15, 4, 1), EngineDate.fromDateTimeString("2020-07-14T12:04:01-0300"));
+        assertLegendDate("2020-07-14 09:04:01.123", PureDate.newPureDate(2020, 7, 14, 9, 4, 1, "123000000"), EngineDate
+                .fromDateTimeString("2020-07-14T12:04:01.123+0300"));
+        assertDoesNotParse("2020-12-12T14:15:16_otherstuff", "DateTime", EngineDate::fromDateTimeString);
+        assertDoesNotParse("2020-12-12T14:15:16*0300", "DateTime", EngineDate::fromDateTimeString);
+        assertDoesNotParse("2020-12-12T14:15:16+-0300", "DateTime", EngineDate::fromDateTimeString);
+    }
+
+    @Test
     public void testFromLocalDate()
     {
         assertLegendDate("2020-07-14", PureDate.newPureDate(2020, 7, 14), EngineDate.fromLocalDate(LocalDate.of(2020, 7, 14)));

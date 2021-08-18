@@ -23,6 +23,8 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,8 +36,14 @@ public class PlanDateParameterDateFormat extends TemplateDateFormat
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
-    private static final RichIterable<PlanDateParameterFormatter> planStrictDateFormatters = Lists.immutable.with(new PlanDateParameterFormatter("yyyy-MM-dd", false, false, false));
-    private static final RichIterable<PlanDateParameterFormatter> planDateTimeFormatters = Lists.immutable.with(new PlanDateParameterFormatter("yyyy-MM-dd'T'HH:mm:ss", true, true, false), new PlanDateParameterFormatter("yyyy-MM-dd'T'HH:mm:ss.SSS", true, true, true), new PlanDateParameterFormatter("yyyy-MM-dd HH:mm:ss.SSS", true, true, true), new PlanDateParameterFormatter("yyyy-MM-dd HH:mm:ss", true, true, false));
+    private static final RichIterable<PlanDateParameterFormatter> planStrictDateFormatters = Lists.immutable.with(new PlanDateParameterFormatter("yyyy-MM-dd", false, false, false, false));
+    private static final RichIterable<PlanDateParameterFormatter> planDateTimeFormatters = Lists.immutable.with(
+            new PlanDateParameterFormatter("yyyy-MM-dd'T'HH:mm:ss", true, false, true, false),
+            new PlanDateParameterFormatter("yyyy-MM-dd'T'HH:mm:ss.SSS", true, false, true, true),
+            new PlanDateParameterFormatter("yyyy-MM-dd HH:mm:ss.SSS", true, false, true, true),
+            new PlanDateParameterFormatter("yyyy-MM-dd HH:mm:ss", true, false, true, false),
+            new PlanDateParameterFormatter("yyyy-MM-dd'T'HH:mm:ss.SSSZ", true, true, true, true),
+            new PlanDateParameterFormatter("yyyy-MM-dd'T'HH:mm:ssZ", true, true, true, false));
     private static final RichIterable<PlanDateParameterFormatter> planDateFormatters = Lists.mutable.withAll(planStrictDateFormatters).withAll(planDateTimeFormatters);
 
     private static final String dateRegex = "\\[(\\S+)\\]\\s(\\S+([\\sT]\\S+)?)";
@@ -46,13 +54,15 @@ public class PlanDateParameterDateFormat extends TemplateDateFormat
     {
         DateTimeFormatter dateFormatter;
         public boolean isDateTime;
+        private boolean hasTimeOffset;
         boolean performTzConversion;
         public boolean hasSubSecond;
         private final String datePattern;
 
-        PlanDateParameterFormatter(String datePattern, boolean isDateTime, boolean performTzConversion, boolean hasSubSecond)
+        PlanDateParameterFormatter(String datePattern, boolean isDateTime, boolean hasTimeOffset, boolean performTzConversion, boolean hasSubSecond)
         {
             this.isDateTime = isDateTime;
+            this.hasTimeOffset = hasTimeOffset;
             this.dateFormatter = DateTimeFormatter.ofPattern(datePattern);
             this.performTzConversion = performTzConversion;
             this.hasSubSecond = hasSubSecond;
@@ -62,7 +72,10 @@ public class PlanDateParameterDateFormat extends TemplateDateFormat
         public LocalDateTime parse(String date) throws DateTimeParseException
         {
             LocalDateTime localDateTime;
-            if (this.isDateTime)
+            if (this.hasTimeOffset) {
+                localDateTime = OffsetDateTime.parse(date, this.dateFormatter).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+            }
+            else if (this.isDateTime)
             {
                 localDateTime = LocalDateTime.parse(date, this.dateFormatter);
             }
