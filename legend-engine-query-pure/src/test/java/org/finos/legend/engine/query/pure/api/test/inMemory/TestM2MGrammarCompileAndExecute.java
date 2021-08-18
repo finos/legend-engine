@@ -110,6 +110,44 @@ public class TestM2MGrammarCompileAndExecute
     }
 
     @Test
+    public void testM2MBigDecimalValue() throws IOException {
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel("" +
+                "Class test::A\n" +
+                "{\n" +
+                "   d: Decimal[1];\n" +
+                "}" +
+                "\n" +
+                "Class test::S_A\n" +
+                "{\n" +
+                "   d: Decimal[1];\n" +
+                "}" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::decimalMapping\n" +
+                "(\n" +
+                "   *test::A : Pure\n" +
+                "            {\n" +
+                "               ~src test::S_A\n" +
+                "               d : $src.d\n" +
+                "            }\n" +
+                ")\n"
+        );
+
+        RootGraphFetchTree fetchTree = rootGFT("test::A", propertyGFT("d"));
+        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::A")), fetchTree), fetchTree));
+
+        ExecuteInput input = new ExecuteInput();
+        input.clientVersion = "vX_X_X";
+        input.model = contextData;
+        input.mapping = "test::decimalMapping";
+        input.function = lambda;
+        input.runtime = runtimeValue(jsonModelConnection("test::S_A", "{\"d\": 999999999999999999.9333339999}"));
+        input.context = context();
+        String json = responseAsString(runTest(input));
+        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"d\":999999999999999999.9333339999}}", json);
+    }
+
+    @Test
     public void testM2MGraphWithAssociations()
     {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel("" +
