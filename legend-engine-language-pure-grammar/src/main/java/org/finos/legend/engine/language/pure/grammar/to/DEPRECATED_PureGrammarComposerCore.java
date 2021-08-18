@@ -107,11 +107,11 @@ import java.util.stream.Collectors;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public final class DEPRECATED_PureGrammarComposerCore implements
-    PackageableElementVisitor<String>,
-    ValueSpecificationVisitor<String>,
-    ClassMappingVisitor<String>,
-    PropertyMappingVisitor<String>,
-    ConnectionVisitor<String>
+        PackageableElementVisitor<String>,
+        ValueSpecificationVisitor<String>,
+        ClassMappingVisitor<String>,
+        PropertyMappingVisitor<String>,
+        ConnectionVisitor<String>
 {
     private final String indentationString;
     private final PureGrammarComposerContext.RenderStyle renderStyle;
@@ -140,13 +140,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
     }
 
-    public int getBaseTabLevel()
-    {
+    public int getBaseTabLevel() {
         return baseTabLevel;
     }
 
-    public void setBaseTabLevel(int baseTabLevel)
-    {
+    public void setBaseTabLevel(int baseTabLevel) {
         this.baseTabLevel = baseTabLevel;
     }
 
@@ -248,7 +246,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             String space = PureGrammarComposerContext.RenderStyle.PRETTY_HTML.equals(this.renderStyle) ? "<span class='pureGrammar-space'></span>" : " ";
             this.indentationString = PureGrammarComposerContext.RenderStyle.PRETTY.equals(this.renderStyle) || PureGrammarComposerContext.RenderStyle.PRETTY_HTML.equals(this.renderStyle) || indentInStandardRenderingMode
-                ? this.indentationString + StringUtils.repeat(space, count) : this.indentationString;
+                    ? this.indentationString + StringUtils.repeat(space, count) : this.indentationString;
             return this;
         }
 
@@ -321,9 +319,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Enumeration _enum)
     {
         return "Enum " + HelperDomainGrammarComposer.renderAnnotations(_enum.stereotypes, _enum.taggedValues) + PureGrammarComposerUtility.convertPath(_enum.getPath()) +
-            "\n{\n" +
-            LazyIterate.collect(_enum.values, enumValue -> getTabString() + HelperDomainGrammarComposer.renderEnumValue(enumValue)).makeString(",\n") + (_enum.values.isEmpty() ? "" : "\n") +
-            "}";
+                "\n{\n" +
+                LazyIterate.collect(_enum.values, enumValue -> getTabString() + HelperDomainGrammarComposer.renderEnumValue(enumValue)).makeString(",\n") + (_enum.values.isEmpty() ? "" : "\n") +
+                "}";
     }
 
     @Override
@@ -376,21 +374,21 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Association association)
     {
         return "Association " + HelperDomainGrammarComposer.renderAnnotations(association.stereotypes, association.taggedValues) + PureGrammarComposerUtility.convertPath(association.getPath()) + "\n" +
-            "{\n" +
-            LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
-            LazyIterate.collect(association.qualifiedProperties, p -> getTabString() + HelperDomainGrammarComposer.renderDerivedProperty(p, this) + ";").makeString("\n") + (association.qualifiedProperties.isEmpty() ? "" : "\n") +
-            "}";
+                "{\n" +
+                LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
+                LazyIterate.collect(association.qualifiedProperties, p -> getTabString() + HelperDomainGrammarComposer.renderDerivedProperty(p, this) + ";").makeString("\n") + (association.qualifiedProperties.isEmpty() ? "" : "\n") +
+                "}";
     }
 
     @Override
     public String visit(Function function)
     {
         return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + PureGrammarComposerUtility.convertPath(HelperValueSpecificationGrammarComposer.getFunctionName(function))
-            + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
-            + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
-            "{\n" +
-            LazyIterate.collect(function.body, b -> "   " + b.accept(this)).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
-            "\n}";
+                + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
+                + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
+                "{\n" +
+                LazyIterate.collect(function.body, b -> "   " + b.accept(this)).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
+                "\n}";
     }
 
 
@@ -414,9 +412,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.append(isMappingContentEmpty ? "" : "\n");
             isMappingContentEmpty = false;
             builder.append(LazyIterate.collect(mapping.classMappings, classMapping -> getTabString() + (classMapping.root ? "*" : "")
-                + classMapping._class + HelperMappingGrammarComposer.renderClassMappingId(classMapping)
-                + (classMapping.extendsClassMappingId != null ? " extends " + HelperMappingGrammarComposer.renderMappingId(classMapping.extendsClassMappingId) : "")
-                + classMapping.accept(this)).makeString("\n"));
+                    + classMapping._class + HelperMappingGrammarComposer.renderClassMappingId(classMapping)
+                    + (classMapping.extendsClassMappingId != null ? " extends " + HelperMappingGrammarComposer.renderMappingId(classMapping.extendsClassMappingId) : "")
+                    + classMapping.accept(this)).makeString("\n"));
             builder.append("\n");
         }
         if (!mapping.associationMappings.isEmpty())
@@ -460,9 +458,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(OperationClassMapping operationClassMapping)
     {
         return ": " + "Operation\n" +
-            getTabString() + "{\n" +
-            getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
-            getTabString() + "}";
+                getTabString() + "{\n" +
+                getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
+                getTabString() + "}";
     }
 
     @Override
@@ -476,10 +474,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             pureFilter = getTabString(2) + "~filter " + filterString + "\n";
         }
         return ": " + "Pure\n" +
-            getTabString(getBaseTabLevel()) + "{\n" +
-            (pureInstanceClassMapping.srcClass == null ? "" : getTabString(getBaseTabLevel() + 1) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
-            LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(this)).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
-            getTabString(getBaseTabLevel()) + "}";
+                getTabString(getBaseTabLevel()) + "{\n" +
+                (pureInstanceClassMapping.srcClass == null ? "" : getTabString(getBaseTabLevel() + 1) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
+                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(this)).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
+                getTabString(getBaseTabLevel()) + "}";
     }
 
     @Override
@@ -488,11 +486,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         purePropertyMapping.transform.parameters = Collections.emptyList();
         String lambdaString = purePropertyMapping.transform.accept(this).replaceFirst("\\|", "");
         return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
-            (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
-            (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
-            (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
-            (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
-            ": " + lambdaString;
+                (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
+                (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
+                (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
+                (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
+                ": " + lambdaString;
     }
 
     @Override
@@ -505,19 +503,18 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(AggregationAwareClassMapping classMapping)
     {
         String mainMapping = "";
-        if (classMapping.mainSetImplementation != null)
-        {
+        if(classMapping.mainSetImplementation != null) {
             setBaseTabLevel(2);
             mainMapping = "~mainMapping" + classMapping.mainSetImplementation.accept(this);
             setBaseTabLevel(1);
         }
         return ": " + "AggregationAware " + "\n" +
-            getTabString() + "{\n" +
-            getTabString(2) + "Views" + ":" + " [\n" +
-            (classMapping.aggregateSetImplementations == null ? "" : LazyIterate.collect(classMapping.aggregateSetImplementations, implementation -> getTabString(3) + HelperMappingGrammarComposer.renderAggregateSetImplementationContainer(implementation, this)).makeString(",\n")) +
-            getTabString(2) + "],\n" +
-            getTabString(2) + mainMapping + "\n" +
-            getTabString() + "}";
+                getTabString() + "{\n" +
+                getTabString(2) + "Views" + ":" + " [\n" +
+                (classMapping.aggregateSetImplementations == null ? "" : LazyIterate.collect(classMapping.aggregateSetImplementations, implementation -> getTabString(3) + HelperMappingGrammarComposer.renderAggregateSetImplementationContainer(implementation, this)).makeString(",\n")) +
+                getTabString(2) + "],\n" +
+                getTabString(2) + mainMapping + "\n" +
+                getTabString() + "}";
     }
 
     @Override
@@ -533,8 +530,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(PackageableConnection packageableConnection)
     {
         return HelperConnectionGrammarComposer.getConnectionValueName(packageableConnection.connectionValue, this.toContext()) +
-            " " + PureGrammarComposerUtility.convertPath(packageableConnection.getPath()) + "\n" +
-            packageableConnection.connectionValue.accept(this);
+                " " + PureGrammarComposerUtility.convertPath(packageableConnection.getPath()) + "\n" +
+                packageableConnection.connectionValue.accept(this);
     }
 
     @Override
@@ -556,9 +553,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         int baseIndentation = 0;
         return this.indentationString + getTabString(baseIndentation) + "{\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "class: " + jsonModelConnection._class + ";\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "url: " + convertString(jsonModelConnection.url, true) + ";\n" +
-            this.indentationString + getTabString(baseIndentation) + "}";
+                this.indentationString + getTabString(baseIndentation + 1) + "class: " + jsonModelConnection._class + ";\n" +
+                this.indentationString + getTabString(baseIndentation + 1) + "url: " + convertString(jsonModelConnection.url, true) + ";\n" +
+                this.indentationString + getTabString(baseIndentation) + "}";
     }
 
     @Override
@@ -566,9 +563,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         int baseIndentation = 0;
         return this.indentationString + getTabString(baseIndentation) + "{\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "class: " + xmlModelConnection._class + ";\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "url: " + convertString(xmlModelConnection.url, true) + ";\n" +
-            this.indentationString + getTabString(baseIndentation) + "}";
+                this.indentationString + getTabString(baseIndentation + 1) + "class: " + xmlModelConnection._class + ";\n" +
+                this.indentationString + getTabString(baseIndentation + 1) + "url: " + convertString(xmlModelConnection.url, true) + ";\n" +
+                this.indentationString + getTabString(baseIndentation) + "}";
     }
 
     @Override
@@ -578,18 +575,16 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
-    public String visit(ModelChainConnection modelChainConnection)
-    {
+    public String visit(ModelChainConnection modelChainConnection) {
         int baseIndentation = 0;
         String mappingsValue = "";
-        if (modelChainConnection.mappings != null)
-        {
+        if (modelChainConnection.mappings != null) {
             mappingsValue = modelChainConnection.mappings.stream().map(m -> this.indentationString + getTabString(baseIndentation + 2) + m).collect(Collectors.joining(",\n")) + (modelChainConnection.mappings.isEmpty() ? "" : "\n");
         }
         String mappings = "[\n" + mappingsValue + this.indentationString + getTabString(baseIndentation + 1) + "]";
         return this.indentationString + getTabString(baseIndentation) + "{\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "mappings: " + mappings + ";\n" +
-            this.indentationString + getTabString(baseIndentation) + "}";
+                this.indentationString + getTabString(baseIndentation + 1) + "mappings: " + mappings + ";\n" +
+                this.indentationString + getTabString(baseIndentation) + "}";
     }
 
 
@@ -599,9 +594,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(PackageableRuntime packageableRuntime)
     {
         return "Runtime " + PureGrammarComposerUtility.convertPath(packageableRuntime.getPath()) + "\n" +
-            "{" +
-            HelperRuntimeGrammarComposer.renderRuntimeValue(packageableRuntime.runtimeValue, 1, false, this) +
-            "\n}";
+                "{" +
+                HelperRuntimeGrammarComposer.renderRuntimeValue(packageableRuntime.runtimeValue, 1, false, this) +
+                "\n}";
     }
 
 
@@ -641,10 +636,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Variable variable)
     {
         return (this.isRenderingHTML() ? "<span class='pureGrammar-var'>" : "") +
-            (this.isVariableInFunctionSignature ? "" : "$") +
-            PureGrammarComposerUtility.convertIdentifier(variable.name) +
-            (this.isRenderingHTML() ? "</span>" : "") +
-            (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
+                (this.isVariableInFunctionSignature ? "" : "$") +
+                PureGrammarComposerUtility.convertIdentifier(variable.name) +
+                (this.isRenderingHTML() ? "</span>" : "") +
+                (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
     }
 
     @Override
@@ -657,10 +652,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         boolean addWrapper = lambda.body.size() > 1 || lambda.parameters.size() > 1;
         boolean addCR = lambda.body.size() > 1;
         return (addWrapper ? "{" : "")
-            + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
-            + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
-            + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)))
-            + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
+                + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
+                + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
+                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)))
+                + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
     }
 
     @Override
@@ -670,8 +665,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             int index = path.startType.lastIndexOf("::");
             String type = index == -1 ?
-                "<span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertPath(path.startType) + "</span>" :
-                "<span class='pureGrammar-package'>" + PureGrammarComposerUtility.convertPath(path.startType.substring(0, index + 2)) + "</span><span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertIdentifier(path.startType.substring(index + 2)) + "</span>";
+                    "<span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertPath(path.startType) + "</span>" :
+                    "<span class='pureGrammar-package'>" + PureGrammarComposerUtility.convertPath(path.startType.substring(0, index + 2)) + "</span><span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertIdentifier(path.startType.substring(index + 2)) + "</span>";
             return "#/" + type + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, this)).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
         }
         return "#/" + PureGrammarComposerUtility.convertPath(path.startType) + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, this)).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
@@ -850,10 +845,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             subTreeString = rootGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
         }
         return "#{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-            DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-            subTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
-            DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
-            this.indentationString + "}#";
+                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
+                subTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
+                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
+                this.indentationString + "}#";
     }
 
     @Override
@@ -869,8 +864,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         if (propertyGraphFetchTree.subTrees != null && !propertyGraphFetchTree.subTrees.isEmpty())
         {
             subTreeString = "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-                propertyGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
-                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}";
+                    propertyGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
+                    DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}";
         }
 
         String parametersString = "";
@@ -898,9 +893,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(AppliedQualifiedProperty appliedQualifiedProperty)
     {
         return appliedQualifiedProperty.parameters.get(0).accept(this)
-            + "."
-            + (this.isRenderingHTML() ? "<span class=pureGrammar-property>" : "") + PureGrammarComposerUtility.convertIdentifier(appliedQualifiedProperty.qualifiedProperty) + (this.isRenderingHTML() ? "</span>" : "")
-            + (appliedQualifiedProperty.parameters.size() > 1 ? "(" + LazyIterate.collect(appliedQualifiedProperty.parameters.subList(1, appliedQualifiedProperty.parameters.size()), l -> l.accept(this)).makeString(", ") + ")" : "");
+                + "."
+                + (this.isRenderingHTML() ? "<span class=pureGrammar-property>" : "") + PureGrammarComposerUtility.convertIdentifier(appliedQualifiedProperty.qualifiedProperty) + (this.isRenderingHTML() ? "</span>" : "")
+                + (appliedQualifiedProperty.parameters.size() > 1 ? "(" + LazyIterate.collect(appliedQualifiedProperty.parameters.subList(1, appliedQualifiedProperty.parameters.size()), l -> l.accept(this)).makeString(", ") + ")" : "");
     }
 
     @Override
