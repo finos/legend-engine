@@ -41,8 +41,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -66,21 +66,19 @@ public class PureGrammarComposer
     public String renderPureModelContextData(PureModelContextData pureModelContextData)
     {
         List<PackageableElement> elements = pureModelContextData.getElements();
-        // NOTE: we use a linked hash set to ensure the order in the case section index is not present, we keep the order
-        // of element as we see them in the model context data
-        Set<PackageableElement> elementsToCompose = new LinkedHashSet<>(elements);
+        Set<PackageableElement> elementsToCompose = new HashSet<>(elements);
         MutableList<String> composedSections = Lists.mutable.empty();
         if (ListIterate.anySatisfy(elements, e -> e instanceof SectionIndex))
         {
-            Map<String, PackageableElement> elementByPath = new LinkedHashMap<>();
+            Map<String, PackageableElement> elementByPath = new HashMap<>();
             // NOTE: here we handle duplication, first element with the duplicated path wins
             elements.forEach(element -> elementByPath.putIfAbsent(element.getPath(), element));
             LazyIterate.selectInstancesOf(elements, SectionIndex.class).forEach(sectionIndex -> this.renderSectionIndex(sectionIndex, elementByPath, elementsToCompose, composedSections));
         }
 
-        for (Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult> composer : this.context.extraFreeSectionComposers)
+        for (Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult> composer : this.context.extraFreeSectionComposers)
         {
-            PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult result = composer.value(elementsToCompose, this.context, composedSections);
+            PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult result = composer.value(ListIterate.select(elements, elementsToCompose::contains), this.context, composedSections);
             if (result != null)
             {
                 composedSections.add(result.value + "\n");

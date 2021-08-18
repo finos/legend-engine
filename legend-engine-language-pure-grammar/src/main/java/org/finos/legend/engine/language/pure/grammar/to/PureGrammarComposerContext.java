@@ -55,7 +55,7 @@ public class PureGrammarComposerContext
     private final boolean isPropertyBracketExpressionModeEnabled;
     public final List<PureGrammarComposerExtension> extensions;
     public final List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> extraSectionComposers;
-    public final List<Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> extraFreeSectionComposers;
+    public final List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> extraFreeSectionComposers;
     public final List<Function2<ClassMapping, PureGrammarComposerContext, String>> extraClassMappingComposers;
     public final List<Function2<AssociationMapping, PureGrammarComposerContext, String>> extraAssociationMappingComposers;
     public final List<Function2<Connection, PureGrammarComposerContext, org.eclipse.collections.api.tuple.Pair<String, String>>> extraConnectionValueComposers;
