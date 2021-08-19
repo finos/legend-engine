@@ -1,3 +1,4 @@
+/*
 // Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,4 +64,4 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
         }
         return null;
     }
-}
+}*/

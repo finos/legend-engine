@@ -1,10 +1,34 @@
-Proposed Refactoring 
-===================
+Refactoring Goals 
+=================== 
+* Make it "easy" for developers to add new relational connectors to Legend.     
+  * Provide simple Java interfaces by which new relational connectors can be added. 
+  * Enable reuse of authentication code across multiple relational connectors.
+* Make it "easy/convenient" for programs to consume Legend jars.
+  * Allow programs to include dependencies on specific relational connectors (and not all the connectors)
 
-- Move all auth, database "specification" classes from store-relational and into store-relational-connection 
-- Move all auth "implementation" classes from store-relational and into store-relational-connection-auth-xxxxx
-- Move all database "implementation" classes from store-relational and into store-relational-connection-database-yyyy
-- Remove default "extension" classes (e.g AuthenticationStrategyTransformer) from store-relational-connection 
+Proposed High Level Refactoring 
+===================
+* store-relational-connection
+  * Remove all database, authentication specific impl classes from store-relational-connection
+  * Only keep the extension interfaces and other generic impl classes 
+* store-relational-connection-auth-XXXXX
+  * Code to implement an authentication scheme XXXX is pushed into a specific module store-relational-connection-auth-userpass
+  * These modules are discovered using a service loader 
+* store-relational-connection-datasource-YYYY
+  * Code to add support for database YYYY is pushed into a specific module e.g store-relational-connection-datasource-snowflake
+  * Each datasource module declares (Maven) dependencies on the auth modules that it supports
+* store-relational
+  * This module now just has the generic execution code like RelationalExecutionManager 
+  * This module is also an "assembly" module that declares (Maven) dependencies on the different datasource modules 
+  * TODO : Programs that use the Legend jars can explicitly exclude the top level datasource modules that they do not need
+  
+Open Questions 
+===================
+* Test Database Support 
+* OAuth Profiles 
+* Vault 
+    * Use of a vault to obtain secrets/key material does not distinguish an authentication type
+    * i.e 2 strategies which use the same authentication scheme (e.g user/password) but differ in where the password is fetched from (e.g properties file vs AWS Secrets Manager) are still the same auth type
 
 Module : store-relational 
 

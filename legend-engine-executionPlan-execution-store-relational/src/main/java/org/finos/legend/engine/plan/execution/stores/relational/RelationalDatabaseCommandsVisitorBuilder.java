@@ -44,8 +44,9 @@ public class RelationalDatabaseCommandsVisitorBuilder
 
     public static RelationalDatabaseCommandsVisitor<Boolean> getStreamResultToTempTableVisitor(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName, String databaseTimeZone)
     {
-        return (extension == null) ?
+/*        return (extension == null) ?
                 new StreamResultToTempTableVisitor(config, connection, result, tableName, databaseTimeZone) :
-                extension.getStreamResultToTempTableVisitor().value(config, connection, result, tableName, databaseTimeZone);
+                extension.getStreamResultToTempTableVisitor().value(config, connection, result, tableName, databaseTimeZone);*/
+        throw new UnsupportedOperationException("handle");
     }
 }

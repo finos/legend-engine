@@ -84,7 +84,7 @@ public class TestExecutionPlan
 
             AlloyH2Server.startServer(port);
 
-            conn = new RelationalStoreState(port).getRelationalExecutor().getConnectionManager().getTestDatabaseConnection();
+/*            conn = new RelationalStoreState(port).getRelationalExecutor().getConnectionManager().getTestDatabaseConnection();
 
             exec("drop table if exists employeeTable", conn);
             exec("create table employeeTable(id INT, name VARCHAR(200), firmId INT, doh TIMESTAMP, type VARCHAR(200), active INT , skills VARCHAR(200))", conn);
@@ -101,7 +101,7 @@ public class TestExecutionPlan
             exec("Drop table if exists PersonSet2;", conn);
             exec("Create Table PersonSet2 (ID INT, lastName_s2 VARCHAR(200), FirmID INT, ADDRESSID INT);", conn);
             exec("insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (1, 'Smith', 1, 1);", conn);
-            exec("insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (2, 'Johnson', 1, 1);", conn);
+            exec("insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (2, 'Johnson', 1, 1);", conn);*/
 
             System.out.println("finished inserts");
         }
@@ -380,15 +380,17 @@ public class TestExecutionPlan
                 "    ],\n" +
                 "    \"connection\": {\n" +
                 "       \"_type\": \"RelationalDatabaseConnection\",\n" +
-                "       \"type\": \"H2\",\n" +
+                "       \"type\": \"Snowflake\",\n" +
                 "       \"authenticationStrategy\" : {\n" +
-                "           \"_type\" : \"test\"\n" +
+                "           \"_type\" : \"snowflakePublic\"\n" +
                 "       },\n" +
                 "       \"datasourceSpecification\" : {\n" +
-                "           \"_type\" : \"static\",\n" +
-                "           \"databaseName\" : \"testDB\",\n" +
-                "           \"host\":\"127.0.0.1\",\n" +
-                "           \"port\" : \""+port+"\"\n" +
+                "           \"_type\" : \"snowflake\",\n" +
+                "           \"accountName\" : \"ki79827\",\n" +
+                "           \"region\":\"us-east-2\",\n" +
+                "           \"warehouseName\" : \"LEGENDRO_WH\",\n" +
+                "           \"databaseName\" : \"LEGEND_SNOWFLAKE_DEMO\",\n" +
+                "           \"cloudType\" : \"aws\"\n" +
                 "       }\n" +
                 "    }," +
                 "    \"_type\": \"relational\",\n" +

@@ -293,7 +293,8 @@ public class RelationalExecutor
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
         try
         {
-            databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalExecutionConfiguration, connectionManagerConnection, res, tempTableName, databaseTimeZone));
+            //databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalExecutionConfiguration, connectionManagerConnection, res, tempTableName, databaseTimeZone));
+            // TOOD : handle
         }
         catch (Exception e)
         {

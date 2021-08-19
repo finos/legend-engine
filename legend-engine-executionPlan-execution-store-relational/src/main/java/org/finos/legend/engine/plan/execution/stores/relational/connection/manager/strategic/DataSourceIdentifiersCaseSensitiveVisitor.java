@@ -10,8 +10,10 @@ public class DataSourceIdentifiersCaseSensitiveVisitor implements DatasourceSpec
     {
         if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
-            SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
-            return snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase == null || !snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase;
+            //SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
+            //return snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase == null || !snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase;
+            // TOOD : what to do here
+            return false;
         }
         return null;
     }
