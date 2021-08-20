@@ -33,7 +33,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.geometry.Rectangle;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -61,11 +60,11 @@ public class DiagramGrammarComposerExtension implements PureGrammarComposerExten
     }
 
     @Override
-    public List<Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
         return Lists.mutable.with((elements, context, composedSections) ->
         {
-            List<Diagram> composableElements = ListIterate.selectInstancesOf(FastList.newList(elements), Diagram.class);
+            List<Diagram> composableElements = ListIterate.selectInstancesOf(elements, Diagram.class);
             return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, DiagramGrammarComposerExtension::renderDiagram).makeString("###" + DiagramParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
@@ -116,22 +115,22 @@ public class DiagramGrammarComposerExtension implements PureGrammarComposerExten
     public static String renderPropertyView(PropertyView propertyView)
     {
         return getTabString() + "propertyView" + "\n" +
-                getTabString() + "{\n" +
-                getTabString(2) + "property: " + PureGrammarComposerUtility.convertPath(propertyView.property._class) + "." + PureGrammarComposerUtility.convertIdentifier(propertyView.property.property) + ";\n" +
-                getTabString(2) + "source: " + propertyView.sourceView + ";\n" +
-                getTabString(2) + "target: " + propertyView.targetView + ";\n" +
-                getTabString(2) + "points: " + renderLine(propertyView.line) + ";\n" +
-                getTabString() + "}\n";
+            getTabString() + "{\n" +
+            getTabString(2) + "property: " + PureGrammarComposerUtility.convertPath(propertyView.property._class) + "." + PureGrammarComposerUtility.convertIdentifier(propertyView.property.property) + ";\n" +
+            getTabString(2) + "source: " + propertyView.sourceView + ";\n" +
+            getTabString(2) + "target: " + propertyView.targetView + ";\n" +
+            getTabString(2) + "points: " + renderLine(propertyView.line) + ";\n" +
+            getTabString() + "}\n";
     }
 
     public static String renderGeneralizationView(GeneralizationView generalizationView)
     {
         return getTabString() + "generalizationView" + "\n" +
-                getTabString() + "{\n" +
-                getTabString(2) + "source: " + generalizationView.sourceView + ";\n" +
-                getTabString(2) + "target: " + generalizationView.targetView + ";\n" +
-                getTabString(2) + "points: " + renderLine(generalizationView.line) + ";\n" +
-                getTabString() + "}\n";
+            getTabString() + "{\n" +
+            getTabString(2) + "source: " + generalizationView.sourceView + ";\n" +
+            getTabString(2) + "target: " + generalizationView.targetView + ";\n" +
+            getTabString(2) + "points: " + renderLine(generalizationView.line) + ";\n" +
+            getTabString() + "}\n";
     }
 
     private static String renderLine(Line line)
