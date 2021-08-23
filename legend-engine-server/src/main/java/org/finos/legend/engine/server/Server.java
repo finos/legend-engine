@@ -28,8 +28,8 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
-import org.finos.legend.engine.application.query.api.QueryAPI;
-import org.finos.legend.engine.application.query.configuration.QueryAPIConfiguration;
+import org.finos.legend.engine.application.query.api.ApplicationQuery;
+import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
@@ -176,7 +176,7 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new ExecutePlan(planExecutor));
 
         // Query
-        environment.jersey().register(new QueryAPI(QueryAPIConfiguration.getMongoDBClient()));
+        environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getMongoClient()));
 
         // Global
         environment.jersey().register(new JsonInformationExceptionMapper());

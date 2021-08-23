@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.dsl.text.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.text.grammar.from.TextParserExtension;
@@ -27,7 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -55,11 +53,11 @@ public class TextGrammarComposerExtension implements PureGrammarComposerExtensio
     }
 
     @Override
-    public List<Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
         return Lists.mutable.with((elements, context, composedSections) ->
         {
-            List<Text> composableElements = ListIterate.selectInstancesOf(FastList.newList(elements), Text.class);
+            List<Text> composableElements = ListIterate.selectInstancesOf(elements, Text.class);
             return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, TextGrammarComposerExtension::renderText).makeString("###" + TextParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
@@ -67,9 +65,9 @@ public class TextGrammarComposerExtension implements PureGrammarComposerExtensio
     private static String renderText(Text text)
     {
         return "Text " + PureGrammarComposerUtility.convertPath(text.getPath()) + "\n" +
-                "{\n" +
-                getTabString() + "type: " + text.type + ";\n" +
-                getTabString() + "content: " + convertString(text.content, true) + ";\n" +
-                "}";
+            "{\n" +
+            getTabString() + "type: " + text.type + ";\n" +
+            getTabString() + "content: " + convertString(text.content, true) + ";\n" +
+            "}";
     }
 }

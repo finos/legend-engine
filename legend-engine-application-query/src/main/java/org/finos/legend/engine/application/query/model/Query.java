@@ -18,7 +18,6 @@ public class Query
 {
     public String id;
     public String name;
-    public String projectId;
     public String groupId;
     public String artifactId;
     public String versionId;
