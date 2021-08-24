@@ -14,11 +14,15 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
+import org.apache.commons.io.IOUtils;
 import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,13 +62,21 @@ public interface ServiceRunner
      */
     default String run(ServiceRunnerInput serviceRunnerInput)
     {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        this.run(serviceRunnerInput, outputStream);
-        return outputStream.toString();
+        try
+        {
+            PipedOutputStream outputStream = new PipedOutputStream();
+            this.run(serviceRunnerInput, outputStream);
+            PipedInputStream inputStream = new PipedInputStream(outputStream);
+            return IOUtils.toString(inputStream, Charset.defaultCharset());
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
-     * Run the service and write the serialized result to the passed output stream
+     * Run the service and write the serialized result to the passed output stream in an async fashion
      *
      * @param serviceRunnerInput service runner input wrapping parameters, connection input, identity, operational context etc.
      * @param outputStream output stream on which serialized result needs to be written

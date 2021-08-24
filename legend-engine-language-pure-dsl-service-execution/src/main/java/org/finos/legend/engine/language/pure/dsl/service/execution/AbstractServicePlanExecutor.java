@@ -176,8 +176,10 @@ public abstract class AbstractServicePlanExecutor
 
     protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
     {
-        Result result = this.executor.execute(this.plan, parameters);
-        serializeResultToStream(result, serviceRunnerInput.getSerializationFormat(), outputStream);
+        new Thread(() -> {
+            Result result = this.executor.execute(this.plan, parameters);
+            serializeResultToStream(result, serviceRunnerInput.getSerializationFormat(), outputStream);
+        }).start();
     }
 
     private void serializeResultToStream(Result result, SerializationFormat serializationFormat, OutputStream outputStream)

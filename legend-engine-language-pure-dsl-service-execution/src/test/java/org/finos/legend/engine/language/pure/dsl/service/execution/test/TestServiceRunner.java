@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution.test;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -34,8 +35,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -55,16 +59,17 @@ public class TestServiceRunner
     }
 
     @Test
-    public void testSimpleM2MServiceExecutionWithOutputStream()
+    public void testSimpleM2MServiceExecutionWithOutputStream() throws IOException
     {
         SimpleM2MServiceRunner simpleM2MServiceRunner = new SimpleM2MServiceRunner();
         ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
                 .newInstance()
                 .withArgs(Collections.singletonList("{\"fullName\": \"Peter Smith\"}"));
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PipedOutputStream outputStream = new PipedOutputStream();
         simpleM2MServiceRunner.run(serviceRunnerInput, outputStream);
-        String result = outputStream.toString();
+        PipedInputStream pipedInputStream = new PipedInputStream(outputStream);
+        String result = IOUtils.toString(pipedInputStream, Charset.defaultCharset());
         Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}}", result);
     }
 
