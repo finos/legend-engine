@@ -26,7 +26,7 @@
     <name>Legend Engine - Language Pure - DSL Service - Execution</name>
 
     <dependencies>
-        <!--        LEGEND ENGINE -->
+        <!-- LEGEND ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
@@ -41,7 +41,7 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-execution</artifactId>
         </dependency>
-        <!--        LEGEND ENGINE -->
+        <!-- LEGEND ENGINE -->
 
         <!-- COMMONS IO -->
         <dependency>
@@ -50,14 +50,19 @@
         </dependency>
         <!-- COMMONS IO -->
 
+        <!-- JACKSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- JACKSON -->
+
+        <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
 
         <!-- TEST -->
         <dependency>
