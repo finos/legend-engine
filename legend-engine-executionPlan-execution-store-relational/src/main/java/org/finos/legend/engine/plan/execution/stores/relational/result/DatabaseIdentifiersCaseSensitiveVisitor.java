@@ -12,6 +12,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 
+@Deprecated
 public class DatabaseIdentifiersCaseSensitiveVisitor implements ConnectionVisitor<Boolean>
 {
     @Override

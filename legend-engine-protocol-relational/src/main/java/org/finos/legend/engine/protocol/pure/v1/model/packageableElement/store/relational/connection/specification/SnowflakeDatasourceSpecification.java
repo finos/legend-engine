@@ -15,4 +15,15 @@ public class SnowflakeDatasourceSpecification extends DatasourceSpecification
     {
         return datasourceSpecificationVisitor.visit(this);
     }
+
+    @Override
+    public String getKey() {
+        return "Snowflake_" +
+                "account:" + accountName + "_" +
+                "region:" + region + "_" +
+                "warehouse:" + warehouseName + "_" +
+                "db:" + databaseName + "_" +
+                "cloudType:" + cloudType + "_" +
+                "quoteIdentifiers:" + quotedIdentifiersIgnoreCase;
+    }
 }

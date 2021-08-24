@@ -244,9 +244,7 @@ public class RelationalExecutor
 
     private void prepareForSQLExecution(ExecutionNode node, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        String sqlQuery;
-
-        sqlQuery = node instanceof RelationalExecutionNode ? ((RelationalExecutionNode) node).sqlQuery() : ((SQLExecutionNode) node).sqlQuery();
+        String sqlQuery = node instanceof RelationalExecutionNode ? ((RelationalExecutionNode) node).sqlQuery() : ((SQLExecutionNode) node).sqlQuery();
 
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
         for (Map.Entry<String, Result> var : executionState.getResults().entrySet())
@@ -293,8 +291,8 @@ public class RelationalExecutor
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
         try
         {
-            //databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalExecutionConfiguration, connectionManagerConnection, res, tempTableName, databaseTimeZone));
-            // TOOD : handle
+            // TODO : epsstan
+            databaseManager.relationalDatabaseSupport().streamResultToTempTable(relationalExecutionConfiguration.tempPath, connectionManagerConnection, res, tempTableName, databaseTimeZone);
         }
         catch (Exception e)
         {

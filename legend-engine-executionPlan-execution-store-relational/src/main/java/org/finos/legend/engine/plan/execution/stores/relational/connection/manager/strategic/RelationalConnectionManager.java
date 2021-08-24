@@ -14,95 +14,36 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
-import org.eclipse.collections.api.block.function.Function2;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
-import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
 import java.sql.Connection;
 import java.util.List;
-import java.util.Objects;
-import java.util.ServiceLoader;
-import java.util.function.Function;
 
 public class RelationalConnectionManager implements ConnectionManager {
     private final int testDbPort;
     private final ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey;
+    private final ImmutableMap<DatabaseType, RelationalConnectionPlugin> plugins;
 
-    private MutableList<AuthenticationStrategyVisitor<AuthenticationStrategyKey>> authenticationStrategyKeyVisitors;
-    private MutableList<AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy>> authenticationStrategyTrans;
-    private MutableList<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>> dataSourceKeys;
-    private MutableList<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>>> dataSourceTrans;
+    private RelationalExecutorInfo relationalExecutorInfo;
 
+    // TODO : epsstan : Do we need the oauth profiles here ??
     public RelationalConnectionManager(int testDbPort, List<OAuthProfile> oauthProfiles, ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey, RelationalExecutorInfo relationalExecutorInfo) {
-
-        MutableList<StrategicConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(StrategicConnectionExtension.class), Lists.mutable.empty());
-
+        this.relationalExecutorInfo = relationalExecutorInfo;
         this.testDbPort = testDbPort;
         this.dbSpecByKey = dbSpecByKey;
-
-        // TODO : epsstan : Refactor interface to remove null check
-        this.authenticationStrategyKeyVisitors =
-                Lists.mutable
-                        .withAll(extensions.collect(StrategicConnectionExtension::getExtraAuthenticationKeyGenerators))
-                        .reject(Objects::isNull);
-
-        this.authenticationStrategyTrans =
-                Lists.mutable
-                        .withAll(extensions.collect(extension -> extension.getExtraAuthenticationStrategyTransformGenerators(oauthProfiles)))
-                        .reject(Objects::isNull);
-
-        this.dataSourceKeys =
-                Lists.mutable
-                        .withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationKeyGenerators(testDbPort)))
-                        .reject(Objects::isNull);
-
-        this.dataSourceTrans =
-                Lists.mutable.withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationTransformerGenerators(oauthProfiles, relationalExecutorInfo)))
-                        .reject(Objects::isNull);
+        this.plugins = new RelationalConnectionPluginLoader().loadRelationalPlugins();
     }
-
-    private DataSourceSpecificationKey buildDataSourceKey(DatasourceSpecification datasourceSpecification, RelationalDatabaseConnection relationalDatabaseConnection) {
-        DataSourceSpecificationKey key = this.dataSourceKeys.collect(f -> datasourceSpecification.accept(f.apply(relationalDatabaseConnection))).detect(Objects::nonNull);
-        if (key == null) {
-            throw new RuntimeException(datasourceSpecification.getClass() + " is not supported!");
-        }
-        return key;
-    }
-
-    private AuthenticationStrategyKey buildAuthStrategyKey(AuthenticationStrategy authenticationStrategy) {
-        AuthenticationStrategyKey key = this.authenticationStrategyKeyVisitors.collect(f -> authenticationStrategy.accept(f)).detect(Objects::nonNull);
-        if (key == null) {
-            throw new RuntimeException(authenticationStrategy.getClass() + " is not supported!");
-        }
-        return key;
-    }
-
-    private DataSourceSpecification buildDataSourceTrans(DatasourceSpecification datasourceSpecification, RelationalDatabaseConnection relationalDatabaseConnection, ConnectionKey connectionKey) {
-        DataSourceSpecification key = this.dataSourceTrans.collect(f -> datasourceSpecification.accept(f.value(relationalDatabaseConnection, connectionKey))).detect(Objects::nonNull);
-        if (key == null) {
-            throw new RuntimeException(datasourceSpecification.getClass() + " is not supported!");
-        }
-        return key;
-    }
-
 
     public Connection getTestDatabaseConnection() {
         StaticDatasourceSpecification datasourceSpecification = new StaticDatasourceSpecification();
@@ -118,13 +59,11 @@ public class RelationalConnectionManager implements ConnectionManager {
         return this.getDataSourceSpecification(testConnection).getConnectionUsingSubject(null);
     }
 
+    // TODO : epsstan : Can we eliminate the concrete key classes ??
     public ConnectionKey generateKeyFromDatabaseConnection(DatabaseConnection connection) {
         if (connection instanceof RelationalDatabaseConnection) {
             RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
-            return new ConnectionKey(
-                    buildDataSourceKey(relationalDatabaseConnection.datasourceSpecification, relationalDatabaseConnection),
-                    buildAuthStrategyKey(relationalDatabaseConnection.authenticationStrategy)
-            );
+            return this.plugins.get(relationalDatabaseConnection.type).buildConnectionKey(relationalDatabaseConnection);
         }
         return null;
     }
@@ -133,7 +72,7 @@ public class RelationalConnectionManager implements ConnectionManager {
         if (connection instanceof RelationalDatabaseConnection) {
             RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
             ConnectionKey connectionKey = this.generateKeyFromDatabaseConnection(connection);
-            return dbSpecByKey.getIfAbsentPutWithKey(connectionKey, key -> buildDataSourceTrans(relationalDatabaseConnection.datasourceSpecification, relationalDatabaseConnection, connectionKey));
+            return dbSpecByKey.getIfAbsentPutWithKey(connectionKey, key -> this.plugins.get(relationalDatabaseConnection.type).buildDatasourceSpecification(relationalDatabaseConnection, relationalExecutorInfo));
         }
         return null;
     }

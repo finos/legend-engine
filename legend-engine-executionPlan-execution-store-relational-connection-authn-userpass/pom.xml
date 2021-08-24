@@ -134,28 +134,40 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-store-relational-connection-new</artifactId>
+            <artifactId>legend-engine-executionPlan-execution-store-relational-connection-interfaces</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- ECLIPSE COLLECTIONS -->
+        <!--
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
+        -->
+        <!--
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
         </dependency>
+        -->
         <!-- ECLIPSE COLLECTIONS -->
 
         <!-- DRIVERS -->
 
         <!-- Authentication -->
+        <!--
         <dependency>
             <groupId>org.pac4j</groupId>
             <artifactId>pac4j-core</artifactId>
         </dependency>
+        -->
         <!-- Authentication -->
 
         <!-- Test -->

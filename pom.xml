@@ -38,11 +38,7 @@
         <module>legend-engine-executionPlan-execution-store-relational</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection-api</module>
-        <module>legend-engine-executionPlan-execution-store-relational-connection-new</module>
-        <module>legend-engine-executionPlan-execution-store-relational-connection-authn-gcp</module>
-        <module>legend-engine-executionPlan-execution-store-relational-connection-authn-h2</module>
-        <module>legend-engine-executionPlan-execution-store-relational-connection-authn-interactive</module>
-        <module>legend-engine-executionPlan-execution-store-relational-connection-authn-kerberos</module>
+        <module>legend-engine-executionPlan-execution-store-relational-connection-interfaces</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection-authn-userpass</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection-datasource-snowflake</module>
         <module>legend-engine-external-shared</module>
@@ -442,27 +438,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-new</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-authn-gcp</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-authn-h2</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-authn-interactive</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-authn-kerberos</artifactId>
+                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-interfaces</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

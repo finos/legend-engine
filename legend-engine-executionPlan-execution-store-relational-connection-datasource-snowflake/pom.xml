@@ -144,7 +144,7 @@
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-store-relational-connection-new</artifactId>
+            <artifactId>legend-engine-executionPlan-execution-store-relational-connection-interfaces</artifactId>
         </dependency>
 
         <dependency>
@@ -158,12 +158,13 @@
             <artifactId>legend-engine-protocol-relational</artifactId>
         </dependency>
 
+        <!--
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
+        -->
 
-        <!--
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-execution</artifactId>
@@ -174,7 +175,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        -->
 
         <!-- ENGINE -->
 
@@ -183,12 +183,10 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-        <!--
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
         </dependency>
-        -->
 
         <!-- ECLIPSE COLLECTIONS -->
 

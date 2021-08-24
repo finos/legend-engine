@@ -18,58 +18,41 @@ import java.util.Objects;
 
 public class UserPasswordAuthenticationStrategyKey implements AuthenticationStrategyKey
 {
-    private final String privateKeyVaultReference;
-    private final String passPhraseVaultReference;
+    private final String passwordVaultReference;
     private final String publicUserName;
 
-    public UserPasswordAuthenticationStrategyKey(String privateKeyVaultReference, String passPhraseVaultReference, String publicUserName)
+    public UserPasswordAuthenticationStrategyKey(String publicUserName, String privateKeyVaultReference)
     {
-        this.privateKeyVaultReference = privateKeyVaultReference;
-        this.passPhraseVaultReference = passPhraseVaultReference;
         this.publicUserName = publicUserName;
+        this.passwordVaultReference = privateKeyVaultReference;
     }
 
-    public String getPrivateKeyVaultReference() {
-        return this.privateKeyVaultReference;
-    }
-
-    public String getPassPhraseVaultReference() {
-        return this.passPhraseVaultReference;
+    public String getPasswordVaultReference() {
+        return passwordVaultReference;
     }
 
     public String getPublicUserName() {
-        return this.publicUserName;
+        return publicUserName;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass())
-        {
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         UserPasswordAuthenticationStrategyKey that = (UserPasswordAuthenticationStrategyKey) o;
-        return Objects.equals(privateKeyVaultReference, that.privateKeyVaultReference) &&
-                Objects.equals(passPhraseVaultReference, that.passPhraseVaultReference) &&
-                Objects.equals(publicUserName, that.publicUserName);
+        return passwordVaultReference.equals(that.passwordVaultReference) && publicUserName.equals(that.publicUserName);
     }
 
     @Override
-    public int hashCode()
-    {
-        return Objects.hash(privateKeyVaultReference, passPhraseVaultReference, publicUserName);
+    public int hashCode() {
+        return Objects.hash(passwordVaultReference, publicUserName);
     }
 
     @Override
     public String shortId()
     {
         return "type:" + type() +
-                "_pk:" + privateKeyVaultReference +
-                "_pp:" + passPhraseVaultReference +
+                "_pk:" + passwordVaultReference +
                 "_username:" + publicUserName;
     }
 

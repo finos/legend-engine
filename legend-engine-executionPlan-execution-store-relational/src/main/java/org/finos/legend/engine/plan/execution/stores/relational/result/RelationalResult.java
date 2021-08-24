@@ -14,8 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
+import com.zaxxer.hikari.util.FastList;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.RelationalConnectionPlugin;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.RelationalConnectionPluginLoader;
 import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
@@ -54,6 +61,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -67,12 +75,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.function.Consumer;
 
-public class RelationalResult extends StreamingResult implements IRelationalResult
+public class
+RelationalResult extends StreamingResult implements IRelationalResult
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final ImmutableList<String> TEMPORAL_DATE_ALIASES = Lists.immutable.of("k_businessDate", "k_processingDate");
@@ -185,7 +195,11 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
     private void buildTransformersAndBuilder(ExecutionNode node, DatabaseConnection databaseConnection) throws SQLException
     {
-        boolean isDatabaseIdentifiersCaseSensitive = databaseConnection.accept(new DatabaseIdentifiersCaseSensitiveVisitor());
+        // TODO : epsstan : ask the data source about this ??
+        RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) databaseConnection;
+        RelationalConnectionPlugin relationalConnectionPlugin = new RelationalConnectionPluginLoader().getPlugin(relationalDatabaseConnection.databaseType);
+        DataSourceSpecification dataSourceSpecification = relationalConnectionPlugin.buildDatasourceSpecification(relationalDatabaseConnection, new RelationalExecutorInfo());
+        boolean isDatabaseIdentifiersCaseSensitive = dataSourceSpecification.isDatabaseIdentifiersCaseSensitive();
         if (ExecutionNodeTDSResultHelper.isResultTDS(node))
         {
             List<TransformerInput<Integer>> transformerInputs = Lists.mutable.empty();

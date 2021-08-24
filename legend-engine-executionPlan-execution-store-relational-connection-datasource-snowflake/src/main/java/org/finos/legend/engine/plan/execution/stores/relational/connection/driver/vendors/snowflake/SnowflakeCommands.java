@@ -1,6 +1,6 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake;
 
-//import org.finos.legend.engine.plan.execution.result.StreamingResult;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
@@ -23,17 +23,14 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
     }
 
     @Override
+    public void streamResultToTempTable(String tempPath, Connection connectionManagerConnection, StreamingResult res, String tempTableName, String databaseTimeZone) {
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    @Override
     public IngestionMethod getDefaultIngestionMethod()
     {
         throw new UnsupportedOperationException("not yet implemented");
     }
 
-/*    @Override
-    protected void buildTempTableFromResult(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName, IngestionMethod ingestionMethod, String databaseTimeZone) {
-        if (ingestionMethod == null)
-        {
-            ingestionMethod = this.getDefaultIngestionMethod();
-        }
-        throw new UnsupportedOperationException("not yet implemented");
-    }*/
 }

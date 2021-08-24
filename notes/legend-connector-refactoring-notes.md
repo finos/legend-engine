@@ -1,107 +1,115 @@
-Refactoring Goals 
-=================== 
-* Make it "easy" for developers to add new relational connectors to Legend.     
-  * Provide simple Java interfaces by which new relational connectors can be added. 
-  * Enable reuse of authentication code across multiple relational connectors.
-* Make it "easy/convenient" for programs to consume Legend jars.
-  * Allow programs to include dependencies on specific relational connectors (and not all the connectors)
+Refactoring
+==================
 
-Proposed High Level Refactoring 
-===================
-* store-relational-connection
-  * Remove all database, authentication specific impl classes from store-relational-connection
-  * Only keep the extension interfaces and other generic impl classes 
-* store-relational-connection-auth-XXXXX
-  * Code to implement an authentication scheme XXXX is pushed into a specific module store-relational-connection-auth-userpass
-  * These modules are discovered using a service loader 
-* store-relational-connection-datasource-YYYY
-  * Code to add support for database YYYY is pushed into a specific module e.g store-relational-connection-datasource-snowflake
-  * Each datasource module declares (Maven) dependencies on the auth modules that it supports
-* store-relational
-  * This module now just has the generic execution code like RelationalExecutionManager 
-  * This module is also an "assembly" module that declares (Maven) dependencies on the different datasource modules 
-  * TODO : Programs that use the Legend jars can explicitly exclude the top level datasource modules that they do not need
-  
-Open Questions 
-===================
-* Test Database Support 
-* OAuth Profiles 
-* Vault 
-    * Use of a vault to obtain secrets/key material does not distinguish an authentication type
-    * i.e 2 strategies which use the same authentication scheme (e.g user/password) but differ in where the password is fetched from (e.g properties file vs AWS Secrets Manager) are still the same auth type
+### New module for connection "interfaces"
 
-Module : store-relational 
+* legend-engine-executionPlan-execution-store-relational-connection-interfaces contains Java interfaces + classes that are not database specific.
+* legend-engine-executionPlan-execution-store-relational-connection will be deleted
 
-Module : store-relational-connection
+### New module per database 
 
-- AuthStrategyKey 
-- AuthStrategy
-- DataSourceSpecificationKey
-- DataSourceSpecification 
-- DatabaseManager 
-- DriverWrapper
-- RelationalDatabaseCommands
-- RelationalDatabaseCommandsVisitor
-- StrategicConnectionExtension
-- ConnectionExtension 
-- RelationalStoreExecutorExtension
+E.g legend-engine-executionPlan-execution-store-relational-connection-datasource-snowflake
 
-Module : store-relational-connection-auth-userpass 
+### New plugin interface
 
-- UserPassAuthStrategyKey
-- UserPassAuthStrategyKeyGenerator (via a StrategicConnectionExtension) 
-- UserPassAuthStrategy
-- UserPassAuthStrategyTransformer (via a StrategicConnectionExtension)
+Every database(type) provides a RelationalConnectionPlugin via the ServiceLoader mechanism.
 
-Module : store-relational-connection-database-snowflake 
+The plugin is the single entry point for all functionality for this database type. This includes :
+* an API to get to a DatabaseManager
+* an API to get to build a "specification" class given a datasource and auth description
 
-- SnowflakeDataSourceSpecificationKeyGenerator (via a StrategicConnectionExtension) 
-- SnowflakeDataSourceSpecificationTransformer (via a StrategicConnectionExtension) 
-- SnowflakeManager (via a ConnectionExtension)
-- SnowflakeDriverWrapper
-- SnowflakeDatabaseCommands
+### Database connection management centralized in a single class
 
-Gotchas 
-===================
+Every database provides a single "specification" class that builds URLs, datasource properties etc. 
 
-1/ StrategicConnectionExtension is not fine grained 
+See [SnowflakeDataSourceSpecification](../legend-engine-executionPlan-execution-store-relational-connection-datasource-snowflake/src/main/java/org/finos/legend/engine/plan/execution/stores/relational/connection/ds/specifications/SnowflakeDataSourceSpecification.java)
 
-An implementation of StrategicConnectionExtension has to provide both auth and datasource classes. 
-But in the proposed refactoring, the auth module cannot provide datasource classes and vice versa. 
+If we want to split datasource code and auth code into different modules, we introduce a dependency cycle. i.e the auth code depends on the datasource and vice versa. 
+So we pass in the auth strategy into the "specification" class.
 
-Tactical solution : Return nulls and skip nulls in RelationalExecutionManager 
+```
+  @Override
+    public Pair<String, Properties> handleConnection(String url, Properties properties)
+    {
+        if (this.authenticationStrategy instanceof UserPasswordAuthenticationStrategy) {
+            UserPasswordAuthenticationStrategy userPasswordAuthenticationStrategy = (UserPasswordAuthenticationStrategy) authenticationStrategy;
+            Properties connectionProperties = new Properties();
+            connectionProperties.putAll(properties);
+            connectionProperties.put("user", "fred");
+            connectionProperties.put("password", userPasswordAuthenticationStrategy.getPassword());
+            return Tuples.pair(url, connectionProperties);
+        } 
+        else if ( ...)
+        {
+            // do something else
+        }
+        else if ( ...)
+        {
+          // do something else
+        }        
+        return Tuples.pair(url, properties);
+    }
+```
+### New module per authentication strategy 
 
-2/ RelationalDatabaseCommandsVisitor 
+E.g legend-engine-executionPlan-execution-store-relational-connection-authn-userpass
 
-Visitor is defined with concrete visit methods which introduces a dependency cycle (store-relational-connection -> store-relational-connection-database-snowflake -> relational-connection)
+### Delete RelationalDatabaseCommandsVisitor 
 
-public interface RelationalDatabaseCommandsVisitor<T>
-{
-    T visit(SnowflakeCommands snowflakeCommands);
-    T visit(H2Commands h2Commands);
-    T visit(BigQueryCommands bigQueryCommands);
-}
+The StreamResultToTempTableVisitor was causing dependency cycles.
 
-Solution : Remove the RelationalDatabaseCommandsVisitor. Replace with additional methods on DatabaseManager.
-i.e We are already in the context of a DatabaseManager. Why not ask the DatabaseManager to do stuff.
+Temp table handling etc is now pushed into RelationalDatabaseCommands. 
 
-Instead of ...
+### Delete DataSourceIdentifiersCaseSensitiveVisitor 
 
-       databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalExecutionConfiguration, connectionManagerConnection, res, tempTableName, databaseTimeZone));
- 
-.. we do 
+Same idea as temp table handling. Push database specific code into the plugin and related classes.
 
-	databaseManager.relationalDatabaseSupport().prepareTempTable(RelationalExecutionConfig )
-	databaseManager.relationalDatabaseSupport().doSomethingElse(...)
+```
+    // RelationalExecutor 
+    
+    private void buildTransformersAndBuilder(ExecutionNode node, DatabaseConnection databaseConnection) throws SQLException
+    {
+        // TODO : epsstan : ask the data source about this ??
+        RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) databaseConnection;
+        RelationalConnectionPlugin relationalConnectionPlugin = new RelationalConnectionPluginLoader().getPlugin(relationalDatabaseConnection.databaseType);
+        DataSourceSpecification dataSourceSpecification = relationalConnectionPlugin.buildDatasourceSpecification(relationalDatabaseConnection, new RelationalExecutorInfo());
+        boolean isDatabaseIdentifiersCaseSensitive = dataSourceSpecification.isDatabaseIdentifiersCaseSensitive();
+       ...
+    }
+```
 
-However, this introduces another dependency cycle : store-relational depends on relational-connection, relational-connection depends on store-relational (via the dependency on RelationalExecutionConfig) 
+Questions / Gotchas
+==================
+### Can we remove the datasource specification key classes ??
 
-Solution : Break the dependency by introducing new config type in relational-connection
+We use the datasource specification key to index user + database specific connections.
 
-3/ What about StaticDataSourceSpecification which is not specific to a database type ?
+Can we introduce a method that returns a key in the protocol classes and remove the key classes ??
 
+### Can we remove the authentication strategy key classes ??
 
-Questions                                                                  
-===================
+Similarly can we remove the auth strategy key classes
 
-1/ Singleton RelationalStoreExecutorExtension 
+### Overspecified/Long keys
+
+In the example below, "quoteIdentifiers" does not uniquely identify the database
+
+```
+    @Override
+    public String shortId()
+    {
+        return "Snowflake_" +
+                "account:" + accountName + "_" +
+                "region:" + region + "_" +
+                "warehouse:" + warehouseName + "_" +
+                "db:" + databaseName + "_" +
+                "cloudType:" + cloudType + "_" +
+                "quoteIdentifiers:" + quoteIdentifiers;
+    }
+```
+
+### OAuth profiles
+TODO 
+
+### Plugin load order
+TODO 

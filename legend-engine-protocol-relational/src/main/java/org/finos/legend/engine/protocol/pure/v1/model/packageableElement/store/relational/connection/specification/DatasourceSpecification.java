@@ -23,4 +23,9 @@ public abstract class DatasourceSpecification
     public SourceInformation sourceInformation;
 
     public abstract <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor);
+
+    public String getKey()
+    {
+        throw new UnsupportedOperationException("implement in child");
+    }
 }

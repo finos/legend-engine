@@ -382,7 +382,7 @@ public class TestExecutionPlan
                 "       \"_type\": \"RelationalDatabaseConnection\",\n" +
                 "       \"type\": \"Snowflake\",\n" +
                 "       \"authenticationStrategy\" : {\n" +
-                "           \"_type\" : \"snowflakePublic\"\n" +
+                "           \"_type\" : \"userPassword\"\n" +
                 "       },\n" +
                 "       \"datasourceSpecification\" : {\n" +
                 "           \"_type\" : \"snowflake\",\n" +

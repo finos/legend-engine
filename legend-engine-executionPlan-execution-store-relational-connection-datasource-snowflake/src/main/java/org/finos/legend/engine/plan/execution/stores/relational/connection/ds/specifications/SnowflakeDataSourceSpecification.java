@@ -14,65 +14,110 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.UserPasswordAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
-import org.eclipse.collections.api.list.MutableList;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.util.Properties;
 import javax.sql.DataSource;
+import java.util.Properties;
 
-public class SnowflakeDataSourceSpecification extends DataSourceSpecification
-{
+public class SnowflakeDataSourceSpecification extends DataSourceSpecification {
     public static String SNOWFLAKE_ACCOUNT_NAME = "legend_snowflake_accountName";
     public static String SNOWFLAKE_REGION = "legend_snowflake_region";
     public static String SNOWFLAKE_WAREHOUSE_NAME = "legend_snowflake_warehouseName";
-    public static String SNOWFLAKE_DATABASE_NAME= "legend_snowflake_databaseName";
-    public static String SNOWFLAKE_CLOUD_TYPE= "legend_snowflake_cloudType";
-    public static String SNOWFLAKE_QUOTE_IDENTIFIERS= "legend_snowflake_quoteIdentifiers";
+    public static String SNOWFLAKE_DATABASE_NAME = "legend_snowflake_databaseName";
+    public static String SNOWFLAKE_CLOUD_TYPE = "legend_snowflake_cloudType";
+    public static String SNOWFLAKE_QUOTE_IDENTIFIERS = "legend_snowflake_quoteIdentifiers";
 
+    private Properties properties = new Properties();
+    private String databaseName;
+    private String accountName;
+    private String region;
+    private SnowflakeDataSourceSpecificationKey key;
+    private String cloudType;
+    private String warehouseName;
+    private Boolean quoteIdentifiers;
 
-    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
-    {
+    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo) {
         super(key, databaseManager, authenticationStrategy, extraUserProperties, relationalExecutorInfo);
 
-        String warehouseName = updateSnowflakeIdentifiers(key.getWarehouseName(), key.getQuoteIdentifiers());
-        String databaseName  = updateSnowflakeIdentifiers(key.getDatabaseName(), key.getQuoteIdentifiers());
+        this.key = key;
+        this.warehouseName = updateSnowflakeIdentifiers(key.getWarehouseName(), key.getQuoteIdentifiers());
+        this.databaseName = updateSnowflakeIdentifiers(key.getDatabaseName(), key.getQuoteIdentifiers());
+        this.accountName = key.getAccountName();
+        this.region = key.getRegion();
+        this.cloudType = key.getCloudType();
+        this.quoteIdentifiers = key.getQuoteIdentifiers();
 
-        this.extraDatasourceProperties.put(SNOWFLAKE_ACCOUNT_NAME, key.getAccountName());
-        this.extraDatasourceProperties.put(SNOWFLAKE_REGION, key.getRegion());
-        this.extraDatasourceProperties.put(SNOWFLAKE_WAREHOUSE_NAME, warehouseName);
-        this.extraDatasourceProperties.put(SNOWFLAKE_DATABASE_NAME, databaseName);
-        this.extraDatasourceProperties.put(SNOWFLAKE_CLOUD_TYPE, key.getCloudType());
-        this.extraDatasourceProperties.put(SNOWFLAKE_QUOTE_IDENTIFIERS, key.getQuoteIdentifiers());
-
-        this.extraDatasourceProperties.put("account", key.getAccountName());
-        this.extraDatasourceProperties.put("warehouse", warehouseName);
-        this.extraDatasourceProperties.put("db", databaseName);
-        this.extraDatasourceProperties.put("ocspFailOpen", true);
+        this.properties.put("account", key.getAccountName());
+        this.properties.put("warehouse", warehouseName);
+        this.properties.put("db", databaseName);
+        this.properties.put("ocspFailOpen", true);
     }
 
-    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
-    {
+    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo) {
         this(key, databaseManager, authenticationStrategy, new Properties(), relationalExecutorInfo);
     }
 
     @Override
-    protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
-    {
-        return this.buildDataSource(null, -1, null, profiles);
+    protected String buildJdbcURL() {
+        // TODO : epsstan : refactor validation
+        return "jdbc:snowflake://" + accountName + "." + region + "." + cloudType + ".snowflakecomputing.com";
     }
 
-    public static String updateSnowflakeIdentifiers(String identifier, boolean quoteIdentifiers)
-    {
-        if (quoteIdentifiers && identifier != null && !(identifier.startsWith("\"") && identifier.endsWith("\"")))
-        {
+    @Override
+    protected DataSource buildDataSource(MutableList<CommonProfile> profiles) {
+        return super.buildDataSourceImpl(profiles);
+    }
+
+    // TODO : epsstan : do we need 2 data source properties ??
+    @Override
+    protected Properties buildExtraJdbcDatasourceProperties() {
+        Properties properties = new Properties();
+        properties.put(SNOWFLAKE_ACCOUNT_NAME, key.getAccountName());
+        properties.put(SNOWFLAKE_REGION, key.getRegion());
+        properties.put(SNOWFLAKE_WAREHOUSE_NAME, warehouseName);
+        properties.put(SNOWFLAKE_DATABASE_NAME, databaseName);
+        properties.put(SNOWFLAKE_CLOUD_TYPE, key.getCloudType());
+        properties.put(SNOWFLAKE_QUOTE_IDENTIFIERS, key.getQuoteIdentifiers());
+        properties.put("account", key.getAccountName());
+        properties.put("warehouse", warehouseName);
+        properties.put("db", databaseName);
+        properties.put("ocspFailOpen", true);
+        return properties;
+    }
+
+    @Override
+    public boolean isDatabaseIdentifiersCaseSensitive() {
+        return this.quoteIdentifiers == null || !this.quoteIdentifiers;
+    }
+
+    public static String updateSnowflakeIdentifiers(String identifier, boolean quoteIdentifiers) {
+        if (quoteIdentifiers && identifier != null && !(identifier.startsWith("\"") && identifier.endsWith("\""))) {
             identifier = "\"" + identifier + "\"";
         }
         return identifier;
     }
+
+    @Override
+    public Pair<String, Properties> handleConnection(String url, Properties properties)
+    {
+        if (this.authenticationStrategy instanceof UserPasswordAuthenticationStrategy) {
+            UserPasswordAuthenticationStrategy userPasswordAuthenticationStrategy = (UserPasswordAuthenticationStrategy) authenticationStrategy;
+            Properties connectionProperties = new Properties();
+            connectionProperties.putAll(properties);
+            connectionProperties.put("user", "fred");
+            connectionProperties.put("password", userPasswordAuthenticationStrategy.getPassword());
+            return Tuples.pair(url, connectionProperties);
+        }
+        return Tuples.pair(url, properties);
+    }
 }
+
