@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
@@ -35,6 +36,10 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                     ._pattern(service.pattern)
                     ._owners(Lists.mutable.withAll(service.owners))
                     ._documentation(service.documentation);
+            if(service.tags != null)
+            {
+                pureService = pureService._tags(ListIterate.collect(service.tags, tag -> HelperServiceBuilder.processServiceTag(tag)));
+            }
             pack._childrenAdd(pureService);
             return pureService;
         }, (service, context) -> {

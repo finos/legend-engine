@@ -709,4 +709,88 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  }\n" +
                 "}\n");
     }
+
+    @Test
+    public void testServiceTags()
+    {
+        // check for single tag
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  tags:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'testName';\n" +
+                "      value: 'testValue';\n" +
+                "    }\n" +
+                "  ];\n"+
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        // check for multiple tags
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  tags:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'testName1';\n" +
+                "      value: 'testValue1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      name: 'testName2';\n" +
+                "      value: 'testValue2';\n" +
+                "    }\n" +
+                "  ];\n"+
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
 }

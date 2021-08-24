@@ -16,7 +16,7 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_SINGLE | SERVICE_MULTI
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
-                                        | SERVICE_TEST | SERVICE_TEST_TESTS | SERVICE_DATA | SERVICE_ASSERTS
+                                        | SERVICE_TEST | SERVICE_TEST_TESTS | SERVICE_DATA | SERVICE_ASSERTS | SERVICE_TAGS | SERVICE_TAGNAME | SERVICE_TAGVALUE
 ;
 
 
@@ -35,6 +35,7 @@ service:                                SERVICE qualifiedName
                                                 (
                                                     servicePattern
                                                     | serviceOwners
+                                                    | serviceTags
                                                     | serviceDocumentation
                                                     | serviceAutoActivateUpdates
                                                     | serviceExec
@@ -55,6 +56,24 @@ serviceDocumentation:                   SERVICE_DOCUMENTATION COLON STRING SEMI_
 serviceAutoActivateUpdates:             SERVICE_AUTO_ACTIVATE_UPDATES COLON BOOLEAN SEMI_COLON
 ;
 
+// -------------------------------------- TAGS --------------------------------------
+serviceTags:                            SERVICE_TAGS COLON
+                                            BRACKET_OPEN
+                                                (tagDescription (COMMA tagDescription)*)?
+                                            BRACKET_CLOSE
+                                        SEMI_COLON
+;
+tagDescription:                         BRACE_OPEN
+                                            (
+                                                serviceTagName
+                                                serviceTagValue
+                                            )
+                                        BRACE_CLOSE
+;
+serviceTagName:                         SERVICE_TAGNAME COLON STRING SEMI_COLON
+;
+serviceTagValue:                        SERVICE_TAGVALUE COLON STRING SEMI_COLON
+;
 
 // -------------------------------------- EXECUTION --------------------------------------
 

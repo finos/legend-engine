@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTag;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Execution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
@@ -45,6 +46,9 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Single
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTag;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTag_Impl;
+
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 
 import java.util.HashSet;
@@ -187,5 +191,12 @@ public class HelperServiceBuilder
         return new Root_meta_legend_service_metamodel_TestContainer_Impl("")
                 ._parametersValues(ListIterate.collect(testContainer.parametersValues, parameterValue -> parameterValue.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))))
                 ._assert(HelperValueSpecificationBuilder.buildLambda(testContainer._assert, context));
+    }
+
+    public static Root_meta_legend_service_metamodel_ServiceTag processServiceTag(ServiceTag tag)
+    {
+        return new Root_meta_legend_service_metamodel_ServiceTag_Impl("")
+                ._name(tag.name)
+                ._value(tag.value);
     }
 }

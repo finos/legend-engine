@@ -38,6 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTag;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
@@ -86,6 +87,9 @@ public class ServiceParseTreeWalker
         // owners (optional)
         ServiceParserGrammar.ServiceOwnersContext ownersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceOwners(), "owners", service.sourceInformation);
         service.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : new ArrayList<>();
+        // tags (optional)
+        ServiceParserGrammar.ServiceTagsContext serviceTagsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTags(), "tags", service.sourceInformation);
+        service.tags = serviceTagsContext != null && serviceTagsContext.SERVICE_TAGS() != null ? ListIterate.collect(serviceTagsContext.tagDescription(), this::visitServiceTagDescription) : new ArrayList<>();
         // execution
         ServiceParserGrammar.ServiceExecContext execContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceExec(), "execution", service.sourceInformation);
         service.execution = this.visitExecution(execContext);
@@ -93,6 +97,14 @@ public class ServiceParseTreeWalker
         ServiceParserGrammar.ServiceTestContext testContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceTest(), "test", service.sourceInformation);
         service.test = this.visitTest(testContext);
         return service;
+    }
+
+    private ServiceTag visitServiceTagDescription(ServiceParserGrammar.TagDescriptionContext ctx)
+    {
+        ServiceTag serviceTag = new ServiceTag();
+        serviceTag.name = ctx.serviceTagName().STRING().getText();
+        serviceTag.value = ctx.serviceTagValue().STRING().getText();
+        return serviceTag;
     }
 
     private Execution visitExecution(ServiceParserGrammar.ServiceExecContext ctx)
