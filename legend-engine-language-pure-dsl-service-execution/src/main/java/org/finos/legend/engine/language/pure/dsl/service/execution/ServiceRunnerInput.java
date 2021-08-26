@@ -43,7 +43,7 @@ public class ServiceRunnerInput
         return this;
     }
 
-    List<Object> getArgs()
+    public List<Object> getArgs()
     {
         return this.args;
     }
@@ -59,7 +59,7 @@ public class ServiceRunnerInput
         return this;
     }
 
-    Identity getIdentity()
+    public Identity getIdentity()
     {
         return this.identity;
     }
@@ -70,7 +70,7 @@ public class ServiceRunnerInput
         return this;
     }
 
-    OperationalContext getOperationalContext()
+    public OperationalContext getOperationalContext()
     {
         return this.operationalContext;
     }
@@ -81,7 +81,7 @@ public class ServiceRunnerInput
         return this;
     }
 
-    SerializationFormat getSerializationFormat()
+    public SerializationFormat getSerializationFormat()
     {
         return this.serializationFormat;
     }

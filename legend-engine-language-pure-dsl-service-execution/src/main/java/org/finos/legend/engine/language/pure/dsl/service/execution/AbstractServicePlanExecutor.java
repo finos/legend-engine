@@ -15,9 +15,15 @@
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 
 import java.io.BufferedReader;
@@ -25,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -112,6 +119,11 @@ public abstract class AbstractServicePlanExecutor
         return this.servicePath;
     }
 
+    public PlanExecutorInfo getPlanExecutorInfo()
+    {
+        return this.executor.getPlanExecutorInfo();
+    }
+
     @Override
     public String toString()
     {
@@ -162,13 +174,66 @@ public abstract class AbstractServicePlanExecutor
         return this.executor.execute(this.plan, parameters, streamProvider);
     }
 
+    protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+    {
+        new Thread(() -> {
+            Result result = this.executor.execute(this.plan, parameters);
+            serializeResultToStream(result, serviceRunnerInput.getSerializationFormat(), outputStream);
+        }).start();
+    }
+
+    private void serializeResultToStream(Result result, SerializationFormat serializationFormat, OutputStream outputStream)
+    {
+        try
+        {
+            if (result instanceof ErrorResult)
+            {
+                throw new RuntimeException("Error: " + ((ErrorResult) result).getMessage());
+            }
+            else if (result instanceof ConstantResult || result instanceof StreamingResult)
+            {
+                try
+                {
+                    if (result instanceof ConstantResult)
+                    {
+                        String serializedResult = ObjectMapperFactory.getNewStandardObjectMapper().writeValueAsString(((ConstantResult) result).getValue());
+                        outputStream.write(serializedResult.getBytes());
+                    }
+                    else
+                    {
+                        ((StreamingResult) result).stream(outputStream, serializationFormat);
+                    }
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException("Error serializing result", e);
+                }
+            }
+            else
+            {
+                throw new RuntimeException("Unknown result type: " + result.getClass().getCanonicalName());
+            }
+        }
+        finally
+        {
+            result.close();
+        }
+    }
+
     protected abstract class ExecutionBuilder
     {
         private StreamProvider streamProvider;
+        private ServiceRunnerInput serviceRunnerInput;
 
         public ExecutionBuilder withStreamProvider(StreamProvider streamProvider)
         {
             this.streamProvider = streamProvider;
+            return this;
+        }
+
+        public ExecutionBuilder withServiceRunnerInput(ServiceRunnerInput serviceRunnerInput)
+        {
+            this.serviceRunnerInput = serviceRunnerInput;
             return this;
         }
 
@@ -181,6 +246,11 @@ public abstract class AbstractServicePlanExecutor
         public Result execute()
         {
             return AbstractServicePlanExecutor.this.execute(getParameters(), this.streamProvider);
+        }
+
+        public void executeToStream(OutputStream outputStream)
+        {
+            AbstractServicePlanExecutor.this.executeToStream(getParameters(), this.serviceRunnerInput, outputStream);
         }
 
         protected abstract void addParameter(String name, Object value);
