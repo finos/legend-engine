@@ -46,6 +46,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 
@@ -58,6 +59,11 @@ public interface CompilerExtension
     Iterable<? extends Processor<?>> getExtraProcessors();
 
     default List<Function4<ValueSpecification, CompileContext, List<String>, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> getExtraValueSpecificationProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> getExtraLambdaPostProcessor()
     {
         return Collections.emptyList();
     }
