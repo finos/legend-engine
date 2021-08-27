@@ -56,6 +56,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.slf4j.Logger;
@@ -103,6 +104,7 @@ public class CompilerExtensions
     private final ImmutableList<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> extraFunctionExpressionBuilderRegistrationInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionHandlerRegistrationInfo>>> extraFunctionHandlerRegistrationInfoCollectors;
     private final ImmutableList<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> extraValueSpecificationProcessors;
+    private final ImmutableList<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> extraLambdaPostProcessors;
     private final ImmutableList<Procedure2<PackageableElement, MutableMap<String, String>>> extraStoreStatBuilders;
     private final ImmutableList<Function2<ExecutionContext, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext>> extraExecutionContextProcessors;
     private final ImmutableList<Procedure<Procedure2<String, List<String>>>> extraElementForPathToElementRegisters;
@@ -126,6 +128,7 @@ public class CompilerExtensions
         this.extraFunctionExpressionBuilderRegistrationInfoCollectors = this.extensions.flatCollect(CompilerExtension::getExtraFunctionExpressionBuilderRegistrationInfoCollectors);
         this.extraFunctionHandlerRegistrationInfoCollectors = this.extensions.flatCollect(CompilerExtension::getExtraFunctionHandlerRegistrationInfoCollectors);
         this.extraValueSpecificationProcessors = this.extensions.flatCollect(CompilerExtension::getExtraValueSpecificationProcessors);
+        this.extraLambdaPostProcessors = this.extensions.flatCollect(CompilerExtension::getExtraLambdaPostProcessor);
         this.extraStoreStatBuilders = this.extensions.flatCollect(CompilerExtension::getExtraStoreStatBuilders);
         this.extraExecutionContextProcessors = this.extensions.flatCollect(CompilerExtension::getExtraExecutionContextProcessors);
         this.extraElementForPathToElementRegisters = this.extensions.flatCollect(CompilerExtension::getExtraElementForPathToElementRegisters);
@@ -249,6 +252,11 @@ public class CompilerExtensions
     public List<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> getExtraValueSpecificationProcessors()
     {
         return this.extraValueSpecificationProcessors.castToList();
+    }
+
+    public List<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> getExtraLambdaPostProcessors()
+    {
+        return this.extraLambdaPostProcessors.castToList();
     }
 
     public List<Procedure2<PackageableElement, MutableMap<String, String>>> getExtraStoreStatBuilders()
