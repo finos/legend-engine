@@ -118,7 +118,7 @@
 
 
         <!-- Legend -->
-        <legend.pure.version>1.34.0</legend.pure.version>
+        <legend.pure.version>1.35.0</legend.pure.version>
         <legend.shared.version>0.15.0</legend.shared.version>
 
         <!-- Dependency versions -->
