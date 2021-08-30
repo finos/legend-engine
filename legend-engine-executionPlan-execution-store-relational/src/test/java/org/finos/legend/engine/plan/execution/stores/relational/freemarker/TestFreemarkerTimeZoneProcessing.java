@@ -125,7 +125,7 @@ public class TestFreemarkerTimeZoneProcessing
     public void testNoTimeZoneSpecifiedThrowsException() throws Exception
     {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Plan parsing error; unable to process Date: [] 2018-10-15T20:00:00.123, expecting: \\[(\\S+)\\]\\s(\\S+([\\sT]\\S+)?) e.g.: '[EST] + $date', where $date is of format: [yyyy-MM-dd, yyyy-MM-dd'T'HH:mm:ss, yyyy-MM-dd'T'HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss] , e.g. : [EST] 2018-10-15T20:00:00.123");
+        expectedException.expectMessage("Plan parsing error; unable to process Date: [] 2018-10-15T20:00:00.123, expecting: \\[(\\S+)\\]\\s(\\S+([\\sT]\\S+)?) e.g.: '[EST] + $date', where $date is of format: [yyyy-MM-dd, yyyy-MM-dd'T'HH:mm:ss, yyyy-MM-dd'T'HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss, yyyy-MM-dd'T'HH:mm:ss.SSSZ, yyyy-MM-dd'T'HH:mm:ssZ] , e.g. : [EST] 2018-10-15T20:00:00.123");
         MutableMap<String, Object> freeMarkerDateParameters = Maps.mutable.with("dateParam", "2018-10-15T20:00:00.123");
         processDateConstantTimeZoneNoConversion("", freeMarkerDateParameters);
     }

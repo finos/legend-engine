@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.result.date;
 
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 
+import java.time.OffsetDateTime;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,10 +29,11 @@ import java.util.regex.Pattern;
 
 public abstract class EngineDate
 {
-    private static final Pattern DATE_PATTERN = Pattern.compile("^(\\d+-\\d+-\\d+)([Tt ](\\d+:\\d+:\\d+(\\.\\d+)?))?$");
+    private static final Pattern DATE_PATTERN = Pattern.compile("^(\\d+-\\d+-\\d+)([Tt ](\\d+:\\d+:\\d+(\\.\\d+)?)([\\+-]\\d+\\d+\\d+\\d+)?)?$");
     private static final int DATE_GROUP = 1;
     private static final int TIME_GROUP = 3;
     private static final int SUBSECOND_GROUP = 4;
+    private static final int TIMEZONE_GROUP = 5;
 
     public abstract String formatToSql();
 
@@ -44,7 +46,7 @@ public abstract class EngineDate
         {
             throw new IllegalArgumentException("Invalid Date string: " + dateString);
         }
-        return (matcher.group(TIME_GROUP) == null) ? fromStrictDateString(dateString) : fromDateTimeMatcher(matcher);
+        return (matcher.group(TIME_GROUP) == null) ? fromStrictDateString(dateString) : fromDateTimeString(dateString);
     }
 
     public static EngineDate fromStrictDateString(String strictDateString)
@@ -60,7 +62,17 @@ public abstract class EngineDate
         {
             throw new IllegalArgumentException("Invalid DateTime string: " + dateTimeString);
         }
-        return fromDateTimeMatcher(matcher);
+        EngineDate engineDate = matcher.group(TIMEZONE_GROUP) != null ? fromDateTimeMatcherForZonedDateTime(matcher) : fromDateTimeMatcher(matcher);
+        return engineDate;
+    }
+
+    private static EngineDate fromDateTimeMatcherForZonedDateTime(Matcher matcher)
+    {
+        LocalDate localDate = LocalDate.parse(matcher.group(DATE_GROUP), DateTimeFormatter.ISO_LOCAL_DATE);
+        LocalTime localTime = LocalTime.parse(matcher.group(TIME_GROUP), DateTimeFormatter.ISO_LOCAL_TIME);
+        ZoneOffset zoneOffset = ZoneOffset.of(matcher.group(TIMEZONE_GROUP));
+        LocalDateTime localDateTime = OffsetDateTime.of(localDate, localTime, zoneOffset).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        return fromLocalDateTime(localDateTime, matcher.group(SUBSECOND_GROUP) == null);
     }
 
     private static EngineDate fromDateTimeMatcher(Matcher matcher)
