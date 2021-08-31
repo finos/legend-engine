@@ -1964,6 +1964,15 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testFunctionWithDateTime()
+    {
+        test("function test::getDateTime(): DateTime[1]\n" +
+                "{\n" +
+                "   %2020-01-01T00:00:00.000\n" +
+                "}\n");
+    }
+
+    @Test
     public void testClassWithStrictDate()
     {
         test("Class apps::Trade\n" +

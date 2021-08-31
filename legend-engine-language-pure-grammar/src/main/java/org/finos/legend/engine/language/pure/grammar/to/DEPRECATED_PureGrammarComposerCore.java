@@ -808,13 +808,15 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(CStrictDate cStrictDate)
     {
-        return this.isValueSpecificationExternalParameter ? cStrictDate.values.get(0).replaceFirst(Character.toString(DateParseTreeWalker.DATE_PREFIX), "") : cStrictDate.values.get(0);
+        String strictDateValue = HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(cStrictDate.values.get(0));
+        return this.isValueSpecificationExternalParameter ? strictDateValue.replaceFirst(Character.toString(StrictTimeParseTreeWalker.STRICT_TIME_PREFIX), "") : strictDateValue;
     }
 
     @Override
     public String visit(CStrictTime CStrictTime)
     {
-        return this.isValueSpecificationExternalParameter ? CStrictTime.values.get(0).replaceFirst(Character.toString(StrictTimeParseTreeWalker.STRICT_TIME_PREFIX), "") : CStrictTime.values.get(0);
+        String strictTimeValue = HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(CStrictTime.values.get(0));
+        return this.isValueSpecificationExternalParameter ? strictTimeValue.replaceFirst(Character.toString(StrictTimeParseTreeWalker.STRICT_TIME_PREFIX), "") : strictTimeValue;
     }
 
     @Override

@@ -236,17 +236,18 @@ public class HelperValueSpecificationGrammarComposer
     public static String renderDate(String s, DEPRECATED_PureGrammarComposerCore transformer)
     {
         String dateString;
+        String updatedS = generateValidDateValueContainingPercent(s);
         if (transformer.isRenderingHTML())
         {
-            dateString = "<span class='pureGrammar-datetime'>" + s + "</span>";
+            dateString = "<span class='pureGrammar-datetime'>" + updatedS + "</span>";
         }
         else if (transformer.isValueSpecificationExternalParameter())
         {
-            dateString = s.replaceFirst(Character.toString(DateParseTreeWalker.DATE_PREFIX), "").replaceAll(".0000", "");
+            dateString = updatedS.replaceFirst(Character.toString(DateParseTreeWalker.DATE_PREFIX), "").replaceAll(".0000", "");
         }
         else
         {
-            dateString = s;
+            dateString = updatedS;
         }
         return dateString;
     }
@@ -315,5 +316,10 @@ public class HelperValueSpecificationGrammarComposer
             return "MANY";
         }
         return "$" + multiplicity.lowerBound + "_" + (multiplicity.getUpperBoundInt() == Integer.MAX_VALUE ? "MANY" : multiplicity.getUpperBoundInt()) + "$";
+    }
+
+    public static String generateValidDateValueContainingPercent(String date)
+    {
+        return date.indexOf(DateParseTreeWalker.DATE_PREFIX) != -1 ? date : DateParseTreeWalker.DATE_PREFIX + date;
     }
 }
