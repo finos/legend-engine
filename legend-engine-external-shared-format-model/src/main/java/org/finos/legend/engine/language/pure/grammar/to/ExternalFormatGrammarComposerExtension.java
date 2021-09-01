@@ -19,8 +19,10 @@ import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
@@ -48,19 +50,22 @@ public class ExternalFormatGrammarComposerExtension implements IExternalFormatGr
                                       {
                                           return null;
                                       }
-                                      return ListIterate.collect(elements, element ->
-                                      {
-                                          if (element instanceof ExternalFormatSchemaSet)
-                                          {
-                                              return renderSchemaSet((ExternalFormatSchemaSet) element);
-                                          }
-                                          else if (element instanceof Binding)
-                                          {
-                                              return renderSchemaBinding((Binding) element);
-                                          }
-                                          return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                                      }).makeString("\n\n");
+                                      return ListIterate.collect(elements, ExternalFormatGrammarComposerExtension::renderElement).makeString("\n\n");
                                   });
+    }
+
+    @Override
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with((elements, context, composedSections) ->
+                                                                       {
+                                                                           List<PackageableElement> composableElements = ListIterate.selectInstancesOf(elements, ExternalFormatSchemaSet.class)
+                                                                                                                                    .collect(PackageableElement.class::cast)
+                                                                                                                                    .withAll(ListIterate.selectInstancesOf(elements, Binding.class));
+                                                                           return composableElements.isEmpty()
+                                                                                  ? null
+                                                                                  : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, ExternalFormatGrammarComposerExtension::renderElement).makeString("###" + ExternalFormatGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                                                                       });
     }
 
     @Override
@@ -110,6 +115,19 @@ public class ExternalFormatGrammarComposerExtension implements IExternalFormatGr
         });
     }
 
+    private static String renderElement(PackageableElement element)
+    {
+        if (element instanceof ExternalFormatSchemaSet)
+        {
+            return renderSchemaSet((ExternalFormatSchemaSet) element);
+        }
+        else if (element instanceof Binding)
+        {
+            return renderSchemaBinding((Binding) element);
+        }
+        return "/* Can't transform element '" + element.getPath() + "' in this section */";
+    }
+
     private static String renderSchemaSet(ExternalFormatSchemaSet schemaSet)
     {
         StringBuilder builder = new StringBuilder()
@@ -118,10 +136,10 @@ public class ExternalFormatGrammarComposerExtension implements IExternalFormatGr
 
         PureGrammarComposerUtility.appendTabString(builder).append("format: ").append(schemaSet.format).append(";\n");
         PureGrammarComposerUtility.appendTabString(builder).append("schemas: [\n");
-        for(int i=0; i<schemaSet.schemas.size(); i++)
+        for (int i = 0; i < schemaSet.schemas.size(); i++)
         {
             ExternalFormatSchema schema = schemaSet.schemas.get(i);
-            PureGrammarComposerUtility.appendTabString(builder,2 ).append("{\n");
+            PureGrammarComposerUtility.appendTabString(builder, 2).append("{\n");
             if (schema.id != null)
             {
                 PureGrammarComposerUtility.appendTabString(builder, 3).append("id: ").append(PureGrammarComposerUtility.convertIdentifier(schema.id)).append(";\n");
@@ -131,7 +149,7 @@ public class ExternalFormatGrammarComposerExtension implements IExternalFormatGr
                 PureGrammarComposerUtility.appendTabString(builder, 3).append("location: ").append(PureGrammarComposerUtility.convertString(schema.location, true)).append(";\n");
             }
             PureGrammarComposerUtility.appendTabString(builder, 3).append("content: ").append(PureGrammarComposerUtility.convertString(schema.content, true)).append(";\n");
-            PureGrammarComposerUtility.appendTabString(builder,2 ).append("}").append(i < schemaSet.schemas.size() - 1 ? ",\n" : "\n");
+            PureGrammarComposerUtility.appendTabString(builder, 2).append("}").append(i < schemaSet.schemas.size() - 1 ? ",\n" : "\n");
         }
         PureGrammarComposerUtility.appendTabString(builder).append("];\n}");
 
