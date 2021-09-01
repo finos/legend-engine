@@ -33,7 +33,7 @@ import java.util.stream.StreamSupport;
 
 public abstract class ExternalFormatReader<T> implements Iterator<IChecked<T>>
 {
-    private static final long FIVE_MINUTES = 5 * 60 * 1000;
+    private static final long FIVE_MINUTES = 5L * 60L * 1000L;
     private static int threadId = 0;
 
     private BlockingQueue<IChecked<T>> queue = new ArrayBlockingQueue<>(256, true);
@@ -115,6 +115,8 @@ public abstract class ExternalFormatReader<T> implements Iterator<IChecked<T>>
         }
         catch (InterruptedException e)
         {
+            // Ignore -  We should really handle the interruption here, but it caused issues to client code
+            // that we haven't been able to track down so leaving this as return null for now.
             return null;
         }
     }
