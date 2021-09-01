@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public abstract class AbstractServicePlanExecutor
+public abstract class AbstractServicePlanExecutor implements ServiceRunner
 {
     private static final boolean DEFAULT_ALLOW_JAVA_COMPILATION = false;
 
@@ -124,6 +124,11 @@ public abstract class AbstractServicePlanExecutor
         return this.executor.getPlanExecutorInfo();
     }
 
+    public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+    {
+        throw new UnsupportedOperationException("Not supported!");
+    }
+
     @Override
     public String toString()
     {
@@ -176,10 +181,8 @@ public abstract class AbstractServicePlanExecutor
 
     protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
     {
-        new Thread(() -> {
-            Result result = this.executor.execute(this.plan, parameters);
-            serializeResultToStream(result, serviceRunnerInput.getSerializationFormat(), outputStream);
-        }).start();
+        Result result = this.executor.execute(this.plan, parameters);
+        serializeResultToStream(result, serviceRunnerInput.getSerializationFormat(), outputStream);
     }
 
     private void serializeResultToStream(Result result, SerializationFormat serializationFormat, OutputStream outputStream)

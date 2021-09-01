@@ -43,13 +43,6 @@
         </dependency>
         <!-- LEGEND ENGINE -->
 
-        <!-- COMMONS IO -->
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-        <!-- COMMONS IO -->
-
         <!-- JACKSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
