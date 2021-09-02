@@ -2129,4 +2129,41 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertEquals(2L, accumMul._lowerBound()._value().longValue());
         Assert.assertNull(accumMul._upperBound()._value());
     }
+
+    @Test
+    public void testCompilationOfLambdaWithBiTemporalClass()
+    {
+        test("###Pure \n" +
+                " \n" +
+                "Class <<temporal.bitemporal>> main::Person \n" +
+                "{ \n" +
+                "    name : String[1]; \n" +
+                "    firm : main::Firm[1]; \n" +
+                "} \n" +
+                " \n" +
+                "Class <<temporal.bitemporal>> main::Firm \n" +
+                "{ \n" +
+                "    name : String[1]; \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree(): main::Person[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%2020-12-12, %2020-12-12)  \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree1(): main::Person[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%latest, %latest)  \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree2(): main::Person[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%latest, %2020-12-12)  \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree3(): main::Firm[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%2020-12-12, %2020-12-12).firm(%latest, %latest)  \n" +
+                "} \n");
+    }
 }
