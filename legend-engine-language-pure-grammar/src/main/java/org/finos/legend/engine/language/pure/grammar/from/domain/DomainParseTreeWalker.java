@@ -57,7 +57,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
