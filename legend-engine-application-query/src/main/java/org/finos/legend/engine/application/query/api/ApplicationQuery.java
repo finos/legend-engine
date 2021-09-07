@@ -20,7 +20,10 @@ import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.application.query.model.Query;
+import org.finos.legend.engine.application.query.model.QueryEvent;
+import org.finos.legend.engine.application.query.model.QueryProjectCoordinates;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -39,6 +42,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Objects;
 
 @Api(tags = "Application - Query")
 @Path("pure/v1/query")
@@ -59,16 +64,29 @@ public class ApplicationQuery
     }
 
     @GET
-    @ApiOperation(value = "Get all queries")
+    @ApiOperation(value = "Get queries")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getQueries(@QueryParam("search") @ApiParam("The search string") String search,
+                               @QueryParam("projectCoordinates") @ApiParam("The list of projects the queries are associated with") List<String> projectCoordinates,
                                @QueryParam("limit") @ApiParam("Limit the number of queries returned") Integer limit,
                                @QueryParam("showCurrentUserQueriesOnly") @ApiParam("Limit to queries which belong to the current user") boolean showCurrentUserQueriesOnly,
                                @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
         try
         {
-            return Response.ok().entity(this.queryStoreManager.getQueries(search, limit, showCurrentUserQueriesOnly, getCurrentUser(profileManager))).build();
+            List<QueryProjectCoordinates> coordinates = ListIterate.distinct(projectCoordinates).collect((projectCoordinate) ->
+            {
+                QueryProjectCoordinates coordinate = new QueryProjectCoordinates();
+                int idx = projectCoordinate.lastIndexOf('.');
+                if (idx == -1)
+                {
+                    return null;
+                }
+                coordinate.groupId = projectCoordinate.substring(0, idx);
+                coordinate.artifactId = projectCoordinate.substring(idx + 1);
+                return coordinate;
+            }).select(Objects::nonNull);
+            return Response.ok().entity(this.queryStoreManager.getQueries(search, coordinates, limit, showCurrentUserQueriesOnly, getCurrentUser(profileManager))).build();
         }
         catch (Exception e)
         {
@@ -157,6 +175,31 @@ public class ApplicationQuery
                 return ((ApplicationQueryException) e).toResponse();
             }
             return ExceptionTool.exceptionManager(e, LoggingEventType.DELETE_QUERY_ERROR, ProfileManagerHelper.extractProfiles(profileManager));
+        }
+    }
+
+    @GET
+    @Path("events")
+    @ApiOperation(value = "Get query events")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getQueryEvents(@QueryParam("queryId") @ApiParam("The query ID the event is associated with") String queryId,
+                                   @QueryParam("eventType") @ApiParam("The type of event") QueryEvent.QueryEventType eventType,
+                                   @QueryParam("since") @ApiParam("Lower limit on the UNIX timestamp for the event creation time") Long since,
+                                   @QueryParam("until") @ApiParam("Upper limit on the UNIX timestamp for the event creation time") Long until,
+                                   @QueryParam("limit") @ApiParam("Limit the number of events returned") Integer limit,
+                                   @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        try
+        {
+            return Response.ok().entity(this.queryStoreManager.getQueryEvents(queryId, eventType, since, until, limit)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_EVENTS_ERROR, null);
         }
     }
 }

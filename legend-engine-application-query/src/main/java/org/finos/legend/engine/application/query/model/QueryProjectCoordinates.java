@@ -14,17 +14,8 @@
 
 package org.finos.legend.engine.application.query.model;
 
-public class Query
+public class QueryProjectCoordinates
 {
-    public String id;
-    public String name;
-    public String description;
     public String groupId;
     public String artifactId;
-    public String versionId;
-    public String mapping;
-    public String runtime;
-    public String content;
-    // We make it clear that we only allow a single owner
-    public String owner;
 }

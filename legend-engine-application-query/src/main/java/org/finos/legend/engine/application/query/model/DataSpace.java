@@ -14,17 +14,18 @@
 
 package org.finos.legend.engine.application.query.model;
 
-public class Query
+import java.util.List;
+
+public class DataSpace
+// NOTE: extends PackageableElement
 {
-    public String id;
-    public String name;
+    // public String label; // should we include this as a nicely-formatted name for the data space?
     public String description;
     public String groupId;
     public String artifactId;
     public String versionId;
     public String mapping;
     public String runtime;
-    public String content;
-    // We make it clear that we only allow a single owner
-    public String owner;
+    public List<String> diagrams;
+    public String supportEmail;
 }
