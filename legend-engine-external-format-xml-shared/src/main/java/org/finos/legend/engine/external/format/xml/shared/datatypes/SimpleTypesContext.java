@@ -46,6 +46,8 @@ import java.util.stream.Collectors;
 
 public class SimpleTypesContext
 {
+    public static final BigDecimal BIG_DECIMAL_DOUBLE_MAX = BigDecimal.valueOf(Double.MAX_VALUE);
+    public static final BigDecimal BIG_DECIMAL_DOUBLE_MIN = BigDecimal.valueOf(Double.MIN_VALUE);
     private final Supplier<NamespaceContext> namespacesSupplier;
     private MutableMap<QName, SimpleTypeHandler<?>> definedTypes = Maps.mutable.empty();
     // TODO Other timezones
@@ -1250,7 +1252,7 @@ public class SimpleTypesContext
             }
             if (enumerations != null)
             {
-                checkEnumerations(new BigDecimal(parsed));
+                checkEnumerations(BigDecimal.valueOf(parsed));
             }
             if (minInclusiveDouble != null && parsed < minInclusiveDouble)
             {
@@ -1277,12 +1279,12 @@ public class SimpleTypesContext
             super.addFacet(facet);
             if (facet.getType() == FacetType.MIN_INCLUSIVE)
             {
-                if (minInclusive.compareTo(new BigDecimal(Double.MIN_VALUE)) < 0)
+                if (minInclusive.compareTo(BIG_DECIMAL_DOUBLE_MIN) < 0)
                 {
                     minInclusiveDouble = null;
                     minExclusiveDouble = null;
                 }
-                else if (minInclusive.compareTo(new BigDecimal(Double.MAX_VALUE)) > 0)
+                else if (minInclusive.compareTo(BIG_DECIMAL_DOUBLE_MAX) > 0)
                 {
                     minInclusiveDouble = null;
                     minExclusiveDouble = Double.MAX_VALUE;
@@ -1295,12 +1297,12 @@ public class SimpleTypesContext
             }
             else if (facet.getType() == FacetType.MIN_EXCLUSIVE)
             {
-                if (minExclusive.compareTo(new BigDecimal(Double.MIN_VALUE)) < 0)
+                if (minExclusive.compareTo(BIG_DECIMAL_DOUBLE_MIN) < 0)
                 {
                     minInclusiveDouble = null;
                     minExclusiveDouble = null;
                 }
-                else if (minExclusive.compareTo(new BigDecimal(Double.MAX_VALUE)) > 0)
+                else if (minExclusive.compareTo(BIG_DECIMAL_DOUBLE_MAX) > 0)
                 {
                     minInclusiveDouble = null;
                     minExclusiveDouble = Double.MAX_VALUE;
@@ -1313,12 +1315,12 @@ public class SimpleTypesContext
             }
             else if (facet.getType() == FacetType.MAX_INCLUSIVE)
             {
-                if (maxInclusive.compareTo(new BigDecimal(Double.MIN_VALUE)) < 0)
+                if (maxInclusive.compareTo(BIG_DECIMAL_DOUBLE_MIN) < 0)
                 {
                     maxInclusiveDouble = null;
                     maxExclusiveDouble = Double.MIN_VALUE;
                 }
-                else if (maxInclusive.compareTo(new BigDecimal(Double.MAX_VALUE)) > 0)
+                else if (maxInclusive.compareTo(BIG_DECIMAL_DOUBLE_MAX) > 0)
                 {
                     maxInclusiveDouble = null;
                     maxExclusiveDouble = null;
@@ -1331,12 +1333,12 @@ public class SimpleTypesContext
             }
             else if (facet.getType() == FacetType.MAX_EXCLUSIVE)
             {
-                if (maxExclusive.compareTo(new BigDecimal(Double.MIN_VALUE)) < 0)
+                if (maxExclusive.compareTo(BIG_DECIMAL_DOUBLE_MIN) < 0)
                 {
                     maxInclusiveDouble = null;
                     maxExclusiveDouble = Double.MIN_VALUE;
                 }
-                else if (maxExclusive.compareTo(new BigDecimal(Double.MAX_VALUE)) > 0)
+                else if (maxExclusive.compareTo(BIG_DECIMAL_DOUBLE_MAX) > 0)
                 {
                     maxInclusiveDouble = null;
                     maxExclusiveDouble = null;
