@@ -1,0 +1,98 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "lessThan",
+          "parameters": [
+            {
+              "_type": "strictDate",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "sourceInformation": {
+                "endColumn": 15,
+                "endLine": 3,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 3
+              },
+              "values": [
+                "2020-01-01"
+              ]
+            },
+            {
+              "_type": "strictDate",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "sourceInformation": {
+                "endColumn": 29,
+                "endLine": 3,
+                "sourceId": "",
+                "startColumn": 19,
+                "startLine": 3
+              },
+              "values": [
+                "2020-01-02"
+              ]
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 29,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 3
+          }
+        }
+      ],
+      "name": "compareDate",
+      "package": "my::example",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "Boolean",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 4,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "my::example::compareDate"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

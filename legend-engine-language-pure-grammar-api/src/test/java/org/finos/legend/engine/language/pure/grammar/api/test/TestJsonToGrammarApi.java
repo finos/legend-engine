@@ -358,6 +358,18 @@ public class TestJsonToGrammarApi
     }
 
     @Test
+    public void testDateFromProtocol()
+    {
+        String expected =
+                "function my::example::compareDate(): Boolean[1]\n" +
+                        "{\n" +
+                        "   %2020-01-01 < %2020-01-02\n" +
+                        "}\n";
+        testModelFromProtocol(expected, "functionWithDate.json");
+        testModelFromProtocol(expected, "functionWithDateContainingPercent.json");
+    }
+
+    @Test
     public void testFunctionNameWithoutParameters()
     {
         String expected =
