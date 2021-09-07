@@ -14,14 +14,12 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution.test;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
-import org.finos.legend.engine.language.pure.dsl.service.execution.ServiceRunner;
 import org.finos.legend.engine.language.pure.dsl.service.execution.ServiceRunnerInput;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
@@ -35,11 +33,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -59,17 +54,16 @@ public class TestServiceRunner
     }
 
     @Test
-    public void testSimpleM2MServiceExecutionWithOutputStream() throws IOException
+    public void testSimpleM2MServiceExecutionWithOutputStream()
     {
         SimpleM2MServiceRunner simpleM2MServiceRunner = new SimpleM2MServiceRunner();
         ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
                 .newInstance()
                 .withArgs(Collections.singletonList("{\"fullName\": \"Peter Smith\"}"));
 
-        PipedOutputStream outputStream = new PipedOutputStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         simpleM2MServiceRunner.run(serviceRunnerInput, outputStream);
-        PipedInputStream pipedInputStream = new PipedInputStream(outputStream);
-        String result = IOUtils.toString(pipedInputStream, Charset.defaultCharset());
+        String result = outputStream.toString();
         Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}}", result);
     }
 
@@ -99,7 +93,7 @@ public class TestServiceRunner
         Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"}]", result);
     }
 
-    private static class SimpleM2MServiceRunner extends AbstractServicePlanExecutor implements ServiceRunner
+    private static class SimpleM2MServiceRunner extends AbstractServicePlanExecutor
     {
         private static final String modelCode = "Class test::Person\n" +
                 "{\n" +
@@ -168,7 +162,7 @@ public class TestServiceRunner
         }
     }
 
-    private static class MultiParameterM2MServiceRunner extends AbstractServicePlanExecutor implements ServiceRunner
+    private static class MultiParameterM2MServiceRunner extends AbstractServicePlanExecutor
     {
         private static final String modelCode = "Class test::Person\n" +
                 "{\n" +
