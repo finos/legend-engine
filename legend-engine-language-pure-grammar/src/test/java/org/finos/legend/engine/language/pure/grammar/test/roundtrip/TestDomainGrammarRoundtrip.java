@@ -693,7 +693,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "\n" +
                 "function main::walkTree(): main::Person[*]\n" +
                 "{\n" +
-                "   main::Person.all(%2020-12-12, %2020-12-12)\n" +
+                "   main::Person.all(%2020-12-12, %2020-12-13)\n" +
                 "}\n" +
                 "\n" +
                 "function main::walkTree1(): main::Person[*]\n" +
@@ -708,7 +708,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "\n" +
                 "function main::walkTree3(): main::Firm[*]\n" +
                 "{\n" +
-                "   main::Person.all(%2020-12-12, %2020-12-12).firm(%2020-12-12, %2020-12-12)\n" +
+                "   main::Person.all(%2020-12-12, %2020-12-13).firm(%2020-12-12, %2020-12-13)\n" +
                 "}\n");
     }
 }
