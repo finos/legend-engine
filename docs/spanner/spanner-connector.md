@@ -74,6 +74,7 @@ This authentication mode is usable only when Legend executes in a GCP environmen
 See the following docs for details :
 * https://cloud.google.com/spanner/docs/getting-started/set-up#set_up_authentication_and_authorization
 * https://cloud.google.com/docs/authentication/production 
+* https://github.com/googleapis/google-cloud-java#authentication
 
 ## Spanner JDBC Driver 
 

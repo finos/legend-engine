@@ -44,7 +44,7 @@ public class SpannerManager extends DatabaseManager {
         GCPApplicationDefaultCredentialsAuthenticationStrategy GCPApplicationDefaultCredentialsAuthenticationStrategy = authenticationStrategy;
         String url =
                 String.format(
-                        "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
+                        "jdbc:cloudspanner://spanner.googleapis.com/projects/%s/instances/%s/databases/%s",
                         extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROJECT_ID),
                         extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_INSTANCE_ID),
                         extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROJECT_ID)
