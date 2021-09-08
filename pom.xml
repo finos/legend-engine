@@ -115,7 +115,7 @@
         <hikaricp.version>3.4.5</hikaricp.version>
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
-
+        <spanner.version>2.4.2</spanner.version>
 
         <!-- Legend -->
         <legend.pure.version>1.35.2-SNAPSHOT</legend.pure.version>
@@ -1471,6 +1471,11 @@
                 <groupId>net.snowflake</groupId>
                 <artifactId>snowflake-jdbc</artifactId>
                 <version>${snowflake.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>google-cloud-spanner-jdbc</artifactId>
+                <version>${spanner.version}</version>
             </dependency>
             <!-- Database -->
 
