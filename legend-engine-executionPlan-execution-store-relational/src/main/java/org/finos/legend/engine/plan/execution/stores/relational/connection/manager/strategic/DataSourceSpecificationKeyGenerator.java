@@ -15,11 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
 
@@ -81,6 +77,14 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
             return new BigQueryDataSourceSpecificationKey(
                     bigQueryDatasourceSpecification.projectId,
                     bigQueryDatasourceSpecification.defaultDataset);
+        }
+        else if (datasourceSpecification instanceof SpannerDatasourceSpecification)
+        {
+            SpannerDatasourceSpecification spannerDatasourceSpecification = (SpannerDatasourceSpecification) datasourceSpecification;
+            return new SpannerDataSourceSpecificationKey(
+                    spannerDatasourceSpecification.projectId,
+                    spannerDatasourceSpecification.instanceId,
+                    spannerDatasourceSpecification.databaseId);
         }
         return null;
     }

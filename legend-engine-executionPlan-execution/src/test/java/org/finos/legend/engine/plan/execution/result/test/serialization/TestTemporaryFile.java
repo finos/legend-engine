@@ -19,6 +19,8 @@ import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+
 public class TestTemporaryFile
 {
     @Test
@@ -28,18 +30,25 @@ public class TestTemporaryFile
         TemporaryFile tempFileWithEndingSlash = new TemporaryFile("/tmp/");
         if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
         {
-            Assert.assertEquals(1, (int) tempFileWithoutEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '/').count());
-            Assert.assertEquals(1, (int) tempFileWithEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '/').count());
+            Assert.assertEquals(1, countPathSeparators(tempFileWithoutEndingSlash));
+            Assert.assertEquals(1, countPathSeparators(tempFileWithEndingSlash));
         }
         else if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX)
         {
-            Assert.assertEquals(2, (int) tempFileWithoutEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '/').count());
-            Assert.assertEquals(2, (int) tempFileWithEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '/').count());
+            Assert.assertEquals(2, countPathSeparators(tempFileWithoutEndingSlash));
+            Assert.assertEquals(2, countPathSeparators(tempFileWithEndingSlash));
         }
         else
         {
-            Assert.assertEquals(1, (int) tempFileWithoutEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '\\').count());
-            Assert.assertEquals(1, (int) tempFileWithEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '\\').count());
+            String systemTempDirectory = System.getProperty("java.io.tmpdir");
+            long expectedPathSeparatorCount = systemTempDirectory.chars().filter(ch -> ch == File.pathSeparatorChar).count();
+            Assert.assertEquals(expectedPathSeparatorCount, countPathSeparators(tempFileWithoutEndingSlash));
+            Assert.assertEquals(expectedPathSeparatorCount, countPathSeparators(tempFileWithEndingSlash));
         }
+    }
+
+    private long countPathSeparators(TemporaryFile temporaryFile)
+    {
+        return temporaryFile.getTemporaryPathForFile().chars().filter(ch -> ch == File.pathSeparatorChar).count();
     }
 }

@@ -76,6 +76,15 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _bigquery._defaultDataset(bigQueryDatasourceSpecification.defaultDataset);
             return _bigquery;
         }
+        else if(datasourceSpecification instanceof SpannerDatasourceSpecification)
+        {
+            SpannerDatasourceSpecification spannerDatasourceSpecification = (SpannerDatasourceSpecification) datasourceSpecification;
+            Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification _spanner =  new Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification_Impl("");
+            _spanner._projectId(spannerDatasourceSpecification.projectId);
+            _spanner._instanceId(spannerDatasourceSpecification.instanceId);
+            _spanner._databaseId(spannerDatasourceSpecification.databaseId);
+            return _spanner;
+        }
         return null;
     }
 }

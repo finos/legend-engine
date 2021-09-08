@@ -201,6 +201,24 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
+    public void testSpannerCPApplicationDefaultCredentialsAuth()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Spanner;\n" +
+                "  specification: Spanner\n" +
+                "  {\n" +
+                "    projectId: 'proj1';\n" +
+                "    instanceId: 'instance1';\n" +
+                "    databaseId: 'database1';\n" +
+                "  };\n" +
+                "  auth: GCPApplicationDefaultCredentials;\n" +
+                "}\n");
+    }
+
+    @Test
     public void testSingleMapperPostProcessors()
     {
         testPostProcessor(

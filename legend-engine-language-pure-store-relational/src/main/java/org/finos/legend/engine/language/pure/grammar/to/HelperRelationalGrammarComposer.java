@@ -582,6 +582,17 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "defaultDataset: " + convertString(spec.defaultDataset, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
+        else if (_spec instanceof SpannerDatasourceSpecification)
+        {
+            SpannerDatasourceSpecification spec = (SpannerDatasourceSpecification) _spec;
+            int baseIndentation = 1;
+            return "Spanner\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "projectId: " + convertString(spec.projectId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "instanceId: " + convertString(spec.instanceId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "databaseId: " + convertString(spec.databaseId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
 
         return null;
     }

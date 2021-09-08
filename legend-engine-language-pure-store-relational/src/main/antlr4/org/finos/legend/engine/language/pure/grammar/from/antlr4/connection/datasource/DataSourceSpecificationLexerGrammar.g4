@@ -26,3 +26,7 @@ QUOTED_IDENTIFIERS_IGNORE_CASE:             'quotedIdentifiersIgnoreCase';
 BIGQUERY_DSP:                               'BigQuery';
 PROJECT:                                    'projectId';
 DATASET:                                    'defaultDataset';
+
+SPANNER_DSP:                                'Spanner';
+SPANNER_INSTANCE:                           'instanceId';
+SPANNER_DATABASE:                           'databaseId';

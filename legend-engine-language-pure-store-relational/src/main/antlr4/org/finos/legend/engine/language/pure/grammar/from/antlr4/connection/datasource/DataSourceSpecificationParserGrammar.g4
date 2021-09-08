@@ -88,6 +88,20 @@ projectId:                                    PROJECT COLON STRING SEMI_COLON
 ;
 defaultDataset:                                    DATASET COLON STRING SEMI_COLON
 ;
+// ----------------------------- Spanner -----------------------------
+spannerDatasourceSpecification:            SPANNER_DSP
+                                                BRACE_OPEN
+                                                    (
+                                                        projectId
+                                                        | instanceId
+                                                        | databaseId
+                                                    )*
+                                                BRACE_CLOSE
+;
+instanceId:                                    SPANNER_INSTANCE COLON STRING SEMI_COLON
+;
+databaseId:                                    SPANNER_DATABASE COLON STRING SEMI_COLON
+;
 // ----------------------------- SHARED -----------------------------
 
 dbPort:                                     PORT COLON INTEGER SEMI_COLON
