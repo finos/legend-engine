@@ -159,6 +159,7 @@ public class NavigationParseTreeWalker
         {
             CLatestDate instance = new CLatestDate();
             instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            instance.multiplicity = getMultiplicityOneOne();
             return instance;
         }
         throw new EngineException("Unsupported scalar expression for property path: " + ctx.getText());

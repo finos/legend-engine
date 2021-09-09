@@ -1257,7 +1257,23 @@ public class DomainParseTreeWalker
         else if (ctx.allFunctionWithMilestoning() != null)
         {
             appliedFunction.function = "getAll";
-            appliedFunction.parameters.addAll(ListIterate.collect(ctx.allFunctionWithMilestoning().buildMilestoningVariableExpression(), b -> b.variable() != null ? variable(b.variable()) : new CLatestDate()));
+            appliedFunction.parameters.addAll(ListIterate.collect(ctx.allFunctionWithMilestoning().buildMilestoningVariableExpression(), b -> {
+                if(b.variable() != null)
+                {
+                    return variable(b.variable());
+                }
+                else if(b.DATE() != null)
+                {
+                    return new DateParseTreeWalker(b.DATE(), this.walkerSourceInformation).visitDefinition();
+                }
+                else
+                {
+                    CLatestDate latestDate = new CLatestDate();
+                    latestDate.sourceInformation = walkerSourceInformation.getSourceInformation(b);
+                    latestDate.multiplicity = getMultiplicityOneOne();
+                    return latestDate;
+                }
+            }));
             return appliedFunction;
         }
         else
