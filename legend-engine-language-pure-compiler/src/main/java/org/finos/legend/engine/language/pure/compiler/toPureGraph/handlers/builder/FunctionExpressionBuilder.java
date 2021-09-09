@@ -34,6 +34,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.navigation.type.Type;
 
 import java.util.List;
+import java.util.Optional;
 
 public abstract class FunctionExpressionBuilder
 {
@@ -80,4 +81,10 @@ public abstract class FunctionExpressionBuilder
     public abstract FunctionExpressionBuilder getFunctionExpressionBuilderAtIndex(int idx);
 
     public abstract void insertFunctionExpressionBuilderAtIndex(int idx, FunctionExpressionBuilder functionExpressionBuilder);
+
+    public abstract void addFunctionHandler(FunctionHandler functionHandler);
+
+    public abstract Boolean supportFunctionHandler(FunctionHandler handler);
+
+    public abstract Optional<Integer> getParametersSize();
 }

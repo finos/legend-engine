@@ -415,6 +415,7 @@ public class Handlers
         register("meta::pure::functions::constraints::warn_Boolean_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
 
         register("meta::pure::functions::lang::subType_Any_m__T_1__T_m_", false, ps -> res(ps.get(1)._genericType(), ps.get(0)._multiplicity()));
+        register("meta::pure::functions::lang::orElse_T_$0_1$__T_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"));
 
         register(h("meta::pure::functions::string::contains_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
                 h("meta::pure::functions::string::contains_String_$0_1$__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
@@ -522,6 +523,11 @@ public class Handlers
                 m(h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()) && "AlloySerializationConfig".equals(ps.get(2)._genericType()._rawType()._name()))),
                 m(h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3))
+                )
+        );
+        register(m(
+                m(h("meta::external::shared::format::executionPlan::externalize_Checked_MANY__Binding_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()))),
+                m(h("meta::external::shared::format::executionPlan::externalize_T_MANY__Binding_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2))
                 )
         );
 
@@ -1090,9 +1096,32 @@ public class Handlers
         register(handlers);
     }
 
+
+    public void register(UserDefinedFunctionHandler handler)
+    {
+        String functionName = handler.getFunctionName();
+        boolean functionRegisteredByName = isFunctionRegisteredByName(handler);
+        if (!functionRegisteredByName)
+        {
+            map.put(functionName, new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler));
+        }
+        else {
+            Assert.assertFalse(isFunctionRegisteredBySignature(handler, functionRegisteredByName), () -> "Function '" + handler.getFunctionSignature() + "' is already registered");
+            FunctionExpressionBuilder builder = map.get(functionName);
+            if (builder.supportFunctionHandler(handler))
+            {
+                builder.addFunctionHandler(handler);
+            }
+            else {
+                this.addFunctionHandler(handler, builder);
+            }
+        }
+        map.get(functionName).handlers().forEach(this::mayReplace);
+    }
+
     private void register(FunctionHandler... handlers)
     {
-        MultiHandlerFunctionExpressionBuilder handler = new MultiHandlerFunctionExpressionBuilder(handlers, this.pureModel);
+        MultiHandlerFunctionExpressionBuilder handler = new MultiHandlerFunctionExpressionBuilder(this.pureModel, handlers);
         Assert.assertTrue(map.get(handler.getFunctionName()) == null, () -> "Function '" + handler.getFunctionName() + "' is already registered");
         Arrays.stream(handlers).forEach(this.pureModel::loadModelFromFunctionHandler);
         for (FunctionHandler h : handlers)
@@ -1175,6 +1204,40 @@ public class Handlers
         return new TypeAndMultiplicity(this.pureModel.getGenericType(type), mul);
     }
 
+    private boolean isFunctionRegisteredByName(UserDefinedFunctionHandler handler)
+    {
+        return map.containsKey(handler.getFunctionName());
+    }
+
+    private boolean isFunctionRegisteredBySignature(UserDefinedFunctionHandler handler, Boolean isFunctionNameAlreadyRegistered)
+    {
+        return isFunctionNameAlreadyRegistered && map.get(handler.getFunctionName()).handlers().stream().anyMatch(val->val.getFunctionSignature().equals(handler.getFunctionSignature()));
+    }
+
+    public void addFunctionHandler(FunctionHandler handler, FunctionExpressionBuilder builder)
+    {
+        if (builder instanceof MultiHandlerFunctionExpressionBuilder)
+        {
+            addFunctionHandler(handler, (MultiHandlerFunctionExpressionBuilder) builder);
+        }
+        else
+        {
+            addFunctionHandler(handler, (CompositeFunctionExpressionBuilder) builder);
+        }
+    }
+
+    private void addFunctionHandler(FunctionHandler handler, MultiHandlerFunctionExpressionBuilder multiHandlerFunctionExpressionBuilder)
+    {
+        MultiHandlerFunctionExpressionBuilder multiHandler = new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler);
+        CompositeFunctionExpressionBuilder compositeFunctionExpressionBuilder = new CompositeFunctionExpressionBuilder(new MultiHandlerFunctionExpressionBuilder[]{multiHandlerFunctionExpressionBuilder, multiHandler});
+        map.put(handler.getFunctionName(), compositeFunctionExpressionBuilder);
+    }
+
+    private void addFunctionHandler(FunctionHandler handler, CompositeFunctionExpressionBuilder compositeFunctionExpressionBuilder)
+    {
+        compositeFunctionExpressionBuilder.getBuilders().add(new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler));
+
+    }
 
     // --------------------------------------------- Function expression builder ----------------------------------
 
@@ -1197,7 +1260,7 @@ public class Handlers
     public MultiHandlerFunctionExpressionBuilder m(FunctionHandler... handlers)
     {
         Arrays.stream(handlers).forEach(this.pureModel::loadModelFromFunctionHandler);
-        return new MultiHandlerFunctionExpressionBuilder(handlers, this.pureModel);
+        return new MultiHandlerFunctionExpressionBuilder(this.pureModel, handlers);
     }
 
     public CompositeFunctionExpressionBuilder m(FunctionExpressionBuilder... builders)

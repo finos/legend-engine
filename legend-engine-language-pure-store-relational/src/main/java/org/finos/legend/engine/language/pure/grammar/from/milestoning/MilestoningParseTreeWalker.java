@@ -93,14 +93,14 @@ public class MilestoningParseTreeWalker
     private static CDate visitStrictDate(CStrictDate strictDate, String val)
     {
         strictDate.values = new ArrayList<>();
-        strictDate.values.add(val);
+        strictDate.values.add(val.substring(val.lastIndexOf('%') + 1));
         return strictDate;
     }
 
     private static CDate visitDateTime(CDateTime dateTime, String val)
     {
         dateTime.values = new ArrayList<>();
-        dateTime.values.add(val);
+        dateTime.values.add(val.substring(val.lastIndexOf('%') + 1));
         return dateTime;
     }
 }

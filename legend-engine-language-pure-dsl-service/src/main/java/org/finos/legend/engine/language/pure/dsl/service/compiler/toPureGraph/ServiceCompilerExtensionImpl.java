@@ -17,6 +17,8 @@ package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service_Impl;

@@ -72,7 +72,7 @@ public class AggregationAwareMappingParseTreeWalker
         MappingElementParser extraParser = this.parserContext.getPureGrammarParserExtensions().getExtraMappingElementParser(parserName);
         String mappingInput = this.input.getText(new Interval(ctx.BRACE_OPEN().getSymbol().getStartIndex() + 1, ctx.MAPPING_ISLAND_BRACE_CLOSE().getSymbol().getStartIndex() - 1));
 
-        ParseTreeWalkerSourceInformation mappingElementWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation mappingElementWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         MappingElementSourceCode mappingElementSourceCode = new MappingElementSourceCode(mappingInput, parserName, mappingElementWalkerSourceInformation,
                 this.mappingElementSourceCode.mappingElementParserRuleContext, this.walkerSourceInformation);
 
@@ -111,7 +111,7 @@ public class AggregationAwareMappingParseTreeWalker
         MappingElementParser extraParser = this.parserContext.getPureGrammarParserExtensions().getExtraMappingElementParser("AggregateSpecification");
         String inputText = this.input.getText(new Interval(ctx.BRACE_OPEN().getSymbol().getStartIndex() + 1, ctx.MAPPING_ISLAND_BRACE_CLOSE().getSymbol().getStartIndex() - 1));
 
-        ParseTreeWalkerSourceInformation sourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation sourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         MappingElementSourceCode sourceCode = new MappingElementSourceCode(inputText, "AggregateSpecification", sourceInformation, this.mappingElementSourceCode.mappingElementParserRuleContext, this.walkerSourceInformation);
 
         Object element = extraParser.parse(sourceCode, this.parserContext);
@@ -133,7 +133,7 @@ public class AggregationAwareMappingParseTreeWalker
         MappingElementParser extraParser = this.parserContext.getPureGrammarParserExtensions().getExtraMappingElementParser(parserName);
         String mappingInput = this.input.getText(new Interval(ctx.BRACE_OPEN().getSymbol().getStartIndex() + 1, ctx.MAPPING_ISLAND_BRACE_CLOSE().getSymbol().getStartIndex() - 1));
 
-        ParseTreeWalkerSourceInformation mappingElementWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation mappingElementWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         MappingElementSourceCode mappingElementSourceCode = new MappingElementSourceCode(mappingInput, parserName, mappingElementWalkerSourceInformation, this.mappingElementSourceCode.mappingElementParserRuleContext, this.walkerSourceInformation);
 
 
@@ -176,7 +176,7 @@ public class AggregationAwareMappingParseTreeWalker
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
 
-        ParseTreeWalkerSourceInformation combinedExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation combinedExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
 
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
         ValueSpecification valueSpecification = new DomainParser().parseCombinedExpression(lambdaString, combinedExpressionSourceInformation, this.parserContext);

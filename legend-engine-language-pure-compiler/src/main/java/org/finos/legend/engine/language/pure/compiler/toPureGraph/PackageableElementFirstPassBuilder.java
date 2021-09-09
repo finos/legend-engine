@@ -270,7 +270,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(packageableConnection.name);
         pack._childrenAdd(stub);
         // NOTE: the whole point of this processing is to put the Pure Connection in an index
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection connection = packageableConnection.connectionValue.accept(new ConnectionBuilder(this.context));
+        final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
         this.context.pureModel.connectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), connection);
         return stub;
     }

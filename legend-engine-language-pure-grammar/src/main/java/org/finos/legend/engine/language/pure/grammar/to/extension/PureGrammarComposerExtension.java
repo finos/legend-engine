@@ -26,7 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public interface PureGrammarComposerExtension
 {
@@ -53,7 +52,7 @@ public interface PureGrammarComposerExtension
     /**
      * This method takes in a set of elements and remove ones supported by the element plugins then compose them, hence `free` section
      */
-    default List<Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    default List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
         return new ArrayList<>();
     }

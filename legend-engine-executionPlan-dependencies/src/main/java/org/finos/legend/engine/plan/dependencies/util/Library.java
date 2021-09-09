@@ -850,6 +850,50 @@ public class Library
         return in.get(0);
     }
 
+    public static <T> T at(T in, long index)
+    {
+        if(in == null)
+        {
+            throw new IllegalStateException("The system is trying to get an element at offset " + index + " where the collection is of size 0");
+        }
+        if(index != 0)
+        {
+            throw new IllegalStateException("The system is trying to get an element at offset " + index + " where the collection is of size 1");
+        }
+        return in;
+    }
+
+    public static <T> T at(List<T> in, long index)
+    {
+        if (in == null)
+        {
+            throw new IllegalStateException("The system is trying to get an element at offset " + index + " where the collection is of size 0");
+        }
+        if(index < 0 || index >= in.size())
+        {
+            throw new IllegalStateException("The system is trying to get an element at offset " + index + " where the collection is of size " + in.size());
+        }
+        return in.get((int)index);
+    }
+
+    public static <T> Integer indexOf(T in, T object)
+    {
+        if(in == null)
+        {
+            return -1;
+        }
+        return in.equals(object) ? 0 : -1;
+    }
+
+    public static <T> Integer indexOf(List<T> in, T object)
+    {
+        if (in == null || in.size() == 0)
+        {
+            return -1;
+        }
+        return in.indexOf(object);
+    }
+
     public static <R> R match(Object object, List<Predicate<Object>> predicates, List<Function<Object, R>> actions)
     {
         for (int i = 0; i < predicates.size(); i++)

@@ -1,0 +1,11 @@
+>>>test::gen::Firm
+Class test::gen::Firm
+{
+  employees: test::gen::Person[*];
+}
+>>>test::gen::Person
+Class test::gen::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}

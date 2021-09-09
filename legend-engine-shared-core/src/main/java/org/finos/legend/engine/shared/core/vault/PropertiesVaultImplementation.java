@@ -4,7 +4,7 @@ import java.util.Properties;
 
 public class PropertiesVaultImplementation implements VaultImplementation
 {
-    private Properties properties;
+    private final Properties properties;
 
     public PropertiesVaultImplementation(Properties properties)
     {
@@ -15,5 +15,11 @@ public class PropertiesVaultImplementation implements VaultImplementation
     public String getValue(String vaultKey)
     {
         return properties.getProperty(vaultKey);
+    }
+
+    @Override
+    public boolean hasValue(String vaultKey)
+    {
+        return properties.containsKey(vaultKey);
     }
 }

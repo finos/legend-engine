@@ -16,9 +16,11 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.validator;
 
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class PureModelContextDataValidator
@@ -44,12 +46,16 @@ public class PureModelContextDataValidator
                 throw new EngineException("Element name is required", el.sourceInformation, EngineErrorType.COMPILATION);
             }
             // Duplication check
-            // FIXME: handle user-defined functions with same name but different signature
-            String elPath = pureModel.buildPackageString(el._package, el.name);
+            String elPath = pureModel.buildPackageString(el._package, this.getElementPath(el));
             if (!allElementPaths.add(elPath))
             {
                 throw new EngineException("Duplicated element '" + elPath + "'", el.sourceInformation, EngineErrorType.COMPILATION);
             }
         });
+    }
+
+    private String getElementPath(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement el)
+    {
+        return el instanceof Function ? HelperModelBuilder.getSignature((Function) el) : el.name;
     }
 }

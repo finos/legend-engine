@@ -13,4 +13,10 @@ public class VoidVault implements VaultImplementation
     {
         throw new RuntimeException("No vault was provided");
     }
+
+    @Override
+    public boolean hasValue(String vaultKey)
+    {
+        throw new RuntimeException("No vault was provided");
+    }
 }

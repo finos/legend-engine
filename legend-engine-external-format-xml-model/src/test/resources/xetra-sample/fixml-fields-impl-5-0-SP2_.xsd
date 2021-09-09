@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.fixprotocol.org/FIXML-5-0-SP2" targetNamespace="http://www.fixprotocol.org/FIXML-5-0-SP2" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xs:include schemaLocation="fixml-fields-base-5-0-SP2_.xsd"/>
+  <xs:simpleType name="SecurityIDSource_t">
+    <xs:restriction base="SecurityIDSource_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingSecurityIDSource_t">
+    <xs:restriction base="UnderlyingSecurityIDSource_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="UnderlyingInstrumentSecurityIDSource_t">
+    <xs:restriction base="UnderlyingInstrumentSecurityIDSource_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityType_t">
+    <xs:restriction base="SecurityType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="PutOrCall_t">
+    <xs:restriction base="PutOrCall_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityAltIDSource_t">
+    <xs:restriction base="SecurityAltIDSource_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="MatchType_t">
+    <xs:restriction base="MatchType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="LegSecurityIDSource_t">
+    <xs:restriction base="LegSecurityIDSource_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="LegSecurityType_t">
+    <xs:restriction base="LegSecurityType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="LegSide_t">
+    <xs:restriction base="LegSide_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="TrdType_t">
+    <xs:restriction base="TrdType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="EventType_t">
+    <xs:restriction base="EventType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="PriceType_t">
+    <xs:restriction base="PriceType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContractCycleType_t">
+    <xs:restriction base="ContractCycleType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContractDisplayInstruction_t">
+    <xs:restriction base="ContractDisplayInstruction_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentPartyIDSource_t">
+    <xs:restriction base="InstrumentPartyIDSource_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentPartyRole_t">
+    <xs:restriction base="InstrumentPartyRole_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentPartyRoleQualifier_t">
+    <xs:restriction base="InstrumentPartyRoleQualifier_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrAttribType_t">
+    <xs:restriction base="InstrAttribType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="LastFragment_t">
+    <xs:restriction base="LastFragment_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityStatus_t">
+    <xs:restriction base="SecurityStatus_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentStatus_t">
+    <xs:restriction base="MarketSegmentStatus_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="SecurityUpdateAction_t">
+    <xs:restriction base="SecurityUpdateAction_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="MDBookType_t">
+    <xs:restriction base="MDBookType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="ImpliedMarketIndicator_t">
+    <xs:restriction base="ImpliedMarketIndicator_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="PostTradeAnonymity_t">
+    <xs:restriction base="PostTradeAnonymity_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="ExerciseStyle_t">
+    <xs:restriction base="ExerciseStyle_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="MultilegModel_t">
+    <xs:restriction base="MultilegModel_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="QuoteSideIndicator_t">
+    <xs:restriction base="QuoteSideIndicator_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="QuoteSideModelType_t">
+    <xs:restriction base="QuoteSideModelType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="ProductComplex_t">
+    <xs:restriction base="ProductComplex_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentRelationship_t">
+    <xs:restriction base="MarketSegmentRelationship_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentScopeOperator_t">
+    <xs:restriction base="InstrumentScopeOperator_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentType_t">
+    <xs:restriction base="MarketSegmentType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="MarketSegmentSubType_t">
+    <xs:restriction base="MarketSegmentSubType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="CalculationMethod_t">
+    <xs:restriction base="CalculationMethod_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="BusinessDayType_t">
+    <xs:restriction base="BusinessDayType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="AuctionType_t">
+    <xs:restriction base="AuctionType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="TradingSessionId_t">
+    <xs:restriction base="TradingSessionId_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="TradingSessionSubId_t">
+    <xs:restriction base="TradingSessionSubId_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="AssetType_t">
+    <xs:restriction base="AssetType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="AssetSubType_t">
+    <xs:restriction base="AssetSubType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="DepositType_t">
+    <xs:restriction base="DepositType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="DecaySplit_t">
+    <xs:restriction base="DecaySplit_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="AccruedInterestCalculationMethod_t">
+    <xs:restriction base="AccruedInterestCalculationMethod_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="InstrumentAuctionType_t">
+    <xs:restriction base="InstrumentAuctionType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="CouponType_t">
+    <xs:restriction base="CouponType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="FlatIndicator_t">
+    <xs:restriction base="FlatIndicator_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="WarrantType_t">
+    <xs:restriction base="WarrantType_enum_t"/>
+  </xs:simpleType>
+  <xs:simpleType name="USApproval_t">
+    <xs:restriction base="USApproval_enum_t"/>
+  </xs:simpleType>
+</xs:schema>

@@ -19,12 +19,63 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.37.1-SNAPSHOT</version>
+        <version>2.41.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-external-format-protobuf</artifactId>
     <name>Legend Engine - External - Format - Protobuf</name>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includePluginDependencies>true</includePluginDependencies>
+                    <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
+                    <arguments>
+                        <argument>meta::external::format::protobuf::metamodel</argument>
+                        <argument>org.finos.legend.engine.external.format.protobuf</argument>
+                        <argument>${project.build.directory}/generated-sources/</argument>
+                    </arguments>
+                    <classpathScope>test</classpathScope>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-protocol-generation</artifactId>
+                        <version>2.41.1-SNAPSHOT</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/target/generated-sources/</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <!-- PURE -->

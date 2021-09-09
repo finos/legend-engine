@@ -96,10 +96,14 @@ public class HelperValueSpecificationBuilder
         GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity());
         ctx.removeLastVariableLevel();
         ctx.pop();
-        return new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
-                ._openVariables(cleanedOpenVariables)
-                ._expressionSequence(valueSpecifications);
+
+        LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId)
+                                        ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
+                                        ._openVariables(cleanedOpenVariables)
+                                        ._expressionSequence(valueSpecifications);
+
+        return context.getCompilerExtensions().getExtraLambdaPostProcessors().stream()
+                .reduce(lambda, (originalLambda, processor) -> processor.value(originalLambda, context, ctx), (p1, p2) -> p1);
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification processProperty(CompileContext context, MutableList<String> openVariables, ProcessingContext processingContext, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, String property, SourceInformation sourceInformation)

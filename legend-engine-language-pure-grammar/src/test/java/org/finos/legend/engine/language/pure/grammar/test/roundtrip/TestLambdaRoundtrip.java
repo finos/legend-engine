@@ -352,7 +352,7 @@ public class TestLambdaRoundtrip
         Lambda postJSON_lambda;
         try
         {
-            Lambda lambda = new DomainParser().parseLambda(text, "");
+            Lambda lambda = new DomainParser().parseLambda(text, "",true);
             String json = objectMapper.writeValueAsString(lambda);
             postJSON_lambda = objectMapper.readValue(json, Lambda.class);
         }

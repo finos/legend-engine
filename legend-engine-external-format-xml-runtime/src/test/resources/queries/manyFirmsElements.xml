@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<world>
+    <continent>
+        <name>North America</name>
+        <firms>
+            <firm>
+                <name>Acme Inc.</name>
+                <ranking>2</ranking>
+            </firm>
+            <firm>
+                <name>Globex Corp</name>
+            </firm>
+        </firms>
+    </continent>
+    <continent name="Europe">
+        <name>Europe</name>
+        <firms>
+            <firm>
+                <name>Widget Engineering</name>
+                <ranking>1</ranking>
+            </firm>
+            <firm>
+                <name>Allied British Plastics</name>
+                <ranking>39</ranking>
+            </firm>
+        </firms>
+    </continent>
+</world>

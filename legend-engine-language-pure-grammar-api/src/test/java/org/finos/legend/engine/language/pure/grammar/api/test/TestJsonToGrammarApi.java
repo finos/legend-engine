@@ -357,6 +357,39 @@ public class TestJsonToGrammarApi
 
     }
 
+    @Test
+    public void testDateFromProtocol()
+    {
+        String expected =
+                "function my::example::compareDate(): Boolean[1]\n" +
+                        "{\n" +
+                        "   %2020-01-01 < %2020-01-02\n" +
+                        "}\n";
+        testModelFromProtocol(expected, "functionWithDate.json");
+        testModelFromProtocol(expected, "functionWithDateContainingPercent.json");
+    }
+
+    @Test
+    public void testFunctionNameWithoutParameters()
+    {
+        String expected =
+                "function domainModel::migration::test::account::getRowsResult(): meta::pure::metamodel::type::Any[*]\n" +
+                        "{\n" +
+                        "   1\n" +
+                        "}\n";
+        testModelFromProtocol(expected, "simpleFunctionWithoutParameters.json");
+    }
+
+    @Test
+    public void testFunctionNameWithParameters()
+    {
+        String expected ="function domainModel::migration::test::account::getRowsResult(a: String[1]): meta::pure::metamodel::type::Any[*]\n" +
+                "{\n" +
+                "   1\n" +
+                "}\n";
+        testModelFromProtocol(expected, "simpleFunctionWithParameters.json");
+    }
+
     private void testMappingFromProtocol(String expected, String protocolPath)
     {
         try

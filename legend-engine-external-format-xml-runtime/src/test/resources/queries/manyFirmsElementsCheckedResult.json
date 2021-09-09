@@ -1,0 +1,79 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": [
+    {
+      "defects": [],
+      "source": {
+        "defects": [],
+        "source": {
+          "number": 1,
+          "record": "<firm><name>Acme Inc.</name><ranking>2</ranking></firm>"
+        },
+        "value": {
+          "name": "Acme Inc.",
+          "ranking": 2
+        }
+      },
+      "value": {
+        "name": "Acme Inc.",
+        "ranking": 2
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "defects": [],
+        "source": {
+          "number": 2,
+          "record": "<firm><name>Globex Corp</name></firm>"
+        },
+        "value": {
+          "name": "Globex Corp",
+          "ranking": null
+        }
+      },
+      "value": {
+        "name": "Globex Corp",
+        "ranking": null
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "defects": [],
+        "source": {
+          "number": 3,
+          "record": "<firm><name>Widget Engineering</name><ranking>1</ranking></firm>"
+        },
+        "value": {
+          "name": "Widget Engineering",
+          "ranking": 1
+        }
+      },
+      "value": {
+        "name": "Widget Engineering",
+        "ranking": 1
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "defects": [],
+        "source": {
+          "number": 4,
+          "record": "<firm><name>Allied British Plastics</name><ranking>39</ranking></firm>"
+        },
+        "value": {
+          "name": "Allied British Plastics",
+          "ranking": 39
+        }
+      },
+      "value": {
+        "name": "Allied British Plastics",
+        "ranking": 39
+      }
+    }
+  ]
+}

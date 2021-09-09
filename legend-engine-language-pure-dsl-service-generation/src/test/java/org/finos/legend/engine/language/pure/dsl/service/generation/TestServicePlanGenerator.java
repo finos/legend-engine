@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -33,6 +34,10 @@ import java.util.Objects;
 
 public class TestServicePlanGenerator
 {
+    private class DummyExecutionOption extends ExecutionOption
+    {
+    }
+
     @Test
     public void testSingleExecutionServiceGenerationJSON()
     {
@@ -42,6 +47,25 @@ public class TestServicePlanGenerator
         Assert.assertTrue(service.execution instanceof PureSingleExecution);
         ExecutionPlan plan = ServicePlanGenerator.generateServiceExecutionPlan(service, null, pureModel, "vX_X_X", PlanPlatform.JAVA, Lists.mutable.empty(), LegendPlanTransformers.transformers);
         Assert.assertTrue(plan instanceof SingleExecutionPlan);
+    }
+
+    @Test
+    public void testSingleExecutionServiceGenerationWithExecutionOptions()
+    {
+        PureModelContextData data = loadModelDataFromResource("simpleJsonService.json");
+        PureModel pureModel = new PureModel(data, null, DeploymentMode.TEST);
+        Service service = data.getElementsOfType(Service.class).get(0);
+        Assert.assertTrue(service.execution instanceof PureSingleExecution);
+        ((PureSingleExecution) service.execution).executionOptions = Lists.mutable.of(new DummyExecutionOption());
+        try
+        {
+            ExecutionPlan plan = ServicePlanGenerator.generateServiceExecutionPlan(service, null, pureModel, "vX_X_X", PlanPlatform.JAVA, Lists.mutable.empty(), LegendPlanTransformers.transformers);
+            Assert.fail("Expected Exception, since we did not include the dummy execution option in the compiler extensions");
+        }
+        catch (Exception e)
+        {
+            Assert.assertEquals("Unsupported execution option type 'class org.finos.legend.engine.language.pure.dsl.service.generation.TestServicePlanGenerator$DummyExecutionOption'", e.getMessage());
+        }
     }
 
     private PureModelContextData loadModelDataFromResource(String resourceName)

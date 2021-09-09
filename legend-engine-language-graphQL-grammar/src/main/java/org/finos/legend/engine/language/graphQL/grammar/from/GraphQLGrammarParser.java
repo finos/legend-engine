@@ -19,18 +19,17 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.graphQL.grammar.from.antlr4.GraphQLLexer;
 import org.finos.legend.engine.language.graphQL.grammar.from.antlr4.GraphQLParser;
-import org.finos.legend.engine.protocol.graphQL.v1.Definition;
-import org.finos.legend.engine.protocol.graphQL.v1.Document;
-import org.finos.legend.engine.protocol.graphQL.v1.executable.*;
-import org.finos.legend.engine.protocol.graphQL.v1.typeSystem.*;
-import org.finos.legend.engine.protocol.graphQL.v1.value.*;
+import org.finos.legend.engine.protocol.graphQL.Definition;
+import org.finos.legend.engine.protocol.graphQL.Document;
+import org.finos.legend.engine.protocol.graphQL.ExecutableDocument;
+import org.finos.legend.engine.protocol.graphQL.executable.*;
+import org.finos.legend.engine.protocol.graphQL.typeSystem.*;
+import org.finos.legend.engine.protocol.graphQL.value.*;
 
 import java.util.Collections;
-import java.util.List;
 
 public class GraphQLGrammarParser
 {
@@ -62,7 +61,7 @@ public class GraphQLGrammarParser
 
     private Document visitDocument(GraphQLParser.DocumentContext documentContext)
     {
-        Document document = new Document();
+        Document document = new ExecutableDocument();
         document.definitions = ListIterate.collect(documentContext.definition(), this::visitDefinition);
         return document;
     }
