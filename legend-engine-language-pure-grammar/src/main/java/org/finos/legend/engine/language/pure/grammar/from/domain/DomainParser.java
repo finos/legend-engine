@@ -77,14 +77,14 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return section;
     }
 
-    public Lambda parseLambda(String code, String lambdaId)
+    public Lambda parseLambda(String code, String lambdaId, boolean returnSourceInfo)
     {
-        return parseLambda(code, lambdaId, new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty())));
+        return parseLambda(code, lambdaId, new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty())), returnSourceInfo);
     }
 
-    public Lambda parseLambda(String code, String lambdaId, PureGrammarParserContext parserContext)
+    public Lambda parseLambda(String code, String lambdaId, PureGrammarParserContext parserContext, boolean returnSourceInfo)
     {
-        ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(lambdaId, 0, 0).build();
+        ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(lambdaId, 0, 0).withReturnSourceInfo(returnSourceInfo).build();
         String prefix = "function go():Any[*]{";
         String fullCode = prefix + code + "}";
         ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(lambdaWalkerSourceInformation)

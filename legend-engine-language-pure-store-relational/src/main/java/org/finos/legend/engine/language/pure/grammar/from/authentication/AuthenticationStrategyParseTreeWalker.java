@@ -46,13 +46,13 @@ public class AuthenticationStrategyParseTreeWalker
         return authStrategy;
     }
 
-    public DeltaLakeAuthenticationStrategy visitDeltaLakeAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.DeltaLakeAuthContext deltaLakeAuthContext)
+    public ApiTokenAuthenticationStrategy visitApiTokenAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.ApiTokenAuthContext apiTokenAuthContext)
     {
-        DeltaLakeAuthenticationStrategy deltaLakeAuthenticationStrategy = new DeltaLakeAuthenticationStrategy();
-        deltaLakeAuthenticationStrategy.sourceInformation = code.getSourceInformation();
-        AuthenticationStrategyParserGrammar.DeltaLakeApiTokenContext apiToken = PureGrammarParserUtility.validateAndExtractRequiredField(deltaLakeAuthContext.deltaLakeApiToken(), "apiToken", code.getSourceInformation());
-        deltaLakeAuthenticationStrategy.apiToken = PureGrammarParserUtility.fromGrammarString(apiToken.STRING().getText(), true);
-        return deltaLakeAuthenticationStrategy;
+        ApiTokenAuthenticationStrategy apiTokenAuthenticationStrategy = new ApiTokenAuthenticationStrategy();
+        apiTokenAuthenticationStrategy.sourceInformation = code.getSourceInformation();
+        AuthenticationStrategyParserGrammar.ApiTokenContext apiToken = PureGrammarParserUtility.validateAndExtractRequiredField(apiTokenAuthContext.apiToken(), "apiToken", code.getSourceInformation());
+        apiTokenAuthenticationStrategy.apiToken = PureGrammarParserUtility.fromGrammarString(apiToken.STRING().getText(), true);
+        return apiTokenAuthenticationStrategy;
     }
 
     public SnowflakePublicAuthenticationStrategy visitSnowflakePublicAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.SnowflakePublicAuthContext snowflakePublicAuth)

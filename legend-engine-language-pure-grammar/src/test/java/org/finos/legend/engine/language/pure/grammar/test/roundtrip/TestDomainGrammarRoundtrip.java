@@ -353,6 +353,12 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "{\n" +
                 "   %1970-01-01T00:00:00.000\n" +
                 "}\n");
+
+        test("###Pure\n" +
+                "function test::getStrictDate(): StrictDate[1]\n" +
+                "{\n" +
+                "   %1970-01-01\n" +
+                "}\n");
     }
 
     @Test
@@ -674,5 +680,41 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                         "   [1, $input]->meta::pure::functions::math::max()\n"+
                         "}\n";
         test(code);
+    }
+
+    @Test
+    public void testLambdaWithBiTemporalClass()
+    {
+        test("###Pure\n" +
+                "Class <<temporal.bitemporal>> main::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  firm: main::Firm[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.bitemporal>> main::Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function main::walkTree(): main::Person[*]\n" +
+                "{\n" +
+                "   main::Person.all(%2020-12-12, %2020-12-13)\n" +
+                "}\n" +
+                "\n" +
+                "function main::walkTree1(): main::Person[*]\n" +
+                "{\n" +
+                "   main::Person.all(%latest, %latest)\n" +
+                "}\n" +
+                "\n" +
+                "function main::walkTree2(): main::Person[*]\n" +
+                "{\n" +
+                "   main::Person.all(%latest, %2020-12-12)\n" +
+                "}\n" +
+                "\n" +
+                "function main::walkTree3(): main::Firm[*]\n" +
+                "{\n" +
+                "   main::Person.all(%2020-12-12, %2020-12-13).firm(%2020-12-12, %2020-12-13)\n" +
+                "}\n");
     }
 }

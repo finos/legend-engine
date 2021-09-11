@@ -150,7 +150,8 @@ public class NavigationParseTreeWalker
         {
             CDateTime instance = new CDateTime();
             instance.multiplicity = this.getMultiplicityOneOne();
-            instance.values = Lists.mutable.with(ctx.getText());
+            String var = ctx.getText();
+            instance.values = Lists.mutable.with(var.substring(var.lastIndexOf('%') + 1));
             instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
             return instance;
         }
@@ -158,6 +159,7 @@ public class NavigationParseTreeWalker
         {
             CLatestDate instance = new CLatestDate();
             instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            instance.multiplicity = getMultiplicityOneOne();
             return instance;
         }
         throw new EngineException("Unsupported scalar expression for property path: " + ctx.getText());

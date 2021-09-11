@@ -56,7 +56,7 @@ public class TestDelimitedBlankLines extends AbstractDriverTest
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
                                                   "{\n" +
                                                   "  scope.untilEof;\n" +
-                                                  "  delimiter : '\t';\n" +
+                                                  "  delimiter : '\\t';\n" +
                                                   "  mayContainBlankLines;\n" +
                                                   "\n" +
                                                   "  Record\n" +

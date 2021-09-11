@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+        xmlns="http://www.ngm.se/ns/ExchangeDataSchema/2.6"
+        elementFormDefault="qualified"
+        targetNamespace="http://www.ngm.se/ns/ExchangeDataSchema/2.6"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:annotation>
+        <xs:documentation>
+            <Title>Exchange Data Specification Schema</Title>
+            <Description>Exchange Data Specification and Classification Schema for Market Data.</Description>
+            <Status>
+                <Status>Production</Status>other
+                <Description>Nordic Growth Market Exchange Data Specification Schema</Description>
+                <Version>2.6</Version>
+            </Status>
+        </xs:documentation>
+    </xs:annotation>
+    <xs:element name="ExchangeData">
+        <xs:annotation>
+            <xs:documentation>The root element for this feed.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="MarketSegment" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>A parent market segment.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="instrumentCount" type="xs:integer"/>
+            <xs:attribute name="tradeCount" type="xs:integer"/>
+            <xs:attribute name="time" use="required" type="xs:dateTime"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="MarketSegment">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="MarketSegment" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>A child market segment.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="Instrument" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>An financial instrument.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="TurnoverSummary" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="marketId" use="required" type="xs:string"/>
+            <xs:attribute name="segmentId" use="required" type="xs:string"/>
+            <xs:attribute name="name" use="required" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="TurnoverSummary">
+        <xs:complexType>
+            <xs:attribute name="currency" use="required" type="xs:string"/>
+            <xs:attribute name="priceType" use="required" type="xs:string"/>
+            <xs:attribute name="turnover" use="required" type="xs:decimal"/>
+            <xs:attribute name="volume" use="required" type="xs:integer"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="Instrument">
+        <xs:annotation>
+            <xs:documentation>An instrument at the NGM exchange.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="LevelData" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>The instrument's current market data view.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="ClosingDatas" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>The instrument's closing data.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="Trades" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>The instrument's trades.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="InstrumentDetail" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>The instrument's detail information in XML.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="ListingInfo" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>The instrument's listing information.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="CorporateActions" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>The instrument's listing information.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="id" use="required" type="xs:string"/>
+            <xs:attribute name="isin" type="xs:string"/>
+            <xs:attribute name="name" type="xs:string"/>
+            <xs:attribute name="symbol" use="required" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="statusType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="PRE_OPEN"/>
+            <xs:enumeration value="OPENING_AUCTION"/>
+            <xs:enumeration value="OPEN"/>
+            <xs:enumeration value="CLOSING_AUCTION"/>
+            <xs:enumeration value="CLOSED"/>
+            <xs:enumeration value="POST_OPEN"/>
+            <xs:enumeration value="HALTED"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="haltReasonType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="REGULATORY_HALT"/>
+            <xs:enumeration value="OTHER"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="LevelData">
+        <xs:annotation>
+            <xs:documentation>Detailed information about the current market view.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="averagePrice" type="xs:decimal"/>
+            <xs:attribute name="buyPrice" type="xs:decimal"/>
+            <xs:attribute name="buyQuantity" type="xs:integer"/>
+            <xs:attribute name="diffPercent" type="xs:decimal"/>
+            <xs:attribute name="diffPrice" type="xs:decimal"/>
+            <xs:attribute name="firstPrice" type="xs:decimal"/>
+            <xs:attribute name="flags" type="xs:string"/>
+            <xs:attribute name="haltReason" type="haltReasonType"/>
+            <xs:attribute name="haltReasonDueToRelated" type="xs:boolean"/>
+            <xs:attribute name="haltReasonInViewOfCommon" type="xs:boolean"/>
+            <xs:attribute name="highPrice" type="xs:decimal"/>
+            <xs:attribute name="openPrice" type="xs:decimal"/>
+            <xs:attribute name="lastPrice" type="xs:decimal"/>
+            <xs:attribute name="lateTurnover" type="xs:decimal"/>
+            <xs:attribute name="lateVolume" type="xs:integer"/>
+            <xs:attribute name="lowPrice" type="xs:decimal"/>
+            <xs:attribute name="closePrice" type="xs:decimal"/>
+            <xs:attribute name="previousClosingPrice" type="xs:decimal"/>
+            <xs:attribute name="sellPrice" type="xs:decimal"/>
+            <xs:attribute name="sellQuantity" type="xs:integer"/>
+            <xs:attribute name="status" use="required" type="statusType"/>
+            <xs:attribute name="turnover" use="required" type="xs:decimal"/>
+            <xs:attribute name="volume" use="required" type="xs:integer"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ClosingDatas">
+        <xs:annotation>
+            <xs:documentation>A collection of closing datas.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ClosingData" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="fromTime" use="required" type="xs:dateTime"/>
+            <xs:attribute name="toTime" use="required" type="xs:dateTime"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ClosingData">
+        <xs:annotation>
+            <xs:documentation>Detailed information of a days closing data.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="date" use="required" type="xs:date"/>
+            <xs:attribute name="averagePrice" type="xs:decimal"/>
+            <xs:attribute name="buyPrice" type="xs:decimal"/>
+            <xs:attribute name="buyQuantity" type="xs:integer"/>
+            <xs:attribute name="diffPercent" type="xs:decimal"/>
+            <xs:attribute name="diffPrice" type="xs:decimal"/>
+            <xs:attribute name="firstPrice" type="xs:decimal"/>
+            <xs:attribute name="highPrice" type="xs:decimal"/>
+            <xs:attribute name="openPrice" type="xs:decimal"/>
+            <xs:attribute name="lastPrice" type="xs:decimal"/>
+            <xs:attribute name="lateTurnover" type="xs:decimal"/>
+            <xs:attribute name="lateVolume" type="xs:integer"/>
+            <xs:attribute name="lowPrice" type="xs:decimal"/>
+            <xs:attribute name="sellPrice" type="xs:decimal"/>
+            <xs:attribute name="sellQuantity" type="xs:integer"/>
+            <xs:attribute name="closePrice" type="xs:decimal"/>
+            <xs:attribute name="previousClosingPrice" type="xs:decimal"/>
+            <xs:attribute name="turnover" use="required" type="xs:decimal"/>
+            <xs:attribute name="volume" use="required" type="xs:integer"/>
+            <xs:attribute name="mmq" type="xs:boolean"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="CorporateActions">
+        <xs:annotation>
+            <xs:documentation>A collection of corporate actions.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="CorporateAction" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="eventType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="CASH_DIVIDEND"/>
+            <xs:enumeration value="OTHER"/>
+            <xs:enumeration value="REVERSE_SPLIT"/>
+            <xs:enumeration value="RIGHTS_ISSUE"/>
+            <xs:enumeration value="SPLIT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="CorporateAction">
+        <xs:annotation>
+            <xs:documentation>Detailed information about corporate action.
+                <Description>The adjustmentfactor of a corporate action is the numerator divided by the denominator and
+                    is used when adjusting
+                    historical values for the corporate action. Prices should be multiplied with the factor while
+                    quantities should be divided by the factor."
+                </Description>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="executionDate" type="xs:date"/>
+            <xs:attribute name="eventType" type="eventType"/>
+            <xs:attribute name="description" type="xs:string"/>
+            <xs:attribute name="isExecuted" type="xs:boolean"/>
+            <xs:attribute name="adjustmentFactorNumerator" type="xs:integer"/>
+            <xs:attribute name="adjustmentFactorDenominator" type="xs:integer"/>
+            <xs:attribute name="dividend" type="xs:integer"/>
+            <xs:attribute name="adjustmentFactor" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="matchType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ONE_PARTY_TRADE"/>
+            <xs:enumeration value="TWO_PARTY_TRADE"/>
+            <xs:enumeration value="AUTO_MATCH"/>
+            <xs:enumeration value="CALL_AUCTION"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tradeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="REGULAR"/>
+            <xs:enumeration value="EXCHANGE_GRANTED"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="aggressorSideType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="BUY"/>
+            <xs:enumeration value="SELL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="lotType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ROUND"/>
+            <xs:enumeration value="ODD"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="Trades">
+        <xs:annotation>
+            <xs:documentation>A collection of trades.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="Trade" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="tradeCount" type="xs:integer"/>
+            <xs:attribute name="fromTime" use="required" type="xs:dateTime"/>
+            <xs:attribute name="toTime" use="required" type="xs:dateTime"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="Trade">
+        <xs:annotation>
+            <xs:documentation>A trade's information.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="tradeId" use="required" type="xs:string"/>
+            <xs:attribute name="tradeTime" use="required" type="xs:dateTime"/>
+            <xs:attribute name="price" use="required" type="xs:decimal"/>
+            <xs:attribute name="quantity" use="required" type="xs:integer"/>
+            <xs:attribute name="buyerMemberId" use="required" type="xs:NCName"/>
+            <xs:attribute name="sellerMemberId" use="required" type="xs:NCName"/>
+            <xs:attribute name="matchType" use="required" type="matchType"/>
+            <xs:attribute name="aggressorSide" type="aggressorSideType"/>
+            <xs:attribute name="canceled" type="xs:boolean"/>
+            <xs:attribute name="cancelTime" type="xs:dateTime"/>
+            <xs:attribute name="lotType" type="lotType"/>
+            <xs:attribute name="reportingTime" type="xs:dateTime"/>
+            <xs:attribute name="tradeType" type="tradeType"/>
+            <xs:attribute name="conditions" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="InstrumentDetail">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="MinTradeVol" type="MinTradeVol" minOccurs="0"/>
+                <xs:element name="RoundLot" type="RoundLot" minOccurs="0"/>
+                <xs:element name="Currency" type="Currency" minOccurs="0"/>
+                <xs:element name="PriceType" type="PriceType" minOccurs="0"/>
+                <xs:any minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>This element contains data as specified in the instrument schema.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:any>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="MinTradeVol">
+        <xs:restriction base="xs:integer">
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="RoundLot">
+        <xs:restriction base="xs:integer">
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="Currency">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="INDEX|[A-Z]{3}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PriceType">
+        <xs:restriction base="xs:string">
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="knockStatusType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="KNOCK_OUT"/>
+            <xs:enumeration value="KNOCK_OUT_BUYBACK"/>
+            <xs:enumeration value="KNOCK_OUT_SOFT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="CorporateActionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="EX_DIVIDEND"/>
+            <xs:enumeration value="EX_RIGHTS"/>
+            <xs:enumeration value="STANDARD_SPLIT"/>
+            <xs:enumeration value="REVERSE_SPLIT"/>
+            <xs:enumeration value="TENDER_OFFER"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FinancialStatusType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="KNOCK_OUT"/>
+            <xs:enumeration value="KNOCK_OUT_BUYBACK"/>
+            <xs:enumeration value="BUYBACK"/>
+            <xs:enumeration value="DISTRIBUTION"/>
+            <xs:enumeration value="KNOCK_OUT_SOFT"/>
+            <xs:enumeration value="CIRCUIT_BREAKER_DYNAMIC"/>
+            <xs:enumeration value="CIRCUIT_BREAKER_STATIC"/>
+            <xs:enumeration value="UNDER_OBSERVATION"/>
+            <xs:enumeration value="ORDER_PROTECTION_MODE"/>
+            <xs:enumeration value="ORDER_PROTECTION_AUCTION"/>
+            <xs:enumeration value="RECALCULATED"/>
+            <xs:enumeration value="MANUAL_MATCH"/>
+            <xs:enumeration value="MISSING_REFERENCE_PRICE_AUCTION"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="ListingInfo">
+        <xs:annotation>
+            <xs:documentation>The instrument's listing, delisting, corporate actions and financial status information.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="CorporateActionTypes" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="CorporateActionType" type="CorporateActionType" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="FinancialStatusTypes" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="FinancialStatusType" type="FinancialStatusType" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="listed" use="required" type="xs:boolean"/>
+            <xs:attribute name="knockStatus" type="knockStatusType"/>
+            <xs:attribute name="delistDate" type="xs:date"/>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

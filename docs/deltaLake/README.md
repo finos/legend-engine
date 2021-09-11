@@ -1,4 +1,4 @@
-## Delta Lake Integration
+## Databricks Integration
 
 *Combining best of open data standards with open source technologies*
 
@@ -12,7 +12,7 @@ data warehousing and data lakes functionalities into one unified platform.
 ### Usage
 
 Create a new database source of type `DeltaLake`, providing both a Datasource specification and authentication.
-For JDBC connection details, please refer to your databricks environment and create a personal access token as per below screenshot.
+For JDBC connection details, please refer to your Databricks environment and create a personal access token as per below screenshot.
 
 ![endpoint](images/endpoint_jdbc.png)
 

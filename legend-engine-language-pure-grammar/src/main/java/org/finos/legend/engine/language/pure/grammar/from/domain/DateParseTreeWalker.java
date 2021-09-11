@@ -95,7 +95,7 @@ public class DateParseTreeWalker
 
         if (index == end && year != -1)
         {
-            return createDateTime(value);
+            return createDateTime(value.substring(value.lastIndexOf(DATE_PREFIX) + 1));
         }
         if (value.charAt(index++) != DATE_SEPARATOR)
         {
@@ -140,7 +140,7 @@ public class DateParseTreeWalker
         {
             CStrictDate cStrictDate = new CStrictDate();
             cStrictDate.multiplicity = ParserTreeWalkerUtility.getMultiplicityOneOne();
-            cStrictDate.values = Lists.mutable.with(value);
+            cStrictDate.values = Lists.mutable.with(value.substring(value.lastIndexOf(DATE_PREFIX) + 1));
             cStrictDate.sourceInformation = walkerSourceInformation.getSourceInformation(this.dateToken.getSymbol());
             return cStrictDate;
         }
@@ -148,7 +148,7 @@ public class DateParseTreeWalker
         {
             throwInvalidDateString(value, start, end);
         }
-        return createDateTime(value);
+        return createDateTime(value.substring(value.lastIndexOf(DATE_PREFIX) + 1));
     }
 
     private CDateTime createDateTime(String values)

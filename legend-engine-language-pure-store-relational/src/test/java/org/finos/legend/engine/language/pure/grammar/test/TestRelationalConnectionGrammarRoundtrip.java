@@ -37,16 +37,16 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     public void testDeltaLakeDatabaseConnection()
     {
         test("###Connection\n" +
-                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "RelationalDatabaseConnection simple::DatabricksConnection\n" +
                 "{\n" +
                 "  store: apps::pure::studio::relational::tests::dbInc;\n" +
-                "  type: DeltaLake;\n" +
-                "  specification: DeltaLake\n" +
+                "  type: Databricks;\n" +
+                "  specification: Databricks\n" +
                 "  {\n" +
                 "    shard: 'shard';\n" +
                 "    httpPath: 'httpPath';\n" +
                 "  };\n" +
-                "  auth: DeltaLake\n" +
+                "  auth: ApiToken\n" +
                 "  {\n" +
                 "    apiToken: 'token';\n" +
                 "  };\n" +

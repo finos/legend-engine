@@ -22,7 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DeltaLakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 
 public class DataSourceSpecificationParseTreeWalker
 {
@@ -58,8 +58,8 @@ public class DataSourceSpecificationParseTreeWalker
         return dsSpec;
     }
 
-    public DeltaLakeDatasourceSpecification visitDeltaLakeDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.DeltaLakeDatasourceSpecificationContext dbSpecCtx) {
-        DeltaLakeDatasourceSpecification dsSpec = new DeltaLakeDatasourceSpecification();
+    public DatabricksDatasourceSpecification visitDatabricksDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.DatabricksDatasourceSpecificationContext dbSpecCtx) {
+        DatabricksDatasourceSpecification dsSpec = new DatabricksDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
         DataSourceSpecificationParserGrammar.ShardContext shardCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.shard(), "shard", dsSpec.sourceInformation);
         dsSpec.shard = PureGrammarParserUtility.fromGrammarString(shardCtx.STRING().getText(), true);

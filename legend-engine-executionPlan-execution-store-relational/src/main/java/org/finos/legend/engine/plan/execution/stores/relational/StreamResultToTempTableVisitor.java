@@ -20,7 +20,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.deltalake.DeltaLakeCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
@@ -82,11 +82,11 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     }
 
     @Override
-    public Boolean visit(DeltaLakeCommands deltaLakeCommands)
+    public Boolean visit(DatabricksCommands databricksCommands)
     {
         if (ingestionMethod == null)
         {
-            ingestionMethod = deltaLakeCommands.getDefaultIngestionMethod();
+            ingestionMethod = databricksCommands.getDefaultIngestionMethod();
         }
         throw new UnsupportedOperationException("not yet implemented");
     }

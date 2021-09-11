@@ -49,7 +49,7 @@ embeddedH2DSPDirectory:                     DIRECTORY COLON STRING SEMI_COLON
 embeddedH2DSPAutoServerMode:                EMBEDDED_H2_DSP_AUTO_SERVER_MODE COLON BOOLEAN SEMI_COLON
 ;
 
-deltaLakeDatasourceSpecification:           DELTALAKE
+databricksDatasourceSpecification:          DATABRICKS
                                                 BRACE_OPEN
                                                     (
                                                         shard
@@ -58,10 +58,10 @@ deltaLakeDatasourceSpecification:           DELTALAKE
                                                 BRACE_CLOSE
 ;
 
-shard:                                     SHARD COLON STRING SEMI_COLON
+shard:                                      DATABRICKS_SHARD COLON STRING SEMI_COLON
 ;
 
-httpPath:                                  HTTP_PATH COLON STRING SEMI_COLON
+httpPath:                                   DATABRICKS_HTTP_PATH COLON STRING SEMI_COLON
 ;
 
 snowflakeDatasourceSpecification:           SNOWFLAKE

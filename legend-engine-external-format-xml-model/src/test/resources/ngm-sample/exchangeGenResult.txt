@@ -1,0 +1,260 @@
+>>>test::gen::AggressorSideType
+Enum test::gen::AggressorSideType
+{
+  BUY,
+  SELL
+}
+
+>>>test::gen::ClosingData
+Class test::gen::ClosingData
+{
+  date: StrictDate[1];
+  averagePrice: Decimal[0..1];
+  buyPrice: Decimal[0..1];
+  buyQuantity: Decimal[0..1];
+  diffPercent: Decimal[0..1];
+  diffPrice: Decimal[0..1];
+  firstPrice: Decimal[0..1];
+  highPrice: Decimal[0..1];
+  openPrice: Decimal[0..1];
+  lastPrice: Decimal[0..1];
+  lateTurnover: Decimal[0..1];
+  lateVolume: Decimal[0..1];
+  lowPrice: Decimal[0..1];
+  sellPrice: Decimal[0..1];
+  sellQuantity: Decimal[0..1];
+  closePrice: Decimal[0..1];
+  previousClosingPrice: Decimal[0..1];
+  turnover: Decimal[1];
+  volume: Decimal[1];
+  mmq: Boolean[0..1];
+}
+
+>>>test::gen::ClosingDatas
+Class test::gen::ClosingDatas
+{
+  {meta::pure::profiles::doc.doc = 'Detailed information of a days closing data.'} closingData: test::gen::ClosingData[*];
+  fromTime: DateTime[1];
+  toTime: DateTime[1];
+}
+
+>>>test::gen::CorporateAction
+Class test::gen::CorporateAction
+{
+  executionDate: StrictDate[0..1];
+  eventType: test::gen::EventType[0..1];
+  description: String[0..1];
+  isExecuted: Boolean[0..1];
+  adjustmentFactorNumerator: Decimal[0..1];
+  adjustmentFactorDenominator: Decimal[0..1];
+  dividend: Decimal[0..1];
+  adjustmentFactor: String[0..1];
+}
+
+>>>test::gen::CorporateActionType
+Enum test::gen::CorporateActionType
+{
+  EX_DIVIDEND,
+  EX_RIGHTS,
+  STANDARD_SPLIT,
+  REVERSE_SPLIT,
+  TENDER_OFFER
+}
+
+>>>test::gen::EventType
+Enum test::gen::EventType
+{
+  CASH_DIVIDEND,
+  OTHER,
+  REVERSE_SPLIT,
+  RIGHTS_ISSUE,
+  SPLIT
+}
+
+>>>test::gen::ExchangeData
+Class test::gen::ExchangeData
+{
+  marketSegment: test::gen::MarketSegment[*];
+  instrumentCount: Decimal[0..1];
+  tradeCount: Decimal[0..1];
+  time: DateTime[1];
+}
+
+>>>test::gen::FinancialStatusType
+Enum test::gen::FinancialStatusType
+{
+  KNOCK_OUT,
+  KNOCK_OUT_BUYBACK,
+  BUYBACK,
+  DISTRIBUTION,
+  KNOCK_OUT_SOFT,
+  CIRCUIT_BREAKER_DYNAMIC,
+  CIRCUIT_BREAKER_STATIC,
+  UNDER_OBSERVATION,
+  ORDER_PROTECTION_MODE,
+  ORDER_PROTECTION_AUCTION,
+  RECALCULATED,
+  MANUAL_MATCH,
+  MISSING_REFERENCE_PRICE_AUCTION
+}
+
+>>>test::gen::HaltReasonType
+Enum test::gen::HaltReasonType
+{
+  REGULATORY_HALT,
+  OTHER
+}
+
+>>>test::gen::Instrument
+Class test::gen::Instrument
+{
+  {meta::pure::profiles::doc.doc = 'Detailed information about the current market view.'} levelData: test::gen::LevelData[0..1];
+  {meta::pure::profiles::doc.doc = 'A collection of closing datas.'} closingDatas: test::gen::ClosingDatas[0..1];
+  {meta::pure::profiles::doc.doc = 'A collection of trades.'} trades: test::gen::Trades[0..1];
+  instrumentDetail: test::gen::InstrumentDetail[0..1];
+  {meta::pure::profiles::doc.doc = 'The instrument\'s listing, delisting, corporate actions and financial status information.'} listingInfo: test::gen::ListingInfo[0..1];
+  {meta::pure::profiles::doc.doc = 'A collection of corporate actions.'} corporateActions: test::gen::CorporateAction[*];
+  id: String[1];
+  isin: String[0..1];
+  name: String[0..1];
+  symbol: String[1];
+}
+
+>>>test::gen::InstrumentDetail
+Class test::gen::InstrumentDetail
+{
+  minTradeVol: Decimal[0..1];
+  roundLot: Decimal[0..1];
+  currency: String[0..1];
+  priceType: String[0..1];
+}
+
+>>>test::gen::KnockStatusType
+Enum test::gen::KnockStatusType
+{
+  KNOCK_OUT,
+  KNOCK_OUT_BUYBACK,
+  KNOCK_OUT_SOFT
+}
+
+>>>test::gen::LevelData
+Class test::gen::LevelData
+{
+  averagePrice: Decimal[0..1];
+  buyPrice: Decimal[0..1];
+  buyQuantity: Decimal[0..1];
+  diffPercent: Decimal[0..1];
+  diffPrice: Decimal[0..1];
+  firstPrice: Decimal[0..1];
+  flags: String[0..1];
+  haltReason: test::gen::HaltReasonType[0..1];
+  haltReasonDueToRelated: Boolean[0..1];
+  haltReasonInViewOfCommon: Boolean[0..1];
+  highPrice: Decimal[0..1];
+  openPrice: Decimal[0..1];
+  lastPrice: Decimal[0..1];
+  lateTurnover: Decimal[0..1];
+  lateVolume: Decimal[0..1];
+  lowPrice: Decimal[0..1];
+  closePrice: Decimal[0..1];
+  previousClosingPrice: Decimal[0..1];
+  sellPrice: Decimal[0..1];
+  sellQuantity: Decimal[0..1];
+  status: test::gen::StatusType[1];
+  turnover: Decimal[1];
+  volume: Decimal[1];
+}
+
+>>>test::gen::ListingInfo
+Class test::gen::ListingInfo
+{
+  corporateActionTypes: test::gen::CorporateActionType[*];
+  financialStatusTypes: test::gen::FinancialStatusType[*];
+  listed: Boolean[1];
+  knockStatus: test::gen::KnockStatusType[0..1];
+  delistDate: StrictDate[0..1];
+}
+
+>>>test::gen::LotType
+Enum test::gen::LotType
+{
+  ROUND,
+  ODD
+}
+
+>>>test::gen::MarketSegment
+Class test::gen::MarketSegment
+{
+  marketSegment: test::gen::MarketSegment[*];
+  {meta::pure::profiles::doc.doc = 'An instrument at the NGM exchange.'} instrument: test::gen::Instrument[*];
+  turnoverSummary: test::gen::TurnoverSummary[*];
+  marketId: String[1];
+  segmentId: String[1];
+  name: String[1];
+}
+
+>>>test::gen::MatchType
+Enum test::gen::MatchType
+{
+  ONE_PARTY_TRADE,
+  TWO_PARTY_TRADE,
+  AUTO_MATCH,
+  CALL_AUCTION
+}
+
+>>>test::gen::StatusType
+Enum test::gen::StatusType
+{
+  PRE_OPEN,
+  OPENING_AUCTION,
+  OPEN,
+  CLOSING_AUCTION,
+  CLOSED,
+  POST_OPEN,
+  HALTED,
+  UNKNOWN
+}
+
+>>>test::gen::Trade
+Class test::gen::Trade
+{
+  tradeId: String[1];
+  tradeTime: DateTime[1];
+  price: Decimal[1];
+  quantity: Decimal[1];
+  buyerMemberId: String[1];
+  sellerMemberId: String[1];
+  matchType: test::gen::MatchType[1];
+  aggressorSide: test::gen::AggressorSideType[0..1];
+  canceled: Boolean[0..1];
+  cancelTime: DateTime[0..1];
+  lotType: test::gen::LotType[0..1];
+  reportingTime: DateTime[0..1];
+  tradeType: test::gen::TradeType[0..1];
+  conditions: String[0..1];
+}
+
+>>>test::gen::TradeType
+Enum test::gen::TradeType
+{
+  REGULAR,
+  EXCHANGE_GRANTED
+}
+
+>>>test::gen::Trades
+Class test::gen::Trades
+{
+  {meta::pure::profiles::doc.doc = 'A trade\'s information.'} trade: test::gen::Trade[*];
+  tradeCount: Decimal[0..1];
+  fromTime: DateTime[1];
+  toTime: DateTime[1];
+}
+
+>>>test::gen::TurnoverSummary
+Class test::gen::TurnoverSummary
+{
+  currency: String[1];
+  priceType: String[1];
+  turnover: Decimal[1];
+  volume: Decimal[1];
+}

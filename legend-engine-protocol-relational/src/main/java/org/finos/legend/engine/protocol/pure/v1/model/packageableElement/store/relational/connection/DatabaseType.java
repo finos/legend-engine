@@ -18,5 +18,5 @@ public enum DatabaseType
 {
     DB2, H2, MemSQL, Sybase, SybaseIQ, Composite, Postgres, SqlServer, Hive,
     Snowflake, Presto,
-    BigQuery, DeltaLake
+    BigQuery, Databricks
 }

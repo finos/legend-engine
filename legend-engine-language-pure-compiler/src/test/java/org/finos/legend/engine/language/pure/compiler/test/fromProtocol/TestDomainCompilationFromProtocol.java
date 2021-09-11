@@ -56,4 +56,16 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
     {
         testWithProtocolPath("functionWithLambdaVariable.json");
     }
+
+    @Test
+    public void testFunctionWithDateTimeComplication()
+    {
+        testWithProtocolPath("functionWithDateTime.json");
+    }
+
+    @Test
+    public void testFunctionWithDateTimeContainsPercentInProtocolComplication()
+    {
+        testWithProtocolPath("functionWithDateTimeContainingPercent.json");
+    }
 }

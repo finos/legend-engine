@@ -1964,6 +1964,15 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testFunctionWithDateTime()
+    {
+        test("function test::getDateTime(): DateTime[1]\n" +
+                "{\n" +
+                "   %2020-01-01T00:00:00.000\n" +
+                "}\n");
+    }
+
+    @Test
     public void testClassWithStrictDate()
     {
         test("Class apps::Trade\n" +
@@ -2128,5 +2137,42 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Multiplicity accumMul = concat._parametersValues().getFirst()._multiplicity();
         Assert.assertEquals(2L, accumMul._lowerBound()._value().longValue());
         Assert.assertNull(accumMul._upperBound()._value());
+    }
+
+    @Test
+    public void testCompilationOfLambdaWithBiTemporalClass()
+    {
+        test("###Pure \n" +
+                " \n" +
+                "Class <<temporal.bitemporal>> main::Person \n" +
+                "{ \n" +
+                "    name : String[1]; \n" +
+                "    firm : main::Firm[1]; \n" +
+                "} \n" +
+                " \n" +
+                "Class <<temporal.bitemporal>> main::Firm \n" +
+                "{ \n" +
+                "    name : String[1]; \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree(): main::Person[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%2020-12-12, %2020-12-13)  \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree1(): main::Person[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%latest, %latest)  \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree2(): main::Person[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%latest, %2020-12-12)  \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree3(): main::Firm[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%2020-12-12, %2020-12-13).firm(%latest, %latest)  \n" +
+                "} \n");
     }
 }

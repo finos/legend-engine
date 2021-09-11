@@ -22,7 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Conne
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.deltalake.DeltaLakeManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 
@@ -45,7 +45,7 @@ public abstract class DatabaseManager
                     register(new H2Manager());
                     register(new SnowflakeManager());
                     register(new BigQueryManager());
-                    register(new DeltaLakeManager());
+                    register(new DatabricksManager());
                     MutableList<ConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionExtension.class), Lists.mutable.empty());
                     extensions.flatCollect(ConnectionExtension::getAdditionalDatabaseManager).forEach(DatabaseManager::register);
                 }

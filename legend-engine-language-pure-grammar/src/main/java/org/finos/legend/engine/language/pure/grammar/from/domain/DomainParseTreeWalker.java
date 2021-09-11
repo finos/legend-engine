@@ -1056,7 +1056,7 @@ public class DomainParseTreeWalker
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + terminalNode.getSymbol().getCharPositionInLine() + terminalNode.getText().length();
-        ParseTreeWalkerSourceInformation graphFetchWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation graphFetchWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         ParserErrorListener errorListener = new ParserErrorListener(graphFetchWalkerSourceInformation);
         NavigationLexerGrammar navigationLexer = new NavigationLexerGrammar(CharStreams.fromString(graphFetchString));
         navigationLexer.removeErrorListeners();
@@ -1087,7 +1087,7 @@ public class DomainParseTreeWalker
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.ISLAND_OPEN().getSymbol().getCharPositionInLine() + ctx.ISLAND_OPEN().getText().length();
-        ParseTreeWalkerSourceInformation graphFetchWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation graphFetchWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         ParserErrorListener errorListener = new ParserErrorListener(graphFetchWalkerSourceInformation);
         GraphFetchTreeLexerGrammar graphLexer = new GraphFetchTreeLexerGrammar(CharStreams.fromString(graphFetchString));
         graphLexer.removeErrorListeners();
@@ -1257,7 +1257,23 @@ public class DomainParseTreeWalker
         else if (ctx.allFunctionWithMilestoning() != null)
         {
             appliedFunction.function = "getAll";
-            appliedFunction.parameters.addAll(ListIterate.collect(ctx.allFunctionWithMilestoning().buildMilestoningVariableExpression(), b -> b.variable() != null ? variable(b.variable()) : new CLatestDate()));
+            appliedFunction.parameters.addAll(ListIterate.collect(ctx.allFunctionWithMilestoning().buildMilestoningVariableExpression(), b -> {
+                if(b.variable() != null)
+                {
+                    return variable(b.variable());
+                }
+                else if(b.DATE() != null)
+                {
+                    return new DateParseTreeWalker(b.DATE(), this.walkerSourceInformation).visitDefinition();
+                }
+                else
+                {
+                    CLatestDate latestDate = new CLatestDate();
+                    latestDate.sourceInformation = walkerSourceInformation.getSourceInformation(b);
+                    latestDate.multiplicity = getMultiplicityOneOne();
+                    return latestDate;
+                }
+            }));
             return appliedFunction;
         }
         else

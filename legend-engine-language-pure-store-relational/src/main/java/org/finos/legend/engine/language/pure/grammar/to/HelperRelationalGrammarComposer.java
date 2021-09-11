@@ -558,11 +558,11 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
-        else if (_spec instanceof DeltaLakeDatasourceSpecification)
+        else if (_spec instanceof DatabricksDatasourceSpecification)
         {
-            DeltaLakeDatasourceSpecification spec = (DeltaLakeDatasourceSpecification) _spec;
+            DatabricksDatasourceSpecification spec = (DatabricksDatasourceSpecification) _spec;
             int baseIndentation = 1;
-            return "DeltaLake\n" +
+            return "Databricks\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "shard: " + convertString(spec.shard, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "httpPath: " + convertString(spec.httpPath, true) + ";\n" +
@@ -619,11 +619,11 @@ public class HelperRelationalGrammarComposer
                             : ""
                     );
         }
-        else if (_auth instanceof DeltaLakeAuthenticationStrategy)
+        else if (_auth instanceof ApiTokenAuthenticationStrategy)
         {
-            DeltaLakeAuthenticationStrategy auth = (DeltaLakeAuthenticationStrategy) _auth;
+            ApiTokenAuthenticationStrategy auth = (ApiTokenAuthenticationStrategy) _auth;
             int baseIndentation = 1;
-            return "DeltaLake" +
+            return "ApiToken" +
                     "\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "apiToken: " + convertString(auth.apiToken, true) + ";\n" +

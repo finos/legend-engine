@@ -27,6 +27,6 @@ BIGQUERY_DSP:                               'BigQuery';
 PROJECT:                                    'projectId';
 DATASET:                                    'defaultDataset';
 
-DELTALAKE:                                  'DeltaLake';
-SHARD:                                      'shard';
-HTTP_PATH:                                  'httpPath';
+DATABRICKS:                                 'Databricks';
+DATABRICKS_SHARD:                           'shard';
+DATABRICKS_HTTP_PATH:                       'httpPath';

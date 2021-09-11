@@ -24,5 +24,5 @@ PROJECT:                                                    'projectId';
 DATASET:                                                    'defaultDataset';
 GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH:                   'GCPApplicationDefaultCredentials';
 
-DELTALAKE_AUTH:                             'DeltaLake';
-DELTALAKE_AUTH_TOKEN:                       'apiToken';
+API_TOKEN_AUTH:                             'ApiToken';
+API_TOKEN_AUTH_TOKEN:                       'apiToken';

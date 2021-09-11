@@ -151,8 +151,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseDataSourceSpecification(code, p -> walker.visitStaticDatasourceSpecification(code, p.staticDatasourceSpecification()));
                 case "EmbeddedH2":
                     return parseDataSourceSpecification(code, p -> walker.visitEmbeddedH2DatasourceSpecification(code, p.embeddedH2DatasourceSpecification()));
-                case "DeltaLake":
-                    return parseDataSourceSpecification(code, p -> walker.visitDeltaLakeDatasourceSpecification(code, p.deltaLakeDatasourceSpecification()));
+                case "Databricks":
+                    return parseDataSourceSpecification(code, p -> walker.visitDatabricksDatasourceSpecification(code, p.databricksDatasourceSpecification()));
                 case "Snowflake":
                     return parseDataSourceSpecification(code, p-> walker.visitSnowflakeDatasourceSpecification(code, p.snowflakeDatasourceSpecification()));
                 case "BigQuery":
@@ -178,8 +178,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseAuthenticationStrategy(code, p -> walker.visitDelegatedKerberosAuthenticationStrategy(code, p.delegatedKerberosAuth()));
                 case "Test":
                     return parseAuthenticationStrategy(code, p -> walker.visitTestDatabaseAuthenticationStrategy(code, p.testDBAuth()));
-                case "DeltaLake":
-                    return parseAuthenticationStrategy(code, p -> walker.visitDeltaLakeAuthenticationStrategy(code, p.deltaLakeAuth()));
+                case "ApiToken":
+                    return parseAuthenticationStrategy(code, p -> walker.visitApiTokenAuthenticationStrategy(code, p.apiTokenAuth()));
                 case "SnowflakePublic":
                     return parseAuthenticationStrategy(code, p -> walker.visitSnowflakePublicAuthenticationStrategy(code, p.snowflakePublicAuth()));
                 case "GCPApplicationDefaultCredentials":
@@ -335,10 +335,10 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         return new SourceCodeParserInfo(connectionValueSourceCode.code, input, connectionValueSourceCode.sourceInformation, connectionValueSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 
-    public static RelationalOperationElement parseRelationalOperationElement(String code)
+    public static RelationalOperationElement parseRelationalOperationElement(String code, boolean returnSourceInfo)
     {
         CharStream input = CharStreams.fromString(code);
-        ParseTreeWalkerSourceInformation parseTreeWalkerSourceInformation= new ParseTreeWalkerSourceInformation.Builder("", 0, 0).build();
+        ParseTreeWalkerSourceInformation parseTreeWalkerSourceInformation= new ParseTreeWalkerSourceInformation.Builder("", 0, 0).withReturnSourceInfo(returnSourceInfo).build();
         ParserErrorListener errorListener = new ParserErrorListener(parseTreeWalkerSourceInformation);
         RelationalLexerGrammar lexer = new RelationalLexerGrammar(input);
         lexer.removeErrorListeners();

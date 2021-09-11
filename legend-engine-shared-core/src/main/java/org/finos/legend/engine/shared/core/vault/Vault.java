@@ -3,11 +3,13 @@ package org.finos.legend.engine.shared.core.vault;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
+import java.util.Objects;
+
 public class Vault
 {
     public static Vault INSTANCE = new Vault();
 
-    private MutableList<VaultImplementation> implementations = Lists.mutable.empty();
+    private final MutableList<VaultImplementation> implementations = Lists.mutable.empty();
 
     private Vault()
     {
@@ -18,9 +20,18 @@ public class Vault
         this.implementations.add(vaultImplementation);
     }
 
-    public String getValue(String key)
+    public void unregisterImplementation(VaultImplementation vaultImplementation)
     {
-        return this.implementations.collect(i -> i.getValue(key)).getFirst();
+        this.implementations.remove(vaultImplementation);
     }
 
+    public String getValue(String key)
+    {
+        return this.implementations.collect(i -> i.getValue(key)).select(Objects::nonNull).getLast();
+    }
+
+    public boolean hasValue(String key)
+    {
+        return !this.implementations.select(i -> i.hasValue(key)).isEmpty();
+    }
 }

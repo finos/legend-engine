@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.mana
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DeltaLakeDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
@@ -65,12 +65,12 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     staticDatasourceSpecification.port,
                     staticDatasourceSpecification.databaseName);
         }
-        else if (datasourceSpecification instanceof DeltaLakeDatasourceSpecification)
+        else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
         {
-            DeltaLakeDatasourceSpecification staticDatasourceSpecification = (DeltaLakeDatasourceSpecification) datasourceSpecification;
-            return new DeltaLakeDataSourceSpecificationKey(
-                    staticDatasourceSpecification.shard,
-                    staticDatasourceSpecification.httpPath);
+            DatabricksDatasourceSpecification databricksSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
+            return new DatabricksDataSourceSpecificationKey(
+                    databricksSpecification.shard,
+                    databricksSpecification.httpPath);
         }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {

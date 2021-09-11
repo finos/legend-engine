@@ -93,7 +93,7 @@ public class ConnectionParseTreeWalker
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.BRACE_OPEN().getSymbol().getCharPositionInLine() + ctx.BRACE_OPEN().getSymbol().getText().length();
-        ParseTreeWalkerSourceInformation connectionValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation connectionValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         ConnectionValueSourceCode connectionValueSourceCode = new ConnectionValueSourceCode(connectionValueCode, connectionType, sourceInformation, connectionValueWalkerSourceInformation, isProcessingEmbeddedConnection);
         ConnectionValueParser connectionValueParser = this.extensions.getConnectionValueParser(connectionType);
         if (connectionValueParser == null)
