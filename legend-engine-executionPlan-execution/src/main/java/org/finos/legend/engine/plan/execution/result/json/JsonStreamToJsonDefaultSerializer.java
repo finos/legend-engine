@@ -14,16 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.result.json;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
-import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class JsonStreamToJsonDefaultSerializer extends Serializer
+public class JsonStreamToJsonDefaultSerializer extends JsonSerializer
 {
     private final JsonStreamingResult result;
     private final Builder builder;
@@ -37,8 +35,7 @@ public class JsonStreamToJsonDefaultSerializer extends Serializer
     @Override
     public void stream(OutputStream targetStream) throws IOException
     {
-        JsonFactory factory = new JsonFactory();
-        try (JsonGenerator generator = factory.createGenerator(targetStream).enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN))
+        try (JsonGenerator generator = this.createGenerator(targetStream))
         {
             generator.writeStartObject();
             generator.setCodec(new ObjectMapper());
