@@ -175,7 +175,6 @@ public class GraphQLGrammarComposer
 
     private String renderArgumentDefinitions(List<InputValueDefinition> argumentDefinitions)
     {
-        System.out.println(argumentDefinitions);
         return (argumentDefinitions.isEmpty() ? "" : "(" + ListIterate.collect(argumentDefinitions, this::renderInputValueDefinition).makeString(", ") + ")");
     }
 

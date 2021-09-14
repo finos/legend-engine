@@ -142,7 +142,7 @@ public class TestGraphQLRoundtrip
                 "}");
     }
 
-    private void check(String value)
+    protected void check(String value)
     {
         GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
         Document document = parser.parseDocument(value);
