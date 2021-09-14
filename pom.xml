@@ -61,6 +61,7 @@
         <module>legend-engine-language-pure-store-relational-grammar-api</module>
         <module>legend-engine-language-pure-dsl-diagram</module>
         <module>legend-engine-language-pure-dsl-text</module>
+        <module>legend-engine-language-pure-dsl-data-space</module>
         <module>legend-engine-language-pure-dsl-generation</module>
         <module>legend-engine-language-pure-dsl-service</module>
         <module>legend-engine-language-pure-dsl-service-generation</module>
@@ -403,6 +404,7 @@
                 <artifactId>snakeyaml</artifactId>
                 <version>1.26</version>
             </dependency>
+
             <!-- ENGINE -->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -570,6 +572,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-text</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-dsl-data-space</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

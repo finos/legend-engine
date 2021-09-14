@@ -43,6 +43,7 @@ public class TestExtensions
             .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
+            .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
             .toImmutable();
 
     // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
