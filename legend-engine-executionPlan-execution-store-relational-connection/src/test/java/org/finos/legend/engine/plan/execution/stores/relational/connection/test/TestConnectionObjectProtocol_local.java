@@ -37,8 +37,7 @@ import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -77,8 +76,6 @@ public class TestConnectionObjectProtocol_local extends DbSpecificTests
         Connection connectionThree= dsThree.getConnectionUsingSubject(getSubject());
         Assert.assertNotEquals(connectionThree.getMetaData().getUserName(),connectionOne.getMetaData().getUserName());
         Assert.assertEquals(connectionThree.getMetaData().getUserName(),connectionTwo.getMetaData().getUserName());
-
-
     }
 
 

@@ -42,9 +42,14 @@ public class SpannerManager extends DatabaseManager {
 
     private String buildUrlWithApplicationDefaultCredentials(Properties extraUserDataSourceProperties, GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy) {
         GCPApplicationDefaultCredentialsAuthenticationStrategy GCPApplicationDefaultCredentialsAuthenticationStrategy = authenticationStrategy;
+
+        /*
+            The Spanner driver throws an error if it sees 'invalid properties'. Some of these are the properties we inject to track the datasource and auth strategy specifications.
+            So include 'lenient=true' in the connection string.
+         */
         String url =
                 String.format(
-                        "jdbc:cloudspanner://spanner.googleapis.com/projects/%s/instances/%s/databases/%s",
+                        "jdbc:cloudspanner://spanner.googleapis.com/projects/%s/instances/%s/databases/%s;lenient=true",
                         extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROJECT_ID),
                         extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_INSTANCE_ID),
                         extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROJECT_ID)

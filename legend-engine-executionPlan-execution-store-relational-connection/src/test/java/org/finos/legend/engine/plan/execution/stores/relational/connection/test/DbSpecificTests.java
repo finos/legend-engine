@@ -70,5 +70,4 @@ public abstract class DbSpecificTests
         }
         assert (res);
     }
-
 }
