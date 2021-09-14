@@ -33,7 +33,7 @@ public class TestFlatDataCompilation extends ExternalSchemaCompilationTest
                              "{\n" +
                              "  scope.untilEof;\n" +
                              "  recordSeparator: ';';\n" +
-                             "  delimiter: ',';\n" +
+                             "  delimiter: '::';\n" +
                              "  quoteChar: '\\'';\n" +
                              "  escapingChar: '\\'';\n" +
                              "  nullString: 'null';\n" +
@@ -185,16 +185,16 @@ public class TestFlatDataCompilation extends ExternalSchemaCompilationTest
     }
 
     @Test
-    public void driverValiationFailure()
+    public void driverValidationFailure()
     {
         testFlatData("section sectionName: DelimitedWithHeadings\n" +
-                             "{\n" +
-                             "  Record\n" +
-                             "  {\n" +
-                             "    HEADING1: STRING;\n" +
-                             "  }\n" +
-                             "}",
-                     "COMPILATION error at [5:16-118]: Error in schema content: scope not specified in section 'sectionName', delimiter not specified in section 'sectionName'"
+                        "{\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "COMPILATION error at [5:16-118]: Error in schema content: scope not specified in section 'sectionName', delimiter not specified in section 'sectionName'"
         );
     }
 

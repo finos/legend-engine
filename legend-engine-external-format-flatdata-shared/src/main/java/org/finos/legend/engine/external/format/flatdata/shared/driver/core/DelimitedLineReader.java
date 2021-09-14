@@ -9,31 +9,74 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.LongSupplier;
+import java.util.function.Predicate;
 
 public class DelimitedLineReader implements LineReader
 {
     private final CharCursor cursor;
-    private final String eol;
     private final String storePath;
     private final LongSupplier lineNumberSupplier;
-    private final char delimiter;
+    private final String delimiter;
     private final String quoteChar;
     private final String escapeChar;
     private final LineParser lineParser;
+    private final Predicate<LineParser> eolTest;
+    private final Runnable eolConsumer;
+    private final Predicate<LineParser> delimiterTest;
+    private final Consumer<LineParser> delimiterConsumer;
     private boolean lastLineEndedInEol = false;
     private boolean lastBlankRowReturned = false;
 
-    DelimitedLineReader(CharCursor cursor, String eol, String storePath, LongSupplier lineNumberSupplier, char delimiter, String quoteChar, String escapeChar)
+    DelimitedLineReader(CharCursor cursor, String eol, String storePath, LongSupplier lineNumberSupplier, String delimiter, String quoteChar, String escapeChar)
     {
         this.cursor = cursor;
-        this.eol = eol;
         this.storePath = storePath;
         this.lineNumberSupplier = lineNumberSupplier;
         this.delimiter = delimiter;
         this.quoteChar = quoteChar;
         this.escapeChar = escapeChar;
         lineParser = new LineParser();
+
+        if (eol == null)
+        {
+            eolTest = parser -> parser.ch == '\n' || parser.ch == '\r';
+            eolConsumer = () -> {
+                int ch1 = cursor.advance();
+                if (ch1 == '\r' && cursor.peek(1) == '\n')
+                {
+                    cursor.advance();
+                }
+            };
+        }
+        else
+        {
+            char[] eolChars = eol.toCharArray();
+            if (eolChars.length == 1)
+            {
+                eolTest = parser -> parser.ch == eolChars[0];
+                eolConsumer = () -> cursor.advance();
+            }
+            else
+            {
+                eolTest = new MultiCharacterHandler(eolChars);
+                eolConsumer = () -> cursor.advance(eolChars.length);
+            }
+        }
+
+        char[] delimiterChars = delimiter.toCharArray();
+        if (delimiterChars.length == 1)
+        {
+            delimiterTest = parser -> parser.ch == delimiterChars[0];
+            delimiterConsumer = LineParser::skipChar;
+        }
+        else
+        {
+            final MultiCharacterHandler handler = new MultiCharacterHandler(delimiterChars);
+            delimiterTest = handler;
+            delimiterConsumer = handler;
+        }
     }
 
     @Override
@@ -69,38 +112,6 @@ public class DelimitedLineReader implements LineReader
         private DelimitedLine parseLine(long lineNumber)
         {
             this.lineNumber = lineNumber;
-
-            EolCheck isEol;
-            Runnable consumeEol;
-            if (DelimitedLineReader.this.eol == null)
-            {
-                isEol = () -> ch == '\n' || ch == '\r';
-                consumeEol = () -> {
-                    int ch1 = cursor.advance();
-                    if (ch1 == '\r' && cursor.peek(1) == '\n')
-                    {
-                        cursor.advance();
-                    }
-                };
-            }
-            else if (DelimitedLineReader.this.eol.length() == 1)
-            {
-                char eolChar = DelimitedLineReader.this.eol.charAt(0);
-                isEol = () -> ch == eolChar;
-                consumeEol = cursor::advance;
-            }
-            else if (DelimitedLineReader.this.eol.length() == 2)
-            {
-                char eolChar0 = DelimitedLineReader.this.eol.charAt(0);
-                char eolChar1 = DelimitedLineReader.this.eol.charAt(1);
-                isEol = () -> ch == eolChar0 && cursor.peek(aheadOfCursor + 1) == eolChar1;
-                consumeEol = () -> cursor.advance(2);
-            }
-            else
-            {
-                throw new IllegalStateException("Specified EOL must be 1 or 2 chars only");
-            }
-
             fullLine.init();
             aheadOfCursor = 0;
             valueChars = 0;
@@ -112,16 +123,16 @@ public class DelimitedLineReader implements LineReader
             {
                 State state = startOfValue;
                 nextChar();
-                while (!isEndOfData() && !(state.shouldStopIfEol() && isEol.check()))
+                while (!isEndOfData() && !(state.shouldStopIfEol() && eolTest.test(this)))
                 {
                     state = state.evaluate();
                     nextChar();
                 }
                 state.finish();
-                if (isEol.check())
+                if (eolTest.test(this))
                 {
                     lastLineEndedInEol = true;
-                    consumeEol.run();
+                    eolConsumer.run();
                 }
 
                 String text = fullLine.finish();
@@ -148,11 +159,6 @@ public class DelimitedLineReader implements LineReader
         private boolean isQuote()
         {
             return quoteChar != null && ch == quoteChar.charAt(0);
-        }
-
-        private boolean isDelimiter()
-        {
-            return ch == delimiter;
         }
 
         private boolean isWhitespace()
@@ -268,7 +274,7 @@ public class DelimitedLineReader implements LineReader
 
             State evaluate()
             {
-                if (isEscape() || isDelimiter() || isQuote())
+                if (isEscape() || (delimiter.length() == 1 && ch == delimiter.charAt(0))  || isQuote())
                 {
                     addCharToValue();
                     return returnToState;
@@ -295,10 +301,10 @@ public class DelimitedLineReader implements LineReader
         {
             State evaluate()
             {
-                if (isDelimiter())
+                if (delimiterTest.test(LineParser.this))
                 {
                     finishValue();
-                    skipChar();
+                    delimiterConsumer.accept(LineParser.this);
                     return startOfValue;
                 }
                 else if (isEscape())
@@ -376,10 +382,10 @@ public class DelimitedLineReader implements LineReader
                     skipChar();
                     return escapeInUnquotedValue;
                 }
-                else if (isDelimiter())
+                else if (delimiterTest.test(LineParser.this))
                 {
                     finishValue();
-                    skipChar();
+                    delimiterConsumer.accept(LineParser.this);
                     return startOfValue;
                 }
                 else
@@ -448,10 +454,10 @@ public class DelimitedLineReader implements LineReader
                         skipChar();
                         return whiteSpaceAfterQuotedValue;
                     }
-                    else if (isDelimiter())
+                    else if (delimiterTest.test(LineParser.this))
                     {
                         finishValue();
-                        skipChar();
+                        delimiterConsumer.accept(LineParser.this);
                         return startOfValue;
                     }
                     else
@@ -480,10 +486,10 @@ public class DelimitedLineReader implements LineReader
                     skipChar();
                     return this;
                 }
-                else if (isDelimiter())
+                else if (delimiterTest.test(LineParser.this))
                 {
                     finishValue();
-                    skipChar();
+                    delimiterConsumer.accept(LineParser.this);
                     return startOfValue;
                 }
                 else
@@ -511,9 +517,9 @@ public class DelimitedLineReader implements LineReader
                     skipChar();
                     return escapeWhileSkippingToDelimiter;
                 }
-                else if (isDelimiter())
+                else if (delimiterTest.test(LineParser.this))
                 {
-                    skipChar();
+                    delimiterConsumer.accept(LineParser.this);
                     return startOfValue;
                 }
                 else
@@ -570,9 +576,9 @@ public class DelimitedLineReader implements LineReader
                         skipChar();
                         return whiteSpaceAfterQuotedValue;
                     }
-                    else if (isDelimiter())
+                    else if (delimiterTest.test(LineParser.this))
                     {
-                        skipChar();
+                        delimiterConsumer.accept(LineParser.this);
                         return startOfValue;
                     }
                     else
@@ -630,8 +636,37 @@ public class DelimitedLineReader implements LineReader
         }
     }
 
-    private interface EolCheck
+    private class MultiCharacterHandler implements Predicate<LineParser>, Consumer<LineParser>
     {
-        boolean check();
+        private final char[] chars;
+
+        MultiCharacterHandler(char[] chars)
+        {
+            this.chars = chars;
+        }
+
+        @Override
+        public boolean test(LineParser parser)
+        {
+            boolean result = parser.ch == chars[0];
+            int index = 1;
+            while (result && index < chars.length)
+            {
+                result = cursor.peek(parser.aheadOfCursor + index) == chars[index];
+                index++;
+            }
+            return result;
+        }
+
+        @Override
+        public void accept(LineParser parser)
+        {
+            parser.skipChar();
+            for (int i=1; i<chars.length; i++)
+            {
+                parser.nextChar();
+                parser.skipChar();
+            }
+        }
     }
 }
