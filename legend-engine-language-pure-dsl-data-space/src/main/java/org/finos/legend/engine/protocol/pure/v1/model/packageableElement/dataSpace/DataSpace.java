@@ -16,11 +16,17 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSp
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 
+import java.util.Collections;
 import java.util.List;
 
 public class DataSpace extends PackageableElement
 {
+    public List<StereotypePtr> stereotypes = Collections.emptyList();
+    public List<TaggedValue> taggedValues = Collections.emptyList();
+
     public String description;
     public String groupId;
     public String artifactId;

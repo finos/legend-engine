@@ -39,8 +39,8 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  mapping: model::Mapping;\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n";
     }
 
@@ -53,24 +53,24 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "{\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  mapping: model::Mapping;\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n", "PARSER error at [2:1-7:1]: Field 'groupId' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
             "{\n" +
             "  groupId: 'test.group';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  mapping: model::Mapping;\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n", "PARSER error at [2:1-7:1]: Field 'artifactId' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
             "{\n" +
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  mapping: model::Mapping;\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n", "PARSER error at [2:1-7:1]: Field 'versionId' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
@@ -78,7 +78,7 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n", "PARSER error at [2:1-7:1]: Field 'mapping' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
@@ -86,7 +86,7 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: 'model::Mapping';\n" +
+            "  mapping: model::Mapping;\n" +
             "}\n", "PARSER error at [2:1-7:1]: Field 'runtime' is required");
         // Duplicated fields
         test("###DataSpace\n" +
@@ -96,8 +96,8 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  mapping: model::Mapping;\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n", "PARSER error at [2:1-9:1]: Field 'groupId' should be specified only once");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
@@ -106,8 +106,8 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  artifactId: 'test-data-space';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  mapping: model::Mapping;\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n", "PARSER error at [2:1-9:1]: Field 'artifactId' should be specified only once");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
@@ -116,8 +116,8 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  mapping: model::Mapping;\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n", "PARSER error at [2:1-9:1]: Field 'versionId' should be specified only once");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
@@ -125,9 +125,9 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  mapping: model::Mapping;\n" +
+            "  mapping: model::Mapping;\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n", "PARSER error at [2:1-9:1]: Field 'mapping' should be specified only once");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
@@ -135,9 +135,9 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: 'model::Mapping';\n" +
-            "  runtime: 'model::Runtime';\n" +
-            "  runtime: 'model::Runtime';\n" +
+            "  mapping: model::Mapping;\n" +
+            "  runtime: model::Runtime;\n" +
+            "  runtime: model::Runtime;\n" +
             "}\n", "PARSER error at [2:1-9:1]: Field 'runtime' should be specified only once");
     }
 }

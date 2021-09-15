@@ -17,12 +17,18 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.servic
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 
+import java.util.Collections;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Service extends PackageableElement
 {
+    public List<StereotypePtr> stereotypes = Collections.emptyList();
+    public List<TaggedValue> taggedValues = Collections.emptyList();
+
     public String pattern;
     public List<String> owners;
     public String documentation;

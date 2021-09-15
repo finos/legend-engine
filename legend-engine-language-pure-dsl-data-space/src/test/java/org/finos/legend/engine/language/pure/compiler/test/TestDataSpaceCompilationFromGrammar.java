@@ -40,6 +40,32 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     }
 
     @Test
+    public void testFaultyAnnotations()
+    {
+        // Faulty stereotype
+        test("###DataSpace\n" +
+            "DataSpace <<NoProfile.NoKey>> model::dataSpace" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  mapping: 'model::Mapping';\n" +
+            "  runtime: 'model::Runtime';\n" +
+            "}\n", "COMPILATION error at [2:13-21]: Can't find the profile 'NoProfile'");
+        // Faulty tagged value
+
+        test("###DataSpace\n" +
+            "DataSpace { NoProfile.NoKey = 'something' } model::dataSpace" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  mapping: 'model::Mapping';\n" +
+            "  runtime: 'model::Runtime';\n" +
+            "}\n", "COMPILATION error at [2:13-21]: Can't find the profile 'NoProfile'");
+    }
+
+    @Test
     public void testDiagramCompilation()
     {
         test("###DataSpace\n" +

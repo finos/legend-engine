@@ -5,6 +5,9 @@ import M3LexerGrammar;
 
 // -------------------------------------- KEYWORD --------------------------------------
 
+STEREOTYPES:                        'stereotypes';
+TAGS:                               'tags';
+
 SERVICE:                            'Service';
 IMPORT:                             'import';
 

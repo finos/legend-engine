@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.dataSpace.grammar.from.DataSpaceParserExtension;
+import org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
@@ -65,7 +66,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
 
     private static String renderDataSpace(DataSpace dataSpace)
     {
-        return "DataSpace " + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
+        return "DataSpace " + HelperDomainGrammarComposer.renderAnnotations(dataSpace.stereotypes, dataSpace.taggedValues) + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
             "{\n" +
             getTabString() + "groupId: " + convertString(dataSpace.groupId, true) + ";\n" +
             getTabString() + "artifactId: " + convertString(dataSpace.artifactId, true) + ";\n" +

@@ -10,6 +10,7 @@ options
 // -------------------------------------- IDENTIFIER --------------------------------------
 
 identifier:                 VALID_STRING | STRING
+                            | STEREOTYPES | TAGS
                             | DATA_SPACE
                             | DATA_SPACE_GROUP_ID
                             | DATA_SPACE_ARTIFACT_ID
@@ -26,7 +27,7 @@ identifier:                 VALID_STRING | STRING
 definition:                 (dataSpaceElement)*
                             EOF
 ;
-dataSpaceElement:           DATA_SPACE qualifiedName
+dataSpaceElement:           DATA_SPACE stereotypes? taggedValues? qualifiedName
                                 BRACE_OPEN
                                     (
                                         groupId
@@ -39,6 +40,14 @@ dataSpaceElement:           DATA_SPACE qualifiedName
                                         | supportEmail
                                     )*
                                 BRACE_CLOSE
+;
+stereotypes:                LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
+;
+stereotype:                 qualifiedName DOT identifier
+;
+taggedValues:               BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
+;
+taggedValue:                qualifiedName DOT identifier EQUAL STRING
 ;
 groupId:                    DATA_SPACE_GROUP_ID COLON STRING SEMI_COLON
 ;
