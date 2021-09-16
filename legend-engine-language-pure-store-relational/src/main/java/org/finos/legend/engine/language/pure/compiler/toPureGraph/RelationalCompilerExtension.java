@@ -482,7 +482,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             ));
 
             PureClientVersions.versions.forEach(v -> {
-                if (PureClientVersions.versionAGreaterThanOrEqualsVersionB(v, "v1_20_0"))
+                if (PureClientVersions.versionAGreaterThanOrEqualsVersionB(v, "v1_21_0"))
                 {
                     registerElementForPathToElement.value("meta::protocols::pure::"+v+"::extension", Lists.mutable.with(
                             "getRelationalExtension_String_1__SerializerExtension_1_"

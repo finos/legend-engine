@@ -32,7 +32,7 @@ public class VersionPlanTransformer implements PlanTransformer
     @Override
     public boolean supports(String version)
     {
-        return !"vX_X_X".equals(version) && PureClientVersions.versionAGreaterThanOrEqualsVersionB(version, "v1_20_0");
+        return !"vX_X_X".equals(version) && PureClientVersions.versionAGreaterThanOrEqualsVersionB(version, "v1_21_0");
     }
 
     @Override
