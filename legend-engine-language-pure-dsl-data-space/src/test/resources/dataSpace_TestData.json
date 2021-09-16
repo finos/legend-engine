@@ -1,0 +1,22 @@
+{
+  "_type": "data",
+  "version": "v1_0_0",
+  "elements": [
+    {
+      "_type": "dataSpace",
+      "name": "TestDataSpace",
+      "package": "test::model",
+      "groupId": "test.group",
+      "artifactId": "test-data-space",
+      "versionId": "0.4.3",
+      "mapping": "test::model::TestMapping",
+      "runtime": "test::model::TestRuntime",
+      "description": "some description",
+      "diagrams": [
+        "test::model::TestDiagram1",
+        "test::model::TestDiagram2"
+      ],
+      "supportEmail": "testEmail@test.org"
+    }
+  ]
+}

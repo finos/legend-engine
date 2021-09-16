@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.application.query.model;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
+
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 
 import java.util.List;
 
-public class DataSpace
-// NOTE: extends PackageableElement
+public class DataSpace extends PackageableElement
 {
-    // public String label; // should we include this as a nicely-formatted name for the data space?
     public String description;
     public String groupId;
     public String artifactId;
@@ -27,5 +28,13 @@ public class DataSpace
     public String mapping;
     public String runtime;
     public List<String> diagrams;
+    // NOTE: we're not too sure about this attribute. We feel that this would be needed but maybe
+    // we can think of a more generic strategy for this type of metadata
     public String supportEmail;
+
+    @Override
+    public <T> T accept(PackageableElementVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }
