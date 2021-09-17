@@ -17,7 +17,7 @@ public class DelimitedDriverHelper extends StreamingDriverHelper
 
     private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
 
-    final char delimiter;
+    final String delimiter;
     final String quoteChar;
     final String escapeChar;
     final List<String> nullStrings;
@@ -27,7 +27,7 @@ public class DelimitedDriverHelper extends StreamingDriverHelper
         super(section, context);
 
         List<FlatDataProperty> properties = section.getSectionProperties();
-        this.delimiter = FlatDataUtils.getString(properties, DELIMITER).get().charAt(0);
+        this.delimiter = FlatDataUtils.getString(properties, DELIMITER).get();
         this.quoteChar = FlatDataUtils.getString(properties, QUOTE_CHAR).orElse(null);
         this.escapeChar = FlatDataUtils.getString(properties, ESCAPING_CHAR).orElse(null);
         this.nullStrings = FlatDataUtils.getStrings(properties, NULL_STRING);

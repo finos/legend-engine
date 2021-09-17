@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>2.42.1-SNAPSHOT</version>
+    <version>2.43.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -61,6 +61,7 @@
         <module>legend-engine-language-pure-store-relational-grammar-api</module>
         <module>legend-engine-language-pure-dsl-diagram</module>
         <module>legend-engine-language-pure-dsl-text</module>
+        <module>legend-engine-language-pure-dsl-data-space</module>
         <module>legend-engine-language-pure-dsl-generation</module>
         <module>legend-engine-language-pure-dsl-service</module>
         <module>legend-engine-language-pure-dsl-service-generation</module>
@@ -118,7 +119,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.36.1</legend.pure.version>
+        <legend.pure.version>1.37.0</legend.pure.version>
         <legend.shared.version>0.15.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -403,6 +404,7 @@
                 <artifactId>snakeyaml</artifactId>
                 <version>1.26</version>
             </dependency>
+
             <!-- ENGINE -->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -570,6 +572,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-text</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-dsl-data-space</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
