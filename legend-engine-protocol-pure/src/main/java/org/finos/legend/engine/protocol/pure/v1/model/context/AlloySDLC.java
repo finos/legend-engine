@@ -21,6 +21,7 @@ import java.util.Objects;
 public class AlloySDLC extends SDLC
 {
     @JsonProperty(value = "project")
+    @Deprecated
     public String project;
 
     @JsonProperty(value = "groupId")
