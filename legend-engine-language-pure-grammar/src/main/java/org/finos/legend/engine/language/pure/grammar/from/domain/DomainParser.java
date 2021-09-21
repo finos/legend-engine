@@ -77,7 +77,7 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return section;
     }
 
-    public Lambda parseLambda(String code, String lambdaId, boolean returnSourceInfo)
+    public Lambda parseLambda(String code, String lambdaId,  boolean returnSourceInfo)
     {
         return parseLambda(code, lambdaId, new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty())), returnSourceInfo);
     }
@@ -100,12 +100,27 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return parseCombinedExpression(code, combinedExpressionWalkerSourceInformation, parserContext, false);
     }
 
+    public ValueSpecification parseInstanceRightSide(String code, ParseTreeWalkerSourceInformation instanceWalkerSourceInformation, PureGrammarParserContext parserContext)
+    {
+        return parseInstanceRightSide(code, instanceWalkerSourceInformation, parserContext, false);
+    }
+
     // TODO PropertyBracketExpression is deprecated.  Remove method once all use has been addressed
     public ValueSpecification parseCombinedExpression(String code, ParseTreeWalkerSourceInformation combinedExpressionWalkerSourceInformation, PureGrammarParserContext parserContext, boolean allowPropertyBracketExpression)
     {
         List<String> typeParametersNames = new ArrayList<>();
         DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext("");
         ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(combinedExpressionWalkerSourceInformation).build();
+        SourceCodeParserInfo sectionParserInfo = this.getParserInfo(code, null, walkerSourceInformation, false);
+        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, allowPropertyBracketExpression);
+        return walker.combinedExpression(((DomainParserGrammar) sectionParserInfo.parser).combinedExpression(), "line", typeParametersNames, lambdaContext, "", true, false);
+    }
+
+    public ValueSpecification parseInstanceRightSide(String code, ParseTreeWalkerSourceInformation instanceWalkerSourceInformation, PureGrammarParserContext parserContext, boolean allowPropertyBracketExpression)
+    {
+        List<String> typeParametersNames = new ArrayList<>();
+        DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext("");
+        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(instanceWalkerSourceInformation).build();
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(code, null, walkerSourceInformation, false);
         DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, allowPropertyBracketExpression);
         return walker.combinedExpression(((DomainParserGrammar) sectionParserInfo.parser).combinedExpression(), "line", typeParametersNames, lambdaContext, "", true, false);

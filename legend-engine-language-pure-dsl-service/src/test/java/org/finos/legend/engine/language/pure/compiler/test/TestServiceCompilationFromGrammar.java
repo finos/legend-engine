@@ -846,4 +846,101 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 "}\n");
     }
+    @Test
+    public void testServiceTestParameters()
+    {
+        String resource = "Class test::class\n" +
+                "{\n" +
+                "  prop1 : Integer[0..1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                ")\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::connection\n" +
+                "{\n" +
+                "  class : test::class;" +
+                "  url : 'asd';\n" +
+                "}\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime\n" +
+                "{\n" +
+                " mappings: [test::mapping];\n" +
+                "}\n";
+
+        // check for single test parameter
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {['testparameter'],'testexpression'}\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        // check for multiple test parameters
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {['parameter1', 440, 13.23, -888],1+280+1}\n" + //test expression
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        // check for multiple test asserts
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {['testparameter1', 'testparameter2'],'expression1'},\n" +
+                "      {['testparameter',22,3.14],'expression2'},\n" +
+                "      {[],'expression3'}\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
 }

@@ -134,8 +134,9 @@ public class HelperServiceGrammarComposer
     private static String renderTestContainers(List<TestContainer> testContainers, int indentation, PureGrammarComposerContext context)
     {
         StringBuilder builder = new StringBuilder().append(getTabString(indentation)).append("[\n");
-        // TODO: handle parameters
-        builder.append(LazyIterate.collect(testContainers, testContainer -> getTabString(indentation + 1) + "{ " + "[]" + ", " + testContainer._assert.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + " }").makeString(",\n")).append(testContainers.isEmpty() ? "" : "\n");
+        builder.append(LazyIterate.collect(testContainers, testContainer -> getTabString(indentation + 1) +
+                "{ " + "["  + LazyIterate.collect(testContainer.parametersValues,parameter->parameter.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).makeString(", ")+ "]"
+                + ", " + testContainer._assert.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + " }").makeString(",\n")).append(testContainers.isEmpty() ? "" : "\n");
         builder.append(getTabString(indentation)).append("];");
         return builder.toString();
     }

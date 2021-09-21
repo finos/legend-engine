@@ -44,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class ServiceParseTreeWalker
@@ -224,10 +225,26 @@ public class ServiceParseTreeWalker
     {
         TestContainer testContainer = new TestContainer();
         testContainer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        // TODO parameters values support
-        testContainer.parametersValues = new ArrayList<>();
+        testContainer.parametersValues = this.visitTestParameters(ctx.testParameters());
         testContainer._assert = this.visitLambda(ctx.combinedExpression());
         return testContainer;
+    }
+
+    private List<ValueSpecification> visitTestParameters(ServiceParserGrammar.TestParametersContext ctx)
+    {
+        List<ValueSpecification> testParameters = ctx != null && ctx.instanceRightSide() != null ? ListIterate.collect(ctx.instanceRightSide(), this::visitTestParameter): new ArrayList<>();
+        return testParameters;
+    }
+
+    private ValueSpecification visitTestParameter(ServiceParserGrammar.InstanceRightSideContext ctx) {
+        DomainParser parser = new DomainParser();
+        int startLine = ctx.getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation instanceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        String instanceString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
+        ValueSpecification valueSpecification = parser.parseInstanceRightSide(instanceString, instanceInformation, null);
+        return valueSpecification;
     }
 
     private KeyedSingleExecutionTest visitKeyedSingleExecutionTest(ServiceParserGrammar.MultiTestElementContext ctx)

@@ -30,7 +30,8 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
-        return Collections.singletonList(Processor.newProcessor(Service.class, (service, context) -> {
+        return Collections.singletonList(Processor.newProcessor(Service.class,
+            Lists.mutable.of(PackageableConnection.class, PackageableRuntime.class), (service, context) -> {
             org.finos.legend.pure.m3.coreinstance.Package pack = context.pureModel.getOrCreatePackage(service._package);
             Root_meta_legend_service_metamodel_Service pureService = new Root_meta_legend_service_metamodel_Service_Impl("")
                     ._package(pack)
