@@ -20,8 +20,14 @@ import java.util.Objects;
 
 public class AlloySDLC extends SDLC
 {
-    @JsonProperty(value = "project", required = true)
+    @JsonProperty(value = "project")
     public String project;
+
+    @JsonProperty(value = "groupId")
+    public String groupId;
+
+    @JsonProperty(value = "artifactId")
+    public String artifactId;
 
     @Override
     public boolean equals(Object o)
@@ -35,12 +41,12 @@ public class AlloySDLC extends SDLC
             return false;
         }
         AlloySDLC that = (AlloySDLC) o;
-        return Objects.equals(this.project, that.project) && Objects.equals(this.version, that.version);
+        return Objects.equals(this.project, that.project) && Objects.equals(this.version, that.version) && Objects.equals(this.groupId, that.groupId) && Objects.equals(this.artifactId, that.artifactId);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(this.project) + 89 * Objects.hashCode(this.version);
+        return Objects.hashCode(this.project) + 89 * Objects.hashCode(this.version)+ 17 * Objects.hashCode(this.groupId) + 17 * Objects.hashCode(artifactId);
     }
 }
