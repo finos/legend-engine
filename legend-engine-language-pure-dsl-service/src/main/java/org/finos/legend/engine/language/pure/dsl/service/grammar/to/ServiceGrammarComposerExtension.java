@@ -89,11 +89,10 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         if (service.tags != null && !service.tags.isEmpty())
         {
             serviceBuilder.append(getTabString()).append("tags:\n").append(getTabString()).append("[\n")
-                    .append(LazyIterate.collect(service.tags, t -> getTabString(2) +
-                    ("{\n") +
-                    getTabString(3) + "name: " + t.name + (";\n") +
-                    getTabString(3) + "value: " + t.value + (";\n") +
-                    getTabString(2) + ("}")).makeString(",\n"))
+                    .append(LazyIterate.collect(service.tags, t -> getTabString(2) + ("{\n") +
+                                                                       getTabString(3) + "name: " + t.name + (";\n") +
+                                                                       getTabString(3) + "value: " + t.value + (";\n") +
+                                                                       getTabString(2) + ("}")).makeString(",\n"))
                     .append("\n").append(getTabString()).append("];\n");
         }
         return serviceBuilder.append("}").toString();

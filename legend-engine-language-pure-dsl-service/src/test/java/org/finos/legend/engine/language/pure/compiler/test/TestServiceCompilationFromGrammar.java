@@ -906,6 +906,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 "}\n");
     }
+
     @Test
     public void testServiceTestParameters()
     {

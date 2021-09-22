@@ -77,7 +77,7 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return section;
     }
 
-    public Lambda parseLambda(String code, String lambdaId,  boolean returnSourceInfo)
+    public Lambda parseLambda(String code, String lambdaId, boolean returnSourceInfo)
     {
         return parseLambda(code, lambdaId, new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty())), returnSourceInfo);
     }
