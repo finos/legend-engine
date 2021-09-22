@@ -5,6 +5,9 @@ import CoreLexerGrammar;
 
 // ------------------------------------ KEYWORD --------------------------------------
 
+STEREOTYPES:                    'stereotypes';
+TAGS:                           'tags';
+
 DATA_SPACE:                     'DataSpace';
 DATA_SPACE_GROUP_ID:            'groupId';
 DATA_SPACE_ARTIFACT_ID:         'artifactId';

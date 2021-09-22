@@ -19,6 +19,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension;
+import org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
@@ -65,7 +66,7 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
 
     private static String renderService(Service service, PureGrammarComposerContext context)
     {
-        StringBuilder serviceBuilder = new StringBuilder().append("Service").append(" ").append(PureGrammarComposerUtility.convertPath(service.getPath()));
+        StringBuilder serviceBuilder = new StringBuilder().append("Service").append(" ").append(HelperDomainGrammarComposer.renderAnnotations(service.stereotypes, service.taggedValues)).append(PureGrammarComposerUtility.convertPath(service.getPath()));
         serviceBuilder.append("\n{\n");
         serviceBuilder.append(getTabString()).append("pattern: ").append(convertString(service.pattern, true)).append(";\n");
         if (!service.owners.isEmpty())

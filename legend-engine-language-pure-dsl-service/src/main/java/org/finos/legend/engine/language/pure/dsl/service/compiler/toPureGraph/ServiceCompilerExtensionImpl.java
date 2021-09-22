@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
 
 import java.util.Collections;
 
@@ -36,6 +37,8 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
             Root_meta_legend_service_metamodel_Service pureService = new Root_meta_legend_service_metamodel_Service_Impl("")
                     ._package(pack)
                     ._name(service.name)
+                    ._stereotypes(ListIterate.collect(service.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
+                    ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))        
                     ._pattern(service.pattern)
                     ._owners(Lists.mutable.withAll(service.owners))
                     ._documentation(service.documentation);

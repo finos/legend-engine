@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.dsl.service.grammar.from;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.misc.Interval;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
@@ -25,6 +26,9 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -76,6 +80,9 @@ public class ServiceParseTreeWalker
         service.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         service._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         service.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        service.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
+        service.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+
         // pattern
         ServiceParserGrammar.ServicePatternContext patternContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.servicePattern(), "pattern", service.sourceInformation);
         service.pattern = PureGrammarParserUtility.fromGrammarString(patternContext.STRING().getText(), true);
@@ -106,6 +113,36 @@ public class ServiceParseTreeWalker
         serviceTag.name = ctx.serviceTagName().STRING().getText();
         serviceTag.value = ctx.serviceTagValue().STRING().getText();
         return serviceTag;
+    }
+
+    private List<TaggedValue> visitTaggedValues(ServiceParserGrammar.TaggedValuesContext ctx)
+    {
+        return ListIterate.collect(ctx.taggedValue(), taggedValueContext ->
+        {
+            TaggedValue taggedValue = new TaggedValue();
+            TagPtr tagPtr = new TagPtr();
+            taggedValue.tag = tagPtr;
+            tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
+            tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
+            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.tag.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
+            taggedValue.tag.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
+            taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);
+            return taggedValue;
+        });
+    }
+
+    private List<StereotypePtr> visitStereotypes(ServiceParserGrammar.StereotypesContext ctx)
+    {
+        return ListIterate.collect(ctx.stereotype(), stereotypeContext ->
+        {
+            StereotypePtr stereotypePtr = new StereotypePtr();
+            stereotypePtr.profile = PureGrammarParserUtility.fromQualifiedName(stereotypeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : stereotypeContext.qualifiedName().packagePath().identifier(), stereotypeContext.qualifiedName().identifier());
+            stereotypePtr.value = PureGrammarParserUtility.fromIdentifier(stereotypeContext.identifier());
+            stereotypePtr.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext.qualifiedName());
+            stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext);
+            return stereotypePtr;
+        });
     }
 
     private Execution visitExecution(ServiceParserGrammar.ServiceExecContext ctx)

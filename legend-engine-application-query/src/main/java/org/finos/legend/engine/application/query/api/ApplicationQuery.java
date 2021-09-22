@@ -77,13 +77,13 @@ public class ApplicationQuery
             List<QueryProjectCoordinates> coordinates = ListIterate.distinct(projectCoordinates).collect((projectCoordinate) ->
             {
                 QueryProjectCoordinates coordinate = new QueryProjectCoordinates();
-                int idx = projectCoordinate.lastIndexOf('.');
-                if (idx == -1)
+                String[] gaCoordinate = projectCoordinate.split(":");
+                if (gaCoordinate.length != 2)
                 {
                     return null;
                 }
-                coordinate.groupId = projectCoordinate.substring(0, idx);
-                coordinate.artifactId = projectCoordinate.substring(idx + 1);
+                coordinate.groupId = gaCoordinate[0];
+                coordinate.artifactId = gaCoordinate[1];
                 return coordinate;
             }).select(Objects::nonNull);
             return Response.ok().entity(this.queryStoreManager.getQueries(search, coordinates, limit, showCurrentUserQueriesOnly, getCurrentUser(profileManager))).build();

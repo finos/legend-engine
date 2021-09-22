@@ -22,7 +22,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     public void testService()
     {
         test("###Service\n" +
-                "Service meta::pure::myServiceSingle\n" +
+                "Service <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::pure::myServiceSingle\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
                 "  owners:\n" +

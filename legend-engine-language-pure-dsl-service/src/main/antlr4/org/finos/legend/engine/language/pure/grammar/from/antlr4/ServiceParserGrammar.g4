@@ -12,6 +12,7 @@ options
 
 identifier:                             VALID_STRING | STRING
                                         | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
+                                        | STEREOTYPES | TAGS
                                         | SERVICE | IMPORT
                                         | SERVICE_SINGLE | SERVICE_MULTI
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
@@ -20,7 +21,7 @@ identifier:                             VALID_STRING | STRING
 ;
 
 
-// -------------------------------------- IDENTIFIER --------------------------------------
+// -------------------------------------- DEFINITION --------------------------------------
 
 definition:                             imports
                                             (service)*
@@ -30,7 +31,7 @@ imports:                                (importStatement)*
 ;
 importStatement:                        IMPORT packagePath PATH_SEPARATOR STAR SEMI_COLON
 ;
-service:                                SERVICE qualifiedName
+service:                                SERVICE stereotypes? taggedValues? qualifiedName
                                             BRACE_OPEN
                                                 (
                                                     servicePattern
@@ -42,6 +43,14 @@ service:                                SERVICE qualifiedName
                                                     | serviceTest
                                                 )*
                                             BRACE_CLOSE
+;
+stereotypes:                            LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
+;
+stereotype:                             qualifiedName DOT identifier
+;
+taggedValues:                           BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
+;
+taggedValue:                            qualifiedName DOT identifier EQUAL STRING
 ;
 servicePattern:                         SERVICE_PATTERN COLON STRING SEMI_COLON
 ;

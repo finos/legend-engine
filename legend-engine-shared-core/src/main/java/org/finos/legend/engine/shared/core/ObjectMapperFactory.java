@@ -15,6 +15,7 @@
 package org.finos.legend.engine.shared.core;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -27,8 +28,9 @@ public class ObjectMapperFactory
     public static <T extends ObjectMapper> T withStandardConfigurations(T objectMapper)
     {
         objectMapper
-                .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
-                .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+                .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT);
         objectMapper.setTimeZone(TimeZone.getDefault());
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         return objectMapper;
