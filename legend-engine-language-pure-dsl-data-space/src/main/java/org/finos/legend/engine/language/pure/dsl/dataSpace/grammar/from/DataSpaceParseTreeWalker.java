@@ -14,15 +14,20 @@
 
 package org.finos.legend.engine.language.pure.dsl.dataSpace.grammar.from;
 
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class DataSpaceParseTreeWalker
@@ -40,15 +45,18 @@ public class DataSpaceParseTreeWalker
 
     public void visit(DataSpaceParserGrammar.DefinitionContext ctx)
     {
-        ctx.dataSpaceElement().stream().map(this::visitText).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        ctx.dataSpaceElement().stream().map(this::visitDataSpace).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
 
-    private DataSpace visitText(DataSpaceParserGrammar.DataSpaceElementContext ctx)
+    private DataSpace visitDataSpace(DataSpaceParserGrammar.DataSpaceElementContext ctx)
     {
         DataSpace dataSpace = new DataSpace();
         dataSpace.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         dataSpace._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         dataSpace.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        dataSpace.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
+        dataSpace.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+
         // Group ID
         DataSpaceParserGrammar.GroupIdContext groupIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.groupId(), "groupId", dataSpace.sourceInformation);
         dataSpace.groupId = PureGrammarParserUtility.fromGrammarString(groupIdContext.STRING().getText(), true);
@@ -74,5 +82,35 @@ public class DataSpaceParseTreeWalker
         DataSpaceParserGrammar.SupportEmailContext supportEmailContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.supportEmail(), "supportEmail", dataSpace.sourceInformation);
         dataSpace.supportEmail = supportEmailContext != null ? PureGrammarParserUtility.fromGrammarString(supportEmailContext.STRING().getText(), true) : null;
         return dataSpace;
+    }
+
+    private List<TaggedValue> visitTaggedValues(DataSpaceParserGrammar.TaggedValuesContext ctx)
+    {
+        return ListIterate.collect(ctx.taggedValue(), taggedValueContext ->
+        {
+            TaggedValue taggedValue = new TaggedValue();
+            TagPtr tagPtr = new TagPtr();
+            taggedValue.tag = tagPtr;
+            tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
+            tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
+            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.tag.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
+            taggedValue.tag.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
+            taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);
+            return taggedValue;
+        });
+    }
+
+    private List<StereotypePtr> visitStereotypes(DataSpaceParserGrammar.StereotypesContext ctx)
+    {
+        return ListIterate.collect(ctx.stereotype(), stereotypeContext ->
+        {
+            StereotypePtr stereotypePtr = new StereotypePtr();
+            stereotypePtr.profile = PureGrammarParserUtility.fromQualifiedName(stereotypeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : stereotypeContext.qualifiedName().packagePath().identifier(), stereotypeContext.qualifiedName().identifier());
+            stereotypePtr.value = PureGrammarParserUtility.fromIdentifier(stereotypeContext.identifier());
+            stereotypePtr.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext.qualifiedName());
+            stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext);
+            return stereotypePtr;
+        });
     }
 }

@@ -22,7 +22,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testClass()
     {
-        test("Class <<temporal.businesstemporal>> {doc.doc = 'bla'} A extends B\n" +
+        test("Class <<temporal.businesstemporal>> {doc.doc = 'something'} A extends B\n" +
                 "{\n" +
                 "  <<equality.Key>> {doc.doc = 'bla'} name: e::R[*];\n" +
                 "  {doc.doc = 'bla'} ok: Integer[1..2];\n" +

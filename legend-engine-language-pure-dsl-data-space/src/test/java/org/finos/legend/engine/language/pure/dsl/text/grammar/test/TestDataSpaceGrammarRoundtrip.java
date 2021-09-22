@@ -23,12 +23,12 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
     public void testDataSpace()
     {
         test("###DataSpace\n" +
-            "DataSpace model::dataSpace\n" +
+            "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
             "{\n" +
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
+            "  mapping: model::String;\n" +
             "  runtime: model::Runtime;\n" +
             "  description: 'some description';\n" +
             "  diagrams: [\n" +
