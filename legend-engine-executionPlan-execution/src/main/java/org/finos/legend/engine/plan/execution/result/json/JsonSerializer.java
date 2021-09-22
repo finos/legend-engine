@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,32 +14,19 @@
 
 package org.finos.legend.engine.plan.execution.result.json;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class JsonStreamToPureFormatSerializer extends JsonSerializer
+abstract class JsonSerializer extends Serializer
 {
-    private final JsonStreamingResult result;
-
-    public JsonStreamToPureFormatSerializer(JsonStreamingResult result)
+    JsonGenerator createGenerator(OutputStream stream) throws IOException
     {
-        this.result = result;
-    }
-
-    @Override
-    public void stream(OutputStream targetStream) throws IOException
-    {
-        try (JsonGenerator generator = this.createGenerator(targetStream))
-        {
-            generator.setCodec(new ObjectMapper());
-            result.getJsonStream().accept(generator);
-        }
-        finally
-        {
-            result.close();
-        }
+        return new JsonFactory().createGenerator(stream)
+                .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
+                .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
     }
 }
