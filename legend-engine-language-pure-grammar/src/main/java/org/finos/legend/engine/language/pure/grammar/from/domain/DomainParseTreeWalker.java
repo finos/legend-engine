@@ -601,7 +601,7 @@ public class DomainParseTreeWalker
         return values;
     }
 
-    private ValueSpecification processRightSide(DomainParserGrammar.ExpressionInstanceRightSideContext rightside, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
+    public ValueSpecification processRightSide(DomainParserGrammar.ExpressionInstanceRightSideContext rightside, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
         ValueSpecification ctx = null;
         if (rightside.expressionInstanceAtomicRightSide().combinedExpression() != null)
