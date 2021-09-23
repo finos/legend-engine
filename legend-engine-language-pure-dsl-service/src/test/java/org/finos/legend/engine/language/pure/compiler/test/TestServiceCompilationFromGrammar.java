@@ -848,7 +848,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
                 "  owners: ['ownerName'];\n" +
-                "  tags:\n" +
+                "  serviceTags:\n" +
                 "  [\n" +
                 "    {\n" +
                 "      name: 'testName';\n" +
@@ -878,7 +878,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
                 "  owners: ['ownerName'];\n" +
-                "  tags:\n" +
+                "  serviceTags:\n" +
                 "  [\n" +
                 "    {\n" +
                 "      name: 'testName1';\n" +

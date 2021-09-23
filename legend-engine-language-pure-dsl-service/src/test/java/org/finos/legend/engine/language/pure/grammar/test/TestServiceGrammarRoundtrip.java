@@ -301,7 +301,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
-                "  tags:\n" +
+                "  serviceTags:\n" +
                 "  [\n" +
                 "    {\n" +
                 "      name: 'testName1';\n" +
@@ -338,7 +338,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
-                "  tags:\n" +
+                "  serviceTags:\n" +
                 "  [\n" +
                 "    {\n" +
                 "      name: 'testName1';\n" +
@@ -392,7 +392,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  pattern: 'url/myUrl/';\n" +
                 "  owners:\n" +
                 "  [\n" +
-                "    'ownerName',\n" +
+                "    'ownerName'\n" +
                 "  ];\n" +
                 "  documentation: 'this is just for context';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -420,7 +420,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  pattern: 'url/myUrl/';\n" +
                 "  owners:\n" +
                 "  [\n" +
-                "    'ownerName',\n" +
+                "    'ownerName'\n" +
                 "  ];\n" +
                 "  documentation: 'this is just for context';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -435,7 +435,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    data: 'moreThanData';\n" +
                 "    asserts:\n" +
                 "    [\n" +
-                "      { ['StringParameter', [1, 2, 3], %23:12:8.54, 'Enum.Reference'], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      { ['StringParameter', [1, 2, 3], %23:12:8.54, 'Enum.Reference'], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
                 "      { [22.7, %23:11:8.54, true], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +

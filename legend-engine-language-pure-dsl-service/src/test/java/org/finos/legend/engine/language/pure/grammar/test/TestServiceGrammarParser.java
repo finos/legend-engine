@@ -719,7 +719,7 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
                 "  owners: ['ownerName', 'ownerName2'];\n" +
-                "  tags:\n" +
+                "  serviceTags:\n" +
                 "  [\n" +
                 "    {\n" +
                 "      name: 'testName';\n" +
@@ -757,7 +757,7 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
                 "  owners: ['ownerName', 'ownerName2'];\n" +
-                "  tags:\n" +
+                "  serviceTags:\n" +
                 "  [\n" +
                 "    {\n" +
                 "      name: 'testName1';\n" +
