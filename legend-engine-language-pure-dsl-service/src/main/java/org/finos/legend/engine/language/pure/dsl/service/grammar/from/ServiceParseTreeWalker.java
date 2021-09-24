@@ -97,7 +97,7 @@ public class ServiceParseTreeWalker
         service.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : new ArrayList<>();
         // tags (optional)
         ServiceParserGrammar.ServiceTagsContext serviceTagsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTags(), "tags", service.sourceInformation);
-        service.tags = serviceTagsContext != null && serviceTagsContext.SERVICE_TAGS() != null ? ListIterate.collect(serviceTagsContext.tagDescription(), this::visitServiceTagDescription) : new ArrayList<>();
+        service.tags = serviceTagsContext != null && serviceTagsContext.SERVICE_TAGS() != null ? ListIterate.collect(serviceTagsContext.tagDescription(), this::visitServiceTagDescription) : null;
         // execution
         ServiceParserGrammar.ServiceExecContext execContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceExec(), "execution", service.sourceInformation);
         service.execution = this.visitExecution(execContext);
