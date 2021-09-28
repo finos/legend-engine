@@ -270,4 +270,86 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 "}\n");
     }
+
+    @Test
+    public void testServiceTags()
+    {
+        //test for single tag
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "  serviceTags:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'testName1';\n" +
+                "      value: 'testValue1';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n"
+        );
+
+        // test for multiple tags
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "  serviceTags:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'testName1';\n" +
+                "      value: 'testValue1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      name: 'testName2';\n" +
+                "      value: 'testValue2';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n"
+        );
+    }
 }

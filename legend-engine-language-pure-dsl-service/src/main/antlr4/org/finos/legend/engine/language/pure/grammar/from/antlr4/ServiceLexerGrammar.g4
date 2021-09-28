@@ -19,6 +19,10 @@ SERVICE_OWNERS:                     'owners';
 SERVICE_DOCUMENTATION:              'documentation';
 SERVICE_AUTO_ACTIVATE_UPDATES:      'autoActivateUpdates';
 
+SERVICE_TAGS:                       'serviceTags';
+SERVICE_TAGNAME:                    'name';
+SERVICE_TAGVALUE:                   'value';
+
 SERVICE_EXECUTION:                  'execution';
 SERVICE_EXECUTION_EXECUTIONS:       'executions';
 SERVICE_FUNCTION:                   'query';

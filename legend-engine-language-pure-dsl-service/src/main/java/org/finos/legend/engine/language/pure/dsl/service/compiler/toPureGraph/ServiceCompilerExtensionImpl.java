@@ -34,7 +34,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
         return Collections.singletonList(Processor.newProcessor(
                 Service.class,
                 Lists.mutable.of(PackageableConnection.class, PackageableRuntime.class),
-                (service, context) -> 
+                (service, context) ->
                 {
                     org.finos.legend.pure.m3.coreinstance.Package pack = context.pureModel.getOrCreatePackage(service._package);
                     Root_meta_legend_service_metamodel_Service pureService = new Root_meta_legend_service_metamodel_Service_Impl("")
@@ -45,9 +45,13 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                             ._pattern(service.pattern)
                             ._owners(Lists.mutable.withAll(service.owners))
                             ._documentation(service.documentation);
+                    if(service.tags != null)
+                    {
+                        pureService = pureService._tags(ListIterate.collect(service.tags, tag -> HelperServiceBuilder.processServiceTag(tag)));
+                    }
                     pack._childrenAdd(pureService);
                     return pureService;
-                }, 
+                },
                 (service, context) -> {
                     Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service)context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> c._name().equals(service.name));
                     pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context))
