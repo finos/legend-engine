@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -33,7 +34,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
     {
         return Collections.singletonList(Processor.newProcessor(
                 Service.class,
-                Lists.mutable.of(PackageableConnection.class, PackageableRuntime.class),
+                Lists.mutable.of(PackageableConnection.class, PackageableRuntime.class, PackageableAuthorizer.class),
                 (service, context) -> 
                 {
                     org.finos.legend.pure.m3.coreinstance.Package pack = context.pureModel.getOrCreatePackage(service._package);
@@ -51,7 +52,8 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 (service, context) -> {
                     Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service)context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> c._name().equals(service.name));
                     pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context))
-                            ._test(HelperServiceBuilder.processServiceTest(service.test, context, service.execution));
+                            ._test(HelperServiceBuilder.processServiceTest(service.test, context, service.execution))
+                            ._authorizer(HelperServiceBuilder.processServiceAuthorizer(service.authorizer, context));
                 }));
     }
 }

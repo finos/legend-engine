@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.servic
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 
@@ -33,6 +34,7 @@ public class Service extends PackageableElement
     public List<String> owners;
     public String documentation;
     public boolean autoActivateUpdates = true;
+    public Authorizer authorizer;
     public Execution execution;
     public ServiceTest test;
     public List<ServiceTag> tags;

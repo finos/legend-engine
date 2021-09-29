@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.CodeLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.CodeParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.authorizer.AuthorizerParser;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
@@ -58,7 +59,8 @@ public class PureGrammarParser
                 new DomainParser(),
                 MappingParser.newInstance(extensions),
                 connectionParser,
-                RuntimeParser.newInstance(connectionParser)
+                RuntimeParser.newInstance(connectionParser),
+                AuthorizerParser.newInstance(extensions)
         ));
     }
 

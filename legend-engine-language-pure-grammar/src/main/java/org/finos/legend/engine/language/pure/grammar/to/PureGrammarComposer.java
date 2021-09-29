@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.from.authorizer.AuthorizerParser;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingParser;
@@ -27,6 +28,7 @@ import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
@@ -102,6 +104,7 @@ public class PureGrammarComposer
         this.DEPRECATED_renderSection(MappingParser.name, pureModelContextData.getElementsOfType(Mapping.class), elementsToCompose, composedSections);
         this.DEPRECATED_renderSection(ConnectionParser.name, pureModelContextData.getElementsOfType(PackageableConnection.class), elementsToCompose, composedSections);
         this.DEPRECATED_renderSection(RuntimeParser.name, pureModelContextData.getElementsOfType(PackageableRuntime.class), elementsToCompose, composedSections);
+        this.DEPRECATED_renderSection(AuthorizerParser.name, pureModelContextData.getElementsOfType(PackageableAuthorizer.class), elementsToCompose, composedSections);
         return composedSections.select(section -> !section.isEmpty()).makeString("\n\n");
     }
 

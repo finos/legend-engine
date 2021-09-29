@@ -32,6 +32,7 @@ public class PureGrammarParserExtensions
     private final ImmutableList<PureGrammarParserExtension> extensions;
     private final MapIterable<String, SectionParser> sectionParsers;
     private final MapIterable<String, ConnectionValueParser> connectionParsers;
+    private final MapIterable<String, AuthorizerValueParser> authorizerParsers;
     private final MapIterable<String, MappingElementParser> mappingElementParsers;
     private final MapIterable<String, MappingTestInputDataParser> mappingTestInputDataParsers;
 
@@ -42,6 +43,7 @@ public class PureGrammarParserExtensions
         this.connectionParsers = indexExtraConnectionValueParsers(this.extensions);
         this.mappingElementParsers = indexExtraMappingElementParsers(this.extensions);
         this.mappingTestInputDataParsers = indexExtraMappingTestInputDataParsers(this.extensions);
+        this.authorizerParsers = indexExtraAuthorizerValueParsers(this.extensions);
     }
 
     public List<PureGrammarParserExtension> getExtensions()
@@ -57,6 +59,11 @@ public class PureGrammarParserExtensions
     public ConnectionValueParser getConnectionValueParser(String type)
     {
         return this.connectionParsers.get(type);
+    }
+
+    public AuthorizerValueParser getAuthorizerValueParser(String type)
+    {
+        return this.authorizerParsers.get(type);
     }
 
     public MappingElementParser getExtraMappingElementParser(String type)
@@ -104,6 +111,13 @@ public class PureGrammarParserExtensions
         return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraConnectionParsers),
                 ConnectionValueParser::getConnectionTypeName,
                 "Conflicting parsers for connection type");
+    }
+
+    private static MapIterable<String, AuthorizerValueParser> indexExtraAuthorizerValueParsers(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraAuthorizerParsers),
+                AuthorizerValueParser::getAuthorizerTypeName,
+                "Conflicting parsers for authorizer type");
     }
 
     private static MapIterable<String, MappingElementParser> indexExtraMappingElementParsers(Iterable<? extends PureGrammarParserExtension> extensions)

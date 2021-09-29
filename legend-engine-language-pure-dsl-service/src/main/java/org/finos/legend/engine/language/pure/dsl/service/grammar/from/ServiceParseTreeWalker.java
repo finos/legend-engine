@@ -26,6 +26,8 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.AuthorizerPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
@@ -94,6 +96,12 @@ public class ServiceParseTreeWalker
         // owners (optional)
         ServiceParserGrammar.ServiceOwnersContext ownersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceOwners(), "owners", service.sourceInformation);
         service.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : new ArrayList<>();
+        // authorizer
+        ServiceParserGrammar.ServiceAuthorizerContext authorizerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceAuthorizer(), "authorizer", service.sourceInformation);
+        if (authorizerContext != null && authorizerContext.qualifiedName() != null)
+        {
+            service.authorizer = this.visitAuthorizer(authorizerContext);
+        }
         // execution
         ServiceParserGrammar.ServiceExecContext execContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceExec(), "execution", service.sourceInformation);
         service.execution = this.visitExecution(execContext);
@@ -101,6 +109,13 @@ public class ServiceParseTreeWalker
         ServiceParserGrammar.ServiceTestContext testContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceTest(), "test", service.sourceInformation);
         service.test = this.visitTest(testContext);
         return service;
+    }
+
+    private Authorizer visitAuthorizer(ServiceParserGrammar.ServiceAuthorizerContext authorizerContext) {
+        AuthorizerPointer authorizerPointer = new AuthorizerPointer();
+        authorizerPointer.authorizer = PureGrammarParserUtility.fromQualifiedName(authorizerContext.qualifiedName().packagePath() == null ? Collections.emptyList() : authorizerContext.qualifiedName().packagePath().identifier(), authorizerContext.qualifiedName().identifier());
+        authorizerPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(authorizerContext.qualifiedName());
+        return authorizerPointer;
     }
 
     private List<TaggedValue> visitTaggedValues(ServiceParserGrammar.TaggedValuesContext ctx)

@@ -22,6 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserD
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
@@ -272,6 +273,18 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         // NOTE: the whole point of this processing is to put the Pure Connection in an index
         final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
         this.context.pureModel.connectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), connection);
+        return stub;
+    }
+
+    @Override
+    public PackageableElement visit(PackageableAuthorizer packageableAuthorizer) {
+        // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
+        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableAuthorizer._package);
+        PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(packageableAuthorizer.name);
+        pack._childrenAdd(stub);
+        // NOTE: the whole point of this processing is to put the Authorizer in an index
+        final org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer authorizer = packageableAuthorizer.authorizerValue.accept(new AuthorizerFirstPassBuilder(this.context));
+        this.context.pureModel.authorizersIndex.put(this.context.pureModel.buildPackageString(packageableAuthorizer._package, packageableAuthorizer.name), authorizer);
         return stub;
     }
 

@@ -77,6 +77,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.G
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
@@ -126,6 +127,7 @@ public class PureModel implements IPureModel
     final MutableMap<String, Mapping> mappingsIndex = Maps.mutable.empty();
     final MutableMap<String, Connection> connectionsIndex = Maps.mutable.empty();
     final MutableMap<String, Runtime> runtimesIndex = Maps.mutable.empty();
+    final MutableMap<String, Authorizer> authorizersIndex = Maps.mutable.empty();
 
     public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode)
     {
@@ -208,6 +210,7 @@ public class PureModel implements IPureModel
             pureModelContextDataIndex.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             pureModelContextDataIndex.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             pureModelContextDataIndex.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.authorizers.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             this.extensions.sortExtraProcessors(pureModelContextDataIndex.stores.keysView()).forEach(p ->
             {
                 MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store> stores = pureModelContextDataIndex.stores.get(p);
@@ -244,6 +247,11 @@ public class PureModel implements IPureModel
             long loadConnectionsAndRuntimesFinished = System.currentTimeMillis();
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT, (double) loadConnectionsAndRuntimesFinished - loadMappingsFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT.toString());
+
+            this.loadAuthorizers(pureModelContextDataIndex);
+            long loadAuthorizersFinished = System.currentTimeMillis();
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_SERVICE_AUTHORIZERS_BUILT, (double) loadAuthorizersFinished - loadConnectionsAndRuntimesFinished).toString());
+            scope.span().log(LoggingEventType.GRAPH_SERVICE_AUTHORIZERS_BUILT.toString());
 
             this.loadOtherElementsPostConnectionsAndRuntimes(pureModelContextDataIndex);
             long loadOtherElementsPostConnectionsAndRuntimesFinished = System.currentTimeMillis();
@@ -440,6 +448,11 @@ public class PureModel implements IPureModel
         // Connections must be loaded before runtimes
         pure.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         pure.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
+    }
+
+    public void loadAuthorizers(PureModelContextDataIndex pure)
+    {
+        pure.authorizers.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
     }
 
     private void loadOtherElementsPreStores(PureModelContextDataIndex pure)
@@ -840,6 +853,18 @@ public class PureModel implements IPureModel
         return this.connectionsIndex.get(packagePrefix(fullPath));
     }
 
+    public Authorizer getAuthorizer(String fullPath, SourceInformation sourceInformation)
+    {
+        Authorizer authorizer = this.getAuthorizer_safe(fullPath);
+        Assert.assertTrue(authorizer != null, () -> "Can't find authorizer '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return authorizer;
+    }
+
+    public Authorizer getAuthorizer_safe(String fullPath)
+    {
+        return this.authorizersIndex.get(packagePrefix(fullPath));
+    }
+
 
     // ------------------------------------------ SUB-ELEMENT GETTER -----------------------------------------
 
@@ -1170,6 +1195,10 @@ public class PureModel implements IPureModel
             {
                 index.sectionIndices.add((SectionIndex) e);
             }
+            else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer)
+            {
+                index.authorizers.add((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer) e);
+            }
             // TODO eliminate special handling for stores
             else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store)
             {
@@ -1195,6 +1224,7 @@ public class PureModel implements IPureModel
         private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure> measures = Lists.mutable.empty();
         private final MutableList<PackageableConnection> connections = Lists.mutable.empty();
         private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime> runtimes = Lists.mutable.empty();
+        private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer> authorizers = Lists.mutable.empty();
         private final MutableList<Profile> profiles = Lists.mutable.empty();
         private final MutableList<SectionIndex> sectionIndices = Lists.mutable.empty();
         private final MutableMap<Processor<?>, MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store>> stores = Maps.mutable.empty();

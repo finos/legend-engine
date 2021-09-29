@@ -49,6 +49,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer;
 
 import java.util.Collections;
 import java.util.List;
@@ -99,6 +100,16 @@ public interface CompilerExtension
     }
 
     default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, CompileContext, Authorizer>> getExtraAuthorizerValueProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, Authorizer, CompileContext>> getExtraAuthorizerSecondPassProcessors()
     {
         return Collections.emptyList();
     }

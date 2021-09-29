@@ -26,6 +26,10 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWa
 import org.finos.legend.engine.language.pure.grammar.from.domain.StrictTimeParseTreeWalker;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.AuthorizerPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.AuthorizerVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
@@ -111,7 +115,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     ValueSpecificationVisitor<String>,
     ClassMappingVisitor<String>,
     PropertyMappingVisitor<String>,
-    ConnectionVisitor<String>
+    ConnectionVisitor<String>,
+    AuthorizerVisitor<String>
 {
     private final String indentationString;
     private final PureGrammarComposerContext.RenderStyle renderStyle;
@@ -602,6 +607,29 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             "{" +
             HelperRuntimeGrammarComposer.renderRuntimeValue(packageableRuntime.runtimeValue, 1, false, this) +
             "\n}";
+    }
+
+    // ----------------------------------------------- AUTHORIZER -----------------------------------------------
+
+    @Override
+    public String visit(PackageableAuthorizer packageableAuthorizer) {
+        return HelperAuthorizerGrammarComposer.getAuthorizerValueName(packageableAuthorizer.authorizerValue, this.toContext()) +
+                " " + PureGrammarComposerUtility.convertPath(packageableAuthorizer.getPath()) + "\n" +
+                packageableAuthorizer.authorizerValue.accept(this);
+    }
+
+    @Override
+    public String visit(Authorizer authorizer)
+    {
+        PureGrammarComposerContext context = this.toContext();
+        Optional<org.eclipse.collections.api.tuple.Pair<String, String>> connectionValueString = context.extraAuthorizerValueComposers.stream().map(composer -> composer.value(authorizer, context)).filter(Objects::nonNull).findFirst();
+        return connectionValueString.orElseGet(() -> Tuples.pair(null, unsupported(authorizer.getClass()))).getTwo();
+    }
+
+    @Override
+    public String visit(AuthorizerPointer authorizerPointer)
+    {
+        return authorizerPointer.authorizer;
     }
 
 

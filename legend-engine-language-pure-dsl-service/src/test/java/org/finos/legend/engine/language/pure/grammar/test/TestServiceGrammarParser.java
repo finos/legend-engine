@@ -709,4 +709,31 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  }\n" +
                 "}\n");
     }
+
+    @Test
+    public void testServiceAuthorizer() {
+        // empty embedded runtime
+        test("###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  authorizer: test::myAuthorizer;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::class[1]|$src.prop1;\n" +
+                "    mapping: test::mapping;\n" +
+                "    runtime: test::myRuntime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
 }

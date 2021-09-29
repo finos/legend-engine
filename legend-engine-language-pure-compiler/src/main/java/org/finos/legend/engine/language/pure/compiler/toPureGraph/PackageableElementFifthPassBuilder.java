@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
@@ -94,6 +95,11 @@ public class PackageableElementFifthPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
+        return null;
+    }
+
+    @Override
+    public PackageableElement visit(PackageableAuthorizer packageableAuthorizer) {
         return null;
     }
 

@@ -37,4 +37,9 @@ public interface PureGrammarParserExtension
     {
         return Collections.emptyList();
     }
+
+    default Iterable<? extends AuthorizerValueParser> getExtraAuthorizerParsers()
+    {
+        return Collections.emptyList();
+    }
 }

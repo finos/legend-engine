@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
@@ -233,6 +234,13 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     {
         final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = this.context.pureModel.getConnection(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), packageableConnection.sourceInformation);
         packageableConnection.connectionValue.accept(new ConnectionSecondPassBuilder(this.context, pureConnection));
+        return null;
+    }
+
+    @Override
+    public PackageableElement visit(PackageableAuthorizer packageableAuthorizer) {
+        final org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer authorizer = this.context.pureModel.getAuthorizer(this.context.pureModel.buildPackageString(packageableAuthorizer._package, packageableAuthorizer.name), packageableAuthorizer.sourceInformation);
+        packageableAuthorizer.authorizerValue.accept(new AuthorizerSecondPassBuilder(this.context, authorizer));
         return null;
     }
 

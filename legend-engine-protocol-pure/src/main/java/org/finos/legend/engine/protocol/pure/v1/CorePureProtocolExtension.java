@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
@@ -86,6 +87,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .withKeyValue(Measure.class, "meta::pure::metamodel::type::Measure")
                 .withKeyValue(PackageableConnection.class, "meta::pure::runtime::PackageableConnection")
                 .withKeyValue(PackageableRuntime.class, "meta::pure::runtime::PackageableRuntime")
+                .withKeyValue(PackageableAuthorizer.class, "meta::pure::service::PackageableAuthorizer")
                 .withKeyValue(Profile.class, "meta::pure::metamodel::extension::Profile")
                 .withKeyValue(SectionIndex.class, "meta::pure::metamodel::section::SectionIndex")
                 .withKeyValue(Unit.class, "meta::pure::metamodel::type::Unit");

@@ -14,7 +14,7 @@ identifier:                             VALID_STRING | STRING
                                         | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                         | STEREOTYPES | TAGS
                                         | SERVICE | IMPORT
-                                        | SERVICE_SINGLE | SERVICE_MULTI
+                                        | SERVICE_SINGLE | SERVICE_MULTI | SERVICE_AUTHORIZER
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
                                         | SERVICE_TEST | SERVICE_TEST_TESTS | SERVICE_DATA | SERVICE_ASSERTS
@@ -38,6 +38,7 @@ service:                                SERVICE stereotypes? taggedValues? quali
                                                     | serviceOwners
                                                     | serviceDocumentation
                                                     | serviceAutoActivateUpdates
+                                                    | serviceAuthorizer
                                                     | serviceExec
                                                     | serviceTest
                                                 )*
@@ -63,7 +64,8 @@ serviceDocumentation:                   SERVICE_DOCUMENTATION COLON STRING SEMI_
 ;
 serviceAutoActivateUpdates:             SERVICE_AUTO_ACTIVATE_UPDATES COLON BOOLEAN SEMI_COLON
 ;
-
+serviceAuthorizer:                      SERVICE_AUTHORIZER COLON qualifiedName SEMI_COLON
+;
 
 // -------------------------------------- EXECUTION --------------------------------------
 

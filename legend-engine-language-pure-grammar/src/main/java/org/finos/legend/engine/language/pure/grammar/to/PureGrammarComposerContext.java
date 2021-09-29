@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -59,6 +60,7 @@ public class PureGrammarComposerContext
     public final List<Function2<ClassMapping, PureGrammarComposerContext, String>> extraClassMappingComposers;
     public final List<Function2<AssociationMapping, PureGrammarComposerContext, String>> extraAssociationMappingComposers;
     public final List<Function2<Connection, PureGrammarComposerContext, org.eclipse.collections.api.tuple.Pair<String, String>>> extraConnectionValueComposers;
+    public final List<Function2<Authorizer, PureGrammarComposerContext, org.eclipse.collections.api.tuple.Pair<String, String>>> extraAuthorizerValueComposers;
     public final List<Function2<InputData, PureGrammarComposerContext, String>> extraMappingTestInputDataComposers;
 
     protected PureGrammarComposerContext(Builder builder)
@@ -76,6 +78,7 @@ public class PureGrammarComposerContext
         this.extraAssociationMappingComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraAssociationMappingComposers);
         this.extraConnectionValueComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraConnectionValueComposers);
         this.extraMappingTestInputDataComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraMappingTestInputDataComposers);
+        this.extraAuthorizerValueComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraAuthorizerValueComposers);
     }
 
     public String getIndentationString()

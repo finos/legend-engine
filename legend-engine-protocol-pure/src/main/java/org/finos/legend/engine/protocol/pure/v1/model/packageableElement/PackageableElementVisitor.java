@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.PackageableAuthorizer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
@@ -50,4 +51,6 @@ public interface PackageableElementVisitor<T>
     T visit(PackageableRuntime packageableRuntime);
 
     T visit(PackageableConnection packageableConnection);
+
+    T visit(PackageableAuthorizer packageableAuthorizer);
 }

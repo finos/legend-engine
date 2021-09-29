@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.AuthorizerPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -75,6 +76,10 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         }
         serviceBuilder.append(getTabString()).append("documentation: ").append(convertString(service.documentation, true)).append(";\n");
         serviceBuilder.append(getTabString()).append("autoActivateUpdates: ").append(service.autoActivateUpdates ? "true" : "false").append(";\n");
+        if (service.authorizer instanceof AuthorizerPointer)
+        {
+            serviceBuilder.append(getTabString()).append("authorizer: ").append(((AuthorizerPointer)service.authorizer).authorizer).append(";\n");
+        }
         Execution execution = service.execution;
         if (execution instanceof PureExecution)
         {
