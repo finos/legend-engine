@@ -16,9 +16,10 @@ package org.finos.legend.engine.external.language.java.generation;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
-import org.finos.legend.pure.generated.Root_meta_java_metamodel_Class;
-import org.finos.legend.pure.generated.Root_meta_java_metamodel_project_Project;
-import org.finos.legend.pure.generated.Root_meta_java_metamodel_project_ProjectDirectory;
+import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_Class;
+import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_Project;
+import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_ProjectDirectory;
+import org.finos.legend.pure.generated.Root_meta_external_language_java_serialization_Stringifier;
 import org.finos.legend.pure.generated.core_java_metamodel_serialization;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
@@ -70,18 +71,19 @@ public abstract class GenerateJavaProject
 
     public void execute()
     {
-        Root_meta_java_metamodel_project_Project project = doExecute(executionSupport);
+        Root_meta_external_language_java_metamodel_project_Project project = doExecute(executionSupport);
+        Root_meta_external_language_java_serialization_Stringifier stringifier = core_java_metamodel_serialization.Root_meta_external_language_java_serialization_newStringifier_Project_1__Stringifier_1_(project, executionSupport);
 
-        Root_meta_java_metamodel_project_ProjectDirectory javaDir = project._root()
+        Root_meta_external_language_java_metamodel_project_ProjectDirectory javaDir = project._root()
                                                                            ._subdirectories().detect(sd -> "src".equals(sd._name()))
                                                                            ._subdirectories().detect(sd -> "main".equals(sd._name()))
                                                                            ._subdirectories().detect(sd -> "java".equals(sd._name()));
-        javaDir._subdirectories().forEach(dir -> processDir(dir, Paths.get(outputDirectory)));
+        javaDir._subdirectories().forEach(dir -> processDir(dir, Paths.get(outputDirectory), stringifier));
     }
 
-    protected abstract Root_meta_java_metamodel_project_Project doExecute(CompiledExecutionSupport executionSupport);
+    protected abstract Root_meta_external_language_java_metamodel_project_Project doExecute(CompiledExecutionSupport executionSupport);
 
-    private void processDir(Root_meta_java_metamodel_project_ProjectDirectory directory, Path dirPath)
+    private void processDir(Root_meta_external_language_java_metamodel_project_ProjectDirectory directory, Path dirPath, Root_meta_external_language_java_serialization_Stringifier stringifier)
     {
         try
         {
@@ -89,9 +91,9 @@ public abstract class GenerateJavaProject
             System.out.println(newDirPath.toAbsolutePath());
             Files.createDirectories(newDirPath);
 
-            directory._classes().forEach(cls -> writeClass(cls, newDirPath));
+            directory._classes().forEach(cls -> writeClass(cls, newDirPath, stringifier));
 
-            directory._subdirectories().forEach(dir -> processDir(dir, newDirPath));
+            directory._subdirectories().forEach(dir -> processDir(dir, newDirPath, stringifier));
         }
         catch (IOException e)
         {
@@ -99,12 +101,12 @@ public abstract class GenerateJavaProject
         }
     }
 
-    private void writeClass(Root_meta_java_metamodel_Class cls, Path dirPath)
+    private void writeClass(Root_meta_external_language_java_metamodel_Class cls, Path dirPath, Root_meta_external_language_java_serialization_Stringifier stringifier)
     {
         try
         {
             Path javaFilePath = dirPath.resolve(cls._simpleName() + ".java");
-            String code = core_java_metamodel_serialization.Root_meta_java_serialization_classToString_Class_1__String_1_(cls, executionSupport);
+            String code = core_java_metamodel_serialization.Root_meta_external_language_java_serialization_ofClass_Stringifier_1__Class_1__String_1_(stringifier, cls, executionSupport);
             Files.write(javaFilePath, code.getBytes(StandardCharsets.UTF_8));
             System.out.println(cls._simpleName());
         }

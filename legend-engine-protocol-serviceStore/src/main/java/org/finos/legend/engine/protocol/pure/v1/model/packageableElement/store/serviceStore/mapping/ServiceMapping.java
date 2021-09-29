@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.application.query.model;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.serviceStore.mapping;
+
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.serviceStore.model.ServicePtr;
 
 import java.util.List;
 
-public class DataSpace
-// NOTE: extends PackageableElement
+public class ServiceMapping
 {
-    // public String label; // should we include this as a nicely-formatted name for the data space?
-    public String description;
-    public String groupId;
-    public String artifactId;
-    public String versionId;
-    public String mapping;
-    public String runtime;
-    public List<String> diagrams;
-    public String supportEmail;
+    public ServicePtr service;
+    public List<ServiceParameterMapping> parameterMappings;
+
+    public SourceInformation sourceInformation;
 }
