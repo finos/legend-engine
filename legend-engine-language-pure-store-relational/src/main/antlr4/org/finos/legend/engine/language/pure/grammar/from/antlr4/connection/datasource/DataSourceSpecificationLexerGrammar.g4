@@ -28,5 +28,6 @@ PROJECT:                                    'projectId';
 DATASET:                                    'defaultDataset';
 
 DATABRICKS:                                 'Databricks';
-DATABRICKS_SHARD:                           'shard';
-DATABRICKS_HTTP_PATH:                       'httpPath';
+PROTOCOL:                                   'protocol';
+HTTP_PATH:                                  'httpPath';
+HOSTNAME:                                   'hostname';

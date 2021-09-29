@@ -43,7 +43,9 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  type: Databricks;\n" +
                 "  specification: Databricks\n" +
                 "  {\n" +
-                "    shard: 'shard';\n" +
+                "    hostname: 'hostname';\n" +
+                "    port: 'port';\n" +
+                "    protocol: 'protocol';\n" +
                 "    httpPath: 'httpPath';\n" +
                 "  };\n" +
                 "  auth: ApiToken\n" +

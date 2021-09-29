@@ -69,7 +69,9 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
         {
             DatabricksDatasourceSpecification databricksSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
             return new DatabricksDataSourceSpecificationKey(
-                    databricksSpecification.shard,
+                    databricksSpecification.hostname,
+                    databricksSpecification.port,
+                    databricksSpecification.protocol,
                     databricksSpecification.httpPath);
         }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)

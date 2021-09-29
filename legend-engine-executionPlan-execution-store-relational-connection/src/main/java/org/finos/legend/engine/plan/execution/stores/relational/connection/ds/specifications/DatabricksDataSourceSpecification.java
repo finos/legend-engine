@@ -28,16 +28,22 @@ import java.util.Properties;
 public class DatabricksDataSourceSpecification extends DataSourceSpecification
 {
 
-    public static String DATABRICKS_SHARD = "legend_databricks_shard";
+    public static String DATABRICKS_HOSTNAME = "legend_databricks_hostname";
+    public static String DATABRICKS_PORT = "legend_databricks_port";
+    public static String DATABRICKS_PROTOCOL = "legend_databricks_protocol";
     public static String DATABRICKS_HTTP_PATH = "legend_databricks_http_path";
 
     public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
     {
         super(key, databaseManager, authenticationStrategy, extraUserProperties, relationalExecutorInfo);
 
-        this.extraDatasourceProperties.put(DATABRICKS_SHARD, key.getShard());
+        this.extraDatasourceProperties.put(DATABRICKS_HOSTNAME, key.getHostname());
+        this.extraDatasourceProperties.put(DATABRICKS_PORT, key.getPort());
+        this.extraDatasourceProperties.put(DATABRICKS_PROTOCOL, key.getProtocol());
         this.extraDatasourceProperties.put(DATABRICKS_HTTP_PATH, key.getHttpPath());
-        this.extraDatasourceProperties.put("shard", key.getShard());
+        this.extraDatasourceProperties.put("hostname", key.getHostname());
+        this.extraDatasourceProperties.put("port", key.getPort());
+        this.extraDatasourceProperties.put("protocol", key.getProtocol());
         this.extraDatasourceProperties.put("httpPath", key.getHttpPath());
     }
 

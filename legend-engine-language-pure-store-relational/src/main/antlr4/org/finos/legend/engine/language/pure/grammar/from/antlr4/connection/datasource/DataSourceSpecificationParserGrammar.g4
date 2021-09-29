@@ -52,16 +52,24 @@ embeddedH2DSPAutoServerMode:                EMBEDDED_H2_DSP_AUTO_SERVER_MODE COL
 databricksDatasourceSpecification:          DATABRICKS
                                                 BRACE_OPEN
                                                     (
-                                                        shard
+                                                        hostname
+                                                        | port
+                                                        | protocol
                                                         | httpPath
                                                     )*
                                                 BRACE_CLOSE
 ;
 
-shard:                                      DATABRICKS_SHARD COLON STRING SEMI_COLON
+hostname:                                   HOSTNAME COLON STRING SEMI_COLON
 ;
 
-httpPath:                                   DATABRICKS_HTTP_PATH COLON STRING SEMI_COLON
+port:                                       PORT COLON STRING SEMI_COLON
+;
+
+protocol:                                   PROTOCOL COLON STRING SEMI_COLON
+;
+
+httpPath:                                   HTTP_PATH COLON STRING SEMI_COLON
 ;
 
 snowflakeDatasourceSpecification:           SNOWFLAKE

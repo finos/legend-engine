@@ -61,10 +61,19 @@ public class DataSourceSpecificationParseTreeWalker
     public DatabricksDatasourceSpecification visitDatabricksDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.DatabricksDatasourceSpecificationContext dbSpecCtx) {
         DatabricksDatasourceSpecification dsSpec = new DatabricksDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
-        DataSourceSpecificationParserGrammar.ShardContext shardCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.shard(), "shard", dsSpec.sourceInformation);
-        dsSpec.shard = PureGrammarParserUtility.fromGrammarString(shardCtx.STRING().getText(), true);
+
+        DataSourceSpecificationParserGrammar.HostnameContext hostnameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.hostname(), "hostname", dsSpec.sourceInformation);
+        dsSpec.hostname = PureGrammarParserUtility.fromGrammarString(hostnameCtx.STRING().getText(), true);
+
+        DataSourceSpecificationParserGrammar.PortContext portCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.port(), "port", dsSpec.sourceInformation);
+        dsSpec.port = PureGrammarParserUtility.fromGrammarString(portCtx.STRING().getText(), true);
+
+        DataSourceSpecificationParserGrammar.ProtocolContext protocolCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.protocol(), "protocol", dsSpec.sourceInformation);
+        dsSpec.protocol = PureGrammarParserUtility.fromGrammarString(protocolCtx.STRING().getText(), true);
+
         DataSourceSpecificationParserGrammar.HttpPathContext httpCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.httpPath(), "httpPath", dsSpec.sourceInformation);
         dsSpec.httpPath = PureGrammarParserUtility.fromGrammarString(httpCtx.STRING().getText(), true);
+
         return dsSpec;
     }
 

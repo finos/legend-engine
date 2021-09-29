@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.DatabricksDataSourceSpecification;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Properties;
 
@@ -36,11 +37,32 @@ public class DatabricksManager extends DatabaseManager
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
         Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HTTP_PATH) != null, () -> DatabricksDataSourceSpecification.DATABRICKS_HTTP_PATH + " is not set");
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_SHARD) != null, () -> DatabricksDataSourceSpecification.DATABRICKS_SHARD + " is not set");
-        String httpPath = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HTTP_PATH);
-        String shard = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_SHARD);
-        return String.format("jdbc:spark://%s;transportMode=http;ssl=1;httpPath=%s;AuthMech=3;",
-                shard,
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HOSTNAME) != null, () -> DatabricksDataSourceSpecification.DATABRICKS_HOSTNAME + " is not set");
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PORT) != null, () -> DatabricksDataSourceSpecification.DATABRICKS_PORT + " is not set");
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PROTOCOL) != null, () -> DatabricksDataSourceSpecification.DATABRICKS_PROTOCOL + " is not set");
+        String httpPath = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HTTP_PATH).trim();
+        String hostname = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HOSTNAME).trim();
+        String dbport = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PORT).trim();
+        String protocol = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PROTOCOL).trim();
+
+        String transportMode = "http";
+        int useSSL = 1;
+        switch (protocol.toLowerCase().trim())
+        {
+            case "http":
+                useSSL = 0;
+                break;
+            case "https":
+                break;
+            default:
+                throw new EngineException("Unsupported protocol [" + protocol + "]");
+        }
+
+        return String.format("jdbc:spark://%s:%s/default;transportMode=%s;ssl=%s;AuthMech=3;httpPath=%s;",
+                hostname,
+                dbport,
+                transportMode,
+                useSSL,
                 httpPath
         );
     }

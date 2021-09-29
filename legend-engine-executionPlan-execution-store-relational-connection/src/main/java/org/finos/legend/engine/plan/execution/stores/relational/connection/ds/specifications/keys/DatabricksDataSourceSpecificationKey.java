@@ -20,18 +20,32 @@ import java.util.Objects;
 
 public class DatabricksDataSourceSpecificationKey implements DataSourceSpecificationKey
 {
-    private final String shard;
+    private final String hostname;
+    private final String port;
+    private final String protocol;
     private final String httpPath;
 
-    public DatabricksDataSourceSpecificationKey(String shard, String httpPath)
+    public DatabricksDataSourceSpecificationKey(String hostname, String port, String protocol, String httpPath)
     {
-        this.shard = shard;
+        this.hostname = hostname;
+        this.port = port;
+        this.protocol = protocol;
         this.httpPath = httpPath;
     }
 
-    public String getShard()
+    public String getHostname()
     {
-        return shard;
+        return hostname;
+    }
+
+    public String getPort()
+    {
+        return port;
+    }
+
+    public String getProtocol()
+    {
+        return protocol;
     }
 
     public String getHttpPath()
@@ -43,7 +57,9 @@ public class DatabricksDataSourceSpecificationKey implements DataSourceSpecifica
     public String toString()
     {
         return "DatabricksDataSourceSpecificationKey{" +
-                "shard='" + shard + '\'' +
+                "hostname='" + hostname + '\'' +
+                "port='" + port + '\'' +
+                "protocol='" + protocol + '\'' +
                 "httpPath='" + httpPath + '\'' +
                 '}';
     }
@@ -52,7 +68,9 @@ public class DatabricksDataSourceSpecificationKey implements DataSourceSpecifica
     public String shortId()
     {
         return "Databricks_" +
-                "shard:" + shard + "_" +
+                "hostname:" + hostname + "_" +
+                "port:" + port + "_" +
+                "protocol:" + protocol + "_" +
                 "httpPath:" + httpPath;
     }
 
@@ -68,12 +86,15 @@ public class DatabricksDataSourceSpecificationKey implements DataSourceSpecifica
             return false;
         }
         DatabricksDataSourceSpecificationKey that = (DatabricksDataSourceSpecificationKey) o;
-        return Objects.equals(shard, that.shard) && Objects.equals(httpPath, that.httpPath);
+        return Objects.equals(hostname, that.hostname)
+                && Objects.equals(port, that.port)
+                && Objects.equals(protocol, that.protocol)
+                && Objects.equals(httpPath, that.httpPath);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(shard, httpPath);
+        return Objects.hash(hostname, port, protocol, httpPath);
     }
 }

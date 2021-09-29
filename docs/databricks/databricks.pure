@@ -65,7 +65,9 @@ RelationalDatabaseConnection fire::database::delta
   type: DeltaLake;
   specification: DeltaLake
   {
-    shard: 'shard.databricks.com:443/default';
+    hostname: 'shard.databricks.com';
+    port: '443';
+    protocol: 'http';
     httpPath: '/sql/1.0/endpoints/XXXXXXXXX';
   };
   auth: DeltaLake
