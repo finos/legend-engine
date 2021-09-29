@@ -100,11 +100,6 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return parseCombinedExpression(code, combinedExpressionWalkerSourceInformation, parserContext, false);
     }
 
-    public ValueSpecification parseInstanceRightSide(String code, ParseTreeWalkerSourceInformation instanceWalkerSourceInformation, PureGrammarParserContext parserContext)
-    {
-        return parseInstanceRightSide(code, instanceWalkerSourceInformation, parserContext, false);
-    }
-
     // TODO PropertyBracketExpression is deprecated.  Remove method once all use has been addressed
     public ValueSpecification parseCombinedExpression(String code, ParseTreeWalkerSourceInformation combinedExpressionWalkerSourceInformation, PureGrammarParserContext parserContext, boolean allowPropertyBracketExpression)
     {
@@ -114,15 +109,5 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(code, null, walkerSourceInformation, false);
         DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, allowPropertyBracketExpression);
         return walker.combinedExpression(((DomainParserGrammar) sectionParserInfo.parser).combinedExpression(), "line", typeParametersNames, lambdaContext, "", true, false);
-    }
-
-    public ValueSpecification parseInstanceRightSide(String code, ParseTreeWalkerSourceInformation instanceWalkerSourceInformation, PureGrammarParserContext parserContext, boolean allowPropertyBracketExpression)
-    {
-        List<String> typeParametersNames = new ArrayList<>();
-        DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext("");
-        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(instanceWalkerSourceInformation).build();
-        SourceCodeParserInfo sectionParserInfo = this.getParserInfo(code, null, walkerSourceInformation, false);
-        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, allowPropertyBracketExpression);
-        return walker.processRightSide(((DomainParserGrammar) sectionParserInfo.parser).expressionInstanceRightSide(), typeParametersNames, lambdaContext,false,"");
     }
 }

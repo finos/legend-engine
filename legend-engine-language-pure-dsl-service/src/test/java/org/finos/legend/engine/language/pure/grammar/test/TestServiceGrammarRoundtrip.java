@@ -407,7 +407,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    data: 'moreThanData';\n" +
                 "    asserts:\n" +
                 "    [\n" +
-                "      { ['singleParameter', 22, 3.14], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      { ['singleParameter', minus(22), 3.14], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
                 "}\n"

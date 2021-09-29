@@ -269,18 +269,18 @@ public class ServiceParseTreeWalker
 
     private List<ValueSpecification> visitTestParameters(ServiceParserGrammar.TestParametersContext ctx)
     {
-        List<ValueSpecification> testParameters = ctx != null && ctx.instanceRightSide() != null ? ListIterate.collect(ctx.instanceRightSide(), this::visitTestParameter): new ArrayList<>();
+        List<ValueSpecification> testParameters = ctx != null && ctx.combinedExpression() != null ? ListIterate.collect(ctx.combinedExpression(), this::visitTestParameter): null;
         return testParameters;
     }
 
-    private ValueSpecification visitTestParameter(ServiceParserGrammar.InstanceRightSideContext ctx) {
+    private ValueSpecification visitTestParameter(ServiceParserGrammar.CombinedExpressionContext ctx) {
         DomainParser parser = new DomainParser();
         int startLine = ctx.getStart().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
-        ParseTreeWalkerSourceInformation instanceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
-        String instanceString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
-        ValueSpecification valueSpecification = parser.parseInstanceRightSide(instanceString, instanceInformation, null);
+        ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        String expression = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
+        ValueSpecification valueSpecification = parser.parseCombinedExpression(expression, combineExpressionSourceInformation, null);
         return valueSpecification;
     }
 
