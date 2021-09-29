@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
@@ -35,7 +34,20 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Execution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_service_Authorizer_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 
 import java.util.HashSet;
