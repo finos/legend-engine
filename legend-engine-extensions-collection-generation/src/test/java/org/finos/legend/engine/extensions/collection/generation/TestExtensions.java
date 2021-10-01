@@ -39,9 +39,11 @@ public class TestExtensions
     private static final ImmutableList<Class<? extends PureProtocolExtension>> EXPECTED_PROTOCOL_EXTENSIONS = Lists.mutable.<Class<? extends PureProtocolExtension>>empty()
             .with(org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
+            .with(org.finos.legend.engine.external.shared.ExternalFormatProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
+            .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
             .toImmutable();
@@ -59,6 +61,7 @@ public class TestExtensions
     private static final ImmutableList<Class<? extends PureGrammarParserExtension>> EXPECTED_GRAMMAR_EXTENSIONS = Lists.mutable.<Class<? extends PureGrammarParserExtension>>empty()
             .with(org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser.class)
             .with(org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension.class)
+            .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
             .toImmutable();
 
     @Test
