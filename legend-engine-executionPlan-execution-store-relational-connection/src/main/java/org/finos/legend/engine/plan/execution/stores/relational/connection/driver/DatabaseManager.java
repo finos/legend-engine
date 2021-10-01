@@ -27,25 +27,31 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DatabaseManager
 {
-    private static volatile ConcurrentHashMap<String, DatabaseManager> managersByName; //NOSONAR - ConcurrentHashMap is good enough
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DatabaseManager.class);
+    private static final ConcurrentHashMap<String, DatabaseManager> managersByName = ConcurrentHashMap.newMap();
+    private static final AtomicBoolean dbManagerReady = new AtomicBoolean();
 
     private static void initialize()
     {
-        if (managersByName == null)
+        if (!dbManagerReady.get())
         {
-            synchronized (DatabaseManager.class)
+            synchronized (dbManagerReady)
             {
-                if (managersByName == null)
+                if (!dbManagerReady.get())
                 {
-                    managersByName = ConcurrentHashMap.newMap();
+                    LOGGER.info("DatabaseManager starting initialization");
+                    long start = System.currentTimeMillis();
                     register(new H2Manager());
                     register(new SnowflakeManager());
                     register(new BigQueryManager());
                     MutableList<ConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionExtension.class), Lists.mutable.empty());
                     extensions.flatCollect(ConnectionExtension::getAdditionalDatabaseManager).forEach(DatabaseManager::register);
+                    dbManagerReady.getAndSet(true);
+                    LOGGER.info("DatabaseManager initialisation took {}", System.currentTimeMillis() - start);
                 }
             }
         }
