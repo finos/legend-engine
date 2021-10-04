@@ -27,16 +27,18 @@ public class DataSpace extends PackageableElement
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
 
-    public String description;
     public String groupId;
     public String artifactId;
     public String versionId;
-    public String mapping;
-    public String runtime;
-    public List<String> diagrams;
-    // NOTE: we're not too sure about this attribute. We feel that this would be needed but maybe
-    // we can think of a more generic strategy for this type of metadata
-    public String supportEmail;
+
+    public List<DataSpaceExecutionContext> executionContexts;
+    public String defaultExecutionContext;
+
+    public String description;
+    public List<String> featuredDiagrams;
+    public DataSpaceSupportInfo supportInfo;
+
+//    public DataSpaceEntitlement entitlement;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

@@ -26,6 +26,8 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtili
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
 
 import java.util.List;
 
@@ -64,6 +66,24 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
         });
     }
 
+    private static String renderDataSpaceSupportInfo(DataSpaceSupportInfo dataSpaceSupportInfo)
+    {
+        return getTabString() + "{\n" +
+            (dataSpaceSupportInfo.description != null ? (getTabString(2) + "description: " + convertString(dataSpaceSupportInfo.description, true) + ";\n") : "") +
+            (dataSpaceSupportInfo.contacts != null ? (getTabString(2) + "contacts:" + (dataSpaceSupportInfo.contacts.isEmpty() ? " []" : "\n" + getTabString(2) + "[\n" + getTabString(3) + ListIterate.collect(dataSpaceSupportInfo.contacts, contact -> convertString(contact, true)).makeString(",\n" + getTabString(3)) + "\n" + getTabString(2) + "]") + ";\n") : "") +
+            getTabString() + "}";
+    }
+
+    private static String renderDataSpaceExecutionContext(DataSpaceExecutionContext executionContext)
+    {
+        return getTabString(2) + "{\n" +
+            (getTabString(3) + "name: " + convertString(executionContext.name, true) + ";\n") +
+            (executionContext.description != null ? (getTabString(3) + "description: " + convertString(executionContext.description, true) + ";\n") : "") +
+            getTabString(3) + "mapping: " + PureGrammarComposerUtility.convertPath(executionContext.mapping) + ";\n" +
+            getTabString(3) + "defaultRuntime: " + PureGrammarComposerUtility.convertPath(executionContext.defaultRuntime) + ";\n" +
+            getTabString(2) + "}";
+    }
+
     private static String renderDataSpace(DataSpace dataSpace)
     {
         return "DataSpace " + HelperDomainGrammarComposer.renderAnnotations(dataSpace.stereotypes, dataSpace.taggedValues) + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
@@ -71,11 +91,11 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
             getTabString() + "groupId: " + convertString(dataSpace.groupId, true) + ";\n" +
             getTabString() + "artifactId: " + convertString(dataSpace.artifactId, true) + ";\n" +
             getTabString() + "versionId: " + convertString(dataSpace.versionId, true) + ";\n" +
-            getTabString() + "mapping: " + PureGrammarComposerUtility.convertPath(dataSpace.mapping) + ";\n" +
-            getTabString() + "runtime: " + PureGrammarComposerUtility.convertPath(dataSpace.runtime) + ";\n" +
+            getTabString() + "executionContexts:" + (dataSpace.executionContexts.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executionContexts, DataSpaceGrammarComposerExtension::renderDataSpaceExecutionContext).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n" +
+            getTabString() + "defaultExecutionContext: " + convertString(dataSpace.defaultExecutionContext, true) + ";\n" +
             (dataSpace.description != null ? (getTabString() + "description: " + convertString(dataSpace.description, true) + ";\n") : "") +
-            (dataSpace.diagrams != null ? (getTabString() + "diagrams: " + (dataSpace.diagrams.isEmpty() ? "[]" : "[\n" + getTabString(2) + ListAdapter.adapt(dataSpace.diagrams).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
-            (dataSpace.supportEmail != null ? (getTabString() + "supportEmail: " + convertString(dataSpace.supportEmail, true) + ";\n") : "") +
+            (dataSpace.featuredDiagrams != null ? (getTabString() + "featuredDiagrams:" + (dataSpace.featuredDiagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListAdapter.adapt(dataSpace.featuredDiagrams).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
+            (dataSpace.supportInfo != null ? (getTabString() + "supportInfo\n" + renderDataSpaceSupportInfo(dataSpace.supportInfo) + ";\n") : "") +
             "}";
     }
 }

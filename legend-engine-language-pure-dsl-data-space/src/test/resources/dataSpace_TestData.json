@@ -9,14 +9,26 @@
       "groupId": "test.group",
       "artifactId": "test-data-space",
       "versionId": "0.4.3",
-      "mapping": "test::model::TestMapping",
-      "runtime": "test::model::TestRuntime",
-      "description": "some description",
-      "diagrams": [
+      "executionContexts": [
+        {
+          "name": "INT",
+          "description": "some description 1",
+          "mapping": "test::model::TestMapping",
+          "defaultRuntime": "test::model::TestRuntime"
+        }
+      ],
+      "defaultExecutionContext": "INT",
+      "description": "some description 2",
+      "featuredDiagrams": [
         "test::model::TestDiagram1",
         "test::model::TestDiagram2"
       ],
-      "supportEmail": "testEmail@test.org"
+      "supportInfo": {
+        "description": "some description 3",
+        "contacts": [
+          "testEmail@test.org"
+        ]
+      }
     }
   ]
 }

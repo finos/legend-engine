@@ -28,23 +28,31 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: model::String;\n" +
-            "  runtime: model::Runtime;\n" +
-            "  description: 'some description';\n" +
-            "  diagrams: [\n" +
-            "    model::Diagram\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      description: 'some information about the context';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
             "  ];\n" +
-            "  supportEmail: 'someEmail@test.org';\n" +
-            "}\n");
-
-        test("###DataSpace\n" +
-            "DataSpace model::dataSpace\n" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "  description: 'some description';\n" +
+            "  featuredDiagrams:\n" +
+            "  [\n" +
+            "    model::Diagram,\n" +
+            "    model::Diagram2\n" +
+            "  ];\n" +
+            "  supportInfo\n" +
+            "  {\n" +
+            "    description: 'some instruction';\n" +
+            "    contacts:\n" +
+            "    [\n" +
+            "      'someEmail@test.org',\n" +
+            "      'someEmail@test.org'\n" +
+            "    ];\n" +
+            "  };\n" +
             "}\n");
     }
 }
