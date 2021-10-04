@@ -33,23 +33,17 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
     {
         return Collections.singletonList(Processor.newProcessor(
                 Service.class,
-                Lists.mutable.of(PackageableConnection.class, PackageableRuntime.class),
-                (service, context) -> 
+                Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class),
+                (service, context) -> new Root_meta_legend_service_metamodel_Service_Impl("")
+                        ._name(service.name)
+                        ._stereotypes(ListIterate.collect(service.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
+                        ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
+                        ._pattern(service.pattern)
+                        ._owners(Lists.mutable.withAll(service.owners))
+                        ._documentation(service.documentation),
+                (service, context) ->
                 {
-                    org.finos.legend.pure.m3.coreinstance.Package pack = context.pureModel.getOrCreatePackage(service._package);
-                    Root_meta_legend_service_metamodel_Service pureService = new Root_meta_legend_service_metamodel_Service_Impl("")
-                            ._package(pack)
-                            ._name(service.name)
-                            ._stereotypes(ListIterate.collect(service.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                            ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
-                            ._pattern(service.pattern)
-                            ._owners(Lists.mutable.withAll(service.owners))
-                            ._documentation(service.documentation);
-                    pack._childrenAdd(pureService);
-                    return pureService;
-                }, 
-                (service, context) -> {
-                    Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service)context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> c._name().equals(service.name));
+                    Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> service.name.equals(c._name()));
                     pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context))
                             ._test(HelperServiceBuilder.processServiceTest(service.test, context, service.execution));
                 }));

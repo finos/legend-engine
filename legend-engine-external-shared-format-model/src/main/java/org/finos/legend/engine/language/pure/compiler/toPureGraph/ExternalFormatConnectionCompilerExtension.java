@@ -30,10 +30,9 @@ import org.finos.legend.pure.generated.Root_meta_external_shared_format_executio
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalFormatConnection_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalSource;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_ModelStore_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Database_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
+import java.util.Collections;
 import java.util.List;
 
 public class ExternalFormatConnectionCompilerExtension implements IExternalFormatCompilerExtension
@@ -48,7 +47,7 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
     @Override
     public List<Function2<Connection, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection>> getExtraConnectionValueProcessors()
     {
-        return Lists.mutable.with(
+        return Collections.singletonList(
                 (connectionValue, context) ->
                 {
                     if (connectionValue instanceof ExternalFormatConnection)
@@ -63,7 +62,7 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
     @Override
     public List<Procedure3<Connection, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
     {
-        return Lists.mutable.with(
+        return Collections.singletonList(
                 (connectionValue, pureConnection, context) ->
                 {
                     if (connectionValue instanceof ExternalFormatConnection)
@@ -93,7 +92,8 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
     @Override
     public List<Function2<ExternalSource, CompileContext, Root_meta_external_shared_format_executionPlan_ExternalSource>> getExtraExternalSourceSpecificationProcessors()
     {
-        return Lists.mutable.with((spec, context) -> {
+        return Collections.singletonList((spec, context) ->
+        {
             if (spec instanceof UrlStreamExternalSource)
             {
                 UrlStreamExternalSource urlStreamExternalSource = (UrlStreamExternalSource) spec;
