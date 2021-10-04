@@ -390,6 +390,57 @@ public class TestJsonToGrammarApi
         testModelFromProtocol(expected, "simpleFunctionWithParameters.json");
     }
 
+    @Test
+    public void testMetaNewFunctionWithSingleParameter()
+    {
+        String expected = "Class modelA::Firm extends meta::pure::metamodel::type::Any\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class modelA::Person extends meta::pure::metamodel::type::Any\n" +
+                "[\n" +
+                "  [^modelA::Firm(name='Goldman Sachs'), ^modelA::Firm(name='Google')]->filter(t|$t.name == $this.firmName)->isNotEmpty()\n" +
+                "]\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  firmName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association modelA::Person_Firm\n" +
+                "{\n" +
+                "  employee: modelA::Person[*];\n" +
+                "  employer: modelA::Firm[*];\n" +
+                "}\n";
+        testModelFromProtocol(expected, "metaNewFunctionWithSingleParameter.json");
+    }
+
+    @Test
+    public void testMetaNewFunctionWithMultiParameters()
+    {
+        String expected ="Class modelA::Firm extends meta::pure::metamodel::type::Any\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  address: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class modelA::Person extends meta::pure::metamodel::type::Any\n" +
+                "[\n" +
+                "  [^modelA::Firm(name='Goldman Sachs' , address='200 West'), ^modelA::Firm(name='Google' , address='111 8th')]->filter(t|$t.name == $this.firmName)->isNotEmpty()\n" +
+                "]\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  firmName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association modelA::Person_Firm\n" +
+                "{\n" +
+                "  employee: modelA::Person[*];\n" +
+                "  employer: modelA::Firm[*];\n" +
+                "}\n";
+        testModelFromProtocol(expected, "metaNewFunctionWithMultiParameters.json");
+    }
+
     private void testMappingFromProtocol(String expected, String protocolPath)
     {
         try
