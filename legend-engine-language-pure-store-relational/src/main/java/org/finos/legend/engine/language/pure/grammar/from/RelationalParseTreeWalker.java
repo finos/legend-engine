@@ -524,20 +524,15 @@ public class RelationalParseTreeWalker
 
     public RelationalOperationElement visitOperation(RelationalParserGrammar.OperationContext ctx, ScopeInfo scopeInfo)
     {
-        if (ctx.dynamicFunctionOperation() != null)
+        if (ctx.booleanOperation() != null)
         {
-            return this.visitDynaFuncOperation(ctx.dynamicFunctionOperation(), scopeInfo);
+            return this.visitBooleanOperation(ctx.booleanOperation(), scopeInfo);
         }
         else if (ctx.joinOperation() != null)
         {
             return this.visitJoinOperation(ctx.joinOperation(), scopeInfo);
         }
         throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitDynaFuncOperation(RelationalParserGrammar.DynamicFunctionOperationContext ctx, ScopeInfo scopeInfo)
-    {
-        return this.visitBooleanOperation(ctx.booleanOperation(), scopeInfo);
     }
 
     private RelationalOperationElement visitBooleanOperation(RelationalParserGrammar.BooleanOperationContext ctx, ScopeInfo scopeInfo)
@@ -569,6 +564,10 @@ public class RelationalParseTreeWalker
         else if (ctx.columnOperation() != null)
         {
             operationElement = this.visitColumnOperation(ctx.columnOperation(), scopeInfo);
+        }
+        else if (ctx.joinOperation() != null)
+        {
+            return this.visitJoinOperation(ctx.joinOperation(), scopeInfo);
         }
         if (operationElement == null)
         {
@@ -866,9 +865,9 @@ public class RelationalParseTreeWalker
         String database = ctx.databasePointer() != null ? this.visitDatabasePointer(ctx.databasePointer()) : (scopeInfo != null ? scopeInfo.database : null);
         ElementWithJoins operation = new ElementWithJoins();
         operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.dynamicFunctionOperation() != null)
+        if (ctx.booleanOperation() != null)
         {
-            operation.relationalElement = this.visitDynaFuncOperation(ctx.dynamicFunctionOperation(), ScopeInfo.Builder.newInstance(scopeInfo).withDatabase(database).build());
+            operation.relationalElement = this.visitBooleanOperation(ctx.booleanOperation(), ScopeInfo.Builder.newInstance(scopeInfo).withDatabase(database).build());
         }
         else if (ctx.tableAliasColumnOperation() != null)
         {
