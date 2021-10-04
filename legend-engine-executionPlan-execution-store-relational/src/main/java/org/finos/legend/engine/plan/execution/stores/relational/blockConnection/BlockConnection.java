@@ -229,7 +229,7 @@ public class BlockConnection implements Connection
     @Override
     public int getHoldability() throws SQLException
     {
-        return this.getHoldability();
+        return this.conn.getHoldability();
     }
 
     @Override
@@ -349,7 +349,7 @@ public class BlockConnection implements Connection
     @Override
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException
     {
-        return this.createArrayOf(typeName, elements);
+        return this.conn.createArrayOf(typeName, elements);
     }
 
     @Override
