@@ -18,13 +18,15 @@ import org.finos.legend.engine.shared.core.util.LimitedByteArrayOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
+
 public class TestLimitedByteArrayOutputStream
 {
     @Test
     public void belowLimit()
     {
         LimitedByteArrayOutputStream stream = new LimitedByteArrayOutputStream(10);
-        stream.write("abcdefg".getBytes(), 0, 7);
+        stream.write("abcdefg".getBytes(StandardCharsets.UTF_8), 0, 7);
         Assert.assertEquals("abcdefg", stream.toString());
     }
 
@@ -32,7 +34,7 @@ public class TestLimitedByteArrayOutputStream
     public void atLimit()
     {
         LimitedByteArrayOutputStream stream = new LimitedByteArrayOutputStream(10);
-        stream.write("abcdefghij".getBytes(), 0, 10);
+        stream.write("abcdefghij".getBytes(StandardCharsets.UTF_8), 0, 10);
         Assert.assertEquals("abcdefghij", stream.toString());
     }
 
@@ -40,7 +42,7 @@ public class TestLimitedByteArrayOutputStream
     public void beyondLimit()
     {
         LimitedByteArrayOutputStream stream = new LimitedByteArrayOutputStream(10);
-        stream.write("abcdefghijklmnopq".getBytes(), 0, 17);
+        stream.write("abcdefghijklmnopq".getBytes(StandardCharsets.UTF_8), 0, 17);
         Assert.assertEquals("abcdefghij...", stream.toString());
     }
 }
