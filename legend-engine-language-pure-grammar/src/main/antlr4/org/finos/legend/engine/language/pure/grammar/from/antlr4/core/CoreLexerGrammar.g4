@@ -31,8 +31,6 @@ FILE_NAME:                                  FileName;
 FILE_NAME_END:                              FileNameEnd;
 PATH_SEPARATOR:                             PathSeparator;
 
-TIMEZONE:                                   TimeZone;
-
 AND:                                        '&&';
 OR:                                         '||';
 NOT:                                        '!';

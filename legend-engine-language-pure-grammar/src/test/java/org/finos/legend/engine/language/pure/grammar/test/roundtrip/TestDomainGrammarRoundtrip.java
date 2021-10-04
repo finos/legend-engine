@@ -22,7 +22,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testClass()
     {
-        test("Class <<temporal.businesstemporal>> {doc.doc = 'bla'} A extends B\n" +
+        test("Class <<temporal.businesstemporal>> {doc.doc = 'something'} A extends B\n" +
                 "{\n" +
                 "  <<equality.Key>> {doc.doc = 'bla'} name: e::R[*];\n" +
                 "  {doc.doc = 'bla'} ok: Integer[1..2];\n" +
@@ -344,7 +344,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function withPath::f(s: Integer[1]): String[1]\n" +
                 "{\n" +
-                "   'ok'->println();\n" +
+                "   println('ok');\n" +
                 "   'a';\n" +
                 "}\n");
 
@@ -352,6 +352,12 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "function test::getDateTime(): DateTime[1]\n" +
                 "{\n" +
                 "   %1970-01-01T00:00:00.000\n" +
+                "}\n");
+
+        test("###Pure\n" +
+                "function test::getStrictDate(): StrictDate[1]\n" +
+                "{\n" +
+                "   %1970-01-01\n" +
                 "}\n");
     }
 
@@ -389,7 +395,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   'ok'->println()\n" +
+                "   println('ok')\n" +
                 "}\n");
     }
 
@@ -597,7 +603,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "\n" +
                 "function <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} f(s: goes2[1], s1: goes2[1]): goes2[1]\n" +
                 "{\n" +
-                "   'ok'->println()\n" +
+                "   println('ok')\n" +
                 "}\n");
     }
 
@@ -663,5 +669,52 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                         "   'a'\n" +
                         "}\n"
         );
+    }
+
+    @Test
+    public void testMetaFunctionExecutionWithFullPath()
+    {
+        String code =
+                "function example::somethingElse(input: Integer[1]): Any[0..1]\n" +
+                        "{\n"+
+                        "   [1, $input]->meta::pure::functions::math::max()\n"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
+    public void testLambdaWithBiTemporalClass()
+    {
+        test("###Pure\n" +
+                "Class <<temporal.bitemporal>> main::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  firm: main::Firm[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.bitemporal>> main::Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function main::walkTree(): main::Person[*]\n" +
+                "{\n" +
+                "   main::Person.all(%2020-12-12, %2020-12-13)\n" +
+                "}\n" +
+                "\n" +
+                "function main::walkTree1(): main::Person[*]\n" +
+                "{\n" +
+                "   main::Person.all(%latest, %latest)\n" +
+                "}\n" +
+                "\n" +
+                "function main::walkTree2(): main::Person[*]\n" +
+                "{\n" +
+                "   main::Person.all(%latest, %2020-12-12)\n" +
+                "}\n" +
+                "\n" +
+                "function main::walkTree3(): main::Firm[*]\n" +
+                "{\n" +
+                "   main::Person.all(%2020-12-12, %2020-12-13).firm(%2020-12-12, %2020-12-13)\n" +
+                "}\n");
     }
 }

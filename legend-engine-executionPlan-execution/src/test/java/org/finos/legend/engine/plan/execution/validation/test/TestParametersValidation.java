@@ -116,10 +116,10 @@ public class TestParametersValidation
     {
         testRequiredToOneParameter(
                 "Date",
-                Arrays.asList(Instant.now(), LocalDate.now(), LocalDateTime.now(), ZonedDateTime.now(), "2020-07-14", "2020-07-14 15:18:23", "2020-07-14T15:18:23", "2020-07-14 15:18:23.992", "2020-07-14T15:18:23.123"),
+                Arrays.asList(Instant.now(), LocalDate.now(), LocalDateTime.now(), ZonedDateTime.now(), "2020-07-14", "2020-07-14 15:18:23", "2020-07-14T15:18:23", "2020-07-14 15:18:23.992", "2020-07-14T15:18:23.123", "2020-07-14T15:18:23-0300"),
                 Arrays.asList(true, false, "the quick brown fox", "jumped over the lazy dog", 4.2, -3.14, 5, 4, 3),
                 this::normalizeDate,
-                "Expected formats: [yyyy-MM-dd,yyyy-MM-dd'T'HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSS,yyyy-MM-dd HH:mm:ss.SSS,yyyy-MM-dd HH:mm:ss]"
+                "Expected formats: [yyyy-MM-dd,yyyy-MM-dd'T'HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSS,yyyy-MM-dd HH:mm:ss.SSS,yyyy-MM-dd HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSSZ,yyyy-MM-dd'T'HH:mm:ssZ]"
         );
         testToManyParameter(
                 "Date",
@@ -152,14 +152,14 @@ public class TestParametersValidation
     {
         testRequiredToOneParameter(
                 "DateTime",
-                Arrays.asList(Instant.now(), LocalDateTime.now(), ZonedDateTime.now(), "2020-07-14 15:18:23", "2020-07-14T15:18:23", "2020-07-14 15:18:23.992", "2020-07-14T15:18:23.123"),
+                Arrays.asList(Instant.now(), LocalDateTime.now(), ZonedDateTime.now(), "2020-07-14 15:18:23", "2020-07-14T15:18:23", "2020-07-14 15:18:23.992", "2020-07-14T15:18:23.123", "2020-07-14T15:18:23.123-0300", "2020-07-14T15:18:23.123+0500"),
                 Arrays.asList(LocalDate.now(), true, false, "the quick brown fox", "jumped over the lazy dog", 4.2, -3.14, 5, 4, 3, "2020-07-14"),
                 this::normalizeDate,
-                "Expected formats: [yyyy-MM-dd'T'HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSS,yyyy-MM-dd HH:mm:ss.SSS,yyyy-MM-dd HH:mm:ss]"
+                "Expected formats: [yyyy-MM-dd'T'HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSS,yyyy-MM-dd HH:mm:ss.SSS,yyyy-MM-dd HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSSZ,yyyy-MM-dd'T'HH:mm:ssZ]"
         );
         testToManyParameter(
                 "DateTime",
-                Arrays.asList(null, Collections.emptyList(), Arrays.asList(ZonedDateTime.now(), Instant.now()), Collections.singletonList(ZonedDateTime.now()), Arrays.asList("2020-07-14T15:18:23", "2020-07-14 15:18:23.992", "2020-07-14T15:18:23.123")),
+                Arrays.asList(null, Collections.emptyList(), Arrays.asList(ZonedDateTime.now(), Instant.now()), Collections.singletonList(ZonedDateTime.now()), Arrays.asList("2020-07-14T15:18:23", "2020-07-14 15:18:23.992", "2020-07-14T15:18:23.123", "2020-07-14T15:18:23.123-0300", "2020-07-14T15:18:23.123+0500")),
                 Arrays.asList(Arrays.asList(5, "b", 3), Arrays.asList(ZonedDateTime.now(), "b"), Arrays.asList(LocalDate.now(), ZonedDateTime.now())),
                 this::normalizeDate
         );

@@ -14,7 +14,8 @@ identifier:                                     VALID_STRING | STRING
                                                 | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                                 | IMPORT
                                                 | CLASS | FUNCTION | PROFILE | ASSOCIATION | ENUM | MEASURE
-                                                | EXTENDS | STEREOTYPES | TAGS
+                                                | EXTENDS
+                                                | STEREOTYPES | TAGS
                                                 | NATIVE | PROJECTS | AS
                                                 | CONSTRAINT_ENFORCEMENT_LEVEL_ERROR | CONSTRAINT_ENFORCEMENT_LEVEL_WARN
                                                 | AGGREGATION_TYPE_COMPOSITE | AGGREGATION_TYPE_SHARED | AGGREGATION_TYPE_NONE
@@ -41,6 +42,18 @@ elementDefinition:                              (
                                                     | instance
                                                     | measureDefinition
                                                 )
+;
+
+
+// -------------------------------------- SHARED --------------------------------------
+
+stereotypes:                                    LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
+;
+stereotype:                                     qualifiedName DOT identifier
+;
+taggedValues:                                   BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
+;
+taggedValue:                                    qualifiedName DOT identifier EQUAL STRING
 ;
 
 
@@ -107,14 +120,6 @@ profile:                                        PROFILE qualifiedName
 stereotypeDefinitions:                          (STEREOTYPES COLON BRACKET_OPEN (identifier (COMMA identifier)*)? BRACKET_CLOSE SEMI_COLON)
 ;
 tagDefinitions:                                 (TAGS COLON BRACKET_OPEN (identifier (COMMA identifier)*)? BRACKET_CLOSE SEMI_COLON)
-;
-stereotypes:                                    LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
-;
-stereotype:                                     qualifiedName DOT identifier
-;
-taggedValues:                                   BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
-;
-taggedValue:                                    qualifiedName DOT identifier EQUAL STRING
 ;
 
 

@@ -46,7 +46,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
@@ -73,11 +72,11 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
     }
 
     @Override
-    public List<Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
         return Lists.mutable.with((elements, context, composedSections) ->
         {
-            List<Database> composableElements = ListIterate.selectInstancesOf(FastList.newList(elements), Database.class);
+            List<Database> composableElements = ListIterate.selectInstancesOf(elements, Database.class);
             return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, RelationalGrammarComposerExtension::renderDatabase).makeString("###" + RelationalGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
@@ -126,7 +125,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 if (!rootRelationalClassMapping.propertyMappings.isEmpty())
                 {
                     RelationalGrammarComposerContext indentedContext = RelationalGrammarComposerContext.Builder.newInstance(ctx).withIndentation(4).build();
-                    builder.append(LazyIterate.collect(rootRelationalClassMapping.propertyMappings, propertyMapping -> HelperRelationalGrammarComposer.renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext)).makeString(",\n"));
+                    builder.append(LazyIterate.collect(rootRelationalClassMapping.propertyMappings, propertyMapping -> HelperRelationalGrammarComposer.renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext, false)).makeString(",\n"));
                     builder.append("\n");
                 }
                 appendTabString(builder).append("}");
@@ -153,7 +152,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 if (!relationalAssociationMapping.propertyMappings.isEmpty())
                 {
                     RelationalGrammarComposerContext indentedContext = RelationalGrammarComposerContext.Builder.newInstance(ctx).withIndentation(6).build();
-                    associationMappingBuilder.append(LazyIterate.collect(relationalAssociationMapping.propertyMappings, propertyMapping -> HelperRelationalGrammarComposer.renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext)).makeString(",\n"));
+                    associationMappingBuilder.append(LazyIterate.collect(relationalAssociationMapping.propertyMappings, propertyMapping -> HelperRelationalGrammarComposer.renderAbstractRelationalPropertyMapping(propertyMapping, indentedContext, true)).makeString(",\n"));
                     associationMappingBuilder.append("\n");
                 }
                 associationMappingBuilder.append(PureGrammarComposerUtility.getTabString(2)).append(")\n").append(getTabString()).append("}");
@@ -177,37 +176,37 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 List<IRelationalGrammarComposerExtension> extensions = IRelationalGrammarComposerExtension.getExtensions(context);
 
                 String authenticationStrategy = IRelationalGrammarComposerExtension.process(relationalDatabaseConnection.authenticationStrategy,
-                        ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraAuthenticationStrategyComposers),
-                        context);
+                    ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraAuthenticationStrategyComposers),
+                    context);
 
                 String specification = IRelationalGrammarComposerExtension.process(relationalDatabaseConnection.datasourceSpecification,
-                        ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraDataSourceSpecificationComposers),
-                        context);
+                    ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraDataSourceSpecificationComposers),
+                    context);
 
                 List<String> postProcessorStrings = FastList.newList();
                 if (relationalDatabaseConnection.postProcessors != null && !relationalDatabaseConnection.postProcessors.isEmpty())
                 {
                     postProcessorStrings.addAll(ListIterate.collect(relationalDatabaseConnection.postProcessors, postProcessor -> IRelationalGrammarComposerExtension.process(
-                            postProcessor,
-                            ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraPostProcessorComposers),
-                            context)));
+                        postProcessor,
+                        ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraPostProcessorComposers),
+                        context)));
                 }
 
                 String postProcessors = !postProcessorStrings.isEmpty()
-                        ? "postProcessors:\n" + getTabString() + "[\n" + String.join(",\n", postProcessorStrings) + "\n" + getTabString() + "];\n"
-                        : null;
+                    ? "postProcessors:\n" + getTabString() + "[\n" + String.join(",\n", postProcessorStrings) + "\n" + getTabString() + "];\n"
+                    : null;
 
                 return Tuples.pair(RelationalGrammarParserExtension.RELATIONAL_DATABASE_CONNECTION_TYPE, context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
-                        (relationalDatabaseConnection.element != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "store: " + relationalDatabaseConnection.element + ";\n") : "") +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "type: " + relationalDatabaseConnection.type.name() + ";\n" +
-                        (relationalDatabaseConnection.timeZone != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "timezone: " + relationalDatabaseConnection.timeZone + ";\n") : "") +
-                        (relationalDatabaseConnection.quoteIdentifiers != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "quoteIdentifiers: " + relationalDatabaseConnection.quoteIdentifiers + ";\n") : "") +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "specification: " + specification + ";\n" +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "auth: " + authenticationStrategy + ";\n" +
-                        (postProcessors != null
-                                ? context.getIndentationString() + getTabString(baseIndentation + 1) + postProcessors
-                                : "") +
-                        context.getIndentationString() + "}");
+                    (relationalDatabaseConnection.element != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "store: " + relationalDatabaseConnection.element + ";\n") : "") +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "type: " + relationalDatabaseConnection.type.name() + ";\n" +
+                    (relationalDatabaseConnection.timeZone != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "timezone: " + relationalDatabaseConnection.timeZone + ";\n") : "") +
+                    (relationalDatabaseConnection.quoteIdentifiers != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "quoteIdentifiers: " + relationalDatabaseConnection.quoteIdentifiers + ";\n") : "") +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "specification: " + specification + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "auth: " + authenticationStrategy + ";\n" +
+                    (postProcessors != null
+                        ? context.getIndentationString() + getTabString(baseIndentation + 1) + postProcessors
+                        : "") +
+                    context.getIndentationString() + "}");
             }
             return null;
         });
@@ -310,7 +309,8 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
     @Override
     public List<Function2<PostProcessor, PureGrammarComposerContext, String>> getExtraPostProcessorComposers()
     {
-        return org.eclipse.collections.api.factory.Lists.mutable.with((postProcessor, context) -> {
+        return org.eclipse.collections.api.factory.Lists.mutable.with((postProcessor, context) ->
+        {
             if (postProcessor instanceof MapperPostProcessor)
             {
                 return HelperRelationalGrammarComposer.visitMapperPostProcessor((MapperPostProcessor) postProcessor, context);

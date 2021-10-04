@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.gra
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GraphFetchTreeParseTreeWalker
 {
@@ -181,10 +182,9 @@ public class GraphFetchTreeParseTreeWalker
                 values.add(ctx.getText());  // Likely wrong
                 CDateTime instance = new CDateTime();
                 instance.multiplicity = this.getPureOne();
-                instance.values = values;
+                instance.values = values.stream().map(value -> value.substring(value.lastIndexOf('%') + 1)).collect(Collectors.toList());
                 instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
                 result = instance;
-
             }
             else if (ctx.BOOLEAN() != null)
             {

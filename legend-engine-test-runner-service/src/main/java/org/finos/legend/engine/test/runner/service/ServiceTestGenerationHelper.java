@@ -81,10 +81,7 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.valuespecification.ValueSpecificationProcessor;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.function.Function;
 import javax.ws.rs.core.MediaType;
 
@@ -286,9 +283,9 @@ public class ServiceTestGenerationHelper
             String executorId = conn.url.split(":")[1];
             String connectionTestData = resolveTestData(executorId, idTestDataAccessorResult, testDataAccessor, testData);
             if(idTestDataAccessorResult != null){
-                ((JsonModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + "," + idTestDataAccessorResult;
+                ((JsonModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes());
             }
-            testJsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + "," + (connectionTestData);
+            testJsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes());
             return Optional.of(conn);
         }
         else if (connection instanceof XmlModelConnection)
@@ -301,9 +298,9 @@ public class ServiceTestGenerationHelper
             String connectionTestData = resolveTestData(executorId, idTestDataAccessorResult, testDataAccessor, testData);
             if(idTestDataAccessorResult != null)
             {
-                ((XmlModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + "," + idTestDataAccessorResult;
+                ((XmlModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes());
             }
-            testXmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + "," + connectionTestData;
+            testXmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes());
             return Optional.of(testXmlModelConnection);
         }
         else if(connection instanceof  ModelChainConnection)

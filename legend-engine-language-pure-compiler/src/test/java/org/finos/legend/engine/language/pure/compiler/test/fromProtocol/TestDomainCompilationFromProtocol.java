@@ -44,4 +44,28 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
     {
         testWithProtocolPath("packageWithCorrectStrictTimeDomain.json");
     }
+
+    @Test
+    public void testCompilePathVariable()
+    {
+        testWithProtocolPath("queryWithPathVariable.json");
+    }
+
+    @Test
+    public void testCompileLambdaVariable()
+    {
+        testWithProtocolPath("functionWithLambdaVariable.json");
+    }
+
+    @Test
+    public void testFunctionWithDateTimeComplication()
+    {
+        testWithProtocolPath("functionWithDateTime.json");
+    }
+
+    @Test
+    public void testFunctionWithDateTimeContainsPercentInProtocolComplication()
+    {
+        testWithProtocolPath("functionWithDateTimeContainingPercent.json");
+    }
 }

@@ -1,0 +1,1106 @@
+>>>test::gen::AbstractMessageT
+Class test::gen::AbstractMessageT
+{
+  hdr: test::gen::MessageHeaderT[0..1];
+}
+
+>>>test::gen::AssetSubTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'Sub-type of asset of an EEX instrument'} test::gen::AssetSubTypeEnumT
+{
+  _0,
+  _1,
+  _2,
+  _3,
+  _4
+}
+
+>>>test::gen::AssetSubTypeT
+Enum test::gen::AssetSubTypeT
+{
+  _0,
+  _1,
+  _2,
+  _3,
+  _4
+}
+
+>>>test::gen::AssetTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'Type of asset of an EEX instrument'} test::gen::AssetTypeEnumT
+{
+  _0,
+  _1
+}
+
+>>>test::gen::AssetTypeT
+Enum test::gen::AssetTypeT
+{
+  _0,
+  _1
+}
+
+>>>test::gen::AuctTypRulesBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::AuctTypRulesBlockT
+{
+}
+
+>>>test::gen::AuctionTypeEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::AuctionTypeEnumT
+{
+  _100
+}
+
+>>>test::gen::AuctionTypeT
+Enum test::gen::AuctionTypeT
+{
+  _100
+}
+
+>>>test::gen::BaseHeaderT
+Class test::gen::BaseHeaderT
+{
+}
+
+>>>test::gen::BaseTrdgRulesBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::BaseTrdgRulesBlockT
+{
+  tickRules: test::gen::TickRuleScopesBlockT[*];
+  quotSzRules: test::gen::QuoteSizeRulesBlockT[*];
+  pxRngRules: test::gen::PxRngRulesBlockT[*];
+  auctTypRule: test::gen::AuctTypRulesBlockT[0..1];
+  trdgSesRules: test::gen::TrdgSesRulesBlockT[0..1];
+}
+
+>>>test::gen::BatchHeaderT
+Class test::gen::BatchHeaderT extends test::gen::BaseHeaderT
+{
+}
+
+>>>test::gen::BatchT
+Class test::gen::BatchT
+{
+  hdr: test::gen::BatchHeaderT[0..1];
+  message: test::gen::AbstractMessageT[*];
+}
+
+>>>test::gen::BusinessDayTypeEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::BusinessDayTypeEnumT
+{
+  _5,
+  _1
+}
+
+>>>test::gen::BusinessDayTypeT
+Enum test::gen::BusinessDayTypeT
+{
+  _5,
+  _1
+}
+
+>>>test::gen::CalculationMethodEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::CalculationMethodEnumT
+{
+  _0,
+  _1
+}
+
+>>>test::gen::CalculationMethodT
+Enum test::gen::CalculationMethodT
+{
+  _0,
+  _1
+}
+
+>>>test::gen::ClearingPriceParametersBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::ClearingPriceParametersBlockT
+{
+}
+
+>>>test::gen::EvntGrpBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::EvntGrpBlockT
+{
+}
+
+>>>test::gen::Fixml
+Class test::gen::Fixml
+[
+  c1_choice: ($this.message->isNotEmpty() && $this.batch->isEmpty()) || ($this.message->isEmpty() && $this.batch->isNotEmpty())
+]
+{
+  message: test::gen::AbstractMessageT[0..1];
+  batch: test::gen::BatchT[*];
+}
+
+>>>test::gen::FlexProdEligsBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::FlexProdEligsBlockT
+{
+}
+
+>>>test::gen::HopGrpBlockT
+Class test::gen::HopGrpBlockT
+{
+}
+
+>>>test::gen::InstrAttribBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::InstrAttribBlockT
+{
+}
+
+>>>test::gen::InstrmtLegGrpBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::InstrmtLegGrpBlockT extends test::gen::InstrumentLegBlockT
+{
+}
+
+>>>test::gen::InstrmtScopeBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::InstrmtScopeBlockT
+{
+}
+
+>>>test::gen::InstrumentBlockT
+Class {meta::pure::profiles::doc.doc = 'The Instrument component block contains all the fields commonly used to describe a security or instrument. Typically the data elements in this component block are considered the static data of a security, data that may be commonly found in a security master database. The Instrument component block can be used to describe any asset type supported by FIX.'} test::gen::InstrumentBlockT
+{
+  aid: test::gen::SecAltIdGrpBlockT[*];
+  pty: test::gen::InstrumentPartyBlockT[*];
+  evnt: test::gen::EvntGrpBlockT[*];
+}
+
+>>>test::gen::InstrumentExtensionBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::InstrumentExtensionBlockT
+{
+  instrAttrib: test::gen::InstrAttribBlockT[*];
+}
+
+>>>test::gen::InstrumentLegBlockT
+Class {meta::pure::profiles::doc.doc = 'The InstrumentLeg component block, like the Instrument component block, contains all the fields commonly used to describe a security or instrument. In the case of the InstrumentLeg component block it describes a security used in multileg-oriented messages.'} test::gen::InstrumentLegBlockT
+{
+}
+
+>>>test::gen::InstrumentPartyBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::InstrumentPartyBlockT
+{
+}
+
+>>>test::gen::InstrumentPartyIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::InstrumentPartyIdSourceEnumT
+{
+  D
+}
+
+>>>test::gen::InstrumentPartyIdSourceT
+Enum test::gen::InstrumentPartyIdSourceT
+{
+  D
+}
+
+>>>test::gen::LastFragmentEnumT
+Enum {meta::pure::profiles::doc.doc = 'Indicates whether this message is the last in a sequence of messages for those messages that support fragmentation, such as Allocation Instruction, Mass Quote, Security List, Derivative Security List'} test::gen::LastFragmentEnumT
+{
+  N,
+  Y
+}
+
+>>>test::gen::LastFragmentT
+Enum test::gen::LastFragmentT
+{
+  N,
+  Y
+}
+
+>>>test::gen::LegSecurityIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Multileg instrument&apos;s individual security&apos;s SecurityIDSource. See SecurityIDSource (22) field for description'} test::gen::LegSecurityIdSourceEnumT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M
+}
+
+>>>test::gen::LegSecurityIdSourceT
+Enum test::gen::LegSecurityIdSourceT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M
+}
+
+>>>test::gen::LegSecurityTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'The type of an individual leg (multileg security).'} test::gen::LegSecurityTypeEnumT
+{
+  MLEG,
+  ULEG
+}
+
+>>>test::gen::LegSecurityTypeT
+Enum test::gen::LegSecurityTypeT
+{
+  MLEG,
+  ULEG
+}
+
+>>>test::gen::LegSideEnumT
+Enum {meta::pure::profiles::doc.doc = 'The side of this individual leg (multileg security). See Side (54) field for description and values'} test::gen::LegSideEnumT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G
+}
+
+>>>test::gen::LegSideT
+Enum test::gen::LegSideT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G
+}
+
+>>>test::gen::MarketDataFeedTypesBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::MarketDataFeedTypesBlockT
+{
+}
+
+>>>test::gen::MarketDefinitionMessageT
+Class {meta::pure::profiles::doc.doc = 'The Market Definition message is used to respond to Market Definition Request. In a subscription, it will be used to provide the initial snapshot of the information requested. Subsequent updates are provided by the Market Definition Update Report.'} test::gen::MarketDefinitionMessageT extends test::gen::AbstractMessageT
+{
+  undly: test::gen::UnderlyingBlockT[0..1];
+  relatedMktSeg: test::gen::RelatedMktSegBlockT[*];
+  instrmtScope: test::gen::InstrmtScopeBlockT[*];
+  mtchRules: test::gen::MatchRulesBlockT[*];
+  flexProdEligs: test::gen::FlexProdEligsBlockT[*];
+  baseTrdgRules: test::gen::BaseTrdgRulesBlockT[0..1];
+  mdFeedTyps: test::gen::MarketDataFeedTypesBlockT[*];
+}
+
+>>>test::gen::MarketSegmentGrpBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::MarketSegmentGrpBlockT
+{
+  secTrdgRules: test::gen::SecurityTradingRulesBlockT[0..1];
+}
+
+>>>test::gen::MarketSegmentStatusEnumT
+Enum {meta::pure::profiles::doc.doc = 'Status of market segment.'} test::gen::MarketSegmentStatusEnumT
+{
+  _1,
+  _3
+}
+
+>>>test::gen::MarketSegmentStatusT
+Enum test::gen::MarketSegmentStatusT
+{
+  _1,
+  _3
+}
+
+>>>test::gen::MarketSegmentSubTypeEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::MarketSegmentSubTypeEnumT
+{
+  _1,
+  _2,
+  _3
+}
+
+>>>test::gen::MarketSegmentSubTypeT
+Enum test::gen::MarketSegmentSubTypeT
+{
+  _1,
+  _2,
+  _3
+}
+
+>>>test::gen::MarketSegmentTypeEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::MarketSegmentTypeEnumT
+{
+  _1
+}
+
+>>>test::gen::MarketSegmentTypeT
+Enum test::gen::MarketSegmentTypeT
+{
+  _1
+}
+
+>>>test::gen::MatchRulesBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::MatchRulesBlockT
+{
+}
+
+>>>test::gen::MatchTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'The point in the matching process at which this trade was matched.'} test::gen::MatchTypeEnumT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  A1,
+  A2,
+  A3,
+  A4,
+  A5,
+  AQ,
+  M1,
+  M2,
+  M3,
+  M4,
+  M5,
+  M6,
+  MT,
+  S1,
+  S2,
+  S3,
+  S4,
+  S5
+}
+
+>>>test::gen::MatchTypeT
+Enum test::gen::MatchTypeT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  A1,
+  A2,
+  A3,
+  A4,
+  A5,
+  AQ,
+  M1,
+  M2,
+  M3,
+  M4,
+  M5,
+  M6,
+  MT,
+  S1,
+  S2,
+  S3,
+  S4,
+  S5
+}
+
+>>>test::gen::MessageHeaderT
+Class test::gen::MessageHeaderT extends test::gen::BaseHeaderT
+{
+}
+
+>>>test::gen::ProductComplexEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies an entire suite of products for a given market. In Futures this may be &quot;interest rates&quot;, &quot;agricultural&quot;, &quot;equity indexes&quot;, etc.'} test::gen::ProductComplexEnumT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  _10
+}
+
+>>>test::gen::ProductComplexT
+Enum test::gen::ProductComplexT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  _10
+}
+
+>>>test::gen::PxRngRulesBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::PxRngRulesBlockT
+{
+}
+
+>>>test::gen::QuoteSideIndicatorEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::QuoteSideIndicatorEnumT
+{
+  _0,
+  _1
+}
+
+>>>test::gen::QuoteSideIndicatorT
+Enum test::gen::QuoteSideIndicatorT
+{
+  _0,
+  _1
+}
+
+>>>test::gen::QuoteSideModelTypeEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::QuoteSideModelTypeEnumT
+{
+  _0,
+  _1
+}
+
+>>>test::gen::QuoteSideModelTypeT
+Enum test::gen::QuoteSideModelTypeT
+{
+  _0,
+  _1
+}
+
+>>>test::gen::QuoteSizeRulesBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::QuoteSizeRulesBlockT
+{
+}
+
+>>>test::gen::RelatedMktSegBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::RelatedMktSegBlockT
+{
+}
+
+>>>test::gen::SecAltIdGrpBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::SecAltIdGrpBlockT
+{
+}
+
+>>>test::gen::SecurityAltIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies class or source of the SecurityAltID (455) value. Required if SecurityAltID is specified. Valid values: Same valid values as the SecurityIDSource (22) field'} test::gen::SecurityAltIdSourceEnumT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M
+}
+
+>>>test::gen::SecurityAltIdSourceT
+Enum test::gen::SecurityAltIdSourceT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M
+}
+
+>>>test::gen::SecurityDefinitionMessageT
+Class {meta::pure::profiles::doc.doc = 'The Security Definition message is used for the following: 1. Accept the security defined in a Security Definition message. 2. Accept the security defined in a Security Definition message with changes to the definition and/or identity of the security. 3. Reject the security requested in a Security Definition message. 4. Respond to a request for securities within a specified market segment. 5. Convey comprehensive security definition for all market segments that the security participates in. 6. Convey the security&apos;s trading rules that differ from default rules for the market segment.'} test::gen::SecurityDefinitionMessageT extends test::gen::AbstractMessageT
+{
+  instrmt: test::gen::InstrumentBlockT[1];
+  instrmtExt: test::gen::InstrAttribBlockT[*];
+  undly: test::gen::UnderlyingInstrumentBlockT[0..1];
+  leg: test::gen::InstrmtLegGrpBlockT[*];
+  mktSegGrp: test::gen::MarketSegmentGrpBlockT[1];
+}
+
+>>>test::gen::SecurityDefinitionUpdateReportMessageT
+Class {meta::pure::profiles::doc.doc = 'This message is used for reporting updates to a Product Security Masterfile. Updates could be the result of corporate actions or other business events. Updates may include additions, modifications or deletions.'} test::gen::SecurityDefinitionUpdateReportMessageT extends test::gen::AbstractMessageT
+{
+  instrmt: test::gen::InstrumentBlockT[0..1];
+  instrmtExt: test::gen::InstrAttribBlockT[*];
+  leg: test::gen::InstrmtLegGrpBlockT[*];
+  mktSegGrp: test::gen::MarketSegmentGrpBlockT[*];
+}
+
+>>>test::gen::SecurityIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified. 100+ are reserved for private security identifications'} test::gen::SecurityIdSourceEnumT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M
+}
+
+>>>test::gen::SecurityIdSourceT
+Enum test::gen::SecurityIdSourceT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M
+}
+
+>>>test::gen::SecurityStatusEnumT
+Enum {meta::pure::profiles::doc.doc = 'Used for derivatives. Denotes the current state of the Instrument.'} test::gen::SecurityStatusEnumT
+{
+  _1,
+  _2,
+  _10,
+  _11
+}
+
+>>>test::gen::SecurityStatusMessageT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::SecurityStatusMessageT extends test::gen::AbstractMessageT
+{
+  clrPxPrm: test::gen::ClearingPriceParametersBlockT[2];
+}
+
+>>>test::gen::SecurityStatusT
+Enum test::gen::SecurityStatusT
+{
+  _1,
+  _2,
+  _10,
+  _11
+}
+
+>>>test::gen::SecurityTradingRulesBlockT
+Class {meta::pure::profiles::doc.doc = 'Ths SecurityTradingRules component block is used as part of security definition to specify the specific security&apos;s standard trading parameters such as trading session eligibility and other attributes of the security.'} test::gen::SecurityTradingRulesBlockT
+{
+  baseTrdgRules: test::gen::BaseTrdgRulesBlockT[0..1];
+}
+
+>>>test::gen::SecurityTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'Indicates type of security. Security type enumerations are grouped by Product(460) field value. NOTE: Additional values may be used by mutual agreement of the counterparties.'} test::gen::SecurityTypeEnumT
+{
+  _,
+  ABS,
+  AMENDED,
+  AN,
+  BA,
+  BDN,
+  BN,
+  BOND,
+  BOX,
+  BRADY,
+  BRIDGE,
+  BUYSELL,
+  CAMM,
+  CAN,
+  CASH,
+  CB,
+  CD,
+  CDS,
+  CL,
+  CMB,
+  CMBS,
+  CMO,
+  COFO,
+  COFP,
+  CORP,
+  CP,
+  CPP,
+  CS,
+  CTB,
+  DEFLTED,
+  DINP,
+  DN,
+  DUAL,
+  ETC,
+  ETF,
+  ETN,
+  EUCD,
+  EUCORP,
+  EUCP,
+  EUFRN,
+  EUSOV,
+  EUSUPRA,
+  FAC,
+  FADN,
+  FOR,
+  FORWARD,
+  FRN,
+  FUN,
+  FUT,
+  FXFWD,
+  FXNDF,
+  FXSPOT,
+  FXSWAP,
+  GO,
+  IET,
+  IRS,
+  LOFC,
+  LQN,
+  MATURED,
+  MBS,
+  MF,
+  MIO,
+  MLEG,
+  MPO,
+  MPP,
+  MPT,
+  MT,
+  MTN,
+  NONE,
+  ONITE,
+  OOC,
+  OOF,
+  OOP,
+  OPT,
+  OTHER,
+  PEF,
+  PFAND,
+  PN,
+  PROV,
+  PS,
+  PZFJ,
+  RAN,
+  REPLACD,
+  REPO,
+  RETIRED,
+  REV,
+  RVLV,
+  RVLVTRM,
+  SECLOAN,
+  SECPLEDGE,
+  SLQN,
+  SPCLA,
+  SPCLO,
+  SPCLT,
+  SR,
+  STN,
+  STRUCT,
+  SUPRA,
+  SWING,
+  TAN,
+  TARP,
+  TAXA,
+  TB,
+  TBA,
+  TBILL,
+  TBOND,
+  TCAL,
+  TD,
+  TECP,
+  TERM,
+  TINT,
+  TIPS,
+  TLQN,
+  TMCP,
+  TNOTE,
+  TPRN,
+  TRAN,
+  TRF,
+  UST,
+  USTB,
+  VAR,
+  VRDN,
+  WAR,
+  WITHDRN,
+  XCN,
+  XLINKD,
+  YANK,
+  YCD
+}
+
+>>>test::gen::SecurityTypeT
+Enum test::gen::SecurityTypeT
+{
+  _,
+  ABS,
+  AMENDED,
+  AN,
+  BA,
+  BDN,
+  BN,
+  BOND,
+  BOX,
+  BRADY,
+  BRIDGE,
+  BUYSELL,
+  CAMM,
+  CAN,
+  CASH,
+  CB,
+  CD,
+  CDS,
+  CL,
+  CMB,
+  CMBS,
+  CMO,
+  COFO,
+  COFP,
+  CORP,
+  CP,
+  CPP,
+  CS,
+  CTB,
+  DEFLTED,
+  DINP,
+  DN,
+  DUAL,
+  ETC,
+  ETF,
+  ETN,
+  EUCD,
+  EUCORP,
+  EUCP,
+  EUFRN,
+  EUSOV,
+  EUSUPRA,
+  FAC,
+  FADN,
+  FOR,
+  FORWARD,
+  FRN,
+  FUN,
+  FUT,
+  FXFWD,
+  FXNDF,
+  FXSPOT,
+  FXSWAP,
+  GO,
+  IET,
+  IRS,
+  LOFC,
+  LQN,
+  MATURED,
+  MBS,
+  MF,
+  MIO,
+  MLEG,
+  MPO,
+  MPP,
+  MPT,
+  MT,
+  MTN,
+  NONE,
+  ONITE,
+  OOC,
+  OOF,
+  OOP,
+  OPT,
+  OTHER,
+  PEF,
+  PFAND,
+  PN,
+  PROV,
+  PS,
+  PZFJ,
+  RAN,
+  REPLACD,
+  REPO,
+  RETIRED,
+  REV,
+  RVLV,
+  RVLVTRM,
+  SECLOAN,
+  SECPLEDGE,
+  SLQN,
+  SPCLA,
+  SPCLO,
+  SPCLT,
+  SR,
+  STN,
+  STRUCT,
+  SUPRA,
+  SWING,
+  TAN,
+  TARP,
+  TAXA,
+  TB,
+  TBA,
+  TBILL,
+  TBOND,
+  TCAL,
+  TD,
+  TECP,
+  TERM,
+  TINT,
+  TIPS,
+  TLQN,
+  TMCP,
+  TNOTE,
+  TPRN,
+  TRAN,
+  TRF,
+  UST,
+  USTB,
+  VAR,
+  VRDN,
+  WAR,
+  WITHDRN,
+  XCN,
+  XLINKD,
+  YANK,
+  YCD
+}
+
+>>>test::gen::SecurityUpdateActionEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::SecurityUpdateActionEnumT
+{
+  A
+}
+
+>>>test::gen::SecurityUpdateActionT
+Enum test::gen::SecurityUpdateActionT
+{
+  A
+}
+
+>>>test::gen::TickRuleScopesBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::TickRuleScopesBlockT
+{
+}
+
+>>>test::gen::TickRulesBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::TickRulesBlockT
+{
+  tickRuleScopes: test::gen::TickRuleScopesBlockT[*];
+}
+
+>>>test::gen::TradingSessionIdEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::TradingSessionIdEnumT
+{
+  _1
+}
+
+>>>test::gen::TradingSessionIdT
+Enum test::gen::TradingSessionIdT
+{
+  _1
+}
+
+>>>test::gen::TradingSessionSubIdEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::TradingSessionSubIdEnumT
+{
+  _3,
+  _6,
+  _8,
+  _103,
+  _104
+}
+
+>>>test::gen::TradingSessionSubIdT
+Enum test::gen::TradingSessionSubIdT
+{
+  _3,
+  _6,
+  _8,
+  _103,
+  _104
+}
+
+>>>test::gen::TrdgSesRulesBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::TrdgSesRulesBlockT
+{
+}
+
+>>>test::gen::UnderlyingBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::UnderlyingBlockT
+{
+}
+
+>>>test::gen::UnderlyingInstrumentBlockT
+Class {meta::pure::profiles::doc.doc = ''} test::gen::UnderlyingInstrumentBlockT
+{
+}
+
+>>>test::gen::UnderlyingInstrumentSecurityIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified. 100+ are reserved for private security identifications'} test::gen::UnderlyingInstrumentSecurityIdSourceEnumT
+{
+  M
+}
+
+>>>test::gen::UnderlyingInstrumentSecurityIdSourceT
+Enum test::gen::UnderlyingInstrumentSecurityIdSourceT
+{
+  M
+}
+
+>>>test::gen::UnderlyingSecurityIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified. 100+ are reserved for private security identifications'} test::gen::UnderlyingSecurityIdSourceEnumT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M
+}
+
+>>>test::gen::UnderlyingSecurityIdSourceT
+Enum test::gen::UnderlyingSecurityIdSourceT
+{
+  _1,
+  _2,
+  _3,
+  _4,
+  _5,
+  _6,
+  _7,
+  _8,
+  _9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M
+}
+
+>>>test::gen::UsApprovalEnumT
+Enum {meta::pure::profiles::doc.doc = ''} test::gen::UsApprovalEnumT
+{
+  None,
+  CFTC,
+  SEC
+}
+
+>>>test::gen::UsApprovalT
+Enum test::gen::UsApprovalT
+{
+  None,
+  CFTC,
+  SEC
+}

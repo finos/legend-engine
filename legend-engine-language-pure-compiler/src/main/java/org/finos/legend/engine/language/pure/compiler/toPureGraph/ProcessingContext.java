@@ -55,6 +55,10 @@ public class ProcessingContext
         return tags;
     }
 
+    public boolean hasVariableLevel()
+    {
+        return !this.inferredVariableList.isEmpty();
+    }
 
     public void addInferredVariables(String name, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification variable)
     {

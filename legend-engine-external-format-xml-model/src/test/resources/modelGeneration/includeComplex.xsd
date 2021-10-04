@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="simple.xsd"/>
+    <xs:complexType name="Person">
+        <xs:sequence>
+            <xs:element name="firstName" type="xs:token"/>
+            <xs:element name="lastName" type="xs:token"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

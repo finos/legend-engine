@@ -96,17 +96,21 @@ public class HelperValueSpecificationBuilder
         GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity());
         ctx.removeLastVariableLevel();
         ctx.pop();
-        return new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
-                ._openVariables(cleanedOpenVariables)
-                ._expressionSequence(valueSpecifications);
+
+        LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId)
+                                        ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
+                                        ._openVariables(cleanedOpenVariables)
+                                        ._expressionSequence(valueSpecifications);
+
+        return context.getCompilerExtensions().getExtraLambdaPostProcessors().stream()
+                .reduce(lambda, (originalLambda, processor) -> processor.value(originalLambda, context, ctx), (p1, p2) -> p1);
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification processProperty(CompileContext context, MutableList<String> openVariables, ProcessingContext processingContext, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, String property, SourceInformation sourceInformation)
     {
         // for X.property. X is the first parameter
         processingContext.push("Processing property " + property);
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification firstParameter = parameters.get(0);
+        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification firstArgument = parameters.get(0);
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processedParameters = ListIterate.collect(parameters, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType;
@@ -114,7 +118,7 @@ public class HelperValueSpecificationBuilder
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification inferredVariable;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification result;
 
-        if (firstParameter instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum // Only for backward compatibility!
+        if (firstArgument instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum // Only for backward compatibility!
             || (processedParameters.get(0)._genericType()._rawType().equals(context.pureModel.getType("meta::pure::metamodel::type::Enumeration"))))
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
@@ -123,17 +127,17 @@ public class HelperValueSpecificationBuilder
             CString enumValue = new CString();
             enumValue.values = Lists.mutable.of(property);
             enumValue.multiplicity = m;
-            context.resolveEnumValue(((PackageableElementPtr) firstParameter).fullPath, enumValue.values.get(0), firstParameter.sourceInformation, sourceInformation); // validation to make sure the enum value can be found
+            context.resolveEnumValue(((PackageableElementPtr) firstArgument).fullPath, enumValue.values.get(0), firstArgument.sourceInformation, sourceInformation); // validation to make sure the enum value can be found
             AppliedFunction extractEnum = new AppliedFunction();
             extractEnum.function = "extractEnumValue";
-            extractEnum.parameters = Lists.mutable.of(firstParameter, enumValue);
+            extractEnum.parameters = Lists.mutable.of(firstArgument, enumValue);
             result = extractEnum.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
         }
         else
         {
-            if (firstParameter instanceof Variable)
+            if (firstArgument instanceof Variable)
             {
-                inferredVariable = processingContext.getInferredVariable(((Variable) firstParameter).name);
+                inferredVariable = processingContext.getInferredVariable(((Variable) firstArgument).name);
             }
             else
             {
@@ -164,12 +168,6 @@ public class HelperValueSpecificationBuilder
             {
                 throw new UnsupportedOperationException("Unhandled property: " + foundProperty);
             }
-
-            // FIXME: remove this when we cleanup the extension method designed specifically for flatdata
-            Type finalInferredType = inferredType;
-            LazyIterate.flatCollect(context.getCompilerExtensions().getExtensions(), CompilerExtension::DEPRECATED_getExtraInferredTypeProcessors).forEach(processor -> processor.value(
-                    finalInferredType, firstParameter, context, processingContext, parameters, property, genericType, processedParameters
-            ));
 
             if (!inferredVariable._multiplicity().getName().equals("PureOne")) // autoMap
             {

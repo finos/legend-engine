@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class ExecutionPlanDependenciesFilter implements ClassPathFilter
 {
     private static final Collection<Class<?>> DEPENDENCY_CLASSES =
-            GeneratePureConfig.PURE_TO_JAVA_CLASSES.values().stream()
+            GeneratePureConfig.MAIN_DEPENDENCIES.values().stream()
                     .map(ExecutionPlanDependenciesFilter::expandClass)
                     .flatMap(Collection::stream)
                     .collect(Collectors.toSet());

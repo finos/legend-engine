@@ -18,6 +18,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -64,8 +65,8 @@ public class Compile
     @Path("compile")
     @ApiOperation(value = "Loads the model and then compiles. It performs no action. Mostly used for testing")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    @Prometheus(name= "compile model", doc ="Pure model compilation duration summary")
-    public Response compile(PureModelContext model, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    @Prometheus(name = "compile model", doc = "Pure model compilation duration summary")
+    public Response compile(PureModelContext model, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
@@ -74,7 +75,7 @@ public class Compile
             CompilerExtensions.logAvailableExtensions();
             modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles, null);
             Long end = System.currentTimeMillis();
-            MetricsHandler.observe("compile model",start,end);
+            MetricsHandler.observe("compile model", start, end);
             // NOTE: we could change this to return 204 (No Content), but Pure client test will break
             // on the another hand, returning 200 Ok with no content is not appropriate. So we have to put this dummy message "OK"
             return Response.ok("{\"message\":\"OK\"}", MediaType.APPLICATION_JSON_TYPE).build();
@@ -95,8 +96,8 @@ public class Compile
     @Path("lambdaReturnType")
     @ApiOperation(value = "Loads a given model and lambda. Returns the lambda return type")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    @Prometheus(name= "lambda return type")
-    public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    @Prometheus(name = "lambda return type")
+    public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
@@ -107,7 +108,7 @@ public class Compile
             String typeName = modelManager.getLambdaReturnType(lambda, model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles);
             Map<String, String> result = new HashMap<>();
             Long end = System.currentTimeMillis();
-            MetricsHandler.observe("lambda return type",start,end);
+            MetricsHandler.observe("lambda return type", start, end);
             // This is an object in case we want to add more information on the lambda.
             result.put("returnType", typeName);
             return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();

@@ -50,10 +50,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.slf4j.Logger;
@@ -65,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class CompilerExtensions
 {
@@ -94,16 +98,19 @@ public class CompilerExtensions
     private final ImmutableList<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> extraAggregationAwareClassMappingSecondPassProcessors;
     private final ImmutableList<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> extraAssociationMappingProcessors;
     private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Connection>> extraConnectionValueProcessors;
+    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Connection, CompileContext>> extraConnectionSecondPassProcessors;
     private final ImmutableList<Procedure2<InputData, CompileContext>> extraMappingTestInputDataProcessors;
     private final ImmutableList<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> extraFunctionHandlerDispatchBuilderInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> extraFunctionExpressionBuilderRegistrationInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionHandlerRegistrationInfo>>> extraFunctionHandlerRegistrationInfoCollectors;
     private final ImmutableList<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> extraValueSpecificationProcessors;
+    private final ImmutableList<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> extraLambdaPostProcessors;
     private final ImmutableList<Procedure2<PackageableElement, MutableMap<String, String>>> extraStoreStatBuilders;
     private final ImmutableList<Function2<ExecutionContext, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext>> extraExecutionContextProcessors;
     private final ImmutableList<Procedure<Procedure2<String, List<String>>>> extraElementForPathToElementRegisters;
     private final ImmutableList<Procedure3<SetImplementation, Set<String>, CompileContext>> extraSetImplementationSourceScanners;
     private final ImmutableList<Procedure2<PureModel, PureModelContextData>> extraPostValidators;
+    private final ImmutableList<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> extraExecutionOptionProcessors;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -115,16 +122,19 @@ public class CompilerExtensions
         this.extraClassMappingSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraClassMappingSecondPassProcessors);
         this.extraAssociationMappingProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAssociationMappingProcessors);
         this.extraConnectionValueProcessors = this.extensions.flatCollect(CompilerExtension::getExtraConnectionValueProcessors);
+        this.extraConnectionSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraConnectionSecondPassProcessors);
         this.extraMappingTestInputDataProcessors = this.extensions.flatCollect(CompilerExtension::getExtraMappingTestInputDataProcessors);
         this.extraFunctionHandlerDispatchBuilderInfoCollectors = this.extensions.flatCollect(CompilerExtension::getExtraFunctionHandlerDispatchBuilderInfoCollectors);
         this.extraFunctionExpressionBuilderRegistrationInfoCollectors = this.extensions.flatCollect(CompilerExtension::getExtraFunctionExpressionBuilderRegistrationInfoCollectors);
         this.extraFunctionHandlerRegistrationInfoCollectors = this.extensions.flatCollect(CompilerExtension::getExtraFunctionHandlerRegistrationInfoCollectors);
         this.extraValueSpecificationProcessors = this.extensions.flatCollect(CompilerExtension::getExtraValueSpecificationProcessors);
+        this.extraLambdaPostProcessors = this.extensions.flatCollect(CompilerExtension::getExtraLambdaPostProcessor);
         this.extraStoreStatBuilders = this.extensions.flatCollect(CompilerExtension::getExtraStoreStatBuilders);
         this.extraExecutionContextProcessors = this.extensions.flatCollect(CompilerExtension::getExtraExecutionContextProcessors);
         this.extraElementForPathToElementRegisters = this.extensions.flatCollect(CompilerExtension::getExtraElementForPathToElementRegisters);
         this.extraSetImplementationSourceScanners = this.extensions.flatCollect(CompilerExtension::getExtraSetImplementationSourceScanners);
         this.extraPostValidators = this.extensions.flatCollect(CompilerExtension::getExtraPostValidators);
+        this.extraExecutionOptionProcessors = this.extensions.flatCollect(CompilerExtension::getExtraExecutionOptionProcessors);
     }
 
     public List<CompilerExtension> getExtensions()
@@ -214,6 +224,11 @@ public class CompilerExtensions
         return this.extraConnectionValueProcessors.castToList();
     }
 
+    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
+    {
+        return this.extraConnectionSecondPassProcessors.castToList();
+    }
+
     public List<Procedure2<InputData, CompileContext>> getExtraMappingTestInputDataProcessors()
     {
         return this.extraMappingTestInputDataProcessors.castToList();
@@ -239,6 +254,11 @@ public class CompilerExtensions
         return this.extraValueSpecificationProcessors.castToList();
     }
 
+    public List<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> getExtraLambdaPostProcessors()
+    {
+        return this.extraLambdaPostProcessors.castToList();
+    }
+
     public List<Procedure2<PackageableElement, MutableMap<String, String>>> getExtraStoreStatBuilders()
     {
         return this.extraStoreStatBuilders.castToList();
@@ -247,6 +267,11 @@ public class CompilerExtensions
     public List<Function2<ExecutionContext, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext>> getExtraExecutionContextProcessors()
     {
         return this.extraExecutionContextProcessors.castToList();
+    }
+
+    public List<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> getExtraExecutionOptionProcessors()
+    {
+        return this.extraExecutionOptionProcessors.castToList();
     }
 
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
@@ -266,34 +291,42 @@ public class CompilerExtensions
 
     public List<Processor<?>> sortExtraProcessors()
     {
-        return sortExtraProcessors(getExtraProcessors(), false);
+        return sortExtraProcessors(getExtraProcessors(), p -> true, false);
     }
 
     public List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors)
     {
-        return sortExtraProcessors(processors, true);
+        return sortExtraProcessors(processors, p -> true, true);
     }
 
-    private List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors, boolean validateProcessors)
+    public List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors, Predicate<Processor> filter)
+    {
+        return sortExtraProcessors(processors, filter, true);
+    }
+
+    private List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors, Predicate<Processor> filter, boolean validateProcessors)
     {
         // Collect processor pre-requisites. Those without pre-requisites can go straight into the results list.
         MutableList<Processor<?>> results = Lists.mutable.empty();
         MutableMap<Processor<?>, Collection<? extends java.lang.Class<? extends PackageableElement>>> withPrerequisites = Maps.mutable.empty();
         processors.forEach(p ->
         {
-            // Validate that the processor is part of this set of extensions
-            if (validateProcessors && (p != this.extraProcessors.get(p.getElementClass())))
+            if (filter.test(p))
             {
-                throw new IllegalArgumentException("Unknown processor: " + p);
-            }
-            Collection<? extends Class<? extends PackageableElement>> prerequisites = p.getPrerequisiteClasses();
-            if (prerequisites.isEmpty())
-            {
-                results.add(p);
-            }
-            else
-            {
-                withPrerequisites.put(p, prerequisites);
+                // Validate that the processor is part of this set of extensions
+                if (validateProcessors && (p != this.extraProcessors.get(p.getElementClass())))
+                {
+                    throw new IllegalArgumentException("Unknown processor: " + p);
+                }
+                Collection<? extends Class<? extends PackageableElement>> prerequisites = p.getPrerequisiteClasses();
+                if (prerequisites.isEmpty())
+                {
+                    results.add(p);
+                }
+                else
+                {
+                    withPrerequisites.put(p, prerequisites);
+                }
             }
         });
 

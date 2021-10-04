@@ -33,9 +33,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
+import java.util.Objects;
+
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class HelperMappingGrammarComposer
 {
@@ -91,7 +91,7 @@ public class HelperMappingGrammarComposer
         {
             return renderXStoreAssociationMapping((XStoreAssociationMapping) associationMapping, context);
         }
-        return context.extraAssociationMappingComposers.stream().map(composer -> composer.value(associationMapping, context)).findFirst().orElseGet(() -> unsupported(associationMapping.getClass()));
+        return context.extraAssociationMappingComposers.stream().map(composer -> composer.value(associationMapping, context)).filter(Objects::nonNull).findFirst().orElseGet(() -> unsupported(associationMapping.getClass()));
     }
 
     private static String renderXStoreAssociationMapping(XStoreAssociationMapping xStoreAssociationMapping, PureGrammarComposerContext context)
@@ -138,7 +138,7 @@ public class HelperMappingGrammarComposer
             ObjectInputData objectInputData = (ObjectInputData) inputData;
             return "<Object, " + objectInputData.inputType + ", " + PureGrammarComposerUtility.convertPath(objectInputData.sourceClass) + ", " + convertString(objectInputData.data, false) + ">";
         }
-        return context.extraMappingTestInputDataComposers.stream().map(composer -> composer.value(inputData, context)).findFirst().orElseGet(() -> unsupported(inputData.getClass()));
+        return context.extraMappingTestInputDataComposers.stream().map(composer -> composer.value(inputData, context)).filter(Objects::nonNull).findFirst().orElseGet(() -> unsupported(inputData.getClass()));
     }
 
     public static String renderClassMappingId(ClassMapping cm)

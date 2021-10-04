@@ -109,8 +109,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "function anything::somethingelse(a:String[1]):String[1]" +
                 "{" +
                 "   'hiiii'" +
-                "}\n", "COMPILATION error at [10:1-67]: Duplicated element 'anything::somethingelse'"
-        );
+                "}\n");
         // Measure
         test(initialGraph +
                 "###Pure\n" +
@@ -121,6 +120,98 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   UnitThree: x -> $x * 400;\n" +
                 "}", "COMPILATION error at [10:1-15:1]: Duplicated element 'anything::somethingelse'"
         );
+    }
+
+    @Test
+    public void testMetaFunctionExecutionWithFullPath()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->meta::pure::functions::math::max();"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
+    public void testMetaFunctionExecutionWithoutFullPath()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
+    public void testUserDefinedFunctionWithTheSameNameButDifferentSignatureExecutionWithImports()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger():Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+"###Pure\n"+
+                        "import example::*;\n"+
+                        "function example::test::go():Any[0..1]\n" +
+                        "{\n"+
+                        "   testMaxInteger(1);"+
+                        "   testMaxInteger();"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
+    public void testUserDefinedFunctionWithTheSameNameButDifferentSignatureExecution()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger(input: Number[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger(f: Float[1], d: Float[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1, $f, $d]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger():Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+
+                        "function example::test::testMaxInteger():Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+
+                        "function example::test::go():Any[0..1]\n" +
+                        "{\n"+
+                        "   example::testMaxInteger(1);"+
+                        "   example::testMaxInteger();"+
+                        "   example::test::testMaxInteger();"+
+                        "   example::testMaxInteger(1.0, 1.123);"+
+                        "}\n";
+        test(code);
+    }
+
+    @Test
+    public void testUserDefinedFunctionWithTheSameSignature()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n"+
+                        "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n";
+        test(code,"COMPILATION error at [4:1-6:17]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
     }
 
     @Test
@@ -427,6 +518,25 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]\n" +
                 "{\n" +
                 "  ok: Integer[1..2];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testFunctionWithExpressionInParameter()
+    {
+        test("Class test::A\n" +
+                "[\n" +
+                "  constraint1\n" +
+                "  (" +
+                "    ~externalId: 'ext ID'\n" +
+                "    ~function: greaterThanEqual($this.start, $this.end-1000)\n" +
+                "    ~enforcementLevel: Warn\n" +
+                "    ~message: $this.start + ' should be greater or equal ' + $this.end\n" +
+                "  )\n" +
+                "]\n" +
+                "{\n" +
+                "  start: Integer[1];\n" +
+                "  end: Integer[1];\n" +
                 "}\n");
     }
 
@@ -1854,6 +1964,15 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testFunctionWithDateTime()
+    {
+        test("function test::getDateTime(): DateTime[1]\n" +
+                "{\n" +
+                "   %2020-01-01T00:00:00.000\n" +
+                "}\n");
+    }
+
+    @Test
     public void testClassWithStrictDate()
     {
         test("Class apps::Trade\n" +
@@ -2018,5 +2137,42 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Multiplicity accumMul = concat._parametersValues().getFirst()._multiplicity();
         Assert.assertEquals(2L, accumMul._lowerBound()._value().longValue());
         Assert.assertNull(accumMul._upperBound()._value());
+    }
+
+    @Test
+    public void testCompilationOfLambdaWithBiTemporalClass()
+    {
+        test("###Pure \n" +
+                " \n" +
+                "Class <<temporal.bitemporal>> main::Person \n" +
+                "{ \n" +
+                "    name : String[1]; \n" +
+                "    firm : main::Firm[1]; \n" +
+                "} \n" +
+                " \n" +
+                "Class <<temporal.bitemporal>> main::Firm \n" +
+                "{ \n" +
+                "    name : String[1]; \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree(): main::Person[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%2020-12-12, %2020-12-13)  \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree1(): main::Person[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%latest, %latest)  \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree2(): main::Person[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%latest, %2020-12-12)  \n" +
+                "} \n" +
+                " \n" +
+                "function main::walkTree3(): main::Firm[*] \n" +
+                "{ \n" +
+                "    main::Person.all(%2020-12-12, %2020-12-13).firm(%latest, %latest)  \n" +
+                "} \n");
     }
 }

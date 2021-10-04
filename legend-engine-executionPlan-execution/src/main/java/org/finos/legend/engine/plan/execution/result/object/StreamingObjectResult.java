@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.result.object;
 
 import org.finos.legend.engine.plan.dependencies.store.shared.IResult;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
@@ -29,6 +30,11 @@ public class StreamingObjectResult<T> extends StreamingResult
     private Stream<T> objectStream;
     private final Builder resultBuilder;
     private final Result childResult;
+
+    public StreamingObjectResult(Stream<T> objectStream)
+    {
+        this(objectStream, null, new ConstantResult(null));
+    }
 
     public StreamingObjectResult(Stream<T> objectStream, Builder resultBuilder, IResult childResult)
     {

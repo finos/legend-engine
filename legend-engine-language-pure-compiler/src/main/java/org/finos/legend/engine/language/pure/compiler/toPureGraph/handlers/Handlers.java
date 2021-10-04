@@ -415,6 +415,7 @@ public class Handlers
         register("meta::pure::functions::constraints::warn_Boolean_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
 
         register("meta::pure::functions::lang::subType_Any_m__T_1__T_m_", false, ps -> res(ps.get(1)._genericType(), ps.get(0)._multiplicity()));
+        register("meta::pure::functions::lang::orElse_T_$0_1$__T_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"));
 
         register(h("meta::pure::functions::string::contains_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
                 h("meta::pure::functions::string::contains_String_$0_1$__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
@@ -522,6 +523,11 @@ public class Handlers
                 m(h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()) && "AlloySerializationConfig".equals(ps.get(2)._genericType()._rawType()._name()))),
                 m(h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3))
+                )
+        );
+        register(m(
+                m(h("meta::external::shared::format::executionPlan::externalize_Checked_MANY__Binding_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()))),
+                m(h("meta::external::shared::format::executionPlan::externalize_T_MANY__Binding_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2))
                 )
         );
 
@@ -1067,10 +1073,10 @@ public class Handlers
 
     private void registerUnitFunctions()
     {
-        register(h("meta::java::generation::functions::unit::unitType_Any_1__String_1_", false, ps -> res("String", "one"), ps -> typeOneMany(ps.get(0), "String")));
-        register(h("meta::java::generation::functions::unit::unitValue_Any_1__Number_1_", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), NUMBER)));
+        register(h("meta::pure::executionPlan::engine::java::unitType_Any_1__String_1_", false, ps -> res("String", "one"), ps -> typeOneMany(ps.get(0), "String")));
+        register(h("meta::pure::executionPlan::engine::java::unitValue_Any_1__Number_1_", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), NUMBER)));
         register(h("meta::pure::functions::meta::newUnit_Unit_1__Number_1__Any_1_", true, ps -> res("meta::pure::metamodel::type::Any", "one"), ps -> typeOneMany(ps.get(0), "Any")));
-        register(h("meta::java::generation::functions::unit::convert_Any_1__Unit_1__Any_1_", false, ps -> res("meta::pure::metamodel::type::Any", "one"), ps -> typeOneMany(ps.get(0), "Any")));
+        register(h("meta::pure::executionPlan::engine::java::convert_Any_1__Unit_1__Any_1_", false, ps -> res("meta::pure::metamodel::type::Any", "one"), ps -> typeOneMany(ps.get(0), "Any")));
     }
 
     public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, CompileContext compileContext, ProcessingContext processingContext)
@@ -1090,9 +1096,32 @@ public class Handlers
         register(handlers);
     }
 
+
+    public void register(UserDefinedFunctionHandler handler)
+    {
+        String functionName = handler.getFunctionName();
+        boolean functionRegisteredByName = isFunctionRegisteredByName(handler);
+        if (!functionRegisteredByName)
+        {
+            map.put(functionName, new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler));
+        }
+        else {
+            Assert.assertFalse(isFunctionRegisteredBySignature(handler, functionRegisteredByName), () -> "Function '" + handler.getFunctionSignature() + "' is already registered");
+            FunctionExpressionBuilder builder = map.get(functionName);
+            if (builder.supportFunctionHandler(handler))
+            {
+                builder.addFunctionHandler(handler);
+            }
+            else {
+                this.addFunctionHandler(handler, builder);
+            }
+        }
+        map.get(functionName).handlers().forEach(this::mayReplace);
+    }
+
     private void register(FunctionHandler... handlers)
     {
-        MultiHandlerFunctionExpressionBuilder handler = new MultiHandlerFunctionExpressionBuilder(handlers, this.pureModel);
+        MultiHandlerFunctionExpressionBuilder handler = new MultiHandlerFunctionExpressionBuilder(this.pureModel, handlers);
         Assert.assertTrue(map.get(handler.getFunctionName()) == null, () -> "Function '" + handler.getFunctionName() + "' is already registered");
         Arrays.stream(handlers).forEach(this.pureModel::loadModelFromFunctionHandler);
         for (FunctionHandler h : handlers)
@@ -1175,6 +1204,40 @@ public class Handlers
         return new TypeAndMultiplicity(this.pureModel.getGenericType(type), mul);
     }
 
+    private boolean isFunctionRegisteredByName(UserDefinedFunctionHandler handler)
+    {
+        return map.containsKey(handler.getFunctionName());
+    }
+
+    private boolean isFunctionRegisteredBySignature(UserDefinedFunctionHandler handler, Boolean isFunctionNameAlreadyRegistered)
+    {
+        return isFunctionNameAlreadyRegistered && map.get(handler.getFunctionName()).handlers().stream().anyMatch(val->val.getFunctionSignature().equals(handler.getFunctionSignature()));
+    }
+
+    public void addFunctionHandler(FunctionHandler handler, FunctionExpressionBuilder builder)
+    {
+        if (builder instanceof MultiHandlerFunctionExpressionBuilder)
+        {
+            addFunctionHandler(handler, (MultiHandlerFunctionExpressionBuilder) builder);
+        }
+        else
+        {
+            addFunctionHandler(handler, (CompositeFunctionExpressionBuilder) builder);
+        }
+    }
+
+    private void addFunctionHandler(FunctionHandler handler, MultiHandlerFunctionExpressionBuilder multiHandlerFunctionExpressionBuilder)
+    {
+        MultiHandlerFunctionExpressionBuilder multiHandler = new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler);
+        CompositeFunctionExpressionBuilder compositeFunctionExpressionBuilder = new CompositeFunctionExpressionBuilder(new MultiHandlerFunctionExpressionBuilder[]{multiHandlerFunctionExpressionBuilder, multiHandler});
+        map.put(handler.getFunctionName(), compositeFunctionExpressionBuilder);
+    }
+
+    private void addFunctionHandler(FunctionHandler handler, CompositeFunctionExpressionBuilder compositeFunctionExpressionBuilder)
+    {
+        compositeFunctionExpressionBuilder.getBuilders().add(new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler));
+
+    }
 
     // --------------------------------------------- Function expression builder ----------------------------------
 
@@ -1197,7 +1260,7 @@ public class Handlers
     public MultiHandlerFunctionExpressionBuilder m(FunctionHandler... handlers)
     {
         Arrays.stream(handlers).forEach(this.pureModel::loadModelFromFunctionHandler);
-        return new MultiHandlerFunctionExpressionBuilder(handlers, this.pureModel);
+        return new MultiHandlerFunctionExpressionBuilder(this.pureModel, handlers);
     }
 
     public CompositeFunctionExpressionBuilder m(FunctionExpressionBuilder... builders)
@@ -1343,9 +1406,9 @@ public class Handlers
         Map<String, Dispatch> map = Maps.mutable.empty();
         map.put("meta::dsb::query::functions::filterReportDates_Any_1__Date_1__Date_1__Function_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || check(funcType(ps.get(3)._genericType()), (FunctionType ft) -> matchZeroOne(ft._returnMultiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ft._returnType()._rawType()._name()) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))));
         map.put("meta::dsb::query::functions::filterReportDates_Any_1__Date_1__Function_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || check(funcType(ps.get(2)._genericType()), (FunctionType ft) -> matchZeroOne(ft._returnMultiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ft._returnType()._rawType()._name()) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))));
-        map.put("meta::java::generation::functions::unit::convert_Any_1__Unit_1__Any_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Unit".equals(ps.get(1)._genericType()._rawType()._name())));
-        map.put("meta::java::generation::functions::unit::unitType_Any_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
-        map.put("meta::java::generation::functions::unit::unitValue_Any_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
+        map.put("meta::pure::executionPlan::engine::java::convert_Any_1__Unit_1__Any_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Unit".equals(ps.get(1)._genericType()._rawType()._name())));
+        map.put("meta::pure::executionPlan::engine::java::unitType_Any_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
+        map.put("meta::pure::executionPlan::engine::java::unitValue_Any_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
         map.put("meta::json::schema::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil","Type","DataType","FunctionType","Class","Measure","Unit","PrimitiveType","Enumeration","ClassProjection","MappingClass").contains(ps.get(2)._genericType()._rawType()._name()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "DiscriminatorMapping".equals(ps.get(3)._genericType()._rawType()._name())));
         map.put("meta::json::schema::mapSchema_String_1__Type_1__DiscriminatorMapping_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil","Type","DataType","Measure","FunctionType","Class","PrimitiveType","Enumeration","Unit","ClassProjection","MappingClass").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::json::toJSON_Any_MANY__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1);

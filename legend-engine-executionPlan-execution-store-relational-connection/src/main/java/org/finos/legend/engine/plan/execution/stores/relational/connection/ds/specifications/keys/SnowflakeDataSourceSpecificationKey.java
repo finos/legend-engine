@@ -26,14 +26,16 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     private final String databaseName;
     private final String cloudType;
 
+    private final Boolean quoteIdentifiers;
 
-    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType)
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers)
     {
         this.accountName = accountName;
         this.region = region;
         this.warehouseName = warehouseName;
         this.databaseName = databaseName;
         this.cloudType = cloudType == null ? "privatelink" : cloudType;
+        this.quoteIdentifiers = quoteIdentifiers == null ? false : quoteIdentifiers;
     }
 
     public String getAccountName()
@@ -61,6 +63,11 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return cloudType;
     }
 
+    public Boolean getQuoteIdentifiers()
+    {
+        return quoteIdentifiers;
+    }
+
     @Override
     public String toString()
     {
@@ -69,6 +76,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 ", region='" + region + '\'' +
                 ", warehouseName='" + warehouseName + '\'' +
                 ", databaseName='" + databaseName + '\'' +
+                ", cloudType='" + cloudType + '\'' +
+                ", quoteIdentifiers='" + quoteIdentifiers + '\'' +
                 '}';
     }
 
@@ -77,8 +86,11 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     {
         return "Snowflake_" +
                 "account:" + accountName + "_" +
+                "region:" + region + "_" +
                 "warehouse:" + warehouseName + "_" +
-                "db:" + databaseName;
+                "db:" + databaseName + "_" +
+                "cloudType:" + cloudType + "_" +
+                "quoteIdentifiers:" + quoteIdentifiers;
     }
 
     @Override
@@ -96,12 +108,14 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return Objects.equals(accountName, that.accountName) &&
                 Objects.equals(region, that.region) &&
                 Objects.equals(warehouseName, that.warehouseName) &&
-                Objects.equals(databaseName, that.databaseName);
+                Objects.equals(databaseName, that.databaseName) &&
+                Objects.equals(cloudType, that.cloudType) &&
+                Objects.equals(quoteIdentifiers, that.quoteIdentifiers);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(accountName, region, warehouseName, databaseName);
+        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers);
     }
 }

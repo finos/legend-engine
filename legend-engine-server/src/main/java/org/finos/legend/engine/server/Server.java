@@ -28,6 +28,8 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.finos.legend.engine.application.query.api.ApplicationQuery;
+import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
@@ -45,6 +47,7 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlan;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
@@ -77,7 +80,11 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
 import java.io.FileInputStream;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.ServiceLoader;
 
 public class Server extends Application<ServerConfiguration>
 {
@@ -99,7 +106,7 @@ public class Server extends Application<ServerConfiguration>
         {
             @Override
             protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(
-                    ServerConfiguration configuration)
+                ServerConfiguration configuration)
             {
                 return configuration.swagger;
             }
@@ -149,6 +156,9 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new TransformRelationalOperationElementGrammarToJson());
         environment.jersey().register(new TransformRelationalOperationElementJsonToGrammar());
 
+        // Relational
+        environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));
+
         // Compilation
         environment.jersey().register((DynamicFeature) (resourceInfo, context) -> context.register(new InflateInterceptor()));
         environment.jersey().register(new Compile(modelManager));
@@ -165,6 +175,9 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
         environment.jersey().register(new ExecutePlan(planExecutor));
 
+        // Query
+        environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getMongoClient()));
+
         // Global
         environment.jersey().register(new JsonInformationExceptionMapper());
         environment.jersey().register(new CatchAllExceptionMapper());
@@ -176,7 +189,8 @@ public class Server extends Application<ServerConfiguration>
     {
         if (vaultConfigurations != null)
         {
-            ListIterate.forEach(vaultConfigurations, (v) -> {
+            ListIterate.forEach(vaultConfigurations, (v) ->
+            {
                 if (v instanceof PropertyVaultConfiguration)
                 {
                     try

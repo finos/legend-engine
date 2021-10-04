@@ -16,10 +16,10 @@ package org.finos.legend.engine.language.pure.dsl.service.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension;
+import org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
@@ -29,11 +29,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 
 import java.util.List;
-import java.util.Set;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class ServiceGrammarComposerExtension implements PureGrammarComposerExtension
 {
@@ -58,18 +55,18 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
     }
 
     @Override
-    public List<Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
         return Lists.mutable.with((elements, context, composedSections) ->
         {
-            List<Service> composableElements = ListIterate.selectInstancesOf(FastList.newList(elements), Service.class);
+            List<Service> composableElements = ListIterate.selectInstancesOf(elements, Service.class);
             return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
     private static String renderService(Service service, PureGrammarComposerContext context)
     {
-        StringBuilder serviceBuilder = new StringBuilder().append("Service").append(" ").append(PureGrammarComposerUtility.convertPath(service.getPath()));
+        StringBuilder serviceBuilder = new StringBuilder().append("Service").append(" ").append(HelperDomainGrammarComposer.renderAnnotations(service.stereotypes, service.taggedValues)).append(PureGrammarComposerUtility.convertPath(service.getPath()));
         serviceBuilder.append("\n{\n");
         serviceBuilder.append(getTabString()).append("pattern: ").append(convertString(service.pattern, true)).append(";\n");
         if (!service.owners.isEmpty())

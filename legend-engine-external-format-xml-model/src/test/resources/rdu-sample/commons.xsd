@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:annotation>
+        <xs:documentation>Common Types</xs:documentation>
+    </xs:annotation>
+    <xs:complexType name="HeaderType">
+        <xs:annotation>
+            <xs:documentation>Common header information</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="ParamInfo" type="ParamInfoType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="fileIdentifier" type="xs:string"/>
+        <xs:attribute name="dateGenerated" type="xs:dateTime"/>
+    </xs:complexType>
+    <xs:complexType name="ParamInfoType">
+        <xs:sequence>
+            <xs:element name="AssetTypeFilter" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="RegionFilter" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="ExchangeFilter" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="SecurityFilter" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="fullOrDelta">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="FULL"/>
+                    <xs:enumeration value="DELTA"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="TrailerType">
+        <xs:annotation>
+            <xs:documentation>Common trailer information</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Exceptions" type="ExceptionType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="numberOfElements" type="xs:int"/>
+    </xs:complexType>
+    <xs:complexType name="ExceptionType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="type" use="required">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="INFO"/>
+                            <xs:enumeration value="WARN"/>
+                            <xs:enumeration value="ERROR"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DateType">
+        <xs:simpleContent>
+            <xs:extension base="xs:date">
+                <xs:attribute name="source" type="xs:string"/>
+                <xs:attribute name="origValue" type="xs:date"/>
+                <xs:attribute name="comment" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DateTimeType">
+        <xs:simpleContent>
+            <xs:extension base="xs:dateTime">
+                <xs:attribute name="source" type="xs:string"/>
+                <xs:attribute name="origValue" type="xs:date"/>
+                <xs:attribute name="comment" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DecimalType">
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="source" type="xs:string"/>
+                <xs:attribute name="origValue" type="xs:decimal"/>
+                <xs:attribute name="comment" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="StringType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="source" type="xs:string"/>
+                <xs:attribute name="origValue" type="xs:string"/>
+                <xs:attribute name="comment" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="IdentifiersType">
+        <xs:sequence>
+            <xs:element name="Identifier" type="IdentifierType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdentifierType">
+        <xs:simpleContent>
+            <xs:extension base="StringType">
+                <xs:attribute name="type" type="xs:string" use="required"/>
+                <xs:attribute name="expiredDate" type="xs:date"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="RatingsType">
+        <xs:sequence>
+            <xs:element name="Rating" type="RatingType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RatingType">
+        <xs:simpleContent>
+            <xs:extension base="StringType">
+                <xs:attribute name="type" type="xs:string" use="required"/>
+                <xs:attribute name="date" type="xs:date" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ClassificationsType">
+        <xs:sequence>
+            <xs:element name="Classification" type="ClassificationType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ClassificationType">
+        <xs:simpleContent>
+            <xs:extension base="StringType">
+                <xs:attribute name="type" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ExpiredDateType">
+        <xs:simpleContent>
+            <xs:extension base="StringType">
+                <xs:attribute name="expiredDt" type="xs:dateTime" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+</xs:schema>

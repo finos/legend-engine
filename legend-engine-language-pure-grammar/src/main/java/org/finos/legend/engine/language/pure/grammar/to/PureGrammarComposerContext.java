@@ -51,11 +51,11 @@ public class PureGrammarComposerContext
      * hence omitting the `$` symbol preceding the variable.
      */
     private final boolean isVariableInFunctionSignature;
-    // FIXME: remove this when we remove inference for flat-data column
-    private final boolean isFlatDataMappingProcessingModeEnabled;
+    // TODO PropertyBracketExpression is deprecated.  Remove flag and related processing once all use has been addressed
+    private final boolean isPropertyBracketExpressionModeEnabled;
     public final List<PureGrammarComposerExtension> extensions;
     public final List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> extraSectionComposers;
-    public final List<Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> extraFreeSectionComposers;
+    public final List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> extraFreeSectionComposers;
     public final List<Function2<ClassMapping, PureGrammarComposerContext, String>> extraClassMappingComposers;
     public final List<Function2<AssociationMapping, PureGrammarComposerContext, String>> extraAssociationMappingComposers;
     public final List<Function2<Connection, PureGrammarComposerContext, org.eclipse.collections.api.tuple.Pair<String, String>>> extraConnectionValueComposers;
@@ -67,7 +67,7 @@ public class PureGrammarComposerContext
         this.renderStyle = builder.renderStyle;
         this.isVariableInFunctionSignature = builder.isVariableInFunctionSignature;
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
-        this.isFlatDataMappingProcessingModeEnabled = builder.isFlatDataMappingProcessingModeEnabled;
+        this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
         // extensions
         this.extensions = PureGrammarComposerExtensionLoader.extensions();
         this.extraSectionComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraSectionComposers);
@@ -98,9 +98,9 @@ public class PureGrammarComposerContext
         return isVariableInFunctionSignature;
     }
 
-    public boolean isFlatDataMappingProcessingModeEnabled()
+    public boolean isPropertyBracketExpressionModeEnabled()
     {
-        return isFlatDataMappingProcessingModeEnabled;
+        return isPropertyBracketExpressionModeEnabled;
     }
 
     public static class Builder
@@ -109,7 +109,7 @@ public class PureGrammarComposerContext
         private RenderStyle renderStyle = RenderStyle.STANDARD;
         private boolean isValueSpecificationExternalParameter = false;
         private boolean isVariableInFunctionSignature = false;
-        private boolean isFlatDataMappingProcessingModeEnabled = false;
+        private boolean isPropertyBracketExpressionModeEnabled = false;
 
         private Builder()
         {
@@ -123,7 +123,7 @@ public class PureGrammarComposerContext
             builder.renderStyle = composerContext.renderStyle;
             builder.isVariableInFunctionSignature = composerContext.isVariableInFunctionSignature;
             builder.isValueSpecificationExternalParameter = composerContext.isValueSpecificationExternalParameter;
-            builder.isFlatDataMappingProcessingModeEnabled = composerContext.isFlatDataMappingProcessingModeEnabled;
+            builder.isPropertyBracketExpressionModeEnabled = composerContext.isPropertyBracketExpressionModeEnabled;
             return builder;
         }
 
@@ -135,7 +135,7 @@ public class PureGrammarComposerContext
             builder.renderStyle = DEPRECATED_context.getRenderStyle();
             builder.isVariableInFunctionSignature = DEPRECATED_context.isVariableInFunctionSignature();
             builder.isValueSpecificationExternalParameter = DEPRECATED_context.isValueSpecificationExternalParameter();
-            builder.isFlatDataMappingProcessingModeEnabled = DEPRECATED_context.isFlatDataMappingProcessingModeEnabled();
+            builder.isPropertyBracketExpressionModeEnabled = DEPRECATED_context.isPropertyBracketExpressionModeEnabled();
             return builder;
         }
 
@@ -167,9 +167,9 @@ public class PureGrammarComposerContext
             return this;
         }
 
-        public Builder withFlatDataMappingProcessingModeEnabled()
+        public Builder withPropertyBracketExpressionModeEnabled()
         {
-            this.isFlatDataMappingProcessingModeEnabled = true;
+            this.isPropertyBracketExpressionModeEnabled = true;
             return this;
         }
 

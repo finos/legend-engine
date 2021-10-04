@@ -184,17 +184,34 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
+    public void testBigQueryGCPApplicationDefaultCredentialsAuth()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: BigQuery;\n" +
+                "  specification: BigQuery\n" +
+                "  {\n" +
+                "    projectId: 'proj1';\n" +
+                "    defaultDataset: 'dataset1';\n" +
+                "  };\n" +
+                "  auth: GCPApplicationDefaultCredentials;\n" +
+                "}\n");
+    }
+
+    @Test
     public void testSingleMapperPostProcessors()
     {
         testPostProcessor(
                 "    mapper\n" +
-                "    {\n" +
-                "      mappers:\n" +
-                "      [\n" +
-                "        table {from: 'a'; to: 'A'; schemaFrom: 'b'; schemaTo: 'B';},\n" +
-                "        schema {from: 'c'; to: 'C';}\n" +
-                "      ];\n" +
-                "    }");
+                        "    {\n" +
+                        "      mappers:\n" +
+                        "      [\n" +
+                        "        table {from: 'a'; to: 'A'; schemaFrom: 'b'; schemaTo: 'B';},\n" +
+                        "        schema {from: 'c'; to: 'C';}\n" +
+                        "      ];\n" +
+                        "    }");
     }
 
     @Test
@@ -233,7 +250,7 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  auth: DefaultH2;\n" +
                 "  postProcessors:\n" +
                 "  [\n" +
-                        String.join(",\n", postProcessors) + "\n" +
+                String.join(",\n", postProcessors) + "\n" +
                 "  ];\n" +
                 "}\n");
     }

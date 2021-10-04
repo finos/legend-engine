@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.dsl.generation.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.generation.grammar.from.GenerationParserExtension;
@@ -28,7 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGen
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -39,66 +37,66 @@ public class GenerationGrammarComposerExtension implements PureGrammarComposerEx
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
         return Lists.mutable.with(
-                (elements, context, sectionName) ->
+            (elements, context, sectionName) ->
+            {
+                if (!GenerationParserExtension.FILE_GENERATION_SECTION_NAME.equals(sectionName))
                 {
-                    if (!GenerationParserExtension.FILE_GENERATION_SECTION_NAME.equals(sectionName))
-                    {
-                        return null;
-                    }
-                    return ListIterate.collect(elements, element ->
-                    {
-                        if (element instanceof FileGenerationSpecification)
-                        {
-                            return renderFileGenerationSpecification((FileGenerationSpecification) element);
-                        }
-                        return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                    }).makeString("\n\n");
-                },
-                (elements, context, sectionName) ->
-                {
-                    if (!GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME.equals(sectionName))
-                    {
-                        return null;
-                    }
-                    return ListIterate.collect(elements, element ->
-                    {
-                        if (element instanceof GenerationSpecification)
-                        {
-                            return renderGenerationSpecification((GenerationSpecification) element);
-                        }
-                        return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                    }).makeString("\n\n");
+                    return null;
                 }
+                return ListIterate.collect(elements, element ->
+                {
+                    if (element instanceof FileGenerationSpecification)
+                    {
+                        return renderFileGenerationSpecification((FileGenerationSpecification) element);
+                    }
+                    return "/* Can't transform element '" + element.getPath() + "' in this section */";
+                }).makeString("\n\n");
+            },
+            (elements, context, sectionName) ->
+            {
+                if (!GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME.equals(sectionName))
+                {
+                    return null;
+                }
+                return ListIterate.collect(elements, element ->
+                {
+                    if (element instanceof GenerationSpecification)
+                    {
+                        return renderGenerationSpecification((GenerationSpecification) element);
+                    }
+                    return "/* Can't transform element '" + element.getPath() + "' in this section */";
+                }).makeString("\n\n");
+            }
         );
     }
 
     @Override
-    public List<Function3<Set<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
         return Lists.mutable.with(
-                (elements, context, composedSections) ->
-                {
-                    List<FileGenerationSpecification> composableElements = ListIterate.selectInstancesOf(FastList.newList(elements), FileGenerationSpecification.class);
-                    return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderFileGenerationSpecification).makeString("###" + GenerationParserExtension.FILE_GENERATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
-                }, (elements, context, composedSections) ->
-                {
-                    List<GenerationSpecification> composableElements = ListIterate.selectInstancesOf(FastList.newList(elements), GenerationSpecification.class);
-                    return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderGenerationSpecification).makeString("###" + GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
-                }
+            (elements, context, composedSections) ->
+            {
+                List<FileGenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, FileGenerationSpecification.class);
+                return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderFileGenerationSpecification).makeString("###" + GenerationParserExtension.FILE_GENERATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
+            }, (elements, context, composedSections) ->
+            {
+                List<GenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, GenerationSpecification.class);
+                return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderGenerationSpecification).makeString("###" + GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
+            }
         );
     }
 
     private static String renderGenerationSpecification(GenerationSpecification generationSpecification)
     {
         return "GenerationSpecification " + PureGrammarComposerUtility.convertPath(generationSpecification.getPath()) +
-                "\n{\n" +
-                (generationSpecification.generationNodes.isEmpty() ? "" :
-                        "  generationNodes: [\n"
-                                + LazyIterate.collect(generationSpecification.generationNodes, HelperGenerationSpecificationGrammarComposer::renderGenerationNode).makeString(",\n") + (generationSpecification.generationNodes.isEmpty() ? "" : "\n") +
-                                "  ];\n"
-                ) +
-                HelperGenerationSpecificationGrammarComposer.renderFileGenerationNode(generationSpecification.fileGenerations) + (generationSpecification.fileGenerations.isEmpty() ? "" : "\n") +
-                "}";
+            "\n{\n" +
+            (generationSpecification.generationNodes.isEmpty() ? "" :
+                "  generationNodes: [\n"
+                    + LazyIterate.collect(generationSpecification.generationNodes, HelperGenerationSpecificationGrammarComposer::renderGenerationNode).makeString(",\n") + (generationSpecification.generationNodes.isEmpty() ? "" : "\n") +
+                    "  ];\n"
+            ) +
+            HelperGenerationSpecificationGrammarComposer.renderFileGenerationNode(generationSpecification.fileGenerations) + (generationSpecification.fileGenerations.isEmpty() ? "" : "\n") +
+            "}";
     }
 
     private static String renderFileGenerationSpecification(FileGenerationSpecification fileGeneration)

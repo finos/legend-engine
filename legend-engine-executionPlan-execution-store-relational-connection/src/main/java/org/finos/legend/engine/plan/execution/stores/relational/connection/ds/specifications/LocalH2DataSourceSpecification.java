@@ -14,61 +14,75 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import com.zaxxer.hikari.HikariDataSource;
+import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
-
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.h2.tools.Server;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.NClob;
-import java.sql.PreparedStatement;
-import java.sql.SQLClientInfoException;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Savepoint;
-import java.sql.Statement;
-import java.sql.Struct;
+import javax.security.auth.Subject;
+import javax.sql.DataSource;
+import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-import javax.sql.DataSource;
 
 public class LocalH2DataSourceSpecification extends DataSourceSpecification
 {
-    private final Server server;
-    private final DataSource dataSource;
+    static int port = DynamicPortGenerator.generatePort();
+    static
+    {
+        try
+        {
+            // We can create only one instance of the server as the databases are anyway shared in the process (VM)
+            // The important part is to have an empty name in 'this.buildDataSource("127.0.0.1", port, "", null)'
+            // It ensure the database creation is 'private' to the connection.
+            AlloyH2Server.startServer(port);
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 
-    public LocalH2DataSourceSpecification(LocalH2DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Server server, RelationalExecutorInfo relationalExecutorInfo)
+    public LocalH2DataSourceSpecification(LocalH2DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
     {
         super(key, databaseManager, authenticationStrategy, new Properties(), relationalExecutorInfo);
-        this.server = server;
-        this.dataSource = this.buildDataSource("127.0.0.1", key.getPort(), key.getDatabaseName(), null);
     }
 
     @Override
     protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
     {
-        return this.dataSource;
+        throw new RuntimeException("Not supported");
     }
 
     @Override
-    public Connection getConnectionUsingProfiles(MutableList<CommonProfile> profiles)
+    protected Connection getConnection(Subject subject, MutableList<CommonProfile> profiles, String principal, Function0<DataSourceWithStatistics> exec)
     {
         try
         {
-            return new WrappedH2Connection(this.dataSource.getConnection(), this.server);
+            HikariDataSource dataSource = this.buildDataSource("127.0.0.1", port, "", null);
+            LocalH2DataSourceSpecificationKey _key = (LocalH2DataSourceSpecificationKey) this.datasourceKey;
+            Connection connection = dataSource.getConnection();
+            if (_key.getTestDataSetupSqls() != null && !_key.getTestDataSetupSqls().isEmpty())
+            {
+                for (String sql : _key.getTestDataSetupSqls())
+                {
+                    try (Statement statement = connection.createStatement())
+                    {
+                        statement.executeUpdate(sql);
+                    }
+                }
+            }
+
+            return new WrappedH2Connection(connection, dataSource);
         }
         catch (SQLException e)
         {
@@ -79,17 +93,12 @@ public class LocalH2DataSourceSpecification extends DataSourceSpecification
     private static class WrappedH2Connection implements Connection
     {
         private Connection conn;
-        private Server server;
+        private HikariDataSource dataSource;
 
-        public WrappedH2Connection(Connection c, Server s)
+        public WrappedH2Connection(Connection connection, HikariDataSource dataSource)
         {
-            this.conn = c;
-            this.server = s;
-        }
-
-        public Server getServer()
-        {
-            return this.server;
+            this.conn = connection;
+            this.dataSource = dataSource;
         }
 
         @Override
@@ -144,7 +153,7 @@ public class LocalH2DataSourceSpecification extends DataSourceSpecification
         public void close() throws SQLException
         {
             this.conn.close();
-            this.server.shutdown();
+            this.dataSource.close();
         }
 
         @Override

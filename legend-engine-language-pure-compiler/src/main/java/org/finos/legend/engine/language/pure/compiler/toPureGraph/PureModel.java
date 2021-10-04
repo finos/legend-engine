@@ -50,6 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -96,12 +97,13 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 public class PureModel implements IPureModel
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
-    private static final MetadataLazy METADATA_LAZY = new MetadataLazy(PureModel.class.getClassLoader());
+    private static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader());
     private final CompiledExecutionSupport executionSupport;
     private final DeploymentMode deploymentMode;
     private final PureModelProcessParameter pureModelProcessParameter;
@@ -206,7 +208,11 @@ public class PureModel implements IPureModel
             pureModelContextDataIndex.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             pureModelContextDataIndex.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             pureModelContextDataIndex.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            pureModelContextDataIndex.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            this.extensions.sortExtraProcessors(pureModelContextDataIndex.stores.keysView()).forEach(p ->
+            {
+                MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store> stores = pureModelContextDataIndex.stores.get(p);
+                stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            });
             pureModelContextDataIndex.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             this.extensions.sortExtraProcessors(pureModelContextDataIndex.otherElementsByProcessor.keysView()).forEach(p ->
             {
@@ -219,9 +225,14 @@ public class PureModel implements IPureModel
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_DOMAIN_BUILT, this.buildDomainStats(pureModelContextData), (double) loadTypesFinished - preValidationFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_DOMAIN_BUILT.toString());
 
+            this.loadOtherElementsPreStores(pureModelContextDataIndex);
+            long loadOtherElementsPreStores = System.currentTimeMillis();
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_PRE_STORES, (double) loadOtherElementsPreStores - loadTypesFinished).toString());
+            scope.span().log(LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_PRE_STORES.toString());
+
             this.loadStores(pureModelContextDataIndex);
             long loadStoresFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_STORES_BUILT, this.buildStoreStats(pureModelContextData, this), (double) loadStoresFinished - loadTypesFinished).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_STORES_BUILT, this.buildStoreStats(pureModelContextData, this), (double) loadOtherElementsPreStores - loadTypesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_STORES_BUILT.toString());
 
             this.loadMappings(pureModelContextDataIndex);
@@ -234,10 +245,10 @@ public class PureModel implements IPureModel
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT, (double) loadConnectionsAndRuntimesFinished - loadMappingsFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT.toString());
 
-            this.loadOtherElements(pureModelContextDataIndex);
-            long loadOtherElementsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT, (double) loadOtherElementsFinished - loadConnectionsAndRuntimesFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT.toString());
+            this.loadOtherElementsPostConnectionsAndRuntimes(pureModelContextDataIndex);
+            long loadOtherElementsPostConnectionsAndRuntimesFinished = System.currentTimeMillis();
+            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES, (double) loadOtherElementsPostConnectionsAndRuntimesFinished - loadConnectionsAndRuntimesFinished).toString());
+            scope.span().log(LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES.toString());
 
             long processingFinished = System.currentTimeMillis();
 
@@ -407,10 +418,14 @@ public class PureModel implements IPureModel
 
     private void loadStores(PureModelContextDataIndex pure)
     {
-        pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
-        pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
-        pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
-        pure.stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFifthPassBuilder(this.getContext(el))));
+        this.extensions.sortExtraProcessors(pure.stores.keysView()).forEach(p ->
+        {
+            MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store> stores = pure.stores.get(p);
+            stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
+            stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
+            stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
+            stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFifthPassBuilder(this.getContext(el))));
+        });
     }
 
     public void loadMappings(PureModelContextDataIndex pure)
@@ -427,9 +442,19 @@ public class PureModel implements IPureModel
         pure.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
     }
 
-    private void loadOtherElements(PureModelContextDataIndex pure)
+    private void loadOtherElementsPreStores(PureModelContextDataIndex pure)
     {
-        this.extensions.sortExtraProcessors(pure.otherElementsByProcessor.keysView()).forEach(p ->
+        loadOtherElements(pure, p -> !p.getPrerequisiteClasses().contains(PackageableConnection.class) &&  !p.getPrerequisiteClasses().contains(PackageableRuntime.class));
+    }
+
+    private void loadOtherElementsPostConnectionsAndRuntimes(PureModelContextDataIndex pure)
+    {
+        loadOtherElements(pure, p -> p.getPrerequisiteClasses().contains(PackageableConnection.class) || p.getPrerequisiteClasses().contains(PackageableRuntime.class));
+    }
+
+    private void loadOtherElements(PureModelContextDataIndex pure, Predicate<Processor> filter)
+    {
+        this.extensions.sortExtraProcessors(pure.otherElementsByProcessor.keysView(), filter).forEach(p ->
         {
             MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pure.otherElementsByProcessor.get(p);
             elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
@@ -514,10 +539,19 @@ public class PureModel implements IPureModel
         {
             return packageableElement;
         }
-        return null;
         // Should eventually consider (but would need to update Pure)
         //packageableElement = getRuntime_safe(fullPath);
         //packageableElement = getConnection_safe(fullPath);
+
+        // For other elements rely on pathToElement registrations to resolve
+        try
+        {
+            return org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(packagePrefix(fullPath), getExecutionSupport());
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
 
 
@@ -1090,6 +1124,9 @@ public class PureModel implements IPureModel
     {
         PureModelContextDataIndex index = new PureModelContextDataIndex();
         MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>,
+                MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store>> stores = Maps.mutable.empty();
+
+        MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>,
                 MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> otherElementsByClass = Maps.mutable.empty();
         pureModelContextData.getElements().forEach(e ->
         {
@@ -1136,13 +1173,14 @@ public class PureModel implements IPureModel
             // TODO eliminate special handling for stores
             else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store)
             {
-                index.stores.add((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store) e);
+                stores.getIfAbsentPut(e.getClass(), Lists.mutable::empty).add((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store) e);
             }
             else
             {
                 otherElementsByClass.getIfAbsentPut(e.getClass(), Lists.mutable::empty).add(e);
             }
         });
+        stores.forEach((cls, elements) -> index.stores.getIfAbsentPut(this.extensions.getExtraProcessorOrThrow(cls), Lists.mutable::empty).addAll(elements));
         otherElementsByClass.forEach((cls, elements) -> index.otherElementsByProcessor.getIfAbsentPut(this.extensions.getExtraProcessorOrThrow(cls), Lists.mutable::empty).addAll(elements));
         return index;
     }
@@ -1159,7 +1197,7 @@ public class PureModel implements IPureModel
         private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime> runtimes = Lists.mutable.empty();
         private final MutableList<Profile> profiles = Lists.mutable.empty();
         private final MutableList<SectionIndex> sectionIndices = Lists.mutable.empty();
-        private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store> stores = Lists.mutable.empty();
+        private final MutableMap<Processor<?>, MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store>> stores = Maps.mutable.empty();
         private final MutableMap<Processor<?>, MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> otherElementsByProcessor = Maps.mutable.empty();
     }
 }

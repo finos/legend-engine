@@ -39,6 +39,7 @@ public abstract class AuthenticationStrategy
     protected String password;
 
     public static String AUTHENTICATION_STRATEGY_PROFILE_BY_POOL = "AUTHENTICATION_STRATEGY_PROFILE_BY_POOL";
+    public static String AUTHENTICATION_STRATEGY_KEY = "AUTHENTICATION_STRATEGY_KEY";
     private static final ConcurrentMutableMap<String, MutableList<CommonProfile>> profilesByPools = ConcurrentHashMap.newMap();
 
     protected static MutableList<CommonProfile> getProfiles(String poolId)
@@ -68,7 +69,7 @@ public abstract class AuthenticationStrategy
 
     public String getAlternativePrincipal(MutableList<CommonProfile> profiles)
     {
-        return null;
+        return "_UNKNOWN_";
     }
 
     public abstract String getPassword();

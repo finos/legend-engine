@@ -57,6 +57,66 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
+    public void testFaultyAnnotations()
+    {
+        // Faulty stereotype
+        test("###Mapping\n" +
+            "Mapping anything::somethingelse ()\n" +
+            "###Service\n" +
+            "Service <<NoProfile.NoKey>> anything::class\n" +
+            "{\n" +
+            "  pattern: 'url/myUrl/';\n" +
+            "  owners: ['test'];\n" +
+            "  documentation: 'test';\n" +
+            "  autoActivateUpdates: true;\n" +
+            "  execution: Single\n" +
+            "  {\n" +
+            "    query: '';\n" +
+            "    mapping: anything::somethingelse;\n" +
+            "    runtime:\n" +
+            "    #{\n" +
+            "     connections: [];\n" +
+            "    }#;\n" +
+            "  }\n" +
+            "  test: Single\n" +
+            "  {\n" +
+            "    data: 'moreThanData';\n" +
+            "    asserts:\n" +
+            "    [\n" +
+            "    ];\n" +
+            "  }\n" +
+            "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+        // Faulty tagged value
+
+        test("###Mapping\n" +
+            "Mapping anything::somethingelse ()\n" +
+            "###Service\n" +
+            "Service { NoProfile.NoKey = 'something' } anything::class\n" +
+            "{\n" +
+            "  pattern: 'url/myUrl/';\n" +
+            "  owners: ['test'];\n" +
+            "  documentation: 'test';\n" +
+            "  autoActivateUpdates: true;\n" +
+            "  execution: Single\n" +
+            "  {\n" +
+            "    query: '';\n" +
+            "    mapping: anything::somethingelse;\n" +
+            "    runtime:\n" +
+            "    #{\n" +
+            "     connections: [];\n" +
+            "    }#;\n" +
+            "  }\n" +
+            "  test: Single\n" +
+            "  {\n" +
+            "    data: 'moreThanData';\n" +
+            "    asserts:\n" +
+            "    [\n" +
+            "    ];\n" +
+            "  }\n" +
+            "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+    }
+
+    @Test
     public void testServiceWithSingleExecution()
     {
         String resource = "Class test::class\n" +

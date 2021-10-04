@@ -36,6 +36,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
@@ -479,10 +480,16 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_",
                     "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_"
             ));
-            registerElementForPathToElement.value("meta::protocols::pure::vX_X_X::extension", Lists.mutable.with(
-                    "getRelationalExtension_String_1__SerializerExtension_1_"
-            ));
-        });
+
+            PureClientVersions.versions.forEach(v -> {
+                if (PureClientVersions.versionAGreaterThanOrEqualsVersionB(v, "v1_20_0"))
+                {
+                    registerElementForPathToElement.value("meta::protocols::pure::"+v+"::extension", Lists.mutable.with(
+                            "getRelationalExtension_String_1__SerializerExtension_1_"
+                    ));
+                }
+            });
+         });
     }
 
     @Override

@@ -1,0 +1,74 @@
+{
+  "isolatedLambdas": {
+    "lambdas": {}
+  },
+  "modelDataContext": {
+    "_type": "data",
+    "elements": [
+      {
+        "_type": "function",
+        "body": [
+          {
+            "_type": "dateTime",
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "sourceInformation": {
+              "endColumn": 21,
+              "endLine": 3,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 3
+            },
+            "values": [
+              "2020-01-01T12:01"
+            ]
+          }
+        ],
+        "name": "getDateTime",
+        "package": "my::example",
+        "parameters": [],
+        "postConstraints": [],
+        "preConstraints": [],
+        "returnMultiplicity": {
+          "lowerBound": 1,
+          "upperBound": 1
+        },
+        "returnType": "DateTime",
+        "sourceInformation": {
+          "endColumn": 1,
+          "endLine": 4,
+          "sourceId": "",
+          "startColumn": 1,
+          "startLine": 1
+        },
+        "stereotypes": [],
+        "taggedValues": []
+      },
+      {
+        "_type": "sectionIndex",
+        "name": "SectionIndex",
+        "package": "__internal__",
+        "sections": [
+          {
+            "_type": "importAware",
+            "elements": [
+              "my::example::getDateTime"
+            ],
+            "imports": [],
+            "parserName": "Pure",
+            "sourceInformation": {
+              "endColumn": 2,
+              "endLine": 6,
+              "sourceId": "",
+              "startColumn": 1,
+              "startLine": 1
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "renderStyle": "STANDARD"
+}

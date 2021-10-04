@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.fixprotocol.org/FIXML-5-0-SP2" targetNamespace="http://www.fixprotocol.org/FIXML-5-0-SP2" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xs:include schemaLocation="fixml-components-impl-5-0-SP2_.xsd"/>
+  <xs:group name="SecurityDefinitionElements">
+    <xs:sequence>
+      <xs:element name="Instrmt" type="Instrument_Block_t" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="InstrmtExt" type="Instrument_Extension_Block_t" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="Undly" type="UnderlyingInstrument_Block_t" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="Leg" type="InstrmtLegGrp_Block_t" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="MktSegGrp" type="MarketSegmentGrp_Block_t" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="SecurityDefinitionAttributes">
+    <xs:attribute name="TxnTm" type="TransactTime_t" use="optional"/>
+    <xs:attribute name="PriSetPx" type="PriorSettlPrice_t" use="optional"/>
+  </xs:attributeGroup>
+  <xs:complexType name="SecurityDefinition_message_t" final="#all">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+                The Security Definition message is used for the following:
+1. Accept the security defined in a Security Definition message.
+2. Accept the security defined in a Security Definition message with changes to the definition and/or identity of the security.
+3. Reject the security requested in a Security Definition message.
+4. Respond to a request for securities within a specified market segment.
+5. Convey comprehensive security definition for all market segments that the security participates in.
+6. Convey the security&amp;apos;s trading rules that differ from default rules for the market segment.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityDefinition" ComponentType="Message"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="Abstract_message_t">
+        <xs:sequence>
+          <xs:group ref="SecurityDefinitionElements"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="SecurityDefinitionAttributes"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="SecDef" type="SecurityDefinition_message_t" substitutionGroup="Message" final="#all"/>
+  <xs:group name="SecurityStatusElements">
+    <xs:sequence>
+      <xs:element name="ClrPxPrm" type="ClearingPriceParameters_Block_t" minOccurs="2" maxOccurs="2"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="SecurityStatusAttributes">
+    <xs:attribute name="MktSegID" type="MarketSegmentID_t" use="required"/>
+    <xs:attribute name="ID" type="SecurityID_t" use="required"/>
+    <xs:attribute name="Src" type="SecurityIDSource_t" use="required"/>
+    <xs:attribute name="SecTyp" type="SecurityType_t" use="required"/>
+    <xs:attribute name="PriSetPx" type="PriorSettlPrice_t" use="optional"/>
+    <xs:attribute name="SetPx" type="SettlPrice_t" use="optional"/>
+  </xs:attributeGroup>
+  <xs:complexType name="SecurityStatus_message_t" final="#all">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityStatus" ComponentType="Message"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="Abstract_message_t">
+        <xs:sequence>
+          <xs:group ref="SecurityStatusElements"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="SecurityStatusAttributes"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="SecStat" type="SecurityStatus_message_t" substitutionGroup="Message" final="#all"/>
+  <xs:group name="SecurityDefinitionUpdateReportElements">
+    <xs:sequence>
+      <xs:element name="Instrmt" type="Instrument_Block_t" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="InstrmtExt" type="Instrument_Extension_Block_t" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="Leg" type="InstrmtLegGrp_Block_t" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="MktSegGrp" type="MarketSegmentGrp_Block_t" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="SecurityDefinitionUpdateReportAttributes">
+    <xs:attribute name="UpdActn" type="SecurityUpdateAction_t" use="optional"/>
+    <xs:attribute name="TxnTm" type="TransactTime_t" use="optional"/>
+    <xs:attribute name="PriSetPx" type="PriorSettlPrice_t" use="optional"/>
+  </xs:attributeGroup>
+  <xs:complexType name="SecurityDefinitionUpdateReport_message_t" final="#all">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+                This message is used for reporting updates to a Product Security Masterfile. Updates could be the result of corporate actions or other business events. Updates may include additions, modifications or deletions.
+
+            </xs:documentation>
+      <xs:appinfo xmlns:x="http://www.fixprotocol.org/fixml/metadata.xsd">
+        <xs:Xref Protocol="FIX" name="SecurityDefinitionUpdateReport" ComponentType="Message"/>
+        <xs:Xref Protocol="ISO_15022_XML"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="Abstract_message_t">
+        <xs:sequence>
+          <xs:group ref="SecurityDefinitionUpdateReportElements"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="SecurityDefinitionUpdateReportAttributes"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="SecDefUpd" type="SecurityDefinitionUpdateReport_message_t" substitutionGroup="Message" final="#all"/>
+</xs:schema>

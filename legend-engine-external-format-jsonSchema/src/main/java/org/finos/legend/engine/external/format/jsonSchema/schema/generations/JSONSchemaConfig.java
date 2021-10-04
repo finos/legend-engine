@@ -69,12 +69,14 @@ public class JSONSchemaConfig extends GenerationConfiguration
                 case "meta::json::schema::generation::JSONSchemaSpecification.OPEN_API_V3_0_3":
                 case "meta::json::schema::generation::JSONSchemaSpecification.OPEN_API_V3_0_3_YAML":
                 case "meta::json::schema::generation::JSONSchemaSpecification.JSON_SCHEMA_DRAFT_07":
+                case "meta::json::schema::generation::JSONSchemaSpecification.OPEN_API_V3_0_3_YAML_PLAIN":
 
                     generationConfiguration._schemaSpecification(pureModel.getEnumValue("meta::json::schema::generation::JSONSchemaSpecification", schemaSpecification.split("[.]")[1]));
                     break;
                 case "OPEN_API_V3_0_3":
                 case "OPEN_API_V3_0_3_YAML":
                 case "JSON_SCHEMA_DRAFT_07":
+                case "OPEN_API_V3_0_3_YAML_PLAIN":
                     generationConfiguration._schemaSpecification(pureModel.getEnumValue("meta::json::schema::generation::JSONSchemaSpecification", schemaSpecification));
                     break;
             }

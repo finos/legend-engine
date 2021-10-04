@@ -554,6 +554,23 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     }
 
     @Test
+    public void testAssociationRelationalMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  test::SomeAssociationMapping: Relational\n" +
+                "  {\n" +
+                "    AssociationMapping\n" +
+                "    (\n" +
+                "      prop1[prop2_source,prop1_source]: [model::Test]@RandomJoin,\n" +
+                "      prop2[prop1_source,prop2_source]: [model::Test]@RandomJoin\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
     public void testRelationalPropertyMappingWithFunctionOperationAndDatabasePointer()
     {
         String unformatted = "###Mapping\n" +

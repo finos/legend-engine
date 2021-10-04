@@ -80,8 +80,8 @@ public class DomainParseTreeWalker
 
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext parserContext;
+    private final boolean allowPropertyBracketExpression;
     private ImportAwareCodeSection section;
-    private String flatDataRecordTypeSource;
 
     /**
      * This constructor is used for standard M3Walker when we see ###Pure.
@@ -91,17 +91,15 @@ public class DomainParseTreeWalker
         this.walkerSourceInformation = walkerSourceInformation;
         this.parserContext = parserContext;
         this.section = section;
+        this.allowPropertyBracketExpression = false;
     }
 
-    /**
-     * This constructor is used when processing flat data.
-     * NOTE: not sure if maintaining a flat data record type source like this is a good idea
-     */
-    public DomainParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, String flatDataRecordTypeSource)
+    // TODO PropertyBracketExpression is deprecated.  Remove parameter once all use has been addressed
+    public DomainParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, boolean allowPropertyBracketExpression)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.parserContext = parserContext;
-        this.flatDataRecordTypeSource = flatDataRecordTypeSource;
+        this.allowPropertyBracketExpression = allowPropertyBracketExpression;
     }
 
     public void visitDefinition(DomainParserGrammar.DefinitionContext ctx, Consumer<PackageableElement> elementConsumer)
@@ -669,18 +667,14 @@ public class DomainParseTreeWalker
                 {
                     result = propertyExpression(pfCtx.propertyExpression(), result, typeParametersNames, lambdaContext, space, addLines);
                 }
+                // TODO PropertyBracketExpression is deprecated.  Remove else if clause once all use has been addressed
                 else if (pfCtx.propertyBracketExpression() != null)
                 {
-                    String columnName = pfCtx.propertyBracketExpression().INTEGER() != null ? pfCtx.propertyBracketExpression().INTEGER().getText() : PureGrammarParserUtility.fromGrammarString(pfCtx.propertyBracketExpression().STRING().getText(), true);
-                    if (this.flatDataRecordTypeSource == null)
+                    if (!allowPropertyBracketExpression)
                     {
                         throw new EngineException("Bracket operation is not supported", walkerSourceInformation.getSourceInformation(pfCtx.propertyBracketExpression()), EngineErrorType.PARSER);
                     }
                     String getPropertyName = "oneString";
-                    if (this.parserContext.flatDataRecordTypeFieldFuncMap.get(this.flatDataRecordTypeSource) != null && this.parserContext.flatDataRecordTypeFieldFuncMap.get(this.flatDataRecordTypeSource).get(columnName) != null)
-                    {
-                        getPropertyName = this.parserContext.flatDataRecordTypeFieldFuncMap.get(this.flatDataRecordTypeSource).get(columnName);
-                    }
                     parameters = new ArrayList<>();
                     AppliedProperty appliedProperty = new AppliedProperty();
                     appliedProperty.property = getPropertyName;
@@ -1062,7 +1056,7 @@ public class DomainParseTreeWalker
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + terminalNode.getSymbol().getCharPositionInLine() + terminalNode.getText().length();
-        ParseTreeWalkerSourceInformation graphFetchWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation graphFetchWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         ParserErrorListener errorListener = new ParserErrorListener(graphFetchWalkerSourceInformation);
         NavigationLexerGrammar navigationLexer = new NavigationLexerGrammar(CharStreams.fromString(graphFetchString));
         navigationLexer.removeErrorListeners();
@@ -1093,7 +1087,7 @@ public class DomainParseTreeWalker
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.ISLAND_OPEN().getSymbol().getCharPositionInLine() + ctx.ISLAND_OPEN().getText().length();
-        ParseTreeWalkerSourceInformation graphFetchWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation graphFetchWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         ParserErrorListener errorListener = new ParserErrorListener(graphFetchWalkerSourceInformation);
         GraphFetchTreeLexerGrammar graphLexer = new GraphFetchTreeLexerGrammar(CharStreams.fromString(graphFetchString));
         graphLexer.removeErrorListeners();
@@ -1253,7 +1247,8 @@ public class DomainParseTreeWalker
         }
         else if (ctx.allVersionsFunction() != null)
         {
-            throw new EngineException(ctx.allVersionsFunction().getText() + " is not supported", walkerSourceInformation.getSourceInformation(ctx.allVersionsFunction()), EngineErrorType.PARSER);
+            appliedFunction.function = "getAllVersions";
+            return appliedFunction;
         }
         else if (ctx.allVersionsInRangeFunction() != null)
         {
@@ -1262,7 +1257,23 @@ public class DomainParseTreeWalker
         else if (ctx.allFunctionWithMilestoning() != null)
         {
             appliedFunction.function = "getAll";
-            appliedFunction.parameters.addAll(ListIterate.collect(ctx.allFunctionWithMilestoning().buildMilestoningVariableExpression(), b -> b.variable() != null ? variable(b.variable()) : new CLatestDate()));
+            appliedFunction.parameters.addAll(ListIterate.collect(ctx.allFunctionWithMilestoning().buildMilestoningVariableExpression(), b -> {
+                if(b.variable() != null)
+                {
+                    return variable(b.variable());
+                }
+                else if(b.DATE() != null)
+                {
+                    return new DateParseTreeWalker(b.DATE(), this.walkerSourceInformation).visitDefinition();
+                }
+                else
+                {
+                    CLatestDate latestDate = new CLatestDate();
+                    latestDate.sourceInformation = walkerSourceInformation.getSourceInformation(b);
+                    latestDate.multiplicity = getMultiplicityOneOne();
+                    return latestDate;
+                }
+            }));
             return appliedFunction;
         }
         else

@@ -29,6 +29,7 @@ import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.result.graphFetch.StoreStreamReadingResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
@@ -53,6 +54,7 @@ import org.pac4j.core.profile.CommonProfile;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Spliterator;
@@ -112,8 +114,21 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
             IInMemoryRootGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
 
             childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.pm, this.executionState));
-            StoreStreamReadingResult<?> storeStreamReadingResult = (StoreStreamReadingResult) childResult;
-            StoreStreamReadingObjectsIterator<?> sourceObjectsIterator = storeStreamReadingResult.getObjectsIterator();
+            Iterator<?> sourceObjectsIterator;
+            if (childResult instanceof StoreStreamReadingResult)
+            {
+                StoreStreamReadingResult<?> storeStreamReadingResult = (StoreStreamReadingResult) childResult;
+                sourceObjectsIterator = storeStreamReadingResult.getObjectsIterator();
+            }
+            else if (childResult instanceof StreamingObjectResult)
+            {
+                StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult) childResult;
+                sourceObjectsIterator = streamingObjectResult.getObjectStream().iterator();
+            }
+            else
+            {
+                throw new IllegalStateException("Unsupported result type: " + childResult.getClass().getSimpleName());
+            }
 
             AtomicLong batchIndex = new AtomicLong(0L);
 

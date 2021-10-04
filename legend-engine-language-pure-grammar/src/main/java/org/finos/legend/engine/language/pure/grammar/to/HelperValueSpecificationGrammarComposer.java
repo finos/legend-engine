@@ -15,9 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Maps;
-import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -28,6 +26,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PathElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PropertyPathElement;
 
@@ -57,31 +65,65 @@ public class HelperValueSpecificationGrammarComposer
         SPECIAL_INFIX.put("or", "||");
     }
 
-    public static final MutableSet<String> FN_PREFIX = Sets.mutable.with("if", "col", "agg");
+    static boolean isPrimitiveValue(ValueSpecification valueSpecification) {
+        return (valueSpecification instanceof CString ||
+            valueSpecification instanceof CBoolean ||
+            valueSpecification instanceof CInteger ||
+            valueSpecification instanceof CFloat ||
+            valueSpecification instanceof CDecimal ||
+            valueSpecification instanceof CDateTime ||
+            valueSpecification instanceof CStrictDate ||
+            valueSpecification instanceof CStrictTime ||
+            valueSpecification instanceof CLatestDate
+        );
+    }
 
-    public static final MutableSet<String> NEXT_LINE_FN = Sets.mutable.with("filter", "project", "and", "or", "groupBy");
-
-    public static String renderFunction(AppliedFunction appliedFunction, boolean toCreateNewLine, DEPRECATED_PureGrammarComposerCore shiftedTransformer, DEPRECATED_PureGrammarComposerCore topParameterTransfomer, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderFunction(AppliedFunction appliedFunction, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<ValueSpecification> parameters = appliedFunction.parameters;
-        String function = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
-        if (!parameters.isEmpty())
+        String functionName = LazyIterate.collect(FastList.newListWith(appliedFunction.function.split("::")), PureGrammarComposerUtility::convertIdentifier).makeString("::");
+        if (parameters.isEmpty())
         {
-            ValueSpecification firstParameter = parameters.get(0);
-            String top = firstParameter.accept(topParameterTransfomer);
-            if (function.equals("not") || firstParameter instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstParameter).function) != null)
-            {
-                return function + "(" + top + ")";
-            }
-            return top + (toCreateNewLine ? shiftedTransformer.returnChar() + shiftedTransformer.getIndentationString() : "") + (shiftedTransformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (shiftedTransformer.isRenderingHTML() ? "</span>" : "")
-                    + renderFunctionName(function, transformer)
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 1) : "") + "("
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3) : "")
-                    + ListIterate.collect(parameters.subList(1, parameters.size()), p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(shiftedTransformer).withIndentation(3).build()))
-                                 .makeString(", " + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 3) : ""))
-                    + (toCreateNewLine ? shiftedTransformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(shiftedTransformer, 1) : "") + ")";
+            return renderFunctionName(functionName, transformer) + "()";
         }
-        return renderFunctionName(function, transformer) + "()";
+        ValueSpecification firstArgument = parameters.get(0);
+        List<ValueSpecification> otherArguments = parameters.subList(1, parameters.size());
+
+        // This is to accommodate for cases where the first parameter is a lambda, such as agg(), col(),
+        // it would be wrong to use `->` syntax, e.g. `$x|x.prop1->col()`
+        if (firstArgument instanceof Lambda)
+        {
+            return renderFunctionName(functionName, transformer) + "("
+                + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : "")
+                + ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(2)).build()))
+                .makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : " "))
+                + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") + ")";
+        }
+        if (otherArguments.size() == 0)
+        {
+            if (firstArgument instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null)
+            {
+                return functionName + "(" + firstArgument.accept(transformer) + ")";
+            }
+            else if (isPrimitiveValue(firstArgument)) {
+                return renderFunctionName(functionName, transformer) + "(" + firstArgument.accept(transformer) + ")";
+            }
+            return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
+                + renderFunctionName(functionName, transformer) + "()";
+        }
+        if (otherArguments.size() == 1 && isPrimitiveValue(otherArguments.get(0)))
+        {
+            return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
+                + renderFunctionName(functionName, transformer) + "("
+                + otherArguments.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build())
+                + ")";
+        }
+        return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
+            + renderFunctionName(functionName, transformer) + "("
+            + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") +
+            ListIterate.collect(otherArguments, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build()))
+                .makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " "))
+            + (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "") + ")";
     }
 
     public static String renderFunctionName(String name, DEPRECATED_PureGrammarComposerCore transformer)
@@ -91,14 +133,14 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String possiblyAddParenthesis(String function, ValueSpecification param, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        if (function.equals("and") || function.equals("or"))
+        if ("and".equals(function) || "or".equals(function))
         {
             if (param instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) param).function) != null)
             {
                 return "(" + param.accept(transformer) + ")";
             }
         }
-        else if ("divide".equals(function) || "times".equals(function) || "plus".equals(function) || "minus".equals(function))
+        else if ("plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function))
         {
             if (isLowerPrecedenceFunction(param, function))
             {
@@ -138,9 +180,19 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String renderCollection(List<?> values, org.eclipse.collections.api.block.function.Function<Object, String> func, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return "[" + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, 2) : "")
-                + LazyIterate.collect(values, func).makeString(", " + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, 2) : ""))
-                + (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "") + "]";
+        if (values.isEmpty()) {
+            return "[]";
+        }
+        // If there is one entry and the entry is either a primitive value or a variable, we will not create new line
+        boolean toCreateNewLine = transformer.isRenderingPretty() &&
+            (values.size() != 1 ||
+                !(values.get(0) instanceof ValueSpecification) ||
+                (!isPrimitiveValue((ValueSpecification) values.get(0)) && !(values.get(0) instanceof Variable)));
+        return "[" +
+            (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") +
+            LazyIterate.collect(values, func).makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " ")) +
+            (toCreateNewLine ? transformer.returnChar() + transformer.getIndentationString() : "") +
+            "]";
     }
 
     public static String renderDecimal(BigDecimal b, DEPRECATED_PureGrammarComposerCore transformer)
@@ -184,17 +236,18 @@ public class HelperValueSpecificationGrammarComposer
     public static String renderDate(String s, DEPRECATED_PureGrammarComposerCore transformer)
     {
         String dateString;
+        String updatedS = generateValidDateValueContainingPercent(s);
         if (transformer.isRenderingHTML())
         {
-            dateString = "<span class='pureGrammar-datetime'>" + s + "</span>";
+            dateString = "<span class='pureGrammar-datetime'>" + updatedS + "</span>";
         }
         else if (transformer.isValueSpecificationExternalParameter())
         {
-            dateString = s.replaceFirst(Character.toString(DateParseTreeWalker.DATE_PREFIX), "").replaceAll(".0000", "");
+            dateString = updatedS.replaceFirst(Character.toString(DateParseTreeWalker.DATE_PREFIX), "").replaceAll(".0000", "");
         }
         else
         {
-            dateString = s;
+            dateString = updatedS;
         }
         return dateString;
     }
@@ -233,9 +286,9 @@ public class HelperValueSpecificationGrammarComposer
 
     private static String getFunctionSignature(Function function)
     {
-        return "_" + LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
+        String functionSignature  = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
-
+        return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;
     }
 
     private static String getParameterSignature(Variable p)
@@ -263,5 +316,10 @@ public class HelperValueSpecificationGrammarComposer
             return "MANY";
         }
         return "$" + multiplicity.lowerBound + "_" + (multiplicity.getUpperBoundInt() == Integer.MAX_VALUE ? "MANY" : multiplicity.getUpperBoundInt()) + "$";
+    }
+
+    public static String generateValidDateValueContainingPercent(String date)
+    {
+        return date.indexOf(DateParseTreeWalker.DATE_PREFIX) != -1 ? date : DateParseTreeWalker.DATE_PREFIX + date;
     }
 }

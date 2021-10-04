@@ -15,22 +15,26 @@
 package org.finos.legend.engine.plan.generation.extension;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
+import org.finos.legend.engine.plan.generation.transformers.VersionPlanTransformer;
 import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 
 public class LegendPlanGeneratorExtension implements PlanGeneratorExtension {
 
     @Override
-    public MutableList<PlanTransformer> getExtraPlanTransformers() {
-        return LegendPlanTransformers.transformers;
+    public MutableList<PlanTransformer> getExtraPlanTransformers()
+    {
+        return Lists.mutable.withAll(LegendPlanTransformers.transformers).with(new VersionPlanTransformer());
     }
 
     @Override
-    public RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> getExtraRouterExtensions(PureModel pureModel) {
+    public RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> getExtraRouterExtensions(PureModel pureModel)
+    {
         return core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport());
     }
 
