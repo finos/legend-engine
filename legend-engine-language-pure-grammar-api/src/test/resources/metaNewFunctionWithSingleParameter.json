@@ -1,0 +1,259 @@
+{
+  "origin": {
+    "sdlcInfo": {
+      "baseVersion": "-1",
+      "_type": "pure",
+      "version": "none",
+      "packageableElementPointers": [
+        {
+          "path": "modelA",
+          "type": "PACKAGE"
+        }
+      ]
+    },
+    "_type": "pointer",
+    "serializer": {
+      "name": "pure",
+      "version": "vX_X_X"
+    }
+  },
+  "elements": [
+    {
+      "superTypes": [
+        "meta::pure::metamodel::type::Any"
+      ],
+      "package": "modelA",
+      "_type": "class",
+      "name": "Firm",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "superTypes": [
+        "meta::pure::metamodel::type::Any"
+      ],
+      "package": "modelA",
+      "_type": "class",
+      "name": "Person",
+      "constraints": [
+        {
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "fControl": "isNotEmpty_Any_MANY__Boolean_1_",
+                "function": "isNotEmpty",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                    "function": "filter",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "multiplicity": {
+                          "upperBound": 2,
+                          "lowerBound": 2
+                        },
+                        "values": [
+                          {
+                            "fControl": "new_Class_1__String_1__KeyExpression_MANY__T_1_",
+                            "function": "new",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "fullPath": "modelA::Firm",
+                                "_type": "packageableElementPtr"
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  ""
+                                ],
+                                "_type": "string"
+                              },
+                              {
+                                "add": false,
+                                "expression": {
+                                  "multiplicity": {
+                                    "upperBound": 1,
+                                    "lowerBound": 1
+                                  },
+                                  "values": [
+                                    "Goldman Sachs"
+                                  ],
+                                  "_type": "string"
+                                },
+                                "_type": "keyExpression",
+                                "key": {
+                                  "multiplicity": {
+                                    "upperBound": 1,
+                                    "lowerBound": 1
+                                  },
+                                  "values": [
+                                    "name"
+                                  ],
+                                  "_type": "string"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "fControl": "new_Class_1__String_1__KeyExpression_MANY__T_1_",
+                            "function": "new",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "fullPath": "modelA::Firm",
+                                "_type": "packageableElementPtr"
+                              },
+                              {
+                                "multiplicity": {
+                                  "upperBound": 1,
+                                  "lowerBound": 1
+                                },
+                                "values": [
+                                  ""
+                                ],
+                                "_type": "string"
+                              },
+                              {
+                                "add": false,
+                                "expression": {
+                                  "multiplicity": {
+                                    "upperBound": 1,
+                                    "lowerBound": 1
+                                  },
+                                  "values": [
+                                    "Google"
+                                  ],
+                                  "_type": "string"
+                                },
+                                "_type": "keyExpression",
+                                "key": {
+                                  "multiplicity": {
+                                    "upperBound": 1,
+                                    "lowerBound": 1
+                                  },
+                                  "values": [
+                                    "name"
+                                  ],
+                                  "_type": "string"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "_type": "collection"
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                            "function": "equal",
+                            "_type": "func",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "property": "name",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "t"
+                                  }
+                                ]
+                              },
+                              {
+                                "_type": "property",
+                                "property": "firmName",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "this"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "t"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "_type": "var",
+                "name": "this"
+              }
+            ]
+          },
+          "name": "0"
+        }
+      ],
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "firmName",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "package": "modelA",
+      "_type": "association",
+      "name": "Person_Firm",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "employee",
+          "type": "modelA::Person"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "employer",
+          "type": "modelA::Firm"
+        }
+      ]
+    }
+  ],
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}
