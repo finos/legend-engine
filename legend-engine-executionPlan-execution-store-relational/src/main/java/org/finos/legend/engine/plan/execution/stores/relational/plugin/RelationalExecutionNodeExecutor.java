@@ -40,6 +40,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalResult;
@@ -1174,16 +1175,24 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                             int setIndex = isUnion ? rootResultSet.getInt(1): 0;
                             Object cachedObject = RelationalExecutionNodeExecutor.this.checkAndReturnCachedObject(cachingEnabledForNode, setIndex, multiSetCache);
                             boolean shouldDeepFetchOnThisInstance = cachedObject == null;
-
+                            Object object;
                             if (shouldDeepFetchOnThisInstance)
                             {
                                 IGraphInstance<? extends IReferencedObject> wrappedObject = nodeSpecifics.nextGraphInstance();
                                 instancesToDeepFetchAndCache.add(Tuples.pair(wrappedObject, multiSetCache.setCaches.get(setIndex)));
-                                resultObjects.add(wrappedObject.getValue());
+                                object = wrappedObject.getValue();
                             }
                             else
                             {
-                                resultObjects.add(cachedObject);
+                                object = cachedObject;
+                            }
+                            if (node.checked != null && node.checked)
+                            {
+                                resultObjects.add(BasicChecked.newChecked(object, null));
+                            }
+                            else
+                            {
+                                resultObjects.add(object);
                             }
 
                             objectCount += 1;
