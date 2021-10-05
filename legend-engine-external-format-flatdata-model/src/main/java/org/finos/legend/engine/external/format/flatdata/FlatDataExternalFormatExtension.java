@@ -128,7 +128,7 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
     @Override
     public List<String> getRegisterablePackageableElementNames()
     {
-        List<String> versions = Arrays.asList("vX_X_X");
+        List<String> versions = Arrays.asList("vX_X_X", "v1_21_0");
         return ListIterate.collect(versions, v -> "meta::protocols::pure::" + v + "::external::format::flatdata::serializerExtension_String_1__SerializerExtension_1_");
     }
 

@@ -102,7 +102,7 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     @Override
     public List<String> getRegisterablePackageableElementNames()
     {
-        List<String> versions = Arrays.asList("vX_X_X");
+        List<String> versions = Arrays.asList("vX_X_X", "v1_21_0");
         return ListIterate.collect(versions, v -> "meta::protocols::pure::"  + v + "::external::format::xml::serializerExtension_String_1__SerializerExtension_1_");
     }
 }
