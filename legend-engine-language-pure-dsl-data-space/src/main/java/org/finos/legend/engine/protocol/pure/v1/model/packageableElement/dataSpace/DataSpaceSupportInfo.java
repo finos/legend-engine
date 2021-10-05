@@ -1,9 +1,12 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public class DataSpaceSupportInfo
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = DataSpaceSupportEmail.class, name = "email"),
+})
+public abstract class DataSpaceSupportInfo
 {
-    public String description;
-    public List<String> contacts;
 }

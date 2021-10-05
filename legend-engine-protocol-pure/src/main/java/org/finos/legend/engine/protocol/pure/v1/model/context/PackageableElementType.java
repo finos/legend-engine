@@ -22,6 +22,7 @@ public enum PackageableElementType
     ASSOCIATION,
     ENUMERATION,
     STORE,
+    RUNTIME,
     MAPPING,
     SERVICE,
     FLATTEN,

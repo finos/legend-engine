@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -35,10 +36,14 @@ public class DataSpace extends PackageableElement
     public String defaultExecutionContext;
 
     public String description;
-    public List<String> featuredDiagrams;
+    public List<PackageableElementPointer> featuredDiagrams;
     public DataSpaceSupportInfo supportInfo;
 
-//    public DataSpaceEntitlement entitlement;
+    // public DataSpaceEntitlement entitlement;
+
+    // Test data is a good way to help users understand data better
+    // and could do some trial with the data without any authentication
+    // public List<String> testData
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

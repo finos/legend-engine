@@ -13,21 +13,31 @@
         {
           "name": "INT",
           "description": "some description 1",
-          "mapping": "test::model::TestMapping",
-          "defaultRuntime": "test::model::TestRuntime"
+          "mapping": {
+            "type": "MAPPING",
+            "path": "test::model::TestMapping"
+          },
+          "defaultRuntime": {
+            "type": "RUNTIME",
+            "path": "test::model::TestRuntime"
+          }
         }
       ],
       "defaultExecutionContext": "INT",
       "description": "some description 2",
       "featuredDiagrams": [
-        "test::model::TestDiagram1",
-        "test::model::TestDiagram2"
+        {
+          "type": "DIAGRAM",
+          "path": "test::model::TestDiagram1"
+        },
+        {
+          "type": "DIAGRAM",
+          "path": "test::model::TestDiagram2"
+        }
       ],
       "supportInfo": {
-        "description": "some description 3",
-        "contacts": [
-          "testEmail@test.org"
-        ]
+        "_type": "email",
+        "address": "testEmail@test.org"
       }
     }
   ]

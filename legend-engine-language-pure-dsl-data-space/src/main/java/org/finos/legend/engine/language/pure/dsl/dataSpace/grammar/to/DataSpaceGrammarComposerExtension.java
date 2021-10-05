@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.dsl.dataSpace.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.dataSpace.grammar.from.DataSpaceParserExtension;
@@ -27,6 +26,7 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
 
 import java.util.List;
@@ -68,10 +68,16 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
 
     private static String renderDataSpaceSupportInfo(DataSpaceSupportInfo dataSpaceSupportInfo)
     {
-        return getTabString() + "{\n" +
-            (dataSpaceSupportInfo.description != null ? (getTabString(2) + "description: " + convertString(dataSpaceSupportInfo.description, true) + ";\n") : "") +
-            (dataSpaceSupportInfo.contacts != null ? (getTabString(2) + "contacts:" + (dataSpaceSupportInfo.contacts.isEmpty() ? " []" : "\n" + getTabString(2) + "[\n" + getTabString(3) + ListIterate.collect(dataSpaceSupportInfo.contacts, contact -> convertString(contact, true)).makeString(",\n" + getTabString(3)) + "\n" + getTabString(2) + "]") + ";\n") : "") +
-            getTabString() + "}";
+        if (dataSpaceSupportInfo instanceof DataSpaceSupportEmail)
+        {
+            return "Email {\n" +
+                getTabString(2) + "address: " + convertString(((DataSpaceSupportEmail) dataSpaceSupportInfo).address, true) + ";\n" +
+                getTabString() + "}";
+        }
+        else
+        {
+            return getTabString() + "/* Unsupported data space support info type */";
+        }
     }
 
     private static String renderDataSpaceExecutionContext(DataSpaceExecutionContext executionContext)
@@ -79,8 +85,8 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
         return getTabString(2) + "{\n" +
             (getTabString(3) + "name: " + convertString(executionContext.name, true) + ";\n") +
             (executionContext.description != null ? (getTabString(3) + "description: " + convertString(executionContext.description, true) + ";\n") : "") +
-            getTabString(3) + "mapping: " + PureGrammarComposerUtility.convertPath(executionContext.mapping) + ";\n" +
-            getTabString(3) + "defaultRuntime: " + PureGrammarComposerUtility.convertPath(executionContext.defaultRuntime) + ";\n" +
+            getTabString(3) + "mapping: " + PureGrammarComposerUtility.convertPath(executionContext.mapping.path) + ";\n" +
+            getTabString(3) + "defaultRuntime: " + PureGrammarComposerUtility.convertPath(executionContext.defaultRuntime.path) + ";\n" +
             getTabString(2) + "}";
     }
 
@@ -94,8 +100,8 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
             getTabString() + "executionContexts:" + (dataSpace.executionContexts.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executionContexts, DataSpaceGrammarComposerExtension::renderDataSpaceExecutionContext).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n" +
             getTabString() + "defaultExecutionContext: " + convertString(dataSpace.defaultExecutionContext, true) + ";\n" +
             (dataSpace.description != null ? (getTabString() + "description: " + convertString(dataSpace.description, true) + ";\n") : "") +
-            (dataSpace.featuredDiagrams != null ? (getTabString() + "featuredDiagrams:" + (dataSpace.featuredDiagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListAdapter.adapt(dataSpace.featuredDiagrams).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
-            (dataSpace.supportInfo != null ? (getTabString() + "supportInfo\n" + renderDataSpaceSupportInfo(dataSpace.supportInfo) + ";\n") : "") +
+            (dataSpace.featuredDiagrams != null ? (getTabString() + "featuredDiagrams:" + (dataSpace.featuredDiagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.featuredDiagrams, diagram -> diagram.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
+            (dataSpace.supportInfo != null ? (getTabString() + "supportInfo: " + renderDataSpaceSupportInfo(dataSpace.supportInfo) + ";\n") : "") +
             "}";
     }
 }

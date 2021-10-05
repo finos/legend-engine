@@ -138,8 +138,7 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  supportInfo\n" +
-            "  {\n" +
+            "  supportInfo: Email {\n" +
             "  };\n" +
             "  executionContexts:\n" +
             "  [\n" +
@@ -150,7 +149,7 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "    }\n" +
             "  ];\n" +
             "  defaultExecutionContext: 'Context 1';\n" +
-            "}\n", "PARSER error at [2:1-18:1]: Field 'contacts' is required");
+            "}\n", "PARSER error at [2:1-17:1]: Field 'address' is required");
     }
 
     @Test
@@ -374,15 +373,13 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "    }\n" +
             "  ];\n" +
             "  defaultExecutionContext: 'Context 1';\n" +
-            "  supportInfo\n" +
-            "  {\n" +
-            "    contacts:['someEmail@test.org'];\n" +
+            "  supportInfo: Email {\n" +
+            "    address: 'someEmail@test.org';\n" +
             "  };\n" +
-            "  supportInfo\n" +
-            "  {\n" +
-            "    contacts:['someEmail@test.org'];\n" +
+            "  supportInfo: Email {\n" +
+            "    address: 'someEmail@test.org';\n" +
             "  };\n" +
-            "}\n", "PARSER error at [2:1-24:1]: Field 'supportInfo' should be specified only once");
+            "}\n", "PARSER error at [2:1-22:1]: Field 'supportInfo' should be specified only once");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace\n" +
             "{\n" +
@@ -398,33 +395,10 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "    }\n" +
             "  ];\n" +
             "  defaultExecutionContext: 'Context 1';\n" +
-            "  supportInfo\n" +
-            "  {\n" +
-            "    description: 'some instruction';\n" +
-            "    description: 'some instruction';\n" +
-            "    contacts:['someEmail@test.org'];\n" +
+            "  supportInfo: Email {\n" +
+            "    address: 'someEmail@test.org';\n" +
+            "    address: 'someEmail@test.org';\n" +
             "  };\n" +
-            "}\n", "PARSER error at [2:1-22:1]: Field 'description' should be specified only once");
-        test("###DataSpace\n" +
-            "DataSpace model::dataSpace\n" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  executionContexts:\n" +
-            "  [\n" +
-            "    {\n" +
-            "      name: 'Context 1';\n" +
-            "      mapping: model::String;\n" +
-            "      defaultRuntime: model::Runtime;\n" +
-            "    }\n" +
-            "  ];\n" +
-            "  defaultExecutionContext: 'Context 1';\n" +
-            "  supportInfo\n" +
-            "  {\n" +
-            "    contacts:['someEmail@test.org'];\n" +
-            "    contacts:['someEmail@test.org'];\n" +
-            "  };\n" +
-            "}\n", "PARSER error at [2:1-21:1]: Field 'contacts' should be specified only once");
+            "}\n", "PARSER error at [2:1-20:1]: Field 'address' should be specified only once");
     }
 }

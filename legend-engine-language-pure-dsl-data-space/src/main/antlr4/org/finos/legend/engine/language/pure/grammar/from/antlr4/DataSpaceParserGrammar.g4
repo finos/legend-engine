@@ -23,7 +23,8 @@ identifier:                 VALID_STRING | STRING
                             | DATA_SPACE_DESCRIPTION
                             | DATA_SPACE_FEATURED_DIAGRAMS
                             | DATA_SPACE_SUPPORT_INFO
-                            | DATA_SPACE_SUPPORT_CONTACTS
+                            | DATA_SPACE_SUPPORT_EMAIL
+                            | DATA_SPACE_SUPPORT_EMAIL_ADDRESS
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -86,13 +87,14 @@ description:                DATA_SPACE_DESCRIPTION COLON STRING SEMI_COLON
 
 featuredDiagrams:           DATA_SPACE_FEATURED_DIAGRAMS COLON BRACKET_OPEN ( qualifiedName (COMMA qualifiedName)* )? BRACKET_CLOSE SEMI_COLON
 ;
-supportInfo:                DATA_SPACE_SUPPORT_INFO
-                                BRACE_OPEN
+
+
+supportInfo:                DATA_SPACE_SUPPORT_INFO COLON
+                                DATA_SPACE_SUPPORT_EMAIL BRACE_OPEN
                                    (
-                                       description
-                                       | supportContacts
+                                       supportEmail
                                    )*
                                 BRACE_CLOSE SEMI_COLON
 ;
-supportContacts:            DATA_SPACE_SUPPORT_CONTACTS COLON BRACKET_OPEN ( STRING (COMMA STRING)* )? BRACKET_CLOSE SEMI_COLON
+supportEmail:               DATA_SPACE_SUPPORT_EMAIL_ADDRESS COLON STRING SEMI_COLON
 ;

@@ -44,14 +44,8 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
             "    model::Diagram,\n" +
             "    model::Diagram2\n" +
             "  ];\n" +
-            "  supportInfo\n" +
-            "  {\n" +
-            "    description: 'some instruction';\n" +
-            "    contacts:\n" +
-            "    [\n" +
-            "      'someEmail@test.org',\n" +
-            "      'someEmail@test.org'\n" +
-            "    ];\n" +
+            "  supportInfo: Email {\n" +
+            "    address: 'someEmail@test.org';\n" +
             "  };\n" +
             "}\n");
     }

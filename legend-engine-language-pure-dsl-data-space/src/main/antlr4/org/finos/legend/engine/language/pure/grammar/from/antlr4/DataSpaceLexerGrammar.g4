@@ -26,4 +26,5 @@ DATA_SPACE_DESCRIPTION:                 'description';
 DATA_SPACE_FEATURED_DIAGRAMS:           'featuredDiagrams';
 
 DATA_SPACE_SUPPORT_INFO:                'supportInfo';
-DATA_SPACE_SUPPORT_CONTACTS:            'contacts';
+DATA_SPACE_SUPPORT_EMAIL:               'Email';
+DATA_SPACE_SUPPORT_EMAIL_ADDRESS:       'address';
