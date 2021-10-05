@@ -33,6 +33,7 @@ public class GlobalGraphFetchExecutionNode extends ExecutionNode
     public XStorePropertyMapping xStorePropertyMapping;
     public Boolean enableConstraints;
     public Boolean checked;
+    public XStorePropertyFetchDetails xStorePropertyFetchDetails;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
@@ -46,6 +47,6 @@ public class GlobalGraphFetchExecutionNode extends ExecutionNode
     {
         return this.children == null ?
                 Lists.mutable.with(this.localGraphFetchExecutionNode) :
-                Lists.mutable.with((ExecutionNode) this.children, this.localGraphFetchExecutionNode);
+                Lists.mutable.with((ExecutionNode) this.localGraphFetchExecutionNode).withAll(this.children);
     }
 }
