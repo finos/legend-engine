@@ -321,6 +321,12 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testLambdaWithBiTemporalClassInPropertyExpression()
+    {
+        testLambda("|Person.all()->project([col(a|$a.firm(%latest, %latest), 'a')])");
+    }
+
+    @Test
     public void testRenderingFunctionExpressionWithSinglePrimitiveArgument()
     {
         testLambda("|sort('car')");

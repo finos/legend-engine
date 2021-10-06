@@ -14,33 +14,42 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
-import org.eclipse.collections.api.list.MutableList;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.util.Properties;
 import javax.sql.DataSource;
+import java.util.Optional;
+import java.util.Properties;
 
 public class SnowflakeDataSourceSpecification extends DataSourceSpecification
 {
-    public static String SNOWFLAKE_ACCOUNT_NAME = "legend_snowflake_accountName";
-    public static String SNOWFLAKE_REGION = "legend_snowflake_region";
-    public static String SNOWFLAKE_WAREHOUSE_NAME = "legend_snowflake_warehouseName";
-    public static String SNOWFLAKE_DATABASE_NAME= "legend_snowflake_databaseName";
-    public static String SNOWFLAKE_CLOUD_TYPE= "legend_snowflake_cloudType";
-    public static String SNOWFLAKE_QUOTE_IDENTIFIERS= "legend_snowflake_quoteIdentifiers";
 
+    public static final String SNOWFLAKE_ACCOUNT_NAME = "legend_snowflake_accountName";
+    public static final String SNOWFLAKE_REGION = "legend_snowflake_region";
+    public static final String SNOWFLAKE_WAREHOUSE_NAME = "legend_snowflake_warehouseName";
+    public static final String SNOWFLAKE_DATABASE_NAME = "legend_snowflake_databaseName";
+    public static final String SNOWFLAKE_CLOUD_TYPE = "legend_snowflake_cloudType";
+    public static final String SNOWFLAKE_QUOTE_IDENTIFIERS = "legend_snowflake_quoteIdentifiers";
+
+    public static final String SNOWFLAKE_ACCOUNT_TYPE_NAME = "accountType";
+    public static final String SNOWFLAKE_ORGANIZATION_NAME = "organization";
+
+    public static final String SNOWFLAKE_PROXY_HOST = "proxyHost";
+    public static final String SNOWFLAKE_PROXY_PORT = "proxyPort";
+    public static final String SNOWFLAKE_NON_PROXY_HOSTS = "nonProxyHosts";
+    public static final String SNOWFLAKE_USE_PROXY = "useProxy";
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
     {
         super(key, databaseManager, authenticationStrategy, extraUserProperties, relationalExecutorInfo);
 
         String warehouseName = updateSnowflakeIdentifiers(key.getWarehouseName(), key.getQuoteIdentifiers());
-        String databaseName  = updateSnowflakeIdentifiers(key.getDatabaseName(), key.getQuoteIdentifiers());
+        String databaseName = updateSnowflakeIdentifiers(key.getDatabaseName(), key.getQuoteIdentifiers());
 
         this.extraDatasourceProperties.put(SNOWFLAKE_ACCOUNT_NAME, key.getAccountName());
         this.extraDatasourceProperties.put(SNOWFLAKE_REGION, key.getRegion());
@@ -53,6 +62,25 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put("warehouse", warehouseName);
         this.extraDatasourceProperties.put("db", databaseName);
         this.extraDatasourceProperties.put("ocspFailOpen", true);
+
+        if (key.getAccountType() != null)
+        {
+            putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_ACCOUNT_TYPE_NAME, key.getAccountType().toString());
+        }
+
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_ORGANIZATION_NAME, key.getOrganisation());
+
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_PROXY_HOST, key.getProxyHost());
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_PROXY_PORT, key.getProxyPort());
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_NON_PROXY_HOSTS, key.getNonProxyHosts());
+        this.extraDatasourceProperties.put(SNOWFLAKE_USE_PROXY, this.extraDatasourceProperties.get(SNOWFLAKE_PROXY_HOST) != null);
+
+
+    }
+
+    private static void putIfNotEmpty(Properties connectionProperties, String propName, String propValue)
+    {
+        Optional.ofNullable(propValue).ifPresent(x -> connectionProperties.put(propName, propValue));
     }
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
@@ -73,5 +101,10 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
             identifier = "\"" + identifier + "\"";
         }
         return identifier;
+    }
+
+    public Properties getConnectionProperties()
+    {
+        return this.extraDatasourceProperties;
     }
 }

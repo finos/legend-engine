@@ -14,17 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch;
 
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import java.util.List;
 
-public class RelationalRootQueryTempTableGraphFetchExecutionNode extends RelationalClassQueryTempTableGraphFetchExecutionNode
+public class XStorePropertyFetchDetails
 {
-    public Integer batchSize;
-    public Boolean checked;
-
-    @Override
-    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
-    {
-        return executionNodeVisitor.visit((ExecutionNode) this);
-    }
+    public boolean supportsCaching;
+    public String propertyPath;
+    public String sourceMappingId;
+    public String sourceSetId;
+    public String targetMappingId;
+    public String targetSetId;
+    public List<String> targetPropertiesOrdered;
+    public String subTree;
 }
