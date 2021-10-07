@@ -96,7 +96,8 @@ public class FlatDataExecutionExtension implements ExecutionExtension
             IFlatDataDeserializeExecutionNodeSpecifics<?> specifics = (IFlatDataDeserializeExecutionNodeSpecifics<?>) specificsClass.getConstructor().newInstance();
             FlatDataContext<?> context = specifics.createContext();
 
-            InputStream stream = ExecutionHelper.inputStreamFromConnection(node.connection);
+            InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+
             FlatDataReader<?> deserializer = new FlatDataReader<>(context, stream);
             return new StreamingObjectResult<>(deserializer.startStream());
         }

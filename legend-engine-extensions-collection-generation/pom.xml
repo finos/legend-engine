@@ -90,11 +90,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-serviceStore</artifactId>
+            <artifactId>legend-engine-protocol-external-store-service</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-store-serviceStore</artifactId>
+            <artifactId>legend-engine-language-external-store-service</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
