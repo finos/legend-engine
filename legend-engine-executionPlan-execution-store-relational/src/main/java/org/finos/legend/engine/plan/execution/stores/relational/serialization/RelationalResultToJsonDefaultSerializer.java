@@ -39,6 +39,7 @@ import java.util.ServiceLoader;
 public class RelationalResultToJsonDefaultSerializer extends Serializer
 {
     private final ObjectMapper objectMapper = ExecutionResultObjectMapperFactory.getNewObjectMapper();
+    private final Function<Object, String> purePrimitiveToJsonConverter = ExecutionResultObjectMapperFactory.getPurePrimitiveToJsonConverter();
     private final RelationalResult relationalResult;
     private final byte[] b_builder = "{\"builder\": ".getBytes();
     private final byte[] b_generation = ", \"generationInfo\": ".getBytes();
@@ -126,10 +127,10 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
 
         for (int i = 1; i <= relationalResult.columnCount - 1; i++)
         {
-            objectMapper.writeValue(outputStream, transformers.get(i - 1).valueOf(relationalResult.getValue(i)));
+            outputStream.write(purePrimitiveToJsonConverter.apply(transformers.get(i - 1).valueOf(relationalResult.getValue(i))).getBytes());
             outputStream.write(b_comma);
         }
-        objectMapper.writeValue(outputStream, transformers.get(relationalResult.columnCount - 1).valueOf(relationalResult.getValue(relationalResult.columnCount)));
+        outputStream.write(purePrimitiveToJsonConverter.apply(transformers.get(relationalResult.columnCount - 1).valueOf(relationalResult.getValue(relationalResult.columnCount))).getBytes());
         outputStream.write(b_end);
     }
 
