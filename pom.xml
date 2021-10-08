@@ -44,6 +44,8 @@
         <module>legend-engine-external-format-flatdata-model</module>
         <module>legend-engine-external-format-flatdata-shared</module>
         <module>legend-engine-external-format-flatdata-runtime</module>
+        <module>legend-engine-external-format-json-model</module>
+        <module>legend-engine-external-format-json-runtime</module>
         <module>legend-engine-external-format-xml-model</module>
         <module>legend-engine-external-format-xml-runtime</module>
         <module>legend-engine-external-format-xml-shared</module>
@@ -77,6 +79,7 @@
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-generation</module>
         <module>legend-engine-protocol-external-format-flatdata</module>
+        <module>legend-engine-protocol-external-format-json</module>
         <module>legend-engine-protocol-external-format-xml</module>
         <module>legend-engine-protocol-external-shared-format</module>
         <module>legend-engine-protocol-pure</module>
@@ -121,7 +124,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.39.0</legend.pure.version>
+        <legend.pure.version>1.39.1-SNAPSHOT</legend.pure.version>
         <legend.shared.version>0.16.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -356,7 +359,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[11.0.10,12)</version>
+                                    <version>[11.0.4,12)</version>
                                 </requireJavaVersion>
                                 <dependencyConvergence />
                                 <bannedDependencies>
@@ -548,6 +551,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-external-format-json</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-protocol-relational</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -666,6 +674,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-format-flatdata-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-json-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-json-runtime</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
