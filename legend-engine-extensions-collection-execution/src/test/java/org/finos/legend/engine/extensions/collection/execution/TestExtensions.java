@@ -18,6 +18,9 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
+import org.finos.legend.engine.external.format.flatdata.FlatDataExecutionExtension;
+import org.finos.legend.engine.external.format.xml.XmlExecutionExtension;
+import org.finos.legend.engine.external.shared.runtime.ExternalFormatExecutionExtension;
 import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
@@ -36,7 +39,10 @@ public class TestExtensions
     public void testExecutionExtensions()
     {
         MutableList<Class<? extends ExecutionExtension>> expectedExtensions = Lists.mutable.<Class<? extends ExecutionExtension>>empty()
-                .with(RelationalExecutionExtension.class);
+                .with(RelationalExecutionExtension.class)
+                .with(ExternalFormatExecutionExtension.class)
+                .with(FlatDataExecutionExtension.class)
+                .with(XmlExecutionExtension.class);
         assertHasExtensions(expectedExtensions, ExecutionExtension.class);
     }
 
