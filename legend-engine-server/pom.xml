@@ -195,6 +195,11 @@
             <artifactId>legend-engine-external-format-rosetta</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-format-morphir</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- Shared Drop Wizard Bundles -->

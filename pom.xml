@@ -50,6 +50,7 @@
         <module>legend-engine-external-format-avro</module>
         <module>legend-engine-external-format-jsonSchema</module>
         <module>legend-engine-external-format-rosetta</module>
+        <module>legend-engine-external-format-morphir</module>
         <module>legend-engine-external-format-protobuf</module>
         <module>legend-engine-external-language-java</module>
         <module>legend-engine-language-pure-modelManager</module>
@@ -121,7 +122,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.39.0</legend.pure.version>
+        <legend.pure.version>1.39.1-SNAPSHOT</legend.pure.version>
         <legend.shared.version>0.16.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -701,6 +702,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-format-rosetta</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-morphir</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
