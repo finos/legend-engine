@@ -16,21 +16,21 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.AuthorizerPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.AuthorizerVisitor;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Authorizer;
 
-public class AuthorizerSecondPassBuilder implements AuthorizerVisitor<Authorizer>
+public class AuthorizerSecondPassBuilder implements AuthorizerVisitor<Root_meta_legend_service_metamodel_Authorizer>
 {
     private final CompileContext context;
-    private final Authorizer authorizer;
+    private final Root_meta_legend_service_metamodel_Authorizer authorizer;
 
-    public AuthorizerSecondPassBuilder(CompileContext context, Authorizer authorizer)
+    public AuthorizerSecondPassBuilder(CompileContext context, Root_meta_legend_service_metamodel_Authorizer authorizer)
     {
         this.context = context;
         this.authorizer = authorizer;
     }
 
     @Override
-    public Authorizer visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer authz)
+    public Root_meta_legend_service_metamodel_Authorizer visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer authz)
     {
         this.context.getCompilerExtensions().getExtraAuthorizerSecondPassProcessors()
                 .forEach(processor -> processor.value(authz, authorizer, this.context));
@@ -38,7 +38,7 @@ public class AuthorizerSecondPassBuilder implements AuthorizerVisitor<Authorizer
     }
 
     @Override
-    public Authorizer visit(AuthorizerPointer authorizerPointer)
+    public Root_meta_legend_service_metamodel_Authorizer visit(AuthorizerPointer authorizerPointer)
     {
         return this.context.resolveAuthorizer(authorizerPointer.authorizer, authorizerPointer.sourceInformation);
     }

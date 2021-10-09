@@ -16,11 +16,11 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.AuthorizerPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.AuthorizerVisitor;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Authorizer;
 
 import java.util.Objects;
 
-public class AuthorizerFirstPassBuilder implements AuthorizerVisitor<Authorizer>
+public class AuthorizerFirstPassBuilder implements AuthorizerVisitor<Root_meta_legend_service_metamodel_Authorizer>
 {
     private final CompileContext context;
 
@@ -30,7 +30,7 @@ public class AuthorizerFirstPassBuilder implements AuthorizerVisitor<Authorizer>
     }
 
     @Override
-    public Authorizer visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer authorizer)
+    public Root_meta_legend_service_metamodel_Authorizer visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer authorizer)
     {
         return this.context.getCompilerExtensions().getExtraAuthorizerValueProcessors().stream()
                 .map(processor -> processor.value(authorizer, this.context))
@@ -40,7 +40,7 @@ public class AuthorizerFirstPassBuilder implements AuthorizerVisitor<Authorizer>
     }
 
     @Override
-    public Authorizer visit(AuthorizerPointer authorizerPointer)
+    public Root_meta_legend_service_metamodel_Authorizer visit(AuthorizerPointer authorizerPointer)
     {
         return this.context.resolveAuthorizer(authorizerPointer.authorizer, authorizerPointer.sourceInformation);
     }

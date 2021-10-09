@@ -32,6 +32,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Authorizer;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
@@ -42,7 +43,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
@@ -318,7 +318,7 @@ public class CompileContext
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getConnection(path, sourceInformation));
     }
 
-    public Authorizer resolveAuthorizer(String fullPath, SourceInformation sourceInformation) {
+    public Root_meta_legend_service_metamodel_Authorizer resolveAuthorizer(String fullPath, SourceInformation sourceInformation) {
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getAuthorizer(path, sourceInformation));
     }
 

@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Authorizer;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Generalization_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
@@ -239,7 +240,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
 
     @Override
     public PackageableElement visit(PackageableAuthorizer packageableAuthorizer) {
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer authorizer = this.context.pureModel.getAuthorizer(this.context.pureModel.buildPackageString(packageableAuthorizer._package, packageableAuthorizer.name), packageableAuthorizer.sourceInformation);
+        final Root_meta_legend_service_metamodel_Authorizer authorizer = this.context.pureModel.getAuthorizer(this.context.pureModel.buildPackageString(packageableAuthorizer._package, packageableAuthorizer.name), packageableAuthorizer.sourceInformation);
         packageableAuthorizer.authorizerValue.accept(new AuthorizerSecondPassBuilder(this.context, authorizer));
         return null;
     }

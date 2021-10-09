@@ -623,8 +623,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Authorizer authorizer)
     {
         PureGrammarComposerContext context = this.toContext();
-        Optional<org.eclipse.collections.api.tuple.Pair<String, String>> connectionValueString = context.extraAuthorizerValueComposers.stream().map(composer -> composer.value(authorizer, context)).filter(Objects::nonNull).findFirst();
-        return connectionValueString.orElseGet(() -> Tuples.pair(null, unsupported(authorizer.getClass()))).getTwo();
+        Optional<org.eclipse.collections.api.tuple.Pair<String, String>> authorizerValueString = context.extraAuthorizerValueComposers.stream().map(composer -> composer.value(authorizer, context)).filter(Objects::nonNull).findFirst();
+        return authorizerValueString.orElseGet(() -> Tuples.pair(null, unsupported(authorizer.getClass()))).getTwo();
     }
 
     @Override

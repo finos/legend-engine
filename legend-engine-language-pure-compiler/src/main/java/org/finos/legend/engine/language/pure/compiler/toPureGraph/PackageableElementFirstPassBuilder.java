@@ -283,7 +283,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(packageableAuthorizer.name);
         pack._childrenAdd(stub);
         // NOTE: the whole point of this processing is to put the Authorizer in an index
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer authorizer = packageableAuthorizer.authorizerValue.accept(new AuthorizerFirstPassBuilder(this.context));
+        final Root_meta_legend_service_metamodel_Authorizer authorizer = packageableAuthorizer.authorizerValue.accept(new AuthorizerFirstPassBuilder(this.context));
         this.context.pureModel.authorizersIndex.put(this.context.pureModel.buildPackageString(packageableAuthorizer._package, packageableAuthorizer.name), authorizer);
         return stub;
     }

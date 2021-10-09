@@ -47,7 +47,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Single
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_service_Authorizer_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Authorizer;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 
 import java.util.HashSet;
@@ -192,14 +192,13 @@ public class HelperServiceBuilder
                 ._assert(HelperValueSpecificationBuilder.buildLambda(testContainer._assert, context));
     }
 
-    public static Root_meta_pure_service_Authorizer_Impl processServiceAuthorizer(Authorizer authorizer, CompileContext context) {
+    public static Root_meta_legend_service_metamodel_Authorizer processServiceAuthorizer(Authorizer authorizer, CompileContext context) {
         if (authorizer == null)
         {
             return null;
         }
         if (authorizer instanceof AuthorizerPointer) {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer serviceAuthorizer = context.resolveAuthorizer(((AuthorizerPointer) authorizer).authorizer, ((AuthorizerPointer) authorizer).sourceInformation);
-            return new Root_meta_pure_service_Authorizer_Impl(serviceAuthorizer);
+            return context.resolveAuthorizer(((AuthorizerPointer) authorizer).authorizer, authorizer.sourceInformation);
         }
 
         throw new UnsupportedOperationException("Unsupported service authorizer type '" + authorizer.getClass().getSimpleName() + "'");

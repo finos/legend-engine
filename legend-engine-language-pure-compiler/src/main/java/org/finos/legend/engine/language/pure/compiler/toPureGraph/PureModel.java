@@ -59,6 +59,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Package_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Authorizer;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl;
@@ -77,7 +78,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.G
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
@@ -127,7 +127,7 @@ public class PureModel implements IPureModel
     final MutableMap<String, Mapping> mappingsIndex = Maps.mutable.empty();
     final MutableMap<String, Connection> connectionsIndex = Maps.mutable.empty();
     final MutableMap<String, Runtime> runtimesIndex = Maps.mutable.empty();
-    final MutableMap<String, Authorizer> authorizersIndex = Maps.mutable.empty();
+    final MutableMap<String, Root_meta_legend_service_metamodel_Authorizer> authorizersIndex = Maps.mutable.empty();
 
     public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode)
     {
@@ -853,14 +853,14 @@ public class PureModel implements IPureModel
         return this.connectionsIndex.get(packagePrefix(fullPath));
     }
 
-    public Authorizer getAuthorizer(String fullPath, SourceInformation sourceInformation)
+    public Root_meta_legend_service_metamodel_Authorizer getAuthorizer(String fullPath, SourceInformation sourceInformation)
     {
-        Authorizer authorizer = this.getAuthorizer_safe(fullPath);
+        Root_meta_legend_service_metamodel_Authorizer authorizer = this.getAuthorizer_safe(fullPath);
         Assert.assertTrue(authorizer != null, () -> "Can't find authorizer '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return authorizer;
     }
 
-    public Authorizer getAuthorizer_safe(String fullPath)
+    public Root_meta_legend_service_metamodel_Authorizer getAuthorizer_safe(String fullPath)
     {
         return this.authorizersIndex.get(packagePrefix(fullPath));
     }

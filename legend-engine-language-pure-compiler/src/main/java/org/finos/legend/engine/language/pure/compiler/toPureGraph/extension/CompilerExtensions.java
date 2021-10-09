@@ -50,6 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Authorizer;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
@@ -59,7 +60,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,8 +112,8 @@ public class CompilerExtensions
     private final ImmutableList<Procedure3<SetImplementation, Set<String>, CompileContext>> extraSetImplementationSourceScanners;
     private final ImmutableList<Procedure2<PureModel, PureModelContextData>> extraPostValidators;
     private final ImmutableList<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> extraExecutionOptionProcessors;
-    private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, CompileContext, Authorizer>> extraAuthorizerValueProcessors;
-    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, Authorizer, CompileContext>> extraAuthorizerSecondPassProcessors;
+    private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, CompileContext, Root_meta_legend_service_metamodel_Authorizer>> extraAuthorizerValueProcessors;
+    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, Root_meta_legend_service_metamodel_Authorizer, CompileContext>> extraAuthorizerSecondPassProcessors;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -234,12 +234,12 @@ public class CompilerExtensions
         return this.extraConnectionSecondPassProcessors.castToList();
     }
 
-    public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, CompileContext, Authorizer>> getExtraAuthorizerValueProcessors()
+    public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, CompileContext, Root_meta_legend_service_metamodel_Authorizer>> getExtraAuthorizerValueProcessors()
     {
         return this.extraAuthorizerValueProcessors.castToList();
     }
 
-    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, Authorizer, CompileContext>> getExtraAuthorizerSecondPassProcessors()
+    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, Root_meta_legend_service_metamodel_Authorizer, CompileContext>> getExtraAuthorizerSecondPassProcessors()
     {
         return this.extraAuthorizerSecondPassProcessors.castToList();
     }

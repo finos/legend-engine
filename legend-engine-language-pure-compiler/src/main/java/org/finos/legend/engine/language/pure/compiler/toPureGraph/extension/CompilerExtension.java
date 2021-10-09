@@ -41,6 +41,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Authorizer;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
@@ -49,7 +50,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.service.Authorizer;
 
 import java.util.Collections;
 import java.util.List;
@@ -104,12 +104,12 @@ public interface CompilerExtension
         return Collections.emptyList();
     }
 
-    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, CompileContext, Authorizer>> getExtraAuthorizerValueProcessors()
+    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, CompileContext, Root_meta_legend_service_metamodel_Authorizer>> getExtraAuthorizerValueProcessors()
     {
         return Collections.emptyList();
     }
 
-    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, Authorizer, CompileContext>> getExtraAuthorizerSecondPassProcessors()
+    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authorizer.Authorizer, Root_meta_legend_service_metamodel_Authorizer, CompileContext>> getExtraAuthorizerSecondPassProcessors()
     {
         return Collections.emptyList();
     }
