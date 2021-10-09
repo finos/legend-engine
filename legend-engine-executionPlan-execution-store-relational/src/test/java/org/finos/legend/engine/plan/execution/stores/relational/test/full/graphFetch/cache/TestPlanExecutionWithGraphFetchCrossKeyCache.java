@@ -14,8 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.full.graphFetch.cache;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -25,7 +26,10 @@ import org.finos.legend.engine.plan.execution.PlanExecutionContext;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByTargetCrossKeys;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToPureFormatSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
@@ -54,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
@@ -265,7 +270,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache();
+        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache(plan);
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache);
 
         String expectedRes = "[" +
@@ -277,7 +282,6 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertFalse(firmCache.isCacheUtilized());
         assertCacheStats(firmCache.getExecutionCache(), 0, 0, 0, 0);
     }
 
@@ -307,7 +311,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache();
+        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache(plan);
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache);
 
         String expectedRes = "[" +
@@ -319,7 +323,6 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertTrue(firmCache.isCacheUtilized());
         assertCacheStats(firmCache.getExecutionCache(), 3, 5, 2, 3);
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -352,7 +355,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys personCache = getPersonCache();
+        GraphFetchCacheByTargetCrossKeys personCache = getPersonCache(plan);
         PlanExecutionContext context = new PlanExecutionContext(plan, personCache);
 
         String expectedRes = "[" +
@@ -364,7 +367,6 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertTrue(personCache.isCacheUtilized());
         assertCacheStats(personCache.getExecutionCache(), 5, 5, 0, 5);
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -403,8 +405,8 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache();
-        GraphFetchCacheByTargetCrossKeys addressCache = getAddressEmptyCache();
+        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache(plan);
+        GraphFetchCacheByTargetCrossKeys addressCache = getAddressCache(plan);
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache, addressCache);
 
         String expectedRes = "[" +
@@ -416,9 +418,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertTrue(firmCache.isCacheUtilized());
         assertCacheStats(firmCache.getExecutionCache(), 3, 5, 2, 3);
-        Assert.assertTrue(addressCache.isCacheUtilized());
         assertCacheStats(addressCache.getExecutionCache(), 4, 5, 1, 4);
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -464,9 +464,9 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache();
-        GraphFetchCacheByTargetCrossKeys addressCache = getAddressEmptyCache();
-        PlanExecutionContext context = new PlanExecutionContext(plan, firmCache, addressCache);
+        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache(plan);
+        List<GraphFetchCacheByTargetCrossKeys> addressCaches = getSharedAddressCaches(plan);
+        PlanExecutionContext context = new PlanExecutionContext(plan, Lists.mutable.of((GraphFetchCache) firmCache).withAll(addressCaches));
 
         String expectedRes = "[" +
                     "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}," +
@@ -477,42 +477,50 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertTrue(firmCache.isCacheUtilized());
         assertCacheStats(firmCache.getExecutionCache(), 3, 5, 2, 3);
-        Assert.assertTrue(addressCache.isCacheUtilized());
-        assertCacheStats(addressCache.getExecutionCache(), 5, 7, 2, 5);
+        assertCacheStats(addressCaches.get(0).getExecutionCache(), 5, 7, 2, 5);
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
         assertCacheStats(firmCache.getExecutionCache(), 3, 10, 7, 3);
-        assertCacheStats(addressCache.getExecutionCache(), 5, 12, 7, 5);
+        assertCacheStats(addressCaches.get(0).getExecutionCache(), 5, 12, 7, 5);
     }
 
-    private GraphFetchCacheByTargetCrossKeys getFirmEmptyCache()
+    private GraphFetchCacheByTargetCrossKeys getFirmEmptyCache(SingleExecutionPlan plan)
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                "test::Map",
-                "test_Person",
-                "test_Firm"
+                GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm>")).findFirst().orElse(null)
         );
     }
 
-    private GraphFetchCacheByTargetCrossKeys getPersonCache()
+    private GraphFetchCacheByTargetCrossKeys getPersonCache(SingleExecutionPlan plan)
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                "test::Map",
-                "test_Address",
-                "test_Person"
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.persons>")).findFirst().orElse(null))
         );
     }
 
-    private GraphFetchCacheByTargetCrossKeys getAddressEmptyCache()
+    private GraphFetchCacheByTargetCrossKeys getAddressCache(SingleExecutionPlan plan)
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                Arrays.asList(Tuples.pair("test::Map", "test_Person"), Tuples.pair("test::Map", "test_Firm")),
-                "test_Address"
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address>")).findFirst().orElse(null))
+        );
+    }
+
+    private List<GraphFetchCacheByTargetCrossKeys> getSharedAddressCaches(SingleExecutionPlan plan)
+    {
+        Cache<GraphFetchCacheKey, List<Object>> cache = CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build();
+        return Arrays.asList(
+                ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
+                        cache,
+                        Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm.address>")).findFirst().orElse(null))
+                ),
+                ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
+                        cache,
+                        Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address>")).findFirst().orElse(null))
+                )
         );
     }
 

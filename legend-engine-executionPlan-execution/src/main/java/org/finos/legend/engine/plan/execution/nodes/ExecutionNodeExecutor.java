@@ -25,6 +25,11 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByTargetCrossKeys;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeSerializerHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
@@ -60,6 +65,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Sequen
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.XStorePropertyFetchDetails;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
@@ -461,6 +467,10 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
             if ((parentObjects != null) && !parentObjects.isEmpty())
             {
+                if (globalGraphFetchExecutionNode.xStorePropertyFetchDetails != null && globalGraphFetchExecutionNode.xStorePropertyFetchDetails.supportsCaching && this.executionState.graphFetchCaches != null)
+                {
+                    graphObjectsBatch.setXStorePropertyCachesForNodeIndex(globalGraphFetchExecutionNode.localGraphFetchExecutionNode.nodeIndex, findGraphFetchCacheByTargetCrossKeys(globalGraphFetchExecutionNode));
+                }
                 globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
 
                 if (globalGraphFetchExecutionNode.children != null && !globalGraphFetchExecutionNode.children.isEmpty())
@@ -510,5 +520,29 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             }
         }
         return last;
+    }
+
+    private ExecutionCache<GraphFetchCacheKey, List<Object>> findGraphFetchCacheByTargetCrossKeys(GlobalGraphFetchExecutionNode globalGraphFetchExecutionNode)
+    {
+        List<GraphFetchCache> graphFetchCaches = this.executionState.graphFetchCaches;
+        XStorePropertyFetchDetails fetchDetails = globalGraphFetchExecutionNode.xStorePropertyFetchDetails;
+
+        return graphFetchCaches
+                .stream()
+                .filter(GraphFetchCacheByTargetCrossKeys.class::isInstance)
+                .map(GraphFetchCacheByTargetCrossKeys.class::cast)
+                .filter(cache -> cache.getGraphFetchCrossAssociationKeys() != null)
+                .filter(cache -> {
+                    GraphFetchCrossAssociationKeys c = cache.getGraphFetchCrossAssociationKeys();
+                    return c.getPropertyPath().equals(fetchDetails.propertyPath) &&
+                            c.getSourceMappingId().equals(fetchDetails.sourceMappingId) &&
+                            c.getSourceSetId().equals(fetchDetails.sourceSetId) &&
+                            c.getTargetMappingId().equals(fetchDetails.targetMappingId) &&
+                            c.getTargetSetId().equals(fetchDetails.targetSetId) &&
+                            c.getTargetPropertiesOrdered().equals(fetchDetails.targetPropertiesOrdered) &&
+                            c.getSubTree().equals(fetchDetails.subTree);
+                })
+                .map(GraphFetchCacheByTargetCrossKeys::getExecutionCache)
+                .findFirst().orElse(null);
     }
 }

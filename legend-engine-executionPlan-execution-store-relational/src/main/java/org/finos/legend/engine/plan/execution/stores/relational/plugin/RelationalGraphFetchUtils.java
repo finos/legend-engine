@@ -240,59 +240,6 @@ class RelationalGraphFetchUtils
         return matchingUtilizedCache;
     }
 
-    static GraphFetchCacheByTargetCrossKeys findCacheByCrossKeys(GraphFetchTree graphFetchTree, String mappingId, String sourceInstanceSetId, String targetInstanceSetId, List<String> targetPropertiesOrdered, List<GraphFetchCache> graphFetchCaches)
-    {
-        if (!subTreeValidForCaching(graphFetchTree))
-        {
-            return null;
-        }
-
-        String subTree = getSubTreeString(graphFetchTree);
-        Pair<String, String> mappingSetIdPair = Tuples.pair(mappingId, sourceInstanceSetId);
-
-        GraphFetchCacheByTargetCrossKeys matchingUtilizedCache = null;
-        for (GraphFetchCache c : graphFetchCaches)
-        {
-            if (c instanceof GraphFetchCacheByTargetCrossKeys)
-            {
-                GraphFetchCacheByTargetCrossKeys ce = (GraphFetchCacheByTargetCrossKeys) c;
-                if (ce.isCacheUtilized() && ce.getSourceSetIds().contains(mappingSetIdPair) && targetInstanceSetId.equals(ce.getTargetSetId()) && targetPropertiesOrdered.equals(ce.getTargetPropertiesOrdered()) && subTree.equals(ce.getSubTree()))
-                {
-                    matchingUtilizedCache = ce;
-                    break;
-                }
-            }
-        }
-
-        if (matchingUtilizedCache == null)
-        {
-            GraphFetchCacheByTargetCrossKeys unUtilizedCache = null;
-            for (GraphFetchCache c : graphFetchCaches)
-            {
-                if (c instanceof GraphFetchCacheByTargetCrossKeys)
-                {
-                    GraphFetchCacheByTargetCrossKeys ce = (GraphFetchCacheByTargetCrossKeys) c;
-                    if (!ce.isCacheUtilized() && ce.getSourceSetIds().contains(mappingSetIdPair) && targetInstanceSetId.equals(ce.getTargetSetId()))
-                    {
-                        unUtilizedCache = ce;
-                        break;
-                    }
-                }
-            }
-
-            if (unUtilizedCache != null)
-            {
-                unUtilizedCache.setSubTree(subTree);
-                unUtilizedCache.setTargetPropertiesOrdered(targetPropertiesOrdered);
-                return unUtilizedCache;
-            }
-
-            return null;
-        }
-
-        return matchingUtilizedCache;
-    }
-
     private static int hashWithKeys(Object obj, List<Method> getters)
     {
         try
