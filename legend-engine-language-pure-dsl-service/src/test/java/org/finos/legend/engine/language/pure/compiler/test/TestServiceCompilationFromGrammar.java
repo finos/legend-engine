@@ -16,11 +16,9 @@ package org.finos.legend.engine.language.pure.compiler.test;
 
 import org.junit.Test;
 
-public class TestServiceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
-{
+public class TestServiceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite {
     @Override
-    public String getDuplicatedElementTestCode()
-    {
+    public String getDuplicatedElementTestCode() {
         return "Class anything::class {}\n" +
                 "###Mapping\n" +
                 "Mapping anything::somethingelse ()\n" +
@@ -51,74 +49,71 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Override
-    public String getDuplicatedElementTestExpectedErrorMessage()
-    {
+    public String getDuplicatedElementTestExpectedErrorMessage() {
         return "COMPILATION error at [5:1-27:1]: Duplicated element 'anything::class'";
     }
 
     @Test
-    public void testFaultyAnnotations()
-    {
+    public void testFaultyAnnotations() {
         // Faulty stereotype
         test("###Mapping\n" +
-            "Mapping anything::somethingelse ()\n" +
-            "###Service\n" +
-            "Service <<NoProfile.NoKey>> anything::class\n" +
-            "{\n" +
-            "  pattern: 'url/myUrl/';\n" +
-            "  owners: ['test'];\n" +
-            "  documentation: 'test';\n" +
-            "  autoActivateUpdates: true;\n" +
-            "  execution: Single\n" +
-            "  {\n" +
-            "    query: '';\n" +
-            "    mapping: anything::somethingelse;\n" +
-            "    runtime:\n" +
-            "    #{\n" +
-            "     connections: [];\n" +
-            "    }#;\n" +
-            "  }\n" +
-            "  test: Single\n" +
-            "  {\n" +
-            "    data: 'moreThanData';\n" +
-            "    asserts:\n" +
-            "    [\n" +
-            "    ];\n" +
-            "  }\n" +
-            "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+                "Mapping anything::somethingelse ()\n" +
+                "###Service\n" +
+                "Service <<NoProfile.NoKey>> anything::class\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['test'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: '';\n" +
+                "    mapping: anything::somethingelse;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "     connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
         // Faulty tagged value
 
         test("###Mapping\n" +
-            "Mapping anything::somethingelse ()\n" +
-            "###Service\n" +
-            "Service { NoProfile.NoKey = 'something' } anything::class\n" +
-            "{\n" +
-            "  pattern: 'url/myUrl/';\n" +
-            "  owners: ['test'];\n" +
-            "  documentation: 'test';\n" +
-            "  autoActivateUpdates: true;\n" +
-            "  execution: Single\n" +
-            "  {\n" +
-            "    query: '';\n" +
-            "    mapping: anything::somethingelse;\n" +
-            "    runtime:\n" +
-            "    #{\n" +
-            "     connections: [];\n" +
-            "    }#;\n" +
-            "  }\n" +
-            "  test: Single\n" +
-            "  {\n" +
-            "    data: 'moreThanData';\n" +
-            "    asserts:\n" +
-            "    [\n" +
-            "    ];\n" +
-            "  }\n" +
-            "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+                "Mapping anything::somethingelse ()\n" +
+                "###Service\n" +
+                "Service { NoProfile.NoKey = 'something' } anything::class\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['test'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: '';\n" +
+                "    mapping: anything::somethingelse;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "     connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
     }
 
     @Test
-    public void testServiceWithSingleExecution()
-    {
+    public void testServiceWithSingleExecution() {
         String resource = "Class test::class\n" +
                 "{\n" +
                 "  prop1 : Integer[0..1];\n" +
@@ -355,8 +350,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
-    public void testServiceWithMultiExecution()
-    {
+    public void testServiceWithMultiExecution() {
         String resource = "Class test::class\n" +
                 "{\n" +
                 "  prop1 : Integer[0..1];\n" +
@@ -696,8 +690,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
-    public void testServiceWithImport()
-    {
+    public void testServiceWithImport() {
         test("Class meta::mySimpleClass\n" +
                 "{\n" +
                 "  name: String[1];\n" +
@@ -814,129 +807,6 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    data: 'moreThanData';\n" +
                 "    asserts:\n" +
                 "    [\n" +
-                "    ];\n" +
-                "  }\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testServiceTestParameters()
-    {
-        String resource = "Class test::class\n" +
-                "{\n" +
-                "  prop1 : Integer[0..1];\n" +
-                "}\n" +
-                "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                ")\n" +
-                "###Connection\n" +
-                "JsonModelConnection test::connection\n" +
-                "{\n" +
-                "  class : test::class;" +
-                "  url : 'asd';\n" +
-                "}\n" +
-                "###Runtime\n" +
-                "Runtime test::runtime\n" +
-                "{\n" +
-                " mappings: [test::mapping];\n" +
-                "}\n";
-
-        // check for single test parameter
-        test(resource + "###Service\n" +
-                "Service test::Service\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  owners: ['ownerName'];\n" +
-                "  documentation: 'test';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: src:    test::class[1]|$src.prop1;\n" +
-                "      mapping: test::mapping;\n" +
-                "      runtime: test::runtime;\n" +
-                "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'test';\n" +
-                "    asserts:\n" +
-                "    [\n" +
-                "      {['testparameter'],'testexpression'}\n" +
-                "    ];\n" +
-                "  }\n" +
-                "}\n");
-
-        // check for multiple test parameters
-        test(resource + "###Service\n" +
-                "Service test::Service\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  owners: ['ownerName'];\n" +
-                "  documentation: 'test';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: src:    test::class[1]|$src.prop1;\n" +
-                "      mapping: test::mapping;\n" +
-                "      runtime: test::runtime;\n" +
-                "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'moreThanData';\n" +
-                "    asserts:\n" +
-                "    [\n" +
-                "      {['parameter1', %23:12:8.54, true, 440, 13.23, 88, -54, 2.3, [1, 2], 3],1+280+1}\n" + //test expression
-                "    ];\n" +
-                "  }\n" +
-                "}\n");
-
-        // check for undefined enumerations
-        test(resource + "###Service\n" +
-                "Service test::Service\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  owners: ['ownerName'];\n" +
-                "  documentation: 'test';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: src:    test::class[1]|$src.prop1;\n" +
-                "      mapping: test::mapping;\n" +
-                "      runtime: test::runtime;\n" +
-                "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'moreThanData';\n" +
-                "    asserts:\n" +
-                "    [\n" +
-                "      {['parameter1', Enum.reference],1+280+1}\n" + //test expression
-                "    ];\n" +
-                "  }\n" +
-                "}\n", "COMPILATION error at [37:23-36]: Can't find enumeration 'Enum'");
-
-
-        // check for multiple test asserts
-        test(resource + "###Service\n" +
-                "Service test::Service\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  owners: ['ownerName'];\n" +
-                "  documentation: 'test';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: src:    test::class[1]|$src.prop1;\n" +
-                "      mapping: test::mapping;\n" +
-                "      runtime: test::runtime;\n" +
-                "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'moreThanData';\n" +
-                "    asserts:\n" +
-                "    [\n" +
-                "      {['testparameter1', 'testparameter2'],'expression1'},\n" +
-                "      {['testparameter', 22, 3.14],'expression2'},\n" +
-                "      {[],'expression3'}\n" +
                 "    ];\n" +
                 "  }\n" +
                 "}\n");

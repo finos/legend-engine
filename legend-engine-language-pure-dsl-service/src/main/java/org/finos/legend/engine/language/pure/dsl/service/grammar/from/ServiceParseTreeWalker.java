@@ -250,26 +250,10 @@ public class ServiceParseTreeWalker
     {
         TestContainer testContainer = new TestContainer();
         testContainer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        testContainer.parametersValues = this.visitTestParameters(ctx.testParameters());
+        // TODO parameters values support
+        testContainer.parametersValues = new ArrayList<>();
         testContainer._assert = this.visitLambda(ctx.combinedExpression());
         return testContainer;
-    }
-
-    private List<ValueSpecification> visitTestParameters(ServiceParserGrammar.TestParametersContext ctx)
-    {
-        List<ValueSpecification> testParameters = ctx != null && ctx.primitiveValue() != null ? ListIterate.collect(ctx.primitiveValue(), this::visitTestParameter): null;
-        return testParameters;
-    }
-
-    private ValueSpecification visitTestParameter(ServiceParserGrammar.PrimitiveValueContext ctx) {
-        DomainParser parser = new DomainParser();
-        int startLine = ctx.getStart().getLine();
-        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
-        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
-        ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
-        String parameter = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
-        ValueSpecification valueSpecification = parser.parseServiceParam(parameter, serviceParamSourceInformation, null);
-        return valueSpecification;
     }
 
     private KeyedSingleExecutionTest visitKeyedSingleExecutionTest(ServiceParserGrammar.MultiTestElementContext ctx)
