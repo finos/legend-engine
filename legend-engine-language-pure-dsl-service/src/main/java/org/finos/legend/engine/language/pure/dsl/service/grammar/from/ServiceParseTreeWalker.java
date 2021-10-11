@@ -257,11 +257,11 @@ public class ServiceParseTreeWalker
 
     private List<ValueSpecification> visitTestParameters(ServiceParserGrammar.TestParametersContext ctx)
     {
-        List<ValueSpecification> testParameters = ctx != null && ctx.serviceParamType() != null ? ListIterate.collect(ctx.serviceParamType(), this::visitTestParameter): null;
+        List<ValueSpecification> testParameters = ctx != null && ctx.primitiveValue() != null ? ListIterate.collect(ctx.primitiveValue(), this::visitTestParameter): null;
         return testParameters;
     }
 
-    private ValueSpecification visitTestParameter(ServiceParserGrammar.ServiceParamTypeContext ctx) {
+    private ValueSpecification visitTestParameter(ServiceParserGrammar.PrimitiveValueContext ctx) {
         DomainParser parser = new DomainParser();
         int startLine = ctx.getStart().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;

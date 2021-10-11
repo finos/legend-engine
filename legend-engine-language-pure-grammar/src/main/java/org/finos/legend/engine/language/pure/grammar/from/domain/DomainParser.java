@@ -118,6 +118,6 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(serviceParamWalkerSourceInformation).build();
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(code, null, walkerSourceInformation, false);
         DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, false);
-        return walker.serviceParamType(((DomainParserGrammar) sectionParserInfo.parser).serviceParamType(), "line", typeParametersNames, lambdaContext, "", true, false);
+        return walker.primitiveValue(((DomainParserGrammar) sectionParserInfo.parser).primitiveValue(), "line", typeParametersNames, lambdaContext, "", true, false);
     }
 }

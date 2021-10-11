@@ -885,10 +885,35 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    data: 'moreThanData';\n" +
                 "    asserts:\n" +
                 "    [\n" +
-                "      {['parameter1', 440, 13.23, 88, -54, 2.3, [1, 2], 3],1+280+1}\n" + //test expression
+                "      {['parameter1', %23:12:8.54, true, 440, 13.23, 88, -54, 2.3, [1, 2], 3],1+280+1}\n" + //test expression
                 "    ];\n" +
                 "  }\n" +
                 "}\n");
+
+        // check for undefined enumerations
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {['parameter1', Enum.reference],1+280+1}\n" + //test expression
+                "    ];\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [37:23-36]: Can't find enumeration 'Enum'");
+
 
         // check for multiple test asserts
         test(resource + "###Service\n" +

@@ -555,25 +555,25 @@ public class DomainParseTreeWalker
         return result;
     }
 
-    public ValueSpecification serviceParamType(DomainParserGrammar.ServiceParamTypeContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    public ValueSpecification primitiveValue(DomainParserGrammar.PrimitiveValueContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        if(ctx.serviceParamAtomic() != null)
+        if(ctx.primitiveValueAtomic() != null)
         {
-           return this.serviceParamAtomic(ctx.serviceParamAtomic(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+           return this.primitiveValueAtomic(ctx.primitiveValueAtomic(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
-        else if(ctx.serviceParamVector() != null)
+        else if(ctx.primitiveValueVector() != null)
         {
             List<ValueSpecification> parameters = Lists.mutable.of();
-            for (DomainParserGrammar.ServiceParamAtomicContext paramCtx : ctx.serviceParamVector().serviceParamAtomic())
+            for (DomainParserGrammar.PrimitiveValueAtomicContext paramCtx : ctx.primitiveValueVector().primitiveValueAtomic())
             {
-                parameters.add(this.serviceParamAtomic(paramCtx, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines));
+                parameters.add(this.primitiveValueAtomic(paramCtx, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines));
             }
             return this.collect(parameters, walkerSourceInformation.getSourceInformation(ctx));
         }
         return null;
     }
 
-    private ValueSpecification serviceParamAtomic(DomainParserGrammar.ServiceParamAtomicContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    private ValueSpecification primitiveValueAtomic(DomainParserGrammar.PrimitiveValueAtomicContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
         if(ctx.instanceLiteral() != null)
         {
