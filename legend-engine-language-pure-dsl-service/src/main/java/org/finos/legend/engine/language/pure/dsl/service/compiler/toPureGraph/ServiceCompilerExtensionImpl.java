@@ -45,10 +45,6 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                             ._pattern(service.pattern)
                             ._owners(Lists.mutable.withAll(service.owners))
                             ._documentation(service.documentation);
-                    if(service.tags != null)
-                    {
-                        pureService = pureService._tags(ListIterate.collect(service.tags, tag -> HelperServiceBuilder.processServiceTag(tag)));
-                    }
                     pack._childrenAdd(pureService);
                     return pureService;
                 },
