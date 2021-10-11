@@ -171,5 +171,5 @@ testAssert:                             BRACE_OPEN
                                             testParameters COMMA combinedExpression
                                         BRACE_CLOSE
 ;
-testParameters:                         BRACKET_OPEN (combinedExpression (COMMA combinedExpression)*)? BRACKET_CLOSE
+testParameters:                         BRACKET_OPEN (serviceParamType (COMMA serviceParamType)*)? BRACKET_CLOSE
 ;

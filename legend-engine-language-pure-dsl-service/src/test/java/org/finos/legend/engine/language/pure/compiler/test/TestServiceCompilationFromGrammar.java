@@ -973,7 +973,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    data: 'moreThanData';\n" +
                 "    asserts:\n" +
                 "    [\n" +
-                "      {['parameter1', 440, 13.23, -888],1+280+1}\n" + //test expression
+                "      {['parameter1', 440, 13.23, 88, -54, 2.3, [1, 2], 3],1+280+1}\n" + //test expression
                 "    ];\n" +
                 "  }\n" +
                 "}\n");
@@ -998,7 +998,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    asserts:\n" +
                 "    [\n" +
                 "      {['testparameter1', 'testparameter2'],'expression1'},\n" +
-                "      {['testparameter',22,3.14],'expression2'},\n" +
+                "      {['testparameter', 22, 3.14],'expression2'},\n" +
                 "      {[],'expression3'}\n" +
                 "    ];\n" +
                 "  }\n" +

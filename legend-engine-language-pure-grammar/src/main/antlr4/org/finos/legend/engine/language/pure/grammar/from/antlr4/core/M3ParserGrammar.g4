@@ -150,6 +150,12 @@ lambdaParam:                                    identifier lambdaParamType?
 ;
 lambdaParamType:                                COLON type multiplicity
 ;
+serviceParamType:                               serviceParamAtomic | serviceParamVector
+;
+serviceParamVector:                             BRACKET_OPEN (serviceParamAtomic (COMMA serviceParamAtomic)* )? BRACKET_CLOSE
+;
+serviceParamAtomic:                             instanceLiteral | enumReference
+;
 instanceLiteral:                                instanceLiteralToken | (MINUS INTEGER) | (MINUS FLOAT) | (MINUS DECIMAL) | (PLUS INTEGER) | (PLUS FLOAT) | (PLUS DECIMAL)
 ;
 instanceLiteralToken:                           STRING | INTEGER | FLOAT | DECIMAL | DATE | BOOLEAN | STRICTTIME

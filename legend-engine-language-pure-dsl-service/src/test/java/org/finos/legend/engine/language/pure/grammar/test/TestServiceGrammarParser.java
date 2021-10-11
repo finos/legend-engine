@@ -856,7 +856,7 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    data: 'test';\n" +
                 "    asserts:\n" +
                 "    [\n" +
-                "      {['testparameter1', 'testparameter2', 'testparameter3'],'expression'}\n" +
+                "      {['testparameter1', 'testparameter2', enum.reference, [1, 2]],'expression'}\n" +
                 "    ];\n" +
                 "  }\n" +
                 "}\n");

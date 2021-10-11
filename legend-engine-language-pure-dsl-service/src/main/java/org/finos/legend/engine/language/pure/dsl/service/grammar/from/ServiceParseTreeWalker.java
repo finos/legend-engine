@@ -269,18 +269,18 @@ public class ServiceParseTreeWalker
 
     private List<ValueSpecification> visitTestParameters(ServiceParserGrammar.TestParametersContext ctx)
     {
-        List<ValueSpecification> testParameters = ctx != null && ctx.combinedExpression() != null ? ListIterate.collect(ctx.combinedExpression(), this::visitTestParameter): null;
+        List<ValueSpecification> testParameters = ctx != null && ctx.serviceParamType() != null ? ListIterate.collect(ctx.serviceParamType(), this::visitTestParameter): null;
         return testParameters;
     }
 
-    private ValueSpecification visitTestParameter(ServiceParserGrammar.CombinedExpressionContext ctx) {
+    private ValueSpecification visitTestParameter(ServiceParserGrammar.ServiceParamTypeContext ctx) {
         DomainParser parser = new DomainParser();
         int startLine = ctx.getStart().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
-        ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
-        String expression = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
-        ValueSpecification valueSpecification = parser.parseCombinedExpression(expression, combineExpressionSourceInformation, null);
+        ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        String parameter = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
+        ValueSpecification valueSpecification = parser.parseServiceParam(parameter, serviceParamSourceInformation, null);
         return valueSpecification;
     }
 
