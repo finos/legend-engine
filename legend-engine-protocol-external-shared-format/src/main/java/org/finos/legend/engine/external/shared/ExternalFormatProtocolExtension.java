@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.DataQualityExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.UrlStreamExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatConnection;
@@ -54,7 +55,8 @@ public class ExternalFormatProtocolExtension implements PureProtocolExtension
                         )).build(),
                 ProtocolSubTypeInfo.Builder.newInstance(ExecutionNode.class)
                                            .withSubtypes(FastList.newListWith(
-                                                   Tuples.pair(DataQualityExecutionNode.class, "dataQuality")
+                                                   Tuples.pair(DataQualityExecutionNode.class, "dataQuality"),
+                                                   Tuples.pair(UrlStreamExecutionNode.class, "urlStream")
                                            )).build()
 
         ));

@@ -33,6 +33,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Col
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleHashingStrategy;
+import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 
 import java.lang.reflect.Method;
 import java.util.List;

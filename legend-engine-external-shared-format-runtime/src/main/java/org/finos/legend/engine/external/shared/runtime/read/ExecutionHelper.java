@@ -14,69 +14,36 @@
 
 package org.finos.legend.engine.external.shared.runtime.read;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatConnection;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
-import org.finos.legend.engine.shared.core.url.UrlFactory;
+import org.finos.legend.engine.plan.execution.result.InputStreamResult;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.UrlStreamExecutionNode;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 public class ExecutionHelper
 {
-    public static InputStream inputStreamFromConnection(Connection connection)
+    public static InputStream inputStreamFromResult(Result result)
     {
-        if (connection instanceof ExternalFormatConnection)
+        if (result instanceof InputStreamResult)
         {
-            return inputStreamFromExternalSource(((ExternalFormatConnection) connection).externalSource);
+            return ((InputStreamResult) result).getInputStream();
         }
         else
         {
-            throw new IllegalStateException("Unsupported connection type for external formats: " + connection.getClass().getSimpleName());
+            throw new IllegalStateException("Unsupported result type for external formats: " + result.getClass().getSimpleName());
         }
     }
 
-    public static String locationFromConnection(Connection connection)
+    public static String locationFromSourceNode(ExecutionNode executionNode)
     {
-        if (connection instanceof ExternalFormatConnection)
+        if (executionNode instanceof UrlStreamExecutionNode)
         {
-            return locationFromExternalSource(((ExternalFormatConnection) connection).externalSource);
+            return ((UrlStreamExecutionNode) executionNode).url;
         }
         else
         {
-            throw new IllegalStateException("Unsupported connection type for external formats: " + connection.getClass().getSimpleName());
-        }
-    }
-
-    public static InputStream inputStreamFromExternalSource(ExternalSource source)
-    {
-        try
-        {
-            if (source instanceof UrlStreamExternalSource)
-            {
-                return UrlFactory.create(((UrlStreamExternalSource) source).url).openStream();
-            }
-            else
-            {
-                throw new IllegalStateException("Unsupported external source: " + source.getClass().getSimpleName());
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String locationFromExternalSource(ExternalSource source)
-    {
-        if (source instanceof UrlStreamExternalSource)
-        {
-            return ((UrlStreamExternalSource) source).url;
-        }
-        else
-        {
-            throw new IllegalStateException("Unsupported external source: " + source.getClass().getSimpleName());
+            throw new IllegalStateException("Unsupported child node type for external formats: " + executionNode.getClass().getSimpleName());
         }
     }
 }
