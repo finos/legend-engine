@@ -27,6 +27,8 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.service.ServiceStoreExecutionExtension;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,7 +44,8 @@ public class TestExtensions
                 .with(RelationalExecutionExtension.class)
                 .with(ExternalFormatExecutionExtension.class)
                 .with(FlatDataExecutionExtension.class)
-                .with(XmlExecutionExtension.class);
+                .with(XmlExecutionExtension.class)
+                .with(ServiceStoreExecutionExtension.class);
         assertHasExtensions(expectedExtensions, ExecutionExtension.class);
     }
 
@@ -51,7 +54,8 @@ public class TestExtensions
     {
         MutableList<Class<? extends StoreExecutorBuilder>> expectedExtensions = Lists.mutable.<Class<? extends StoreExecutorBuilder>>empty()
                 .with(InMemoryStoreExecutorBuilder.class)
-                .with(RelationalStoreExecutorBuilder.class);
+                .with(RelationalStoreExecutorBuilder.class)
+                .with(ServiceStoreExecutorBuilder.class);
         assertHasExtensions(expectedExtensions, StoreExecutorBuilder.class);
     }
 

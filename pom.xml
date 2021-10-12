@@ -38,6 +38,7 @@
         <module>legend-engine-executionPlan-execution-store-relational</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection-api</module>
+        <module>legend-engine-executionPlan-execution-external-store-service</module>
         <module>legend-engine-external-shared</module>
         <module>legend-engine-external-shared-format-model</module>
         <module>legend-engine-external-shared-format-runtime</module>
@@ -67,7 +68,7 @@
         <module>legend-engine-language-pure-dsl-service-generation</module>
         <module>legend-engine-language-pure-dsl-service-execution</module>
         <module>legend-engine-language-pure-store-relational</module>
-        <module>legend-engine-language-pure-store-serviceStore</module>
+        <module>legend-engine-language-external-store-service</module>
         <module>legend-engine-language-graphQL-grammar</module>
         <module>legend-engine-language-graphQL-compiler</module>
         <module>legend-engine-test-runner-shared</module>
@@ -81,7 +82,7 @@
         <module>legend-engine-protocol-external-shared-format</module>
         <module>legend-engine-protocol-pure</module>
         <module>legend-engine-protocol-relational</module>
-        <module>legend-engine-protocol-serviceStore</module>
+        <module>legend-engine-protocol-external-store-service</module>
         <module>legend-engine-protocol-graphQL</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
@@ -440,6 +441,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution-external-store-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-executionPlan-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -553,7 +559,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-protocol-serviceStore</artifactId>
+                <artifactId>legend-engine-protocol-external-store-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -715,7 +721,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-language-pure-store-serviceStore</artifactId>
+                <artifactId>legend-engine-language-external-store-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
