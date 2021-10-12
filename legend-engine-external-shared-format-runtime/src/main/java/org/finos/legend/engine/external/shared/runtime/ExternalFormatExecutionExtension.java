@@ -25,12 +25,17 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.DataQualityExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.UrlStreamExecutionNode;
+import org.finos.legend.engine.shared.core.url.UrlFactory;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,11 +54,28 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
                                              {
                                                  return executeDataQuality((DataQualityExecutionNode) executionNode, pm, executionState);
                                              }
+                                             else if (executionNode instanceof UrlStreamExecutionNode)
+                                             {
+                                                 return executeUrlStream((UrlStreamExecutionNode) executionNode, pm, executionState);
+                                             }
                                              else
                                              {
                                                  return null;
                                              }
                                          });
+    }
+
+    private Result executeUrlStream(UrlStreamExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        try
+        {
+            InputStream inputStream = UrlFactory.create(node.url).openStream();
+            return new InputStreamResult(inputStream);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private Result executeDataQuality(DataQualityExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)

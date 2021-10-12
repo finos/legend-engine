@@ -810,9 +810,11 @@ public class DomainParseTreeWalker
         }
         else if (ctx.functionExpressionLatestMilestoningDateParameter() != null)
         {
-            CLatestDate date = new CLatestDate();
-            date.multiplicity = getMultiplicityOneOne();
-            parameters.add(date);
+            ctx.functionExpressionLatestMilestoningDateParameter().LATEST_DATE().forEach(lDate -> {
+                CLatestDate date = new CLatestDate();
+                date.multiplicity = getMultiplicityOneOne();
+                parameters.add(date);
+            });
         }
         AppliedProperty appliedProperty = new AppliedProperty();
         appliedProperty.property = PureGrammarParserUtility.fromIdentifier(property);

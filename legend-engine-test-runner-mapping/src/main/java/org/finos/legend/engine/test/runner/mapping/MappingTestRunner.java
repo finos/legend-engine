@@ -14,11 +14,6 @@
 
 package org.finos.legend.engine.test.runner.mapping;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Consumer;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -59,11 +54,24 @@ import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExt
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.function.Consumer;
 import javax.ws.rs.core.MediaType;
 
 public class MappingTestRunner
 {
-    private static final ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES,true);
+    private static final ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
     private final PureModel pureModel;
     private final PlanExecutor executor;
@@ -88,7 +96,7 @@ public class MappingTestRunner
 
     public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
     {
-          this(pureModel, mappingPath, mappingTest,executor, extensions, transformers, null);
+        this(pureModel, mappingPath, mappingTest, executor, extensions, transformers, null);
     }
 
 
@@ -112,14 +120,14 @@ public class MappingTestRunner
             {
                 JsonModelConnection jsonModelConnection = new JsonModelConnection();
                 jsonModelConnection._class = objectInputData.sourceClass;
-                jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes());
+                jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(jsonModelConnection);
             }
             else if (ObjectInputType.XML.equals(objectInputData.inputType))
             {
                 XmlModelConnection xmlModelConnection = new XmlModelConnection();
                 xmlModelConnection._class = objectInputData.sourceClass;
-                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes());
+                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(xmlModelConnection);
             }
             else
@@ -136,7 +144,7 @@ public class MappingTestRunner
     private static Connection getTestConnectionFromFactories(InputData inputData)
     {
         MutableList<ConnectionFactoryExtension> factories = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
-        return  factories
+        return factories
                 .collect(f -> f.tryBuildFromInputData(inputData))
                 .select(Objects::nonNull)
                 .select(Optional::isPresent)
@@ -159,7 +167,7 @@ public class MappingTestRunner
             List<JsonNode> actual = getResultValuesAsJson(actualResult);
             String rawActualJSON = objectMapper.writeValueAsString(actual);
 
-            List<JsonNode> expected = this.nodeToList(this.parseJsonString(getExpected().replace("\\n","\n")));
+            List<JsonNode> expected = this.nodeToList(this.parseJsonString(getExpected().replace("\\n", "\n")));
             String rawExpectedJSON = objectMapper.writeValueAsString(expected);
 
             this.assertEquals(expected, actual);
@@ -196,18 +204,10 @@ public class MappingTestRunner
 
     private void assertEquals(String expected, String actual)
     {
-        if(isEquals(expected, actual)){
-            return;
+        if (!Objects.equals(expected, actual))
+        {
+            throw new ComparisonError(expected, actual);
         }
-        throw new ComparisonError(expected, actual);
-    }
-
-    private boolean isEquals(String expected, String actual)
-    {
-        if(expected == null){
-            return actual == null;
-        }
-        return expected.equals(actual);
     }
 
     protected void assertEquals(JsonNode expected, JsonNode actual)

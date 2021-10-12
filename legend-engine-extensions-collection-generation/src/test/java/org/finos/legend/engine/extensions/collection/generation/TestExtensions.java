@@ -20,6 +20,8 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
+import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
+import org.finos.legend.engine.external.shared.format.model.ExternalFormatPlanGeneratorExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
@@ -39,9 +41,13 @@ public class TestExtensions
     private static final ImmutableList<Class<? extends PureProtocolExtension>> EXPECTED_PROTOCOL_EXTENSIONS = Lists.mutable.<Class<? extends PureProtocolExtension>>empty()
             .with(org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
+            .with(org.finos.legend.engine.external.shared.ExternalFormatProtocolExtension.class)
+            .with(org.finos.legend.engine.external.format.flatdata.FlatDataProtocolExtension.class)
+            .with(org.finos.legend.engine.external.format.xml.XmlProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
+            .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
             .toImmutable();
@@ -59,6 +65,18 @@ public class TestExtensions
     private static final ImmutableList<Class<? extends PureGrammarParserExtension>> EXPECTED_GRAMMAR_EXTENSIONS = Lists.mutable.<Class<? extends PureGrammarParserExtension>>empty()
             .with(org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser.class)
             .with(org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension.class)
+            .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
+            .with(org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension.class)
+            .toImmutable();
+
+    private static final ImmutableList<Class<? extends PlanGeneratorExtension>> EXPECTED_PLAN_GENERATOR_EXTENSIONS = Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty()
+            .with(LegendPlanGeneratorExtension.class)
+            .with(ExternalFormatPlanGeneratorExtension.class)
+            .toImmutable();
+
+    private static final ImmutableList<Class<? extends ExternalFormatExtension>> EXPECTED_EXTERNAL_FORMAT_EXTENSIONS = Lists.mutable.<Class<? extends ExternalFormatExtension>>empty()
+            .with(org.finos.legend.engine.external.format.flatdata.FlatDataExternalFormatExtension.class)
+            .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)
             .toImmutable();
 
     @Test
@@ -82,7 +100,13 @@ public class TestExtensions
     @Test
     public void testPlanGeneratorExtensionArePresent()
     {
-        assertHasExtensions(Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty().with(LegendPlanGeneratorExtension.class), PlanGeneratorExtension.class, true);
+        assertHasExtensions(Sets.mutable.withAll(EXPECTED_PLAN_GENERATOR_EXTENSIONS), PlanGeneratorExtension.class, true);
+    }
+
+    @Test
+    public void testExpectedExternalFormatExtensionsArePresent()
+    {
+        assertHasExtensions(org.eclipse.collections.api.factory.Sets.mutable.withAll(EXPECTED_EXTERNAL_FORMAT_EXTENSIONS), ExternalFormatExtension.class, true);
     }
 
     private <T> void assertHasExtensions(Iterable<? extends Class<? extends T>> expectedExtensionClasses, Class<T> extensionClass, boolean failOnAdditional)

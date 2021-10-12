@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 public class RelationalRootQueryTempTableGraphFetchExecutionNode extends RelationalClassQueryTempTableGraphFetchExecutionNode
 {
     public Integer batchSize;
+    public Boolean checked;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

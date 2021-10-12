@@ -60,6 +60,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Sequen
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryCrossStoreGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
@@ -483,6 +484,12 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     public Result visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
     {
         return inMemoryRootGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
+    }
+
+    @Override
+    public Result visit(InMemoryCrossStoreGraphFetchExecutionNode inMemoryCrossStoreGraphFetchExecutionNode)
+    {
+        return inMemoryCrossStoreGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
     }
 
     @Override
