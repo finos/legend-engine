@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.external.format.flatdata.FlatDataExecutionExtension;
+import org.finos.legend.engine.external.format.json.JsonExecutionExtension;
 import org.finos.legend.engine.external.format.xml.XmlExecutionExtension;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatExecutionExtension;
 import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
@@ -44,6 +45,7 @@ public class TestExtensions
                 .with(RelationalExecutionExtension.class)
                 .with(ExternalFormatExecutionExtension.class)
                 .with(FlatDataExecutionExtension.class)
+                .with(JsonExecutionExtension.class)
                 .with(XmlExecutionExtension.class)
                 .with(ServiceStoreExecutionExtension.class);
         assertHasExtensions(expectedExtensions, ExecutionExtension.class);
