@@ -481,6 +481,30 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "   let x = ^anything::goes2(v2=^anything::goes(v='value'))\n" +
                 "}\n");
     }
+    @Test
+    public void testMetaNewFunctionWithSingleParameter()
+    {
+        test("Class modelA::Firm extends meta::pure::metamodel::type::Any\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class modelA::Person extends meta::pure::metamodel::type::Any\n" +
+                "[\n" +
+                "  [^modelA::Firm(name='Goldman Sachs'), ^modelA::Firm(name='Google')]->filter(t|$t.name == $this.firmName)->isNotEmpty()\n" +
+                "]\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  firmName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association modelA::Person_Firm\n" +
+                "{\n" +
+                "  employee: modelA::Person[*];\n" +
+                "  employer: modelA::Firm[*];\n" +
+                "}\n");
+    }
+
 
     @Test
     public void testMultiIFExpressions()

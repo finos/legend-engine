@@ -49,6 +49,7 @@ embeddedH2DSPDirectory:                     DIRECTORY COLON STRING SEMI_COLON
 embeddedH2DSPAutoServerMode:                EMBEDDED_H2_DSP_AUTO_SERVER_MODE COLON BOOLEAN SEMI_COLON
 ;
 
+
 snowflakeDatasourceSpecification:           SNOWFLAKE
                                                 BRACE_OPEN
                                                     (
@@ -58,19 +59,31 @@ snowflakeDatasourceSpecification:           SNOWFLAKE
                                                         | snowflakeRegion
                                                         | cloudType
                                                         | snowflakeQuotedIdentifiersIgnoreCase
+                                                        | dbProxyHost
+                                                        | dbProxyPort
+                                                        | dbNonProxyHosts
+                                                        | dbAccountType
+                                                        | dbOrganization
                                                     )*
                                                 BRACE_CLOSE
 ;
 
 dbWarehouse:                                WAREHOUSE COLON STRING SEMI_COLON
 ;
-
 dbAccount:                                  ACCOUNT COLON STRING SEMI_COLON
 ;
-
+dbProxyHost:                                PROXYHOST COLON STRING SEMI_COLON
+;
+dbProxyPort:                                PROXYPORT COLON STRING SEMI_COLON
+;
+dbNonProxyHosts:                            NONPROXYHOSTS COLON STRING SEMI_COLON
+;
+dbAccountType:                              ACCOUNTTYPE COLON identifier SEMI_COLON
+;
+dbOrganization:                             ORGANIZATION COLON STRING SEMI_COLON
+;
 snowflakeRegion:                            REGION COLON STRING SEMI_COLON
 ;
-
 cloudType:                                  CLOUDTYPE COLON STRING SEMI_COLON
 ;
 snowflakeQuotedIdentifiersIgnoreCase:       QUOTED_IDENTIFIERS_IGNORE_CASE COLON BOOLEAN SEMI_COLON

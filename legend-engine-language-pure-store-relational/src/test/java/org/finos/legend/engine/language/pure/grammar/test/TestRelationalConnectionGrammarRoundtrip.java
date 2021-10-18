@@ -121,6 +121,77 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "    passPhraseVaultReference: 'passRef';\n" +
                 "  };\n" +
                 "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    cloudType: 'aws';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    cloudType: 'aws';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: MultiTenant;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    cloudType: 'aws';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: BadOption;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
 
         test("###Connection\n" +
                 "RelationalDatabaseConnection meta::mySimpleConnection\n" +

@@ -23,6 +23,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
+import java.util.Optional;
+
 public class DataSourceSpecificationParseTreeWalker
 {
     public LocalH2DatasourceSpecification visitLocalH2DatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.LocalH2DatasourceSpecificationContext dbSpecCtx)
@@ -84,6 +86,22 @@ public class DataSourceSpecificationParseTreeWalker
         {
             dsSpec.quotedIdentifiersIgnoreCase = Boolean.parseBoolean(snowflakeQuotedIdentifiersIgnoreCaseCtx.BOOLEAN().getText());
         }
+       // proxyHost
+        DataSourceSpecificationParserGrammar.DbProxyHostContext proxyHostContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbProxyHost(), "proxyHost", dsSpec.sourceInformation);
+        Optional.ofNullable(proxyHostContext).ifPresent(hostCtx -> dsSpec.proxyHost = PureGrammarParserUtility.fromGrammarString(hostCtx.STRING().getText(), true));
+        // proxyPort
+        DataSourceSpecificationParserGrammar.DbProxyPortContext proxyPortContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbProxyPort(), "proxyPort", dsSpec.sourceInformation);
+        Optional.ofNullable(proxyPortContext).ifPresent(portCtx -> dsSpec.proxyPort = PureGrammarParserUtility.fromGrammarString(portCtx.STRING().getText(), true));
+        // nonProxyHosts
+        DataSourceSpecificationParserGrammar.DbNonProxyHostsContext nonProxyHostsContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbNonProxyHosts(), "nonProxyHosts", dsSpec.sourceInformation);
+        Optional.ofNullable(nonProxyHostsContext).ifPresent(nonProxyHostsCtx -> dsSpec.nonProxyHosts = PureGrammarParserUtility.fromGrammarString(nonProxyHostsCtx.STRING().getText(), true));
+        // accountType
+        DataSourceSpecificationParserGrammar.DbAccountTypeContext accountTypeContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbAccountType(), "accountType", dsSpec.sourceInformation);
+        Optional.ofNullable(accountTypeContext).ifPresent(accountTypeCtx -> dsSpec.accountType = PureGrammarParserUtility.fromIdentifier(accountTypeCtx.identifier()));
+        // organization
+        DataSourceSpecificationParserGrammar.DbOrganizationContext organizationContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbOrganization(), "organization", dsSpec.sourceInformation);
+        Optional.ofNullable(organizationContext).ifPresent(organizationCtx -> dsSpec.organization = PureGrammarParserUtility.fromGrammarString(organizationCtx.STRING().getText(), true));
+
         return dsSpec;
     }
 

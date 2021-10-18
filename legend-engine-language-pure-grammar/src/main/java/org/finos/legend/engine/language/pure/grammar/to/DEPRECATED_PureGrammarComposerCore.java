@@ -100,6 +100,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.pat
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -697,7 +698,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         else if ("new".equals(function))
         {
-            List<ValueSpecification> values = ((Collection) parameters.get(parameters.size() - 1)).values;
+            ValueSpecification param = parameters.get(parameters.size() - 1);
+            List<ValueSpecification> values = param instanceof Collection ? ((Collection) param).values : Arrays.asList(param);
             return "^" + parameters.get(0).accept(this) + "(" + Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ") + ")";
         }
         else if ("not".equals(function))
