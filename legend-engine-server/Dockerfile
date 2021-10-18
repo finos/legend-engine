@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM openjdk:11.0.12-bullseye
+FROM openjdk:11.0.12
 COPY target/legend-engine-server-*.jar /app/bin/
-CMD java -XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=60 -Xss4M -cp /app/bin/*-shaded.jar -Dfile.encoding=UTF8 org.finos.legend.engine.server.Server server /config/config.json
+CMD java -cp /app/bin/*-shaded.jar \
+-XX:+ExitOnOutOfMemoryError \
+-XX:MaxRAMPercentage=60 \
+-Xss4M \
+-Dfile.encoding=UTF8 \
+org.finos.legend.engine.server.Server server /config/config.json
