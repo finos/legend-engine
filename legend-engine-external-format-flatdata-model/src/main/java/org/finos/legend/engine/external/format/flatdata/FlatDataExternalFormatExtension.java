@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.flatdata;
 
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.flatdata.compile.FlatDataSchemaCompiler;
 import org.finos.legend.engine.external.format.flatdata.fromModel.ModelToFlatDataConfiguration;
@@ -35,6 +36,7 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration;
@@ -128,8 +130,8 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
     @Override
     public List<String> getRegisterablePackageableElementNames()
     {
-        List<String> versions = Arrays.asList("vX_X_X");
-        return ListIterate.collect(versions, v -> "meta::protocols::pure::" + v + "::external::format::flatdata::serializerExtension_String_1__SerializerExtension_1_");
+        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
+        return versions.collect(v -> "meta::protocols::pure::" + v + "::external::format::flatdata::serializerExtension_String_1__SerializerExtension_1_").toList();
     }
 
     private FlatData transformFlatData(Root_meta_external_format_flatdata_metamodel_FlatData flatData)
