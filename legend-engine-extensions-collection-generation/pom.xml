@@ -54,6 +54,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-format-json-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-format-xml-model</artifactId>
         </dependency>
         <dependency>
@@ -103,6 +107,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-external-format-flatdata</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-external-format-json</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

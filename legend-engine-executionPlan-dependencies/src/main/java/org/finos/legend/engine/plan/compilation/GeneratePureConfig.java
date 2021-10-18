@@ -439,8 +439,8 @@ public class GeneratePureConfig
 
         out.lineOut("");
         out.lineOut("import " + purePackage + "*;");
-        out.lineOut("import meta::java::generation::convention::*;");
-        out.lineOut("import meta::java::metamodel::factory::*;");
+        out.lineOut("import meta::external::language::java::factory::*;");
+        out.lineOut("import meta::external::language::java::transform::*;");
         out.lineOut("");
 
         if (!classes.isEmpty())

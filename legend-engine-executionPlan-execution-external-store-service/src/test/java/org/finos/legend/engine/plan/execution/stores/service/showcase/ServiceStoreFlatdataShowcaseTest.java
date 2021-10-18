@@ -27,7 +27,7 @@ import org.junit.Test;
 import static org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils.buildPlanForQuery;
 import static org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils.executePlan;
 
-public class ServiceStoreShowcaseTest
+public class ServiceStoreFlatdataShowcaseTest
 {
     private static final String SERVICE_STORE;
     private static final String SERVICE_STORE_MAPPING;
@@ -42,9 +42,9 @@ public class ServiceStoreShowcaseTest
     static
     {
         PORT = DynamicPortGenerator.generatePort();
-        SERVER_RESOURCE_FILE_PATH = "/showcase/pathContent.json";
+        SERVER_RESOURCE_FILE_PATH = "/showcase/flatdata/pathContent.json";
 
-        SERVICE_STORE = ServiceStoreTestUtils.readGrammarFromPureFile("/showcase/serviceStore.pure");
+        SERVICE_STORE = ServiceStoreTestUtils.readGrammarFromPureFile("/showcase/flatdata/serviceStore.pure");
         SERVICE_STORE_CONNECTION =
                 "###Connection\n" +
                 "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
@@ -52,8 +52,8 @@ public class ServiceStoreShowcaseTest
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:" + PORT + "';\n" +
                 "}";
-        SERVICE_STORE_MAPPING = ServiceStoreTestUtils.readGrammarFromPureFile("/showcase/mapping.pure");
-        MODELS = ServiceStoreTestUtils.readGrammarFromPureFile("/showcase/model.pure");
+        SERVICE_STORE_MAPPING = ServiceStoreTestUtils.readGrammarFromPureFile("/showcase/flatdata/mapping.pure");
+        MODELS = ServiceStoreTestUtils.readGrammarFromPureFile("/showcase/flatdata/model.pure");
     }
 
     @BeforeClass
