@@ -14,14 +14,15 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
-import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
-import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.IdentityFactory;
-
-import javax.security.auth.Subject;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import javax.security.auth.Subject;
+
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 
 /* Work in progress, do not use */
 
@@ -50,7 +51,8 @@ public class ServiceRunnerInput
 
     public ServiceRunnerInput withIdentity(Subject subject)
     {
-        return this.withIdentity(IdentityFactory.newSubjectIdentity(subject));
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(subject);
+        return this.withIdentity(identity);
     }
 
     public ServiceRunnerInput withIdentity(Identity identity)

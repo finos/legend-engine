@@ -14,23 +14,50 @@
 
 package org.finos.legend.engine.shared.core.identity;
 
-import javax.security.auth.Subject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-/* Work in progress, do not use */
-
-public interface Identity
+public class Identity
 {
-    /**
-     * Get the user id
-     *
-     * @return user id
-     */
-    String getUser();
+    private String name;
+    private final List<Credential> credentials = new ArrayList<>();
 
-    /**
-     * Get the user subject if present, otherwise return null
-     *
-     * @return user subject or null
-     */
-    Subject getSubject();
+    public Identity(String name, Credential credential)
+    {
+        this.name = name;
+        this.credentials.add(credential);
+    }
+
+    public Identity(String name)
+    {
+        this.name = name;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public <T extends Credential> Optional<T> getCredential(Class<T> credentialType)
+    {
+        // TODO : Can there be more than one cred of the same type ??
+        Optional<Credential> holder = this.credentials.stream().filter(c -> credentialType.isInstance(c)).findFirst();
+        if (!holder.isPresent())
+        {
+            return Optional.empty();
+        }
+        Credential raw = holder.get();
+        return Optional.of(credentialType.cast(raw));
+    }
+
+    public int countCredentials()
+    {
+        return this.credentials.size();
+    }
 }

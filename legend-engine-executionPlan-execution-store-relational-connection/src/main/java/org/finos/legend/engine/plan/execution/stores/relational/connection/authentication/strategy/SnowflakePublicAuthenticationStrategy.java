@@ -1,5 +1,18 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
 
+import java.io.StringReader;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import javax.crypto.EncryptedPrivateKeyInfo;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
 import com.google.common.base.Splitter;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -9,7 +22,6 @@ import net.snowflake.client.jdbc.internal.org.bouncycastle.openssl.jcajce.JceOpe
 import net.snowflake.client.jdbc.internal.org.bouncycastle.operator.InputDecryptorProvider;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.apache.commons.codec.binary.Base64;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
@@ -18,22 +30,12 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.SnowflakePublicAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionState;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
-import org.pac4j.core.profile.CommonProfile;
-
-import javax.crypto.EncryptedPrivateKeyInfo;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.security.auth.Subject;
-import java.io.StringReader;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.Security;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
 
 public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrategy
 {
@@ -49,29 +51,18 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
     }
 
     @Override
-    public String getLogin()
-    {
-        return this.publicUserName;
-    }
-
-    @Override
-    public String getPassword()
-    {
-        return null;
-    }
-
-    @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
+        PrivateKeyCredential keyPairCredential = this.resolveCredential(properties, this.privateKeyVaultReference, this.passPhraseVaultReference, this.publicUserName);
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        connectionProperties.put("privateKey", getEncryptedPrivateKey(this.privateKeyVaultReference, this.passPhraseVaultReference));
-        connectionProperties.put("user", this.publicUserName);
+        connectionProperties.put("privateKey", keyPairCredential.getPrivateKey());
+        connectionProperties.put("user", keyPairCredential.getUser());
         return Tuples.pair(url, connectionProperties);
     }
 
     @Override
-    protected Connection getConnectionImpl(DataSourceWithStatistics ds, Subject subject, MutableList<CommonProfile> profiles) throws ConnectionException
+    public Connection getConnection(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
         try
         {
@@ -87,6 +78,17 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
     public AuthenticationStrategyKey getKey()
     {
         return new SnowflakePublicAuthenticationStrategyKey(this.privateKeyVaultReference, this.passPhraseVaultReference, this.publicUserName);
+    }
+
+    private PrivateKeyCredential resolveCredential(Properties properties, String privateKeyVaultReference, String passPhraseVaultReference, String publicUserName)
+    {
+        ConnectionState connectionState = ConnectionStateManager.getInstance().getStateUsing(properties);
+        if (!connectionState.getCredentialSupplier().isPresent())
+        {
+            PrivateKey privateKey = this.getEncryptedPrivateKey(privateKeyVaultReference, passPhraseVaultReference);
+            return new PrivateKeyCredential(publicUserName, privateKey);
+        }
+        return (PrivateKeyCredential)super.getDatabaseCredential(connectionState);
     }
 
     private PrivateKey getEncryptedPrivateKey(String privateKeyVaultReference, String passPhraseVaultReference)

@@ -37,6 +37,7 @@
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
         <module>legend-engine-executionPlan-execution-store-relational</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection</module>
+        <module>legend-engine-executionPlan-execution-store-relational-connection-tests</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection-api</module>
         <module>legend-engine-executionPlan-execution-external-store-service</module>
         <module>legend-engine-external-shared</module>
@@ -96,6 +97,7 @@
         <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
+        <module>legend-engine-authentication</module>
     </modules>
 
     <properties>
@@ -192,6 +194,7 @@
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
         <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
+        <byte-buddy.version>1.11.20</byte-buddy.version>
     </properties>
 
     <scm>
@@ -753,6 +756,12 @@
                 <artifactId>legend-engine-application-query</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-authentication</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
 
             <!-- PURE -->
@@ -1131,6 +1140,21 @@
                 <version>${junit.version}</version>
             </dependency>
             <!-- JUNIT -->
+
+            <!-- concurrency testing -->
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${byte-buddy.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- concurrency testing -->
 
             <!-- ANTLR -->
             <dependency>

@@ -93,6 +93,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-javaCompiler</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-authentication</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- ALLOY -->

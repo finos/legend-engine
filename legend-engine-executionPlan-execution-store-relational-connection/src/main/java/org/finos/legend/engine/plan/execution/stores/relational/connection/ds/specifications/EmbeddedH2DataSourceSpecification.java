@@ -14,19 +14,20 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
+import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
-import org.eclipse.collections.api.list.MutableList;
-import org.pac4j.core.profile.CommonProfile;
-
-import javax.security.auth.Subject;
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class EmbeddedH2DataSourceSpecification extends DataSourceSpecification
 {
@@ -42,20 +43,15 @@ public class EmbeddedH2DataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put(H2_DATA_DIRECTORY_PATH, key.getDirectory().getAbsolutePath());
         this.extraDatasourceProperties.put(H2_AUTO_SERVER_MODE, String.valueOf(key.isAutoServerMode()).toUpperCase());
         this.key = key;
-        this.dataSource = this.buildDataSource(null);
     }
 
     @Override
-    protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
-    {
-        return this.buildDataSource(null, -1, this.key.getDatabaseName(), profiles);
-    }
-
-    @Override
-    public Connection getConnectionUsingSubject(Subject subject)
+    public Connection getConnectionUsingIdentity(Identity identity, Optional<CredentialSupplier> databaseCredentialSupplier)
     {
         try
         {
+            super.cacheConnectionState(identity, databaseCredentialSupplier);
+            this.dataSource = this.buildDataSource(identity);
             return this.dataSource.getConnection();
         }
         catch (SQLException e)
