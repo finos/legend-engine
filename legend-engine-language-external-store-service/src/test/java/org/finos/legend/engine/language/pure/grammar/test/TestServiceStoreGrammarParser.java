@@ -49,7 +49,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService/';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -66,7 +66,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : 'testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -83,7 +83,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : [String] ( location = query )\n" +
                 "    );\n" +
@@ -100,7 +100,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : [String] ( location = query, style = simple )\n" +
                 "    );\n" +
@@ -117,7 +117,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query, style = simple, explode = true )\n" +
                 "    );\n" +
@@ -134,7 +134,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -145,7 +145,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -162,7 +162,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -176,7 +176,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -195,7 +195,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    path : '/testService';\n" +
                 "    requestBody : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -212,7 +212,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = path )\n" +
                 "    );\n" +
@@ -229,7 +229,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = path )\n" +
                 "    );\n" +
@@ -246,7 +246,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : PUT;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = path )\n" +
                 "    );\n" +
@@ -263,7 +263,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = requestBody )\n" +
                 "    );\n" +
