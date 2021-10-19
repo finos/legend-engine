@@ -143,17 +143,15 @@ join:                                       JOIN identifier PAREN_OPEN operation
 //
 // Also note that we split the rule `operation` because in `joinOperation` we cannot directly use `joinOperation` as the operation
 //
-// IMPORTANT: Notice the way we construct `dynamicFunctionOperation`, `booleanOperation`, and `atomicOperation` which
+// IMPORTANT: Notice the way we construct `booleanOperation`, and `atomicOperation` which
 // forms a hierarchy/precedence. The gist of this is:
 //  - The more deeply nested the parser rule, the higher the precedence it is
 //  - The higher precedence rule should use only token of precedence equals or higher than itself
 //    (i.e. `atomicOperation` should not use `booleanOperation` in its parser definition)
 // See https://stackoverflow.com/questions/1451728/antlr-operator-precedence
 
-operation:                                  dynamicFunctionOperation
+operation:                                  booleanOperation
                                             | joinOperation
-;
-dynamicFunctionOperation:                   booleanOperation
 ;
 booleanOperation:                           atomicOperation booleanOperationRight?
 ;
@@ -165,6 +163,7 @@ atomicOperation:                            (
                                                 groupOperation
                                                 | ( databasePointer? functionOperation )
                                                 | columnOperation
+                                                | joinOperation
                                                 | constant
                                             )
                                             atomicOperationRight?
@@ -193,7 +192,7 @@ tableAliasColumnOperationWithTarget:        TARGET DOT relationalIdentifier
 ;
 tableAliasColumnOperationWithScopeInfo:     relationalIdentifier (DOT scopeInfo)?
 ;
-joinOperation:                              databasePointer? joinSequence (PIPE (dynamicFunctionOperation | tableAliasColumnOperation))?
+joinOperation:                              databasePointer? joinSequence (PIPE (booleanOperation | tableAliasColumnOperation))?
 ;
 joinSequence:                               joinPointer (GREATER_THAN joinPointerFull)*
 ;

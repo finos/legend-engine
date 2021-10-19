@@ -23,9 +23,9 @@ public class ClassView extends PositionedRectangle
     public String id;
     @JsonProperty(value = "class")
     public String _class;
-    public boolean hideProperties;
-    public boolean hideTaggedValues;
-    public boolean hideStereotypes;
+    public Boolean hideProperties;
+    public Boolean hideTaggedValues;
+    public Boolean hideStereotypes;
     public SourceInformation sourceInformation;
     public SourceInformation classSourceInformation;
 }

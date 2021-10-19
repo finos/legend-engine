@@ -96,15 +96,15 @@ public class DiagramGrammarComposerExtension implements PureGrammarComposerExten
         appendTabString(builder, 2).append("class: ").append(PureGrammarComposerUtility.convertPath(classView._class)).append(";\n");
         appendTabString(builder, 2).append("position: ").append(renderPoint(classView.position)).append(";\n");
         appendTabString(builder, 2).append("rectangle: ").append(renderRectangle(classView.rectangle)).append(";\n");
-        if (classView.hideProperties)
+        if (classView.hideProperties != null && classView.hideProperties)
         {
             builder.append(getTabString(2)).append("hideProperties: true").append(";\n");
         }
-        if (classView.hideTaggedValues)
+        if (classView.hideTaggedValues != null && classView.hideTaggedValues)
         {
             builder.append(getTabString(2)).append("hideTaggedValue: true").append(";\n");
         }
-        if (classView.hideStereotypes)
+        if (classView.hideStereotypes != null && classView.hideStereotypes)
         {
             builder.append(getTabString(2)).append("hideStereotype: true").append(";\n");
         }

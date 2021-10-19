@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.xsd;
 
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.xml.XmlExternalFormatPureExtension;
 import org.finos.legend.engine.external.format.xsd.compile.XsdCompiler;
@@ -25,6 +26,7 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_Schema;
@@ -102,7 +104,7 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     @Override
     public List<String> getRegisterablePackageableElementNames()
     {
-        List<String> versions = Arrays.asList("vX_X_X");
-        return ListIterate.collect(versions, v -> "meta::protocols::pure::"  + v + "::external::format::xml::serializerExtension_String_1__SerializerExtension_1_");
+        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
+        return versions.collect(v -> "meta::protocols::pure::"  + v + "::external::format::xml::serializerExtension_String_1__SerializerExtension_1_").toList();
     }
 }
