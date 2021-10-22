@@ -21,21 +21,19 @@ import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 
-public class MetadataWrapper implements org.finos.legend.pure.runtime.java.compiled.metadata.Metadata
+public class MetadataWrapper implements Metadata
 {
-    private Metadata lazy;
-    private Package root;
-    private PureModel pureModel;
+    private final Metadata lazy;
+    private final Package root;
+    private final PureModel pureModel;
 
-    public MetadataWrapper(Package root, MetadataLazy lazy)
+    public MetadataWrapper(Package root, Metadata lazy)
     {
-        this.root = root;
-        this.lazy = lazy;
+        this(root, lazy, null);
     }
 
-    public MetadataWrapper(Package root, MetadataLazy lazy, PureModel pureModel)
+    public MetadataWrapper(Package root, Metadata lazy, PureModel pureModel)
     {
         this.root = root;
         this.lazy = lazy;
@@ -63,29 +61,25 @@ public class MetadataWrapper implements org.finos.legend.pure.runtime.java.compi
     @Override
     public CoreInstance getMetadata(String classifier, String id)
     {
+        if ((M3Paths.Package.equals(classifier) && M3Paths.Root.equals(id)))
+        {
+            return this.root;
+        }
         try
         {
-            if ((M3Paths.Package.equals(classifier) && M3Paths.Root.equals(id)))
-            {
-                return this.root;
-            }
-            else
-            {
-                return this.lazy.getMetadata(classifier, id);
-            }
-
+            return this.lazy.getMetadata(classifier, id);
         }
         catch (RuntimeException e)
         {
-            CoreInstance type = pureModel.getTypeFromIndex(id.substring(M3Paths.Root.length() + 2));
-            if (type == null)
+            if (this.pureModel != null)
             {
-                throw new PureExecutionException(e);
+                CoreInstance type = this.pureModel.getTypeFromIndex(id.substring(M3Paths.Root.length() + 2));
+                if (type != null)
+                {
+                    return type;
+                }
             }
-            else
-            {
-                return type;
-            }
+            throw new PureExecutionException(e);
         }
     }
 
