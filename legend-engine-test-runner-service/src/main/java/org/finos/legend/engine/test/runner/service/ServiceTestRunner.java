@@ -40,6 +40,8 @@ import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemorySto
 import org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreState;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -265,7 +267,7 @@ public class ServiceTestRunner
                     // Execute Plan
                     ExecutionState testExecutionState = new ExecutionState(parameters,
                             Lists.mutable.withAll(executionPlan.templateFunctions),
-                            Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(execScope == null ? -1 : execScope.getPort())), new InMemoryStoreExecutionState(new InMemoryStoreState()))
+                            Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(execScope == null ? -1 : execScope.getPort())), new InMemoryStoreExecutionState(new InMemoryStoreState()), new ServiceStoreExecutionState(new ServiceStoreState()))
                     );
                     Result result = executor.execute(executionPlan, testExecutionState, null, null);
 

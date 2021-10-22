@@ -1,0 +1,16 @@
+[
+  {
+    "firstName": "Nancy",
+    "lastName": "Fraher",
+    "dateOfBirth": "1970-12-13",
+    "isAlive": false,
+    "heightInMeters": 1.71
+  },
+  {
+    "firstName": "Jason",
+    "lastName": "Schlichting",
+    "dateOfBirth": "1968-03-05",
+    "isAlive": true,
+    "heightInMeters": 1.82
+  }
+]

@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 import java.util.List;
 
+@Deprecated
 public class RelationalCrossRootGraphFetchExecutionNode extends RelationalTempTableGraphFetchExecutionNode
 {
     public String parentTempTableName;

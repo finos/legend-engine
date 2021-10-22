@@ -1082,7 +1082,7 @@ public class Handlers
     public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, CompileContext compileContext, ProcessingContext processingContext)
     {
         FunctionExpressionBuilder builder = compileContext.resolveFunctionBuilder(functionName, this.map, sourceInformation, processingContext);
-        return builder.buildFunctionExpression(parameters, openVariables, compileContext, processingContext);
+        return builder.buildFunctionExpression(parameters, openVariables, compileContext, processingContext, sourceInformation);
     }
 
     private void register(String name, boolean isNative, ReturnInference inference)

@@ -21,10 +21,18 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
+import java.util.Collections;
 import java.util.List;
 
 public class MorphirGenerationConfig extends GenerationConfiguration
 {
+    @Override
+    public List<String> generationScope()
+    {
+        String first = this.scopeElements.get(0);
+        return Collections.singletonList(first.substring(0, first.indexOf("::")));
+    }
+
     public Root_meta_external_language_morphir_generation_MorphirConfig process(PureModel pureModel)
     {
         Root_meta_external_language_morphir_generation_MorphirConfig generateMorphirIRConfig = core_external_language_morphir_integration.Root_meta_external_language_morphir_generation_defaultConfig__MorphirConfig_1_(pureModel.getExecutionSupport());

@@ -23,6 +23,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryCrossStoreGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
@@ -51,7 +52,8 @@ import java.util.List;
         @JsonSubTypes.Type(value = FreeMarkerConditionalExecutionNode.class, name = "freeMarkerConditionalExecutionNode"),
         @JsonSubTypes.Type(value = StoreStreamReadingExecutionNode.class, name = "storeStreamReading"),
         @JsonSubTypes.Type(value = InMemoryRootGraphFetchExecutionNode.class, name = "inMemoryRootGraphFetch"),
-        @JsonSubTypes.Type(value = InMemoryPropertyGraphFetchExecutionNode.class, name = "inMemoryPropertyGraphFetch")
+        @JsonSubTypes.Type(value = InMemoryPropertyGraphFetchExecutionNode.class, name = "inMemoryPropertyGraphFetch"),
+        @JsonSubTypes.Type(value = InMemoryCrossStoreGraphFetchExecutionNode.class, name = "inMemoryCrossStoreGraphFetch")
 })
 public abstract class ExecutionNode
 {

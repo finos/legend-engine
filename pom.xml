@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>2.46.1-SNAPSHOT</version>
+    <version>2.48.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -38,12 +38,15 @@
         <module>legend-engine-executionPlan-execution-store-relational</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection-api</module>
+        <module>legend-engine-executionPlan-execution-external-store-service</module>
         <module>legend-engine-external-shared</module>
         <module>legend-engine-external-shared-format-model</module>
         <module>legend-engine-external-shared-format-runtime</module>
         <module>legend-engine-external-format-flatdata-model</module>
         <module>legend-engine-external-format-flatdata-shared</module>
         <module>legend-engine-external-format-flatdata-runtime</module>
+        <module>legend-engine-external-format-json-model</module>
+        <module>legend-engine-external-format-json-runtime</module>
         <module>legend-engine-external-format-xml-model</module>
         <module>legend-engine-external-format-xml-runtime</module>
         <module>legend-engine-external-format-xml-shared</module>
@@ -68,7 +71,7 @@
         <module>legend-engine-language-pure-dsl-service-generation</module>
         <module>legend-engine-language-pure-dsl-service-execution</module>
         <module>legend-engine-language-pure-store-relational</module>
-        <module>legend-engine-language-pure-store-serviceStore</module>
+        <module>legend-engine-language-external-store-service</module>
         <module>legend-engine-language-graphQL-grammar</module>
         <module>legend-engine-language-graphQL-compiler</module>
         <module>legend-engine-test-runner-shared</module>
@@ -78,11 +81,12 @@
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-generation</module>
         <module>legend-engine-protocol-external-format-flatdata</module>
+        <module>legend-engine-protocol-external-format-json</module>
         <module>legend-engine-protocol-external-format-xml</module>
         <module>legend-engine-protocol-external-shared-format</module>
         <module>legend-engine-protocol-pure</module>
         <module>legend-engine-protocol-relational</module>
-        <module>legend-engine-protocol-serviceStore</module>
+        <module>legend-engine-protocol-external-store-service</module>
         <module>legend-engine-protocol-graphQL</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
@@ -122,8 +126,8 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.39.1-SNAPSHOT</legend.pure.version>
-        <legend.shared.version>0.16.0</legend.shared.version>
+        <legend.pure.version>1.41.1-SNAPSHOT</legend.pure.version>
+        <legend.shared.version>0.17.0</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -441,6 +445,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution-external-store-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-executionPlan-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -549,12 +558,17 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-external-format-json</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-protocol-relational</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-protocol-serviceStore</artifactId>
+                <artifactId>legend-engine-protocol-external-store-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -671,6 +685,16 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-json-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-format-json-runtime</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-format-xml-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -721,7 +745,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-language-pure-store-serviceStore</artifactId>
+                <artifactId>legend-engine-language-external-store-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
