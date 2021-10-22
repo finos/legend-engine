@@ -14,16 +14,17 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import com.zaxxer.hikari.HikariConfig;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.pac4j.core.profile.CommonProfile;
+import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
 import javax.sql.DataSource;
@@ -34,13 +35,18 @@ import java.util.Properties;
 
 public abstract class AuthenticationStrategy
 {
-    protected AuthenticationStatistics authenticationStatistics;
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AuthenticationStrategy.class);
+    private static final int CONNECTION_TIMEOUT = 30000;
+    public static final String AUTHENTICATION_STRATEGY_PROFILE_BY_POOL = "AUTHENTICATION_STRATEGY_PROFILE_BY_POOL";
+    public static final String AUTHENTICATION_STRATEGY_KEY = "AUTHENTICATION_STRATEGY_KEY";
+    private static final String UNKNOWN_USER = "_UNKNOWN_";
+
+    protected AuthenticationStatistics authenticationStatistics = new AuthenticationStatistics();
     protected String login;
     protected String password;
 
-    public static String AUTHENTICATION_STRATEGY_PROFILE_BY_POOL = "AUTHENTICATION_STRATEGY_PROFILE_BY_POOL";
-    public static String AUTHENTICATION_STRATEGY_KEY = "AUTHENTICATION_STRATEGY_KEY";
     private static final ConcurrentMutableMap<String, MutableList<CommonProfile>> profilesByPools = ConcurrentHashMap.newMap();
+
 
     protected static MutableList<CommonProfile> getProfiles(String poolId)
     {
@@ -60,8 +66,18 @@ public abstract class AuthenticationStrategy
         {
             registerProfilesByPool(((HikariConfig)ds.getDataSource()).getPoolName(), profiles);
         }
-        return getConnectionImpl(ds, subject, profiles);
+        try
+        {
+            return getConnectionImpl(ds, subject, profiles);
+        }
+        catch (ConnectionException ce)
+        {
+            this.authenticationStatistics.logConnectionError();
+            LOGGER.error("error getting connection (total : {}) {}", this.authenticationStatistics.getTotalConnectionErrors(), ce);
+            throw ce;
+        }
     }
+
 
     protected abstract Connection getConnectionImpl(DataSourceWithStatistics ds, Subject subject, MutableList<CommonProfile> profiles) throws ConnectionException;
 
@@ -69,7 +85,7 @@ public abstract class AuthenticationStrategy
 
     public String getAlternativePrincipal(MutableList<CommonProfile> profiles)
     {
-        return "_UNKNOWN_";
+        return UNKNOWN_USER;
     }
 
     public abstract String getPassword();
@@ -85,10 +101,12 @@ public abstract class AuthenticationStrategy
         }
         catch (PrivilegedActionException e)
         {
+            LOGGER.error("PrivilegedActionException for subject {} {} []", subject, e);
             throw new ConnectionException(e.getException());
         }
         catch (RuntimeException e)
         {
+            LOGGER.error("RuntimeException for subject {} {} []", subject, e);
             throw new ConnectionException(e);
         }
         return connection;
@@ -101,7 +119,7 @@ public abstract class AuthenticationStrategy
 
     public int getConnectionTimeout()
     {
-        return 30000;
+        return CONNECTION_TIMEOUT;
     }
 
     public abstract AuthenticationStrategyKey getKey();

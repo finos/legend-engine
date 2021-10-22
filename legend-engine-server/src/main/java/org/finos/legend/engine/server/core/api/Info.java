@@ -35,7 +35,6 @@ import java.util.Date;
 @Produces(MediaType.APPLICATION_JSON)
 public class Info
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private String message;
 
     public Info(DeploymentConfiguration deploymentConfiguration, OpenTracingConfiguration openTracingConfiguration)
@@ -66,6 +65,7 @@ public class Info
                     "\"pure\":" +
                     "   {" +
                     "       \"platform\":\"" + Version.PLATFORM + "\"," +
+                    "       \"server\":\"" + Version.SERVER + "\"," +
                     "       \"model\":\"" + Version.MODEL + "\"" +
                     "   }" +
                     "}";

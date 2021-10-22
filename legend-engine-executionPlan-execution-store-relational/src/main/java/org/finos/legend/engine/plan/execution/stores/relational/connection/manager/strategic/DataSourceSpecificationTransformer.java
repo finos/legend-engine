@@ -73,7 +73,7 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
                 return new StaticDataSourceSpecification(
                         (StaticDataSourceSpecificationKey) key,
                         new H2Manager(),
-                        new TestDatabaseAuthenticationStrategy(),
+                        this.authenticationStrategy,
                         relationalExecutorInfo
                 );
             }

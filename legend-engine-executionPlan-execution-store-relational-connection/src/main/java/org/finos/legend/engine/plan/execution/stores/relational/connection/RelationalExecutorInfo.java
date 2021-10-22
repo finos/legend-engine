@@ -15,23 +15,49 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.HikariPoolMXBean;
+import org.eclipse.collections.api.map.ConcurrentMutableMap;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
-import com.zaxxer.hikari.HikariDataSource;
-import org.eclipse.collections.api.map.ConcurrentMutableMap;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+
 
 public class RelationalExecutorInfo
 {
-    private ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey;
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RelationalExecutorInfo.class);
+    private static final ObjectMapper mapper = new ObjectMapper();
+    private final ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dataSourceSpecificationsByConnectionKey = ConcurrentHashMap.newMap();
+    private final ConcurrentMutableMap<ConnectionKey, String> connectionKeyToDatasourceId = ConcurrentHashMap.newMap();
     private ConcurrentMutableMap<String, DataSourceSpecification> dataSourceSpecifications;
 
-    public void setDbSpecByKey(ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey)
+
+    public ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey()
     {
-        this.dbSpecByKey = dbSpecByKey;
+        return dataSourceSpecificationsByConnectionKey;
+    }
+
+    public DataSourceSpecification get(String instanceKey, Supplier<DataSourceSpecification> dataSourceSpecificationSupplier)
+    {
+        return this.dataSourceSpecifications.getIfAbsentPut(instanceKey, dataSourceSpecificationSupplier::get);
+    }
+
+    public DataSourceSpecification getByConnectionKey(ConnectionKey connectionKey, Supplier<DataSourceSpecification> dataSourceSpecificationSupplier)
+    {
+        return this.dataSourceSpecificationsByConnectionKey.getIfAbsentPut(connectionKey, dataSourceSpecificationSupplier::get);
     }
 
     public void setDataSourceSpecifications(ConcurrentMutableMap<String, DataSourceSpecification> dataSourceSpecifications)
@@ -39,74 +65,216 @@ public class RelationalExecutorInfo
         this.dataSourceSpecifications = dataSourceSpecifications;
     }
 
+    public void putInstanceKeyIfAbsent(ConnectionKey instanceKey, String shortId)
+    {
+        this.connectionKeyToDatasourceId.putIfAbsent(instanceKey, shortId);
+    }
+
     @JsonProperty(value = "datasourcesCacheSanityCheck", required = true)
     public boolean datasourcesCacheSanityCheck()
     {
-        return dbSpecByKey.valuesView().size() == (dataSourceSpecifications == null ? 0 : dataSourceSpecifications.keySet().size());
+        return dataSourceSpecificationsByConnectionKey.size() == (dataSourceSpecifications == null ? 0 : dataSourceSpecifications.size());
+    }
+
+    @JsonProperty(value = "totalConnectionsKeys", required = true)
+    public int getTotalConnectionKeys()
+    {
+        return dataSourceSpecificationsByConnectionKey != null ? dataSourceSpecificationsByConnectionKey.size() : 0;
+    }
+
+    @JsonProperty(value = "totalDatasourceSpecificationsKeys", required = true)
+    public int getTotalDatasourceSpecificationsKeys()
+    {
+        return dataSourceSpecifications != null ? dataSourceSpecifications.size() : 0;
     }
 
     @JsonProperty(value = "databases", required = true)
-    public List<? extends Object> getDatabases()
+    public List<RelationalStoreInfo> getRelationalStores()
     {
-        return dbSpecByKey.keyValuesView().collect(
-                k -> new KeyAndPools
-                        (
-                                k.getOne(),
-                                k.getTwo().getConnectionPoolByUser().keyValuesView().collect(z ->
-                                        {
-                                            HikariDataSource ds = ((HikariDataSource) z.getTwo().getDataSource());
-                                            return new Pool
-                                                    (
-                                                            z.getTwo().getStatistics(),
-                                                            z.getOne(),
-                                                            new PoolStatic(
-                                                                    ds.getJdbcUrl(),
-                                                                    ds.getConnectionInitSql(),
-                                                                    ds.getConnectionTimeout(),
-                                                                    ds.getIdleTimeout(),
-                                                                    ds.getMaximumPoolSize(),
-                                                                    ds.getMinimumIdle()),
-                                                            new PoolDynamic(
-                                                                    ds.getHikariPoolMXBean().getActiveConnections(),
-                                                                    ds.getHikariPoolMXBean().getIdleConnections(),
-                                                                    ds.getHikariPoolMXBean().getThreadsAwaitingConnection(),
-                                                                    ds.getHikariPoolMXBean().getTotalConnections()
-                                                            )
-                                                    );
-                                        }
-                                ).toList(),
-                                k.getTwo().getDataSourceSpecificationStatistics(),
-                                k.getTwo().getAuthenticationStrategy().getAuthenticationStatistics()
-                        )
-        ).toList();
+        return dataSourceSpecificationsByConnectionKey.keyValuesView().collect(k -> buildRelationalStoreInfo(k.getOne(), k.getTwo())).toList();
     }
 
-    class KeyAndPools
+    private static RelationalStoreInfo buildRelationalStoreInfo(ConnectionKey connectionKey, DataSourceSpecification ds)
     {
-        public Object connectionKey;
-        public DataSourceSpecificationStatistics dataSourceSpecificationStatistics;
-        public AuthenticationStatistics authenticationStatistics;
-        public Object pools;
+        return new RelationalStoreInfo(
+                connectionKey,
+                ds.toString(),
+                ds.getConnectionPoolByUser().keyValuesView().collect(z -> buildConnectionPool(z.getOne(), z.getTwo())).toList(),
+                ds.getDataSourceSpecificationStatistics(),
+                ds.getAuthenticationStrategy().getAuthenticationStatistics()
+        );
+    }
 
-        public KeyAndPools(ConnectionKey connectionKey, Object two, DataSourceSpecificationStatistics dataSourceSpecificationStatistics, AuthenticationStatistics authenticationStatistics)
+    private static ConnectionPool buildConnectionPool(String user, DataSourceWithStatistics dataSourceWithStatistics)
+    {
+        HikariDataSource ds = ((HikariDataSource)dataSourceWithStatistics.getDataSource());
+        return new ConnectionPool
+                (ds.getPoolName(),
+                        dataSourceWithStatistics.getStatistics(),
+                        user,
+                        buildPoolStaticConfiguration(ds),
+                        buildPoolDynamicStats(ds)
+                );
+    }
+
+    private static PoolDynamic buildPoolDynamicStats(HikariDataSource ds)
+    {
+        HikariPoolMXBean mxBean = ds.getHikariPoolMXBean();
+        return new PoolDynamic(
+                mxBean.getActiveConnections(),
+                mxBean.getIdleConnections(),
+                mxBean.getThreadsAwaitingConnection(),
+                mxBean.getTotalConnections()
+        );
+    }
+
+    private static PoolStatic buildPoolStaticConfiguration(HikariDataSource ds)
+    {
+        return new PoolStatic(
+                ds.getJdbcUrl(),
+                ds.getConnectionInitSql(),
+                ds.getConnectionTimeout(),
+                ds.getIdleTimeout(),
+                ds.getMaximumPoolSize(),
+                ds.getMinimumIdle(),
+                Long.getLong(DataSourceSpecification.HIKARICP_HOUSEKEEPING_PERIOD_MS, 0),
+                ds.getMaxLifetime(),
+                ds.getLeakDetectionThreshold());
+    }
+
+
+    public Optional<ConnectionPool> findByPoolName(String poolName)
+    {
+        Pair<String, DataSourceWithStatistics> found = findDataSourceByPoolName(poolName);
+        return found == null ? Optional.empty() : Optional.of(buildConnectionPool(found.getOne(), found.getTwo()));
+    }
+
+    private Pair<String, DataSourceWithStatistics> findDataSourceByPoolName(String poolName)
+    {
+        Pair<String, DataSourceWithStatistics> found = null;
+        if (this.dataSourceSpecifications != null && !this.dataSourceSpecifications.values().isEmpty())
+        {
+            Iterator<DataSourceSpecification> it = this.dataSourceSpecifications.values().iterator();
+            while (it.hasNext())
+            {
+                found = findPool(it.next().getConnectionPoolByUser(), poolName);
+                if (found != null)
+                {
+                    break;
+                }
+            }
+        }
+        return found;
+    }
+
+    private Pair<String, DataSourceWithStatistics> findPool(ConcurrentMutableMap<String, DataSourceWithStatistics> dsMap, String poolName)
+    {
+        return dsMap.keyValuesView().detect(kv -> ((HikariDataSource)kv.getTwo().getDataSource()).getPoolName().equals(poolName));
+    }
+
+    public List<ConnectionPool> getPoolInformationByUser(String user)
+    {
+        List<ConnectionPool> connectionPools = new ArrayList<>();
+        dataSourceSpecificationsByConnectionKey.valuesView().forEach(kv -> {
+            DataSourceWithStatistics dataSourceWithStatistics = kv.getConnectionPoolByUser().get(user);
+            if (dataSourceWithStatistics != null)
+            {
+                connectionPools.add(buildConnectionPool(user, dataSourceWithStatistics));
+            }
+        });
+        return connectionPools;
+    }
+
+    public Object softEvictConnections(String poolName)
+    {
+        StringBuffer result = new StringBuffer();
+        Pair<String, DataSourceWithStatistics> datasource = findDataSourceByPoolName(poolName);
+        if (datasource != null)
+        {
+            HikariDataSource hds = (HikariDataSource)datasource.getTwo().getDataSource();
+            result.append("found [").append(hds.getPoolName());
+            result.append("], active connections [");
+            result.append(hds.getHikariPoolMXBean().getActiveConnections());
+            result.append("] ,idle connections [");
+            result.append(hds.getHikariPoolMXBean().getIdleConnections());
+            result.append("] ,total connections [");
+            result.append(hds.getHikariPoolMXBean().getTotalConnections());
+            result.append("]");
+            hds.getHikariPoolMXBean().softEvictConnections();
+        }
+        return result.toString();
+    }
+
+    public static String getPoolStatisticsAsJSON(DataSourceSpecification ds)
+    {
+        if (ds != null)
+        {
+            try
+            {
+                return mapper.writeValueAsString(buildRelationalStoreInfo(ds.buildConnectionKey(), ds));
+            }
+            catch (JsonProcessingException e)
+            {
+                LOGGER.error("error getPoolStatisticsAsJSON", e);
+            }
+        }
+        return null;
+    }
+
+
+    static class RelationalStoreInfo
+    {
+        public final ConnectionKey connectionKey;
+        public final String connectionKeyShortId;
+        public final String datasourceName;
+        public final Statistics statistics;
+        public final List<ConnectionPool> pools;
+
+        public RelationalStoreInfo(ConnectionKey connectionKey, String datasourceName, List<ConnectionPool> pools, DataSourceSpecificationStatistics dataSourceSpecificationStatistics, AuthenticationStatistics authenticationStatistics)
         {
             this.connectionKey = connectionKey;
-            this.pools = two;
-            this.authenticationStatistics = authenticationStatistics;
-            this.dataSourceSpecificationStatistics = dataSourceSpecificationStatistics;
+            this.connectionKeyShortId = connectionKey.shortId();
+            this.datasourceName = datasourceName;
+            this.pools = pools;
+            this.statistics = new Statistics(pools.size(), buildAggregatedPoolStats(pools), dataSourceSpecificationStatistics, authenticationStatistics);
+        }
+
+        private PoolDynamic buildAggregatedPoolStats(List<ConnectionPool> pools)
+        {
+            PoolDynamic aggregatePoolDynamic = new PoolDynamic(0, 0, 0, 0);
+            pools.stream().forEach(pool -> aggregatePoolDynamic.addStats(pool.dynamic));
+            return aggregatePoolDynamic;
         }
     }
 
-    class Pool
+    static class Statistics
     {
-        public DataSourceStatistics statistics;
-        public String user;
+        public final DataSourceSpecificationStatistics dataSourceSpecificationStatistics;
+        public final AuthenticationStatistics authenticationStatistics;
+        public final int totalNumberOfPools;
+        public final PoolDynamic aggregatedPoolDynamicInfo;
+
+        public Statistics(int totalNumberOfPools, PoolDynamic aggregatedPoolDynamicInfo, DataSourceSpecificationStatistics dataSourceSpecificationStatistics, AuthenticationStatistics authenticationStatistics)
+        {
+            this.totalNumberOfPools = totalNumberOfPools;
+            this.aggregatedPoolDynamicInfo = aggregatedPoolDynamicInfo;
+            this.dataSourceSpecificationStatistics = dataSourceSpecificationStatistics;
+            this.authenticationStatistics = authenticationStatistics;
+        }
+    }
+
+    static class ConnectionPool
+    {
+        public final String name;
+        public final DataSourceStatistics statistics;
+        public final String user;
         @JsonProperty(value = "static", required = true)
         public PoolStatic _static;
         public PoolDynamic dynamic;
 
-        public Pool(DataSourceStatistics statistics, String user, PoolStatic _static, PoolDynamic dynamic)
+        public ConnectionPool(String name, DataSourceStatistics statistics, String user, PoolStatic _static, PoolDynamic dynamic)
         {
+            this.name = name;
             this.user = user;
             this.statistics = statistics;
             this._static = _static;
@@ -114,22 +282,27 @@ public class RelationalExecutorInfo
         }
     }
 
-    class PoolStatic
+    static class PoolStatic
     {
-        public String jdbcURL;
-        public String connectionInitSql;
-        public long connectionTimeout;
-        public long idleTimeout;
-        public long maximumPoolSize;
-        public long minimumIdle;
+        public final String jdbcURL;
+        public final String connectionInitSql;
+        public final long connectionTimeout;
+        public final long idleTimeout;
+        public final long maximumPoolSize;
+        public final long minimumIdle;
+        public final long houseKeeperFrequency;
+        public final long maximumLifeTime;
+        public final long leakDetectionThreshold;
 
         public PoolStatic(String jdbcURL,
                           String connectionInitSql,
                           long connectionTimeout,
                           long idleTimeout,
                           long maximumPoolSize,
-                          long minimumIdle
-        )
+                          long minimumIdle,
+                          long houseKeeperFrequency,
+                          long maximumLifeTime,
+                          long leakDetectionThreshold)
         {
             this.jdbcURL = jdbcURL;
             this.connectionInitSql = connectionInitSql;
@@ -137,11 +310,14 @@ public class RelationalExecutorInfo
             this.idleTimeout = idleTimeout;
             this.maximumPoolSize = maximumPoolSize;
             this.minimumIdle = minimumIdle;
+            this.houseKeeperFrequency = houseKeeperFrequency;
+            this.maximumLifeTime = maximumLifeTime;
+            this.leakDetectionThreshold = leakDetectionThreshold;
         }
 
     }
 
-    class PoolDynamic
+    static class PoolDynamic
     {
         public long activeConnections;
         public long idleConnections;
@@ -159,6 +335,14 @@ public class RelationalExecutorInfo
             this.idleConnections = idleConnections;
             this.threadsAwaitingConnection = threadsAwaitingConnection;
             this.totalConnections = totalConnections;
+        }
+
+        public void addStats(PoolDynamic pool)
+        {
+            this.activeConnections += pool.activeConnections;
+            this.idleConnections += pool.idleConnections;
+            this.threadsAwaitingConnection += pool.threadsAwaitingConnection;
+            this.totalConnections += pool.totalConnections;
         }
     }
 }

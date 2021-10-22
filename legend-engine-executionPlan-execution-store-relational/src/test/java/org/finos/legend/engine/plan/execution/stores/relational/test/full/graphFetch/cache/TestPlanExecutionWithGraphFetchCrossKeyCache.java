@@ -23,7 +23,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutionContext;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
@@ -32,9 +31,7 @@ import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKe
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToPureFormatSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
-import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -44,29 +41,19 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
-import org.h2.tools.Server;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
-
-public class TestPlanExecutionWithGraphFetchCrossKeyCache
+public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServer
 {
-    private static Server server;
-    private static PlanExecutor planExecutor;
 
     private static final String LOGICAL_MODEL = "###Pure\n" +
             "Class test::Person\n" +
@@ -208,47 +195,6 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
             "  ];\n" +
             "}\n";
 
-    @BeforeClass
-    public static void setUp()
-    {
-        try
-        {
-            Class.forName("org.h2.Driver");
-
-            Enumeration<Driver> e = DriverManager.getDrivers();
-            while (e.hasMoreElements())
-            {
-                Driver d = e.nextElement();
-                if (!d.getClass().getName().equals("org.h2.Driver"))
-                {
-                    try
-                    {
-                        DriverManager.deregisterDriver(d);
-                    }
-                    catch (Exception ignored)
-                    {
-                    }
-                }
-            }
-
-            int port = DynamicPortGenerator.generatePort();
-            server = AlloyH2Server.startServer(port);
-            insertData(port);
-            planExecutor = PlanExecutor.newPlanExecutor(Relational.build(port));
-            System.out.println("Finished setup");
-        }
-        catch (Exception ignored)
-        {
-        }
-    }
-
-    @AfterClass
-    public static void tearDown()
-    {
-        server.shutdown();
-        server.stop();
-        System.out.println("Teardown complete");
-    }
 
     @Test
     public void testCrossCacheWithNoPropertyAccess() throws JavaCompileException
@@ -315,11 +261,11 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache);
 
         String expectedRes = "[" +
-                    "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"}}," +
-                    "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"}}," +
-                    "{\"fullName\":\"P3\",\"firm\":null}," +
-                    "{\"fullName\":\"P4\",\"firm\":null}," +
-                    "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"}}" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"}}," +
+                "{\"fullName\":\"P3\",\"firm\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"}}" +
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -410,11 +356,11 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache, addressCache);
 
         String expectedRes = "[" +
-                    "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"},\"address\":{\"name\":\"A1\"}}," +
-                    "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"},\"address\":{\"name\":\"A2\"}}," +
-                    "{\"fullName\":\"P3\",\"firm\":null,\"address\":null}," +
-                    "{\"fullName\":\"P4\",\"firm\":null,\"address\":{\"name\":\"A3\"}}," +
-                    "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"},\"address\":{\"name\":\"A1\"}}" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"},\"address\":{\"name\":\"A1\"}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"},\"address\":{\"name\":\"A2\"}}," +
+                "{\"fullName\":\"P3\",\"firm\":null,\"address\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null,\"address\":{\"name\":\"A3\"}}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"},\"address\":{\"name\":\"A1\"}}" +
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -469,11 +415,11 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
         PlanExecutionContext context = new PlanExecutionContext(plan, Lists.mutable.of((GraphFetchCache) firmCache).withAll(addressCaches));
 
         String expectedRes = "[" +
-                    "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}," +
-                    "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"address\":{\"name\":\"A3\"}},\"address\":{\"name\":\"A2\"}}," +
-                    "{\"fullName\":\"P3\",\"firm\":null,\"address\":null}," +
-                    "{\"fullName\":\"P4\",\"firm\":null,\"address\":{\"name\":\"A3\"}}," +
-                    "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"address\":{\"name\":\"A3\"}},\"address\":{\"name\":\"A2\"}}," +
+                "{\"fullName\":\"P3\",\"firm\":null,\"address\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null,\"address\":{\"name\":\"A3\"}}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}" +
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -526,11 +472,11 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
 
     private String executePlan(SingleExecutionPlan plan, PlanExecutionContext context)
     {
-        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(plan, Collections.emptyMap(), null, context);
+        JsonStreamingResult result = (JsonStreamingResult)planExecutor.execute(plan, Collections.emptyMap(), null, context);
         return result.flush(new JsonStreamToPureFormatSerializer(result));
     }
 
-    private void assertCacheStats(ExecutionCache<?,?> cache, int estimatedSize, int requestCount, int hitCount, int missCount)
+    private void assertCacheStats(ExecutionCache<?, ?> cache, int estimatedSize, int requestCount, int hitCount, int missCount)
     {
         Assert.assertEquals(estimatedSize, cache.estimatedSize());
         Assert.assertEquals(requestCount, cache.stats().requestCount());
@@ -559,64 +505,29 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
         );
     }
 
-    private static void insertData(int port)
+    @Override
+    protected void insertTestData(Statement s) throws SQLException
     {
-        Connection c = null;
-        Statement s = null;
-        try
-        {
-            c = buildTestExecutor(port).getConnectionManager().getTestDatabaseConnection();
-            s = c.createStatement();
-
-            s.execute("Create Schema default;");
-            s.execute("Drop table if exists personTable;");
-            s.execute("Create Table personTable(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(fullName));");
-            s.execute("Drop table if exists firmTable;");
-            s.execute("Create Table firmTable(name VARCHAR(100) NOT NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(name));");
-            s.execute("Drop table if exists addressTable;");
-            s.execute("Create Table addressTable(name VARCHAR(100) NOT NULL, PRIMARY KEY(name));");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P1','F1','A1');");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P2','F2','A2');");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P3',null,null);");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P4',null,'A3');");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P5','F1','A1');");
-            s.execute("insert into firmTable (name,addressName) values ('F1','A4');");
-            s.execute("insert into firmTable (name,addressName) values ('F2','A3');");
-            s.execute("insert into firmTable (name,addressName) values ('F3','A3');");
-            s.execute("insert into firmTable (name,addressName) values ('F4',null);");
-            s.execute("insert into addressTable (name) values ('A1');");
-            s.execute("insert into addressTable (name) values ('A2');");
-            s.execute("insert into addressTable (name) values ('A3');");
-            s.execute("insert into addressTable (name) values ('A4');");
-            s.execute("insert into addressTable (name) values ('A5');");
-        }
-        catch (Exception ignored)
-        {
-        }
-        finally
-        {
-            try
-            {
-                if (s != null)
-                {
-                    s.close();
-                }
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-            try
-            {
-                if (c != null)
-                {
-                    c.close();
-                }
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
+        s.execute("Create Schema default;");
+        s.execute("Drop table if exists personTable;");
+        s.execute("Create Table personTable(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(fullName));");
+        s.execute("Drop table if exists firmTable;");
+        s.execute("Create Table firmTable(name VARCHAR(100) NOT NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(name));");
+        s.execute("Drop table if exists addressTable;");
+        s.execute("Create Table addressTable(name VARCHAR(100) NOT NULL, PRIMARY KEY(name));");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P1','F1','A1');");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P2','F2','A2');");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P3',null,null);");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P4',null,'A3');");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P5','F1','A1');");
+        s.execute("insert into firmTable (name,addressName) values ('F1','A4');");
+        s.execute("insert into firmTable (name,addressName) values ('F2','A3');");
+        s.execute("insert into firmTable (name,addressName) values ('F3','A3');");
+        s.execute("insert into firmTable (name,addressName) values ('F4',null);");
+        s.execute("insert into addressTable (name) values ('A1');");
+        s.execute("insert into addressTable (name) values ('A2');");
+        s.execute("insert into addressTable (name) values ('A3');");
+        s.execute("insert into addressTable (name) values ('A4');");
+        s.execute("insert into addressTable (name) values ('A5');");
     }
 }
