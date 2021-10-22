@@ -39,6 +39,17 @@ public class PlanExecutionContext
         this.graphFetchCaches = graphFetchCaches;
     }
 
+    public PlanExecutionContext(GraphFetchCache... graphFetchCaches)
+    {
+        this(Arrays.asList(graphFetchCaches));
+    }
+
+    public PlanExecutionContext(List<GraphFetchCache> graphFetchCaches)
+    {
+        this.externalJavaCompiler = null;
+        this.graphFetchCaches = graphFetchCaches;
+    }
+
     EngineJavaCompiler getExternalJavaCompiler()
     {
         return this.externalJavaCompiler;

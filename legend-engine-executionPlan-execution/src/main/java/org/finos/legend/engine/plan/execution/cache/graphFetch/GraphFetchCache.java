@@ -15,10 +15,11 @@
 package org.finos.legend.engine.plan.execution.cache.graphFetch;
 
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 
 public interface GraphFetchCache
 {
-    boolean isCacheUtilized();
-
     ExecutionCache<GraphFetchCacheKey, ?> getExecutionCache();
+
+    boolean isValidForPlan(SingleExecutionPlan plan);
 }

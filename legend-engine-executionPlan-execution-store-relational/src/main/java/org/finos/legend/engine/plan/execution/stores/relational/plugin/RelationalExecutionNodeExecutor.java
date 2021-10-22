@@ -49,7 +49,6 @@ import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.*;
 import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
-import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByTargetCrossKeys;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeResultHelper;
@@ -1487,17 +1486,12 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 GraphFetchTree nodeSubTree = node.graphFetchTree;
 
                 boolean cachingEnabled = false;
-                ExecutionCache<GraphFetchCacheKey, List<Object>> crossCache = null;
+                ExecutionCache<GraphFetchCacheKey, List<Object>> crossCache = relationalGraphObjectsBatch.getXStorePropertyCacheForNodeIndex(node.nodeIndex);
                 List<Method> parentCrossKeyGettersOrderedPerTargetProperties = null;
-                if ((this.executionState.graphFetchCaches != null) && nodeSpecifics.supportsCrossCaching())
+                if (crossCache != null)
                 {
-                    GraphFetchCacheByTargetCrossKeys c = RelationalGraphFetchUtils.findCacheByCrossKeys(nodeSubTree, nodeSpecifics.mappingId(), nodeSpecifics.sourceInstanceSetId(), nodeSpecifics.targetInstanceSetId(), nodeSpecifics.targetPropertiesOrdered(), this.executionState.graphFetchCaches);
-                    if (c != null)
-                    {
-                        cachingEnabled = true;
-                        crossCache = c.getExecutionCache();
-                        parentCrossKeyGettersOrderedPerTargetProperties = nodeSpecifics.parentCrossKeyGettersOrderedByTargetProperties();
-                    }
+                    cachingEnabled = true;
+                    parentCrossKeyGettersOrderedPerTargetProperties = nodeSpecifics.parentCrossKeyGettersOrderedByTargetProperties();
                 }
 
                 List<Object> parentsToDeepFetch = new ArrayList<>();
@@ -1618,10 +1612,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
                     if (cachingEnabled)
                     {
-                        ExecutionCache<GraphFetchCacheKey, List<Object>> cache = crossCache;
                         List<Method> getters = parentCrossKeyGettersOrderedPerTargetProperties;
                         parentToChildMap.forEach((p, cs) -> {
-                            cache.put(
+                            crossCache.put(
                                     new RelationalGraphFetchUtils.RelationalCrossObjectGraphFetchCacheKey(p, getters),
                                     cs
                             );
