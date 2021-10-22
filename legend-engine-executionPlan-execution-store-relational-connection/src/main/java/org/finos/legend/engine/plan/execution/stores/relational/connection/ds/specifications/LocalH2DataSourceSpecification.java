@@ -59,10 +59,8 @@ public class LocalH2DataSourceSpecification extends DataSourceSpecification
     {
         try
         {
-            super.cacheConnectionState(identity, databaseCredentialSupplier);
             HikariDataSource dataSource = this.buildDataSource("127.0.0.1", port, "", identity);
             Connection connection = dataSource.getConnection();
-
             LocalH2DataSourceSpecificationKey _key = (LocalH2DataSourceSpecificationKey) this.datasourceKey;
             if (_key.getTestDataSetupSqls() != null && !_key.getTestDataSetupSqls().isEmpty())
             {

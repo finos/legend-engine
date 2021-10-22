@@ -50,7 +50,6 @@ public class EmbeddedH2DataSourceSpecification extends DataSourceSpecification
     {
         try
         {
-            super.cacheConnectionState(identity, databaseCredentialSupplier);
             this.dataSource = this.buildDataSource(identity);
             return this.dataSource.getConnection();
         }

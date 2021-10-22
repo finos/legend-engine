@@ -155,7 +155,7 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-authentication</artifactId>
+            <artifactId>legend-engine-executionPlan-execution-store-authentication</artifactId>
         </dependency>
         <!-- ENGINE -->
 

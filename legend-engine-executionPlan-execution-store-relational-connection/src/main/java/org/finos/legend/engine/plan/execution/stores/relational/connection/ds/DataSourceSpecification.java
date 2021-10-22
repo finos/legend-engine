@@ -14,21 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds;
 
-import java.security.PrivilegedAction;
-import java.sql.Connection;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.security.auth.Subject;
-import javax.sql.DataSource;
-
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.list.MutableList;
@@ -37,6 +28,8 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
@@ -49,6 +42,15 @@ import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
+import javax.security.auth.Subject;
+import javax.sql.DataSource;
+import java.security.PrivilegedAction;
+import java.sql.Connection;
+import java.util.Optional;
+import java.util.Properties;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 public abstract class DataSourceSpecification
 {
     public static MetricRegistry METRIC_REGISTRY;
@@ -58,16 +60,25 @@ public abstract class DataSourceSpecification
         METRIC_REGISTRY = metricRegistry;
     }
 
+    public static final String HIKARICP_HOUSEKEEPING_PERIOD_MS = "com.zaxxer.hikari.housekeeping.periodMs";
+
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataSourceSpecification.class);
 
     // HikariCP Parameters
     protected static final int HIKARICP_MAX_POOL_SIZE = 100;
     protected static final int HIKARICP_MIN_IDLE = 0;
+    //default is 30 seconds
+    protected static final long HIKARICP_HOUSEKEEPER_FREQ_IN_MS = SECONDS.toMillis(30L);
+
+    static
+    {  //house keeper frequency can only be altered via system property and will affect all pools!!
+        System.setProperty(HIKARICP_HOUSEKEEPING_PERIOD_MS, String.valueOf(Long.getLong(HIKARICP_HOUSEKEEPING_PERIOD_MS, HIKARICP_HOUSEKEEPER_FREQ_IN_MS)));
+    }
 
     protected org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey datasourceKey;
     private DatabaseManager databaseManager;
     private AuthenticationStrategy authenticationStrategy;
-    protected Properties extraDatasourceProperties;
+    protected Properties extraDatasourceProperties = new Properties();
 
     private KeyLockManager<String> keyLockManager = KeyLockManager.newManager();
     private ConcurrentMutableMap<String, org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics> connectionPoolByUser = ConcurrentHashMap.newMap();
@@ -77,28 +88,30 @@ public abstract class DataSourceSpecification
     public static String DATASOURCE_SPEC_INSTANCE = "DATASOURCE_SPEC_INSTANCE";
     private static final ConcurrentMutableMap<String, DataSourceSpecification> dataSourceSpecifications = ConcurrentHashMap.newMap();
 
+
     protected DataSourceSpecification(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
     {
         this.datasourceKey = key;
         this.databaseManager = databaseManager;
         this.authenticationStrategy = authenticationStrategy;
-        this.extraDatasourceProperties = new Properties();
         this.extraDatasourceProperties.putAll(extraUserProperties);
-        relationalExecutorInfo.setDataSourceSpecifications(dataSourceSpecifications);
 
         synchronized (DataSourceSpecification.class)
         {
-            String instanceKey = buildInstanceKey();
-            dataSourceSpecifications.put(instanceKey, this);
-            this.extraDatasourceProperties.put(DATASOURCE_SPEC_INSTANCE, instanceKey);
+            relationalExecutorInfo.setDataSourceSpecifications(dataSourceSpecifications);
+            ConnectionKey instanceKey = buildConnectionKey();
+            String instanceId = instanceKey.shortId();
+            dataSourceSpecifications.putIfAbsent(instanceId, this);
+            this.extraDatasourceProperties.put(DATASOURCE_SPEC_INSTANCE, instanceId);
+            relationalExecutorInfo.putInstanceKeyIfAbsent(instanceKey, instanceId);
         }
         MetricsHandler.observeCount("datastore specifications");
-        LOGGER.info("Create new {}", this);
+        LOGGER.info("Created new {}", this);
     }
 
-    private String buildInstanceKey()
+    public ConnectionKey buildConnectionKey()
     {
-        return this.datasourceKey.shortId()+"_"+this.authenticationStrategy.getKey().shortId();
+        return new ConnectionKey(this.datasourceKey, this.authenticationStrategy.getKey());
     }
 
     public org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationStatistics getDataSourceSpecificationStatistics()
@@ -129,7 +142,7 @@ public abstract class DataSourceSpecification
 
     public Connection getConnectionUsingProfiles(MutableList<CommonProfile> profiles)
     {
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         return this.getConnectionUsingIdentity(identity, Optional.empty());
     }
 
@@ -143,16 +156,22 @@ public abstract class DataSourceSpecification
     {
         String principal = identity.getName();
         Optional<LegendKerberosCredential> kerberosCredentialHolder = identity.getCredential(LegendKerberosCredential.class);
-        Function<String, DataSourceWithStatistics> dataSourceBuilder =
-                kerberosCredentialHolder.isPresent() ?
-                        p -> new DataSourceWithStatistics(KerberosUtils.doAs(identity, (PrivilegedAction<DataSource>) () -> this.buildDataSource(identity))) :
-                        p -> new DataSourceWithStatistics(this.buildDataSource(identity));
+
+        Function0<DataSourceWithStatistics> dataSourceBuilder;
+        if (kerberosCredentialHolder.isPresent())
+        {
+            dataSourceBuilder = () -> new DataSourceWithStatistics(KerberosUtils.doAs(identity, (PrivilegedAction<DataSource>) () -> this.buildDataSource(identity)));
+        }
+        else
+        {
+            dataSourceBuilder = () -> new DataSourceWithStatistics(this.buildDataSource(identity));
+        }
 
         return getConnection(
                 identity,
                 principal,
                 databaseCredentialSupplierHolder,
-                () -> connectionPoolByUser.getIfAbsentPutWithKey(principal, dataSourceBuilder));
+                dataSourceBuilder);
     }
 
     public void cacheConnectionState(Identity identity, Optional<CredentialSupplier> databaseCredentialSupplier)
@@ -169,33 +188,48 @@ public abstract class DataSourceSpecification
             // Logs and traces -----
             scope.span().setTag("Principal", principal);
             scope.span().setTag("DataSourceSpecification", this.toString());
-            LOGGER.info("Get Connection for {} from {}", principal, this);
+            LOGGER.info("Get Connection as [{}] for datasource [{}]", principal, this);
             LOGGER.debug("connectionPoolByUser Size {} Keys {}", connectionPoolByUser.size(), connectionPoolByUser.keySet());
             // ---------------------
 
             cacheConnectionState(identity, databaseCredentialSupplier);
-
-            org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics dataSourceWithStatistics = connectionPoolByUser.get(principal);
+            DataSourceWithStatistics dataSourceWithStatistics = connectionPoolByUser.get(principal);
             if (dataSourceWithStatistics == null)
             {
                 synchronized (keyLockManager.getLock(identity.getName()))
                 {
-                    dataSourceWithStatistics = dataSourceBuilder.value();
+                    dataSourceWithStatistics = connectionPoolByUser.get(principal);
+                    if (dataSourceWithStatistics == null)
+                    {
+                        LOGGER.info("Pool entry not found for [{}] for datasource [{}], creating one", principal, this);
+                        dataSourceWithStatistics = dataSourceBuilder.value();
+                        connectionPoolByUser.put(principal, dataSourceWithStatistics);
+                    }
                 }
             }
-
-            // Logs and traces and stats -----
-            scope.span().setTag("Pool", dataSourceWithStatistics.getDataSource().toString());
-            LOGGER.info("Found {}", dataSourceWithStatistics.getDataSource());
-            dataSourceWithStatistics.requestConnection();
-            // -------------------------------
-            return authenticationStrategy.getConnection(dataSourceWithStatistics, identity);
+            try
+            {
+                int requests = dataSourceWithStatistics.requestConnection();
+                // Logs and traces and stats -----
+                scope.span().setTag("Pool", dataSourceWithStatistics.getDataSource().toString());
+                String poolName = getPoolName(dataSourceWithStatistics.getDataSource());
+                LOGGER.info("Found pool for [{}] in datasource [{}] : pool Name [{}]", principal, dataSourceWithStatistics.getDataSource(), poolName);
+                LOGGER.info("Principal [{}] has requested [{}] connections for pool [{}]", principal, requests, poolName);
+                // -------------------------------
+                return authenticationStrategy.getConnection(dataSourceWithStatistics, identity);
+            }
+            catch (ConnectionException ce)
+            {
+                LOGGER.error("ConnectionException  {{}} : pool stats [{}] ", principal, RelationalExecutorInfo.getPoolStatisticsAsJSON(this));
+                LOGGER.error("ConnectionException ", ce);
+                throw ce;
+            }
         }
     }
 
-    protected DataSource buildDataSource(Identity identity)
+    private String getPoolName(DataSource dataSource)
     {
-        return this.buildDataSource(null, -1, null, identity);
+        return ((HikariDataSource)dataSource).getPoolName();
     }
 
     protected String poolNameFor(Identity identity)
@@ -203,18 +237,24 @@ public abstract class DataSourceSpecification
         return "DBPool_" + this.datasourceKey.shortId() + "_" + this.authenticationStrategy.getKey().shortId() + "_" + identity.getName();
     }
 
+    protected DataSource buildDataSource(Identity identity)
+    {
+        return this.buildDataSource(null, -1, null, identity);
+    }
+
     protected HikariDataSource buildDataSource(String host, int port, String databaseName, Identity identity)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Create Pool").startActive(true))
         {
-            String poolName = poolNameFor(identity);
             Properties properties = new Properties();
+            String poolName = poolNameFor(identity);
             properties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy, identity));
             properties.putAll(this.extraDatasourceProperties);
 
             properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_KEY, this.authenticationStrategy.getKey().shortId());
             properties.put(ConnectionStateManager.POOL_NAME_KEY, poolName);
 
+            LOGGER.info("Building pool [{}] for [{}] ", poolName, identity.getName());
             HikariConfig jdbcConfig = new HikariConfig();
             jdbcConfig.setDriverClassName(databaseManager.getDriver());
             jdbcConfig.setPoolName(poolName);
@@ -228,19 +268,18 @@ public abstract class DataSourceSpecification
             jdbcConfig.addDataSourceProperty("useServerPrepStmts", false);
             jdbcConfig.addDataSourceProperty("privateProperty", "MyProperty");
 
-//        jdbcConfig.setHealthCheckRegistry(new HealthCheckRegistry());
             if (this.databaseManager.publishMetrics())
             {
                 jdbcConfig.setMetricRegistry(METRIC_REGISTRY);
             }
 
             // Properties management --------------
-            MapAdapter.adapt(properties).keyValuesView().forEach((Procedure<Pair>) p -> jdbcConfig.addDataSourceProperty(p.getOne().toString(), p.getTwo()));
+            MapAdapter.adapt(properties).keyValuesView().forEach((Procedure<Pair>)p -> jdbcConfig.addDataSourceProperty(p.getOne().toString(), p.getTwo()));
             //-------------------------------------
 
             HikariDataSource ds = new HikariDataSource(jdbcConfig);
             scope.span().setTag("Pool", ds.getPoolName());
-            LOGGER.info("Create new Connection Pool  {}", ds);
+            LOGGER.info("New Connection Pool created {}", ds);
             return ds;
         }
     }
@@ -295,7 +334,7 @@ public abstract class DataSourceSpecification
         return "DataSourceSpecification[" +
                 this.getClass().getSimpleName() + "," +
                 this.datasourceKey.shortId() + "," +
-                this.authenticationStrategy.getKey().shortId()+"," +
+                this.authenticationStrategy.getKey().shortId() + "," +
                 super.toString() + "]";
     }
 }

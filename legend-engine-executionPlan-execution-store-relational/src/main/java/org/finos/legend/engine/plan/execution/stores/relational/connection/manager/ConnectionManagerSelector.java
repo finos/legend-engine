@@ -14,18 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager;
 
-import java.sql.Connection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.ServiceLoader;
-
-import javax.security.auth.Subject;
-
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.ConcurrentMutableMap;
-import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
@@ -42,28 +32,27 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.pac4j.core.profile.CommonProfile;
 
+import javax.security.auth.Subject;
+import java.sql.Connection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ServiceLoader;
+
 public class ConnectionManagerSelector
 {
     private MutableList<ConnectionManager> connectionManagers;
-    private final ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey = ConcurrentHashMap.newMap();
 
     public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, RelationalExecutorInfo relationalExecutorInfo)
     {
-        relationalExecutorInfo.setDbSpecByKey(dbSpecByKey);
+        if (relationalExecutorInfo == null)
+        {
+            throw new IllegalArgumentException("relational executor info not provided");
+        }
         MutableList<ConnectionManagerExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionManagerExtension.class), Lists.mutable.empty());
         this.connectionManagers = Lists.mutable.<ConnectionManager>with(
-                new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, dbSpecByKey, relationalExecutorInfo)
-        ).withAll(extensions.collect(e->e.getExtensionManager(temporaryTestDb.port, oauthProfiles, dbSpecByKey, relationalExecutorInfo)));
-    }
-
-    private DataSourceSpecification getDataSourceSpecification(DatabaseConnection databaseConnection)
-    {
-        DataSourceSpecification datasource = this.connectionManagers.collect(c -> c.getDataSourceSpecification(databaseConnection)).detect(Objects::nonNull);
-        if (datasource == null)
-        {
-            throw new RuntimeException("Not Supported! " + databaseConnection.getClass());
-        }
-        return datasource;
+                new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, relationalExecutorInfo)
+        ).withAll(extensions.collect(e -> e.getExtensionManager(temporaryTestDb.port, oauthProfiles,  relationalExecutorInfo)));
     }
 
     public Connection getDatabaseConnection(MutableList<CommonProfile> profiles, DatabaseConnection databaseConnection)
@@ -78,6 +67,16 @@ public class ConnectionManagerSelector
         DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(subject);
         return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource);
+    }
+
+    private DataSourceSpecification getDataSourceSpecification(DatabaseConnection databaseConnection)
+    {
+        DataSourceSpecification datasource = this.connectionManagers.collect(c -> c.getDataSourceSpecification(databaseConnection)).detect(Objects::nonNull);
+        if (datasource == null)
+        {
+            throw new RuntimeException("Not Supported! " + databaseConnection.getClass());
+        }
+        return datasource;
     }
 
     public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection)
@@ -129,8 +128,8 @@ public class ConnectionManagerSelector
         db.databaseType = DatabaseType.H2;
         db.type = DatabaseType.H2;
         db.element = originalConnection.element;
-        db.timeZone = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection) originalConnection).timeZone : null;
-        db.quoteIdentifiers = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection) originalConnection).quoteIdentifiers : null;
+        db.timeZone = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection)originalConnection).timeZone : null;
+        db.quoteIdentifiers = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection)originalConnection).quoteIdentifiers : null;
         return db;
     }
 }

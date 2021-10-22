@@ -32,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.After;
 import org.junit.Before;
@@ -52,7 +53,7 @@ public class TestDatasourceCreation
     @BeforeClass
     public static void setupClass() throws SQLException
     {
-        server = AlloyH2Server.startServer(9095);
+        server = AlloyH2Server.startServer(DynamicPortGenerator.generatePort());
     }
 
     @After
@@ -61,6 +62,7 @@ public class TestDatasourceCreation
         if (server != null)
         {
             server.shutdown();
+            server.stop();
         }
     }
 
@@ -80,8 +82,8 @@ public class TestDatasourceCreation
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
 
         // User gets connection to db1
-        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", this.server.getPort(), "db1");
-        String key = "Static_host:127.0.0.1_port:9095_db:db1_type:TestDB";
+        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
+        String key = String.format("Static_host:127.0.0.1_port:%d_db:db1_auth_type:TestDB", server.getPort());
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         // We have a single data source
@@ -110,8 +112,8 @@ public class TestDatasourceCreation
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
 
         // User gets connection to db1
-        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", this.server.getPort(), "db2");
-        String key1 = "Static_host:127.0.0.1_port:9095_db:db2_type:TestDB";
+        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db2");
+        String key1 = String.format("Static_host:127.0.0.1_port:%d_db:db2_auth_type:TestDB", server.getPort());
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         // We have a single data source
@@ -122,8 +124,9 @@ public class TestDatasourceCreation
         DataSourceWithStatistics datasource1 = this.getDatasourceForUser(this.getDatasourceBykey(datasourceSpecifications, key1), identity);
 
         // User gets another connection to db2
-        RelationalDatabaseConnection database2 = buildStaticDatabaseSpec("127.0.0.1", this.server.getPort(), "db3");
-        String key2 = "Static_host:127.0.0.1_port:9095_db:db3_type:TestDB";
+        RelationalDatabaseConnection database2 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db3");
+        String key3 = String.format("Static_host:127.0.0.1_port:%d_db:db3_auth_type:TestDB", server.getPort());
+
         this.connectionManagerSelector.getDatabaseConnection(identity, database2);
 
         // We now have 2 data sources one per database
@@ -131,7 +134,7 @@ public class TestDatasourceCreation
         assertEquals(2, datasourceSpecifications.size());
 
         // We have a single data source for user2
-        DataSourceWithStatistics datasource2 = this.getDatasourceForUser(this.getDatasourceBykey(datasourceSpecifications, key2), identity);
+        DataSourceWithStatistics datasource2 = this.getDatasourceForUser(this.getDatasourceBykey(datasourceSpecifications, key3), identity);
 
         assertNotSame("found same datasource when distinct datasources was expected", datasource1, datasource2);
     }
@@ -144,8 +147,9 @@ public class TestDatasourceCreation
         Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
 
         // User gets connection to db1
-        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", this.server.getPort(), "db4");
-        String key1 = "Static_host:127.0.0.1_port:9095_db:db4_type:TestDB";
+        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db4");
+        String key1 = String.format("Static_host:127.0.0.1_port:%d_db:db4_auth_type:TestDB", server.getPort());
+
         this.connectionManagerSelector.getDatabaseConnection(identity1, database1);
 
         // We have a single data source
@@ -158,8 +162,8 @@ public class TestDatasourceCreation
         Identity identity2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser2");
 
         // User gets another connection to db2
-        RelationalDatabaseConnection database2 = buildStaticDatabaseSpec("127.0.0.1", this.server.getPort(), "db5");
-        String key2 = "Static_host:127.0.0.1_port:9095_db:db5_type:TestDB";
+        RelationalDatabaseConnection database2 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db5");
+        String key2 = String.format("Static_host:127.0.0.1_port:%d_db:db5_auth_type:TestDB", server.getPort());
         this.connectionManagerSelector.getDatabaseConnection(identity2, database2);
 
         // We now have 2 data sources one per database + user

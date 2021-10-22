@@ -42,7 +42,7 @@ public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenti
     }
 
     @Override
-    public Connection getConnection(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
+    public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
         Optional<LegendKerberosCredential> kerberosHolder = identity.getCredential(LegendKerberosCredential.class);
         if (!kerberosHolder.isPresent())

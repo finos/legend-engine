@@ -45,13 +45,6 @@ public class ConnectionPoolTestUtils
         return connectionPoolsForUser;
     }
 
-    public static DataSourceWithStatistics getSingleConnectionPoolForUser(String identityName) throws NoSuchFieldException, IllegalAccessException
-    {
-        List<DataSourceWithStatistics> pools = getConnectionPoolByUser(identityName);
-        assert(1 == pools.size());
-        return pools.get(0);
-    }
-
     public static ConcurrentMutableMap getDataSourceSpecifications() throws NoSuchFieldException, IllegalAccessException
     {
         Field field = DataSourceSpecification.class.getDeclaredField("dataSourceSpecifications");
@@ -68,7 +61,7 @@ public class ConnectionPoolTestUtils
     private static List<DataSourceWithStatistics> getAllConnectionPoolsForUser(String identityName, ConcurrentMutableMap<String, DataSourceSpecification> connectionPoolsBySpecification ) throws NoSuchFieldException, IllegalAccessException
     {
         List<DataSourceWithStatistics> connectionPoolsForUser = connectionPoolsBySpecification.stream()
-                .map(specification -> specification.getConnectionPoolByUser())
+                .map(DataSourceSpecification::getConnectionPoolByUser)
                 .flatMap(m -> m.entrySet().stream())
                 .filter(e -> e.getKey().contains(identityName))
                 .map(Map.Entry::getValue)

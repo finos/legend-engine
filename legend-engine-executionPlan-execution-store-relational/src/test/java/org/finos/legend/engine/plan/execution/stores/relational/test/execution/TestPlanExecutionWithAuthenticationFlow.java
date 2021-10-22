@@ -29,21 +29,28 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.engine.shared.core.vault.Vault;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.h2.tools.Server;
+import org.junit.*;
+
 import static org.junit.Assert.assertTrue;
 
 public class TestPlanExecutionWithAuthenticationFlow extends AbstractTestPlanExecution
 {
     private static final int port = DynamicPortGenerator.generatePort();
+    private static Server server;
 
     @BeforeClass
     public static void setupClass() throws Exception
     {
         registerDriver("org.h2.Driver");
-        AlloyH2Server.startServer(port);
+        server = AlloyH2Server.startServer(port);
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception
+    {
+        server.shutdown();
+        server.stop();
     }
 
     public Connection setupH2Connection() throws Exception

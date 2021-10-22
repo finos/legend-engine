@@ -34,7 +34,7 @@ import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPass
 public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
 {
     @Override
-    public Connection getConnection(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
+    public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
         try
         {
@@ -54,10 +54,17 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
         return Tuples.pair(url, properties);
     }
 
+    /*
+        Note : H2 use is not meant for production.
+        As such we do not want to use idioms like connection pooling/authentication flows for H2.
+        Even though the code below looks for a credential supplier obtained using a flow, it is merely meant for developer testing.
+
+        Production flow providers should not provide a flow for H2 and the code below will simply instantiate a PlaintextUserPasswordCredential
+     */
     private PlaintextUserPasswordCredential resolveCredential(Properties properties)
     {
         ConnectionState connectionState = ConnectionStateManager.getInstance().getStateUsing(properties);
-        if (!connectionState.getCredentialSupplier().isPresent())
+        if (connectionState == null || !connectionState.getCredentialSupplier().isPresent())
         {
             return new PlaintextUserPasswordCredential("sa", "");
         }

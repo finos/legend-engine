@@ -39,7 +39,7 @@ import javax.security.auth.Subject;
 import com.zaxxer.hikari.pool.HikariProxyConnection;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
-import org.finos.legend.engine.authentication.flows.H2LocalWithDefaultUserPasswordFlow;
+import org.finos.legend.engine.authentication.demoflows.H2LocalWithDefaultUserPasswordFlow;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;

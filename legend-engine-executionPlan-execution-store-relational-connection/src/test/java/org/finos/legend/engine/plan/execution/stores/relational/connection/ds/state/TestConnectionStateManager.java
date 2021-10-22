@@ -14,14 +14,16 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -63,24 +65,24 @@ public class TestConnectionStateManager
     @Test
     public void testEviction()
     {
-        connectionStateManager.registerState("pool1", null, null);
-        connectionStateManager.registerState("pool2", null, null);
+        connectionStateManager.registerState("pool1", null, Optional.empty());
+        connectionStateManager.registerState("pool2", null, Optional.empty());
 
         assertEquals(2, connectionStateManager.size());
         assertStateExists("pool1", "pool2");
 
-        ConnectionStateManager.ConnectionStateEvictionTask houseKeeper = new ConnectionStateManager.ConnectionStateEvictionTask(Duration.ofMinutes(10));
+        ConnectionStateManager.ConnectionStateEvictionTask houseKeeper = new ConnectionStateManager.ConnectionStateEvictionTask(Duration.ofMinutes(5).getSeconds());
 
-        // advance clock by 9 minutes and run housekeeper
-        clock.advance(Duration.ofMinutes(9));
+        // advance clock by 4 minutes and run housekeeper
+        clock.advance(Duration.ofMinutes(4));
         houseKeeper.run();
 
         assertEquals(2, connectionStateManager.size());
         assertStateExists("pool1", "pool2");
 
-        connectionStateManager.registerState("pool3", null, null);
-        connectionStateManager.registerState("pool4", null, null);
-        connectionStateManager.registerState("pool5", null, null);
+        connectionStateManager.registerState("pool3", null, Optional.empty());
+        connectionStateManager.registerState("pool4", null, Optional.empty());
+        connectionStateManager.registerState("pool5", null, Optional.empty());
 
         // advance clock by 2 more minutes and run housekeeper
         clock.advance(Duration.ofMinutes(2));
@@ -88,6 +90,22 @@ public class TestConnectionStateManager
 
         assertEquals(3, connectionStateManager.size());
         assertStateExists("pool3", "pool4", "pool5");
+    }
+
+    @Test
+    public void testDefaultEvictionDuration()
+    {
+        System.clearProperty(ConnectionStateManager.EVICTION_DURATION_SYSTEM_PROPERTY);
+        long evictionDurationInSeconds = ConnectionStateManager.resolveEvictionDuration();
+        assertEquals(Duration.ofMinutes(5).getSeconds(), evictionDurationInSeconds);
+    }
+
+    @Test
+    public void testNonDefaultEvictionDuration()
+    {
+        System.setProperty(ConnectionStateManager.EVICTION_DURATION_SYSTEM_PROPERTY, "4567");
+        long evictionDurationInSeconds = ConnectionStateManager.resolveEvictionDuration();
+        assertEquals(4567, evictionDurationInSeconds);
     }
 
     private void assertStateExists(String ...poolNames)

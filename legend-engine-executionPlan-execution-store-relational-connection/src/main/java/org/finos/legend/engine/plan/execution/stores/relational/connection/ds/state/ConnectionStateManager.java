@@ -16,14 +16,8 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import java.time.Clock;
 import java.time.Duration;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
@@ -43,22 +37,39 @@ public class ConnectionStateManager
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStateManager.class);
 
-    private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
-    private static final Duration EVICTION_DURATION = Duration.ofMinutes(10);
-    private Clock clock;
+    private static ScheduledExecutorService EXECUTOR_SERVICE;
 
-    private ConnectionStateManager(Clock clock)
-    {
-        // singleton
-        this.clock = clock;
-        ConnectionStateEvictionTask evictionTask = new ConnectionStateEvictionTask(EVICTION_DURATION);
-        EXECUTOR_SERVICE.scheduleAtFixedRate(evictionTask, 0, EVICTION_DURATION.toMinutes(), TimeUnit.MINUTES);
-        LOGGER.info("Connection state eviction thread frequency. Time period={}, Time unit={}", EVICTION_DURATION.toMinutes(), TimeUnit.MINUTES);
-    }
+    public static final long DEFAULT_EVICTION_DURATION_IN_SECONDS = Duration.ofMinutes(5).getSeconds();
+    public static String EVICTION_DURATION_SYSTEM_PROPERTY = "org.finos.legend.engine.execution.connectionStateEvictionDurationInSeconds";
 
     public static String POOL_NAME_KEY = "POOL_NAME_KEY";
 
     private static ConnectionStateManager INSTANCE;
+
+    static
+    {
+        ThreadFactory threadFactory = r -> new Thread(r, "ConnectionStateManager Housekeeper");
+        long evictionDurationInSeconds = resolveEvictionDuration();
+        ConnectionStateEvictionTask connectionStateEvictionTask = new ConnectionStateEvictionTask(evictionDurationInSeconds);
+        EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1, threadFactory);
+        EXECUTOR_SERVICE.scheduleWithFixedDelay(connectionStateEvictionTask, 0, evictionDurationInSeconds, TimeUnit.SECONDS);
+        LOGGER.info("Connection state eviction thread frequency. Time period={}, Time unit={}", evictionDurationInSeconds, TimeUnit.SECONDS);
+    }
+
+    public static long resolveEvictionDuration()
+    {
+        Long evictionDurationInSeconds = Long.getLong(EVICTION_DURATION_SYSTEM_PROPERTY);
+        if (evictionDurationInSeconds == null)
+        {
+            LOGGER.info("Using default eviction duration of {}", DEFAULT_EVICTION_DURATION_IN_SECONDS);
+            return DEFAULT_EVICTION_DURATION_IN_SECONDS;
+        }
+        else
+        {
+            LOGGER.info("Using non default eviction duration of {}", evictionDurationInSeconds);
+            return evictionDurationInSeconds;
+        }
+    }
 
     public static synchronized final ConnectionStateManager getInstance()
     {
@@ -80,6 +91,14 @@ public class ConnectionStateManager
     }
 
     private ConcurrentHashMap<String, ConnectionState> stateByPool = new ConcurrentHashMap<>();
+
+    private Clock clock;
+
+    private ConnectionStateManager(Clock clock)
+    {
+        // singleton
+        this.clock = clock;
+    }
 
     public void registerState(String poolName, Identity identity, Optional<CredentialSupplier> databaseCredentialSupplier)
     {
@@ -136,26 +155,87 @@ public class ConnectionStateManager
 
     public void dump()
     {
-        System.out.println(this.stateByPool.keySet());
+        for (String key : this.stateByPool.keySet())
+        {
+            ConnectionState state = this.stateByPool.get(key);
+            boolean credentialSupplierExists = state.getCredentialSupplier().isPresent();
+            LOGGER.info("Connection state : AgeInMillis={}, CredentialSupplierExists={}, Key={}", state.ageInMillis(clock), credentialSupplierExists, key);
+        }
+    }
+
+    public List<ConnectionStatePOJO> getAll()
+    {
+        List<ConnectionStatePOJO> statePOJOS = this.stateByPool.entrySet().stream()
+                .map(entry -> new ConnectionStatePOJO(entry.getKey(), entry.getValue().getCredentialSupplier().isPresent(), entry.getValue().ageInMillis(clock)))
+                .collect(Collectors.toList());
+        return statePOJOS;
+    }
+
+    public synchronized void purge(long durationInSeconds)
+    {
+        int sizeBeforePurge = this.size();
+        LOGGER.info("Connection state purge : Starting purge with size={}", sizeBeforePurge);
+        this.evictStateOlderThan(Duration.ofSeconds(durationInSeconds));
+        int sizeAfterPurge = this.size();
+        LOGGER.info("Connection state purge : Evicted={}", sizeBeforePurge-sizeAfterPurge);
+        this.dump();
+        LOGGER.info("Connection state purge : Completed purge with size={}", sizeAfterPurge);
     }
 
     public static class ConnectionStateEvictionTask implements Runnable
     {
-        private final Duration duration;
+        private final long durationInSeconds;
 
-        public ConnectionStateEvictionTask(Duration duration)
+        public ConnectionStateEvictionTask(long durationInSeconds)
         {
-            this.duration = duration;
+            this.durationInSeconds = durationInSeconds;
         }
 
         @Override
         public void run()
         {
             ConnectionStateManager instance = ConnectionStateManager.getInstance();
-            int sizeBeforePurge = instance.size();
-            instance.evictStateOlderThan(this.duration);
-            int sizeAfterPurge = instance.size();
-            LOGGER.info("Connection state purge stats : Size before purge={}, Size after purge={}", sizeBeforePurge, sizeAfterPurge);
+            instance.purge(durationInSeconds);
+        }
+    }
+
+    public static class ConnectionStatePOJO
+    {
+        String poolName;
+        boolean credentialSupplierPresent;
+        long ageInMillis;
+
+        public ConnectionStatePOJO() {
+        }
+
+        public ConnectionStatePOJO(String poolName, boolean credentialSupplierPresent, long ageInMillis) {
+            this.poolName = poolName;
+            this.credentialSupplierPresent = credentialSupplierPresent;
+            this.ageInMillis = ageInMillis;
+        }
+
+        public String getPoolName() {
+            return poolName;
+        }
+
+        public void setPoolName(String poolName) {
+            this.poolName = poolName;
+        }
+
+        public boolean isCredentialSupplierPresent() {
+            return credentialSupplierPresent;
+        }
+
+        public void setCredentialSupplierPresent(boolean credentialSupplierPresent) {
+            this.credentialSupplierPresent = credentialSupplierPresent;
+        }
+
+        public long getAgeInMillis() {
+            return ageInMillis;
+        }
+
+        public void setAgeInMillis(long ageInMillis) {
+            this.ageInMillis = ageInMillis;
         }
     }
 }

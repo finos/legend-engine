@@ -34,6 +34,7 @@
         <module>legend-engine-executionPlan-dependencies</module>
         <module>legend-engine-executionPlan-execution</module>
         <module>legend-engine-executionPlan-execution-api</module>
+        <module>legend-engine-executionPlan-execution-store-authentication</module>
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
         <module>legend-engine-executionPlan-execution-store-relational</module>
         <module>legend-engine-executionPlan-execution-store-relational-connection</module>
@@ -97,7 +98,6 @@
         <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
-        <module>legend-engine-authentication</module>
     </modules>
 
     <properties>
@@ -433,6 +433,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution-store-authentication</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-executionPlan-execution-store-inMemory</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -754,12 +759,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-application-query</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-authentication</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->

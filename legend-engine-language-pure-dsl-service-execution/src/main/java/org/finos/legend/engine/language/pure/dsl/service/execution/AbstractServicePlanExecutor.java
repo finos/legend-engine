@@ -30,6 +30,8 @@ import org.finos.legend.engine.plan.execution.result.serialization.Serialization
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
@@ -45,11 +47,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractServicePlanExecutor implements ServiceRunner
@@ -198,11 +196,17 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
     {
         MutableList<CommonProfile> profiles = Lists.mutable.empty();
-        if (serviceRunnerInput.getIdentity() != null && serviceRunnerInput.getIdentity().getSubject() != null)
+        Identity identity = serviceRunnerInput.getIdentity();
+        if (identity != null)
         {
-            profiles.add(new KerberosProfile(serviceRunnerInput.getIdentity().getSubject(), null));
+            Optional<LegendKerberosCredential> credentialHolder = identity.getCredential(LegendKerberosCredential.class);
+            if (credentialHolder.isPresent())
+            {
+                LegendKerberosCredential legendKerberosCredential = credentialHolder.get();
+                KerberosProfile kerberosProfile = new KerberosProfile(legendKerberosCredential.getSubject(), null);
+                profiles.add(kerberosProfile);
+            }
         }
-
         PlanExecutionContext planExecutionContext = null;
         if (serviceRunnerInput.getOperationalContext() != null && serviceRunnerInput.getOperationalContext().getGraphFetchCrossAssociationKeysCacheConfig() != null)
         {

@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.After;
 import org.junit.Before;
@@ -51,7 +52,7 @@ public class TestConnectionState
     @BeforeClass
     public static void setupClass() throws SQLException
     {
-        server = AlloyH2Server.startServer(9096);
+        server = AlloyH2Server.startServer(DynamicPortGenerator.generatePort());
     }
 
     @After
@@ -60,6 +61,7 @@ public class TestConnectionState
         if (server != null)
         {
             server.shutdown();
+            server.stop();
         }
     }
 
@@ -77,11 +79,12 @@ public class TestConnectionState
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
 
         // User gets connection to db1
-        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", this.server.getPort(), "db1");
+        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        ConnectionState connectionState = ConnectionStateManager.getInstance().getState("DBPool_Static_host:127.0.0.1_port:9096_db:db1_type:TestDB_testuser1");
+        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
+        ConnectionState connectionState = ConnectionStateManager.getInstance().getState(poolName);
         assertEquals("testuser1", connectionState.getIdentity().getName());
         assertNotNull(connectionState.getCredentialSupplier());
     }
@@ -92,11 +95,12 @@ public class TestConnectionState
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
 
         // User gets connection to db1
-        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", this.server.getPort(), "db1");
+        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        ConnectionState connectionState1 = ConnectionStateManager.getInstance().getState("DBPool_Static_host:127.0.0.1_port:9096_db:db1_type:TestDB_testuser1");
+        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
+        ConnectionState connectionState1 = ConnectionStateManager.getInstance().getState(poolName);
         assertEquals("testuser1", connectionState1.getIdentity().getName());
         assertNotNull(connectionState1.getCredentialSupplier());
 
@@ -104,7 +108,7 @@ public class TestConnectionState
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        ConnectionState connectionState2 = ConnectionStateManager.getInstance().getState("DBPool_Static_host:127.0.0.1_port:9096_db:db1_type:TestDB_testuser1");
+        ConnectionState connectionState2 = ConnectionStateManager.getInstance().getState(poolName);
         assertEquals("testuser1", connectionState2.getIdentity().getName());
         assertNotNull(connectionState2.getCredentialSupplier());
 
@@ -118,24 +122,25 @@ public class TestConnectionState
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
 
         // User gets connection to db1
-        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", this.server.getPort(), "db1");
+        RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        ConnectionState connectionState1 = ConnectionStateManager.getInstance().getState("DBPool_Static_host:127.0.0.1_port:9096_db:db1_type:TestDB_testuser1");
+        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
+        ConnectionState connectionState1 = ConnectionStateManager.getInstance().getState(poolName);
         assertEquals("testuser1", connectionState1.getIdentity().getName());
         assertNotNull(connectionState1.getCredentialSupplier());
 
         // Reset connection state - This simulates a case where the state manager evicts state objects
         ConnectionStateManager.getInstance().evictStateOlderThan(Duration.ofMillis(1));
-        ConnectionState connectionState = ConnectionStateManager.getInstance().getState("DBPool_Static_host:127.0.0.1_port:9096_db:db1_type:TestDB_testuser1");
+        ConnectionState connectionState = ConnectionStateManager.getInstance().getState(poolName);
         assertNull(connectionState);
 
         // User gets another connection to db1
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //Verify new connection state has been created for user
-        ConnectionState connectionState2 = ConnectionStateManager.getInstance().getState("DBPool_Static_host:127.0.0.1_port:9096_db:db1_type:TestDB_testuser1");
+        ConnectionState connectionState2 = ConnectionStateManager.getInstance().getState(poolName);
         assertEquals("testuser1", connectionState2.getIdentity().getName());
         assertNotNull(connectionState2.getCredentialSupplier());
 

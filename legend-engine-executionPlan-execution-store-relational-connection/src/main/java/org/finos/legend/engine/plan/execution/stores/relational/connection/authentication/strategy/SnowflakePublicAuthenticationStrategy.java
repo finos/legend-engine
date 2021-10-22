@@ -62,7 +62,7 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
     }
 
     @Override
-    public Connection getConnection(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
+    public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
         try
         {

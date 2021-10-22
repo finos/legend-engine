@@ -65,15 +65,12 @@ public class LocalH2DataSourceSpecificationKey implements DataSourceSpecificatio
             return false;
         }
         LocalH2DataSourceSpecificationKey that = (LocalH2DataSourceSpecificationKey) o;
-        return currentTime == that.currentTime &&
-                Objects.equals(testDataSetupSqls, that.testDataSetupSqls) &&
-                uuidString.equals(that.uuidString) &&
-                id.equals(that.id);
+        return Objects.equals(testDataSetupSqls, that.testDataSetupSqls) && id.equals(that.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(testDataSetupSqls, currentTime, uuidString, id);
+        return Objects.hash(testDataSetupSqls, id);
     }
 }

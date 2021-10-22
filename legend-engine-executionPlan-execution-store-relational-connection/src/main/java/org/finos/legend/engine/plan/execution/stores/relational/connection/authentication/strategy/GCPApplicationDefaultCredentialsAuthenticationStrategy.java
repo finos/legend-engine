@@ -43,7 +43,7 @@ public class GCPApplicationDefaultCredentialsAuthenticationStrategy extends Auth
     }
 
     @Override
-    public Connection getConnection(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
+    public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
         try
         {
