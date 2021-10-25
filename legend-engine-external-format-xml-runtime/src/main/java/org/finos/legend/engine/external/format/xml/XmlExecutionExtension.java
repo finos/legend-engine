@@ -74,8 +74,8 @@ public class XmlExecutionExtension implements ExecutionExtension
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
             IXmlDeserializeExecutionNodeSpecifics specifics = (IXmlDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
 
-            InputStream stream = ExecutionHelper.inputStreamFromConnection(node.connection);
-            String location = ExecutionHelper.locationFromConnection(node.connection);
+            InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+            String location = ExecutionHelper.locationFromSourceNode(node.executionNodes().getFirst());
             XmlReader<?> deserializer = new XmlReader(specifics, stream, location);
             return new StreamingObjectResult<>(deserializer.startStream());
         }

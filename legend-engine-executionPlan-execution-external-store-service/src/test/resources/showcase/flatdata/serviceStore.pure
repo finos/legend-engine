@@ -1,0 +1,138 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###ServiceStore
+ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore
+(
+   description : 'Showcase Service Store';
+
+   ServiceGroup TradeServices
+   (
+      path : '/trades';
+
+      Service AllTradeService
+      (
+         path : '/allTradesService';
+         method : GET;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup ProductServices
+   (
+      path : '/products';
+
+      Service ProductByIdService
+      (
+         path : '/getProductById/{id}';
+         method : GET;
+         parameters :
+         (
+            id : String (location = path)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+
+      Service ProductByNameService
+      (
+         path : '/getProductByName';
+         method : GET;
+         parameters :
+         (
+            name : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+
+      Service ProductByNameAndDescriptionService
+      (
+         path : '/getProductByNameAndDescription';
+         method : GET;
+         parameters :
+         (
+            name        : String (location = query),
+            description : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+   )
+)
+
+###ExternalFormat
+SchemaSet meta::external::store::service::showcase::store::tradeSchemaSet
+{
+  format  : FlatData;
+  schemas : [
+    {
+        content: 'section A: DelimitedWithHeadings{  scope.untilEof;  delimiter: \',\';  Record  {      s_tradeId       : STRING;      s_traderDetails : STRING;      s_tradeDetails  : STRING;  }}';
+    }
+  ];
+}
+
+SchemaSet meta::external::store::service::showcase::store::productSchemaSet
+{
+  format  : FlatData;
+  schemas : [
+    {
+        content: 'section A: DelimitedWithHeadings{  scope.untilEof;  delimiter: \',\';  Record  {      s_productId   : STRING;      s_productName : STRING;      s_description : STRING;  }}';
+    }
+  ];
+}
+
+Binding meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding
+{
+  schemaSet     : meta::external::store::service::showcase::store::tradeSchemaSet;
+  contentType   : 'application/x.flatdata';
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Trade ];
+}
+
+Binding meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding
+{
+  schemaSet     : meta::external::store::service::showcase::store::productSchemaSet;
+  contentType   : 'application/x.flatdata';
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Product ];
+}
+
+###Runtime
+Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping
+    ];
+    connections :
+    [
+        meta::external::store::service::showcase::store::TradeProductServiceStore :
+        [
+            connection_1 : meta::external::store::service::showcase::connection::serviceStoreConnection
+        ],
+        ModelStore :
+        [
+            connection_2 : meta::external::store::service::showcase::connection::modelChainConnection
+        ]
+    ];
+}
+
+###Connection
+ModelChainConnection meta::external::store::service::showcase::connection::modelChainConnection
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping
+    ];
+}

@@ -18,16 +18,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.factory.Maps;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.service.generation.ServicePlanGenerator;
+import org.finos.legend.engine.language.pure.dsl.service.generation.extension.ServiceExecutionExtension;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
@@ -40,6 +39,8 @@ import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemorySto
 import org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreState;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -50,7 +51,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
-import org.finos.legend.engine.language.pure.dsl.service.generation.extension.ServiceExecutionExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
@@ -68,12 +68,15 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
+import org.finos.legend.engine.test.runner.shared.TestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionTest;
 import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -87,45 +90,52 @@ import java.util.ServiceLoader;
 
 public class ServiceTestRunner
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Legend Execution Server: Service Test Runner");
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTestRunner.class);
 
-    private final Pair<Service, Root_meta_legend_service_metamodel_Service> pureServicePairs;
-    private final Pair<PureModelContextData, PureModel> pureModelPairs;
+    private final Service service;
+    private final Root_meta_legend_service_metamodel_Service pureService;
+    private final PureModelContextData pureModelContextData;
+    private final PureModel pureModel;
     private final ObjectMapper objectMapper;
     private final PlanExecutor executor;
     private final RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions;
     private final MutableList<PlanTransformer> transformers;
     private final String pureVersion;
 
-    public ServiceTestRunner(Pair<Service, Root_meta_legend_service_metamodel_Service> pureServicePairs, Pair<PureModelContextData, PureModel> pureModelPairs, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {
-        this.pureServicePairs = pureServicePairs;
-        this.pureModelPairs = pureModelPairs;
-        this.objectMapper = objectMapper;
+        this.service = service;
+        this.pureService = (pureService == null) ? findPureService(service, pureModel) : pureService;
+        this.pureModelContextData = pureModelContextData;
+        this.pureModel = pureModel;
+        this.objectMapper = (objectMapper == null) ? ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports() : objectMapper;
         this.executor = executor;
         this.extensions = extensions;
         this.transformers = transformers;
         this.pureVersion = pureVersion;
     }
 
+    @Deprecated
+    public ServiceTestRunner(Pair<Service, Root_meta_legend_service_metamodel_Service> pureServicePairs, Pair<PureModelContextData, PureModel> pureModelPairs, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    {
+        this(pureServicePairs.getOne(), pureServicePairs.getTwo(), pureModelPairs.getOne(), pureModelPairs.getTwo(), objectMapper, executor, extensions, transformers, pureVersion);
+    }
+
+    @Deprecated
     public ServiceTestRunner(Service service, Pair<PureModelContextData, PureModel> pureModelPairs, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {
-        this(Tuples.pair(service,(Root_meta_legend_service_metamodel_Service) service.accept(new PackageableElementFirstPassBuilder(pureModelPairs.getTwo().getContext(service)))), pureModelPairs, ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports(), executor, extensions, transformers, pureVersion);
+        this(service, null, pureModelPairs.getOne(), pureModelPairs.getTwo(), null, executor, extensions, transformers, pureVersion);
     }
 
     public List<RichServiceTestResult> executeTests() throws IOException, JavaCompileException
     {
-        Service service = pureServicePairs.getOne();
-        Root_meta_legend_service_metamodel_Service pureService = pureServicePairs.getTwo();
-        PureModelContextData pureModelContextData = pureModelPairs.getOne();
-        PureModel pureModel = pureModelPairs.getTwo();
-        Execution serviceExecution = service.execution;
+        Execution serviceExecution = this.service.execution;
         if (serviceExecution instanceof PureMultiExecution)
         {
-            List<RichServiceTestResult> results = org.eclipse.collections.api.factory.Lists.mutable.empty();
+            List<RichServiceTestResult> results = Lists.mutable.empty();
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Tests And Run For MultiExecution Service").startActive(true))
             {
-                Map<String, Runtime> runtimeMap = ServiceTestGenerationHelper.buildMultiExecutionTestRuntime((PureMultiExecution)serviceExecution, (MultiExecutionTest) service.test, pureModelContextData, pureModel);
+                Map<String, Runtime> runtimeMap = ServiceTestGenerationHelper.buildMultiExecutionTestRuntime((PureMultiExecution) serviceExecution, (MultiExecutionTest) this.service.test, this.pureModelContextData, this.pureModel);
                 Map<String, MutableList<String>> sqlStatementsByKey = Maps.mutable.empty();
                 runtimeMap.forEach((key, runtime) ->
                 {
@@ -135,14 +145,14 @@ public class ServiceTestRunner
                         sqlStatementsByKey.put(key, sql);
                     }
                 });
-                CompositeExecutionPlan compositeExecutionPlan = ServiceTestGenerationHelper.buildCompositeExecutionTestPlan(service, runtimeMap, pureModel, pureVersion, PlanPlatform.JAVA, extensions, transformers);
+                CompositeExecutionPlan compositeExecutionPlan = ServiceTestGenerationHelper.buildCompositeExecutionTestPlan(this.service, runtimeMap, this.pureModel, this.pureVersion, PlanPlatform.JAVA, this.extensions, this.transformers);
                 Map<String, SingleExecutionPlan> plansByKey = compositeExecutionPlan.executionPlans;
                 for (SingleExecutionPlan plan : plansByKey.values())
                 {
                     JavaHelper.compilePlan(plan, null);
                 }
 
-                for (KeyedSingleExecutionTest es : ((MultiExecutionTest) service.test).tests)
+                for (KeyedSingleExecutionTest es : ((MultiExecutionTest) this.service.test).tests)
                 {
                     SingleExecutionPlan executionPlan = plansByKey.get(es.key);
                     List<TestContainer> asserts = es.asserts;
@@ -158,27 +168,28 @@ public class ServiceTestRunner
         {
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Single Pure Tests And Run").startActive(true))
             {
-                PureSingleExecution pureSingleExecution = (PureSingleExecution) service.execution;
-                Runtime testRuntime = ServiceTestGenerationHelper.buildSingleExecutionTestRuntime((PureSingleExecution) service.execution, (SingleExecutionTest) service.test, pureModelContextData, pureModel);
+                PureSingleExecution pureSingleExecution = (PureSingleExecution) this.service.execution;
+                Runtime testRuntime = ServiceTestGenerationHelper.buildSingleExecutionTestRuntime((PureSingleExecution) this.service.execution, (SingleExecutionTest) this.service.test, this.pureModelContextData, this.pureModel);
                 RichIterable<? extends String> sqlStatements = extractSetUpSQLFromTestRuntime(testRuntime);
                 PureSingleExecution testPureSingleExecution = shallowCopySingleExecution(pureSingleExecution);
                 testPureSingleExecution.runtime = testRuntime;
-                ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, extensions, transformers);
+                ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, this.pureModel, this.pureVersion, PlanPlatform.JAVA, null, this.extensions, this.transformers);
                 SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
                 JavaHelper.compilePlan(singleExecutionPlan, null);
-                List<TestContainer> asserts = ((SingleExecutionTest) service.test).asserts;
+                List<TestContainer> asserts = ((SingleExecutionTest) this.service.test).asserts;
                 return Collections.singletonList(executeTestAsserts(singleExecutionPlan, asserts, sqlStatements, scope));
             }
         }
-        else {
+        else
+        {
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Extra Service Execution Tests and Run").startActive(true))
             {
-                MutableList<ServiceExecutionExtension> serviceExecutionExtensions = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ServiceExecutionExtension.class));
-                Pair<ExecutionPlan, RichIterable<? extends  String>> testExecutor = getExtraServiceExecutionPlan(serviceExecutionExtensions, serviceExecution, ((Root_meta_legend_service_metamodel_SingleExecutionTest) pureService._test())._data());
+                MutableList<ServiceExecutionExtension> serviceExecutionExtensions = Lists.mutable.withAll(ServiceLoader.load(ServiceExecutionExtension.class));
+                Pair<ExecutionPlan, RichIterable<? extends String>> testExecutor = getExtraServiceExecutionPlan(serviceExecutionExtensions, serviceExecution, ((Root_meta_legend_service_metamodel_SingleExecutionTest) this.pureService._test())._data());
                 ExecutionPlan executionPlan = testExecutor.getOne();
                 Assert.assertTrue(executionPlan instanceof SingleExecutionPlan, () -> "Only Single Execution Plan supported");
                 List<TestContainer> containers = getExtraServiceTestContainers(serviceExecutionExtensions, service.test);
-                return Collections.singletonList(executeTestAsserts((SingleExecutionPlan)executionPlan, containers, testExecutor.getTwo(), scope));
+                return Collections.singletonList(executeTestAsserts((SingleExecutionPlan) executionPlan, containers, testExecutor.getTwo(), scope));
             }
         }
     }
@@ -186,7 +197,7 @@ public class ServiceTestRunner
     private Pair<ExecutionPlan, RichIterable<? extends String>> getExtraServiceExecutionPlan(MutableList<ServiceExecutionExtension> extensions, Execution execution, String testData)
     {
         return extensions
-                .collect(f -> f.tryToBuildTestExecutorContext(execution, testData, this.objectMapper, this.pureModelPairs.getTwo(), this.extensions, this.transformers, this.pureVersion))
+                .collect(f -> f.tryToBuildTestExecutorContext(execution, testData, this.objectMapper, this.pureModel, this.extensions, this.transformers, this.pureVersion))
                 .select(Objects::nonNull)
                 .select(Optional::isPresent)
                 .collect(Optional::get)
@@ -197,7 +208,7 @@ public class ServiceTestRunner
     private List<TestContainer> getExtraServiceTestContainers(MutableList<ServiceExecutionExtension> extensions, ServiceTest test)
     {
         return extensions
-                .collect(f -> f.tryToBuildTestAsserts(test, this.objectMapper, this.pureModelPairs.getTwo()))
+                .collect(f -> f.tryToBuildTestAsserts(test, this.objectMapper, this.pureModel))
                 .select(Objects::nonNull)
                 .select(Optional::isPresent)
                 .collect(Optional::get)
@@ -216,14 +227,12 @@ public class ServiceTestRunner
 
     private RichServiceTestResult executeTestAsserts(SingleExecutionPlan executionPlan, List<TestContainer> asserts, RichIterable<? extends String> sqlStatements, Scope scope) throws IOException
     {
-        if (ExecutionNodeTDSResultHelper.isResultTDS(executionPlan.rootExecutionNode) || (executionPlan.rootExecutionNode.isResultPrimitiveType() && executionPlan.rootExecutionNode.getDataTypeResultType().equals("String")))
+        if (ExecutionNodeTDSResultHelper.isResultTDS(executionPlan.rootExecutionNode) || (executionPlan.rootExecutionNode.isResultPrimitiveType() && "String".equals(executionPlan.rootExecutionNode.getDataTypeResultType())))
         {
             // Java
             String packageName = "org.finos.legend.tests.generated";
             String className = "TestSuite";
-            Service service = pureServicePairs.getOne();
-            PureModel pureModel = pureModelPairs.getTwo();
-            String javaCode = ServiceTestGenerationHelper.generateJavaForAsserts(asserts, service, pureModel, packageName, className);
+            String javaCode = ServiceTestGenerationHelper.generateJavaForAsserts(asserts, this.service, this.pureModel, packageName, className);
             Class<?> assertsClass;
             RichServiceTestResult testRun;
             try
@@ -232,7 +241,7 @@ public class ServiceTestRunner
             }
             catch (JavaCompileException e)
             {
-                throw new RuntimeException("Error compiling test asserts for " + service.getPath(), e);
+                throw new RuntimeException("Error compiling test asserts for " + this.service.getPath(), e);
             }
 
             scope.span().log("Java asserts generated and compiled");
@@ -247,15 +256,15 @@ public class ServiceTestRunner
                 }
 
                 // Run tests
-                Map<String, org.finos.legend.engine.test.runner.shared.TestResult> results = org.eclipse.collections.api.factory.Maps.mutable.empty();
-                Map<String, Exception> assertExceptions = org.eclipse.collections.api.factory.Maps.mutable.empty();
+                Map<String, TestResult> results = Maps.mutable.empty();
+                Map<String, Exception> assertExceptions = Maps.mutable.empty();
                 for (Pair<TestContainer, Integer> tc : LazyIterate.zipWithIndex(asserts))
                 {
                     // Build Param Map
-                    Map<String, Result>  parameters = Maps.mutable.empty();
-                    if (service.execution instanceof PureExecution)
+                    Map<String, Result> parameters = Maps.mutable.empty();
+                    if (this.service.execution instanceof PureExecution)
                     {
-                        parameters = ListIterate.zip(((PureExecution) service.execution).func.parameters, tc.getOne().parametersValues).toMap(
+                        parameters = ListIterate.zip(((PureExecution) this.service.execution).func.parameters, tc.getOne().parametersValues).toMap(
                                 p -> p.getOne().name,
                                 p -> new ConstantResult(p.getTwo() instanceof PureList
                                         ? ListIterate.collect(((PureList) p.getTwo()).values, v -> v.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withValueSpecificationAsExternalParameter().build()))
@@ -265,20 +274,20 @@ public class ServiceTestRunner
                     // Execute Plan
                     ExecutionState testExecutionState = new ExecutionState(parameters,
                             Lists.mutable.withAll(executionPlan.templateFunctions),
-                            Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(execScope == null ? -1 : execScope.getPort())), new InMemoryStoreExecutionState(new InMemoryStoreState()))
+                            Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(execScope == null ? -1 : execScope.getPort())), new InMemoryStoreExecutionState(new InMemoryStoreState()), new ServiceStoreExecutionState(new ServiceStoreState()))
                     );
-                    Result result = executor.execute(executionPlan, testExecutionState, null, null);
+                    Result result = this.executor.execute(executionPlan, testExecutionState, null, null);
 
                     org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result<Object> pureResult = result.accept(new ResultToPureResultVisitor());
 
                     // Execute Assert
                     String testName = ServiceTestGenerationHelper.getAssertMethodName(tc.getTwo());
-                    scope.span().setTag(testName, resultToString(pureResult, pureModel.getExecutionSupport()));
-                    org.finos.legend.engine.test.runner.shared.TestResult testResult;
+                    scope.span().setTag(testName, resultToString(pureResult, this.pureModel.getExecutionSupport()));
+                    TestResult testResult;
                     try
                     {
                         Boolean assertResult = (Boolean) assertsClass.getMethod(testName, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result.class, ExecutionSupport.class).invoke(null, pureResult, pureModel.getExecutionSupport());
-                        testResult = assertResult ? org.finos.legend.engine.test.runner.shared.TestResult.SUCCESS : org.finos.legend.engine.test.runner.shared.TestResult.FAILURE;
+                        testResult = assertResult ? TestResult.SUCCESS : TestResult.FAILURE;
                         scope.span().setTag(testName + "_assert", assertResult);
                     }
                     catch (Exception e)
@@ -287,7 +296,7 @@ public class ServiceTestRunner
                         PrintWriter writer = new PrintWriter(out);
                         e.printStackTrace(writer);
                         e.printStackTrace();
-                        testResult = org.finos.legend.engine.test.runner.shared.TestResult.ERROR;
+                        testResult = TestResult.ERROR;
                         assertExceptions.put(testName, e);
                         scope.span().setTag(testName + "_assert", out.toString());
                     }
@@ -300,7 +309,7 @@ public class ServiceTestRunner
             catch (Exception e)
             {
                 LOGGER.error("Error running tests", e);
-                throw new RuntimeException(e);
+                throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
             }
             finally
             {
@@ -314,7 +323,7 @@ public class ServiceTestRunner
         }
         else
         {
-            return new RichServiceTestResult(pureServicePairs.getOne().getPath(),Collections.emptyMap(), Collections.emptyMap(), null,   executionPlan, "");
+            return new RichServiceTestResult(this.service.getPath(), Collections.emptyMap(), Collections.emptyMap(), null, executionPlan, "");
         }
     }
 
@@ -344,10 +353,7 @@ public class ServiceTestRunner
         {
             return (String) value;
         }
-        else
-        {
-            throw new RuntimeException("To Code");
-        }
+        throw new RuntimeException("To Code");
     }
 
 
@@ -369,10 +375,10 @@ public class ServiceTestRunner
         MutableList<String> results = null;
         for (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection connection : connections)
         {
-            if(connection instanceof RelationalDatabaseConnection)
+            if (connection instanceof RelationalDatabaseConnection)
             {
                 RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
-                if(relationalDatabaseConnection.datasourceSpecification instanceof LocalH2DatasourceSpecification)
+                if (relationalDatabaseConnection.datasourceSpecification instanceof LocalH2DatasourceSpecification)
                 {
                     LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) relationalDatabaseConnection.datasourceSpecification;
                     if (localH2DatasourceSpecification.testDataSetupSqls != null)
@@ -394,4 +400,13 @@ public class ServiceTestRunner
         return results;
     }
 
+    private static Root_meta_legend_service_metamodel_Service findPureService(Service service, PureModel pureModel)
+    {
+        PackageableElement foundElement = pureModel.getPackageableElement(service.getPath());
+        if (!(foundElement instanceof Root_meta_legend_service_metamodel_Service))
+        {
+            throw new RuntimeException("Could not find service '" + service.getPath() + "' in Pure model");
+        }
+        return (Root_meta_legend_service_metamodel_Service) foundElement;
+    }
 }

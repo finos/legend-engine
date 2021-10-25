@@ -14,10 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -35,6 +40,7 @@ public abstract class DriverWrapper implements Driver
         }
         catch (Exception e)
         {
+            LOGGER.error("Error loading driver {}", e);
             throw new RuntimeException(e);
         }
     }
@@ -48,32 +54,54 @@ public abstract class DriverWrapper implements Driver
     @Override
     public Connection connect(String url, Properties info) throws SQLException
     {
+        DataSourceSpecification ds = null;
         try
         {
-            DataSourceSpecification ds = DataSourceSpecification.getInstance((String)info.get(DataSourceSpecification.DATASOURCE_SPEC_INSTANCE));
+            String instanceId = (String)info.get(DataSourceSpecification.DATASOURCE_SPEC_INSTANCE);
+            if (instanceId == null)
+            {
+                throw new IllegalArgumentException("Connection properties dont have datasource Id " + DataSourceSpecification.DATASOURCE_SPEC_INSTANCE);
+            }
+            ds = DataSourceSpecification.getInstance(instanceId);
+            if (ds == null)
+            {
+                throw new IllegalStateException("Cannot get datasource for id " + instanceId);
+            }
+
             Pair<String, Properties> res = ds.getAuthenticationStrategy().handleConnection(url, info, ds.getDatabaseManager());
-            ds.getDataSourceSpecificationStatistics().builtConnections++;
-            LOGGER.debug("connect {}", driver.getClass().getSimpleName());
-            return driver.connect(res.getOne(), res.getTwo());
+            LOGGER.info("Handled connection by [{}] Authentication strategy for [{}]", ds.getAuthenticationStrategy().getKey().shortId(), instanceId);
+            int builtConnections = ds.getDataSourceSpecificationStatistics().buildConnection();
+            LOGGER.info("Total [{}] connections built for data source [{}]", builtConnections, instanceId);
+            Connection dbConnection = driver.connect(res.getOne(), handlePropertiesPriorToJDBCDriverConnection(res.getTwo()));
+            LOGGER.info("[{}] Driver connected ", driver.getClass().getCanonicalName());
+            return dbConnection;
         }
         catch (Exception e)
         {
+            LOGGER.error("Error connecting to db [{}] , pool stats [{}]", url,RelationalExecutorInfo.getPoolStatisticsAsJSON(ds),e);
             if (e instanceof SQLException)
             {
                 StringBuffer buffer = new StringBuffer();
-                for (SQLException ex = (SQLException) e; ex != null; ex = ex.getNextException())
+                for (SQLException ex = (SQLException)e; ex != null; ex = ex.getNextException())
                 {
                     buffer.append("\n------------------------------\n");
-                    buffer.append("   State      :"+ex.getSQLState()+"\n");
-                    buffer.append("   Code       :"+ex.getErrorCode()+"\n");
-                    buffer.append("   exception  :"+ex.toString()+"\n");
+                    buffer.append("   State      :" + ex.getSQLState() + "\n");
+                    buffer.append("   Code       :" + ex.getErrorCode() + "\n");
+                    buffer.append("   exception  :" + ex.toString() + "\n");
                     buffer.append("------------------------------");
                 }
                 LOGGER.error(buffer.toString());
             }
-            LOGGER.error("Error connecting to db", e);
+
             throw new RuntimeException(e);
         }
+    }
+
+    protected Properties handlePropertiesPriorToJDBCDriverConnection(Properties properties)
+    {
+        //some drivers have strict checks for expected  properties
+        //override this method to remove any internal engine properties
+        return properties;
     }
 
     @Override

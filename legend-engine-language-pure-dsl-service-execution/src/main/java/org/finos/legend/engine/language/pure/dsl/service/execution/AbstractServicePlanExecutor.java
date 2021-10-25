@@ -14,8 +14,14 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.PlanExecutionContext;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -25,6 +31,8 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
+import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
+import org.pac4j.core.profile.CommonProfile;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -39,8 +47,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public abstract class AbstractServicePlanExecutor implements ServiceRunner
 {
@@ -130,6 +140,12 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     }
 
     @Override
+    public List<GraphFetchCrossAssociationKeys> getGraphFetchCrossAssociationKeys()
+    {
+        return GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(this.plan);
+    }
+
+    @Override
     public String toString()
     {
         return "<" + getClass().getSimpleName() + " " + getServicePath() + ">";
@@ -181,7 +197,27 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
     protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
     {
-        Result result = this.executor.execute(this.plan, parameters);
+        MutableList<CommonProfile> profiles = Lists.mutable.empty();
+        if (serviceRunnerInput.getIdentity() != null && serviceRunnerInput.getIdentity().getSubject() != null)
+        {
+            profiles.add(new KerberosProfile(serviceRunnerInput.getIdentity().getSubject(), null));
+        }
+
+        PlanExecutionContext planExecutionContext = null;
+        if (serviceRunnerInput.getOperationalContext() != null && serviceRunnerInput.getOperationalContext().getGraphFetchCrossAssociationKeysCacheConfig() != null)
+        {
+            List<GraphFetchCache> graphFetchCaches = serviceRunnerInput
+                    .getOperationalContext()
+                    .getGraphFetchCrossAssociationKeysCacheConfig()
+                    .entrySet()
+                    .stream()
+                    .map(e -> ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(e.getValue(), e.getKey()))
+                    .collect(Collectors.toList());
+
+            planExecutionContext = new PlanExecutionContext(graphFetchCaches);
+        }
+
+        Result result = this.executor.execute(this.plan, parameters, null, profiles, planExecutionContext);
         serializeResultToStream(result, serviceRunnerInput.getSerializationFormat(), outputStream);
     }
 

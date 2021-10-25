@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.cache.graphFetch;
 
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 
 import java.util.Objects;
 
@@ -56,7 +57,6 @@ public class GraphFetchCacheByEqualityKeys implements GraphFetchCache
         return this.subTree;
     }
 
-    @Override
     public boolean isCacheUtilized()
     {
         return this.subTree != null;
@@ -66,5 +66,11 @@ public class GraphFetchCacheByEqualityKeys implements GraphFetchCache
     public ExecutionCache<GraphFetchCacheKey, Object> getExecutionCache()
     {
         return this.cache;
+    }
+
+    @Override
+    public boolean isValidForPlan(SingleExecutionPlan plan)
+    {
+        return true;
     }
 }

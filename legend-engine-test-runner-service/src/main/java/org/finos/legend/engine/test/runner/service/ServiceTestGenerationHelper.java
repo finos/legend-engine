@@ -14,41 +14,34 @@
 
 package org.finos.legend.engine.test.runner.service;
 
-
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
-import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
-import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
+import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
+import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
@@ -71,8 +64,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatConnection;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
+import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
@@ -81,14 +81,18 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.valuespecification.ValueSpecificationProcessor;
 
-import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import javax.ws.rs.core.MediaType;
 
 public class ServiceTestGenerationHelper
 {
-
-    public static CompositeExecutionPlan buildCompositeExecutionTestPlan(Service service, Map<String, Runtime> testRuntimes, PureModel pureModel, String pureVersion, PlanPlatform platform,RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
+    public static CompositeExecutionPlan buildCompositeExecutionTestPlan(Service service, Map<String, Runtime> testRuntimes, PureModel pureModel, String pureVersion, PlanPlatform platform, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         if (!(service.execution instanceof PureMultiExecution))
         {
@@ -117,7 +121,7 @@ public class ServiceTestGenerationHelper
         return buildTestRuntime(pureSingleExecution.runtime, pureSingleExecution.mapping, singleExecutionTest.data, pureModelContextData, pureModel);
     }
 
-    public static Map<String, Runtime> buildMultiExecutionTestRuntime(PureMultiExecution pureMultiExecution,MultiExecutionTest multiExecutionTest,  PureModelContextData pureModelContextData, PureModel pureModel)
+    public static Map<String, Runtime> buildMultiExecutionTestRuntime(PureMultiExecution pureMultiExecution, MultiExecutionTest multiExecutionTest, PureModelContextData pureModelContextData, PureModel pureModel)
     {
         MutableMap<String, KeyedExecutionParameter> executionsByKey = Iterate.groupByUniqueKey(pureMultiExecution.executionParameters, e -> e.key);
         return Iterate.toMap(multiExecutionTest.tests,
@@ -131,10 +135,10 @@ public class ServiceTestGenerationHelper
 
     private static Runtime buildTestRuntime(Runtime runtime, String mappingPath, String testData, PureModelContextData pureModelContextData, PureModel pureModel)
     {
-        if (doesNotContainRelational(runtime, pureModel) || (hasMultipleConnection(runtime, pureModel) && !hasModelChainConnection(runtime,pureModelContextData)))
+        if (doesNotContainRelational(runtime, pureModel) || (hasMultipleConnection(runtime, pureModel) && !hasModelChainConnection(runtime, pureModelContextData)))
         {
             EngineRuntime engineRuntime = resolveRuntime(runtime, pureModelContextData);
-            return buildMultipleConnectionRuntime(mappingPath, testData, engineRuntime, pureModelContextData,pureModel);
+            return buildMultipleConnectionRuntime(mappingPath, testData, engineRuntime, pureModelContextData, pureModel);
         }
         return buildRelationalTestRuntime(runtime, mappingPath, testData, pureModel);
     }
@@ -147,8 +151,8 @@ public class ServiceTestGenerationHelper
         mappingPointer.path = mappingPath;
         runtime.mappings.add(mappingPointer);
         engineRuntime.mappings = runtime.mappings;
-        Function<String, String> testDataAccessor = getTestDataAccessor(testData,engineRuntime);
-        runtime.connections = ListIterate.collect(engineRuntime.connections, c->buildTestConnection(c,testDataAccessor,pureModelContextData,engineRuntime,mappingPath,pureModel,testData));
+        Function<String, String> testDataAccessor = getTestDataAccessor(testData, engineRuntime);
+        runtime.connections = ListIterate.collect(engineRuntime.connections, c -> buildTestConnection(c, testDataAccessor, pureModelContextData, engineRuntime, mappingPath, pureModel, testData));
         return runtime;
     }
 
@@ -156,11 +160,12 @@ public class ServiceTestGenerationHelper
     {
         StoreConnections newStoreConnections = new StoreConnections();
         newStoreConnections.store = storeConnections.store;
-        newStoreConnections.storeConnections =ListIterate.collect(storeConnections.storeConnections,s-> newTestIdentifiedConnection(s,storeConnections,testDataAccessor,pureModelContextData,runtime,mappingPath,pureModel,testData));
+        newStoreConnections.storeConnections = ListIterate.collect(storeConnections.storeConnections, s -> newTestIdentifiedConnection(s, storeConnections, testDataAccessor, pureModelContextData, runtime, mappingPath, pureModel, testData));
         return newStoreConnections;
     }
 
-    private static IdentifiedConnection newTestIdentifiedConnection(IdentifiedConnection identifiedConnection, StoreConnections storeConnections, Function<String, String> testDataAccessor, PureModelContextData pureModelContextData, EngineRuntime runtime, String mappingPath, PureModel pureModel, String testData) {
+    private static IdentifiedConnection newTestIdentifiedConnection(IdentifiedConnection identifiedConnection, StoreConnections storeConnections, Function<String, String> testDataAccessor, PureModelContextData pureModelContextData, EngineRuntime runtime, String mappingPath, PureModel pureModel, String testData)
+    {
         Connection connection = identifiedConnection.connection;
         IdentifiedConnection newIdentifiedConnection = new IdentifiedConnection();
         newIdentifiedConnection.id = identifiedConnection.id;
@@ -174,32 +179,34 @@ public class ServiceTestGenerationHelper
         if (runtime instanceof EngineRuntime)
         {
             List<StoreConnections> storeConnections = ((EngineRuntime) runtime).connections;
-            return (storeConnections != null) && !storeConnections.isEmpty() && storeConnections.size()>1;
+            return (storeConnections != null) && !storeConnections.isEmpty() && storeConnections.size() > 1;
         }
         if (runtime instanceof LegacyRuntime)
         {
             List<Connection> connections = ((LegacyRuntime) runtime).connections;
-            return (connections != null) && !connections.isEmpty() && connections.size()>1 ;
+            return (connections != null) && !connections.isEmpty() && connections.size() > 1;
         }
         if (runtime instanceof RuntimePointer)
         {
             RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection> connections = pureModel.getRuntime(((RuntimePointer) runtime).runtime)._connections();
-            return (connections != null) && connections.size()>1;
+            return (connections != null) && connections.size() > 1;
         }
         throw new UnsupportedOperationException("Unsupported runtime type: " + runtime.getClass().getName());
     }
 
     private static boolean hasModelChainConnection(Runtime runtime, PureModelContextData pureModelContextData)
     {
-        EngineRuntime engineRuntime = resolveRuntime(runtime,pureModelContextData);
+        EngineRuntime engineRuntime = resolveRuntime(runtime, pureModelContextData);
         List<StoreConnections> storeConnections = engineRuntime.connections;
-        for(StoreConnections s: storeConnections)
+        for (StoreConnections s : storeConnections)
         {
             List<IdentifiedConnection> identifiedConnection = s.storeConnections;
-            for(IdentifiedConnection ic : identifiedConnection)
+            for (IdentifiedConnection ic : identifiedConnection)
             {
-                if(ic.connection instanceof ModelChainConnection || (("ModelStore").equals(s.store.path) && ic.connection instanceof ConnectionPointer))
+                if (ic.connection instanceof ModelChainConnection || (("ModelStore").equals(s.store.path) && ic.connection instanceof ConnectionPointer))
+                {
                     return true;
+                }
             }
         }
         return false;
@@ -250,10 +257,11 @@ public class ServiceTestGenerationHelper
         }
     }
 
-    private static Connection getTestConnection(Connection connection, Runtime parentRuntime, String mappingPath,  Pair<PureModelContextData, PureModel> pureModelPairs,StoreConnections parentStoreConnection, Function<String, String> testDataAccessor,  String testData, String idTestDataAccessorResult)
+    private static Connection getTestConnection(Connection connection, Runtime parentRuntime, String mappingPath, Pair<PureModelContextData, PureModel> pureModelPairs, StoreConnections parentStoreConnection, Function<String, String> testDataAccessor, String testData, String idTestDataAccessorResult)
     {
-        Optional<Connection> optionalConnection = getNullableTestConnection(connection, parentRuntime, mappingPath, pureModelPairs, parentStoreConnection,testDataAccessor,  null, idTestDataAccessorResult);
-        if(optionalConnection.isPresent()){
+        Optional<Connection> optionalConnection = getNullableTestConnection(connection, parentRuntime, mappingPath, pureModelPairs, parentStoreConnection, testDataAccessor, null, idTestDataAccessorResult);
+        if (optionalConnection.isPresent())
+        {
             return optionalConnection.get();
         }
         else
@@ -262,7 +270,7 @@ public class ServiceTestGenerationHelper
         }
     }
 
-    private static Optional<Connection> getNullableTestConnection(Connection connection, Runtime parentRuntime, String mappingPath,  Pair<PureModelContextData, PureModel> pureModelPairs,StoreConnections parentStoreConnection, Function<String, String> testDataAccessor,  String testData, String idTestDataAccessorResult)
+    private static Optional<Connection> getNullableTestConnection(Connection connection, Runtime parentRuntime, String mappingPath, Pair<PureModelContextData, PureModel> pureModelPairs, StoreConnections parentStoreConnection, Function<String, String> testDataAccessor, String testData, String idTestDataAccessorResult)
     {
         if (connection instanceof ConnectionPointer)
         {
@@ -282,13 +290,14 @@ public class ServiceTestGenerationHelper
             testJsonModelConnection.element = conn.element != null ? conn.element : (parentStoreConnection.store != null ? parentStoreConnection.store.path : null);
             String executorId = conn.url.split(":")[1];
             String connectionTestData = resolveTestData(executorId, idTestDataAccessorResult, testDataAccessor, testData);
-            if(idTestDataAccessorResult != null){
-                ((JsonModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes());
+            if (idTestDataAccessorResult != null)
+            {
+                ((JsonModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes(StandardCharsets.UTF_8));
             }
-            testJsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes());
+            testJsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes(StandardCharsets.UTF_8));
             return Optional.of(conn);
         }
-        else if (connection instanceof XmlModelConnection)
+        if (connection instanceof XmlModelConnection)
         {
             XmlModelConnection conn = (XmlModelConnection) connection;
             XmlModelConnection testXmlModelConnection = new XmlModelConnection();
@@ -296,21 +305,31 @@ public class ServiceTestGenerationHelper
             testXmlModelConnection.element = conn.element != null ? conn.element : (parentStoreConnection.store != null ? parentStoreConnection.store.path : null);
             String executorId = conn.url.split(":")[1];
             String connectionTestData = resolveTestData(executorId, idTestDataAccessorResult, testDataAccessor, testData);
-            if(idTestDataAccessorResult != null)
+            if (idTestDataAccessorResult != null)
             {
-                ((XmlModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes());
+                ((XmlModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes(StandardCharsets.UTF_8));
             }
-            testXmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes());
+            testXmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes(StandardCharsets.UTF_8));
             return Optional.of(testXmlModelConnection);
         }
-        else if(connection instanceof  ModelChainConnection)
+        if (connection instanceof ExternalFormatConnection)
         {
-            return  Optional.of(connection);
+            ExternalFormatConnection conn = (ExternalFormatConnection) connection;
+            ExternalFormatConnection testConn = new ExternalFormatConnection();
+            testConn.element = conn.element;
+            UrlStreamExternalSource source = new UrlStreamExternalSource();
+            source.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes(StandardCharsets.UTF_8));
+            testConn.externalSource = source;
+            return Optional.of(testConn);
         }
-        else if(connection instanceof DatabaseConnection)
+        if (connection instanceof ModelChainConnection)
         {
-            List<String> sql = getSql(parentRuntime, mappingPath, idTestDataAccessorResult , pureModelPairs.getTwo());
-            return  Optional.of(newRelationalConnection(connection, idTestDataAccessorResult, sql));
+            return Optional.of(connection);
+        }
+        if (connection instanceof DatabaseConnection)
+        {
+            List<String> sql = getSql(parentRuntime, mappingPath, idTestDataAccessorResult, pureModelPairs.getTwo());
+            return Optional.of(newRelationalConnection(connection, idTestDataAccessorResult, sql));
         }
         String element = connection.element != null ? connection.element : (parentStoreConnection.store != null ? parentStoreConnection.store.path : null);
         Connection testConnectionFromFactories = getTestConnectionFromFactories(connection, idTestDataAccessorResult == null ? testData : idTestDataAccessorResult, element);
@@ -320,24 +339,23 @@ public class ServiceTestGenerationHelper
     private static Connection getTestConnectionFromFactories(Connection connection, String testData, String element)
     {
         MutableList<ConnectionFactoryExtension> factories = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
-        return  factories.asLazy()
-            .collect(f -> f.tryBuildFromConnection(connection, testData, element))
-            .select(Optional::isPresent)
-            .collect(Optional::get)
-            .getFirst();
+        return factories.asLazy()
+                .collect(f -> f.tryBuildFromConnection(connection, testData, element))
+                .select(Optional::isPresent)
+                .collect(Optional::get)
+                .getFirst();
     }
 
-
-
-    private static String resolveTestData(String executorId,  String idConnectionTestData, Function<String, String> testDataAccessor,  String testData)
+    private static String resolveTestData(String executorId, String idConnectionTestData, Function<String, String> testDataAccessor, String testData)
     {
-        if(idConnectionTestData != null){
+        if (idConnectionTestData != null)
+        {
             return idConnectionTestData;
         }
-        if(testDataAccessor != null)
+        if (testDataAccessor != null)
         {
             String testDataAccessorString = testDataAccessor.apply(executorId);
-            if(testDataAccessorString != null)
+            if (testDataAccessorString != null)
             {
                 return testDataAccessorString;
             }

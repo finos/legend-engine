@@ -70,7 +70,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Mu
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.PackageableMultiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.PrimitiveType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -78,11 +77,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.SVNCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
+import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
@@ -90,9 +91,11 @@ import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataAccessor;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -101,13 +104,13 @@ import java.util.function.Predicate;
 
 public class PureModel implements IPureModel
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = LoggerFactory.getLogger("Alloy Execution Server");
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
     private static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader());
     private final CompiledExecutionSupport executionSupport;
     private final DeploymentMode deploymentMode;
     private final PureModelProcessParameter pureModelProcessParameter;
-    private final org.finos.legend.pure.m3.coreinstance.Package root = new Package_Impl("Root")._name("Root");
+    private final org.finos.legend.pure.m3.coreinstance.Package root = new Package_Impl(M3Paths.Root)._name(M3Paths.Root);
     // NOTE: since we have states within each extension, we have to keep extensions local to `PureModel` rather than having
     // this as part of `CompileContext`
     final CompilerExtensions extensions;
@@ -345,7 +348,7 @@ public class PureModel implements IPureModel
     private void registerElementForPathToElement(String pack, List<String> children)
     {
         org.finos.legend.pure.m3.coreinstance.Package newPkg = getOrCreatePackage(root, pack);
-        org.finos.legend.pure.m3.coreinstance.Package oldPkg = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata("Package", "Root"), pack);
+        org.finos.legend.pure.m3.coreinstance.Package oldPkg = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pack);
         for (String child : children)
         {
             // allow duplicated registration, but only the first one will actually get registered
@@ -358,39 +361,21 @@ public class PureModel implements IPureModel
 
     private void initializeMultiplicities()
     {
-        this.multiplicitiesIndex.put("zero", (PackageableMultiplicity) executionSupport.getMetadata("meta::pure::metamodel::multiplicity::PackageableMultiplicity", "Root::meta::pure::metamodel::multiplicity::PureZero"));
-        this.multiplicitiesIndex.put("one", (PackageableMultiplicity) executionSupport.getMetadata("meta::pure::metamodel::multiplicity::PackageableMultiplicity", "Root::meta::pure::metamodel::multiplicity::PureOne"));
-        this.multiplicitiesIndex.put("zeroone", (PackageableMultiplicity) executionSupport.getMetadata("meta::pure::metamodel::multiplicity::PackageableMultiplicity", "Root::meta::pure::metamodel::multiplicity::ZeroOne"));
-        this.multiplicitiesIndex.put("onemany", (PackageableMultiplicity) executionSupport.getMetadata("meta::pure::metamodel::multiplicity::PackageableMultiplicity", "Root::meta::pure::metamodel::multiplicity::OneMany"));
-        this.multiplicitiesIndex.put("zeromany", (PackageableMultiplicity) executionSupport.getMetadata("meta::pure::metamodel::multiplicity::PackageableMultiplicity", "Root::meta::pure::metamodel::multiplicity::ZeroMany"));
+        this.multiplicitiesIndex.put("zero", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureZero"));
+        this.multiplicitiesIndex.put("one", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureOne"));
+        this.multiplicitiesIndex.put("zeroone", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroOne"));
+        this.multiplicitiesIndex.put("onemany", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::OneMany"));
+        this.multiplicitiesIndex.put("zeromany", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroMany"));
     }
 
     private void initializePrimitiveTypes()
     {
-        this.typesIndex.put("String", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "String"));
-        this.immutables.add("String");
-        this.typesIndex.put("Binary", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "Binary"));
-        this.immutables.add("Binary");
-        this.typesIndex.put("Boolean", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "Boolean"));
-        this.immutables.add("Boolean");
-        this.typesIndex.put("Integer", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "Integer"));
-        this.immutables.add("Integer");
-        this.typesIndex.put("Number", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "Number"));
-        this.immutables.add("Number");
-        this.typesIndex.put("Float", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "Float"));
-        this.immutables.add("Float");
-        this.typesIndex.put("Decimal", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "Decimal"));
-        this.immutables.add("Decimal");
-        this.typesIndex.put("Date", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "Date"));
-        this.immutables.add("Date");
-        this.typesIndex.put("StrictDate", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "StrictDate"));
-        this.immutables.add("StrictDate");
-        this.typesIndex.put("DateTime", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "DateTime"));
-        this.immutables.add("DateTime");
-        this.typesIndex.put("LatestDate", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "LatestDate"));
-        this.immutables.add("LatestDate");
-        this.typesIndex.put("StrictTime", (PrimitiveType) executionSupport.getMetadata("meta::pure::metamodel::type::PrimitiveType", "StrictTime"));
-        this.immutables.add("StrictTime");
+        MetadataAccessor metadataAccessor = this.executionSupport.getMetadataAccessor();
+        ModelRepository.PRIMITIVE_TYPE_NAMES.newWith(M3Paths.Number).forEach(typeName ->
+        {
+            this.typesIndex.put(typeName, metadataAccessor.getPrimitiveType(typeName));
+            this.immutables.add(typeName);
+        });
     }
 
 
@@ -543,15 +528,33 @@ public class PureModel implements IPureModel
         //packageableElement = getRuntime_safe(fullPath);
         //packageableElement = getConnection_safe(fullPath);
 
-        // For other elements rely on pathToElement registrations to resolve
-        try
+        // For other elements search the package tree
+        return findPackageableElement(packagePrefix(fullPath));
+    }
+
+    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement findPackageableElement(String fullPath)
+    {
+        if ("".equals(fullPath) || "::".equals(fullPath) || M3Paths.Root.equals(fullPath))
         {
-            return org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(packagePrefix(fullPath), getExecutionSupport());
+            return this.root;
         }
-        catch (Exception e)
+
+        org.finos.legend.pure.m3.coreinstance.Package currentPackage = this.root;
+        int start = 0;
+        int end;
+        while ((end = fullPath.indexOf(':', start)) != -1)
         {
-            return null;
+            String name = fullPath.substring(start, end);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement child = currentPackage._children().detect(c -> name.equals(c._name()));
+            if (!(child instanceof org.finos.legend.pure.m3.coreinstance.Package))
+            {
+                return null;
+            }
+            currentPackage = (org.finos.legend.pure.m3.coreinstance.Package) child;
+            start = end + 2;
         }
+        String name = fullPath.substring(start);
+        return currentPackage._children().detect(c -> name.equals(c._name()));
     }
 
 
@@ -1110,7 +1113,7 @@ public class PureModel implements IPureModel
         {
             String pkg = HelperModelBuilder.getElementFullPath(f.getFunc()._package(), this.getExecutionSupport());
             org.finos.legend.pure.m3.coreinstance.Package n = getOrCreatePackage(root, pkg);
-            org.finos.legend.pure.m3.coreinstance.Package o = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata("Package", "Root"), pkg);
+            org.finos.legend.pure.m3.coreinstance.Package o = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pkg);
             n._childrenAdd(o._children().detect(c -> f.getFunctionSignature().equals(c._name())));
         }
     }

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.test.runner.service;
 
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
@@ -23,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.test.runner.shared.TestResult;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,24 +48,30 @@ public class TestServiceTestRunner
         Assert.assertEquals(1, testResults.size());
         RichServiceTestResult testResult = testResults.get(0);
         Assert.assertEquals(servicePath, testResult.getServicePath());
-        if(multiExecution){
+        if (multiExecution)
+        {
             Assert.assertNotNull(testResult.getOptionalMultiExecutionKey());
-        } else {
+        }
+        else
+        {
             Assert.assertNull(testResult.getOptionalMultiExecutionKey());
         }
         Assert.assertEquals(Collections.emptyMap(), testResult.getAssertExceptions());
         Assert.assertEquals(Collections.singletonMap("test0", expectedResult), testResult.getResults());
     }
 
-    private List<RichServiceTestResult> runTest(Service service, PureModel pureModel, PureModelContextData pureModelContextData) {
-        ServiceTestRunner serviceTestRunner = new ServiceTestRunner(service, Tuples.pair(pureModelContextData, pureModel), PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(), core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
-        try {
+    private List<RichServiceTestResult> runTest(Service service, PureModel pureModel, PureModelContextData pureModelContextData)
+    {
+        ServiceTestRunner serviceTestRunner = new ServiceTestRunner(service, (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement(service.getPath()), pureModelContextData, pureModel, ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports(), PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(), core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
+        try
+        {
             return serviceTestRunner.executeTests();
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             throw new RuntimeException(e);
         }
     }
-
 
     @Test
     public void testSucceedingService() throws Exception
@@ -84,5 +90,4 @@ public class TestServiceTestRunner
     {
         test("legend-sdlc-test-services-multi-execution.json", "my::Service", TestResult.SUCCESS, true);
     }
-
 }
