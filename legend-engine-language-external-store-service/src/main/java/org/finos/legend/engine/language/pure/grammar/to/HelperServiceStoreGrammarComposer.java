@@ -76,7 +76,7 @@ public class HelperServiceStoreGrammarComposer
         builder.append(getTabString(baseIndentation + 1)).append("method : ").append(service.method).append(";\n");
         if (service.parameters != null)
         {
-            builder.append(getTabString(baseIndentation + 1)).append("parameters : \n")
+            builder.append(getTabString(baseIndentation + 1)).append("parameters :\n")
                     .append(getTabString(baseIndentation + 1)).append("(\n")
                     .append(String.join(",\n", ListIterate.collect(service.parameters, param -> renderServiceParameter(param, baseIndentation + 2))))
                     .append("\n")

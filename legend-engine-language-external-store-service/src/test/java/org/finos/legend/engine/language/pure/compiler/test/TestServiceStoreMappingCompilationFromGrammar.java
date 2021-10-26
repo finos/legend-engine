@@ -55,7 +55,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -90,7 +90,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "      path : '/testService/{param}';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        param : String ( location = path )\n" +
                 "      );\n" +
@@ -123,7 +123,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "      path : '/testService/{param}';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        param : String ( location = path )\n" +
                 "      );\n" +
@@ -162,7 +162,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "      (\n" +
                 "        path : '/testService/{param}';\n" +
                 "        method : GET;\n" +
-                "        parameters : \n" +
+                "        parameters :\n" +
                 "        (\n" +
                 "          param : String ( location = path )\n" +
                 "        );\n" +
@@ -199,7 +199,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "      (\n" +
                 "        path : '/testService/{param}';\n" +
                 "        method : GET;\n" +
-                "        parameters : \n" +
+                "        parameters :\n" +
                 "        (\n" +
                 "          param : String ( location = path ),\n" +
                 "          param2 : Integer ( location = query )\n" +
@@ -241,7 +241,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "      path : '/testService1';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        param : String ( location = query ),\n" +
                 "        param2 : Integer ( location = query )\n" +
@@ -253,7 +253,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "      path : '/testService2';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        param1 : Boolean ( location = query )\n" +
                 "      );\n" +
@@ -300,7 +300,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "      path : '/testService1';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        param : String ( location = query ),\n" +
                 "        param2 : Integer ( location = query )\n" +
@@ -312,7 +312,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "      path : '/testService2';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        param1 : Boolean ( location = query )\n" +
                 "      );\n" +
@@ -357,7 +357,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "      path : '/testService1';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        param : String ( location = query ),\n" +
                 "        param2 : Integer ( location = query )\n" +
@@ -369,7 +369,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "      path : '/testService2';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        param1 : Boolean ( location = query )\n" +
                 "      );\n" +
@@ -419,7 +419,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "      (\n" +
                 "        path : '/testService1/{param}';\n" +
                 "        method : GET;\n" +
-                "        parameters : \n" +
+                "        parameters :\n" +
                 "        (\n" +
                 "          param : String ( location = path ),\n" +
                 "          param1 : Integer ( location = query )\n" +
@@ -431,7 +431,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "      (\n" +
                 "        path : '/testService2/{param}';\n" +
                 "        method : GET;\n" +
-                "        parameters : \n" +
+                "        parameters :\n" +
                 "        (\n" +
                 "          param : Boolean ( location = path ),\n" +
                 "          param1 : Float ( location = query )\n" +
@@ -482,7 +482,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -514,7 +514,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -547,7 +547,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      param : Float ( location = query )\n" +
                 "    );\n" +
@@ -577,7 +577,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -620,7 +620,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query, enum = test::SerializationFormat )\n" +
                 "    );\n" +
