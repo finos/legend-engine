@@ -31,7 +31,7 @@ public class SourceInformationHelper
         }
     }
 
-    public static org.finos.legend.pure.m4.coreinstance.SourceInformation toM3SourceInformation(SourceInformation sourceInformation)
+    static org.finos.legend.pure.m4.coreinstance.SourceInformation toM3SourceInformation(SourceInformation sourceInformation)
     {
         return sourceInformation != null
                 ? new org.finos.legend.pure.m4.coreinstance.SourceInformation(sourceInformation.sourceId, sourceInformation.startLine, sourceInformation.startColumn, sourceInformation.endLine, sourceInformation.endColumn)

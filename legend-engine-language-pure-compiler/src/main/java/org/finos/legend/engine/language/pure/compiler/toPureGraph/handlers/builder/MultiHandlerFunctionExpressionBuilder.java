@@ -19,7 +19,10 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -68,25 +71,20 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<ValueSpecification> parameters, MutableList<String> openVariables, CompileContext compileContext, ProcessingContext processingContext, SourceInformation sourceInformation)
+    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<ValueSpecification> parameters, MutableList<String> openVariables, CompileContext compileContext, ProcessingContext processingContext)
     {
         if (test(handlers.get(0).getFunc(), parameters, compileContext.pureModel, processingContext))
         {
             List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processed = parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(compileContext, openVariables, processingContext))).collect(Collectors.toList());
-            return Tuples.pair(buildFunctionExpressionGraph(processed, openVariables, compileContext, processingContext, sourceInformation), processed);
+            return Tuples.pair(buildFunctionExpressionGraph(processed, openVariables, compileContext, processingContext), processed);
         }
         return Tuples.pair(null, null);
     }
 
-    public SimpleFunctionExpression buildFunctionExpressionGraph(List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> parameters, MutableList<String> openVariables, CompileContext compileContext, ProcessingContext processingContext, SourceInformation sourceInformation)
+    public SimpleFunctionExpression buildFunctionExpressionGraph(List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> parameters, MutableList<String> openVariables, CompileContext compileContext, ProcessingContext processingContext)
     {
         RichIterable<SimpleFunctionExpression> res = handlers.collect(h -> h.getDispatch().shouldSelect(parameters) ? h.process(parameters) : null);
-        SimpleFunctionExpression result = res.select(Objects::nonNull).getFirst();
-        if (result != null)
-        {
-            result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
-        }
-        return result;
+        return res.select(Objects::nonNull).getFirst();
     }
 
     @Override
