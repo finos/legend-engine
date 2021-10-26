@@ -82,7 +82,10 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     {
         RichIterable<SimpleFunctionExpression> res = handlers.collect(h -> h.getDispatch().shouldSelect(parameters) ? h.process(parameters) : null);
         SimpleFunctionExpression result = res.select(Objects::nonNull).getFirst();
-        result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
+        if (result != null)
+        {
+            result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
+        }
         return result;
     }
 
