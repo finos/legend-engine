@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
+import org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatPlanGeneratorExtension;
@@ -59,7 +60,7 @@ public class TestExtensions
             .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.jsonSchema.extension.JSONSchemaGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationExtension.class)
-            .with(org.finos.legend.engine.external.format.morphir.extension.MorphirGenerationExtension.class)
+            .with(MorphirGenerationExtension.class)
             .toImmutable();
 
 

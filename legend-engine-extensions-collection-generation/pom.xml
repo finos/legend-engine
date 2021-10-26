@@ -134,7 +134,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-morphir</artifactId>
+            <artifactId>legend-engine-external-language-morphir</artifactId>
         </dependency>
         <!-- ENGINE -->
 
