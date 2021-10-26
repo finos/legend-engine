@@ -59,6 +59,7 @@ public class TestExtensions
             .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.jsonSchema.extension.JSONSchemaGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationExtension.class)
+            .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class)
             .toImmutable();
 
 

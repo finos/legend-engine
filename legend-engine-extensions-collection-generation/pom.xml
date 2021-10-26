@@ -132,6 +132,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-format-rosetta</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-language-morphir</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- ECLIPSE COLLECTIONS -->

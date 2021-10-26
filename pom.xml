@@ -55,6 +55,7 @@
         <module>legend-engine-external-format-rosetta</module>
         <module>legend-engine-external-format-protobuf</module>
         <module>legend-engine-external-language-java</module>
+        <module>legend-engine-external-language-morphir</module>
         <module>legend-engine-language-pure-modelManager</module>
         <module>legend-engine-language-pure-modelManager-sdlc</module>
         <module>legend-engine-language-pure-compiler</module>
@@ -730,6 +731,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-language-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-language-morphir</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

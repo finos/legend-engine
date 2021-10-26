@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration;
+package org.finos.legend.engine.external.language.morphir.schema.generations;
 
-public enum FileGenerationType
+import org.finos.legend.engine.external.shared.format.generations.GenerationInput;
+
+public class MorphirGenerationInput extends GenerationInput
 {
-    avro("Avro"),
-    java("Java"),
-    jsonSchema("JSON Schema"),
-    protobuf("Protobuf"),
-    slang("Slang"),
-    rosetta("Rosetta"),
-    morphir("Morphir");
-    private String label;
-
-    private FileGenerationType(final String label)
-    {
-        this.label = label;
-    }
-
-    public String getLabel()
-    {
-        return this.label;
-    }
+    public MorphirGenerationConfig config;
 }

@@ -234,6 +234,11 @@
             <artifactId>legend-engine-external-format-xml-runtime</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-language-morphir</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- Shared Drop Wizard Bundles -->
