@@ -18,8 +18,8 @@ import javax.sql.DataSource;
 
 public class DataSourceWithStatistics
 {
-    private DataSourceStatistics statistics = new DataSourceStatistics();
-    private DataSource dataSource;
+    private final DataSourceStatistics statistics = new DataSourceStatistics();
+    private final DataSource dataSource;
 
     public DataSourceWithStatistics(DataSource dataSource)
     {
@@ -36,9 +36,9 @@ public class DataSourceWithStatistics
         return statistics;
     }
 
-    public void requestConnection()
+    public int requestConnection()
     {
-        statistics.requestConnections++;
+        return this.statistics.requestConnection();
     }
 }
 

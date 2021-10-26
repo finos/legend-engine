@@ -2,45 +2,17 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.full.funct
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.finos.legend.engine.language.pure.compiler.Compiler;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
-import org.finos.legend.engine.plan.generation.PlanGenerator;
-import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
-import org.finos.legend.engine.plan.platform.PlanPlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
-import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
-import org.h2.tools.Server;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Enumeration;
 import java.util.Map;
 
-import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
-
-public class TestPlanExecutionForIn
+public class TestPlanExecutionForIn extends AlloyTestServer
 {
-    private static Server server;
-    private static PlanExecutor planExecutor;
 
     private static final String LOGICAL_MODEL = "###Pure\n" +
             "Class test::Person\n" +
@@ -98,58 +70,29 @@ public class TestPlanExecutionForIn
             "  ];\n" +
             "}\n";
 
-    @BeforeClass
-    public static void setUp()
+    @Override
+    protected void insertTestData(Statement statement) throws SQLException
     {
-        try
-        {
-            Class.forName("org.h2.Driver");
-
-            Enumeration<Driver> e = DriverManager.getDrivers();
-            while (e.hasMoreElements())
-            {
-                Driver d = e.nextElement();
-                if (!d.getClass().getName().equals("org.h2.Driver"))
-                {
-                    try
-                    {
-                        DriverManager.deregisterDriver(d);
-                    }
-                    catch (Exception ignored)
-                    {
-                    }
-                }
-            }
-
-            int port = DynamicPortGenerator.generatePort();
-            server = AlloyH2Server.startServer(port);
-            insertData(port);
-            planExecutor = PlanExecutor.newPlanExecutor(Relational.build(port));
-            System.out.println("Finished setup");
-        }
-        catch (Exception ignored)
-        {
-        }
-    }
-
-    @AfterClass
-    public static void tearDown()
-    {
-        server.shutdown();
-        server.stop();
-        System.out.println("Teardown complete");
+        statement.execute("Drop table if exists PERSON;");
+        statement.execute("Create Table PERSON(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL,birthTime TIMESTAMP NULL, PRIMARY KEY(fullName));");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P1','F1','A1','2020-12-12 20:00:00');");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P2','F2','A2','2020-12-13 20:00:00');");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P3',null,null,'2020-12-14 20:00:00');");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P4',null,'A3','2020-12-15 20:00:00');");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P5','F1','A1','2020-12-16 20:00:00');");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P10','F1','A1','2020-12-17 20:00:00');");
     }
 
     @Test
     public void testInExecutionWithStringList()
     {
         String fetchFunction = "###Pure\n" +
-                               "function test::fetch(): Any[1]\n" +
-                               "{\n" +
-                               "  {names:String[*] | test::Person.all()\n" +
-                               "                        ->filter(p:test::Person[1] | $p.fullName->in($names))\n" +
-                               "                        ->project([x | $x.fullName], ['fullName'])}\n" +
-                               "}";
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {names:String[*] | test::Person.all()\n" +
+                "                        ->filter(p:test::Person[1] | $p.fullName->in($names))\n" +
+                "                        ->project([x | $x.fullName], ['fullName'])}\n" +
+                "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
         Map<String, ?> paramWithEmptyList = Maps.mutable.with("names", Lists.mutable.empty());
@@ -240,87 +183,11 @@ public class TestPlanExecutionForIn
         Assert.assertEquals(expectedResWithMultipleValues, executePlan(plan, paramWithMultipleValues));
     }
 
-    private String executePlan(SingleExecutionPlan plan, Map<String, ?> params)
-    {
-        RelationalResult result = (RelationalResult) planExecutor.execute(plan, params, null);
-        return result.flush(new RelationalResultToJsonDefaultSerializer(result));
-    }
 
     private SingleExecutionPlan buildPlanForFetchFunction(String fetchFunction, boolean withTimeZone)
     {
-        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + fetchFunction);
-        if(withTimeZone)
-        {
-            updateRuntimeWithArizonaTimeZone(contextData.getElementsOfType(PackageableRuntime.class).get(0));
-        }
-        PureModel pureModel = Compiler.compile(contextData, null, null);
-        Function fetchFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
-
-        return PlanGenerator.generateExecutionPlan(
-                HelperValueSpecificationBuilder.buildLambda(((Lambda) fetchFunctionExpressions.body.get(0)).body, ((Lambda) fetchFunctionExpressions.body.get(0)).parameters, pureModel.getContext()),
-                pureModel.getMapping("test::Map"),
-                pureModel.getRuntime("test::Runtime"),
-                null,
-                pureModel,
-                "vX_X_X",
-                PlanPlatform.JAVA,
-                null,
-                core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()),
-                LegendPlanTransformers.transformers
-        );
+        return super.buildPlan( LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + fetchFunction, withTimeZone ? "US/Arizona" : null);
     }
 
-    private static void updateRuntimeWithArizonaTimeZone(PackageableRuntime runtime)
-    {
-        ((DatabaseConnection) runtime.runtimeValue.connections.get(0).storeConnections.get(0).connection).timeZone = "US/Arizona";
-    }
-
-    private static void insertData(int port)
-    {
-        Connection c = null;
-        Statement s = null;
-        try
-        {
-            c = buildTestExecutor(port).getConnectionManager().getTestDatabaseConnection();
-            s = c.createStatement();
-
-            s.execute("Drop table if exists PERSON;");
-            s.execute("Create Table PERSON(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL,birthTime TIMESTAMP NULL, PRIMARY KEY(fullName));");
-            s.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P1','F1','A1','2020-12-12 20:00:00');");
-            s.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P2','F2','A2','2020-12-13 20:00:00');");
-            s.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P3',null,null,'2020-12-14 20:00:00');");
-            s.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P4',null,'A3','2020-12-15 20:00:00');");
-            s.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P5','F1','A1','2020-12-16 20:00:00');");
-            s.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P10','F1','A1','2020-12-17 20:00:00');");
-        }
-        catch (Exception ignored)
-        {
-        }
-        finally
-        {
-            try
-            {
-                if (s != null)
-                {
-                    s.close();
-                }
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-            try
-            {
-                if (c != null)
-                {
-                    c.close();
-                }
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
 }
 

@@ -17,11 +17,14 @@ package org.finos.legend.engine.language.pure.dsl.dataSpace.compiler.toPureGraph
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_PackageableElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
 
 import java.util.Collections;
+import java.util.List;
 
 public class DataSpaceCompilerExtension implements CompilerExtension
 {
@@ -29,9 +32,21 @@ public class DataSpaceCompilerExtension implements CompilerExtension
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
-        return Collections.singletonList(Processor.newProcessor(DataSpace.class, (dataSpace, context) -> new Root_meta_pure_metamodel_PackageableElement_Impl("")
-            ._stereotypes(ListIterate.collect(dataSpace.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-            ._taggedValues(ListIterate.collect(dataSpace.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
+        return Collections.singletonList(Processor.newProcessor(
+            DataSpace.class,
+            (dataSpace, context) -> new Root_meta_pure_metamodel_PackageableElement_Impl("")
+                ._stereotypes(ListIterate.collect(dataSpace.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
+                ._taggedValues(ListIterate.collect(dataSpace.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value))),
+            (dataSpace, context) ->
+            {
+                if (dataSpace.executionContexts.isEmpty()) {
+                    throw new EngineException("Data space must have at least one execution context", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                List<String> executionContextNames = ListIterate.collect(dataSpace.executionContexts, executionContext -> executionContext.name).distinct();
+                if (!executionContextNames.contains(dataSpace.defaultExecutionContext)) {
+                    throw new EngineException("Default execution context does not match any existing execution contexts", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
         ));
     }
 }

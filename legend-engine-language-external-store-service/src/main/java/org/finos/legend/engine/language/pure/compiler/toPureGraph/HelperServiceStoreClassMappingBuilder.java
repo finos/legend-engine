@@ -16,8 +16,10 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
@@ -30,10 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
@@ -50,7 +49,7 @@ import static org.finos.legend.pure.generated.platform_pure_corefunctions_meta.R
 
 public class HelperServiceStoreClassMappingBuilder
 {
-    public static Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation compileRootServiceStoreClassMapping(RootServiceStoreClassMapping serviceStoreClassMapping, Mapping parent, CompileContext context)
+    public static Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>> compileRootServiceStoreClassMapping(RootServiceStoreClassMapping serviceStoreClassMapping, Mapping parent, CompileContext context)
     {
         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = context.resolveClass(serviceStoreClassMapping._class, serviceStoreClassMapping.classSourceInformation);
         String id = HelperMappingBuilder.getClassMappingId(serviceStoreClassMapping, context);
@@ -69,8 +68,12 @@ public class HelperServiceStoreClassMappingBuilder
 
         validateRootServiceStoreClassMapping(res, serviceStoreClassMapping);
 
-        res._propertyMappings(FastList.newList(generatePropertyMappingsForClassMapping(res, serviceStoreClassMapping, context)).toImmutable());
-        return res;
+        List<PropertyMapping> generatePropertyMappings = generatePropertyMappingsForClassMapping(res, serviceStoreClassMapping, context);
+        res._propertyMappings(FastList.newList(generatePropertyMappings).toImmutable());
+
+        MutableList<EmbeddedSetImplementation> embeddedSetImplementations = ListIterate.selectInstancesOf(generatePropertyMappings, EmbeddedSetImplementation.class);
+
+        return Tuples.pair(res, embeddedSetImplementations);
     }
 
     private static MappingClass generateMappingClass(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String id, RootServiceStoreClassMapping serviceStoreClassMapping, Mapping parent, CompileContext context)

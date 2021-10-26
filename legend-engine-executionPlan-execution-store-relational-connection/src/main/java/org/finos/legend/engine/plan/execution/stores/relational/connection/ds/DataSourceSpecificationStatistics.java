@@ -14,7 +14,21 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds;
 
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class DataSourceSpecificationStatistics
 {
-    public int builtConnections;
+    private final AtomicInteger builtConnections = new AtomicInteger(0);
+
+    public int buildConnection()
+    {
+        return builtConnections.incrementAndGet();
+    }
+
+    public int getBuiltConnections()
+    {
+        return builtConnections.get();
+    }
+
 }

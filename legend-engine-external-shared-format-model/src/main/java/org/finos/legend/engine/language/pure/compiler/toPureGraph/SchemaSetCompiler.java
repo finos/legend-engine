@@ -21,10 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchema;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
@@ -69,10 +66,8 @@ public class SchemaSetCompiler
             throw new EngineException("Unknown schema format: " + srcSchemaSet.format, srcSchemaSet.formatSourceInformation, EngineErrorType.COMPILATION);
         }
 
-        org.finos.legend.pure.m3.coreinstance.Package pack = context.pureModel.getOrCreatePackage(srcSchemaSet._package);
         Root_meta_external_shared_format_metamodel_SchemaSet schemaSet = new Root_meta_external_shared_format_metamodel_SchemaSet_Impl(srcSchemaSet.name)
                 ._name(srcSchemaSet.name)
-                ._package(pack)
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::external::shared::format::metamodel::SchemaSet")))
                 ._format(srcSchemaSet.format);
 

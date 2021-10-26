@@ -14,18 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.RelationalConnectionManager;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.ConcurrentMutableMap;
-import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -41,15 +38,17 @@ import java.util.ServiceLoader;
 public class ConnectionManagerSelector
 {
     private MutableList<ConnectionManager> connectionManagers;
-    private final ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey = ConcurrentHashMap.newMap();
 
     public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, RelationalExecutorInfo relationalExecutorInfo)
     {
-        relationalExecutorInfo.setDbSpecByKey(dbSpecByKey);
+        if (relationalExecutorInfo == null)
+        {
+            throw new IllegalArgumentException("relational executor info not provided");
+        }
         MutableList<ConnectionManagerExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionManagerExtension.class), Lists.mutable.empty());
         this.connectionManagers = Lists.mutable.<ConnectionManager>with(
-                new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, dbSpecByKey, relationalExecutorInfo)
-        ).withAll(extensions.collect(e->e.getExtensionManager(temporaryTestDb.port, oauthProfiles, dbSpecByKey, relationalExecutorInfo)));
+                new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, relationalExecutorInfo)
+        ).withAll(extensions.collect(e -> e.getExtensionManager(temporaryTestDb.port, oauthProfiles,  relationalExecutorInfo)));
     }
 
     public Connection getDatabaseConnection(MutableList<CommonProfile> profiles, DatabaseConnection databaseConnection)
@@ -100,8 +99,8 @@ public class ConnectionManagerSelector
         db.databaseType = DatabaseType.H2;
         db.type = DatabaseType.H2;
         db.element = originalConnection.element;
-        db.timeZone = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection) originalConnection).timeZone : null;
-        db.quoteIdentifiers = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection) originalConnection).quoteIdentifiers : null;
+        db.timeZone = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection)originalConnection).timeZone : null;
+        db.quoteIdentifiers = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection)originalConnection).quoteIdentifiers : null;
         return db;
     }
 }

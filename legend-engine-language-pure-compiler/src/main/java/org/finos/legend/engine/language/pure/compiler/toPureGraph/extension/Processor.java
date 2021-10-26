@@ -15,7 +15,9 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.extension;
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.Package;
 
 import java.util.Collection;
@@ -36,7 +38,13 @@ public abstract class Processor<T extends PackageableElement>
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pureElement = processElementFirstPass(castElement(element), context);
         pureElement._name(element.name);
+
         Package pack = context.pureModel.getOrCreatePackage(element._package);
+        if (pack._children().anySatisfy(c -> element.name.equals(c._name())))
+        {
+            throw new EngineException("An element named '" + element.name + "' already exists in the package '" + element._package + "'", element.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
         pureElement._package(pack);
         pack._childrenAdd(pureElement);
         return pureElement;

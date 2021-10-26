@@ -133,6 +133,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         catch (Throwable e)
         {
+            LOGGER.error("error initialising RelationalResult" ,e);
             this.close();
             if (e instanceof Error)
             {
@@ -170,6 +171,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         catch (Throwable e)
         {
+            LOGGER.error("error initialising RelationalResult" ,e);
             this.close();
             if (e instanceof Error)
             {
@@ -330,6 +332,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             catch (Exception e)
             {
+                LOGGER.error("error closing result set", e);
             }
         }
         if (statement != null)
@@ -340,6 +343,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             catch (Exception e)
             {
+                LOGGER.error("error closing statement", e);
             }
         }
         if (connection != null)
@@ -350,6 +354,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             catch (Exception e)
             {
+                LOGGER.error("error closing connection", e);
             }
         }
     }

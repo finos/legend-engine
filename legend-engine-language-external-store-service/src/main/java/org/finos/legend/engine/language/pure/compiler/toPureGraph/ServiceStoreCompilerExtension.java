@@ -75,7 +75,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                     if (cm instanceof RootServiceStoreClassMapping)
                     {
                         RootServiceStoreClassMapping classMapping = (RootServiceStoreClassMapping) cm;
-                        return Tuples.pair(HelperServiceStoreClassMappingBuilder.compileRootServiceStoreClassMapping(classMapping, parentMapping, context), Lists.immutable.empty());
+                        return HelperServiceStoreClassMappingBuilder.compileRootServiceStoreClassMapping(classMapping, parentMapping, context);
                     }
                     return null;
                 }
