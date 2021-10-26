@@ -709,4 +709,105 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  }\n" +
                 "}\n");
     }
+
+    @Test
+    public void testServiceTestParameters()
+    {
+        // check for single test parameter
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "       { ['parameter1'], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        // check for multiple test parameters
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {['testparameter1', 'testparameter2', enum.reference, [1, 2]],'expression'}\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {[],res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1},\n" +
+                "      {['testparameter1', 'testparameter2'],'expression1'},\n" +
+                "      {['testparameter'],'expression2'}\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
 }
