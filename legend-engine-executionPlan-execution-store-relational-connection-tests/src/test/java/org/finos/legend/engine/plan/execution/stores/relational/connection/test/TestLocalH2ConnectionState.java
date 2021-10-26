@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Relat
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.H2TestUtils;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ReflectionUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
@@ -35,12 +36,14 @@ import java.sql.Connection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestLocalH2ConnectionState extends DbSpecificTests {
+public class TestLocalH2ConnectionState extends DbSpecificTests
+{
     private ConnectionManagerSelector connectionManagerSelector;
 
     @Override
@@ -49,7 +52,12 @@ public class TestLocalH2ConnectionState extends DbSpecificTests {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws Exception
+    {
+        // The manager is a singleton. Reset singleton to avoid interference from other tests
+        ConcurrentHashMap stateByPool = (ConcurrentHashMap) ReflectionUtils.getFieldUsingReflection(ConnectionStateManager.class, ConnectionStateManager.getInstance(), "stateByPool");
+        stateByPool.clear();
+
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
     }
 

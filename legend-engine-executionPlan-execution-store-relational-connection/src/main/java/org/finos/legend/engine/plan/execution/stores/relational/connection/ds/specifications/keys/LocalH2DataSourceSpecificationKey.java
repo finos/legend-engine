@@ -14,25 +14,19 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys;
 
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
+
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
-
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 
 public class LocalH2DataSourceSpecificationKey implements DataSourceSpecificationKey
 {
     private final List<String> testDataSetupSqls;
-    private final long currentTime;
-    private final String uuidString;
-    private final String id;
 
     public LocalH2DataSourceSpecificationKey(List<String> testDataSetupSqls)
     {
-        this.currentTime = System.currentTimeMillis();
-        this.uuidString = UUID.randomUUID().toString();
         this.testDataSetupSqls = testDataSetupSqls;
-        this.id = String.format("LocalH2:%d:%s", this.currentTime, this.uuidString);
     }
 
     public List<String> getTestDataSetupSqls()
@@ -43,14 +37,7 @@ public class LocalH2DataSourceSpecificationKey implements DataSourceSpecificatio
     @Override
     public String shortId()
     {
-        /*
-            //return "LocalH2_testDataSetupSqls:" + ListIterate.collect(testDataSetupSqls, v -> v.substring(0, Math.min(v.length(), 30))+ System.identityHashCode(v)).makeString("");
-
-            Note : We intentionally changed how we identify H2 data sources.
-            Previously : The data source id was a best effort attempt to produce a globally unique id. Not only did this not guarantee uniqueness, it was also very long and spamming the logs.
-            Now : We simply use the current time plus a random UUID.
-         */
-        return this.id;
+        return "LocalH2_testDataSetupSqls:" + ListIterate.collect(testDataSetupSqls, v -> v.substring(0, Math.min(v.length(), 30))+ System.identityHashCode(v)).makeString("");
     }
 
     @Override
@@ -65,12 +52,12 @@ public class LocalH2DataSourceSpecificationKey implements DataSourceSpecificatio
             return false;
         }
         LocalH2DataSourceSpecificationKey that = (LocalH2DataSourceSpecificationKey) o;
-        return Objects.equals(testDataSetupSqls, that.testDataSetupSqls) && id.equals(that.id);
+        return  Objects.equals(testDataSetupSqls, that.testDataSetupSqls);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(testDataSetupSqls, id);
+        return Objects.hash(testDataSetupSqls);
     }
 }

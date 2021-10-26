@@ -44,37 +44,33 @@ import static org.junit.Assert.*;
 
 public class TestCredentialCreation
 {
-    private static Server server;
-
-    @BeforeClass
-    public static void setupClass() throws SQLException
-    {
-        server = AlloyH2Server.startServer(DynamicPortGenerator.generatePort());
-    }
-
-    @After
-    public void shutDownClass()
-    {
-        if (server != null)
-        {
-            server.shutdown();
-            server.stop();
-        }
-    }
-
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
     private ConnectionManagerSelector connectionManagerSelector;
 
     private TestDatabaseAuthenticationFlowProvider testFlowProvider = null;
 
+    private Server server;
+
     @Before
     public void setup() throws Exception
     {
+        server = AlloyH2Server.startServer(DynamicPortGenerator.generatePort());
+
         installTestFlowProvider();
         assertStaticH2FlowIsAvailable();
 
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
+    }
+
+    @After
+    public void shutdown()
+    {
+        if (server != null)
+        {
+            server.shutdown();
+            server.stop();
+        }
     }
 
     private void installTestFlowProvider() throws Exception

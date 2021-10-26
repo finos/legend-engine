@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
-import java.sql.SQLException;
-import java.util.Collections;
-
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
@@ -36,42 +33,40 @@ import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import java.util.Collections;
+
 import static org.junit.Assert.*;
 
 public class TestDatasourceCreation
 {
-    private static Server server;
+    private  Server server;
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
     private ConnectionManagerSelector connectionManagerSelector;
 
-    @BeforeClass
-    public static void setupClass() throws SQLException
+    @Before
+    public void setup() throws Exception
     {
         server = AlloyH2Server.startServer(DynamicPortGenerator.generatePort());
+
+        // We maintain a bunch of singleton state. We have to reset this state so as to avoid interference between tests
+        ConnectionPoolTestUtils.resetDatasourceSpecificationSingletonState();
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
     }
 
     @After
-    public void shutDownClass()
+    public void shutDown()
     {
         if (server != null)
         {
             server.shutdown();
             server.stop();
         }
-    }
-
-    @Before
-    public void setup() throws Exception
-    {
-        // We maintain a bunch of singleton state. We have to reset this state so as to avoid interference between tests
-        ConnectionPoolTestUtils.resetDatasourceSpecificationSingletonState();
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
     }
 
     @Test
