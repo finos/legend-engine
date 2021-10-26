@@ -64,6 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -260,26 +261,10 @@ public class ServiceTestRunner
                     {
                         parameters = ListIterate.zip(((PureExecution) service.execution).func.parameters, tc.getOne().parametersValues).toMap(
                                 p -> p.getOne().name,
-                                p -> new ConstantResult(p.getTwo() instanceof PureList
-                                        ? ListIterate.collect(((PureList) p.getTwo()).values, v -> v.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withValueSpecificationAsExternalParameter().build()))
-                                        : p.getTwo() instanceof CBoolean
-                                        ? ((CBoolean) p.getTwo()).values.get(0)
-                                        : p.getTwo() instanceof CString
-                                        ? ((CString) p.getTwo()).values.get(0)
-                                        : p.getTwo() instanceof CInteger
-                                        ? ((CInteger) p.getTwo()).values.get(0)
-                                        : p.getTwo() instanceof CFloat
-                                        ? ((CFloat) p.getTwo()).values.get(0)
-                                        : p.getTwo() instanceof CDateTime
-                                        ? ((CDateTime) p.getTwo()).values.get(0)
-                                        : p.getTwo() instanceof CStrictDate
-                                        ? ((CStrictDate) p.getTwo()).values.get(0)
-                                        : p.getTwo() instanceof CStrictTime
-                                        ? ((CStrictTime) p.getTwo()).values.get(0)
-                                        : p.getTwo() instanceof EnumValue
-                                        ? ((EnumValue) p.getTwo()).value
-                                        : null));
-
+                                p -> p.getTwo() instanceof Collection
+                                    ? new ConstantResult(
+                                    ListIterate.collect(( (Collection) p.getTwo()).values, v -> primitiveInstanceValueCollector(v).getValue()))
+                                    : primitiveInstanceValueCollector(p.getTwo()));
                     }
 
                     // Execute Plan
@@ -336,6 +321,29 @@ public class ServiceTestRunner
         {
             return new RichServiceTestResult(pureServicePairs.getOne().getPath(),Collections.emptyMap(), Collections.emptyMap(), null,   executionPlan, "");
         }
+    }
+
+    private ConstantResult primitiveInstanceValueCollector(ValueSpecification instance)
+    {
+        return new ConstantResult(
+        instance instanceof CBoolean
+        ? ((CBoolean) instance).values.get(0)
+        : instance instanceof CString
+        ? ((CString)instance).values.get(0)
+        : instance instanceof CInteger
+        ? ((CInteger) instance).values.get(0)
+        : instance instanceof CFloat
+        ? ((CFloat) instance).values.get(0)
+        : instance instanceof CDateTime
+        ? ((CDateTime) instance).values.get(0)
+        : instance instanceof CStrictDate
+        ? ((CStrictDate) instance).values.get(0)
+        : instance instanceof CStrictTime
+        ? ((CStrictTime) instance).values.get(0)
+        : instance instanceof EnumValue
+        ? ((CString) instance).values.get(0)
+        : null
+        );
     }
 
     private static Class<?> compileJavaForAsserts(String packageName, String className, String javaCode) throws JavaCompileException
