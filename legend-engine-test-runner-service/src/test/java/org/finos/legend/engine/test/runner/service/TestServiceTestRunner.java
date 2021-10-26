@@ -90,4 +90,46 @@ public class TestServiceTestRunner
     {
         test("legend-sdlc-test-services-multi-execution.json", "my::Service", TestResult.SUCCESS, true);
     }
+
+    @Test
+    public void testNoTestServiceFlow() throws Exception
+    {
+        URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("legend-sdlc-test-services-without-tests.json"));
+        PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
+        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+
+        Service service = pureModelContextData.getElementsOfType(Service.class).get(0);
+
+        List<RichServiceTestResult> testResults = this.runTest(service, pureModel, pureModelContextData);
+        Assert.assertNotNull(testResults);
+        Assert.assertEquals(1, testResults.size());
+        RichServiceTestResult testResult = testResults.get(0);
+        Assert.assertEquals("test::legend::service::execution::test::m2m::simpleServiceNoTest", testResult.getServicePath());
+        Assert.assertNull(testResult.getOptionalMultiExecutionKey());
+        Assert.assertNull(testResult.getExecutionPlan());
+        Assert.assertNull(testResult.getJavaCodeString());
+        Assert.assertEquals(Collections.emptyMap(), testResult.getAssertExceptions());
+        Assert.assertEquals(Collections.emptyMap(), testResult.getResults());
+    }
+
+    @Test
+    public void testMultiExecutionNoTestServiceFlow() throws Exception
+    {
+        URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("legend-sdlc-test-services-multi-execution-without-tests.json"));
+        PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
+        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+
+        Service service = pureModelContextData.getElementsOfType(Service.class).get(0);
+
+        List<RichServiceTestResult> testResults = this.runTest(service, pureModel, pureModelContextData);
+        Assert.assertNotNull(testResults);
+        Assert.assertEquals(1, testResults.size());
+        RichServiceTestResult testResult = testResults.get(0);
+        Assert.assertEquals("my::Service", testResult.getServicePath());
+        Assert.assertEquals("Env1", testResult.getOptionalMultiExecutionKey());
+        Assert.assertNull(testResult.getExecutionPlan());
+        Assert.assertNull(testResult.getJavaCodeString());
+        Assert.assertEquals(Collections.emptyMap(), testResult.getAssertExceptions());
+        Assert.assertEquals(Collections.emptyMap(), testResult.getResults());
+    }
 }

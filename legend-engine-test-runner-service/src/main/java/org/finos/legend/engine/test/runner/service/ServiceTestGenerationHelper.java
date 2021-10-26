@@ -17,9 +17,7 @@ package org.finos.legend.engine.test.runner.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -28,19 +26,13 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
-import org.finos.legend.engine.plan.generation.PlanGenerator;
-import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
-import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
@@ -52,9 +44,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
@@ -71,10 +60,7 @@ import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shar
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -92,48 +78,12 @@ import javax.ws.rs.core.MediaType;
 
 public class ServiceTestGenerationHelper
 {
-    public static CompositeExecutionPlan buildCompositeExecutionTestPlan(Service service, Map<String, Runtime> testRuntimes, PureModel pureModel, String pureVersion, PlanPlatform platform, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
-    {
-        if (!(service.execution instanceof PureMultiExecution))
-        {
-            throw new IllegalArgumentException("Must be " + PureMultiExecution.class.getSimpleName() + ", got: " + service.execution.getClass());
-        }
-        PureMultiExecution pureExecution = (PureMultiExecution) service.execution;
-        LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(pureExecution.func.body, pureExecution.func.parameters, pureModel.getContext(service));
-        CompileContext compileContext = pureModel.getContext(service);
-
-        List<String> keys = Lists.mutable.empty();
-        Map<String, SingleExecutionPlan> plans = Maps.mutable.empty();
-        LazyIterate.select(pureExecution.executionParameters, es -> testRuntimes.containsKey(es.key))
-                .forEach(es ->
-                {
-                    keys.add(es.key);
-                    Mapping pureMapping = pureModel.getMapping(es.mapping);
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime pureRuntime = HelperRuntimeBuilder.buildPureRuntime(testRuntimes.get(es.key), compileContext);
-                    SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(lambda, pureMapping, pureRuntime, null, pureModel, pureVersion, platform, null, extensions, transformers);
-                    plans.put(es.key, plan);
-                });
-        return new CompositeExecutionPlan(plans, pureExecution.executionKey, keys);
-    }
-
     public static Runtime buildSingleExecutionTestRuntime(PureSingleExecution pureSingleExecution, SingleExecutionTest singleExecutionTest, PureModelContextData pureModelContextData, PureModel pureModel)
     {
         return buildTestRuntime(pureSingleExecution.runtime, pureSingleExecution.mapping, singleExecutionTest.data, pureModelContextData, pureModel);
     }
 
-    public static Map<String, Runtime> buildMultiExecutionTestRuntime(PureMultiExecution pureMultiExecution, MultiExecutionTest multiExecutionTest, PureModelContextData pureModelContextData, PureModel pureModel)
-    {
-        MutableMap<String, KeyedExecutionParameter> executionsByKey = Iterate.groupByUniqueKey(pureMultiExecution.executionParameters, e -> e.key);
-        return Iterate.toMap(multiExecutionTest.tests,
-                t -> t.key,
-                t ->
-                {
-                    KeyedExecutionParameter e = executionsByKey.get(t.key);
-                    return buildTestRuntime(e.runtime, e.mapping, t.data, pureModelContextData, pureModel);
-                });
-    }
-
-    private static Runtime buildTestRuntime(Runtime runtime, String mappingPath, String testData, PureModelContextData pureModelContextData, PureModel pureModel)
+    public static Runtime buildTestRuntime(Runtime runtime, String mappingPath, String testData, PureModelContextData pureModelContextData, PureModel pureModel)
     {
         if (doesNotContainRelational(runtime, pureModel) || (hasMultipleConnection(runtime, pureModel) && !hasModelChainConnection(runtime, pureModelContextData)))
         {
