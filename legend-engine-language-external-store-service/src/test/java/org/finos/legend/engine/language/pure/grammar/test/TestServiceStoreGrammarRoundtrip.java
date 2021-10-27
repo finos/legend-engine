@@ -37,7 +37,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -53,7 +53,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : [String] ( location = query, style = simple, explode = true )\n" +
                 "    );\n" +
@@ -69,7 +69,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : [Integer] ( location = query, style = simple, explode = true, enum = test::Enum )\n" +
                 "    );\n" +
@@ -85,7 +85,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "  (\n" +
                 "    path : '/testService/{param2}';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      param1 : String ( location = query ),\n" +
                 "      param2 : String ( location = path )\n" +
@@ -103,7 +103,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    path : '/testService/{param2}';\n" +
                 "    requestBody : [ExampleClass <- tests::store::exampleBinding];\n" +
                 "    method : POST;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      param1 : String ( location = query ),\n" +
                 "      param2 : String ( location = path )\n" +
@@ -139,7 +139,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -159,7 +159,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -171,7 +171,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "      path : '/testService';\n" +
                 "      requestBody : ExampleClass <- tests::store::exampleBinding;\n" +
                 "      method : POST;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -193,7 +193,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    path : '/testService/{param2}';\n" +
                 "    requestBody : [ExampleClass <- tests::store::exampleBinding];\n" +
                 "    method : POST;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      param1 : String ( location = query ),\n" +
                 "      param2 : String ( location = path )\n" +
@@ -208,7 +208,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -230,7 +230,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    path : '/testService/{param2}';\n" +
                 "    requestBody : [ExampleClass <- tests::store::exampleBinding];\n" +
                 "    method : POST;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      param1 : String ( location = query ),\n" +
                 "      param2 : String ( location = path )\n" +
@@ -242,7 +242,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : [Integer] ( location = query, style = simple, explode = true, enum = test::Enum )\n" +
                 "    );\n" +
@@ -256,7 +256,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -274,7 +274,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "      (\n" +
                 "        path : '/testService';\n" +
                 "        method : GET;\n" +
-                "        parameters : \n" +
+                "        parameters :\n" +
                 "        (\n" +
                 "          serializationFormat : String ( location = query )\n" +
                 "        );\n" +
@@ -290,7 +290,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -301,7 +301,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +

@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>2.48.1-SNAPSHOT</version>
+    <version>2.49.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -55,6 +55,7 @@
         <module>legend-engine-external-format-rosetta</module>
         <module>legend-engine-external-format-protobuf</module>
         <module>legend-engine-external-language-java</module>
+        <module>legend-engine-external-language-morphir</module>
         <module>legend-engine-language-pure-modelManager</module>
         <module>legend-engine-language-pure-modelManager-sdlc</module>
         <module>legend-engine-language-pure-compiler</module>
@@ -125,7 +126,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.41.0</legend.pure.version>
+        <legend.pure.version>1.42.0</legend.pure.version>
         <legend.shared.version>0.17.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -730,6 +731,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-language-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-external-language-morphir</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

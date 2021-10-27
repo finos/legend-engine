@@ -21,7 +21,9 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -44,13 +46,13 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
@@ -137,29 +139,21 @@ public class ServiceTestRunner
             List<RichServiceTestResult> results = Lists.mutable.empty();
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Tests And Run For MultiExecution Service").startActive(true))
             {
-                Map<String, Runtime> runtimeMap = ServiceTestGenerationHelper.buildMultiExecutionTestRuntime((PureMultiExecution) serviceExecution, (MultiExecutionTest) this.service.test, this.pureModelContextData, this.pureModel);
-                Map<String, MutableList<String>> sqlStatementsByKey = Maps.mutable.empty();
-                runtimeMap.forEach((key, runtime) ->
+                MutableMap<String, KeyedExecutionParameter> executionsByKey = Iterate.groupByUniqueKey(((PureMultiExecution) serviceExecution).executionParameters, e -> e.key);
+                for (KeyedSingleExecutionTest es : ((MultiExecutionTest) service.test).tests)
                 {
-                    MutableList<String> sql = extractSetUpSQLFromTestRuntime(runtime);
-                    if (sql != null)
-                    {
-                        sqlStatementsByKey.put(key, sql);
-                    }
-                });
-                CompositeExecutionPlan compositeExecutionPlan = ServiceTestGenerationHelper.buildCompositeExecutionTestPlan(this.service, runtimeMap, this.pureModel, this.pureVersion, PlanPlatform.JAVA, this.extensions, this.transformers);
-                Map<String, SingleExecutionPlan> plansByKey = compositeExecutionPlan.executionPlans;
-                for (SingleExecutionPlan plan : plansByKey.values())
-                {
-                    JavaHelper.compilePlan(plan, null);
-                }
-
-                for (KeyedSingleExecutionTest es : ((MultiExecutionTest) this.service.test).tests)
-                {
-                    SingleExecutionPlan executionPlan = plansByKey.get(es.key);
                     List<TestContainer> asserts = es.asserts;
-                    RichIterable<? extends String> sqls = sqlStatementsByKey.get(es.key);
-                    RichServiceTestResult richServiceTestResult = executeTestAsserts(executionPlan, asserts, sqls, scope);
+                    KeyedExecutionParameter e = executionsByKey.get(es.key);
+
+                    PureMultiExecution pureExecution = (PureMultiExecution) service.execution;
+                    PureSingleExecution pureSingleExecution = new PureSingleExecution();
+                    pureSingleExecution.func = pureExecution.func;
+                    pureSingleExecution.mapping = e.mapping;
+                    pureSingleExecution.runtime = e.runtime;
+                    pureSingleExecution.executionOptions = e.executionOptions;
+
+                    String noAssertMessage = "No test assert found for key - " + es.key + "!!";
+                    RichServiceTestResult richServiceTestResult = executeSingleExecutionTest(pureSingleExecution, es.data, asserts, noAssertMessage, pureModelContextData, pureModel, scope);
                     richServiceTestResult.setOptionalMultiExecutionKey(es.key);
                     results.add(richServiceTestResult);
                 }
@@ -170,16 +164,9 @@ public class ServiceTestRunner
         {
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Single Pure Tests And Run").startActive(true))
             {
-                PureSingleExecution pureSingleExecution = (PureSingleExecution) this.service.execution;
-                Runtime testRuntime = ServiceTestGenerationHelper.buildSingleExecutionTestRuntime((PureSingleExecution) this.service.execution, (SingleExecutionTest) this.service.test, this.pureModelContextData, this.pureModel);
-                RichIterable<? extends String> sqlStatements = extractSetUpSQLFromTestRuntime(testRuntime);
-                PureSingleExecution testPureSingleExecution = shallowCopySingleExecution(pureSingleExecution);
-                testPureSingleExecution.runtime = testRuntime;
-                ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, this.pureModel, this.pureVersion, PlanPlatform.JAVA, null, this.extensions, this.transformers);
-                SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
-                JavaHelper.compilePlan(singleExecutionPlan, null);
-                List<TestContainer> asserts = ((SingleExecutionTest) this.service.test).asserts;
-                return Collections.singletonList(executeTestAsserts(singleExecutionPlan, asserts, sqlStatements, scope));
+                List<TestContainer> asserts = ((SingleExecutionTest) service.test).asserts;
+                String noAssertMessage = "No test assert found !!";
+                return Collections.singletonList(executeSingleExecutionTest((PureSingleExecution) service.execution, ((SingleExecutionTest) service.test).data, asserts, noAssertMessage, pureModelContextData, pureModel, scope));
             }
         }
         else
@@ -193,6 +180,26 @@ public class ServiceTestRunner
                 List<TestContainer> containers = getExtraServiceTestContainers(serviceExecutionExtensions, service.test);
                 return Collections.singletonList(executeTestAsserts((SingleExecutionPlan) executionPlan, containers, testExecutor.getTwo(), scope));
             }
+        }
+    }
+
+    private RichServiceTestResult executeSingleExecutionTest(PureSingleExecution execution, String testData, List<TestContainer> asserts, String noAssertMessage, PureModelContextData pureModelContextData, PureModel pureModel, Scope scope) throws IOException, JavaCompileException
+    {
+        if (asserts == null || asserts.isEmpty())
+        {
+            scope.span().log(noAssertMessage);
+            return new RichServiceTestResult(service.getPath(), Collections.emptyMap(), Collections.emptyMap(), null, null, null);
+        }
+        else
+        {
+            Runtime testRuntime = ServiceTestGenerationHelper.buildTestRuntime(execution.runtime, execution.mapping, testData, pureModelContextData, pureModel);
+            RichIterable<? extends String> sqlStatements = extractSetUpSQLFromTestRuntime(testRuntime);
+            PureSingleExecution testPureSingleExecution = shallowCopySingleExecution(execution);
+            testPureSingleExecution.runtime = testRuntime;
+            ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, extensions, transformers);
+            SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
+            JavaHelper.compilePlan(singleExecutionPlan, null);
+            return executeTestAsserts(singleExecutionPlan, asserts, sqlStatements, scope);
         }
     }
 
