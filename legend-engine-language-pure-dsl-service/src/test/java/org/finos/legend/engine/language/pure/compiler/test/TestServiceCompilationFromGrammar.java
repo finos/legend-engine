@@ -16,9 +16,11 @@ package org.finos.legend.engine.language.pure.compiler.test;
 
 import org.junit.Test;
 
-public class TestServiceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite {
+public class TestServiceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
+{
     @Override
-    public String getDuplicatedElementTestCode() {
+    public String getDuplicatedElementTestCode()
+    {
         return "Class anything::class {}\n" +
                 "###Mapping\n" +
                 "Mapping anything::somethingelse ()\n" +
@@ -49,71 +51,74 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Override
-    public String getDuplicatedElementTestExpectedErrorMessage() {
+    public String getDuplicatedElementTestExpectedErrorMessage()
+    {
         return "COMPILATION error at [5:1-27:1]: Duplicated element 'anything::class'";
     }
 
     @Test
-    public void testFaultyAnnotations() {
+    public void testFaultyAnnotations()
+    {
         // Faulty stereotype
         test("###Mapping\n" +
-                "Mapping anything::somethingelse ()\n" +
-                "###Service\n" +
-                "Service <<NoProfile.NoKey>> anything::class\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  owners: ['test'];\n" +
-                "  documentation: 'test';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: '';\n" +
-                "    mapping: anything::somethingelse;\n" +
-                "    runtime:\n" +
-                "    #{\n" +
-                "     connections: [];\n" +
-                "    }#;\n" +
-                "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'moreThanData';\n" +
-                "    asserts:\n" +
-                "    [\n" +
-                "    ];\n" +
-                "  }\n" +
-                "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+            "Mapping anything::somethingelse ()\n" +
+            "###Service\n" +
+            "Service <<NoProfile.NoKey>> anything::class\n" +
+            "{\n" +
+            "  pattern: 'url/myUrl/';\n" +
+            "  owners: ['test'];\n" +
+            "  documentation: 'test';\n" +
+            "  autoActivateUpdates: true;\n" +
+            "  execution: Single\n" +
+            "  {\n" +
+            "    query: '';\n" +
+            "    mapping: anything::somethingelse;\n" +
+            "    runtime:\n" +
+            "    #{\n" +
+            "     connections: [];\n" +
+            "    }#;\n" +
+            "  }\n" +
+            "  test: Single\n" +
+            "  {\n" +
+            "    data: 'moreThanData';\n" +
+            "    asserts:\n" +
+            "    [\n" +
+            "    ];\n" +
+            "  }\n" +
+            "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
         // Faulty tagged value
 
         test("###Mapping\n" +
-                "Mapping anything::somethingelse ()\n" +
-                "###Service\n" +
-                "Service { NoProfile.NoKey = 'something' } anything::class\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  owners: ['test'];\n" +
-                "  documentation: 'test';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: '';\n" +
-                "    mapping: anything::somethingelse;\n" +
-                "    runtime:\n" +
-                "    #{\n" +
-                "     connections: [];\n" +
-                "    }#;\n" +
-                "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'moreThanData';\n" +
-                "    asserts:\n" +
-                "    [\n" +
-                "    ];\n" +
-                "  }\n" +
-                "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+            "Mapping anything::somethingelse ()\n" +
+            "###Service\n" +
+            "Service { NoProfile.NoKey = 'something' } anything::class\n" +
+            "{\n" +
+            "  pattern: 'url/myUrl/';\n" +
+            "  owners: ['test'];\n" +
+            "  documentation: 'test';\n" +
+            "  autoActivateUpdates: true;\n" +
+            "  execution: Single\n" +
+            "  {\n" +
+            "    query: '';\n" +
+            "    mapping: anything::somethingelse;\n" +
+            "    runtime:\n" +
+            "    #{\n" +
+            "     connections: [];\n" +
+            "    }#;\n" +
+            "  }\n" +
+            "  test: Single\n" +
+            "  {\n" +
+            "    data: 'moreThanData';\n" +
+            "    asserts:\n" +
+            "    [\n" +
+            "    ];\n" +
+            "  }\n" +
+            "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
     }
 
     @Test
-    public void testServiceWithSingleExecution() {
+    public void testServiceWithSingleExecution()
+    {
         String resource = "Class test::class\n" +
                 "{\n" +
                 "  prop1 : Integer[0..1];\n" +
@@ -350,7 +355,8 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
-    public void testServiceWithMultiExecution() {
+    public void testServiceWithMultiExecution()
+    {
         String resource = "Class test::class\n" +
                 "{\n" +
                 "  prop1 : Integer[0..1];\n" +
@@ -690,7 +696,8 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
-    public void testServiceWithImport() {
+    public void testServiceWithImport()
+    {
         test("Class meta::mySimpleClass\n" +
                 "{\n" +
                 "  name: String[1];\n" +
