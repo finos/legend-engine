@@ -162,7 +162,13 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "  e,\n" +
                 "  g,\n" +
                 "  r\n" +
-                "}\n");
+                "}\n" +
+                "\n" +
+                "Enum <<st.test>> {doc.doc = 'Enum with Integer'} zz::enumWithInteger\n" +
+                "{\n" +
+                "  1\n" +
+                "}\n"
+        );
     }
 
     @Test

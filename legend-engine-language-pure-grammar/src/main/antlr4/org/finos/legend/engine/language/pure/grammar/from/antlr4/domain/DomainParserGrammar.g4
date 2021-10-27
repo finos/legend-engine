@@ -130,7 +130,7 @@ enumDefinition:                                 ENUM stereotypes? taggedValues? 
                                                         (enumValue (COMMA enumValue)*)?
                                                     BRACE_CLOSE
 ;
-enumValue:                                      stereotypes? taggedValues? identifier
+enumValue:                                      stereotypes? taggedValues? (identifier | INTEGER)
 ;
 
 

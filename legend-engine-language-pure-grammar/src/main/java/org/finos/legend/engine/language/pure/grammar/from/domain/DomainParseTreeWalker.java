@@ -243,7 +243,7 @@ public class DomainParseTreeWalker
     private EnumValue visitEnumValue(DomainParserGrammar.EnumValueContext ctx)
     {
         EnumValue enumValue = new EnumValue();
-        enumValue.value = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        enumValue.value = ctx.identifier() == null ? ctx.INTEGER().toString() : PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         enumValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         enumValue.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         enumValue.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());

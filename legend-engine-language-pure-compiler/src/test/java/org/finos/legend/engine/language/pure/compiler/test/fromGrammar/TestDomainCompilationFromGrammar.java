@@ -1337,6 +1337,10 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{" +
                 "   A,B" +
                 "}" +
+                "Enum test::enumWithInteger" +
+                "{" +
+                "   1, 2" +
+                "}" +
                 "" +
                 "Class test::B" +
                 "{" +
