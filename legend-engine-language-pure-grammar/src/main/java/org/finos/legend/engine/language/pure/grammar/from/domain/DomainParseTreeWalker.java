@@ -555,85 +555,7 @@ public class DomainParseTreeWalker
         return result;
     }
 
-    public ValueSpecification primitiveValue(DomainParserGrammar.PrimitiveValueContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
-    {
-        if(ctx.primitiveValueAtomic() != null)
-        {
-           return this.primitiveValueAtomic(ctx.primitiveValueAtomic(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
-        }
-        else if(ctx.primitiveValueVector() != null)
-        {
-            List<ValueSpecification> parameters = Lists.mutable.of();
-            for (DomainParserGrammar.PrimitiveValueAtomicContext paramCtx : ctx.primitiveValueVector().primitiveValueAtomic())
-            {
-                parameters.add(this.primitiveValueAtomic(paramCtx, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines));
-            }
-            return this.collect(parameters, walkerSourceInformation.getSourceInformation(ctx));
-        }
-        return null;
-    }
-
-    private ValueSpecification primitiveValueAtomic(DomainParserGrammar.PrimitiveValueAtomicContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
-    {
-        if(ctx.instanceLiteral() != null)
-        {
-            return this.instanceLiteral(ctx.instanceLiteral(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
-        }
-        else if(ctx.enumReference() != null)
-        {
-            return this.enumReference(ctx.enumReference(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
-        }
-        return null;
-    }
-
-    private ValueSpecification enumReference(DomainParserGrammar.EnumReferenceContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
-    {
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue result = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue();
-        result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        result.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-        result.value = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        return result;
-    }
-
-    private ValueSpecification instanceLiteral(DomainParserGrammar.InstanceLiteralContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
-    {
-        ValueSpecification result;
-        if(ctx.instanceLiteralToken() != null)
-        {
-            result = this.instanceLiteralToken(ctx.instanceLiteralToken(), wrapFlag);
-        }
-        else if (ctx.INTEGER() != null && ctx.MINUS() != null)
-        {
-            CInteger instance = getInstanceInteger(ctx.MINUS().getText() + ctx.INTEGER().getText());
-            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-            result = instance;
-        }
-        else if (ctx.FLOAT() != null && ctx.MINUS() != null)
-        {
-            CFloat instance = getInstanceFloat(ctx.MINUS().getText() + ctx.FLOAT().getText());
-            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-            result = instance;
-        }
-        else if (ctx.INTEGER() != null && ctx.PLUS() != null)
-        {
-            CInteger instance = getInstanceInteger(ctx.PLUS().getText() + ctx.INTEGER().getText());
-            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-            result = instance;
-        }
-        else if (ctx.FLOAT() != null && ctx.PLUS() != null)
-        {
-            CFloat instance = getInstanceFloat(ctx.PLUS().getText() + ctx.FLOAT().getText());
-            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-            result = instance;
-        }
-        else
-        {
-            throw new RuntimeException("TODO");
-        }
-        return result;
-    }
-
-    private AppliedFunction letExpression(DomainParserGrammar.LetExpressionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
+   private AppliedFunction letExpression(DomainParserGrammar.LetExpressionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
         ValueSpecification result = this.combinedExpression(ctx.combinedExpression(), "", typeParametersNames, lambdaContext, space, true, addLines);
         result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
@@ -843,16 +765,6 @@ public class DomainParseTreeWalker
         return instance;
     }
 
-    private CFloat getInstanceFloat(String floatString)
-    {
-        List<Double> values = new ArrayList<>();
-        values.add(Double.parseDouble(floatString));
-        CFloat instance = new CFloat();
-        instance.multiplicity = getMultiplicityOneOne();
-        instance.values = values;
-        return instance;
-    }
-
     private boolean isLowerPrecedenceBoolean(String boolop1, String boolop2)
     {
         return boolop1.equals("or") && boolop2.equals("and");
@@ -1005,7 +917,11 @@ public class DomainParseTreeWalker
             }
             else if (ctx.FLOAT() != null)
             {
-                CFloat instance = getInstanceFloat(ctx.getText());
+                List<Double> values = new ArrayList<>();
+                values.add(Double.parseDouble(ctx.getText()));
+                CFloat instance = new CFloat();
+                instance.multiplicity = m;
+                instance.values = values;
                 instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
                 result = instance;
             }
