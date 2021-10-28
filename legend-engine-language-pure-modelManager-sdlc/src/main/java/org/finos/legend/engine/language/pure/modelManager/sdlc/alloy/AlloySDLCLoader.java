@@ -22,9 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
 
-import javax.security.auth.Subject;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,26 +38,28 @@ public class AlloySDLCLoader
     public PureModelContextData loadAlloyProject(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion)
     {
         String url;
-        if(alloySDLC.project !=null ) {
+        if (alloySDLC.project != null)
+        {
             url = (alloySDLC.version == null || alloySDLC.version.equals("none") || alloySDLC.version.equals("master-SNAPSHOT")) ?
-                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/metadata/api/projects/" + alloySDLC.project + "/revisions/latest/pureModelContextData/" + clientVersion  :
-                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/metadata/api/projects/" + alloySDLC.project + "/versions/" + alloySDLC.version + "/pureModelContextData/" + clientVersion;
+                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/revisions/latest/pureModelContextData/" + clientVersion :
+                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/versions/" + alloySDLC.version + "/pureModelContextData/" + clientVersion;
         }
-        else {
-            Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, ()->"AlloySDLC info must contain and group and artifact IDs if project ID is not specified");
+        else
+        {
+            Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs if project ID is not specified");
             url = (alloySDLC.version == null || alloySDLC.version.equals("none") || alloySDLC.version.equals("master-SNAPSHOT")) ?
-                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/metadata/api/projects/" + alloySDLC.groupId+ "/"+ alloySDLC.artifactId + "/revisions/latest/pureModelContextData?clientVersion="+ clientVersion :
-                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/metadata/api/projects/" + alloySDLC.groupId+ "/"+ alloySDLC.artifactId + "/versions/" + alloySDLC.version + "/pureModelContextData?clientVersion=" + clientVersion;
+                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/revisions/latest/pureModelContextData?clientVersion=" + clientVersion :
+                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + alloySDLC.version + "/pureModelContextData?clientVersion=" + clientVersion;
         }
         return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url);
     }
 
-    public List<String> checkAllPathsExist(PureModelContextData data, AlloySDLC alloySDLC) {
+    public List<String> checkAllPathsExist(PureModelContextData data, AlloySDLC alloySDLC)
+    {
         List<String> pathsFromPointer = alloySDLC.packageableElementPointers.stream().map(s -> s.path).collect(Collectors.toList());
         List<String> entities = data.getElements().stream().map(s -> s.getPath()).collect(Collectors.toList());
 
         pathsFromPointer.removeAll(entities);
         return pathsFromPointer;
     }
-
 }
