@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 public class PackageableElementFifthPassBuilder implements PackageableElementVisitor<PackageableElement>
@@ -93,6 +94,12 @@ public class PackageableElementFifthPassBuilder implements PackageableElementVis
 
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
+    {
+        return null;
+    }
+
+    @Override
+    public PackageableElement visit(Text text)
     {
         return null;
     }

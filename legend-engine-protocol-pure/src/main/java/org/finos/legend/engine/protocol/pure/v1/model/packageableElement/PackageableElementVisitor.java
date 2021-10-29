@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 
 public interface PackageableElementVisitor<T>
 {
@@ -50,4 +51,9 @@ public interface PackageableElementVisitor<T>
     T visit(PackageableRuntime packageableRuntime);
 
     T visit(PackageableConnection packageableConnection);
+
+    // dsl-text
+
+    T visit(Text text);
+
 }

@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -240,6 +241,12 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     {
         final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = this.context.pureModel.getConnection(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), packageableConnection.sourceInformation);
         packageableConnection.connectionValue.accept(new ConnectionSecondPassBuilder(this.context, pureConnection));
+        return null;
+    }
+
+    @Override
+    public PackageableElement visit(Text text)
+    {
         return null;
     }
 

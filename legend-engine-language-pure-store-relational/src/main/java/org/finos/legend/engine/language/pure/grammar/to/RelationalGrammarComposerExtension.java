@@ -30,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ElementsTestDataSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.StringTestDataSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
@@ -46,6 +48,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
@@ -272,23 +275,27 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             if (inputData instanceof RelationalInputData)
             {
                 RelationalInputData relationalInputData = (RelationalInputData) inputData;
-                String data;
-                if (relationalInputData.inputType == RelationalInputType.SQL)
+
+                if (relationalInputData.testDataSource instanceof ElementsTestDataSource)
                 {
-                    MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(relationalInputData.data.replace("\n", "").split("(?<!\\\\);"));
-                    data = "\n" + lines.collect(l -> getTabString(5) + convertString(l + ";\n", true).replace("\\\\;", "\\;")).makeString("+\n");
-                }
-                else if (relationalInputData.inputType == RelationalInputType.CSV)
-                {
-                    MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(relationalInputData.data.split("\\n"));
-                    lines.add("\n\n");
-                    data = "\n" + lines.collect(l -> getTabString(5) + convertString(l + "\n", true)).makeString("+\n");
+                    return "<Relational, " + relationalInputData.database + ", [" + ((ElementsTestDataSource) relationalInputData.testDataSource).textElements.stream().collect(Collectors.joining(",")) + "]>";
                 }
                 else
                 {
-                    data = relationalInputData.data;
+                    String data = ((StringTestDataSource)relationalInputData.testDataSource).data;
+                    if (relationalInputData.inputType == RelationalInputType.SQL)
+                    {
+                        MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(data.replace("\n", "").split("(?<!\\\\);"));
+                        data = "\n" + lines.collect(l -> getTabString(5) + convertString(l + ";\n", true).replace("\\\\;", "\\;")).makeString("+\n");
+                    }
+                    else if (relationalInputData.inputType == RelationalInputType.CSV)
+                    {
+                        MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(data.split("\\n"));
+                        lines.add("\n\n");
+                        data = "\n" + lines.collect(l -> getTabString(5) + convertString(l + "\n", true)).makeString("+\n");
+                    }
+                    return "<Relational, " + relationalInputData.inputType + ", " + relationalInputData.database + ", " + data + "\n" + getTabString(4) + ">";
                 }
-                return "<Relational, " + relationalInputData.inputType + ", " + relationalInputData.database + ", " + data + "\n" + getTabString(4) + ">";
             }
             return null;
         });

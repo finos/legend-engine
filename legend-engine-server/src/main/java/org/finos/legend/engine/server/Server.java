@@ -56,6 +56,7 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.query.pure.api.Execute;
+import org.finos.legend.engine.query.pure.api.MappingTestExecute;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
@@ -178,6 +179,7 @@ public class Server extends Application<ServerConfiguration>
 
         // Execution
         environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
+        environment.jersey().register(new MappingTestExecute(modelManager, planExecutor, (PureModel pureModel) -> core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
         environment.jersey().register(new ExecutePlan(planExecutor));
 
         // Query

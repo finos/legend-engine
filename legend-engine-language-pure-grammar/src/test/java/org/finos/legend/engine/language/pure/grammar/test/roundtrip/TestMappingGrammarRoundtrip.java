@@ -82,6 +82,45 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     }
 
     @Test
+    public void testMappingWithTestsWithTextElementInputData()
+    {
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "  }\n" +
+                "\n" +
+                "  MappingTests\n" +
+                "  [\n" +
+                "    test1\n" +
+                "    (\n" +
+                "      query: src: meta::slang::transform::tests::Address[1]|$src.a;\n" +
+                "      data:\n" +
+                "      [\n" +
+                "      ];\n" +
+                "      assert: 'assertString';\n" +
+                "    ),\n" +
+                "    test2\n" +
+                "    (\n" +
+                "      query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        <Object, model::domain::Source, [model::textElement::JsonData]>,\n" +
+                "        <Object, SourceClass, [model::textElement::XMLData1,model::textElement::XMLData2]>\n" +
+                "      ];\n" +
+                // This is a very deeply nested string that represents a JSON, we must be extremely careful with (un)escaping this during serialization or parsing
+                "      assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"{\\\\\"anotherOne\\\\\":\\\\\"movie\\\\\"}\\\"}\"}}}';\n" +
+                "    )\n" +
+                "  ]\n" +
+                ")\n");
+    }
+
+    @Test
     public void testEnumerationMapping()
     {
         test("###Mapping\n" +

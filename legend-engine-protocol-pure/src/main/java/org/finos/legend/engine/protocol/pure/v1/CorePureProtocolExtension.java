@@ -37,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 
 import java.util.List;
 import java.util.Map;
@@ -58,7 +59,8 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(Association.class, "association"),
                                 Tuples.pair(Function.class, "function"),
                                 Tuples.pair(Measure.class, "measure"),
-                                Tuples.pair(Unit.class, "unit")
+                                Tuples.pair(Unit.class, "unit"),
+                                Tuples.pair(Text.class, "text")
                         ))
                         .build(),
                 // Runtime
@@ -88,7 +90,8 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .withKeyValue(PackageableRuntime.class, "meta::pure::runtime::PackageableRuntime")
                 .withKeyValue(Profile.class, "meta::pure::metamodel::extension::Profile")
                 .withKeyValue(SectionIndex.class, "meta::pure::metamodel::section::SectionIndex")
-                .withKeyValue(Unit.class, "meta::pure::metamodel::type::Unit");
+                .withKeyValue(Unit.class, "meta::pure::metamodel::type::Unit")
+                .withKeyValue(Text.class, "meta::pure::metamodel::text::Text");
     }
 
 }

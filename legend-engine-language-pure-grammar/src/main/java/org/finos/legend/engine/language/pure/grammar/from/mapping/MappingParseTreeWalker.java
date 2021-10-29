@@ -187,7 +187,7 @@ public class MappingParseTreeWalker
     private InputData visitMappingTestInputData(MappingParserGrammar.TestInputElementContext ctx)
     {
         SourceInformation testInputDataSourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        String inputDataType = ctx.testInputType().getText();
+        String inputDataType = ctx.testInputElementWithTextPtrs()!= null ? ctx.testInputElementWithTextPtrs().testInputType().getText() : ctx.testInputType().getText();
         MappingTestInputDataParser mappingTestInputDataParser = this.extensions.getExtraMappingTestInputDataParser(inputDataType);
         if (mappingTestInputDataParser == null)
         {

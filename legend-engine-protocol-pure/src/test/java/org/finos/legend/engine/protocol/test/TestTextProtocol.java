@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.test;
+package org.finos.legend.engine.protocol.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,7 +25,7 @@ import java.util.Objects;
 
 public class TestTextProtocol
 {
-    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private static final ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
 
     @Test
     public void testBasicProtocol() throws Exception

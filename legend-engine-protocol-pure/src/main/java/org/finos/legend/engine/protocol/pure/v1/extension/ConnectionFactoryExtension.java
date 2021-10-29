@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.extension;
 
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 
@@ -21,7 +22,7 @@ import java.util.Optional;
 
 public interface ConnectionFactoryExtension {
 
-    default Optional<Connection> tryBuildFromInputData(InputData inputData) {
+    default Optional<Connection> tryBuildFromInputData(InputData inputData, PureModelContextData pureModelContextData) {
         return Optional.empty();
     }
 

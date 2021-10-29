@@ -635,7 +635,8 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "          'Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\n'+\n" +
                 "          'Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\n'+\n" +
                 "          'Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');\\n'\n" +
-                "        >\n" +
+                "        >,\n" +
+                "        <Relational, aa::db, [model::textElement::SQLData]>\n" +
                 "      ];\n" +
                 "      assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
                 "    )\n" +

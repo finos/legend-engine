@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.dsl.text.grammar.test;
+package org.finos.legend.engine.language.pure.grammar.test.parser;
 
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.TextParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.text.TextParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import org.junit.Test;
 

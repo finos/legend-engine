@@ -54,9 +54,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -219,20 +217,32 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
         ObjectInputData objectInputData = new ObjectInputData();
         objectInputData.sourceInformation = testInputDataSourceInformation;
-        try
+        if(inputDataContext.testInputElementWithTextPtrs() != null)
         {
-            if (inputDataContext.testInputFormat() == null)
+            objectInputData.sourceClass = PureGrammarParserUtility.fromQualifiedName(inputDataContext.testInputElementWithTextPtrs().testInputSrc().qualifiedName().packagePath() == null ? Collections.emptyList() : inputDataContext.testInputElementWithTextPtrs().testInputSrc().qualifiedName().packagePath().identifier(), inputDataContext.testInputElementWithTextPtrs().testInputSrc().qualifiedName().identifier());
+            ElementsTestDataSource dataSource = new ElementsTestDataSource();
+            dataSource.textElements = ListIterate.collect(inputDataContext.testInputElementWithTextPtrs().testTextElements().qualifiedName(), qn -> PureGrammarParserUtility.fromQualifiedName(qn.packagePath() == null ? Collections.emptyList() : qn.packagePath().identifier(), qn.identifier()));
+            objectInputData.testDataSource = dataSource;
+        }
+        else
+        {
+            try
             {
-                throw new EngineException("Mapping test object 'input type' is missing. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), testInputDataSourceInformation, EngineErrorType.PARSER);
+                if (inputDataContext.testInputFormat() == null)
+                {
+                    throw new EngineException("Mapping test object 'input type' is missing. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), testInputDataSourceInformation, EngineErrorType.PARSER);
+                }
+                objectInputData.inputType = ObjectInputType.valueOf(inputDataContext.testInputFormat().getText());
             }
-            objectInputData.inputType = ObjectInputType.valueOf(inputDataContext.testInputFormat().getText());
+            catch (IllegalArgumentException e)
+            {
+                throw new EngineException("Mapping test object input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
+            }
+            objectInputData.sourceClass = PureGrammarParserUtility.fromQualifiedName(inputDataContext.testInputSrc().qualifiedName().packagePath() == null ? Collections.emptyList() : inputDataContext.testInputSrc().qualifiedName().packagePath().identifier(), inputDataContext.testInputSrc().qualifiedName().identifier());
+            StringTestDataSource dataSource = new StringTestDataSource();
+            dataSource.data = ListIterate.collect(inputDataContext.testInputDataContent().STRING(), x -> PureGrammarParserUtility.fromGrammarString(x.getText(), false)).makeString("");
+            objectInputData.testDataSource = dataSource;
         }
-        catch (IllegalArgumentException e)
-        {
-            throw new EngineException("Mapping test object input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
-        }
-        objectInputData.sourceClass = PureGrammarParserUtility.fromQualifiedName(inputDataContext.testInputSrc().qualifiedName().packagePath() == null ? Collections.emptyList() : inputDataContext.testInputSrc().qualifiedName().packagePath().identifier(), inputDataContext.testInputSrc().qualifiedName().identifier());
-        objectInputData.data = ListIterate.collect(inputDataContext.testInputDataContent().STRING(), x -> PureGrammarParserUtility.fromGrammarString(x.getText(), false)).makeString("");
         return objectInputData;
     }
 

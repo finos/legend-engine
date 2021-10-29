@@ -137,6 +137,13 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     }
 
     @Override
+    public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text text)
+    {
+        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(text._package);
+        return new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(text.name);
+    }
+
+    @Override
     public PackageableElement visit(Association srcAssociation)
     {
         String packageString = this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name);

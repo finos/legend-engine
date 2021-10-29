@@ -31,9 +31,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ElementsTestDataSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.StringTestDataSource;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
@@ -136,7 +139,11 @@ public class HelperMappingGrammarComposer
         if (inputData instanceof ObjectInputData)
         {
             ObjectInputData objectInputData = (ObjectInputData) inputData;
-            return "<Object, " + objectInputData.inputType + ", " + PureGrammarComposerUtility.convertPath(objectInputData.sourceClass) + ", " + convertString(objectInputData.data, false) + ">";
+            if (objectInputData.testDataSource instanceof ElementsTestDataSource)
+            {
+                return "<Object, " + objectInputData.sourceClass + ", [" + ((ElementsTestDataSource)objectInputData.testDataSource).textElements.stream().collect(Collectors.joining(",")) + "]>";
+            }
+            return "<Object, " + objectInputData.inputType + ", " + PureGrammarComposerUtility.convertPath(objectInputData.sourceClass) + ", " + convertString(((StringTestDataSource)objectInputData.testDataSource).data, false) + ">";
         }
         return context.extraMappingTestInputDataComposers.stream().map(composer -> composer.value(inputData, context)).filter(Objects::nonNull).findFirst().orElseGet(() -> unsupported(inputData.getClass()));
     }

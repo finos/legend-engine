@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.dsl.text.grammar.test;
+package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;

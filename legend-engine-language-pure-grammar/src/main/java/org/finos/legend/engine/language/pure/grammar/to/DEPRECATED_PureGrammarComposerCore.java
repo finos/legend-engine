@@ -53,6 +53,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
@@ -536,6 +537,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return HelperConnectionGrammarComposer.getConnectionValueName(packageableConnection.connectionValue, this.toContext()) +
             " " + PureGrammarComposerUtility.convertPath(packageableConnection.getPath()) + "\n" +
             packageableConnection.connectionValue.accept(this);
+    }
+
+    @Override
+    public String visit(Text text)
+    {
+        return HelperTextGrammarComposer.renderText(text);
     }
 
     @Override

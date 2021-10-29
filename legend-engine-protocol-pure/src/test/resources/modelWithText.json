@@ -1,0 +1,13 @@
+{
+  "_type": "data",
+  "version": "v1_0_0",
+  "texts": [
+    {
+      "_type": "text",
+      "content": "test element test",
+      "name": "TestElementTest",
+      "package": "ui::mapping::editor::domain",
+      "type": "plainText"
+    }
+  ]
+}

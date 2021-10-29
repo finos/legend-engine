@@ -99,13 +99,17 @@ testInput:                      BRACKET_OPEN
                                     (testInputElement (COMMA testInputElement)*)?
                                 BRACKET_CLOSE
 ;
-testInputElement:               LESS_THAN testInputType (COMMA testInputFormat)? COMMA testInputSrc COMMA testInputDataContent GREATER_THAN
+testInputElement:               LESS_THAN (testInputType (COMMA testInputFormat)? COMMA testInputSrc COMMA testInputDataContent | testInputElementWithTextPtrs) GREATER_THAN
+;
+testInputElementWithTextPtrs:    testInputType COMMA testInputSrc COMMA BRACKET_OPEN testTextElements BRACKET_CLOSE
 ;
 testInputType:                  identifier
 ;
 testInputFormat:                identifier
 ;
 testInputSrc:                   qualifiedName
+;
+testTextElements:               qualifiedName (COMMA qualifiedName)*
 ;
 testInputDataContent:           STRING ('+' STRING)*
 ;

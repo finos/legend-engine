@@ -203,6 +203,85 @@ public class TestMappingTestRunner
         assertEquals(TestResult.SUCCESS, testResult.getResult());
     }
 
+    @Test
+    public void testRelationalSuccessfulTestCSVExecutionUsingTextElement() throws IOException
+    {
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(
+                dbAndModel +
+                        "###Text\n" +
+                        "Text test::myText\n" +
+                        "{\n" +
+                        "  type: csv;\n" +
+                        "  content: 'default\\r\\nPersonTable\\r\\nid,lastName\\r\\n1,Doe\\r\\n2,Doe2\\r\\n------';\n" +
+                        "}\n" +
+                        "###Mapping\n" +
+                        "Mapping test::MyMapping\n" +
+                        "(\n" +
+                        sharedMapping +
+                        "  MappingTests\n" +
+                        "  [\n" +
+                        "    test_1\n" +
+                        "    (\n" +
+                        "      query: |test::Person.all()->project([p|$p.lastName],['lastName']);\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        <Relational, test::DB , [test::myText]>\n" +
+                        "      ];\n" +
+                        "      assert: '[ {\\n  \"values\" : [ \"Doe\" ]\\n}, {\\n  \"values\" : [ \"Doe2\" ]\\n} ]';\n" +
+                        "    )\n" +
+                        "  ]\n" +
+                        ")\n");
+        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+
+        RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
+
+        assertEquals("test::MyMapping", testResult.getMappingPath());
+        assertEquals("test_1", testResult.getTestName());
+        assertEquals(TestResult.SUCCESS, testResult.getResult());
+    }
+
+    @Test
+    public void testRelationalSuccessfulTestCSVExecutionUsingMultipleTextElements() throws IOException
+    {
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(
+                dbAndModel +
+                        "###Text\n" +
+                        "Text test::myText\n" +
+                        "{\n" +
+                        "  type: sql;\n" +
+                        "  content: 'Drop table if exists PersonTable;\\r\\nCreate Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\r\\nInsert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\');\\r\\n';\n" +
+                        "}\n" +
+                        "Text test::myText1\n" +
+                        "{\n" +
+                        "  type: sql;\n" +
+                        "  content: 'Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');\\n';\n" +
+                        "}\n" +
+                        "###Mapping\n" +
+                        "Mapping test::MyMapping\n" +
+                        "(\n" +
+                        sharedMapping +
+                        "  MappingTests\n" +
+                        "  [\n" +
+                        "    test_1\n" +
+                        "    (\n" +
+                        "      query: |test::Person.all()->project([p|$p.lastName],['lastName']);\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        <Relational, test::DB , [test::myText, test::myText1]>\n" +
+                        "      ];\n" +
+                        "      assert: '[ {\\n  \"values\" : [ \"Doe\" ]\\n}, {\\n  \"values\" : [ \"Doe2\" ]\\n} ]';\n" +
+                        "    )\n" +
+                        "  ]\n" +
+                        ")\n");
+        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+
+        RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
+
+        assertEquals("test::MyMapping", testResult.getMappingPath());
+        assertEquals("test_1", testResult.getTestName());
+        assertEquals(TestResult.SUCCESS, testResult.getResult());
+    }
+
 
     @Test
     public void testRelationalFailureTestSQLExecution() throws IOException
@@ -282,7 +361,7 @@ public class TestMappingTestRunner
     {
         Mapping mapping = pureModelContextData.getElementsOfType(Mapping.class).get(0);
         MappingTest mappingTest = mapping.tests.get(0);
-        MappingTestRunner mappingTestRunner = new MappingTestRunner(pureModel, mapping.getPath(), mappingTest, planExecutor, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
+        MappingTestRunner mappingTestRunner = new MappingTestRunner(pureModelContextData, pureModel, mapping.getPath(), mappingTest, planExecutor, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
         return mappingTestRunner.setupAndRunTest();
     }
 

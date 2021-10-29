@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,15 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public class ObjectInputData extends InputData
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = StringTestDataSource.class, name = "stringData"),
+        @JsonSubTypes.Type(value = ElementsTestDataSource.class, name = "textElements")
+})
+public abstract class TestDataSource
 {
-    public String sourceClass;
-    public TestDataSource testDataSource;
-    @Deprecated
-    public String data;
-    public ObjectInputType inputType = ObjectInputType.JSON; // for backward compatibility, but in general, we should not default this to JSON
 }
+

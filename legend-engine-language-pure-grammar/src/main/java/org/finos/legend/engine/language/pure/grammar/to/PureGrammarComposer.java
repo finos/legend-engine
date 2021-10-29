@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionP
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
+import org.finos.legend.engine.language.pure.grammar.from.text.TextParser;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -39,6 +40,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,6 +101,7 @@ public class PureGrammarComposer
         {
             this.DEPRECATED_renderSection(DomainParser.name, ListIterate.select(elements, isDomainElement), elementsToCompose, composedSections);
         }
+        this.DEPRECATED_renderSection(TextParser.name, pureModelContextData.getElementsOfType(Text.class), elementsToCompose, composedSections);
         this.DEPRECATED_renderSection(MappingParser.name, pureModelContextData.getElementsOfType(Mapping.class), elementsToCompose, composedSections);
         this.DEPRECATED_renderSection(ConnectionParser.name, pureModelContextData.getElementsOfType(PackageableConnection.class), elementsToCompose, composedSections);
         this.DEPRECATED_renderSection(RuntimeParser.name, pureModelContextData.getElementsOfType(PackageableRuntime.class), elementsToCompose, composedSections);

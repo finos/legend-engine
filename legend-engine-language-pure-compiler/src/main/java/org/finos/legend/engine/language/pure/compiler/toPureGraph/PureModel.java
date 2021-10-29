@@ -53,6 +53,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -208,6 +209,7 @@ public class PureModel implements IPureModel
             pureModelContextDataIndex.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             pureModelContextDataIndex.enumerations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             pureModelContextDataIndex.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+            pureModelContextDataIndex.texts.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             pureModelContextDataIndex.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             pureModelContextDataIndex.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             pureModelContextDataIndex.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
@@ -1169,6 +1171,10 @@ public class PureModel implements IPureModel
             {
                 index.profiles.add((Profile) e);
             }
+            else if (e instanceof  org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text)
+            {
+                index.texts.add((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text) e);
+            }
             else if (e instanceof SectionIndex)
             {
                 index.sectionIndices.add((SectionIndex) e);
@@ -1195,6 +1201,7 @@ public class PureModel implements IPureModel
         private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration> enumerations = Lists.mutable.empty();
         private final MutableList<Function> functions = Lists.mutable.empty();
         private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping> mappings = Lists.mutable.empty();
+        private final MutableList<Text> texts = Lists.mutable.empty();
         private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure> measures = Lists.mutable.empty();
         private final MutableList<PackageableConnection> connections = Lists.mutable.empty();
         private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime> runtimes = Lists.mutable.empty();

@@ -36,6 +36,7 @@ import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
@@ -44,8 +45,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ElementsTestDataSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.StringTestDataSource;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.engine.test.runner.shared.ComparisonError;
@@ -53,6 +56,7 @@ import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -74,6 +78,7 @@ public class MappingTestRunner
     private static final ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
     private final PureModel pureModel;
+    private final PureModelContextData pureModelContextData;
     private final PlanExecutor executor;
     private final String mappingPath;
     public final MappingTest mappingTest;
@@ -82,9 +87,10 @@ public class MappingTestRunner
     private final Root_meta_pure_runtime_Runtime_Impl runtime;
     private final String pureVersion;
 
-    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public MappingTestRunner(PureModelContextData pureModelContextData,PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {
-        this.pureModel = pureModel;
+        this.pureModelContextData = pureModelContextData;
+        this.pureModel = pureModel;;
         this.executor = executor;
         this.mappingPath = mappingPath;
         this.mappingTest = mappingTest;
@@ -94,9 +100,9 @@ public class MappingTestRunner
         this.pureVersion = pureVersion;
     }
 
-    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    public MappingTestRunner(PureModelContextData pureModelContextData,PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
     {
-        this(pureModel, mappingPath, mappingTest, executor, extensions, transformers, null);
+        this(pureModelContextData, pureModel, mappingPath, mappingTest, executor, extensions, transformers, null);
     }
 
 
@@ -120,14 +126,33 @@ public class MappingTestRunner
             {
                 JsonModelConnection jsonModelConnection = new JsonModelConnection();
                 jsonModelConnection._class = objectInputData.sourceClass;
-                jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
+
+                //TODO: create a merging option for multiple JSON text elements, currently supports only one text element
+                //TODO: check the types of the text elements before creating connection when xml and other data types are supported
+
+                if (objectInputData.testDataSource instanceof ElementsTestDataSource)
+                {
+                    List<String> textElements = ((ElementsTestDataSource) objectInputData.testDataSource).textElements;
+                    if (textElements.size() == 1)
+                    {
+                        jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(pureModelContextData.getElementsOfType(Text.class).stream().filter(x -> x.getPath().equals(textElements.get(0))).findFirst().get().content.getBytes(StandardCharsets.UTF_8));
+                    }
+                    else
+                    {
+                        throw new UnsupportedOperationException("Multiple Text Elements are currently not supported for m2m Mapping Tests");
+                    }
+                }
+                else
+                {
+                    jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(((StringTestDataSource) objectInputData.testDataSource).data.getBytes(StandardCharsets.UTF_8));
+                }
                 connectionRegistrar.accept(jsonModelConnection);
             }
             else if (ObjectInputType.XML.equals(objectInputData.inputType))
             {
                 XmlModelConnection xmlModelConnection = new XmlModelConnection();
                 xmlModelConnection._class = objectInputData.sourceClass;
-                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
+                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(((StringTestDataSource) objectInputData.testDataSource).data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(xmlModelConnection);
             }
             else
@@ -137,15 +162,15 @@ public class MappingTestRunner
         }
         else
         {
-            connectionRegistrar.accept(getTestConnectionFromFactories(input));
+            connectionRegistrar.accept(getTestConnectionFromFactories(input, this.pureModelContextData));
         }
     }
 
-    private static Connection getTestConnectionFromFactories(InputData inputData)
+    private static Connection getTestConnectionFromFactories(InputData inputData, PureModelContextData pureModelContextData)
     {
         MutableList<ConnectionFactoryExtension> factories = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
         return factories
-                .collect(f -> f.tryBuildFromInputData(inputData))
+                .collect(f -> f.tryBuildFromInputData(inputData, pureModelContextData))
                 .select(Objects::nonNull)
                 .select(Optional::isPresent)
                 .collect(Optional::get)
@@ -193,7 +218,7 @@ public class MappingTestRunner
         throw new RuntimeException("Unsupported type of MappingTestAssert: " + this.mappingTest._assert.getClass().getName());
     }
 
-    protected Result executeLegend(Lambda lambda, String mappingPath)
+    private Result executeLegend(Lambda lambda, String mappingPath)
     {
         LambdaFunction<?> pureLambda = HelperValueSpecificationBuilder.buildLambda(lambda, new CompileContext.Builder(this.pureModel).withElement(mappingPath).build());
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = this.pureModel.getMapping(mappingPath);

@@ -48,6 +48,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ElementsTestDataSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.StringTestDataSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
@@ -223,23 +225,33 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
         RelationalInputData relationalInputData = new RelationalInputData();
         relationalInputData.sourceInformation = testInputDataSourceInformation;
-
-        try
+        if(inputDataContext.testInputElementWithTextPtrs() != null)
         {
-            if (inputDataContext.testInputFormat() == null)
+            relationalInputData.database = PureGrammarParserUtility.fromQualifiedName(inputDataContext.testInputElementWithTextPtrs().testInputSrc().qualifiedName().packagePath() == null ? Collections.emptyList() : inputDataContext.testInputElementWithTextPtrs().testInputSrc().qualifiedName().packagePath().identifier(), inputDataContext.testInputElementWithTextPtrs().testInputSrc().qualifiedName().identifier());
+            ElementsTestDataSource dataSource = new ElementsTestDataSource();
+            dataSource.textElements = ListIterate.collect(inputDataContext.testInputElementWithTextPtrs().testTextElements().qualifiedName(), qn -> PureGrammarParserUtility.fromQualifiedName(qn.packagePath() == null ? Collections.emptyList() : qn.packagePath().identifier(), qn.identifier()));
+            relationalInputData.testDataSource = dataSource;
+        }
+        else
+        {
+            try
             {
-                throw new EngineException("Mapping test relational 'input type' is missing. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), testInputDataSourceInformation, EngineErrorType.PARSER);
+                if (inputDataContext.testInputFormat() == null)
+                {
+                    throw new EngineException("Mapping test relational 'input type' is missing. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), testInputDataSourceInformation, EngineErrorType.PARSER);
+                }
+                relationalInputData.inputType = RelationalInputType.valueOf(inputDataContext.testInputFormat().getText());
             }
-            relationalInputData.inputType = RelationalInputType.valueOf(inputDataContext.testInputFormat().getText());
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new EngineException("Mapping test relational input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
-        }
+            catch (IllegalArgumentException e)
+            {
+                throw new EngineException("Mapping test relational input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
+            }
 
-        relationalInputData.database = inputDataContext.testInputSrc().getText();
-
-        relationalInputData.data = ListIterate.collect(inputDataContext.testInputDataContent().STRING(), x->PureGrammarParserUtility.fromGrammarString(x.getText().replace("\\;","\\\\;"), true)).makeString("");
+            relationalInputData.database = inputDataContext.testInputSrc().getText();
+            StringTestDataSource dataSource = new StringTestDataSource();
+            dataSource.data = ListIterate.collect(inputDataContext.testInputDataContent().STRING(), x -> PureGrammarParserUtility.fromGrammarString(x.getText().replace("\\;", "\\\\;"), true)).makeString("");
+            relationalInputData.testDataSource = dataSource;
+        }
         return relationalInputData;
     }
 

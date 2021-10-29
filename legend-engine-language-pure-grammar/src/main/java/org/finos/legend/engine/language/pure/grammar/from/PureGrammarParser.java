@@ -26,6 +26,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
+import org.finos.legend.engine.language.pure.grammar.from.text.TextParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -58,7 +59,8 @@ public class PureGrammarParser
                 new DomainParser(),
                 MappingParser.newInstance(extensions),
                 connectionParser,
-                RuntimeParser.newInstance(connectionParser)
+                RuntimeParser.newInstance(connectionParser),
+                new TextParser()
         ));
     }
 

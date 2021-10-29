@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.compiler.test;
+package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
+
+import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 
 public class TestTextCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {

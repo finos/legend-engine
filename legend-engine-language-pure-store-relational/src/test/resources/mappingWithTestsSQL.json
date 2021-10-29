@@ -32,7 +32,10 @@
           "inputData": [
             {
               "_type": "relational",
-              "data": "Drop table if exists PersonTable;\nCreate Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\nInsert into PersonTable (id, firmId, lastName) values (1, 1, 'Doe\\;');\nInsert into PersonTable (id, firmId, lastName) values (2, 1, 'Doe2');",
+              "testDataSource": {
+                "_type": "stringData",
+                "data": "Drop table if exists PersonTable;\nCreate Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\nInsert into PersonTable (id, firmId, lastName) values (1, 1, 'Doe\\;');\nInsert into PersonTable (id, firmId, lastName) values (2, 1, 'Doe2');"
+              },
               "database": "aa::db",
               "inputType": "SQL",
               "sourceInformation": {

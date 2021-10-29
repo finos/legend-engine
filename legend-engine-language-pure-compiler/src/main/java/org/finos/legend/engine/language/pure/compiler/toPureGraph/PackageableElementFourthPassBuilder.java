@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -161,6 +162,12 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
 
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
+    {
+        return null;
+    }
+
+    @Override
+    public PackageableElement visit(Text text)
     {
         return null;
     }

@@ -307,6 +307,40 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "   ]" +
                 "\n" +
                 ")\n", "PARSER error at [10:32-227]: Unsupported mapping test input data type 'Objected'");
+        // check input data with text pointers
+        test("Class model::domain::Source {}\n" +
+                "###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "   MappingTests\n" +
+                "   [\n" +
+                "      test2\n" +
+                "      (\n" +
+                "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                "         data: [<Object , model::domain::Source , []>" +
+                "                   ];\n" +
+                "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                "      )\n" +
+                "   ]" +
+                "\n" +
+                ")\n", "PARSER error at [10:52]: Unexpected token");
+
+        test("Class model::domain::Source {}\n" +
+                "###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "   MappingTests\n" +
+                "   [\n" +
+                "      test2\n" +
+                "      (\n" +
+                "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                "         data: [<Object , model::domain::Source , [model::domain::textElement1]>" +
+                "                   ];\n" +
+                "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                "      )\n" +
+                "   ]" +
+                "\n" +
+                ")\n");
     }
 
     @Test
