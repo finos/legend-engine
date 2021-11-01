@@ -64,8 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
@@ -84,7 +83,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.Class;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -275,10 +273,9 @@ public class ServiceTestRunner
                     {
                         parameters = ListIterate.zip(((PureExecution) this.service.execution).func.parameters, tc.getOne().parametersValues).toMap(
                                 p -> p.getOne().name,
-                                p -> p.getTwo() instanceof Collection
-                                    ? new ConstantResult(
-                                    ListIterate.collect(( (Collection) p.getTwo()).values, v -> primitiveInstanceValueCollector(v).getValue()))
-                                    : primitiveInstanceValueCollector(p.getTwo()));
+                                p -> new ConstantResult(p.getTwo() instanceof PureList
+                                        ? ListIterate.collect(((PureList) p.getTwo()).values, v -> v.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withValueSpecificationAsExternalParameter().build()))
+                                        : p.getTwo().accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withValueSpecificationAsExternalParameter().build())));
                     }
 
                     // Execute Plan
@@ -335,29 +332,6 @@ public class ServiceTestRunner
         {
             return new RichServiceTestResult(this.service.getPath(), Collections.emptyMap(), Collections.emptyMap(), null, executionPlan, "");
         }
-    }
-
-    private ConstantResult primitiveInstanceValueCollector(ValueSpecification instance)
-    {
-        return new ConstantResult(
-        instance instanceof CBoolean
-        ? ((CBoolean) instance).values.get(0)
-        : instance instanceof CString
-        ? ((CString)instance).values.get(0)
-        : instance instanceof CInteger
-        ? ((CInteger) instance).values.get(0)
-        : instance instanceof CFloat
-        ? ((CFloat) instance).values.get(0)
-        : instance instanceof CDateTime
-        ? ((CDateTime) instance).values.get(0)
-        : instance instanceof CStrictDate
-        ? ((CStrictDate) instance).values.get(0)
-        : instance instanceof CStrictTime
-        ? ((CStrictTime) instance).values.get(0)
-        : instance instanceof EnumValue
-        ? ((CString) instance).values.get(0)
-        : null
-        );
     }
 
     private static Class<?> compileJavaForAsserts(String packageName, String className, String javaCode) throws JavaCompileException
