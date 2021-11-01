@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatConnection;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ParameterExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -30,6 +31,7 @@ import org.finos.legend.pure.generated.Root_meta_external_shared_format_executio
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalFormatConnection_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalSource;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ParameterExternalSource_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
@@ -99,6 +101,12 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
                 UrlStreamExternalSource urlStreamExternalSource = (UrlStreamExternalSource) spec;
                 return new Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource_Impl("")
                         ._url(urlStreamExternalSource.url);
+            }
+            else if (spec instanceof ParameterExternalSource)
+            {
+                ParameterExternalSource parameterExternalSource = (ParameterExternalSource) spec;
+                return new Root_meta_external_shared_format_executionPlan_ParameterExternalSource_Impl("")
+                        ._name(parameterExternalSource.name);
             }
             return null;
         });

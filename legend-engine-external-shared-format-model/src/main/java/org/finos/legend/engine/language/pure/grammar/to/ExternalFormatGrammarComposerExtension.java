@@ -32,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shar
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ParameterExternalSource;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -108,6 +109,14 @@ public class ExternalFormatGrammarComposerExtension implements IExternalFormatGr
                 return "UrlStream\n" +
                         context.getIndentationString() + getTabString(1) + "{\n" +
                         context.getIndentationString() + getTabString(2) + "url: " + convertString(spec.url, true) + ";\n" +
+                        context.getIndentationString() + getTabString(1) + "}";
+            }
+            else if (specification instanceof ParameterExternalSource)
+            {
+                ParameterExternalSource spec = (ParameterExternalSource) specification;
+                return "Parameter\n" +
+                        context.getIndentationString() + getTabString(1) + "{\n" +
+                        context.getIndentationString() + getTabString(2) + "name: " + convertString(spec.name, true) + ";\n" +
                         context.getIndentationString() + getTabString(1) + "}";
             }
 
