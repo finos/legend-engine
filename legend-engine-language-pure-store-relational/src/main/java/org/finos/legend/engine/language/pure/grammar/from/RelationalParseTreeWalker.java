@@ -880,8 +880,13 @@ public class RelationalParseTreeWalker
     // NOTE: right now, for join we only support sequence (line), not tree
     private List<JoinPointer> visitJoinSequence(RelationalParserGrammar.JoinSequenceContext ctx, String database, ScopeInfo scopeInfo)
     {
+        Token joinType = ctx.identifier() != null ? ctx.identifier().getStart() : null;
+        if (joinType != null && !JOIN_TYPES.contains(joinType.getText().toUpperCase()))
+        {
+            throw new EngineException("Unsupported join type '" + joinType.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart()), EngineErrorType.PARSER);
+        }
         List<JoinPointer> joins = new ArrayList<>();
-        joins.add(visitJoinPointer(ctx.joinPointer(), null, scopeInfo, database));
+        joins.add(visitJoinPointer(ctx.joinPointer(), joinType == null ? null : joinType.getText().toUpperCase(), scopeInfo, database));
         for (RelationalParserGrammar.JoinPointerFullContext joinPointerFullContext : ctx.joinPointerFull())
         {
             if (joinPointerFullContext.identifier() != null && !JOIN_TYPES.contains(PureGrammarParserUtility.fromIdentifier(joinPointerFullContext.identifier()).toUpperCase()))

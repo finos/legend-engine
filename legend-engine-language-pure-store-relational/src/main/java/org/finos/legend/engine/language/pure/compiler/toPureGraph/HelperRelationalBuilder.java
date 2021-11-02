@@ -25,6 +25,7 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.Multimap;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.impl.block.factory.Predicates;
@@ -172,6 +173,7 @@ public class HelperRelationalBuilder
 {
     private static final String DEFAULT_SCHEMA_NAME = "default";
     private static final String SELF_JOIN_TABLE_NAME = "{target}";
+    private static final ImmutableSet<String> JOIN_TYPES = org.eclipse.collections.api.factory.Sets.immutable.with("INNER", "OUTER", "LEFT_OUTER");
 
     private static final Predicate2<Schema, Object> SCHEMA_NAME_PREDICATE = Predicates2.attributeEqual(SchemaAccessor::_name);
     private static final Predicate2<RelationalOperationElement, Object> COLUMN_NAME_PREDICATE = Predicates2.attributeEqual(column -> ((Column) column)._name());
@@ -1293,6 +1295,22 @@ public class HelperRelationalBuilder
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping propMapping = ListIterate.detect(legendPropertyMappings, propertyMapping -> propertyMapping.property.property.equals(propertyAndJoinTreeNode.getOne()));
             SourceInformation srcInfo = propMapping == null ? classMapping.sourceInformation : propMapping.sourceInformation;
+            if(propertyAndJoinTreeNode.getTwo()._joinType() != null)
+            {
+                String firstJoinType = propertyAndJoinTreeNode.getTwo()._joinType()._name().toUpperCase();
+                if (!JOIN_TYPES.contains(firstJoinType))
+                {
+                    throw new EngineException("Unsupported join type '" + firstJoinType + "'", srcInfo, EngineErrorType.COMPILATION);
+                }
+                else if (firstJoinType.equals("INNER"))
+                {
+                    throw new EngineException("Inner join could be only used as the first join in the filterMapping. Do not support specifying join type for the first join in the classMapping.", srcInfo, EngineErrorType.COMPILATION);
+                }
+                else
+                {
+                    throw new EngineException("Do not support specifying join type for the first join in the classMapping.", srcInfo, EngineErrorType.COMPILATION);
+                }
+            }
             HelperRelationalBuilder.validateJoinTreeNode(propertyAndJoinTreeNode.getTwo(), mainTable, srcInfo);
         });
     }

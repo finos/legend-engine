@@ -901,4 +901,139 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         // classMappingId
         Assert.assertEquals(rootRelationalInstanceSetImplementation._id(), "model_Firm");
     }
+
+    @Test
+    public void testFilterMappingWithInnerJoin() {
+        test("import other::*;\n" +
+                "\n" +
+                "Class other::Person\n" +
+                "{\n" +
+                "    firstName:String[1];\n" +
+                "    firm:Firm[1];\n" +
+                "}\n" +
+                "Class other::Firm\n" +
+                "{\n" +
+                "    legalName:String[1];\n" +
+                "    employees:Person[1];\n" +
+                "}\n" +
+                "###Relational\n" +
+                "Database mapping::db(\n" +
+                "   Table personTable\n" +
+                "   (\n" +
+                "    id INT PRIMARY KEY,\n" +
+                "    firstName VARCHAR(200),\n" +
+                "    firmId INT,\n" +
+                "    legalName VARCHAR(200)\n" +
+                "   )\n" +
+                "   Table firmTable\n" +
+                "   (\n" +
+                "    id INT PRIMARY KEY,\n" +
+                "    legalName VARCHAR(200)\n" +
+                "   )\n" +
+                "   View personFirmView\n"+
+                "   (\n" +
+                "    id : personTable.id,\n" +
+                "    firstName : personTable.firstName,\n" +
+                "    firmId : personTable.firmId\n" +
+                "   )\n" +
+                "   Filter FirmFilter(firmTable.legalName = 'A')\n" +
+                "   Join Firm_Person(firmTable.id = personTable.firmId)\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "import other::*;\n" +
+                "import mapping::*;\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "    Person: Relational\n" +
+                "    {\n" +
+                "        ~filter [mapping::db] (INNER) @Firm_Person | [mapping::db] FirmFilter \n" +
+                "        firstName : [db]personTable.firstName\n" +
+                "    }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testInnerJoinReferenceInRelationalMapping() {
+        String model = "Class simple::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Firm\n" +
+                "{\n" +
+                "  employees: simple::Person[*];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Enum simple::GeographicEntityType\n" +
+                "{\n" +
+                "  CITY,\n" +
+                "  COUNTRY,\n" +
+                "  REGION\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database simple::dbInc\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    FIRSTNAME VARCHAR(200),\n" +
+                "    LASTNAME VARCHAR(200),\n" +
+                "    AGE INTEGER,\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    FIRMID INTEGER,\n" +
+                "    MANAGERID INTEGER\n" +
+                "  )\n" +
+                "  Table firmTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    LEGALNAME VARCHAR(200),\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    CEOID INTEGER\n" +
+                "  )\n" +
+                "  Join Firm_Person(firmTable.ID = personTable.FIRMID)\n" +
+                ")\n" +
+                "\n" +
+                "\n" ;
+
+        test( model +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Firm[simple_Firm]: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]firmTable\n" +
+                "    employees: [simple::dbInc] @Firm_Person > (INNER) [simple::dbInc] @Firm_Person\n" +
+                "  }\n" +
+                "\n" +
+                ")");
+
+        test( model +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Firm[simple_Firm]: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]firmTable\n" +
+                "    employees: [simple::dbInc] (OUTER) @Firm_Person > (INNER) [simple::dbInc] @Firm_Person\n" +
+                "  }\n" +
+                "\n" +
+                ")", "COMPILATION error at [52:14-90]: Do not support specifying join type for the first join in the classMapping.");
+
+        test( model +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Firm[simple_Firm]: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]firmTable\n" +
+                "    employees: [simple::dbInc] (INNER) @Firm_Person > (INNER) [simple::dbInc] @Firm_Person\n" +
+                "  }\n" +
+                "\n" +
+                ")", "COMPILATION error at [52:14-90]: Inner join could be only used as the first join in the filterMapping. Do not support specifying join type for the first join in the classMapping.");
+    }
 }

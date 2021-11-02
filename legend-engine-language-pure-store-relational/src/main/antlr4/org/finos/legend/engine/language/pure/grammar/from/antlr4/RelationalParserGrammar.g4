@@ -194,7 +194,7 @@ tableAliasColumnOperationWithScopeInfo:     relationalIdentifier (DOT scopeInfo)
 ;
 joinOperation:                              databasePointer? joinSequence (PIPE (booleanOperation | tableAliasColumnOperation))?
 ;
-joinSequence:                               joinPointer (GREATER_THAN joinPointerFull)*
+joinSequence:                               (PAREN_OPEN identifier PAREN_CLOSE)? joinPointer (GREATER_THAN joinPointerFull)*
 ;
 joinPointer:                                AT identifier
 ;
