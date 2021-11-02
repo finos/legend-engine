@@ -57,6 +57,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatConnection;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ParameterExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
@@ -267,6 +268,13 @@ public class ServiceTestGenerationHelper
             ExternalFormatConnection conn = (ExternalFormatConnection) connection;
             ExternalFormatConnection testConn = new ExternalFormatConnection();
             testConn.element = conn.element;
+            if (conn.externalSource instanceof ParameterExternalSource)
+            {
+                ParameterExternalSource parameterExternalSource = new ParameterExternalSource();
+                parameterExternalSource.name = ((ParameterExternalSource) conn.externalSource).name;
+                testConn.externalSource = parameterExternalSource;
+                return Optional.of(testConn);
+            }
             UrlStreamExternalSource source = new UrlStreamExternalSource();
             source.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes(StandardCharsets.UTF_8));
             testConn.externalSource = source;
