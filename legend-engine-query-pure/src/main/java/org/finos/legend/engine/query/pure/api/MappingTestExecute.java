@@ -92,8 +92,12 @@ public class MappingTestExecute
             RichMappingTestResult result = new MappingTestRunner((PureModelContextData) executeInput.model, pureModel, executeInput.mapping, getMappingTest(executeInput, (PureModelContextData) executeInput.model), this.planExecutor, this.extensions.apply(pureModel), this.transformers, executeInput.clientVersion).setupAndRunTest();
             //TODO: allow multiple tests to be run and get the similar response
             //Create an object which has an array of result for multiple test
-                return Response.ok().entity("{\"actual\": " + result.getActual().get() + ", \"result\": \""+ result.getResult().toString() + "\"}").build();
-            }
+            return Response.ok().entity("{\"actual\": " + result.getActual().get() + ", \"result\": \""+ result.getResult().toString() + "\"}").build();
+        }
+        catch (Exception ex)
+        {
+            MetricsHandler.observeError("execute");
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
     }
 
