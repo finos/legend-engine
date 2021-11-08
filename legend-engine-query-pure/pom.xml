@@ -73,6 +73,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-modelManager</artifactId>
+        </dependency>  
+	<dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-runner-shared</artifactId>
         </dependency>
         <!-- ENGINE -->
 
