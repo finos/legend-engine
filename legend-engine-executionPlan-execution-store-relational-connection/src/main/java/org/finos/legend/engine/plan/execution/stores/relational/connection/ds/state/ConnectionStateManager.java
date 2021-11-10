@@ -155,11 +155,12 @@ public class ConnectionStateManager
 
     public void dump()
     {
+        LOGGER.debug("Connection state dump");
         for (String key : this.stateByPool.keySet())
         {
             ConnectionState state = this.stateByPool.get(key);
             boolean credentialSupplierExists = state.getCredentialSupplier().isPresent();
-            LOGGER.info("Connection state : AgeInMillis={}, CredentialSupplierExists={}, Key={}", state.ageInMillis(clock), credentialSupplierExists, key);
+            LOGGER.debug("Connection state : AgeInMillis={}, CredentialSupplierExists={}, Key={}", state.ageInMillis(clock), credentialSupplierExists, key);
         }
     }
 
@@ -174,12 +175,12 @@ public class ConnectionStateManager
     public synchronized void purge(long durationInSeconds)
     {
         int sizeBeforePurge = this.size();
-        LOGGER.info("Connection state purge : Starting purge with size={}", sizeBeforePurge);
+        LOGGER.info("Connection state purge : Starting purge with cache size={}", sizeBeforePurge);
         this.evictStateOlderThan(Duration.ofSeconds(durationInSeconds));
         int sizeAfterPurge = this.size();
         LOGGER.info("Connection state purge : Evicted={}", sizeBeforePurge-sizeAfterPurge);
         this.dump();
-        LOGGER.info("Connection state purge : Completed purge with size={}", sizeAfterPurge);
+        LOGGER.info("Connection state purge : Completed purge with cache size={}", sizeAfterPurge);
     }
 
     public static class ConnectionStateEvictionTask implements Runnable
