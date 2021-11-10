@@ -709,4 +709,104 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  }\n" +
                 "}\n");
     }
+
+    @Test
+    public void testServiceTestParameters()
+    {
+        // check for single test parameter
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: p1: String[1]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);\n"+
+                "    mapping: meta::myMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "       { ['parameter1'], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        // check for multiple test parameters
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: p1: String[*]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);\n"+
+                "    mapping: meta::myMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {['testparameter1', 'testparameter2', enum.reference, [1, 2]],res: meta::pure::mapping::Result[1]|$res.values->toOne()->toString()->equalJsonStrings('{}')}\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: p1: String[*]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);\n"+
+                "    mapping: meta::myMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {['testparameter1', 'testparameter2'],res: meta::pure::mapping::Result[1]|$res.values->toOne()->toString()->equalJsonStrings('{}')},\n" +
+                "      {['testparameter'],res: meta::pure::mapping::Result[1]|$res.values->toOne()->toString()->equalJsonStrings('{}')}\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
 }
