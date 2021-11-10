@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.query.pure.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
@@ -31,9 +32,11 @@ import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.model.ExecuteMappingTestInput;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
+import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.engine.test.runner.mapping.MappingTestRunner;
@@ -43,6 +46,9 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -56,7 +62,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "Pure - Execution")
@@ -64,11 +69,12 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Produces(MediaType.APPLICATION_JSON)
 public class MappingTestExecute
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private final ModelManager modelManager;
     private final PlanExecutor planExecutor;
     private Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> extensions;
     private MutableList<PlanTransformer> transformers;
+    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
     public MappingTestExecute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> extensions, MutableList<PlanTransformer> transformers)
     {
@@ -87,22 +93,32 @@ public class MappingTestExecute
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Mapping Test Execution").startActive(true)) {
+            long start = System.currentTimeMillis();
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.production : executeInput.clientVersion;
             PureModel pureModel = modelManager.loadModel(executeInput.model, clientVersion, profiles, null);
-            RichMappingTestResult result = new MappingTestRunner((PureModelContextData) executeInput.model, pureModel, executeInput.mapping, getMappingTest(executeInput, (PureModelContextData) executeInput.model), this.planExecutor, this.extensions.apply(pureModel), this.transformers, executeInput.clientVersion).setupAndRunTest();
-            //TODO: allow multiple tests to be run and get the similar response
-            //Create an object which has an array of result for multiple test
-            return Response.ok().entity("{\"actual\": " + result.getActual().get() + ", \"result\": \""+ result.getResult().toString() + "\"}").build();
+            List<RichMappingTestResult> resultList;
+            List<MappingTest> mappingTestList = getAllMappingTests(executeInput, (PureModelContextData) executeInput.model);
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
+            if(executeInput.testIdList == null || executeInput.testIdList.size() == 0)
+            {
+                resultList = mappingTestList.stream().map(test -> new MappingTestRunner((PureModelContextData) executeInput.model, pureModel, executeInput.mapping, test, this.planExecutor, this.extensions.apply(pureModel), this.transformers, executeInput.clientVersion).setupAndRunTest()).collect(Collectors.toList());
+            }
+            else
+            {
+                resultList = executeInput.testIdList.stream().map(testId -> new MappingTestRunner((PureModelContextData) executeInput.model, pureModel, executeInput.mapping, mappingTestList.stream().filter(x -> testId.contains(x.name)).findFirst().get(), this.planExecutor, this.extensions.apply(pureModel), this.transformers, executeInput.clientVersion).setupAndRunTest()).collect(Collectors.toList());
+            }
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double)System.currentTimeMillis() - start).toString());
+            return Response.ok().entity(objectMapper.writeValueAsString(resultList)).build();
         }
         catch (Exception ex)
         {
-            MetricsHandler.observeError("execute");
+            MetricsHandler.observeError("MappingTestExecute");
             return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
     }
 
-    private MappingTest getMappingTest(ExecuteMappingTestInput executeInput, PureModelContextData contextData)
+    private List<MappingTest> getAllMappingTests(ExecuteMappingTestInput executeInput, PureModelContextData contextData)
     {
-        return contextData.getElementsOfType(Mapping.class).stream().filter(x -> x.getPath().equals(executeInput.mapping)).findFirst().get().tests.stream().filter(x -> executeInput.testId.contains(x.name)).findFirst().get();
+        return contextData.getElementsOfType(Mapping.class).stream().filter(x -> x.getPath().equals(executeInput.mapping)).findFirst().get().tests;
     }
 }

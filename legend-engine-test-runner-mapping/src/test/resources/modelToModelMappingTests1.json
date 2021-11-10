@@ -175,10 +175,7 @@
               "_type": "object",
               "inputType": "JSON",
               "sourceClass": "model::domain::inmemm2m::source::_Firm",
-              "testDataSource": {
-               "_type": "stringData",
-                "data": "{\"name\":\"CompanyA\", \"employees\":[{\"firstName\":\"John\",\"lastName\":\"Smith\"}, {\"firstName\":\"Mark\",\"lastName\":\"Johnson\"}]}"
-              }
+              "data": "{\"name\":\"CompanyA\", \"employees\":[{\"firstName\":\"John\",\"lastName\":\"Smith\"}, {\"firstName\":\"Mark\",\"lastName\":\"Johnson\"}]}"
             }
           ],
           "assert": {

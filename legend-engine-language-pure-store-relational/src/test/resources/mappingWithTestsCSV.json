@@ -32,10 +32,7 @@
           "inputData": [
             {
               "_type": "relational",
-              "testDataSource": {
-                "_type": "stringData",
-                "data": "default\nPersonTable\nid,lastName\n1,Doe;\n2,Doe2\n\n\n\n"
-              },
+              "data": "default\nPersonTable\nid,lastName\n1,Doe;\n2,Doe2\n\n\n\n",
               "database": "aa::db",
               "inputType": "CSV",
               "sourceInformation": {

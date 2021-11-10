@@ -61,7 +61,7 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
             }
             else
              {
-                 String data = ((StringTestDataSource) relationalInputData.testDataSource).data;
+                 String data = relationalInputData.data != null ? relationalInputData.data : ((StringTestDataSource) relationalInputData.testDataSource).data;
                 if (relationalInputData.inputType == RelationalInputType.SQL)
                 {
                     localH2DatasourceSpecification.testDataSetupSqls = Lists.mutable.of(data.split("(?<!\\\\);")).collect(r -> r.replace("\\;", ";") + ";");

@@ -144,15 +144,17 @@ public class MappingTestRunner
                 }
                 else
                 {
-                    jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(((StringTestDataSource) objectInputData.testDataSource).data.getBytes(StandardCharsets.UTF_8));
+                    String data = objectInputData.data != null ? objectInputData.data : ((StringTestDataSource) objectInputData.testDataSource).data;
+                    jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
                 }
                 connectionRegistrar.accept(jsonModelConnection);
             }
             else if (ObjectInputType.XML.equals(objectInputData.inputType))
             {
+                String data = objectInputData.data != null ? objectInputData.data : ((StringTestDataSource) objectInputData.testDataSource).data;
                 XmlModelConnection xmlModelConnection = new XmlModelConnection();
                 xmlModelConnection._class = objectInputData.sourceClass;
-                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(((StringTestDataSource) objectInputData.testDataSource).data.getBytes(StandardCharsets.UTF_8));
+                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(xmlModelConnection);
             }
             else

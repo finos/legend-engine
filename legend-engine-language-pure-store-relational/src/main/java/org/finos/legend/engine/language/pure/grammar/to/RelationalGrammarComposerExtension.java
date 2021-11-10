@@ -282,7 +282,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 }
                 else
                 {
-                    String data = ((StringTestDataSource)relationalInputData.testDataSource).data;
+                    String data = relationalInputData.data != null ? relationalInputData.data : ((StringTestDataSource)relationalInputData.testDataSource).data;
                     if (relationalInputData.inputType == RelationalInputType.SQL)
                     {
                         MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(data.replace("\n", "").split("(?<!\\\\);"));

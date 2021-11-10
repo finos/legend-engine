@@ -73,10 +73,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-modelManager</artifactId>
-        </dependency>  
-	<dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-test-runner-shared</artifactId>
         </dependency>
         <!-- ENGINE -->
 
@@ -143,7 +139,6 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.databind.version}</version>
-            <scope>test</scope>
 		</dependency>
         <dependency>
             <groupId>log4j</groupId>

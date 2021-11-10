@@ -143,7 +143,8 @@ public class HelperMappingGrammarComposer
             {
                 return "<Object, " + objectInputData.sourceClass + ", [" + ((ElementsTestDataSource)objectInputData.testDataSource).textElements.stream().collect(Collectors.joining(",")) + "]>";
             }
-            return "<Object, " + objectInputData.inputType + ", " + PureGrammarComposerUtility.convertPath(objectInputData.sourceClass) + ", " + convertString(((StringTestDataSource)objectInputData.testDataSource).data, false) + ">";
+            String data = objectInputData.data != null ? objectInputData.data : ((StringTestDataSource)objectInputData.testDataSource).data;
+            return "<Object, " + objectInputData.inputType + ", " + PureGrammarComposerUtility.convertPath(objectInputData.sourceClass) + ", " + convertString( data, false) + ">";
         }
         return context.extraMappingTestInputDataComposers.stream().map(composer -> composer.value(inputData, context)).filter(Objects::nonNull).findFirst().orElseGet(() -> unsupported(inputData.getClass()));
     }
