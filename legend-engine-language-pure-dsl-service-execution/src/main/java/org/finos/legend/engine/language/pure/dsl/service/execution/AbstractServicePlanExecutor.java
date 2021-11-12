@@ -146,6 +146,12 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     }
 
     @Override
+    public void setGraphFetchBatchMemoryLimit(long graphFetchBatchMemoryLimit)
+    {
+        this.executor.setGraphFetchBatchMemoryLimit(graphFetchBatchMemoryLimit);
+    }
+
+    @Override
     public String toString()
     {
         return "<" + getClass().getSimpleName() + " " + getServicePath() + ">";

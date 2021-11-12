@@ -59,7 +59,7 @@ public class PlanExecutor
     private final boolean isJavaCompilationAllowed;
     private final ImmutableList<StoreExecutor> extraExecutors;
     private final PlanExecutorInfo planExecutorInfo;
-    private final long graphFetchBatchMemoryLimit;
+    private long graphFetchBatchMemoryLimit;
 
     private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit)
     {
@@ -192,6 +192,11 @@ public class PlanExecutor
             // execute
             return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(profiles, state));
         }
+    }
+
+    public void setGraphFetchBatchMemoryLimit(long graphFetchBatchMemoryLimit)
+    {
+        this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
     }
 
     private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, MutableList<CommonProfile> profiles)

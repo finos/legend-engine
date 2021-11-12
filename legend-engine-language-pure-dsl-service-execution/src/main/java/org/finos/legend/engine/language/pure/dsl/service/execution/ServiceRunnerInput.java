@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-/* Work in progress, do not use */
-
 public class ServiceRunnerInput
 {
     private List<Object> args = Collections.emptyList();

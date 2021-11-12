@@ -22,8 +22,6 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 
-/* Work in progress, do not use */
-
 public interface ServiceRunner
 {
     /**
@@ -80,4 +78,11 @@ public interface ServiceRunner
     {
         return Collections.emptyList();
     }
+
+    /**
+     * Set the memory limit for one batch of a graph fetch execution for this instance of ServiceRunner
+     *
+     * @param graphFetchBatchMemoryLimit limit in bytes for one batch of a graph fetch execution
+     */
+    void setGraphFetchBatchMemoryLimit(long graphFetchBatchMemoryLimit);
 }

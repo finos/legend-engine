@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-/* Work in progress, do not use */
-
 public class OperationalContext
 {
     private Map<GraphFetchCrossAssociationKeys, ExecutionCache<GraphFetchCacheKey, List<Object>>> graphFetchCrossAssociationKeysCacheConfig;
