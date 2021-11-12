@@ -824,14 +824,24 @@ public class HelperRelationalBuilder
                 columns, context);
     }
 
+    public static RichIterable<Column> getMilestoneColumn(String colName, Multimap<String, Column> columns, SourceInformation sourceInformation)
+    {
+        RichIterable<Column> c = columns.get(colName);
+        if (c == null || c.isEmpty())
+        {
+            throw new EngineException(String.format("Milestone column '%s' not found on table definition", colName), sourceInformation, EngineErrorType.COMPILATION);
+        }
+        return c;
+    }
+
     public static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning visitMilestoning(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning milestoning, CompileContext context, Multimap<String, Column> columns)
     {
         if (milestoning instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning businessMilestoning = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning) milestoning;
             Root_meta_relational_metamodel_relation_BusinessMilestoning_Impl pureBm = new Root_meta_relational_metamodel_relation_BusinessMilestoning_Impl("");
-            pureBm._from(columns.get(businessMilestoning.from));
-            pureBm._thru(columns.get(businessMilestoning.thru));
+            pureBm._from(getMilestoneColumn(businessMilestoning.from, columns, milestoning.sourceInformation));
+            pureBm._thru(getMilestoneColumn(businessMilestoning.thru, columns, milestoning.sourceInformation));
             if (businessMilestoning.infinityDate != null)
             {
                 pureBm._infinityDate((PureDate) ((Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) businessMilestoning.infinityDate.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("TO REMOVE!"))))._values.getFirst());
@@ -843,15 +853,15 @@ public class HelperRelationalBuilder
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning businessSnapshotMilestoning = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning) milestoning;
             Root_meta_relational_metamodel_relation_BusinessSnapshotMilestoning_Impl pureBsm = new Root_meta_relational_metamodel_relation_BusinessSnapshotMilestoning_Impl("");
-            pureBsm._snapshotDate(columns.get(businessSnapshotMilestoning.snapshotDate));
+            pureBsm._snapshotDate(getMilestoneColumn(businessSnapshotMilestoning.snapshotDate, columns, milestoning.sourceInformation));
             return pureBsm;
         }
         else if (milestoning instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning processingMilestoning = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning) milestoning;
             Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl purePm = new Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl("");
-            purePm._in(columns.get(processingMilestoning.in));
-            purePm._out(columns.get(processingMilestoning.out));
+            purePm._in(getMilestoneColumn(processingMilestoning.in, columns, milestoning.sourceInformation));
+            purePm._out(getMilestoneColumn(processingMilestoning.out, columns, milestoning.sourceInformation));
             if (processingMilestoning.infinityDate != null)
             {
                 purePm._infinityDate((PureDate) ((Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) processingMilestoning.infinityDate.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("TO REMOVE!"))))._values.getFirst());
