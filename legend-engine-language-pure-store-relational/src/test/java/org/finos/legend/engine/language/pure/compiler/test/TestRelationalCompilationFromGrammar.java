@@ -42,7 +42,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "\n" +
             "    View interactionViewMaxTime  \n" +
             "    (\n" +
-            "       ~filter PositiveInteractionTimeFilter\n" +
+            "       ~filter [model::relational::tests::db] PositiveInteractionTimeFilter\n" +
             "       ~groupBy (interactionTable.sourceId, interactionTable.targetId)\n" +
             "       sourceId : interactionTable.sourceId,\n" +
             "       targetId : interactionTable.targetId,\n" +
