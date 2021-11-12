@@ -15,6 +15,8 @@
 package org.finos.legend.engine.plan.execution.result.graphFetch;
 
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,7 @@ public class GraphObjectsBatch
     private final long graphFetchBatchMemoryLimit;
     protected final long batchIndex;
     protected Map<Integer, List<?>> nodeObjects;
+    protected Map<Integer, ExecutionCache<GraphFetchCacheKey, List<Object>>> xStorePropertyCaches;
     protected long totalObjectMemoryUtilization;
     protected long rowCount;
 
@@ -39,6 +42,7 @@ public class GraphObjectsBatch
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
         this.batchIndex = batchIndex;
         this.nodeObjects = new HashMap<>();
+        this.xStorePropertyCaches = new HashMap<>();
         this.totalObjectMemoryUtilization = 0;
         this.rowCount = 0;
     }
@@ -48,6 +52,7 @@ public class GraphObjectsBatch
         this.graphFetchBatchMemoryLimit = other.graphFetchBatchMemoryLimit;
         this.batchIndex = other.batchIndex;
         this.nodeObjects = other.nodeObjects;
+        this.xStorePropertyCaches = other.xStorePropertyCaches;
         this.totalObjectMemoryUtilization = other.totalObjectMemoryUtilization;
         this.rowCount = other.rowCount;
     }
@@ -65,6 +70,16 @@ public class GraphObjectsBatch
     public List<?> getObjectsForNodeIndex(int index)
     {
         return this.nodeObjects.get(index);
+    }
+
+    public void setXStorePropertyCachesForNodeIndex(int index, ExecutionCache<GraphFetchCacheKey, List<Object>> cache)
+    {
+        this.xStorePropertyCaches.put(index, cache);
+    }
+
+    public ExecutionCache<GraphFetchCacheKey, List<Object>> getXStorePropertyCacheForNodeIndex(int index)
+    {
+        return this.xStorePropertyCaches.get(index);
     }
 
     public long getRowCount()

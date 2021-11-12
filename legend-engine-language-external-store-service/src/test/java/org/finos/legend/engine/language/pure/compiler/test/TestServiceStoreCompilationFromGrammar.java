@@ -57,7 +57,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -73,7 +73,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : [String] ( location = query, style = simple, explode = true )\n" +
                 "    );\n" +
@@ -89,7 +89,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : [Integer] ( location = query, style = simple, explode = true, enum = test::Enum )\n" +
                 "    );\n" +
@@ -105,7 +105,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "  (\n" +
                 "    path : '/testService/{param2}';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      param1 : String ( location = query ),\n" +
                 "      param2 : String ( location = path )\n" +
@@ -123,7 +123,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    path : '/testService/{param2}';\n" +
                 "    requestBody : test::Person <- test::TestBinding;\n" +
                 "    method : POST;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      param1 : String ( location = query ),\n" +
                 "      param2 : String ( location = path )\n" +
@@ -147,7 +147,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -167,7 +167,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -179,7 +179,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "      path : '/testService';\n" +
                 "      requestBody : test::Person <- test::TestBinding;\n" +
                 "      method : POST;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -201,7 +201,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    path : '/testService/{param2}';\n" +
                 "    requestBody : test::Person <- test::TestBinding;\n" +
                 "    method : POST;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      param1 : String ( location = query ),\n" +
                 "      param2 : String ( location = path )\n" +
@@ -216,7 +216,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -238,7 +238,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    path : '/testService/{param2}';\n" +
                 "    requestBody : test::Person <- test::TestBinding;\n" +
                 "    method : POST;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      param1 : String ( location = query ),\n" +
                 "      param2 : String ( location = path )\n" +
@@ -250,7 +250,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : [Integer] ( location = query, style = simple, explode = true, enum = test::Enum )\n" +
                 "    );\n" +
@@ -264,7 +264,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -282,7 +282,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "      (\n" +
                 "        path : '/testService';\n" +
                 "        method : GET;\n" +
-                "        parameters : \n" +
+                "        parameters :\n" +
                 "        (\n" +
                 "          serializationFormat : String ( location = query )\n" +
                 "        );\n" +
@@ -298,7 +298,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -309,7 +309,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    (\n" +
                 "      path : '/testService';\n" +
                 "      method : GET;\n" +
-                "      parameters : \n" +
+                "      parameters :\n" +
                 "      (\n" +
                 "        serializationFormat : String ( location = query )\n" +
                 "      );\n" +
@@ -331,7 +331,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +
@@ -348,7 +348,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "  (\n" +
                 "    path : '/testService';\n" +
                 "    method : GET;\n" +
-                "    parameters : \n" +
+                "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : String ( location = query )\n" +
                 "    );\n" +

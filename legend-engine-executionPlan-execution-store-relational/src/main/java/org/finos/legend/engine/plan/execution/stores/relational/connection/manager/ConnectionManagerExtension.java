@@ -24,5 +24,11 @@ import java.util.List;
 
 public interface ConnectionManagerExtension
 {
+    @Deprecated
     ConnectionManager getExtensionManager(int testDbPort, List<OAuthProfile> oauthProfiles, ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey, RelationalExecutorInfo relationalExecutorInfo);
+
+    default ConnectionManager getExtensionManager(int testDbPort, List<OAuthProfile> oauthProfiles, RelationalExecutorInfo relationalExecutorInfo)
+    {
+        return getExtensionManager(testDbPort,oauthProfiles,relationalExecutorInfo.dbSpecByKey(),relationalExecutorInfo);
+    }
 }

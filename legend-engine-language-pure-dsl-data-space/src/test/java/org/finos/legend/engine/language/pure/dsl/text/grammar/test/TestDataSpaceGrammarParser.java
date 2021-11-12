@@ -39,38 +39,37 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
+            "  executionContexts: [];\n" +
+            "  defaultExecutionContext: '';\n" +
             "}\n";
     }
 
     @Test
-    public void testDataSpace()
+    public void testMissingFields()
     {
-        // Missing fields
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
             "{\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
+            "  executionContexts: [];\n" +
+            "  defaultExecutionContext: '';\n" +
             "}\n", "PARSER error at [2:1-7:1]: Field 'groupId' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
             "{\n" +
             "  groupId: 'test.group';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
+            "  executionContexts: [];\n" +
+            "  defaultExecutionContext: '';\n" +
             "}\n", "PARSER error at [2:1-7:1]: Field 'artifactId' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
             "{\n" +
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
+            "  executionContexts: [];\n" +
+            "  defaultExecutionContext: '';\n" +
             "}\n", "PARSER error at [2:1-7:1]: Field 'versionId' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
@@ -78,66 +77,328 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  runtime: model::Runtime;\n" +
-            "}\n", "PARSER error at [2:1-7:1]: Field 'mapping' is required");
+            "  defaultExecutionContext: '';\n" +
+            "}\n", "PARSER error at [2:1-7:1]: Field 'executionContexts' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
             "{\n" +
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "}\n", "PARSER error at [2:1-7:1]: Field 'runtime' is required");
-        // Duplicated fields
-        test("###DataSpace\n" +
-            "DataSpace model::dataSpace" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
-            "}\n", "PARSER error at [2:1-9:1]: Field 'groupId' should be specified only once");
-        test("###DataSpace\n" +
-            "DataSpace model::dataSpace" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
-            "}\n", "PARSER error at [2:1-9:1]: Field 'artifactId' should be specified only once");
+            "  executionContexts: [];\n" +
+            "}\n", "PARSER error at [2:1-7:1]: Field 'defaultExecutionContext' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
             "{\n" +
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
-            "}\n", "PARSER error at [2:1-9:1]: Field 'versionId' should be specified only once");
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-14:1]: Field 'name' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
             "{\n" +
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
-            "}\n", "PARSER error at [2:1-9:1]: Field 'mapping' should be specified only once");
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-14:1]: Field 'mapping' is required");
         test("###DataSpace\n" +
             "DataSpace model::dataSpace" +
             "{\n" +
             "  groupId: 'test.group';\n" +
             "  artifactId: 'test-data-space';\n" +
             "  versionId: '1.0.0';\n" +
-            "  mapping: model::Mapping;\n" +
-            "  runtime: model::Runtime;\n" +
-            "  runtime: model::Runtime;\n" +
-            "}\n", "PARSER error at [2:1-9:1]: Field 'runtime' should be specified only once");
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-14:1]: Field 'defaultRuntime' is required");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  supportInfo: Email {\n" +
+            "  };\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-17:1]: Field 'address' is required");
+    }
+
+    @Test
+    public void testDuplicatedFields()
+    {
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-17:1]: Field 'groupId' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-17:1]: Field 'artifactId' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-17:1]: Field 'versionId' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-17:1]: Field 'defaultExecutionContext' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-24:1]: Field 'executionContexts' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-24:1]: Field 'executionContexts' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-17:1]: Field 'name' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-17:1]: Field 'mapping' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "}\n", "PARSER error at [2:1-17:1]: Field 'defaultRuntime' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "  description: 'some description';\n" +
+            "  description: 'some description';\n" +
+            "}\n", "PARSER error at [2:1-18:1]: Field 'description' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "  featuredDiagrams:[model::Diagram];\n" +
+            "  featuredDiagrams:[model::Diagram];\n" +
+            "}\n", "PARSER error at [2:1-18:1]: Field 'featuredDiagrams' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "  supportInfo: Email {\n" +
+            "    address: 'someEmail@test.org';\n" +
+            "  };\n" +
+            "  supportInfo: Email {\n" +
+            "    address: 'someEmail@test.org';\n" +
+            "  };\n" +
+            "}\n", "PARSER error at [2:1-22:1]: Field 'supportInfo' should be specified only once");
+        test("###DataSpace\n" +
+            "DataSpace model::dataSpace\n" +
+            "{\n" +
+            "  groupId: 'test.group';\n" +
+            "  artifactId: 'test-data-space';\n" +
+            "  versionId: '1.0.0';\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'Context 1';\n" +
+            "      mapping: model::String;\n" +
+            "      defaultRuntime: model::Runtime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'Context 1';\n" +
+            "  supportInfo: Email {\n" +
+            "    address: 'someEmail@test.org';\n" +
+            "    address: 'someEmail@test.org';\n" +
+            "  };\n" +
+            "}\n", "PARSER error at [2:1-20:1]: Field 'address' should be specified only once");
     }
 }

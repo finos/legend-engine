@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -108,6 +109,12 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         });
 
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> properties = ListIterate.collect(srcClass.properties, HelperModelBuilder.processProperty(this.context, _classGenericType, _class));
+        MutableSet<String> duplicateProps = properties.collect(prop -> prop._name()).toBag().selectDuplicates().toSet();
+        if(!duplicateProps.isEmpty())
+        {
+            throw new EngineException("Property conflict on class " + this.context.pureModel.buildPackageString(srcClass._package, srcClass.name) + ": property '" + duplicateProps  + "' defined more than once", srcClass.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> withMilestoningProperties = properties.withAll(Milestoning.generateMilestoningProperties(_class, this.context));
 
         ProcessingContext ctx = new ProcessingContext("Class '" + this.context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "' Second Pass");

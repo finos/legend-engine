@@ -46,7 +46,9 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlan;
+import org.finos.legend.engine.plan.execution.api.ExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
+import org.finos.legend.engine.plan.execution.stores.relational.api.RelationalExecutorInformation;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
@@ -150,6 +152,8 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new Info(serverConfiguration.deployment, serverConfiguration.opentracing));
         environment.jersey().register(new CurrentUser());
         environment.jersey().register(new Memory());
+        environment.jersey().register(new ExecutorInfo(planExecutor));
+        environment.jersey().register(new RelationalExecutorInformation(relationalStoreExecutor));
 
         // Grammar
         environment.jersey().register(new TransformGrammarToJson());

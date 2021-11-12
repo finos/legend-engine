@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -27,16 +28,22 @@ public class DataSpace extends PackageableElement
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
 
-    public String description;
     public String groupId;
     public String artifactId;
     public String versionId;
-    public String mapping;
-    public String runtime;
-    public List<String> diagrams;
-    // NOTE: we're not too sure about this attribute. We feel that this would be needed but maybe
-    // we can think of a more generic strategy for this type of metadata
-    public String supportEmail;
+
+    public List<DataSpaceExecutionContext> executionContexts;
+    public String defaultExecutionContext;
+
+    public String description;
+    public List<PackageableElementPointer> featuredDiagrams;
+    public DataSpaceSupportInfo supportInfo;
+
+    // public DataSpaceEntitlement entitlement;
+
+    // Test data is a good way to help users understand data better
+    // and could do some trial with the data without any authentication
+    // public List<String> testData
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

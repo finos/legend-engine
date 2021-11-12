@@ -43,6 +43,7 @@ public class TestExtensions
             .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
             .with(org.finos.legend.engine.external.shared.ExternalFormatProtocolExtension.class)
             .with(org.finos.legend.engine.external.format.flatdata.FlatDataProtocolExtension.class)
+            .with(org.finos.legend.engine.external.format.json.JsonProtocolExtension.class)
             .with(org.finos.legend.engine.external.format.xml.XmlProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
@@ -58,6 +59,7 @@ public class TestExtensions
             .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.jsonSchema.extension.JSONSchemaGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationExtension.class)
+            .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class)
             .toImmutable();
 
 
@@ -76,6 +78,7 @@ public class TestExtensions
 
     private static final ImmutableList<Class<? extends ExternalFormatExtension>> EXPECTED_EXTERNAL_FORMAT_EXTENSIONS = Lists.mutable.<Class<? extends ExternalFormatExtension>>empty()
             .with(org.finos.legend.engine.external.format.flatdata.FlatDataExternalFormatExtension.class)
+            .with(org.finos.legend.engine.external.format.json.JsonExternalFormatExtension.class)
             .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)
             .toImmutable();
 

@@ -555,7 +555,7 @@ public class DomainParseTreeWalker
         return result;
     }
 
-    private AppliedFunction letExpression(DomainParserGrammar.LetExpressionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
+   private AppliedFunction letExpression(DomainParserGrammar.LetExpressionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
         ValueSpecification result = this.combinedExpression(ctx.combinedExpression(), "", typeParametersNames, lambdaContext, space, true, addLines);
         result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
