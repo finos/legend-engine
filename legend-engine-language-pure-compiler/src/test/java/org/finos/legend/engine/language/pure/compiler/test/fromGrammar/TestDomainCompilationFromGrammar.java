@@ -123,43 +123,6 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testDuplicatedPropertiesClass()
-    {
-        test("###Pure\n" +
-                "Class test::A\n" +
-                "{\n" +
-                "  property1 : Integer[0..1];\n" +
-                "  property1 : Integer[0..1];\n" +
-                "  property2 : Integer[0..1];\n" +
-                "  property2 : Integer[0..1];\n" +
-                "  property3 : Integer[0..1];\n" +
-                "}\n", "COMPILATION error at [2:1-9:1]: Property conflict on class test::A: property '[property2, property1]' defined more than once"
-        );
-    }
-
-    @Test
-    public void testDuplicatedPropertiesClassAssociation()
-    {
-        test("###Pure\n" +
-                "Class test::A\n" +
-                "{\n" +
-                "  propertyA : Integer[0..1];\n" +
-                "  property2 : test::B[1];\n" +
-                "}\n" +
-                "Class test::B\n" +
-                "{\n" +
-                "  propertyB : Integer[0..1];\n" +
-                "  property1 : test::A[*];\n" +
-                "}\n" +
-                "Association test::FaultyAssociation\n" +
-                "{\n" +
-                "  property1 : test::A[*];\n" +
-                "  property2 : test::B[1];\n" +
-                "}\n", "COMPILATION error at [12:1-16:1]: Property conflict on class(s), defined more than once: [test::B:property1],[test::A:property2]"
-        );
-    }
-
-    @Test
     public void testMetaFunctionExecutionWithFullPath()
     {
         String code =
