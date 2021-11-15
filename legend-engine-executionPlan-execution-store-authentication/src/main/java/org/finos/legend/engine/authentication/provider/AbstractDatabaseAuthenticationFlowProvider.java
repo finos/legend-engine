@@ -38,12 +38,11 @@ public abstract class AbstractDatabaseAuthenticationFlowProvider implements Data
     }
 
     /*
-        This validation exists to prevent the use of H2 with idioms such as flows which are meant for production use cases.
-        We create a lot of use-and-throw H2 connections for running user tests.
-        Features such as the flow require maintain state for the lifetime of the datasource/connection.
-        It does not make sense to maintain this state for shortlived but numerous h2 connections.
-
-        For now, we only allow static H2 for developer testing. We do not expect static h2 to be used frequently in the wild.
+        This validation exists to limit the use of H2 in flows.
+        The flow implementation maintains some state for the lifetime of the datasource/connection.
+        We create a lot of use-and-throw H2 connections for running user tests. This results in us a shortlived state.
+        Therefore we do not allow the use of H2 with the LocalH2 connections.
+        We only allow StaticH2 connections for developer testing. We do not expect static h2 to be used frequently in the wild.
      */
     private void validateProperUseOfH2Flows(DatabaseAuthenticationFlow flow)
     {

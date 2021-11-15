@@ -26,4 +26,4 @@ Database connections are acquired in four layers
 
 - This layer actually computes the the database credential that is passed to the database
 - This layer fetches the identity and credential supplier cached in layer two and creates a credential 
-- The credential is then added back to the Jdbc properties such that when control returns back to Hikari, it can pass the credentials to the database  
+- The credential is then added back to the Jdbc properties such that when control return to Hikari, it can pass the credentials to the database  

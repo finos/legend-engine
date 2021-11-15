@@ -51,7 +51,7 @@ public class RelationalExecutorInformation
     }
 
     @GET
-    @Path("relationalExecutorInfo/connectionState")
+    @Path("executorInfo/connectionState")
     @ApiOperation(value = "Provides connection state information")
     public Response getConnectionState()
     {

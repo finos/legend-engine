@@ -198,28 +198,4 @@ public class TestLocalH2ConcurrentConnectionAcquisition
         CredentialSupplier credentialSupplier = new CredentialSupplier(new H2LocalWithDefaultUserPasswordFlow(), null, null);
         return Optional.of(credentialSupplier);
     }
-
-    @Ignore
-    public void testJava11Timestamp() throws Exception
-    {
-        LocalH2DataSourceSpecification specification = new LocalH2DataSourceSpecification(
-                new LocalH2DataSourceSpecificationKey(Lists.mutable.empty()),
-                new H2Manager(),
-                new TestDatabaseAuthenticationStrategy(),
-                new RelationalExecutorInfo());
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
-
-        PlaintextUserPasswordCredential userPassword = new PlaintextUserPasswordCredential("sa", "");
-        Connection connection = specification.getConnectionUsingIdentity(identity, plainTextCredentialSupplier());
-
-        Statement statement = connection.createStatement();
-        statement.execute("create table test(col1 TIMESTAMP)");
-        String timestampValue = "1800-03-02 14:00:00.000123";
-        statement.execute("insert into test values('" + timestampValue + "')");
-        ResultSet resultSet = statement.executeQuery("select * from test");
-        resultSet.next();
-        Timestamp value = (Timestamp)resultSet.getObject(1);
-        assertEquals(timestampValue, value.toString());
-        connection.close();
-    }
 }

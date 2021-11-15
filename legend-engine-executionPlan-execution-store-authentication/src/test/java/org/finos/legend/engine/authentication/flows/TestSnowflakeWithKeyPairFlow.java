@@ -68,7 +68,7 @@ public class TestSnowflakeWithKeyPairFlow
     public void testFlow() throws Exception
     {
         String passphrase = "test";
-        String privateKeyFromFile = this.loadEncryptedPrivateKey("/test-secrtes/encrypted_privatekey1.p8");
+        String privateKeyFromFile = this.loadEncryptedPrivateKey("/test-secrets/encrypted_privatekey1.p8");
         inMemoryVault.setValue("key1", privateKeyFromFile);
         inMemoryVault.setValue("passphrase1", passphrase);
 
