@@ -14,12 +14,9 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.ListIterable;
-import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
@@ -34,7 +31,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
@@ -164,7 +160,8 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object> property1 = HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(property1Ref), association).valueOf(srcAssociation.properties.get(0));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object> property2 = HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(property0Ref), association).valueOf(srcAssociation.properties.get(1));
 
-        buildClassWithAssocisationProperties(srcAssociation, source, target, property1, property2);
+        source._propertiesFromAssociationsAdd(property2);
+        target._propertiesFromAssociationsAdd(property1);
 
         ProcessingContext ctx = new ProcessingContext("Association " + packageString + " (second pass)");
 
@@ -188,18 +185,6 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
                           ._stereotypes(ListIterate.collect(srcAssociation.stereotypes, s -> this.context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
                           ._taggedValues(ListIterate.collect(srcAssociation.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(this.context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
                           ._package(pack);
-    }
-
-    private void buildClassWithAssocisationProperties(Association srcAssociation, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target, Property<Object, Object> property1, Property<Object, Object> property2)
-    {
-        ImmutableList<Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object>, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object>>> owningTypeToProperty = Lists.immutable.with(Tuples.pair(target, property1), Tuples.pair(source, property2));
-        ImmutableList<Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object>, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object>>> propertiesInError  = owningTypeToProperty.select(pair -> pair.getOne()._properties().collect(p -> p._name()).contains(pair.getTwo()._name()));
-        if(!propertiesInError.isEmpty())
-        {
-            String duplicateProperties = "Property conflict on class(s), defined more than once: " + propertiesInError.collect(pair -> this.context.pureModel.buildPackageString(pair.getOne()._package()._name(), pair.getOne()._name()) + ":" + pair.getTwo()._name()).makeString("[","],[","]");
-            throw new EngineException(duplicateProperties, srcAssociation.sourceInformation, EngineErrorType.COMPILATION);
-        }
-        owningTypeToProperty.forEach(p -> p.getOne()._propertiesFromAssociationsAdd(p.getTwo()));
     }
 
     @Override
