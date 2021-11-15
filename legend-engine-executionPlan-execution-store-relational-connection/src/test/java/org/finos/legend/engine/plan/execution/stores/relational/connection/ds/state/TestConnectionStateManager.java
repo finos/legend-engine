@@ -18,10 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
-import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -113,45 +110,6 @@ public class TestConnectionStateManager
         for (String poolName : poolNames)
         {
             assertNotNull("State not found for pool="+ poolName, connectionStateManager.getState(poolName));
-        }
-    }
-
-    static class FakeClock extends Clock
-    {
-        private long currentTimeInMillis;
-
-        public FakeClock(long currentTimeInMillis)
-        {
-            this.currentTimeInMillis = currentTimeInMillis;
-        }
-
-        public void advance(Duration duration)
-        {
-            this.currentTimeInMillis += duration.toMillis();
-        }
-
-        @Override
-        public ZoneId getZone()
-        {
-            return null;
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone)
-        {
-            return null;
-        }
-
-        @Override
-        public Instant instant()
-        {
-            return null;
-        }
-
-        @Override
-        public long millis()
-        {
-            return this.currentTimeInMillis;
         }
     }
 }
