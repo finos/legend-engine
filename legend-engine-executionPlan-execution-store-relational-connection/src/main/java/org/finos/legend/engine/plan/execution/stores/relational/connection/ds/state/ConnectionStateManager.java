@@ -61,10 +61,10 @@ import org.slf4j.LoggerFactory;
     1/ The DevOps threads can observe an inconsistent state of the map. This is because we do not lock the entire map when it is being read. While this can produce an inconsistent view, it does not affect correctness/safety.
 
     2/ The connection serving threads and connection creation threads are properly synchronized.
-    The state objects are keyed by the name of the pool. Writes and reads to this pool's state are synchronized using a pool specific lock.
+    The state objects are keyed by the name of the pool. Writes and reads to this pool's state are synchronized using a lock. We do not use an explicit lock but instead use the lock used by the concurrent map implementation.
     This pool specific lock enforces a "happens before" relationship between the write in the serving thread and read in the creation thread.
 
-    3/ The eviction thread races with connection serving/creation threads. However we detect and handle this race properly.
+    3/ The eviction thread races with connection serving/creation threads.
     Consider the following sequence :
         time t0 : Eviction Thread : State object S1 with key K1 becomes eligible for eviction
         time t1 : Eviction Thread : Thread is ready to evict S1. It has a reference to S1 but has not yet removed S1 from the map
@@ -141,8 +141,6 @@ public class ConnectionStateManager
         return INSTANCE;
     }
 
-    private final ConcurrentMutableMap<String, Object> locks = ConcurrentHashMap.newMap();
-
     private final ConcurrentMutableMap<String, ConnectionState> stateByPool = ConcurrentHashMap.newMap();
 
     private Clock clock;
@@ -153,33 +151,29 @@ public class ConnectionStateManager
         this.clock = clock;
     }
 
-    private Object createOrGetLock(String poolName)
-    {
-        return locks.getIfAbsentPut(poolName, new Object());
-    }
-
+    // Synchronizes using concurrent map's locks
     public void registerState(String poolName, Identity identity, Optional<CredentialSupplier> databaseCredentialSupplier)
     {
-        Object lock = this.createOrGetLock(poolName);
-        synchronized (lock)
-        {
-            this.stateByPool.put(poolName, new ConnectionState(this.clock.millis(), identity, databaseCredentialSupplier));
-        }
+        this.stateByPool.put(poolName, new ConnectionState(this.clock.millis(), identity, databaseCredentialSupplier));
     }
 
+    // Synchronizes using concurrent map's locks
     public ConnectionState getStateUsing(Properties properties)
     {
         String poolName = properties.getProperty(ConnectionStateManager.POOL_NAME_KEY);
         return this.getState(poolName);
     }
 
+    // Synchronizes using concurrent map's locks
     public ConnectionState getState(String poolName)
     {
-        Object lock = this.createOrGetLock(poolName);
-        synchronized (lock)
-        {
-            return this.stateByPool.get(poolName);
-        }
+        return this.stateByPool.get(poolName);
+    }
+
+    // Synchronizes using concurrent map's locks
+    public void atomicallyRemove(String poolName, ConnectionState expectedStateValue)
+    {
+        this.stateByPool.remove(poolName, expectedStateValue);
     }
 
     public Set<Map.Entry<String, ConnectionState>> findStateOlderThan(Duration duration)
@@ -191,24 +185,14 @@ public class ConnectionStateManager
 
     public void evictStateOlderThan(Duration duration)
     {
+        // step 1 - gather entries to be deleted without acquiring a global lock
         Set<Map.Entry<String, ConnectionState>> entriesToPurge = this.findStateOlderThan(duration);
         for (Map.Entry<String, ConnectionState> entry : entriesToPurge)
         {
             String poolName = entry.getKey();
             ConnectionState state = entry.getValue();
-            Object lock = this.createOrGetLock(poolName);
-            synchronized (lock)
-            {
-                ConnectionState latestState = this.stateByPool.get(poolName);
-                if (latestState != state)
-                {
-                    continue;
-                }
-                else
-                {
-                    this.stateByPool.remove(poolName);
-                }
-            }
+            // step 2 - remove atomically - i.e remove iff the state has not been updated since it was read in step 1
+            this.atomicallyRemove(poolName, state);
         }
     }
 
