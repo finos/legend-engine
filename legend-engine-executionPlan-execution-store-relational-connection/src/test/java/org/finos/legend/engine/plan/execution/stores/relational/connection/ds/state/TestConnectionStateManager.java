@@ -94,7 +94,7 @@ public class TestConnectionStateManager
     {
         System.clearProperty(ConnectionStateManager.EVICTION_DURATION_SYSTEM_PROPERTY);
         long evictionDurationInSeconds = ConnectionStateManager.resolveEvictionDuration();
-        assertEquals(Duration.ofMinutes(5).getSeconds(), evictionDurationInSeconds);
+        assertEquals(Duration.ofMinutes(10).getSeconds(), evictionDurationInSeconds);
     }
 
     @Test

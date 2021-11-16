@@ -20,48 +20,64 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+import org.eclipse.collections.api.map.ConcurrentMutableMap;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /*
-    This class implements a least-frequently-used cache of state objects.
-    The objects are keyed by name and maintained in a concurrent hash map.
+    This class implements a least-recently-used cache of state objects.
+    The objects are keyed by pool name and maintained in a concurrent hash map.
     An eviction thread removes state objects which have not been used in the last N minutes.
 
     Thread safety:
     ----------------
-    The state manager is (mostly ??) thread safe.
+    The state manager is **mostly** thread safe.
 
     Threads:
     ----------------
     The state manager is accessed by three types of threads :
 
-    1/ Connection acquisition threads - These are threads that serve user connection requests and threads spawned by Hikari. These threads read/write state objects.
-    a/ Write : For every connection request, irrespective of whether a physical database connection is created or not, the thread serving the connection request creates a new state object for the pool from which the connection is requested.
-    The created state object captures a creation timestamp which is later used to evict the state object.
-    b/ Read : If a new physical database connection has to be created, the thread serving the connection request reads the state object that was previously written.
+    1/ Connection serving thread - This thread serves user connection requests.
+    For every connection request, irrespective of whether a physical database connection is created or not, this thread creates a new state object for the pool from which the connection is requested.
+    The created state object captures the current timestamp. This timestamp which is later used to evict the state object.
+    If a state object for this pool already exists, it is replaced with a new state object with an updated timestamp.
 
-    2/ State manager eviction thread - A scheduled task evicts state object older than a certain duration.
-    a/ Read/Write : The eviction thread evicts state objects that have not been used in the last N minutes. It iterates over the map and removes objects based on their creation timestamp.
+    2/ Connection creation thread - This thread actually creates the database connection. This can either be the connection serving thread or a Hikari pool thread.
+    When the connection serving thread initializes the Hikari datasource, Hikari *synchronously* creates a connection.
+    After a Hikari datasource has been initialized, Hikari can refresh the pool by creating connections in its own threads.
+    In both cases, the thread creating the connection reads the state object that was previously written.
 
-    3/ DevOps threads - These are threads that access the state manager for debugging/devops purposes
-    a/ Read - The state manager exposes "get/getAll/dump" methods that iterate over the map.
+    3/ State manager eviction thread - A scheduled task evicts state objects.
+    The eviction thread evicts state objects that have not been used in the last N minutes. It iterates over the map and removes objects based on the last used timestamp.
 
-    The DevOps threads can observe an inconsistent state of the map. This is because we do not lock the entire map when it is being read. While this can produce an inconsistent view, it does not affect correctness/safety.
+    4/ "DevOps" thread - These are other threads that read the state map for debugging/logging purposes.
+    The state manager exposes "get/getAll/dump" methods that iterate over the map.
 
-    The connection acquisition threads and the eviction thread race. Concretely, it is possible for the eviction thread to evict a state object that is being used by a connection acquisition thread.
+    Thread Interactions :
+    ----------------
+    1/ The DevOps threads can observe an inconsistent state of the map. This is because we do not lock the entire map when it is being read. While this can produce an inconsistent view, it does not affect correctness/safety.
+
+    2/ The connection serving threads and connection creation threads are properly synchronized.
+    The state objects are keyed by the name of the pool. Writes and reads to this pool's state are synchronized using a pool specific lock.
+    This pool specific lock enforces a "happens before" relationship between the write in the serving thread and read in the creation thread.
+
+    3/ The eviction thread races with connection serving/creation threads. However we detect and handle this race properly.
     Consider the following sequence :
-        time t0 : state object S1 with key K1 becomes eligible for eviction
-        time t1 : Eviction Thread : Thread is ready to evict S1. It has reference to S1 but has not yet removed S1 from the map
-        time t2 : Connection Thread : Thread "touches" key K1 with a new state object S2
+        time t0 : Eviction Thread : State object S1 with key K1 becomes eligible for eviction
+        time t1 : Eviction Thread : Thread is ready to evict S1. It has a reference to S1 but has not yet removed S1 from the map
+        time t2 : Connection Serving Thread : Thread "touches" key K1 with a new state object S2
         time t3 : Eviction thread : Thread evicts S1 by removing the map entry with key K1
         time t4 : Connection Thread : Thread fetches state object for key K1 but does not find it (and encounters a null pointer exception)
-    To protect against this scenario, the eviction thread uses a two step eviction process. In the first step it computes the map entries to be evicted.
-    In the second step, for each entry to be evicted, it checks if the entry has not been updated. If the entry has been updated, it simply skips the entry.
+    To protect against this scenario, the eviction thread uses a two step eviction process.
 
-    Connection acquisition threads for the same pool (i.e same logical identity, same database, same auth type) race. Consider the following sequence :
+    - First, it computes the map entries to be evicted. This read is done *without* acquiring a full lock on the map.
+    - Second, for each entry to be evicted, it checks if the entry has not been updated (since the first read). If the entry has been updated, it simply skips the entry.
+    - The second read of each state object is synchronized using the pool specific lock. This lock enforces a "happens before" relationship between this read and any other thread that might have previously updated this state object.
+
+    4/ Connection acquisition threads for the same pool (i.e same logical identity, same database, same auth type) race. Consider the following sequence :
         time t0 : Connection thread1 : Creates state object S1 for key K1
         time t1 : Connection thread2 : Creates state object S2 for key K1
         time t2 : Connection thread1 : Creates connection using state object S2 created by thread2 instead of state object S1
@@ -74,7 +90,7 @@ public class ConnectionStateManager
 
     private static ScheduledExecutorService EXECUTOR_SERVICE;
 
-    public static final long DEFAULT_EVICTION_DURATION_IN_SECONDS = Duration.ofMinutes(5).getSeconds();
+    public static final long DEFAULT_EVICTION_DURATION_IN_SECONDS = Duration.ofMinutes(10).getSeconds();
     public static String EVICTION_DURATION_SYSTEM_PROPERTY = "org.finos.legend.engine.execution.connectionStateEvictionDurationInSeconds";
 
     public static String POOL_NAME_KEY = "POOL_NAME_KEY";
@@ -125,7 +141,9 @@ public class ConnectionStateManager
         return INSTANCE;
     }
 
-    private ConcurrentHashMap<String, ConnectionState> stateByPool = new ConcurrentHashMap<>();
+    private final ConcurrentMutableMap<String, Object> locks = ConcurrentHashMap.newMap();
+
+    private final ConcurrentMutableMap<String, ConnectionState> stateByPool = ConcurrentHashMap.newMap();
 
     private Clock clock;
 
@@ -135,9 +153,18 @@ public class ConnectionStateManager
         this.clock = clock;
     }
 
+    private Object createOrGetLock(String poolName)
+    {
+        return locks.getIfAbsentPut(poolName, new Object());
+    }
+
     public void registerState(String poolName, Identity identity, Optional<CredentialSupplier> databaseCredentialSupplier)
     {
-        this.stateByPool.put(poolName, new ConnectionState(this.clock.millis(), identity, databaseCredentialSupplier));
+        Object lock = this.createOrGetLock(poolName);
+        synchronized (lock)
+        {
+            this.stateByPool.put(poolName, new ConnectionState(this.clock.millis(), identity, databaseCredentialSupplier));
+        }
     }
 
     public ConnectionState getStateUsing(Properties properties)
@@ -148,25 +175,11 @@ public class ConnectionStateManager
 
     public ConnectionState getState(String poolName)
     {
-        return this.stateByPool.get(poolName);
-    }
-
-    public Optional<CredentialSupplier>  getCredentialSupplier(String poolName)
-    {
-        if (!this.stateByPool.containsKey(poolName))
+        Object lock = this.createOrGetLock(poolName);
+        synchronized (lock)
         {
-            return null;
+            return this.stateByPool.get(poolName);
         }
-        return this.stateByPool.get(poolName).getCredentialSupplier();
-    }
-
-    public Identity getIdentity(String poolName)
-    {
-        if (!this.stateByPool.containsKey(poolName))
-        {
-            return null;
-        }
-        return this.stateByPool.get(poolName).getIdentity();
     }
 
     public Set<Map.Entry<String, ConnectionState>> findStateOlderThan(Duration duration)
@@ -181,15 +194,21 @@ public class ConnectionStateManager
         Set<Map.Entry<String, ConnectionState>> entriesToPurge = this.findStateOlderThan(duration);
         for (Map.Entry<String, ConnectionState> entry : entriesToPurge)
         {
-            String key = entry.getKey();
-            ConnectionState stateForKey = entry.getValue();
-            ConnectionState latestStateForKey = this.stateByPool.get(key);
-            // Deliberate test based on object hash code. See thread safety documentation at the top of this class
-            if (stateForKey.hashCode() != latestStateForKey.hashCode())
+            String poolName = entry.getKey();
+            ConnectionState state = entry.getValue();
+            Object lock = this.createOrGetLock(poolName);
+            synchronized (lock)
             {
-                continue;
+                ConnectionState latestState = this.stateByPool.get(poolName);
+                if (latestState != state)
+                {
+                    continue;
+                }
+                else
+                {
+                    this.stateByPool.remove(poolName);
+                }
             }
-            this.stateByPool.remove(key);
         }
     }
 

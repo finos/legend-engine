@@ -68,10 +68,8 @@ public class TestConnectionStateManagerRace
         assertEquals(2, connectionStateManager.size());
         assertStateExists("pool1", "pool2");
 
-        // advance clock by 4 minutes and run housekeeper
+        // advance clock by 4 minutes and invoke eviction (to simulate eviction task)
         clock.advance(Duration.ofMinutes(4));
-
-        // invoke eviction.
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         Future<?> evictionTask = executorService.submit(() -> connectionStateManager.evictStateOlderThan(Duration.ofMinutes(3)));
 
