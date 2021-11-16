@@ -14,16 +14,16 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
-import org.eclipse.collections.api.list.MutableList;
-import org.pac4j.core.profile.CommonProfile;
-
-import java.util.Properties;
-import javax.sql.DataSource;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class StaticDataSourceSpecification extends DataSourceSpecification
 {
@@ -38,13 +38,13 @@ public class StaticDataSourceSpecification extends DataSourceSpecification
     }
 
     @Override
-    protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
+    protected DataSource buildDataSource(Identity identity)
     {
         return this.buildDataSource(
                 ((StaticDataSourceSpecificationKey)this.datasourceKey).getHost(),
                 ((StaticDataSourceSpecificationKey)this.datasourceKey).getPort(),
                 ((StaticDataSourceSpecificationKey)this.datasourceKey).getDatabaseName(),
-                profiles
+                identity
         );
     }
 }

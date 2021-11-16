@@ -14,61 +14,41 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication;
 
-import com.zaxxer.hikari.HikariConfig;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.ConcurrentMutableMap;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
-import org.pac4j.core.profile.CommonProfile;
-import org.slf4j.Logger;
-
-import javax.security.auth.Subject;
-import javax.sql.DataSource;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.util.Properties;
 
+import javax.security.auth.Subject;
+import javax.sql.DataSource;
+
+import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.authentication.credential.CredentialSupplier;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionState;
+import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.slf4j.Logger;
+
 public abstract class AuthenticationStrategy
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AuthenticationStrategy.class);
     private static final int CONNECTION_TIMEOUT = 30000;
-    public static final String AUTHENTICATION_STRATEGY_PROFILE_BY_POOL = "AUTHENTICATION_STRATEGY_PROFILE_BY_POOL";
-    public static final String AUTHENTICATION_STRATEGY_KEY = "AUTHENTICATION_STRATEGY_KEY";
-    private static final String UNKNOWN_USER = "_UNKNOWN_";
-
+    public static String AUTHENTICATION_STRATEGY_KEY = "AUTHENTICATION_STRATEGY_KEY";
     protected AuthenticationStatistics authenticationStatistics = new AuthenticationStatistics();
-    protected String login;
-    protected String password;
 
-    private static final ConcurrentMutableMap<String, MutableList<CommonProfile>> profilesByPools = ConcurrentHashMap.newMap();
-
-
-    protected static MutableList<CommonProfile> getProfiles(String poolId)
+    /*
+        Note : This method is called when the DataSource is first initialized to serve a user request.
+        Also note that this method can be called multiple times for the same user if the user is routed to different engine backends (JVMs).
+     */
+    public Connection getConnection(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
-        return profilesByPools.get(poolId);
-    }
-
-    public static void registerProfilesByPool(String poolName, MutableList<CommonProfile> profiles)
-    {
-        // The profiles are associated with the Pool as the Pool can create connections by itself in its own threads.
-        profilesByPools.put(poolName, profiles);
-    }
-
-    public Connection getConnection(DataSourceWithStatistics ds, Subject subject, MutableList<CommonProfile> profiles) throws ConnectionException
-    {
-        // Refresh the profiles in the pool if they are provided (The profiles were already associated with the Pool at Pool creation)
-        if (profiles != null)
-        {
-            registerProfilesByPool(((HikariConfig)ds.getDataSource()).getPoolName(), profiles);
-        }
         try
         {
-            return getConnectionImpl(ds, subject, profiles);
+            return this.getConnectionImpl(ds, identity);
         }
         catch (ConnectionException ce)
         {
@@ -78,17 +58,17 @@ public abstract class AuthenticationStrategy
         }
     }
 
+    public abstract Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException;
 
-    protected abstract Connection getConnectionImpl(DataSourceWithStatistics ds, Subject subject, MutableList<CommonProfile> profiles) throws ConnectionException;
+    /*
+        Note : This method is called when the Hikari DataSource needs a connection. This happens under two conditions :
 
-    public abstract String getLogin();
+        1/ The very first time the Hikari DataSource is being initialized. The above getConnection method is invoked in DataSourceSpecification.getConnection. When the Hikari DataSource is being initialized, it invokes the DriverWrapper
+        which invokes handleConnection on the authentication strategy
 
-    public String getAlternativePrincipal(MutableList<CommonProfile> profiles)
-    {
-        return UNKNOWN_USER;
-    }
-
-    public abstract String getPassword();
+        2/ Whenever the Hikari DataSource's connection pool needs to be refreshed. Using the same DriverWrapper mechanism, the pool invokes handleConnection. This allows the authentication strategy to populate JDBC properties to be used in
+        connection creation.
+     */
 
     public abstract Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager);
 
@@ -123,4 +103,18 @@ public abstract class AuthenticationStrategy
     }
 
     public abstract AuthenticationStrategyKey getKey();
+
+    protected Credential getDatabaseCredential(ConnectionState connectionState)
+    {
+        try
+        {
+            Identity identity = connectionState.getIdentity();
+            CredentialSupplier credentialSupplier = connectionState.getCredentialSupplier().get();
+            return credentialSupplier.getCredential(identity);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 }

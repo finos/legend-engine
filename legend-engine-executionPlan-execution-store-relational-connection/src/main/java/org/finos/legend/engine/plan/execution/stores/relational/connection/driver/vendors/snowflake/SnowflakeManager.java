@@ -70,12 +70,6 @@ public class SnowflakeManager extends DatabaseManager
 
 
     @Override
-    public Properties getExtraDataSourceProperties(AuthenticationStrategy authenticationStrategy)
-    {
-        return new Properties();
-    }
-
-    @Override
     public String getDriver()
     {
         return "org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeDriver";
