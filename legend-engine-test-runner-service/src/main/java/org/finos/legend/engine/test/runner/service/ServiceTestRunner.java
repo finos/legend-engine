@@ -67,6 +67,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
@@ -115,6 +117,7 @@ public class ServiceTestRunner
         this.extensions = extensions;
         this.transformers = transformers;
         this.pureVersion = pureVersion;
+        MetricsHandler.createMetrics(this.getClass());
     }
 
     @Deprecated
@@ -194,11 +197,28 @@ public class ServiceTestRunner
             RichIterable<? extends String> sqlStatements = extractSetUpSQLFromTestRuntime(testRuntime);
             PureSingleExecution testPureSingleExecution = shallowCopySingleExecution(execution);
             testPureSingleExecution.runtime = testRuntime;
-            ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, extensions, transformers);
+            ExecutionPlan executionPlan = generatePlan(testPureSingleExecution);
             SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
-            JavaHelper.compilePlan(singleExecutionPlan, null);
+            compilePlan(singleExecutionPlan);
             return executeTestAsserts(singleExecutionPlan, asserts, sqlStatements, scope);
         }
+    }
+
+    @Prometheus(name = "service test generate plan", doc = "Plan generation duration summary within service test execution")
+    private ExecutionPlan generatePlan(PureSingleExecution pureSingleExecution)
+    {
+        long start = System.currentTimeMillis();
+        ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(pureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, extensions, transformers);
+        MetricsHandler.observe("service test generate plan", start, System.currentTimeMillis());
+        return executionPlan;
+    }
+
+    @Prometheus(name = "service test compile plan", doc = "Plan compilation duration summary within service test execution")
+    private void compilePlan(SingleExecutionPlan singleExecutionPlan) throws JavaCompileException
+    {
+        long start = System.currentTimeMillis();
+        JavaHelper.compilePlan(singleExecutionPlan, null);
+        MetricsHandler.observe("service test compile plan", start, System.currentTimeMillis());
     }
 
     private Pair<ExecutionPlan, RichIterable<? extends String>> getExtraServiceExecutionPlan(MutableList<ServiceExecutionExtension> extensions, Execution execution, String testData)
@@ -232,8 +252,10 @@ public class ServiceTestRunner
         return shallowCopy;
     }
 
+    @Prometheus(name = "service test execute", doc = "Execution duration summary within service test execution")
     private RichServiceTestResult executeTestAsserts(SingleExecutionPlan executionPlan, List<TestContainer> asserts, RichIterable<? extends String> sqlStatements, Scope scope) throws IOException
     {
+        long start = System.currentTimeMillis();
         if (ExecutionNodeTDSResultHelper.isResultTDS(executionPlan.rootExecutionNode) || (executionPlan.rootExecutionNode.isResultPrimitiveType() && "String".equals(executionPlan.rootExecutionNode.getDataTypeResultType())))
         {
             // Java
@@ -324,6 +346,7 @@ public class ServiceTestRunner
                 {
                     execScope.close();
                 }
+                MetricsHandler.observe("service test execute", start, System.currentTimeMillis());
             }
 
             return testRun;
