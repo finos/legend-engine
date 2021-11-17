@@ -196,4 +196,102 @@ public class TestRuntimeGenerationForServiceTests
         Assert.assertEquals(testRuntime.getStoreConnections("ModelStore").storeConnections.size(), 1);
         Assert.assertFalse((testRuntime.getStoreConnections("ModelStore").storeConnections.get(0).connection instanceof RelationalDatabaseConnection));
     }
+
+    @Test
+    public void testRuntimeGenerationForServiceWithRuntimePointer()
+    {
+        String pureGrammarWithModelChainConnection =
+                        "###Relational\n" +
+                        "Database test::relationalDB\n" +
+                        "(\n" +
+                        "  Table Person\n" +
+                        "  (\n" +
+                        "    fullname VARCHAR(1000) PRIMARY KEY\n" +
+                        "  )\n" +
+                        ")\n" +
+                        "\n" +
+                        "\n" +
+                        "###Service\n" +
+                        "Service test::serviceWithRuntimePointer\n" +
+                        "{\n" +
+                        "  pattern: '/garprat/test/fromStudio/';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'garprat'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: false;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |test::Person.all()->project([f|$f.fullName], ['fullName']);\n" +
+                        "    mapping: test::relationalMapping;\n" +
+                        "    runtime: test::runtimePointer;\n" +
+                        "  }\n" +
+                        "  test: Single\n" +
+                        "  {\n" +
+                        "    data: 'default\\nPerson\\nfullname\\nPierre DeBelen\\n';\n" +
+                        "    asserts:\n" +
+                        "    [\n" +
+                        "    ];\n" +
+                        "  }\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "Class test::Person\n" +
+                        "{\n" +
+                        "  fullName: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping test::relationalMapping\n" +
+                        "(\n" +
+                        "  test::Person: Relational\n" +
+                        "  {\n" +
+                        "    ~primaryKey\n" +
+                        "    (\n" +
+                        "      [test::relationalDB]Person.fullname\n" +
+                        "    )\n" +
+                        "    ~mainTable [test::relationalDB]Person\n" +
+                        "    fullName: [test::relationalDB]Person.fullname\n" +
+                        "  }\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Connection\n" +
+                        "RelationalDatabaseConnection test::mySimpleConnection\n" +
+                        "{\n" +
+                        "  store: test::relationalDB;\n" +
+                        "  type: MemSQL;\n" +
+                        "  specification: Static\n" +
+                        "  {\n" +
+                        "    name: 'memsql_person_data';\n" +
+                        "    host: 'myserver_url';\n" +
+                        "    port: 80;\n" +
+                        "  };\n" +
+                        "  auth: DefaultH2;\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Runtime\n" +
+                        "Runtime test::runtimePointer\n" +
+                        "{\n" +
+                        "  mappings:\n" +
+                        "  [\n" +
+                        "     test::relationalMapping\n" +
+                        "  ];\n" +
+                        "  connections:\n" +
+                        "  [\n" +
+                        "    test::relationalDB:\n" +
+                        "    [\n" +
+                        "      connection_1: test::mySimpleConnection\n" +
+                        "    ]\n" +
+                        "  ];\n" +
+                        "}\n";
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(pureGrammarWithModelChainConnection);
+        PureModel pureModel = new PureModel(contextData, null, DeploymentMode.TEST);
+        Service service = contextData.getElementsOfType(Service.class).get(0);
+        EngineRuntime testRuntime = (EngineRuntime) ServiceTestGenerationHelper.buildSingleExecutionTestRuntime((PureSingleExecution) service.execution, (SingleExecutionTest) service.test, contextData, pureModel);
+        Assert.assertEquals(testRuntime.connections.size(), 1);
+    }
 }

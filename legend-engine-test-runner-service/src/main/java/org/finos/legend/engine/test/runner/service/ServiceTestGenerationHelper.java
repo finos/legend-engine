@@ -90,6 +90,11 @@ public class ServiceTestGenerationHelper
             EngineRuntime engineRuntime = resolveRuntime(runtime, pureModelContextData);
             return buildMultipleConnectionRuntime(mappingPath, testData, engineRuntime, pureModelContextData, pureModel);
         }
+        if (runtime instanceof RuntimePointer)
+        {
+            EngineRuntime engineRuntime = resolveRuntime(runtime, pureModelContextData);
+            return buildRelationalTestRuntime(engineRuntime, mappingPath, testData, pureModel);
+        }
         return buildRelationalTestRuntime(runtime, mappingPath, testData, pureModel);
     }
 
