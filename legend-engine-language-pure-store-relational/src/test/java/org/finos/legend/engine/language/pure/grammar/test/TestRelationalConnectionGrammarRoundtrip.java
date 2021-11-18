@@ -252,6 +252,27 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "    passPhraseVaultReference: 'passRef';\n" +
                 "  };\n" +
                 "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: H2;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'okilkol.asdasd';\n" +
+                "    warehouse: 'warehousename';\n" +
+                "    region: 'EMEA';\n" +
+                "    quotedIdentifiersIgnoreCase: false;\n" +
+                "    role: 'aRole';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
     }
 
     @Test

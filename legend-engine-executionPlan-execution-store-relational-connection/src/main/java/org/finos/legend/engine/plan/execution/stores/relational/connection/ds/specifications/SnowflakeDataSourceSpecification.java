@@ -40,6 +40,7 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public static final String SNOWFLAKE_PROXY_PORT = "proxyPort";
     public static final String SNOWFLAKE_NON_PROXY_HOSTS = "nonProxyHosts";
     public static final String SNOWFLAKE_USE_PROXY = "useProxy";
+    public static final String SNOWFLAKE_ROLE = "role";
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
     {
@@ -47,6 +48,8 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
 
         String warehouseName = updateSnowflakeIdentifiers(key.getWarehouseName(), key.getQuoteIdentifiers());
         String databaseName = updateSnowflakeIdentifiers(key.getDatabaseName(), key.getQuoteIdentifiers());
+        String roleName= updateSnowflakeIdentifiers(key.getRole(),key.getQuoteIdentifiers());
+        putIfNotEmpty(this.extraDatasourceProperties,SNOWFLAKE_ROLE, roleName);
 
         this.extraDatasourceProperties.put(SNOWFLAKE_ACCOUNT_NAME, key.getAccountName());
         this.extraDatasourceProperties.put(SNOWFLAKE_REGION, key.getRegion());

@@ -84,7 +84,8 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     snowflakeDatasourceSpecification.proxyPort,
                     snowflakeDatasourceSpecification.nonProxyHosts,
                     snowflakeDatasourceSpecification.accountType,
-                    snowflakeDatasourceSpecification.organization);
+                    snowflakeDatasourceSpecification.organization,
+                    snowflakeDatasourceSpecification.role);
         }
         else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {

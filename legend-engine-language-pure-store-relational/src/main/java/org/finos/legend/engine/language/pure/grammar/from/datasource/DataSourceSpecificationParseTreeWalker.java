@@ -102,6 +102,10 @@ public class DataSourceSpecificationParseTreeWalker
         DataSourceSpecificationParserGrammar.DbOrganizationContext organizationContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbOrganization(), "organization", dsSpec.sourceInformation);
         Optional.ofNullable(organizationContext).ifPresent(organizationCtx -> dsSpec.organization = PureGrammarParserUtility.fromGrammarString(organizationCtx.STRING().getText(), true));
 
+        // role
+        DataSourceSpecificationParserGrammar.DbRoleContext roleContext= PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbRole(), "role", dsSpec.sourceInformation);
+        Optional.ofNullable(roleContext).ifPresent(roleCtx -> dsSpec.role = PureGrammarParserUtility.fromGrammarString(roleCtx.STRING().getText(), true));
+
         return dsSpec;
     }
 

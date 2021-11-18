@@ -612,6 +612,8 @@ public class HelperRelationalGrammarComposer
                     (spec.nonProxyHosts != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "nonProxyHosts: " + convertString(spec.nonProxyHosts, true) + ";\n" : "") +
                     (spec.accountType != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "accountType: " + spec.accountType + ";\n" : "") +
                     (spec.organization != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "organization: " + convertString(spec.organization, true) + ";\n" : "") +
+
+                    (spec.role != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "role: " + convertString(spec.role, true) + ";\n" : "") +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         else if (_spec instanceof BigQueryDatasourceSpecification)

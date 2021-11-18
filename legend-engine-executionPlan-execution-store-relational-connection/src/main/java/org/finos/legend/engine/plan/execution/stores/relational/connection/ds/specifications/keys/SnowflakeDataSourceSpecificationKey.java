@@ -34,9 +34,10 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     private SnowflakeAccountType accountType;
     private String organisation;
 
+    private String role;
 
 
-    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation)
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String role)
     {
         this(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers);
         this.proxyHost = proxyHost;
@@ -45,6 +46,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
 
         this.accountType = accountType == null ? null : SnowflakeAccountType.valueOf(accountType);
         this.organisation = organisation;
+        this.role = role;
     }
 
     public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers)
@@ -112,6 +114,11 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return accountType;
     }
 
+    public String getRole()
+    {
+        return role;
+    }
+
     @Override
     public String toString()
     {
@@ -127,6 +134,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 ", nonProxyHosts='" + nonProxyHosts + '\'' +
                 ", accountType='" + accountType + '\'' +
                 ", organisation='" + organisation + '\'' +
+                ", role='" + role + '\'' +
                 '}';
     }
 
@@ -144,7 +152,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 "nonProxyHosts:" + nonProxyHosts + "_" +
                 "accountType:" + accountType + "_" +
                 "organisation:" + organisation + "_" +
-                "quoteIdentifiers:" + quoteIdentifiers;
+                "quoteIdentifiers:" + quoteIdentifiers +
+                "role:" + role;
     }
 
     @Override
@@ -169,12 +178,13 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 Objects.equals(nonProxyHosts, that.nonProxyHosts) &&
                 Objects.equals(accountType, that.accountType) &&
                 Objects.equals(organisation, that.organisation) &&
-                Objects.equals(quoteIdentifiers, that.quoteIdentifiers);
+                Objects.equals(quoteIdentifiers, that.quoteIdentifiers) &&
+                Objects.equals(role, that.role);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers,proxyHost, proxyPort, nonProxyHosts, accountType, organisation);
+        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers,proxyHost, proxyPort, nonProxyHosts, accountType, organisation,role);
     }
 }

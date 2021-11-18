@@ -64,6 +64,7 @@ snowflakeDatasourceSpecification:           SNOWFLAKE
                                                         | dbNonProxyHosts
                                                         | dbAccountType
                                                         | dbOrganization
+                                                        | dbRole
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -87,6 +88,8 @@ snowflakeRegion:                            REGION COLON STRING SEMI_COLON
 cloudType:                                  CLOUDTYPE COLON STRING SEMI_COLON
 ;
 snowflakeQuotedIdentifiersIgnoreCase:       QUOTED_IDENTIFIERS_IGNORE_CASE COLON BOOLEAN SEMI_COLON
+;
+dbRole:                                     ROLE COLON STRING SEMI_COLON
 ;
 
 bigQueryDatasourceSpecification:            BIGQUERY_DSP

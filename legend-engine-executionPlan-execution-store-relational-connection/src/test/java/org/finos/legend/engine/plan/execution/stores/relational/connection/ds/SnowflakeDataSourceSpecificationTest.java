@@ -26,13 +26,13 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
 
     private SnowflakeDataSourceSpecification buildSnowflakeDataSource(String accountName, String region, String warehouse, String database, String cloudType, Boolean quoteIdentifiers)
     {
-        return buildSnowflakeDataSource(accountName, region, warehouse, database, cloudType, quoteIdentifiers, null, null, null, null, null);
+        return buildSnowflakeDataSource(accountName, region, warehouse, database, cloudType, quoteIdentifiers, null, null, null, null, null,null);
     }
 
-    private SnowflakeDataSourceSpecification buildSnowflakeDataSource(String accountName, String region, String warehouse, String database, String cloudType, Boolean quoteIdentifiers, String proxyHost, String proxyProt, String nonProxyHosts, String accountType, String organisation)
+    private SnowflakeDataSourceSpecification buildSnowflakeDataSource(String accountName, String region, String warehouse, String database, String cloudType, Boolean quoteIdentifiers, String proxyHost, String proxyProt, String nonProxyHosts, String accountType, String organisation, String role)
     {
         return new SnowflakeDataSourceSpecification(
-                new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, database, cloudType, quoteIdentifiers, proxyHost, proxyProt, nonProxyHosts, accountType, organisation),
+                new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, database, cloudType, quoteIdentifiers, proxyHost, proxyProt, nonProxyHosts, accountType, organisation,role),
                 new SnowflakeManager(),
                 new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"),
                 new RelationalExecutorInfo());
@@ -94,11 +94,43 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         Assert.assertEquals("\"LEGENDRO_WH\"", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME));
     }
 
+    @Test
+    public void testSnowflakeDataSourceSpecificationPropertiesWithRole()
+    {
+        SnowflakeDataSourceSpecification ds = buildSnowflakeDataSource("sampleAccount", "us-east-2", "LEGENDRO_WH", "SAMPLE_DB", "aws", false,null,null,null,null,null,"TEST_ROLE");
+
+        Properties properties = ds.getConnectionProperties();
+
+        Assert.assertEquals("sampleAccount", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME));
+        Assert.assertEquals("us-east-2", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION));
+        Assert.assertEquals("aws", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE));
+        Assert.assertEquals(false, properties.get(SnowflakeDataSourceSpecification.SNOWFLAKE_QUOTE_IDENTIFIERS));
+        Assert.assertEquals("SAMPLE_DB", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_DATABASE_NAME));
+        Assert.assertEquals("LEGENDRO_WH", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME));
+        Assert.assertEquals("TEST_ROLE", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ROLE));
+    }
+
+    @Test
+    public void testSnowflakeDataSourceSpecificationPropertiesWithRoleWithIdentifier()
+    {
+        SnowflakeDataSourceSpecification ds = buildSnowflakeDataSource("sampleAccount", "us-east-2", "LEGENDRO_WH", "SAMPLE_DB", "aws", true,null,null,null,null,null,"TEST_ROLE");
+
+        Properties properties = ds.getConnectionProperties();
+
+        Assert.assertEquals("sampleAccount", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME));
+        Assert.assertEquals("us-east-2", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION));
+        Assert.assertEquals("aws", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE));
+        Assert.assertEquals(true, properties.get(SnowflakeDataSourceSpecification.SNOWFLAKE_QUOTE_IDENTIFIERS));
+        Assert.assertEquals("\"SAMPLE_DB\"", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_DATABASE_NAME));
+        Assert.assertEquals("\"LEGENDRO_WH\"", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME));
+        Assert.assertEquals("\"TEST_ROLE\"", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ROLE));
+    }
+
 
     @Test
     public void testSnowflakeDataSourceSpecificationPropertiesWithProxy()
     {
-        SnowflakeDataSourceSpecification ds = buildSnowflakeDataSource("sampleAccount", "us-east-2", "LEGENDRO_WH", "SAMPLE_DB", "aws", false,"testProxy","testPort123","nonHosts",null,null);
+        SnowflakeDataSourceSpecification ds = buildSnowflakeDataSource("sampleAccount", "us-east-2", "LEGENDRO_WH", "SAMPLE_DB", "aws", false,"testProxy","testPort123","nonHosts",null,null,null);
 
         Properties properties = ds.getConnectionProperties();
 
@@ -135,7 +167,8 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
                 null,
                 null,
                 "VPS",
-                "organisationSample");
+                "organisationSample",
+                null);
 
         String url = extractURL(profile);
         Assert.assertEquals("jdbc:snowflake://organisation_division.organisationSample.us-east-1.aws.privatelink.snowflakecomputing.com", url);
@@ -170,7 +203,8 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
                 null,
                 null,
                 null,
-                null
+                null,
+                 null
         );
 
         String url = extractURL(profile);
@@ -206,6 +240,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
                 null,
                 null,
                 "MultiTenant",
+                null,
                 null
         );
 
