@@ -714,9 +714,7 @@ public class HelperRelationalGrammarComposer
                 "from: '" + nameMapper.from + "'; " +
                 "to: '" + nameMapper.to + "'; " +
                 "schemaFrom: '" + nameMapper.schema.from + "';" +
-                (nameMapper.schema.from.equals(nameMapper.schema.to)
-                        ? ""
-                        : " schemaTo: '" + nameMapper.schema.to + "';") +
+                " schemaTo: '" + nameMapper.schema.to + "';" +
                 "}";
     }
 
