@@ -360,4 +360,251 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "}\n"
         );
     }
+
+    @Test
+    public void testMultiServiceWithExecutionOptions()
+    {
+        // empty eliminated during formmatting
+        testFormat("###Service\n" +
+                        "Service meta::pure::myServiceSingle\n" +
+                        "{\n" +
+                        "  pattern: 'url/myUrl/';\n" +
+                        "  documentation: 'this is just for context';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Multi\n" +
+                        "  {\n" +
+                        "    query: |model::pure::mapping::modelToModel::test::shared::dest::Product.all()->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                        "    key: 'env';\n" +
+                        "    executions['QA']:\n" +
+                        "    {\n" +
+                        "      mapping: meta::myMapping1;\n" +
+                        "      runtime: test::runtime;\n" +
+                        "    }\n" +
+                        "    executions['UAT']:\n" +
+                        "    {\n" +
+                        "      mapping: meta::myMapping2;\n" +
+                        "      runtime: meta::myRuntime;\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "  test: Multi\n" +
+                        "  {\n" +
+                        "    tests['QA']:\n" +
+                        "    {\n" +
+                        "      data: 'moreData';\n" +
+                        "      asserts:\n" +
+                        "      [\n" +
+                        "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                        "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                        "      ];\n" +
+                        "    }\n" +
+                        "    tests['UAT']:\n" +
+                        "    {\n" +
+                        "      data: 'moreData';\n" +
+                        "      asserts:\n" +
+                        "      [\n" +
+                        "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                        "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                        "      ];\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}\n",
+                "###Service\n" +
+                        "Service meta::pure::myServiceSingle\n" +
+                        "{\n" +
+                        "  pattern: 'url/myUrl/';\n" +
+                        "  documentation: 'this is just for context';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Multi\n" +
+                        "  {\n" +
+                        "    query: |model::pure::mapping::modelToModel::test::shared::dest::Product.all()->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                        "    key: 'env';\n" +
+                        "    executions['QA']:\n" +
+                        "    {\n" +
+                        "      mapping: meta::myMapping1;\n" +
+                        "      runtime: test::runtime;\n" +
+                        "      executionOptions: [\n" +
+                        "      ];\n" +
+                        "    }\n" +
+                        "    executions['UAT']:\n" +
+                        "    {\n" +
+                        "      mapping: meta::myMapping2;\n" +
+                        "      runtime: meta::myRuntime;\n" +
+                        "      executionOptions: [\n" +
+                        "      ];\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "  test: Multi\n" +
+                        "  {\n" +
+                        "    tests['QA']:\n" +
+                        "    {\n" +
+                        "      data: 'moreData';\n" +
+                        "      asserts:\n" +
+                        "      [\n" +
+                        "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                        "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                        "      ];\n" +
+                        "    }\n" +
+                        "    tests['UAT']:\n" +
+                        "    {\n" +
+                        "      data: 'moreData';\n" +
+                        "      asserts:\n" +
+                        "      [\n" +
+                        "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                        "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                        "      ];\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}\n");
+
+        // test with some exec options
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: |model::pure::mapping::modelToModel::test::shared::dest::Product.all()->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                "    key: 'env';\n" +
+                "    executions['QA']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping1;\n" +
+                "      runtime: test::runtime;\n" +
+                "      executionOptions:\n" +
+                "      [\n" +
+                "          #{\n" +
+                "            dummyExecOption\n" +
+                "          }#,\n" +
+                "          #{\n" +
+                "            dummyExecOptionWithParam\n" +
+                "              {\n" +
+                "                 var1: Hello;\n" +
+                "                 var2: 123;\n" +
+                "                 var3: [world, bye];\n" +
+                "                 var4: { name: Bobby };\n" +
+                "              }\n" +
+                "          }#\n" +
+                "      ];\n" +
+                "    }\n" +
+                "    executions['UAT']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping2;\n" +
+                "      runtime: meta::myRuntime;\n" +
+                "      executionOptions:\n" +
+                "      [\n" +
+                "          #{\n" +
+                "            dummyExecOption\n" +
+                "          }#\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "    tests['UAT']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testSingleServiceWithExecutionOptions()
+    {
+        // empty eliminated during formmatting
+        testFormat("###Service\n" +
+                        "Service meta::pure::myServiceSingle\n" +
+                        "{\n" +
+                        "  pattern: 'url/myUrl/';\n" +
+                        "  documentation: 'this is just for context';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                        "    mapping: mySimpleMapping;\n" +
+                        "    runtime: mySimpleRuntime;\n" +
+                        "  }\n" +
+                        "  test: Single\n" +
+                        "  {\n" +
+                        "    data: 'moreThanData';\n" +
+                        "    asserts:\n" +
+                        "    [\n" +
+                        "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                        "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                        "    ];\n" +
+                        "  }\n" +
+                        "}\n",
+                "###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: mySimpleMapping;\n" +
+                "    runtime: mySimpleRuntime;\n" +
+                "    executionOptions: [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        // test with some exec options
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                        "{\n" +
+                        "  pattern: 'url/myUrl/';\n" +
+                        "  documentation: 'this is just for context';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                        "    mapping: mySimpleMapping;\n" +
+                        "    runtime: mySimpleRuntime;\n" +
+                        "    executionOptions:\n" +
+                        "    [\n" +
+                        "        #{\n" +
+                        "          dummyExecOption\n" +
+                        "        }#,\n" +
+                        "        #{\n" +
+                        "          dummyExecOptionWithParam {var1: Hello; var2: 123; var3: [world, bye]; var4: { name: Bobby };}\n" +
+                        "        }#\n" +
+                        "    ];\n" +
+                        "  }\n" +
+                        "  test: Single\n" +
+                        "  {\n" +
+                        "    data: 'moreThanData';\n" +
+                        "    asserts:\n" +
+                        "    [\n" +
+                        "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                        "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                        "    ];\n" +
+                        "  }\n" +
+                        "}\n");
+    }
 }

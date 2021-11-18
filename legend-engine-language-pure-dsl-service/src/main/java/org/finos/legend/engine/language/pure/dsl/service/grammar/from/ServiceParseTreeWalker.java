@@ -16,8 +16,10 @@ package org.finos.legend.engine.language.pure.dsl.service.grammar.from;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.dsl.service.grammar.from.executionoption.ExecutionOptionSpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
@@ -25,6 +27,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceParserGr
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
@@ -49,6 +52,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ServiceParseTreeWalker
 {
@@ -150,6 +156,8 @@ public class ServiceParseTreeWalker
             // runtime
             ServiceParserGrammar.ServiceRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(pureSingleExecContext.serviceRuntime(), "runtime", pureSingleExecution.sourceInformation);
             pureSingleExecution.runtime = this.visitRuntime(runtimeContext);
+            // execution options
+            pureSingleExecution.executionOptions = this.visitExecutionOptions(pureSingleExecContext.executionOptions());
             return pureSingleExecution;
         }
         else if (ctx.multiExec() != null)
@@ -170,6 +178,45 @@ public class ServiceParseTreeWalker
         throw new UnsupportedOperationException();
     }
 
+    private List<ExecutionOption> visitExecutionOptions(ServiceParserGrammar.ExecutionOptionsContext executionOptionsContext)
+    {
+        if (executionOptionsContext != null)
+        {
+            List<ServiceParserGrammar.ExecutionOptionContext> specifications = executionOptionsContext.executionOption();
+            List<IServiceParserExtension> extensions = IServiceParserExtension.getExtensions();
+            List<Function<ExecutionOptionSpecificationSourceCode, ExecutionOption>> parsers = ListIterate.flatCollect(extensions, IServiceParserExtension::getExtraExecutionOptionParsers);
+            return ListIterate.collect(specifications, spec -> visitExecutionOption(spec, parsers));
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private ExecutionOption visitExecutionOption(ServiceParserGrammar.ExecutionOptionContext spec, List<Function<ExecutionOptionSpecificationSourceCode, ExecutionOption>> parsers)
+    {
+        // avoid last element which should be island closer and subparsers should not be interested on it
+        List<ServiceParserGrammar.IslandSpecificationValueContext> islandCodeSpecs = spec.islandSpecificationValue().subList(0, spec.islandSpecificationValue().size() - 1);
+
+        String islandCode = Stream.concat(Stream.<ParseTree>of(spec.ISLAND_CONTENT()), islandCodeSpecs.stream())
+                .map(ParseTree::getText)
+                .collect(Collectors.joining());
+
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(spec);
+
+        ExecutionOptionSpecificationSourceCode code = new ExecutionOptionSpecificationSourceCode(
+                islandCode,
+                spec.ISLAND_CONTENT().getText().trim(),
+                sourceInformation,
+                new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation)
+                        .withLineOffset(sourceInformation.startLine - 1)
+                        .withColumnOffset(sourceInformation.startColumn + 1)
+                        .build()
+        );
+
+        return IServiceParserExtension.process(code, parsers);
+    }
+
     private Runtime visitRuntime(ServiceParserGrammar.ServiceRuntimeContext serviceRuntimeContext)
     {
         if (serviceRuntimeContext.runtimePointer() != null)
@@ -185,7 +232,7 @@ public class ServiceParseTreeWalker
         else if (serviceRuntimeContext.embeddedRuntime() != null)
         {
             StringBuilder embeddedRuntimeText = new StringBuilder();
-            for (ServiceParserGrammar.EmbeddedRuntimeContentContext fragment : serviceRuntimeContext.embeddedRuntime().embeddedRuntimeContent())
+            for (ServiceParserGrammar.IslandSpecificationValueContext fragment : serviceRuntimeContext.embeddedRuntime().islandSpecificationValue())
             {
                 embeddedRuntimeText.append(fragment.getText());
             }
@@ -216,6 +263,8 @@ public class ServiceParseTreeWalker
         // runtime
         ServiceParserGrammar.ServiceRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceRuntime(), "runtime", keyedExecutionParameter.sourceInformation);
         keyedExecutionParameter.runtime = this.visitRuntime(runtimeContext);
+        // execution options
+        keyedExecutionParameter.executionOptions = this.visitExecutionOptions(ctx.executionOptions());
         return keyedExecutionParameter;
     }
 

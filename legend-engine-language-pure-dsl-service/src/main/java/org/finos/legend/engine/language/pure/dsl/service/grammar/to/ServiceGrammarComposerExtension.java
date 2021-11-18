@@ -22,7 +22,6 @@ import org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServicePar
 import org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
-import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
@@ -32,7 +31,7 @@ import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
-public class ServiceGrammarComposerExtension implements PureGrammarComposerExtension
+public class ServiceGrammarComposerExtension implements IServiceGrammarComposerExtension
 {
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
@@ -43,11 +42,14 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
             {
                 return null;
             }
+
+            List<IServiceGrammarComposerExtension> extensions = IServiceGrammarComposerExtension.getExtensions(context);
+
             return ListIterate.collect(elements, element ->
             {
                 if (element instanceof Service)
                 {
-                    return renderService((Service) element, context);
+                    return renderService((Service) element, extensions, context);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
@@ -59,12 +61,13 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
     {
         return Lists.mutable.with((elements, context, composedSections) ->
         {
+            List<IServiceGrammarComposerExtension> extensions = IServiceGrammarComposerExtension.getExtensions(context);
             List<Service> composableElements = ListIterate.selectInstancesOf(elements, Service.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, extensions, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
-    private static String renderService(Service service, PureGrammarComposerContext context)
+    private static String renderService(Service service, List<IServiceGrammarComposerExtension> extensions, PureGrammarComposerContext context)
     {
         StringBuilder serviceBuilder = new StringBuilder().append("Service").append(" ").append(HelperDomainGrammarComposer.renderAnnotations(service.stereotypes, service.taggedValues)).append(PureGrammarComposerUtility.convertPath(service.getPath()));
         serviceBuilder.append("\n{\n");
@@ -78,7 +81,7 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         Execution execution = service.execution;
         if (execution instanceof PureExecution)
         {
-            serviceBuilder.append(getTabString()).append("execution: ").append(HelperServiceGrammarComposer.renderServiceExecution(execution, context));
+            serviceBuilder.append(getTabString()).append("execution: ").append(HelperServiceGrammarComposer.renderServiceExecution(execution, extensions, context));
         }
         else
         {

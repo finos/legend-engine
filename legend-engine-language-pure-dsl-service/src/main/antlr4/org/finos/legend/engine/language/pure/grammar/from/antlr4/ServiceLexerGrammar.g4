@@ -25,6 +25,7 @@ SERVICE_FUNCTION:                   'query';
 SERVICE_EXECUTION_KEY:              'key';
 SERVICE_MAPPING:                    'mapping';
 SERVICE_RUNTIME:                    'runtime';
+SERVICE_EXECUTION_OPTIONS:          'executionOptions';
 
 SERVICE_TEST:                       'test';
 SERVICE_TEST_TESTS:                 'tests';

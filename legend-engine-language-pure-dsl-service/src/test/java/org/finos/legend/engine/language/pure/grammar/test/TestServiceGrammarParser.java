@@ -387,6 +387,48 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    asserts: [];\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [12:9-17:3]: Field 'asserts' should be specified only once");
+        // unknown exec option
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "    executionOptions: [ \n" +
+                "         #{\n" +
+                "            unknownOption\n" +
+                "         }# ];\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [12:10-14:11]: Unsupported Execution Option type 'unknownOption'");
+        // fail on exec option subparser (proper source info on error)
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "    executionOptions: [ \n" +
+                "         #{\n" +
+                "            failingDummyExecOption\n" +
+                "         }# ];\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-34]: Error to check source info reported correctly from subparser");
     }
 
     @Test
@@ -649,6 +691,59 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [18:5-23:5]: Field 'asserts' should be specified only once");
+        // unknown exec option
+        test("###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    key: 'env';\n" +
+                "    executions['QA']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping1;\n" +
+                "      runtime: test::runtime;\n" +
+                "      executionOptions: [ #{ unknownOption }# ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts: [];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [14:27-45]: Unsupported Execution Option type 'unknownOption'");
+
+        // fail on exec option subparser (proper source info on error)
+        test("###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    key: 'env';\n" +
+                "    executions['QA']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping1;\n" +
+                "      runtime: test::runtime;\n" +
+                "      executionOptions: [ #{ failingDummyExecOption }# ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts: [];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [14:30-51]: Error to check source info reported correctly from subparser");
     }
 
     @Test

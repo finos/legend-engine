@@ -22,13 +22,12 @@ import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 
 import java.util.Collections;
 
-public class ServiceParserExtension implements PureGrammarParserExtension
+public class ServiceParserExtension implements IServiceParserExtension
 {
     public static final String NAME = "Service";
 

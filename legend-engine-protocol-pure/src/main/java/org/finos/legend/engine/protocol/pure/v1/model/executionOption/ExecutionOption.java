@@ -15,8 +15,10 @@
 package org.finos.legend.engine.protocol.pure.v1.model.executionOption;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public abstract class ExecutionOption
 {
+    public SourceInformation sourceInformation;
 }

@@ -15,9 +15,11 @@
 package org.finos.legend.engine.language.pure.dsl.service.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.HelperRuntimeGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
@@ -41,7 +43,7 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class HelperServiceGrammarComposer
 {
-    public static String renderServiceExecution(Execution execution, PureGrammarComposerContext context)
+    public static String renderServiceExecution(Execution execution, List<IServiceGrammarComposerExtension> extensions, PureGrammarComposerContext context)
     {
         int baseIndentation = 1;
         if (execution instanceof PureSingleExecution)
@@ -52,6 +54,7 @@ public class HelperServiceGrammarComposer
                     getTabString(baseIndentation + 1) + "query: " + pureSingleExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + ";\n" +
                     getTabString(baseIndentation + 1) + "mapping: " + pureSingleExecution.mapping + ";\n" +
                     renderServiceExecutionRuntime(pureSingleExecution.runtime, baseIndentation + 1, context) + "\n" +
+                    renderServiceExecutionOptions(pureSingleExecution.executionOptions, baseIndentation + 1, extensions, context) +
                     getTabString(baseIndentation) + "}\n";
         }
         else if (execution instanceof PureMultiExecution)
@@ -61,10 +64,35 @@ public class HelperServiceGrammarComposer
             appendTabString(builder, baseIndentation).append("{\n");
             appendTabString(builder, baseIndentation + 1).append("query: ").append(pureMultiExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).append(";\n");
             appendTabString(builder, baseIndentation + 1).append("key: ").append(convertString(pureMultiExecution.executionKey, true)).append(";\n");
-            builder.append(LazyIterate.collect(pureMultiExecution.executionParameters, executionParameter -> renderKeyedExecutionParameter(executionParameter, context)).makeString("\n"));
+            builder.append(LazyIterate.collect(pureMultiExecution.executionParameters, executionParameter -> renderKeyedExecutionParameter(executionParameter, extensions, context)).makeString("\n"));
             return builder.append("\n").append(getTabString(baseIndentation)).append("}\n").toString();
         }
         return unsupported(execution.getClass());
+    }
+
+    private static String renderServiceExecutionOptions(List<ExecutionOption> executionOptions, int i, List<IServiceGrammarComposerExtension> extensions, PureGrammarComposerContext currContext)
+    {
+        if (executionOptions != null && !executionOptions.isEmpty())
+        {
+            List<String> execOptionsAsString = ListIterate.collectWith(
+                    executionOptions,
+                    (executionOption, context) -> IServiceGrammarComposerExtension.process(
+                        executionOption,
+                        ListIterate.flatCollect(extensions, IServiceGrammarComposerExtension::getExtraExecutionOptionComposers),
+                        context),
+                    PureGrammarComposerContext.Builder.newInstance(currContext).withIndentationString(getTabString(i + 3)).build()
+            );
+
+            String islandEntry = getTabString(i + 2) + "#{";
+            String islandClose = getTabString(i + 2) + "}#";
+
+            return getTabString(i)
+                    + "executionOptions:\n"
+                    + getTabString(i) + "[\n" + islandEntry + "\n"
+                    + String.join("\n" + islandClose + ",\n" + islandEntry + "\n", execOptionsAsString) + "\n" + islandClose + "\n" + getTabString(i) + "];\n";
+        }
+
+        return "";
     }
 
     private static String renderServiceExecutionRuntime(Runtime runtime, int baseIndentation, PureGrammarComposerContext context)
@@ -88,13 +116,14 @@ public class HelperServiceGrammarComposer
         return unsupported(runtime.getClass(), "runtime type");
     }
 
-    private static String renderKeyedExecutionParameter(KeyedExecutionParameter keyedExecutionParameter, PureGrammarComposerContext context)
+    private static String renderKeyedExecutionParameter(KeyedExecutionParameter keyedExecutionParameter, List<IServiceGrammarComposerExtension> extensions, PureGrammarComposerContext context)
     {
         int baseIndentation = 2;
         StringBuilder builder = new StringBuilder().append(getTabString(baseIndentation)).append("executions[").append(convertString(keyedExecutionParameter.key, true)).append("]:\n");
         builder.append(getTabString(baseIndentation)).append("{\n");
         builder.append(getTabString(baseIndentation + 1)).append("mapping: ").append(keyedExecutionParameter.mapping).append(";\n");
         builder.append(renderServiceExecutionRuntime(keyedExecutionParameter.runtime, baseIndentation + 1, context)).append("\n");
+        builder.append(renderServiceExecutionOptions(keyedExecutionParameter.executionOptions, baseIndentation + 1, extensions, context));
         return builder.append(getTabString(baseIndentation)).append("}").toString();
     }
 

@@ -15,12 +15,16 @@
 package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
@@ -45,11 +49,13 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Single
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -89,7 +95,8 @@ public class HelperServiceBuilder
             return new Root_meta_legend_service_metamodel_PureSingleExecution_Impl("")
                     ._func(HelperValueSpecificationBuilder.buildLambda(pureSingleExecution.func, context))
                     ._mapping(mapping)
-                    ._runtime(runtime);
+                    ._runtime(runtime)
+                    ._executionOptions(buildExecutionOptions(pureSingleExecution.executionOptions, context));
         }
         else if (execution instanceof PureMultiExecution)
         {
@@ -108,6 +115,28 @@ public class HelperServiceBuilder
                                                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported service execution type '" + execution.getClass().getSimpleName() + "'"));
     }
 
+    private static RichIterable<? extends Root_meta_pure_executionPlan_ExecutionOption> buildExecutionOptions(List<ExecutionOption> executionOptions, CompileContext context)
+    {
+        if (executionOptions == null || executionOptions.isEmpty())
+        {
+            return null;
+        }
+        else
+        {
+            return ListIterate.collectWith(executionOptions, HelperServiceBuilder::buildExecutionOption, context);
+        }
+    }
+
+    private static Root_meta_pure_executionPlan_ExecutionOption buildExecutionOption(ExecutionOption executionOption, CompileContext context)
+    {
+        return context.getCompilerExtensions().getExtraExecutionOptionProcessors()
+                .stream()
+                .map(processor -> processor.value(executionOption, context))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new EngineException("Unsupported execution option type '" + executionOption.getClass() + "'", executionOption.sourceInformation, EngineErrorType.COMPILATION));
+    }
+
     private static Root_meta_legend_service_metamodel_KeyedExecutionParameter processServiceKeyedExecutionParameter(KeyedExecutionParameter keyedExecutionParameter, CompileContext context, Set<String> executionKeyValues)
     {
         Mapping mapping = context.resolveMapping(keyedExecutionParameter.mapping, keyedExecutionParameter.mappingSourceInformation);
@@ -121,7 +150,8 @@ public class HelperServiceBuilder
         return new Root_meta_legend_service_metamodel_KeyedExecutionParameter_Impl("")
                 ._key(keyedExecutionParameter.key)
                 ._mapping(mapping)
-                ._runtime(runtime);
+                ._runtime(runtime)
+                ._executionOptions(buildExecutionOptions(keyedExecutionParameter.executionOptions, context));
     }
     public static Root_meta_legend_service_metamodel_Test processServiceTest(ServiceTest serviceTest, CompileContext context, Execution execution)
     {

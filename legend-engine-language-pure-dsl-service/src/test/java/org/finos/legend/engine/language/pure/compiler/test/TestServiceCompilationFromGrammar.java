@@ -201,7 +201,34 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    ];\n" +
                 "  }\n" +
                 "}\n", "COMPILATION error at [29:14-27]: Can't find mapping 'test::mapping2'");
-        // test service execution runtime pointer
+        // test unknown exec option
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::class[1]|$src.prop1;\n" +
+                "    mapping: test::mapping;\n" +
+                "    runtime: test::runtime;\n" +
+                "    executionOptions:\n" +
+                "    [\n" +
+                "       #{dummyExecOption}#,\n" +
+                "       #{dummyExecOptionWithParam {var1: 123}}#\n" +
+                "    ];\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [34:8-47]: Unsupported execution option type 'class org.finos.legend.engine.language.pure.org.finos.legend.engine.language.pure.dsl.service.test.executionoption.DummyExecOptionWithParameters'");
+        // test service execution runtime pointer00
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
                 "{\n" +
@@ -479,6 +506,37 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  }\n" +
                 "}\n", "COMPILATION error at [35:5-39:5]: Execution parameter with key 'PROD' already existed");
+        // check unknown exec option
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "    key: 'env';\n" +
+                "    executions['PROD']:\n" +
+                "    {\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "      executionOptions:\n" +
+                "      [\n" +
+                "          #{dummyExecOption}#,\n" +
+                "          #{dummyExecOptionWithParam {var1: 123}}#\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['PROD']:\n" +
+                "    {\n" +
+                "      data: 'testData';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [37:11-50]: Unsupported execution option type 'class org.finos.legend.engine.language.pure.org.finos.legend.engine.language.pure.dsl.service.test.executionoption.DummyExecOptionWithParameters'");
         // check duplicated test key values
         test(resource + "###Service\n" +
                 "Service test::Service\n" +

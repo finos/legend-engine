@@ -16,7 +16,7 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE | IMPORT
                                         | SERVICE_SINGLE | SERVICE_MULTI
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
-                                        | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
+                                        | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING | SERVICE_EXECUTION_OPTIONS
                                         | SERVICE_TEST | SERVICE_TEST_TESTS | SERVICE_DATA | SERVICE_ASSERTS
 ;
 
@@ -71,6 +71,14 @@ serviceFunc:                            SERVICE_FUNCTION COLON combinedExpressio
 ;
 serviceExec:                            SERVICE_EXECUTION COLON (singleExec|multiExec)
 ;
+
+executionOptions:                       SERVICE_EXECUTION_OPTIONS COLON
+                                            BRACKET_OPEN
+                                                (executionOption (COMMA executionOption)*)?
+                                            BRACKET_CLOSE
+                                            SEMI_COLON
+;
+
 singleExec:                             SERVICE_SINGLE
                                             BRACE_OPEN
                                                 (
@@ -78,6 +86,7 @@ singleExec:                             SERVICE_SINGLE
                                                     | serviceMapping
                                                     | serviceRuntime
                                                 )*
+                                                executionOptions?
                                             BRACE_CLOSE
 ;
 multiExec:                              SERVICE_MULTI
@@ -95,6 +104,7 @@ execParameter:                          execParameterSignature COLON
                                                     serviceMapping
                                                     | serviceRuntime
                                                 )*
+                                                executionOptions?
                                             BRACE_CLOSE
 ;
 execParameterSignature:                 SERVICE_EXECUTION_EXECUTIONS BRACKET_OPEN STRING BRACKET_CLOSE
@@ -107,9 +117,11 @@ serviceRuntime:                         SERVICE_RUNTIME COLON (runtimePointer | 
 ;
 runtimePointer:                         qualifiedName SEMI_COLON
 ;
-embeddedRuntime:                        ISLAND_OPEN (embeddedRuntimeContent)* SEMI_COLON
+embeddedRuntime:                        ISLAND_OPEN (islandSpecificationValue)* SEMI_COLON
 ;
-embeddedRuntimeContent:                 ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+executionOption:                        ISLAND_OPEN ISLAND_CONTENT (islandSpecificationValue)*
+;
+islandSpecificationValue:               ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
 
 
