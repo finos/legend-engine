@@ -45,6 +45,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.test.runner.service.RichServiceTestResult;
 import org.finos.legend.engine.test.runner.service.ServiceTestRunner;
@@ -71,6 +73,7 @@ public class ServiceModeling
     {
         this.modelManager = modelManager;
         this.deploymentMode = deploymentMode;
+        MetricsHandler.createMetrics(this.getClass());
     }
 
     public Root_meta_legend_service_metamodel_Service compileService(Service service, CompileContext compileContext)
@@ -88,15 +91,18 @@ public class ServiceModeling
         return compiledService;
     }
 
+    @Prometheus(name = "service test model resolve", doc = "Model resolution duration summary within service test execution")
     public List<TestResult> testService(MutableList<CommonProfile> profiles, PureModelContext context)
     {
         try
         {
+            long start = System.currentTimeMillis();
             PureModelContextData data = ((PureModelContextData) context).shallowCopy();
             Service service = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
             PureModelContextData dataWithoutService = PureModelContextData.newBuilder().withOrigin(data.getOrigin()).withSerializer(data.getSerializer()).withElements(LazyIterate.select(data.getElements(), e -> e != service)).build();
             PureModel pureModel  = new PureModel(dataWithoutService, profiles, deploymentMode);
             Pair<PureModelContextData, PureModel> pureModelAndData  = Tuples.pair(dataWithoutService, pureModel);
+            MetricsHandler.observe("service test model resolve", start, System.currentTimeMillis());
 
             if (service.execution instanceof PureMultiExecution)
             {
