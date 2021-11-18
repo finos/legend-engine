@@ -242,7 +242,7 @@ public class HelperServiceStoreClassMappingBuilder
     {
         Root_meta_external_store_service_metamodel_mapping_EmbeddedServiceStoreSetImplementation propertyMapping = new Root_meta_external_store_service_metamodel_mapping_EmbeddedServiceStoreSetImplementation_Impl("");
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) property._genericType()._rawType();
-        String id = getElementFullPath(property._genericType()._rawType(), context.pureModel.getExecutionSupport()).replaceAll("::", "_");
+        String id = owner._id() + "_" + property._name();
 
         propertyMapping._class(pureClass);
         propertyMapping._id(id);
