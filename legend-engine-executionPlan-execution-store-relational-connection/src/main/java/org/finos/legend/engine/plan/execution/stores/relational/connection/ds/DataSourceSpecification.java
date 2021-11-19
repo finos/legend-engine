@@ -20,7 +20,6 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.list.MutableList;
@@ -28,13 +27,17 @@ import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.map.mutable.MapAdapter;
+import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
@@ -43,6 +46,7 @@ import javax.security.auth.Subject;
 import javax.sql.DataSource;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
+import java.util.Optional;
 import java.util.Properties;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -110,8 +114,6 @@ public abstract class DataSourceSpecification
         return new ConnectionKey(this.datasourceKey, this.authenticationStrategy.getKey());
     }
 
-    protected abstract DataSource buildDataSource(MutableList<CommonProfile> profiles);
-
     public org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationStatistics getDataSourceSpecificationStatistics()
     {
         return dataSourceSpecificationStatistics;
@@ -140,48 +142,46 @@ public abstract class DataSourceSpecification
 
     public Connection getConnectionUsingProfiles(MutableList<CommonProfile> profiles)
     {
-        Subject subject = ProfileManagerHelper.extractSubject(profiles);
-        Connection c;
-        if (subject == null)
-        {
-            LOGGER.info("subject is absent");
-            String principal = this.authenticationStrategy.getAlternativePrincipal(profiles);
-            String username = getUserNameFromPrincipal(principal);
-            LOGGER.info("getting connection for username {} using profiles", username);
-            c = getConnection(
-                    null,
-                    profiles,
-                    principal,
-                    () -> connectionPoolByUser.getIfAbsentPutWithKey(getUserNameFromPrincipal(principal), p -> new DataSourceWithStatistics(this.buildDataSource(profiles)))
-            );
-        }
-        else
-        {
-            c = getConnectionUsingSubject(subject);
-        }
-        return c;
+         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        return this.getConnectionUsingIdentity(identity, Optional.empty());
     }
 
     public Connection getConnectionUsingSubject(Subject subject)
     {
-        LOGGER.info("subject is present, using privileged action");
-        String principal = SubjectTools.getPrincipal(subject);
-        String username = getUserNameFromPrincipal(principal);
-        LOGGER.info("getting connection for username {} by subject", username);
-        return getConnection(
-                subject,
-                null,
-                principal,
-                () -> connectionPoolByUser.getIfAbsentPutWithKey(username, getDataSourceWithStatisticsFunction(subject))
-        );
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(subject);
+        return this.getConnectionUsingIdentity(identity, Optional.empty());
     }
 
-    private Function<String, DataSourceWithStatistics> getDataSourceWithStatisticsFunction(Subject subject)
+    public Connection getConnectionUsingIdentity(Identity identity, Optional<CredentialSupplier> databaseCredentialSupplierHolder)
     {
-        return p -> new DataSourceWithStatistics(Subject.doAs(subject, (PrivilegedAction<DataSource>)() -> this.buildDataSource(null)));
+        String principal = identity.getName();
+        Optional<LegendKerberosCredential> kerberosCredentialHolder = identity.getCredential(LegendKerberosCredential.class);
+
+        Function0<DataSourceWithStatistics> dataSourceBuilder;
+        if (kerberosCredentialHolder.isPresent())
+        {
+            dataSourceBuilder = () -> new DataSourceWithStatistics(KerberosUtils.doAs(identity, (PrivilegedAction<DataSource>) () -> this.buildDataSource(identity)));
+        }
+        else
+        {
+            dataSourceBuilder = () -> new DataSourceWithStatistics(this.buildDataSource(identity));
+        }
+
+        return getConnection(
+                identity,
+                principal,
+                databaseCredentialSupplierHolder,
+                dataSourceBuilder);
     }
 
-    protected Connection getConnection(Subject subject, MutableList<CommonProfile> profiles, String principal, Function0<org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics> exec)
+    public void cacheConnectionState(Identity identity, Optional<CredentialSupplier> databaseCredentialSupplier)
+    {
+        String poolName = poolNameFor(identity);
+        ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
+        connectionStateManager.registerState(poolName, identity, databaseCredentialSupplier);
+    }
+
+    protected Connection getConnection(Identity identity, String principal, Optional<CredentialSupplier> databaseCredentialSupplier, Function0<DataSourceWithStatistics> dataSourceBuilder)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Get Connection").startActive(true))
         {
@@ -192,16 +192,18 @@ public abstract class DataSourceSpecification
             LOGGER.debug("connectionPoolByUser Size {} Keys {}", connectionPoolByUser.size(), connectionPoolByUser.keySet());
             // ---------------------
 
+            cacheConnectionState(identity, databaseCredentialSupplier);
             DataSourceWithStatistics dataSourceWithStatistics = connectionPoolByUser.get(principal);
             if (dataSourceWithStatistics == null)
             {
-                synchronized (keyLockManager.getLock(getUserNameFromPrincipal(principal)))
+                synchronized (keyLockManager.getLock(identity.getName()))
                 {
                     dataSourceWithStatistics = connectionPoolByUser.get(principal);
                     if (dataSourceWithStatistics == null)
                     {
                         LOGGER.info("Pool entry not found for [{}] for datasource [{}], creating one", principal, this);
-                        dataSourceWithStatistics = exec.value();
+                        dataSourceWithStatistics = dataSourceBuilder.value();
+                        connectionPoolByUser.put(principal, dataSourceWithStatistics);
                     }
                 }
             }
@@ -214,7 +216,7 @@ public abstract class DataSourceSpecification
                 LOGGER.info("Found pool for [{}] in datasource [{}] : pool Name [{}]", principal, dataSourceWithStatistics.getDataSource(), poolName);
                 LOGGER.info("Principal [{}] has requested [{}] connections for pool [{}]", principal, requests, poolName);
                 // -------------------------------
-                return authenticationStrategy.getConnection(dataSourceWithStatistics, subject, profiles);
+                return authenticationStrategy.getConnection(dataSourceWithStatistics, identity);
             }
             catch (ConnectionException ce)
             {
@@ -230,21 +232,29 @@ public abstract class DataSourceSpecification
         return ((HikariDataSource)dataSource).getPoolName();
     }
 
-    protected HikariDataSource buildDataSource(String host, int port, String databaseName, MutableList<CommonProfile> profiles)
+    protected String poolNameFor(Identity identity)
+    {
+        return "DBPool_" + this.datasourceKey.shortId() + "_" + this.authenticationStrategy.getKey().shortId() + "_" + identity.getName();
+    }
+
+    protected DataSource buildDataSource(Identity identity)
+    {
+        return this.buildDataSource(null, -1, null, identity);
+    }
+
+    protected HikariDataSource buildDataSource(String host, int port, String databaseName, Identity identity)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Create Pool").startActive(true))
         {
             Properties properties = new Properties();
-            String subject = (SubjectTools.getCurrentUsername() != null ? SubjectTools.getCurrentUsername() : this.authenticationStrategy.getAlternativePrincipal(profiles));
-            String poolName = "DBPool_" + this.datasourceKey.shortId() + "_" + this.authenticationStrategy.getKey().shortId() + "_" + subject;
-            properties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy));
+            String poolName = poolNameFor(identity);
+            properties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy, identity));
             properties.putAll(this.extraDatasourceProperties);
 
             properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_KEY, this.authenticationStrategy.getKey().shortId());
-            properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_PROFILE_BY_POOL, poolName);
-            // The profiles are associated with the Pool as the Pool can create connections by itself in its own threads.
-            AuthenticationStrategy.registerProfilesByPool(poolName, profiles);
-            LOGGER.info("Building pool [{}] for [{}] ", poolName, subject);
+            properties.put(ConnectionStateManager.POOL_NAME_KEY, poolName);
+
+            LOGGER.info("Building pool [{}] for [{}] ", poolName, identity.getName());
             HikariConfig jdbcConfig = new HikariConfig();
             jdbcConfig.setDriverClassName(databaseManager.getDriver());
             jdbcConfig.setPoolName(poolName);
@@ -252,9 +262,6 @@ public abstract class DataSourceSpecification
             jdbcConfig.setMinimumIdle(HIKARICP_MIN_IDLE);
             jdbcConfig.setJdbcUrl(this.databaseManager.buildURL(host, port, databaseName, properties, this.authenticationStrategy));
             jdbcConfig.setConnectionTimeout(authenticationStrategy.getConnectionTimeout());
-            jdbcConfig.setUsername(authenticationStrategy.getLogin());
-            jdbcConfig.setPassword(authenticationStrategy.getPassword());
-            jdbcConfig.addDataSourceProperty("poolSubject", subject);
             jdbcConfig.addDataSourceProperty("cachePrepStmts", false);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSize", 0);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
@@ -275,12 +282,6 @@ public abstract class DataSourceSpecification
             LOGGER.info("New Connection Pool created {}", ds);
             return ds;
         }
-    }
-
-    //make public in to legend subjectTools
-    private static String getUserNameFromPrincipal(String principal)
-    {
-        return principal != null ? principal.split("@")[0] : null;
     }
 
     private static class KeyLockManager<K>

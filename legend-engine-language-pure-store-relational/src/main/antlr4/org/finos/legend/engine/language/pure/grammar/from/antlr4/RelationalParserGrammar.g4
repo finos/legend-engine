@@ -115,7 +115,9 @@ view:                                       VIEW relationalIdentifier
                                                     (viewColumnMapping (COMMA viewColumnMapping)*)?
                                                 PAREN_CLOSE
 ;
-viewFilterMapping:                          FILTER_CMD (databasePointer joinSequence PIPE databasePointer)? identifier
+viewFilterMapping:                          FILTER_CMD (viewFilterMappingJoin | databasePointer)? identifier
+;
+viewFilterMappingJoin:                      databasePointer joinSequence PIPE databasePointer
 ;
 viewGroupBy:                                GROUP_BY_CMD
                                                 PAREN_OPEN

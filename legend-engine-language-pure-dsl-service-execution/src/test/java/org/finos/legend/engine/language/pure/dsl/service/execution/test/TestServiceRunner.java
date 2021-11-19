@@ -253,6 +253,49 @@ public class TestServiceRunner
         assertCacheStats(addressCache, 5, 12, 7, 5);
     }
 
+    @Test
+    public void testServiceRunnerGraphFetchBatchMemoryLimit()
+    {
+        ServiceRunnerInput serviceRunnerInput1 = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList("{\"fullName\": \"Peter Smith\"}"))
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        ServiceRunnerInput serviceRunnerInput2 = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList("[{\"fullName\": \"Peter Smith\"}, {\"fullName\": \"John Hill\"}]"))
+                .withSerializationFormat(SerializationFormat.PURE);
+
+
+        // Service with default batch size (1 in case of M2M)
+        SimpleM2MServiceRunner simpleM2MServiceRunner = new SimpleM2MServiceRunner();
+
+        simpleM2MServiceRunner.setGraphFetchBatchMemoryLimit(1);
+        Exception e1 = Assert.assertThrows(RuntimeException.class, () -> simpleM2MServiceRunner.run(serviceRunnerInput1));
+        Assert.assertEquals("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.", e1.getMessage());
+
+        simpleM2MServiceRunner.setGraphFetchBatchMemoryLimit(200);
+        Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", simpleM2MServiceRunner.run(serviceRunnerInput1));
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"}]", simpleM2MServiceRunner.run(serviceRunnerInput2));
+
+
+        // Service which has graph fetch batch size set
+        SimpleM2MServiceRunnerWthGraphFetchBatchSize simpleM2MServiceRunnerWthGraphFetchBatchSize = new SimpleM2MServiceRunnerWthGraphFetchBatchSize();
+
+        simpleM2MServiceRunnerWthGraphFetchBatchSize.setGraphFetchBatchMemoryLimit(1);
+        Exception e2 = Assert.assertThrows(RuntimeException.class, () -> simpleM2MServiceRunnerWthGraphFetchBatchSize.run(serviceRunnerInput1));
+        Assert.assertEquals("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.", e2.getMessage());
+
+        simpleM2MServiceRunnerWthGraphFetchBatchSize.setGraphFetchBatchMemoryLimit(200);
+        Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", simpleM2MServiceRunnerWthGraphFetchBatchSize.run(serviceRunnerInput1));
+
+        Exception e3 = Assert.assertThrows(RuntimeException.class, () -> simpleM2MServiceRunnerWthGraphFetchBatchSize.run(serviceRunnerInput2));
+        Assert.assertEquals("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.", e3.getMessage());
+
+        simpleM2MServiceRunnerWthGraphFetchBatchSize.setGraphFetchBatchMemoryLimit(400);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"}]", simpleM2MServiceRunnerWthGraphFetchBatchSize.run(serviceRunnerInput2));
+    }
+
     private static class SimpleM2MServiceRunner extends AbstractServicePlanExecutor
     {
         SimpleM2MServiceRunner()
@@ -283,6 +326,23 @@ public class TestServiceRunner
             newExecutionBuilder()
                     .withParameter("input1", serviceRunnerInput.getArgs().get(0))
                     .withParameter("input2", serviceRunnerInput.getArgs().get(1))
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
+    }
+
+    private static class SimpleM2MServiceRunnerWthGraphFetchBatchSize extends AbstractServicePlanExecutor
+    {
+        SimpleM2MServiceRunnerWthGraphFetchBatchSize()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", "test::functionWithBatchSize"), true);
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            newSingleParameterExecutionBuilder()
+                    .withParameter("input", serviceRunnerInput.getArgs().get(0))
                     .withServiceRunnerInput(serviceRunnerInput)
                     .executeToStream(outputStream);
         }

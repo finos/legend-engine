@@ -12,25 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.shared.core.identity;
-
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+package org.finos.legend.engine.shared.core.identity.factory;
 
 import javax.security.auth.Subject;
 
-public class SubjectIdentity extends AbstractIdentity
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.pac4j.core.profile.CommonProfile;
+
+public interface IdentityFactory
 {
-    private final Subject subject;
+    Identity makeIdentity(Subject subject);
 
-    public SubjectIdentity(Subject subject)
-    {
-        super(SubjectTools.getPrincipal(subject));
-        this.subject = subject;
-    }
+    Identity makeIdentity(MutableList<CommonProfile> profiles);
 
-    @Override
-    public Subject getSubject()
-    {
-        return this.subject;
-    }
+    Identity makeIdentityForTesting(String name);
 }

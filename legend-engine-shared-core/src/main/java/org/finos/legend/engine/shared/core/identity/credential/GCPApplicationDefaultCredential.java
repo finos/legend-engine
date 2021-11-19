@@ -12,19 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.shared.core.identity;
+package org.finos.legend.engine.shared.core.identity.credential;
 
-import javax.security.auth.Subject;
+import org.finos.legend.engine.shared.core.identity.Credential;
 
-public class IdentityFactory
+/*
+    This is a no-op credential that is used to indicate the use of GCP credentials that are natively available in the environment.
+
+    See the following docs for details :
+    1/ https://cloud.google.com/bigquery/docs/authentication
+    2/ https://cloud.google.com/docs/authentication/production
+ */
+public class GCPApplicationDefaultCredential implements Credential
 {
-    private IdentityFactory()
-    {
-
-    }
-
-    public static Identity newSubjectIdentity(Subject subject)
-    {
-        return new SubjectIdentity(subject);
-    }
 }

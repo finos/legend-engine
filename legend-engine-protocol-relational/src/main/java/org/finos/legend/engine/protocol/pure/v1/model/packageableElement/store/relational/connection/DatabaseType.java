@@ -17,6 +17,5 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 public enum DatabaseType
 {
     DB2, H2, MemSQL, Sybase, SybaseIQ, Composite, Postgres, SqlServer, Hive,
-    Snowflake, Presto,
-    BigQuery
+    Snowflake, Presto, BigQuery, Redshift
 }

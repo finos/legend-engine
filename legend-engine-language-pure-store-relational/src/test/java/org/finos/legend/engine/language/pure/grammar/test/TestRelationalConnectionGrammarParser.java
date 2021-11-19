@@ -207,6 +207,31 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                 "       passPhraseVaultReference : 'pass';\n" +
                 "  };\n" +
                 "}\n", "PARSER error at [13:3-18:4]: Field 'passPhraseVaultReference' should be specified only once");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: MultiTenant;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "    role: 'sampleRole';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {" +
+                "       publicUserName: 'name';\n" +
+                "       privateKeyVaultReference: 'name';\n" +
+                "       passPhraseVaultReference: 'name';\n" +
+                "  };\n" +
+                "}\n");
     }
 
     @Test

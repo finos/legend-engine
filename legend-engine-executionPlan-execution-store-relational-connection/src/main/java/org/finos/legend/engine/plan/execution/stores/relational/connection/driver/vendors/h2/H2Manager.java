@@ -44,12 +44,6 @@ public class H2Manager extends DatabaseManager
     }
 
     @Override
-    public Properties getExtraDataSourceProperties(AuthenticationStrategy authenticationStrategy)
-    {
-        return new Properties();
-    }
-
-    @Override
     public String getDriver()
     {
         return "org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Driver";
