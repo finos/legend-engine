@@ -245,6 +245,75 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    public void testMissingColumnOnMilestoning()
+    {
+        // PROCESSING_IN missing
+        test("###Relational\n" +
+                "Database app::db\n" +
+                "(\n" +
+                "    Table personTable" +
+                "    (" +
+                "       milestoning(processing(PROCESSING_IN = dummyIn, PROCESSING_OUT = dummyOut))" +
+                "       ID INT PRIMARY KEY, MANAGERID INT, dummyOut TIMESTAMP\n" +
+                "    )\n" +
+                ")",
+                "COMPILATION error at [4:47-108]: Milestone column 'dummyIn' not found on table definition"
+            );
+
+        // PROCESSING_OUT missing
+        test("###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "    Table personTable" +
+                        "    (" +
+                        "       milestoning(processing(PROCESSING_IN = dummyIn, PROCESSING_OUT = dummyOut))" +
+                        "       ID INT PRIMARY KEY, MANAGERID INT, dummyIn TIMESTAMP\n" +
+                        "    )\n" +
+                        ")",
+                "COMPILATION error at [4:47-108]: Milestone column 'dummyOut' not found on table definition"
+        );
+
+        // BUS_FROM missing
+        test("###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "    Table personTable" +
+                        "    (" +
+                        "       milestoning(business(BUS_FROM = dummyIn, BUS_THRU = dummyOut))" +
+                        "       ID INT PRIMARY KEY, MANAGERID INT, dummyOut DATE\n" +
+                        "    )\n" +
+                        ")",
+                "COMPILATION error at [4:56-94]: Milestone column 'dummyIn' not found on table definition"
+        );
+
+        // BUS_THRU missing
+        test("###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "    Table personTable" +
+                        "    (" +
+                        "       milestoning(business(BUS_FROM = dummyIn, BUS_THRU = dummyOut))" +
+                        "       ID INT PRIMARY KEY, MANAGERID INT, dummyIn DATE\n" +
+                        "    )\n" +
+                        ")",
+                "COMPILATION error at [4:56-94]: Milestone column 'dummyOut' not found on table definition"
+        );
+
+        // BUS_SNAPSHOT_DATE missing
+        test("###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "    Table personTable" +
+                        "    (" +
+                        "       milestoning(business(BUS_SNAPSHOT_DATE = dummy))" +
+                        "       ID INT PRIMARY KEY, MANAGERID INT\n" +
+                        "    )\n" +
+                        ")",
+                "COMPILATION error at [4:56-80]: Milestone column 'dummy' not found on table definition"
+        );
+    }
+
+    @Test
     public void testMissingJoin()
     {
         test("###Relational\n" +
