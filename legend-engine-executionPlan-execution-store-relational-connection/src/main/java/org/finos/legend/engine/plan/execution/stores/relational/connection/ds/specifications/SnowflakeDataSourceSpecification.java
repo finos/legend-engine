@@ -14,17 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.eclipse.collections.api.list.MutableList;
+import java.util.Optional;
+import java.util.Properties;
+
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
-import org.pac4j.core.profile.CommonProfile;
-
-import javax.sql.DataSource;
-import java.util.Optional;
-import java.util.Properties;
 
 public class SnowflakeDataSourceSpecification extends DataSourceSpecification
 {
@@ -86,12 +83,6 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
     {
         this(key, databaseManager, authenticationStrategy, new Properties(), relationalExecutorInfo);
-    }
-
-    @Override
-    protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
-    {
-        return this.buildDataSource(null, -1, null, profiles);
     }
 
     public static String updateSnowflakeIdentifiers(String identifier, boolean quoteIdentifiers)

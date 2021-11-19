@@ -12,20 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.shared.core.identity;
+package org.finos.legend.engine.authentication.vaults;
 
-public abstract class AbstractIdentity implements Identity
+import java.util.HashMap;
+import java.util.Map;
+
+import org.finos.legend.engine.shared.core.vault.VaultImplementation;
+
+public class InMemoryVaultForTesting implements VaultImplementation
 {
-    private final String user;
+    private Map<String, String> map = new HashMap<>();
 
-    public AbstractIdentity(String user)
+    @Override
+    public String getValue(String key)
     {
-        this.user = user;
+        return map.get(key);
     }
 
     @Override
-    public String getUser()
+    public boolean hasValue(String key)
     {
-        return this.user;
+        return map.containsKey(key);
+    }
+
+    public void setValue(String key, String value)
+    {
+        map.put(key, value);
     }
 }

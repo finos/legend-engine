@@ -453,18 +453,24 @@ public class RelationalParseTreeWalker
         FilterPointer filterPointer = new FilterPointer();
         filterPointer.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         filterMapping.filter = filterPointer;
-        String database = null;
-        if (ctx.databasePointer() != null)
+        if(ctx.viewFilterMappingJoin() != null)
         {
-            String _database = this.visitDatabasePointer(ctx.databasePointer(0));
-            if (ctx.joinSequence() != null)
-            {
-                filterMapping.joins = this.visitJoinSequence(ctx.joinSequence(), _database, ScopeInfo.Builder.newInstance().withDatabase(_database).build());
-            }
-            database = this.visitDatabasePointer(ctx.databasePointer(1));
+            this.visitViewFilterMappingJoin(ctx.viewFilterMappingJoin(), filterMapping, filterPointer);
         }
-        filterPointer.db = database;
+        else
+        {
+            filterPointer.db = ctx.databasePointer() == null ? null : this.visitDatabasePointer(ctx.databasePointer());
+        }
         return filterMapping;
+    }
+
+    private void visitViewFilterMappingJoin(RelationalParserGrammar.ViewFilterMappingJoinContext ctx, FilterMapping filterMapping, FilterPointer filterPointer)
+    {
+        String database = this.visitDatabasePointer(ctx.databasePointer(0));
+        if (ctx.joinSequence() != null) {
+            filterMapping.joins = this.visitJoinSequence(ctx.joinSequence(), database, ScopeInfo.Builder.newInstance().withDatabase(database).build());
+        }
+        filterPointer.db = this.visitDatabasePointer(ctx.databasePointer(1));
     }
 
     public ColumnMapping visitViewColumnMapping(RelationalParserGrammar.ViewColumnMappingContext ctx, List<String> primaryKeys, ScopeInfo scopeInfo)

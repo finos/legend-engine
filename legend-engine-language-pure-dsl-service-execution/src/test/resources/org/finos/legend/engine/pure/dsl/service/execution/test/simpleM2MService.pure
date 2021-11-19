@@ -28,6 +28,11 @@ function test::function(input: String[1]): String[1]
    test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
 }
 
+function test::functionWithBatchSize(input: String[1]): String[1]
+{
+   test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#, 10)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
 
 ###Mapping
 Mapping test::Map

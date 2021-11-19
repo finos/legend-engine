@@ -20,6 +20,18 @@ public class EmbeddedH2DatasourceSpecification extends DatasourceSpecification
     public String directory;
     public boolean autoServerMode;
 
+    public EmbeddedH2DatasourceSpecification()
+    {
+        // jackson
+    }
+
+    public EmbeddedH2DatasourceSpecification(String databaseName, String directory, boolean autoServerMode)
+    {
+        this.databaseName = databaseName;
+        this.directory = directory;
+        this.autoServerMode = autoServerMode;
+    }
+
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)
     {

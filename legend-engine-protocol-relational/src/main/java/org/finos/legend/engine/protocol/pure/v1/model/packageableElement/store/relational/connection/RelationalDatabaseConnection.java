@@ -29,6 +29,18 @@ public class RelationalDatabaseConnection extends DatabaseConnection
     public DatabaseType databaseType;
     public List<PostProcessor> postProcessors = Collections.emptyList();
 
+    public RelationalDatabaseConnection()
+    {
+        // jackson
+    }
+
+    public RelationalDatabaseConnection(DatasourceSpecification datasourceSpecification, AuthenticationStrategy authenticationStrategy, DatabaseType databaseType)
+    {
+        this.datasourceSpecification = datasourceSpecification;
+        this.authenticationStrategy = authenticationStrategy;
+        this.databaseType = databaseType;
+    }
+
     @Override
     public <T> T accept(ConnectionVisitor<T> connectionVisitor)
     {

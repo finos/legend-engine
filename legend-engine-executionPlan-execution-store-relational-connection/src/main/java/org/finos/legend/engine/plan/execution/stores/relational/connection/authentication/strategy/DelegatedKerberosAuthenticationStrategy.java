@@ -14,18 +14,18 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
 
+import java.sql.Connection;
+import java.util.Optional;
+import java.util.Properties;
+
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DelegatedKerberosAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
-import org.pac4j.core.profile.CommonProfile;
-
-import javax.security.auth.Subject;
-import java.sql.Connection;
-import java.util.Properties;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
 public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenticationStrategy
 {
@@ -42,34 +42,26 @@ public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenti
     }
 
     @Override
-    protected Connection getConnectionImpl(DataSourceWithStatistics ds, Subject subject, MutableList<CommonProfile> profiles) throws ConnectionException
+    public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
-        return getConnectionUsingKerberos(ds.getDataSource(), subject);
+        Optional<LegendKerberosCredential> kerberosHolder = identity.getCredential(LegendKerberosCredential.class);
+        if (!kerberosHolder.isPresent())
+        {
+            throw new UnsupportedOperationException("Expected Kerberos credential was not found");
+        }
+        return getConnectionUsingKerberos(ds.getDataSource(), kerberosHolder.get().getSubject());
     }
 
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
-        Pair<String, Properties> res = super.handleConnection(url, properties, databaseManager);
-        return Tuples.pair(res.getOne(), res.getTwo());
+        return Tuples.pair(url, properties);
     }
 
     @Override
     public DelegatedKerberosAuthenticationStrategyKey getKey()
     {
         return new DelegatedKerberosAuthenticationStrategyKey(this.serverPrincipal);
-    }
-
-    @Override
-    public String getLogin()
-    {
-        return null;
-    }
-
-    @Override
-    public String getPassword()
-    {
-        return null;
     }
 
     public String getServerPrincipal()
