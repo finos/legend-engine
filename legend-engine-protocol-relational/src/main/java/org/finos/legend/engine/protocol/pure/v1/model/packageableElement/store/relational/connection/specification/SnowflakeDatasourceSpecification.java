@@ -15,6 +15,8 @@ public class SnowflakeDatasourceSpecification extends DatasourceSpecification
     public String organization;
     public String accountType;
 
+    public String role;
+
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)
     {

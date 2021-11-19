@@ -27,6 +27,7 @@ PROXYPORT:                                  'proxyPort';
 NONPROXYHOSTS:                              'nonProxyHosts';
 ACCOUNTTYPE:                                'accountType';
 ORGANIZATION:                               'organization';
+ROLE:                                       'role';
 
 BIGQUERY_DSP:                               'BigQuery';
 PROJECT:                                    'projectId';
