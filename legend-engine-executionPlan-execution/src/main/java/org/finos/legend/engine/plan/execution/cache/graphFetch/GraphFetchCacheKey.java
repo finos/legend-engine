@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.cache.graphFetch;
 
-public abstract class GraphFetchCacheKey
+import java.io.Serializable;
+
+public abstract class GraphFetchCacheKey implements Serializable
 {
     protected abstract int hash();
 
