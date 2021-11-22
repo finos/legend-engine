@@ -99,8 +99,8 @@ public class TestParametersValidation
         Function<Object, ?> normalizer = x -> (x instanceof Float) ? ((Float) x).doubleValue() : x;
         testRequiredToOneParameter(
                 "Float",
-                Arrays.asList(5.0, 6.12d, -2.71f, Double.MAX_VALUE, Double.MIN_VALUE, Float.MAX_VALUE, "-1.0", "5.234", "678978678"),
-                Arrays.asList(true, false, "the quick brown fox", "jumped over the lazy dog", Instant.now(), LocalDate.now(), 5, 4, 3),
+                Arrays.asList(5.0, 6.12d, -2.71f, Double.MAX_VALUE, Double.MIN_VALUE, Float.MAX_VALUE, "-1.0", "5.234", "678978678", 5, 4, Long.MAX_VALUE),
+                Arrays.asList(true, false, "the quick brown fox", "jumped over the lazy dog", Instant.now(), LocalDate.now()),
                 normalizer
         );
         testToManyParameter(
