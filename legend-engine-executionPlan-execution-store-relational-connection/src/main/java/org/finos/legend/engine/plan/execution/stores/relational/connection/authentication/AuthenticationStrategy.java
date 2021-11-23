@@ -81,7 +81,7 @@ public abstract class AuthenticationStrategy
         }
         catch (PrivilegedActionException e)
         {
-            LOGGER.error("PrivilegedActionException for subject {} {} []", subject, e);
+            LOGGER.error("PrivilegedActionException for subject {} {}", subject, e);
             throw new ConnectionException(e.getException());
         }
         catch (RuntimeException e)

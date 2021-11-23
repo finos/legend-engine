@@ -118,30 +118,31 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests {
         Connection conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec1);
 
         assertEquals(1, ConnectionPoolTestUtils.getDataSourceSpecifications().size());
-        LocalH2DataSourceSpecification localH2DatasourceSpecification1 = getDatasourceSpecification(ConnectionPoolTestUtils.getDataSourceSpecifications(), "PERSON1");
+        LocalH2DataSourceSpecification localH2DatasourceSpecification1 = getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec1).shortId());
 
         // User gets a connection
         RelationalDatabaseConnection spec2 = this.buildLocalH2DatasourceSpecWithTableName("PERSON2");
         Connection conn2 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec2);
 
         assertEquals(2, ConnectionPoolTestUtils.getDataSourceSpecifications().size());
-        LocalH2DataSourceSpecification localH2DatasourceSpecification2 = getDatasourceSpecification(ConnectionPoolTestUtils.getDataSourceSpecifications(), "PERSON2");
+        LocalH2DataSourceSpecification localH2DatasourceSpecification2 = getDatasourceSpecification( this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec2).shortId());
 
         // User gets a connection
         RelationalDatabaseConnection spec3 = this.buildLocalH2DatasourceSpecWithTableName("PERSON3");
         Connection conn3 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec3);
 
         assertEquals(3, ConnectionPoolTestUtils.getDataSourceSpecifications().size());
-        LocalH2DataSourceSpecification localH2DatasourceSpecification3 = getDatasourceSpecification(ConnectionPoolTestUtils.getDataSourceSpecifications(), "PERSON3");
+        LocalH2DataSourceSpecification localH2DatasourceSpecification3 = getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec3).shortId());
 
         assertNotSame(localH2DatasourceSpecification1, localH2DatasourceSpecification2);
         assertNotSame(localH2DatasourceSpecification2, localH2DatasourceSpecification3);
         assertNotSame(localH2DatasourceSpecification1, localH2DatasourceSpecification3);
     }
 
-    public LocalH2DataSourceSpecification getDatasourceSpecification(ConcurrentMutableMap datasourceSpecifications, String personTableName)
+    public LocalH2DataSourceSpecification getDatasourceSpecification(String instanceId) throws NoSuchFieldException, IllegalAccessException
     {
-        return (LocalH2DataSourceSpecification) datasourceSpecifications.stream().filter(key -> key.toString().contains(personTableName)).findFirst().get();
+        ConcurrentMutableMap datasourceSpecifications = ConnectionPoolTestUtils.getDataSourceSpecifications();
+        return (LocalH2DataSourceSpecification) datasourceSpecifications.get(instanceId);
     }
 
     public RelationalDatabaseConnection buildLocalH2DatasourceSpecWithTableName(String personTableName)

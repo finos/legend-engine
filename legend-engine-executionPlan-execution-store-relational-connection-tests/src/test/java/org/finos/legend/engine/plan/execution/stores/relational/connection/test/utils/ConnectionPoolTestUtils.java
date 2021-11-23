@@ -68,4 +68,10 @@ public class ConnectionPoolTestUtils
                 .collect(Collectors.toList());
         return connectionPoolsForUser;
     }
+
+    public static DataSourceSpecification getDatasource(String datasourceId) throws NoSuchFieldException, IllegalAccessException
+    {
+        ConcurrentMutableMap<String, DataSourceSpecification> specifications = getDataSourceSpecifications();
+        return specifications.get(datasourceId);
+    }
 }

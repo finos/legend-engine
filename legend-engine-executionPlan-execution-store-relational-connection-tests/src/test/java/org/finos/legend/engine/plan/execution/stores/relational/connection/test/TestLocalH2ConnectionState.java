@@ -62,7 +62,7 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
     }
 
     @Test
-    public void stateNotAccumulatedForLocalH2() throws Exception {
+    public void stateAccumulatedForLocalH2() throws Exception {
         ConnectionStateManager stateManager = ConnectionStateManager.getInstance();
         assertEquals("mismatch in state count", 0, stateManager.size());
 
@@ -79,7 +79,7 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
                 .collect(Collectors.toSet());
         assertEquals("did not create distinct connections", 10, connectionNames.size());
 
-        assertEquals("mismatch in state count", 0, stateManager.size());
+        assertEquals("mismatch in state count", 1, stateManager.size());
     }
 
     public RelationalDatabaseConnection buildLocalH2DatasourceSpec() throws Exception {

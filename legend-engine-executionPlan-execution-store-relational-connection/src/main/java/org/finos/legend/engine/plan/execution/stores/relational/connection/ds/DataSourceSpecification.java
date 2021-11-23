@@ -80,7 +80,7 @@ public abstract class DataSourceSpecification
     private AuthenticationStrategy authenticationStrategy;
     protected Properties extraDatasourceProperties = new Properties();
 
-    private KeyLockManager<String> keyLockManager = KeyLockManager.newManager();
+    private final KeyLockManager<String> keyLockManager = KeyLockManager.newManager();
     private ConcurrentMutableMap<String, org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics> connectionPoolByUser = ConcurrentHashMap.newMap();
 
     private org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationStatistics dataSourceSpecificationStatistics = new org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationStatistics();
@@ -101,9 +101,8 @@ public abstract class DataSourceSpecification
             relationalExecutorInfo.setDataSourceSpecifications(dataSourceSpecifications);
             ConnectionKey instanceKey = buildConnectionKey();
             String instanceId = instanceKey.shortId();
-            dataSourceSpecifications.putIfAbsent(instanceId, this);
+            dataSourceSpecifications.put(instanceId, this);
             this.extraDatasourceProperties.put(DATASOURCE_SPEC_INSTANCE, instanceId);
-            relationalExecutorInfo.putInstanceKeyIfAbsent(instanceKey, instanceId);
         }
         MetricsHandler.observeCount("datastore specifications");
         LOGGER.info("Created new {}", this);
@@ -278,7 +277,7 @@ public abstract class DataSourceSpecification
             //-------------------------------------
 
             HikariDataSource ds = new HikariDataSource(jdbcConfig);
-            scope.span().setTag("Pool", ds.getPoolName());
+            scope.span().setTag("Pool", poolName);
             LOGGER.info("New Connection Pool created {}", ds);
             return ds;
         }
@@ -286,14 +285,7 @@ public abstract class DataSourceSpecification
 
     private static class KeyLockManager<K>
     {
-        private static final Function0<Object> NEW_LOCK = new Function0<Object>()
-        {
-            @Override
-            public Object value()
-            {
-                return new Object();
-            }
-        };
+        private static final Function0<Object> NEW_LOCK = (Function0<Object>)() -> new Object();
 
         private final ConcurrentMutableMap<K, Object> locks = ConcurrentHashMap.newMap();
 

@@ -129,7 +129,7 @@ public class TestLocalH2ConcurrentConnectionAcquisition
         private Connection initConnection()
         {
             LocalH2DataSourceSpecification specification = new LocalH2DataSourceSpecification(
-                    new LocalH2DataSourceSpecificationKey(Lists.mutable.empty()),
+                    Lists.mutable.empty(),
                     new H2Manager(),
                     new TestDatabaseAuthenticationStrategy(),
                     new RelationalExecutorInfo());
@@ -160,10 +160,7 @@ public class TestLocalH2ConcurrentConnectionAcquisition
         {
             try
             {
-                LocalH2DataSourceSpecification.WrappedH2Connection wrapped = (LocalH2DataSourceSpecification.WrappedH2Connection) connection;
-                HikariProxyConnection hikariProxyConnection = (HikariProxyConnection) getFieldUsingReflection(LocalH2DataSourceSpecification.WrappedH2Connection.class, wrapped, "conn");
-                JdbcConnection h2Connection = (JdbcConnection) getFieldUsingReflection(HikariProxyConnection.class, hikariProxyConnection, "delegate");
-                return h2Connection;
+                return (JdbcConnection)connection;
             }
             catch (Exception e)
             {

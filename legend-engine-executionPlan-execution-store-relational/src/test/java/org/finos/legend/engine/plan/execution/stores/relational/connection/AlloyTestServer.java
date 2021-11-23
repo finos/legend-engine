@@ -25,7 +25,6 @@ import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.h2.tools.Server;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -35,7 +34,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Map;
 
 import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;

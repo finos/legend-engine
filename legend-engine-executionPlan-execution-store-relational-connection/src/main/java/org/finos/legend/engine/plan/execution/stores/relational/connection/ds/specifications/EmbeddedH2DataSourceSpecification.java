@@ -34,15 +34,11 @@ public class EmbeddedH2DataSourceSpecification extends DataSourceSpecification
     public static final String H2_DATA_DIRECTORY_PATH = "h2_data_directory_path";
     public static final String H2_AUTO_SERVER_MODE = "h2_auto_server_mode";
 
-    private EmbeddedH2DataSourceSpecificationKey key;
-    private DataSource dataSource;
-
     public EmbeddedH2DataSourceSpecification(EmbeddedH2DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
     {
         super(key, databaseManager, authenticationStrategy, new Properties(), relationalExecutorInfo);
         this.extraDatasourceProperties.put(H2_DATA_DIRECTORY_PATH, key.getDirectory().getAbsolutePath());
         this.extraDatasourceProperties.put(H2_AUTO_SERVER_MODE, String.valueOf(key.isAutoServerMode()).toUpperCase());
-        this.key = key;
     }
 
     @Override
@@ -50,8 +46,8 @@ public class EmbeddedH2DataSourceSpecification extends DataSourceSpecification
     {
         try
         {
-            this.dataSource = this.buildDataSource(identity);
-            return this.dataSource.getConnection();
+            DataSource dataSource = this.buildDataSource(identity);
+            return dataSource.getConnection();
         }
         catch (SQLException e)
         {

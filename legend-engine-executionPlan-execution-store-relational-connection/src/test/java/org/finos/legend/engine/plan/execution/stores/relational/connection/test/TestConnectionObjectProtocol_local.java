@@ -62,12 +62,12 @@ public class TestConnectionObjectProtocol_local extends DbSpecificTests
     private LocalH2DataSourceSpecification buildLocalDataSourceSpecification(AuthenticationStrategy authenticationStrategy)
     {
         return new LocalH2DataSourceSpecification(
-                new LocalH2DataSourceSpecificationKey(Lists.mutable.with("drop table if exists PersonTable;",
+                Lists.mutable.with("drop table if exists PersonTable;",
                         "create table PersonTable(id INT, firmId INT, firstName VARCHAR(200), lastName VARCHAR(200));",
                         "insert into PersonTable (id, firmId, firstName, lastName) values (1, 1, 'pierre', 'de belen');",
                         "drop table if exists FirmTable;",
                         "create table FirmTable(id INT, legalName VARCHAR(200));",
-                        "insert into FirmTable (id, legalName) values (1, 'firm')")),
+                        "insert into FirmTable (id, legalName) values (1, 'firm')"),
                 new org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager(),
                 authenticationStrategy,
                 new RelationalExecutorInfo());
