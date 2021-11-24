@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.externalSource;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.externalSource.ExternalSourceSpecificationParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ParameterExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
 
 public class ExternalSourceSpecificationParseTreeWalker
@@ -27,6 +28,15 @@ public class ExternalSourceSpecificationParseTreeWalker
         extSource.sourceInformation = code.getSourceInformation();
         ExternalSourceSpecificationParserGrammar.UrlStreamUrlContext urlCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.urlStreamUrl(), "url", code.getSourceInformation());
         extSource.url = PureGrammarParserUtility.fromGrammarString(urlCtx.STRING().getText(), true);
+        return extSource;
+    }
+
+    public ExternalSource visitParameterExternalSourceSpecification(ExternalSourceSpecificationSourceCode code, ExternalSourceSpecificationParserGrammar.ParameterExternalSourceSpecificationContext ctx)
+    {
+        ParameterExternalSource extSource = new ParameterExternalSource();
+        extSource.sourceInformation = code.getSourceInformation();
+        ExternalSourceSpecificationParserGrammar.ParameterNameContext parameterNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.parameterName(), "name", code.getSourceInformation());
+        extSource.name = PureGrammarParserUtility.fromGrammarString(parameterNameContext.STRING().getText(), true);
         return extSource;
     }
 }

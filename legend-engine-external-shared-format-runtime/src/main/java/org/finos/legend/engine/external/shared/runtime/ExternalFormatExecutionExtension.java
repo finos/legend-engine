@@ -25,17 +25,21 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.DataQualityExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.ParameterExternalSourceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.UrlStreamExecutionNode;
 import org.finos.legend.engine.shared.core.url.UrlFactory;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,6 +62,10 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
                                              {
                                                  return executeUrlStream((UrlStreamExecutionNode) executionNode, pm, executionState);
                                              }
+                                             else if (executionNode instanceof ParameterExternalSourceExecutionNode)
+                                             {
+                                                 return executeParameterExternalSourceExecutionNode((ParameterExternalSourceExecutionNode) executionNode, pm, executionState);
+                                             }
                                              else
                                              {
                                                  return null;
@@ -76,6 +84,28 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private Result executeParameterExternalSourceExecutionNode(ParameterExternalSourceExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        String paramName = node.name;
+        Result paramResult = executionState.getResult(paramName);
+
+        if (paramResult != null)
+        {
+            if (paramResult instanceof ConstantResult)
+            {
+                Object paramValue = ((ConstantResult) paramResult).getValue();
+                if (paramValue instanceof String)
+                {
+                    InputStream inputStream = new ByteArrayInputStream(((String) paramValue).getBytes(StandardCharsets.UTF_8));
+                    return new InputStreamResult(inputStream);
+                }
+                throw new IllegalArgumentException("Parameter '" + paramName + "' should be a String");
+            }
+            throw new IllegalArgumentException("Parameter '" + paramName + "' should be a ConstantResult");
+        }
+        throw new IllegalStateException("Parameter '" + paramName + "' not provided");
     }
 
     private Result executeDataQuality(DataQualityExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
