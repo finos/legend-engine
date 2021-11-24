@@ -22,7 +22,6 @@ import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.DataQualityExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.ParameterExternalSourceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.UrlStreamExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -31,7 +30,6 @@ import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shar
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ParameterExternalSource;
 
 import java.util.List;
 
@@ -53,14 +51,12 @@ public class ExternalFormatProtocolExtension implements PureProtocolExtension
 
                 ProtocolSubTypeInfo.Builder.newInstance(ExternalSource.class)
                         .withSubtypes(FastList.newListWith(
-                                Tuples.pair(UrlStreamExternalSource.class, "urlStream"),
-                                Tuples.pair(ParameterExternalSource.class, "parameter")
+                                Tuples.pair(UrlStreamExternalSource.class, "urlStream")
                         )).build(),
                 ProtocolSubTypeInfo.Builder.newInstance(ExecutionNode.class)
                                            .withSubtypes(FastList.newListWith(
                                                    Tuples.pair(DataQualityExecutionNode.class, "dataQuality"),
-                                                   Tuples.pair(UrlStreamExecutionNode.class, "urlStream"),
-                                                   Tuples.pair(ParameterExternalSourceExecutionNode.class, "parameterExternalSource")
+                                                   Tuples.pair(UrlStreamExecutionNode.class, "urlStream")
                                            )).build()
 
         ));

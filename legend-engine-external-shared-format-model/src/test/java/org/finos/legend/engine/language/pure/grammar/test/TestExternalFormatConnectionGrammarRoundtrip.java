@@ -31,18 +31,4 @@ public class TestExternalFormatConnectionGrammarRoundtrip extends TestGrammarRou
                      "  };\n" +
                      "}\n");
     }
-
-    @Test
-    public void testParameterExternalConnection()
-    {
-        test("###Connection\n" +
-                "ExternalFormatConnection simple::Parameter\n" +
-                "{\n" +
-                "  store: test::SchemaBinding;\n" +
-                "  source: Parameter\n" +
-                "  {\n" +
-                "    name: 'paramName';\n" +
-                "  };\n" +
-                "}\n");
-    }
 }

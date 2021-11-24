@@ -16,7 +16,6 @@ package org.finos.legend.engine.external.shared.runtime.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatPlanGenerationExtensionLoader;
@@ -48,27 +47,16 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.Reader;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Map;
 import java.util.Objects;
 
 public abstract class TestExternalFormatQueries
 {
     protected String runTest(String grammar, String query, String mappingPath, String runtimePath, String input)
     {
-        return runTest(grammar, query, mappingPath, runtimePath, input, Maps.mutable.empty());
-    }
-
-    protected String runTest(String grammar, String query, String mappingPath, String runtimePath, String input, Map<String, ?> params)
-    {
         try
         {
-            return runTest(null, grammar, query, mappingPath, runtimePath, input == null ? null : new ByteArrayInputStream(input.getBytes("UTF-8")), params);
+            return runTest(grammar, query, mappingPath, runtimePath, new ByteArrayInputStream(input.getBytes("UTF-8")));
         }
         catch (Exception e)
         {
@@ -78,14 +66,9 @@ public abstract class TestExternalFormatQueries
 
     protected String runTest(PureModelContextData generated, String grammar, String query, String mappingPath, String runtimePath, String input)
     {
-        return runTest(generated, grammar, query, mappingPath, runtimePath, input, Maps.mutable.empty());
-    }
-
-    protected String runTest(PureModelContextData generated, String grammar, String query, String mappingPath, String runtimePath, String input, Map<String, ?> params)
-    {
         try
         {
-            return runTest(generated, grammar, query, mappingPath, runtimePath, input == null ? null : new ByteArrayInputStream(input.getBytes("UTF-8")), params);
+            return runTest(generated, grammar, query, mappingPath, runtimePath, new ByteArrayInputStream(input.getBytes("UTF-8")));
         }
         catch (Exception e)
         {
@@ -95,15 +78,10 @@ public abstract class TestExternalFormatQueries
 
     protected String runTest(String grammar, String query, String mappingPath, String runtimePath, InputStream input)
     {
-        return runTest(null, grammar, query, mappingPath, runtimePath, input, Maps.mutable.empty());
+        return runTest(null, grammar, query, mappingPath, runtimePath, input);
     }
 
     protected String runTest(PureModelContextData generated, String grammar, String query, String mappingPath, String runtimePath, InputStream input)
-    {
-        return runTest(generated, grammar, query, mappingPath, runtimePath, input, Maps.mutable.empty());
-    }
-
-    protected String runTest(PureModelContextData generated, String grammar, String query, String mappingPath, String runtimePath, InputStream input, Map<String, ?> params)
     {
         try
         {
@@ -128,7 +106,7 @@ public abstract class TestExternalFormatQueries
             String plan = PlanGenerator.generateExecutionPlanAsString(lambda, mapping, runtime, context, model, "vX_X_X", PlanPlatform.JAVA, "test", extensions, LegendPlanTransformers.transformers);
 
             PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(true);
-            Result result = executor.execute(plan, input, params);
+            Result result = executor.execute(plan, input);
             StreamingResult streamingResult = (StreamingResult) result;
             return streamingResult.flush(streamingResult.getSerializer(SerializationFormat.DEFAULT));
         }
@@ -314,35 +292,6 @@ public abstract class TestExternalFormatQueries
 
     }
 
-    protected String parameterRuntime(String mapping, String binding, String parameterName)
-    {
-        return "###Runtime\n" +
-                "Runtime test::runtime\n" +
-                "{\n" +
-                "  mappings:\n" +
-                "  [\n" +
-                "    " + mapping + "\n" +
-                "  ];\n" +
-                "  connections:\n" +
-                "  [\n" +
-                "    " + binding + ":\n" +
-                "    [\n" +
-                "      c1:\n" +
-                "      #{\n" +
-                "        ExternalFormatConnection\n" +
-                "        {\n" +
-                "          source: Parameter\n" +
-                "          {\n" +
-                "            name: '" + parameterName + "';\n" +
-                "          };\n" +
-                "        }\n" +
-                "      }#\n" +
-                "    ]\n" +
-                "  ];\n" +
-                "}\n";
-
-    }
-
     protected String firmTree()
     {
         return "#{test::firm::model::Firm {name, ranking}}#";
@@ -399,21 +348,6 @@ public abstract class TestExternalFormatQueries
     protected InputStream resource(String name)
     {
         return Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(name), "Failed to find resource " + name);
-    }
-
-    protected String resourceAsString(String path)
-    {
-        byte[] bytes;
-        try
-        {
-            bytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(path), "Failed to get resource " + path).toURI()));
-        }
-        catch (IOException | URISyntaxException e)
-        {
-            throw new RuntimeException(e);
-        }
-        String string = new String(bytes, StandardCharsets.UTF_8);
-        return string.replaceAll("\\R", "\n");
     }
 
     protected Reader resourceReader(String name)

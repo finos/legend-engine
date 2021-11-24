@@ -15,9 +15,9 @@
 package org.finos.legend.engine.external.format.xml.test;
 
 import net.javacrumbs.jsonunit.JsonMatchers;
-import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQueries;
 import org.hamcrest.MatcherAssert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestXmlQueries extends TestExternalFormatQueries
@@ -145,20 +145,6 @@ public class TestXmlQueries extends TestExternalFormatQueries
                                 resource("queries/firmWithXsiNil.xml"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmWithXsiNilCheckedResult.json")));
-    }
-
-    @Test
-    public void testParameterInputXML()
-    {
-        String grammar = firmModel() + firmSelfMapping() + schemalessBinding() + parameterRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding", "xmlInput");
-        String result = runTest(grammar,
-                "{xmlInput:String[1] | test::firm::model::Firm.all()->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")}",
-                "test::firm::mapping::SelfMapping",
-                "test::runtime",
-                null,
-                Maps.mutable.of("xmlInput", resourceAsString("queries/oneFirm.xml")));
-
-        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/oneFirmCheckedResult.json")));
     }
 
     private String schemalessBinding()

@@ -72,8 +72,6 @@ public class ExternalFormatConnectionGrammarParserExtension implements IExternal
                                              {
                                                  case "UrlStream":
                                                      return parseDataSourceSpecification(code, p -> walker.visitUrlStreamExternalSourceSpecification(code, p.urlStreamExternalSourceSpecification()));
-                                                 case "Parameter":
-                                                     return parseDataSourceSpecification(code, p -> walker.visitParameterExternalSourceSpecification(code, p.parameterExternalSourceSpecification()));
                                                  default:
                                                      return null;
                                              }

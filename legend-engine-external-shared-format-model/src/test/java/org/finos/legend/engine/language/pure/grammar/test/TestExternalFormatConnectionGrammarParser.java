@@ -112,40 +112,4 @@ public class TestExternalFormatConnectionGrammarParser extends TestGrammarParser
                      "  };\n" +
                      "}\n", "PARSER error at [5:3-9:4]: Field 'url' should be specified only once");
     }
-
-    @Test
-    public void testParameterExternalSource()
-    {
-        // Missing field
-        test("###Connection\n" +
-                "ExternalFormatConnection meta::mySimpleConnection\n" +
-                "{\n" +
-                "  store: domain::SchemaBinding1;\n" +
-                "  source: Parameter\n" +
-                "  {\n" +
-                "  };\n" +
-                "}\n", "PARSER error at [5:3-7:4]: Field 'name' is required");
-
-        //Duplicate field
-        test("###Connection\n" +
-                "ExternalFormatConnection meta::mySimpleConnection\n" +
-                "{\n" +
-                "  store: domain::SchemaBinding1;\n" +
-                "  source: Parameter\n" +
-                "  {\n" +
-                "     name: 'param1';\n" +
-                "     name: 'param2';\n" +
-                "  };\n" +
-                "}\n", "PARSER error at [5:3-9:4]: Field 'name' should be specified only once");
-
-        test("###Connection\n" +
-                "ExternalFormatConnection meta::mySimpleConnection\n" +
-                "{\n" +
-                "  store: domain::SchemaBinding1;\n" +
-                "  source: Parameter\n" +
-                "  {\n" +
-                "     name: 'paramName';\n" +
-                "  };\n" +
-                "}\n");
-    }
 }
