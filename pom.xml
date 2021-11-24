@@ -94,6 +94,8 @@
         <module>legend-engine-query-pure</module>
         <module>legend-engine-shared-core</module>
         <module>legend-engine-shared-javaCompiler</module>
+        <module>legend-engine-services-model</module>
+        <module>legend-engine-services-model-api</module>
         <module>legend-engine-server</module>
         <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
@@ -759,6 +761,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-application-query</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-services-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-services-model-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->
