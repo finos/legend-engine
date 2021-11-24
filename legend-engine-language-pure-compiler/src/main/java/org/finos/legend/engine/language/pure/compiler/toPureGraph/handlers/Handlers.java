@@ -1048,6 +1048,9 @@ public class Handlers
         register(h("meta::pure::functions::math::sum_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
                 h("meta::pure::functions::math::sum_Integer_MANY__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
                 h("meta::pure::functions::math::sum_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
+
+        register(m(m(h("meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> ps.size() == 4)),
+                m(h("meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> true))));
     }
 
     private void registerStdDeviations()
@@ -1766,6 +1769,8 @@ public class Handlers
         map.put("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::math::olap::rank_Any_MANY__Map_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
+        map.put("meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 4 && Sets.immutable.with("Nil","Number","Decimal","Float","Integer").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Float".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Boolean".equals(ps.get(2)._genericType()._rawType()._name())) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "Boolean".equals(ps.get(3)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 2 && Sets.immutable.with("Nil","Number","Decimal","Float","Integer").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Float".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::pi__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 0);
         map.put("meta::pure::functions::math::plus_Decimal_MANY__Decimal_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Decimal".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::plus_Float_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Float".equals(ps.get(0)._genericType()._rawType()._name())));
