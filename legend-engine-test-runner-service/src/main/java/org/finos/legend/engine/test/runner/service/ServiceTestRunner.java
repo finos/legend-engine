@@ -29,7 +29,6 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.service.generation.ServicePlanGenerator;
 import org.finos.legend.engine.language.pure.dsl.service.generation.extension.ServiceExecutionExtension;
-import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
@@ -65,6 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
@@ -85,6 +85,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.Class;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -295,9 +296,13 @@ public class ServiceTestRunner
                     {
                         parameters = ListIterate.zip(((PureExecution) this.service.execution).func.parameters, tc.getOne().parametersValues).toMap(
                                 p -> p.getOne().name,
-                                p -> new ConstantResult(p.getTwo() instanceof PureList
-                                        ? ListIterate.collect(((PureList) p.getTwo()).values, v -> v.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withValueSpecificationAsExternalParameter().build()))
-                                        : p.getTwo().accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withValueSpecificationAsExternalParameter().build())));
+                                p -> p.getTwo() instanceof Collection   // Condition evoked in case of studio-flow
+                                    ? new ConstantResult(
+                                    ListIterate.collect(( (Collection) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor())))
+                                    : p.getTwo() instanceof PureList   // Condition evoked in case of pureIDE-flow
+                                    ? new ConstantResult(
+                                    ListIterate.collect(( (PureList) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor())))
+                                    : p.getTwo().accept(new ValueSpecificationToResultVisitor()));
                     }
 
                     // Execute Plan

@@ -120,7 +120,7 @@ abstract class FunctionParameterTypeValidator
         @Override
         protected boolean isValidJavaType(Object parameterValue)
         {
-            return (parameterValue instanceof Double) || (parameterValue instanceof Float);
+            return (parameterValue instanceof Double) || (parameterValue instanceof Float) || (parameterValue instanceof Integer) || (parameterValue instanceof Long);
         }
 
         @Override

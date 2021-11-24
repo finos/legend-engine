@@ -150,6 +150,12 @@ lambdaParam:                                    identifier lambdaParamType?
 ;
 lambdaParamType:                                COLON type multiplicity
 ;
+primitiveValue:                                 primitiveValueAtomic | primitiveValueVector
+;
+primitiveValueVector:                           BRACKET_OPEN (primitiveValueAtomic (COMMA primitiveValueAtomic)* )? BRACKET_CLOSE
+;
+primitiveValueAtomic:                           instanceLiteral | enumReference
+;
 instanceLiteral:                                instanceLiteralToken | (MINUS INTEGER) | (MINUS FLOAT) | (MINUS DECIMAL) | (PLUS INTEGER) | (PLUS FLOAT) | (PLUS DECIMAL)
 ;
 instanceLiteralToken:                           STRING | INTEGER | FLOAT | DECIMAL | DATE | BOOLEAN | STRICTTIME
