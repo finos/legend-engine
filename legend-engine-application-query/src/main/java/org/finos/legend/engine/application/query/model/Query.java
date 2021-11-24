@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.application.query.model;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
+
+import java.util.List;
+
 public class Query
 {
     public String id;
@@ -28,5 +33,6 @@ public class Query
     // We make it clear that we only allow a single owner
     public String owner;
 
-//    public String associatedDataSpace; // optional
+    public List<TaggedValue> taggedValues;
+    public List<StereotypePtr> stereotypes;
 }

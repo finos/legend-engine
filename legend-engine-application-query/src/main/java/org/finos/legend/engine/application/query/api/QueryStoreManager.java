@@ -23,11 +23,15 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
-import org.finos.legend.engine.application.query.model.QueryProjectCoordinates;
+import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
 import javax.lang.model.SourceVersion;
@@ -94,6 +98,28 @@ public class QueryStoreManager
         query.runtime = document.getString("runtime");
         query.content = document.getString("content");
         query.owner = document.getString("owner");
+        if (document.get("taggedValues") != null)
+        {
+            query.taggedValues = ListIterate.collect(document.getList("taggedValues", Document.class), _doc ->
+            {
+                TaggedValue taggedValue = new TaggedValue();
+                taggedValue.tag = new TagPtr();
+                taggedValue.tag.profile = _doc.getEmbedded(Lists.fixedSize.of("tag", "profile"), String.class);
+                taggedValue.tag.value = _doc.getEmbedded(Lists.fixedSize.of("tag", "value"), String.class);
+                taggedValue.value = _doc.getString("value");
+                return taggedValue;
+            });
+        }
+        if (document.get("stereotypes") != null)
+        {
+            query.stereotypes = ListIterate.collect(document.getList("stereotypes", Document.class), _doc ->
+            {
+                StereotypePtr stereotypePtr = new StereotypePtr();
+                stereotypePtr.profile = _doc.getString("profile");
+                stereotypePtr.value = _doc.getString("value");
+                return stereotypePtr;
+            });
+        }
         return query;
     }
 
@@ -161,29 +187,44 @@ public class QueryStoreManager
         // TODO: we can potentially create a pattern check for version
     }
 
-    public List<Query> getQueries(String search, List<QueryProjectCoordinates> projectCoordinates, Integer limit, boolean showCurrentUserQueriesOnly, String currentUser)
+    public List<Query> getQueries(
+        QuerySearchSpecification searchSpecification,
+        String currentUser
+    )
     {
         List<Bson> filters = new ArrayList<>();
-        if (showCurrentUserQueriesOnly)
+        if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
         {
             // NOTE: every user is considered owner of the queries created by unknown user
             filters.add(Filters.in("owner", currentUser, null));
         }
-        if (search != null)
+        if (searchSpecification.searchTerm != null)
         {
-            filters.add(Filters.regex("name", Pattern.quote(search), "i"));
+            filters.add(Filters.regex("name", Pattern.quote(searchSpecification.searchTerm), "i"));
         }
-        if (projectCoordinates != null && !projectCoordinates.isEmpty())
+        if (searchSpecification.projectCoordinates != null && !searchSpecification.projectCoordinates.isEmpty())
         {
             filters.add(Filters.or(
-                ListIterate.collect(projectCoordinates, projectCoordinate ->
+                ListIterate.collect(searchSpecification.projectCoordinates, projectCoordinate ->
                     Filters.and(Filters.eq("groupId", projectCoordinate.groupId), Filters.eq("artifactId", projectCoordinate.artifactId)))));
+        }
+        if (searchSpecification.taggedValues != null && !searchSpecification.taggedValues.isEmpty())
+        {
+            filters.add(Filters.or(
+                ListIterate.collect(searchSpecification.taggedValues, taggedValue ->
+                    Filters.and(Filters.eq("taggedValues.tag.profile", taggedValue.tag.profile), Filters.eq("taggedValues.tag.value", taggedValue.tag.value), Filters.eq("taggedValues.value", taggedValue.value)))));
+        }
+        if (searchSpecification.stereotypes != null && !searchSpecification.stereotypes.isEmpty())
+        {
+            filters.add(Filters.or(
+                ListIterate.collect(searchSpecification.stereotypes, stereotype ->
+                    Filters.and(Filters.eq("stereotypes.profile", stereotype.profile), Filters.eq("stereotypes.value", stereotype.value)))));
         }
         return LazyIterate.collect(this.getQueryCollection()
             .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
             // NOTE: return a light version of the query to save bandwidth
             .projection(Projections.include("id", "name", "versionId", "groupId", "artifactId", "owner"))
-            .limit(Math.min(MAX_NUMBER_OF_QUERIES, limit == null ? Integer.MAX_VALUE : limit)), QueryStoreManager::documentToQuery).toList();
+            .limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit)), QueryStoreManager::documentToQuery).toList();
     }
 
     public Query getQuery(String queryId)
