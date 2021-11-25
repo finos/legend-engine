@@ -890,7 +890,7 @@ public class RelationalParseTreeWalker
         joins.add(visitJoinPointer(ctx.joinPointer(), null, scopeInfo, database));
         for (RelationalParserGrammar.JoinPointerFullContext joinPointerFullContext : ctx.joinPointerFull())
         {
-            if (joinPointerFullContext.identifier() != null && !JOIN_TYPES.contains(PureGrammarParserUtility.fromIdentifier(joinPointerFullContext.identifier()).toUpperCase()))
+            if (joinPointerFullContext.identifier() != null && !JOIN_TYPES.contains(PureGrammarParserUtility.fromIdentifier(joinPointerFullContext.identifier())))
             {
                 throw new EngineException("Unsupported join type '" + joinPointerFullContext.identifier().getText() + "'", this.walkerSourceInformation.getSourceInformation(joinPointerFullContext.identifier()), EngineErrorType.PARSER);
             }

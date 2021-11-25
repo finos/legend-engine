@@ -465,7 +465,7 @@ public class HelperRelationalGrammarComposer
 
     private static String renderJoinPointer(JoinPointer joinPointer)
     {
-        return (joinPointer.joinType != null ? ("(" + joinPointer.joinType.toUpperCase() + ") ") : "") +
+        return (joinPointer.joinType != null ? ("(" + (joinPointer.joinType.equals("LEFT_OUTER") ? "OUTER" : joinPointer.joinType) + ") ") : "") +
                 (joinPointer.db != null ? renderDatabasePointer(joinPointer.db) : "") +
                 "@" + PureGrammarComposerUtility.convertIdentifier(joinPointer.name);
     }
