@@ -2,7 +2,7 @@ package org.finos.legend.engine.external.format.flatdata.shared.driver.spi;
 
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
 
-public interface FlatDataProcessingContext<T>
+public interface FlatDataProcessingContext
 {
     String getDefiningPath();
 
@@ -18,7 +18,7 @@ public interface FlatDataProcessingContext<T>
 
     boolean isNextSectionReadyToStartAt(Cursor cursor);
 
-    ParsedFlatDataToObject<? extends T> createToObjectFactory(FlatDataRecordType recordType);
+    <T> ParsedFlatDataToObject<? extends T> createToObjectFactory(FlatDataRecordType recordType);
 
-    ObjectToParsedFlatData<? extends T> createFromObjectFactory(FlatDataRecordType recordType);
+    <T> ObjectToParsedFlatData<? extends T> createFromObjectFactory(FlatDataRecordType recordType);
 }

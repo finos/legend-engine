@@ -82,6 +82,12 @@ public class ReadPerson implements IFlatDataDeserializeExecutionNodeSpecifics<Pe
                 }
                 return result;
             }
+
+            @Override
+            public boolean isReturnable()
+            {
+                return true;
+            }
         };
     }
 

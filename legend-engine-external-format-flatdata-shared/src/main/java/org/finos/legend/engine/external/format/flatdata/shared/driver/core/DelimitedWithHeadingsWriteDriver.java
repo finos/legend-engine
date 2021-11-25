@@ -11,7 +11,7 @@ import java.util.List;
 
 public class DelimitedWithHeadingsWriteDriver<T> extends DelimitedWriteDriver<T>
 {
-    DelimitedWithHeadingsWriteDriver(FlatDataSection section, FlatDataProcessingContext<T> context)
+    DelimitedWithHeadingsWriteDriver(FlatDataSection section, FlatDataProcessingContext context)
     {
         super(new DelimitedDriverHelper(section, context));
     }

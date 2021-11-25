@@ -1,0 +1,34 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": {
+    "defects": [],
+    "source": {
+      "defects": [],
+      "source": {
+        "number": 1,
+        "lineNumber": 2,
+        "record": "John Doe,Male",
+        "recordValues": [
+          {
+            "address": "name",
+            "rawValue": "John Doe"
+          },
+          {
+            "address": "gender",
+            "rawValue": "Male"
+          }
+        ]
+      },
+      "value": {
+        "name": "John Doe",
+        "gender": "MALE"
+      }
+    },
+    "value": {
+      "name": "John Doe",
+      "gender": "MALE"
+    }
+  }
+}

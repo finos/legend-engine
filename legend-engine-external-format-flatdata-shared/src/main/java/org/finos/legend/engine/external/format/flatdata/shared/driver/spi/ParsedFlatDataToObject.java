@@ -14,7 +14,22 @@
 
 package org.finos.legend.engine.external.format.flatdata.shared.driver.spi;
 
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+
 public interface ParsedFlatDataToObject<T>
 {
     T make(ParsedFlatData parsedFlatData);
+
+    default IChecked<T> makeChecked(ParsedFlatData parsedFlatData)
+    {
+        return BasicChecked.newChecked(make(parsedFlatData), parsedFlatData);
+    }
+
+    default boolean isReturnable()
+    {
+        return true;
+    }
+
+    default void finished() {};
 }

@@ -34,14 +34,6 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSec
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataTemporal;
 import org.finos.legend.engine.external.format.flatdata.write.IFlatDataSerializeExecutionNodeSpecifics;
-import org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension;
-import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataAdder;
-import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataBooleanAdder;
-import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataDoubleAdder;
-import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataLongAdder;
-import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder;
-import org.finos.legend.engine.external.shared.runtime.dependencies.IExternalData;
-import org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDataFactory;
 import org.finos.legend.engine.plan.compilation.GeneratePureConfig;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
 import org.finos.legend.engine.shared.javaCompiler.ClassListFilter;
@@ -91,7 +83,7 @@ public class FlatDataJavaCompilerExtension implements ExecutionPlanJavaCompilerE
      */
     public static void main(String[] args)
     {
-        GeneratePureConfig extension = new GeneratePureConfig("externalFormatFlatdata", ExternalFormatJavaCompilerExtension.class, PURE_PACKAGE);
+        GeneratePureConfig extension = new GeneratePureConfig("externalFormatFlatdata", FlatDataJavaCompilerExtension.class, PURE_PACKAGE);
         DEPENDENCIES.forEach(extension::addClass);
         System.out.println(extension.generate());
     }
