@@ -23,6 +23,7 @@ import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.Multimap;
@@ -485,14 +486,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_"
             ));
 
-            PureClientVersions.versions.forEach(v -> {
-                if (PureClientVersions.versionAGreaterThanOrEqualsVersionB(v, "v1_20_0"))
-                {
-                    registerElementForPathToElement.value("meta::protocols::pure::"+v+"::extension", Lists.mutable.with(
-                            "getRelationalExtension_String_1__SerializerExtension_1_"
-                    ));
-                }
-            });
+            ImmutableList<String> versions = PureClientVersions.versionsSince("v1_20_0");
+            versions.forEach(v -> registerElementForPathToElement.value("meta::protocols::pure::"+v+"::extension", Lists.mutable.with("getRelationalExtension_String_1__SerializerExtension_1_")));
          });
     }
 

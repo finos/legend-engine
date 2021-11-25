@@ -20,8 +20,8 @@ import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -116,14 +116,8 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                     "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_"
             ));
 
-            PureClientVersions.versions.forEach(v -> {
-                if (PureClientVersions.versionAGreaterThanOrEqualsVersionB(v, "vX_X_X"))
-                {
-                    registerElementForPathToElement.value("meta::protocols::pure::"+v+"::extension::store::service", Lists.mutable.with(
-                            "getServiceStoreExtension_String_1__SerializerExtension_1_"
-                    ));
-                }
-            });
+            ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
+            versions.forEach(v -> registerElementForPathToElement.value("meta::protocols::pure::" + v + "::extension::store::service", Lists.mutable.with("getServiceStoreExtension_String_1__SerializerExtension_1_")));
         });
     }
 }
