@@ -298,10 +298,10 @@ public class ServiceTestRunner
                                 p -> p.getOne().name,
                                 p -> p.getTwo() instanceof Collection   // Condition evoked in case of studio-flow
                                     ? new ConstantResult(
-                                    ListIterate.collect(( (Collection) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor())))
+                                    ListIterate.collect(( (Collection) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
                                     : p.getTwo() instanceof PureList   // Condition evoked in case of pureIDE-flow
                                     ? new ConstantResult(
-                                    ListIterate.collect(( (PureList) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor())))
+                                    ListIterate.collect(( (PureList) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
                                     : p.getTwo().accept(new ValueSpecificationToResultVisitor()));
                     }
 
