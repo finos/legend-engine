@@ -57,6 +57,7 @@ public class TemporaryFile implements Closeable
 
         LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_CREATED, fileName).toString());
         MetricsHandler.observeCount("temp file created");
+        MetricsHandler.incrementTempFileCount();
         try (OutputStream outputStream = new FileOutputStream(path.toString()))
         {
             source.stream(outputStream);
@@ -81,6 +82,7 @@ public class TemporaryFile implements Closeable
         {
             Files.deleteIfExists(path);
             LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_DELETED, fileName).toString());
+            MetricsHandler.decrementTempFileCount();
             MetricsHandler.decrementCount("temp file created");
         }
         catch (Exception e)
