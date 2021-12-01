@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.collections.api.factory.Sets;
@@ -886,11 +887,16 @@ public class RelationalParseTreeWalker
     // NOTE: right now, for join we only support sequence (line), not tree
     private List<JoinPointer> visitJoinSequence(RelationalParserGrammar.JoinSequenceContext ctx, String database, ScopeInfo scopeInfo)
     {
+        ParserRuleContext joinType = ctx.identifier() != null ? ctx.identifier() : null;
+        if (joinType != null && !JOIN_TYPES.contains(PureGrammarParserUtility.fromIdentifier(joinType)))
+        {
+            throw new EngineException("Unsupported join type '" + joinType.getText() + "'. The supported join types are: " + JOIN_TYPES.toString(), this.walkerSourceInformation.getSourceInformation(ctx.identifier()), EngineErrorType.PARSER);
+        }
         List<JoinPointer> joins = new ArrayList<>();
-        joins.add(visitJoinPointer(ctx.joinPointer(), null, scopeInfo, database));
+        joins.add(visitJoinPointer(ctx.joinPointer(), joinType == null ? null : joinType.getText(), scopeInfo, database));
         for (RelationalParserGrammar.JoinPointerFullContext joinPointerFullContext : ctx.joinPointerFull())
         {
-            if (joinPointerFullContext.identifier() != null && !JOIN_TYPES.contains(PureGrammarParserUtility.fromIdentifier(joinPointerFullContext.identifier()).toUpperCase()))
+            if (joinPointerFullContext.identifier() != null && !JOIN_TYPES.contains(PureGrammarParserUtility.fromIdentifier(joinPointerFullContext.identifier())))
             {
                 throw new EngineException("Unsupported join type '" + joinPointerFullContext.identifier().getText() + "'", this.walkerSourceInformation.getSourceInformation(joinPointerFullContext.identifier()), EngineErrorType.PARSER);
             }

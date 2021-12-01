@@ -465,7 +465,7 @@ public class HelperRelationalGrammarComposer
 
     private static String renderJoinPointer(JoinPointer joinPointer)
     {
-        return (joinPointer.joinType != null ? ("(" + joinPointer.joinType.toUpperCase() + ") ") : "") +
+        return (joinPointer.joinType != null ? ("(" + (joinPointer.joinType.equals("LEFT_OUTER") ? "OUTER" : joinPointer.joinType) + ") ") : "") +
                 (joinPointer.db != null ? renderDatabasePointer(joinPointer.db) : "") +
                 "@" + PureGrammarComposerUtility.convertIdentifier(joinPointer.name);
     }
@@ -475,11 +475,23 @@ public class HelperRelationalGrammarComposer
         return "[" + database + "]";
     }
 
+    private static String renderJoinPointerForTheFirstFilterJoin(JoinPointer joinPointer)
+    {
+        return (joinPointer.db != null ? renderDatabasePointer(joinPointer.db) : "") + " " +
+                (joinPointer.joinType != null ? ("(" + (joinPointer.joinType.equals("LEFT_OUTER") ? "OUTER" : joinPointer.joinType) + ") ") : "") +
+                "@" + PureGrammarComposerUtility.convertIdentifier(joinPointer.name);
+    }
+
     public static String renderFilterMapping(FilterMapping filterMapping)
     {
-        return "~filter " + (filterMapping.filter.db != null
-                ? (LazyIterate.collect(filterMapping.joins, HelperRelationalGrammarComposer::renderJoinPointer).makeString(" > ") + (!filterMapping.joins.isEmpty() ? " | " : "") + renderDatabasePointer(filterMapping.filter.db))
-                : "") +
+        int joinSize = filterMapping.joins.size();
+        String firstJoin = joinSize > 0 ? renderJoinPointerForTheFirstFilterJoin(filterMapping.joins.get(0)) : "";
+        List<JoinPointer> otherJoins = joinSize > 1 ? filterMapping.joins.subList(1, joinSize) : null;
+        String body = firstJoin +
+                (otherJoins != null ? " > " + LazyIterate.collect(otherJoins, HelperRelationalGrammarComposer::renderJoinPointer).makeString(" > "): "" ) +
+                (!filterMapping.joins.isEmpty() ? " | " : "") + renderDatabasePointer(filterMapping.filter.db);
+
+        return "~filter " + (filterMapping.filter.db != null ? body : "") +
                 PureGrammarComposerUtility.convertIdentifier(filterMapping.filter.name);
     }
 
