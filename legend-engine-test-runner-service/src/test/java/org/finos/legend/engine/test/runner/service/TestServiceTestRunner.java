@@ -80,6 +80,12 @@ public class TestServiceTestRunner
     }
 
     @Test
+    public void testSucceedingServiceWithMultiParam() throws Exception
+    {
+        test("legend-sdlc-test-services-with-multi-param.json","test::legend::service::execution::test::m2m::simpleJsonServiceMultiParam", TestResult.SUCCESS, false);
+    }
+
+    @Test
     public void testFailingService() throws Exception
     {
         test("legend-sdlc-test-services-with-tests.json", "test::legend::service::execution::test::m2m::simpleFailingJsonService", TestResult.FAILURE, false);
