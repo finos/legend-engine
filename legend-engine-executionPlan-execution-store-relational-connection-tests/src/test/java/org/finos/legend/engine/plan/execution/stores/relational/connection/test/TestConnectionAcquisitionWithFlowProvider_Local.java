@@ -54,7 +54,7 @@ public class TestConnectionAcquisitionWithFlowProvider_Local extends DbSpecificT
         installFlowProvider();
         assertStaticH2FlowIsAvailable();
 
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
 
     private void installFlowProvider()

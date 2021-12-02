@@ -26,13 +26,16 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DefaultH2AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionState;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
 public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
 {
+    public static final String SA_USER = "sa";
+    public static final String SA_PASSWORD = "";
+
     @Override
     public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
@@ -63,12 +66,12 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
      */
     private PlaintextUserPasswordCredential resolveCredential(Properties properties)
     {
-        ConnectionState connectionState = ConnectionStateManager.getInstance().getStateUsing(properties);
-        if (connectionState == null || !connectionState.getCredentialSupplier().isPresent())
+        IdentityState identityState = ConnectionStateManager.getInstance().getStateUsing(properties);
+        if (identityState == null || !identityState.getCredentialSupplier().isPresent())
         {
-            return new PlaintextUserPasswordCredential("sa", "");
+            return new PlaintextUserPasswordCredential(SA_USER, SA_PASSWORD);
         }
-        return (PlaintextUserPasswordCredential)super.getDatabaseCredential(connectionState);
+        return (PlaintextUserPasswordCredential)super.getDatabaseCredential(identityState);
     }
 
     @Override

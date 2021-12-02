@@ -24,6 +24,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 public class RelationalStoreState implements StoreState
 {
     private final RelationalExecutor relationalExecutor;
+    private final RelationalExecutorInfo relationalExecutorInfo = new RelationalExecutorInfo();
 
     public RelationalStoreState(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration)
     {
@@ -44,7 +45,7 @@ public class RelationalStoreState implements StoreState
     @Override
     public RelationalExecutorInfo getStoreExecutionInfo()
     {
-        return this.relationalExecutor.getRelationalExecutorInfo();
+        return this.relationalExecutorInfo;
     }
 
     public RelationalExecutor getRelationalExecutor()

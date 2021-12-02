@@ -16,8 +16,8 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionState;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ConnectionPoolTestUtils;
@@ -55,7 +55,7 @@ public class TestConnectionState
 
         // We maintain a bunch of singleton state. We have to reset this state so as to avoid interference between tests
         ConnectionPoolTestUtils.resetDatasourceSpecificationSingletonState();
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
 
     @After
@@ -79,7 +79,7 @@ public class TestConnectionState
 
         //verify connection state for user1 exists
         String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
-        ConnectionState connectionState = ConnectionStateManager.getInstance().getState(poolName);
+        IdentityState connectionState = ConnectionStateManager.getInstance().getState(poolName);
         assertEquals("testuser1", connectionState.getIdentity().getName());
         assertNotNull(connectionState.getCredentialSupplier());
     }
@@ -95,7 +95,7 @@ public class TestConnectionState
 
         //verify connection state for user1 exists
         String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
-        ConnectionState connectionState1 = ConnectionStateManager.getInstance().getState(poolName);
+        DataSourceWithStatistics connectionState1 = ConnectionStateManager.getInstance().getDataSourceByPoolName(poolName);
         assertEquals("testuser1", connectionState1.getIdentity().getName());
         assertNotNull(connectionState1.getCredentialSupplier());
 
@@ -103,7 +103,7 @@ public class TestConnectionState
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        ConnectionState connectionState2 = ConnectionStateManager.getInstance().getState(poolName);
+        IdentityState connectionState2 = ConnectionStateManager.getInstance().getState(poolName);
         assertEquals("testuser1", connectionState2.getIdentity().getName());
         assertNotNull(connectionState2.getCredentialSupplier());
 
@@ -122,20 +122,20 @@ public class TestConnectionState
 
         //verify connection state for user1 exists
         String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
-        ConnectionState connectionState1 = ConnectionStateManager.getInstance().getState(poolName);
+        IdentityState connectionState1 = ConnectionStateManager.getInstance().getState(poolName);
         assertEquals("testuser1", connectionState1.getIdentity().getName());
         assertNotNull(connectionState1.getCredentialSupplier());
 
         // Reset connection state - This simulates a case where the state manager evicts state objects
         ConnectionStateManager.getInstance().evictStateOlderThan(Duration.ofMillis(1));
-        ConnectionState connectionState = ConnectionStateManager.getInstance().getState(poolName);
+        IdentityState connectionState = ConnectionStateManager.getInstance().getState(poolName);
         assertNull(connectionState);
 
         // User gets another connection to db1
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //Verify new connection state has been created for user
-        ConnectionState connectionState2 = ConnectionStateManager.getInstance().getState(poolName);
+        IdentityState connectionState2 = ConnectionStateManager.getInstance().getState(poolName);
         assertEquals("testuser1", connectionState2.getIdentity().getName());
         assertNotNull(connectionState2.getCredentialSupplier());
 

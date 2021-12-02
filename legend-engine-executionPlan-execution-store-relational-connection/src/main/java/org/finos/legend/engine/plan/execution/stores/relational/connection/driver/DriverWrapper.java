@@ -15,8 +15,8 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver;
 
 import org.eclipse.collections.api.tuple.Pair;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -30,10 +30,12 @@ public abstract class DriverWrapper implements Driver
 {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DriverWrapper.class);
 
-    private Driver driver;
+    private final Driver driver;
+    private final ConnectionStateManager connectionStateManager;
 
     public DriverWrapper()
     {
+        this.connectionStateManager = ConnectionStateManager.getInstance();
         try
         {
             this.driver = (Driver) DriverWrapper.class.getClassLoader().loadClass(getClassName()).newInstance();
@@ -54,31 +56,31 @@ public abstract class DriverWrapper implements Driver
     @Override
     public Connection connect(String url, Properties info) throws SQLException
     {
-        DataSourceSpecification ds = null;
+        DataSourceWithStatistics ds = null;
         try
         {
-            String instanceId = (String)info.get(DataSourceSpecification.DATASOURCE_SPEC_INSTANCE);
-            if (instanceId == null)
+            String poolIdentifier = (String)info.get(ConnectionStateManager.POOL_NAME_KEY);
+            if (poolIdentifier == null)
             {
-                throw new IllegalArgumentException("Connection properties dont have datasource Id " + DataSourceSpecification.DATASOURCE_SPEC_INSTANCE);
+                throw new IllegalStateException("Connection properties dont have pool Id " + ConnectionStateManager.POOL_NAME_KEY);
             }
-            ds = DataSourceSpecification.getInstance(instanceId);
+            ds = this.connectionStateManager.getDataSourceByPoolName(poolIdentifier);
             if (ds == null)
             {
-                throw new IllegalStateException("Cannot get datasource for id " + instanceId);
+                throw new IllegalStateException("Cannot find state for pool " + poolIdentifier);
             }
 
             Pair<String, Properties> res = ds.getAuthenticationStrategy().handleConnection(url, info, ds.getDatabaseManager());
-            LOGGER.info("Handled connection by [{}] Authentication strategy for [{}]", ds.getAuthenticationStrategy().getKey().shortId(), instanceId);
-            int builtConnections = ds.getDataSourceSpecificationStatistics().buildConnection();
-            LOGGER.info("Total [{}] connections built for data source [{}]", builtConnections, instanceId);
+            LOGGER.info("Handled connection by [{}] Authentication strategy for [{}]", ds.getAuthenticationStrategy().getKey().shortId(), poolIdentifier);
+            int builtConnections = ds.buildConnection();
+            LOGGER.info("Total [{}] connections built for data source [{}]", builtConnections, poolIdentifier);
             Connection dbConnection = driver.connect(res.getOne(), handlePropertiesPriorToJDBCDriverConnection(res.getTwo()));
             LOGGER.info("[{}] Driver connected ", driver.getClass().getCanonicalName());
             return dbConnection;
         }
         catch (Exception e)
         {
-            LOGGER.error("Error connecting to db [{}] , pool stats [{}]", url,RelationalExecutorInfo.getPoolStatisticsAsJSON(ds),e);
+            LOGGER.error("Error connecting to db [{}], pool stats [{}]", url,connectionStateManager.getPoolStatisticsAsJSON(ds),e);
             if (e instanceof SQLException)
             {
                 StringBuffer buffer = new StringBuffer();

@@ -18,7 +18,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.H2TestUtils;
@@ -45,6 +44,12 @@ import static org.junit.Assert.assertEquals;
 public class TestLocalH2ConnectionState extends DbSpecificTests
 {
     private ConnectionManagerSelector connectionManagerSelector;
+    public static final MutableList<String> SETUP_SQLS = Lists.mutable.with("drop table if exists PersonTable;",
+            "create table PersonTable(id INT, firmId INT, firstName VARCHAR(200), lastName VARCHAR(200));",
+            "insert into PersonTable (id, firmId, firstName, lastName) values (1, 1, 'pierre', 'de belen');",
+            "drop table if exists FirmTable;",
+            "create table FirmTable(id INT, legalName VARCHAR(200));",
+            "insert into FirmTable (id, legalName) values (1, 'firm')");
 
     @Override
     protected Subject getSubject() {
@@ -55,14 +60,13 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
     public void setup() throws Exception
     {
         // The manager is a singleton. Reset singleton to avoid interference from other tests
-        ConcurrentHashMap stateByPool = (ConcurrentHashMap) ReflectionUtils.getFieldUsingReflection(ConnectionStateManager.class, ConnectionStateManager.getInstance(), "stateByPool");
+        ConcurrentHashMap stateByPool = (ConcurrentHashMap) ReflectionUtils.getFieldUsingReflection(ConnectionStateManager.class, ConnectionStateManager.getInstance(), "connectionPools");
         stateByPool.clear();
-
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
 
     @Test
-    public void stateNotAccumulatedForLocalH2() throws Exception {
+    public void stateAccumulatedForLocalH2() throws Exception {
         ConnectionStateManager stateManager = ConnectionStateManager.getInstance();
         assertEquals("mismatch in state count", 0, stateManager.size());
 
@@ -79,19 +83,18 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
                 .collect(Collectors.toSet());
         assertEquals("did not create distinct connections", 10, connectionNames.size());
 
-        assertEquals("mismatch in state count", 0, stateManager.size());
+        assertEquals("mismatch in state count", 1, stateManager.size());
     }
 
-    public RelationalDatabaseConnection buildLocalH2DatasourceSpec() throws Exception {
-        MutableList<String> setupSqls = Lists.mutable.with("drop table if exists PersonTable;",
-                "create table PersonTable(id INT, firmId INT, firstName VARCHAR(200), lastName VARCHAR(200));",
-                "insert into PersonTable (id, firmId, firstName, lastName) values (1, 1, 'pierre', 'de belen');",
-                "drop table if exists FirmTable;",
-                "create table FirmTable(id INT, legalName VARCHAR(200));",
-                "insert into FirmTable (id, legalName) values (1, 'firm')");
+    private RelationalDatabaseConnection buildLocalH2DatasourceSpec() throws Exception {
 
-        LocalH2DatasourceSpecification localH2DatasourceSpec = new LocalH2DatasourceSpecification(null, setupSqls);
+        LocalH2DatasourceSpecification localH2DatasourceSpec = buildDataSource(SETUP_SQLS);
         TestDatabaseAuthenticationStrategy testDatabaseAuthSpec = new TestDatabaseAuthenticationStrategy();
         return new RelationalDatabaseConnection(localH2DatasourceSpec, testDatabaseAuthSpec, DatabaseType.H2);
+    }
+
+    private LocalH2DatasourceSpecification buildDataSource(MutableList<String> setupSqls)
+    {
+        return new LocalH2DatasourceSpecification(null, setupSqls);
     }
 }

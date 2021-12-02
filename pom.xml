@@ -125,7 +125,7 @@
         <maven.compiler.release>8</maven.compiler.release>
 
         <!-- Databases -->
-        <hikaricp.version>3.4.5</hikaricp.version>
+        <hikaricp.version>4.0.3</hikaricp.version>
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
 

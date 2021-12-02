@@ -17,12 +17,16 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ConnectionPoolTestUtils;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ReflectionUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
@@ -48,6 +52,7 @@ public class TestDatasourceCreation
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
     private ConnectionManagerSelector connectionManagerSelector;
+    private ConnectionStateManager connectionStateManager;
 
     @Before
     public void setup() throws Exception
@@ -56,7 +61,8 @@ public class TestDatasourceCreation
 
         // We maintain a bunch of singleton state. We have to reset this state so as to avoid interference between tests
         ConnectionPoolTestUtils.resetDatasourceSpecificationSingletonState();
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
+        this.connectionStateManager = ConnectionStateManager.getInstance();
     }
 
     @After
@@ -78,15 +84,17 @@ public class TestDatasourceCreation
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
-        String key = String.format("Static_host:127.0.0.1_port:%d_db:db1_auth_type:TestDB", server.getPort());
+        ConnectionKey connectionKey = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database1);
+        String key = this.connectionStateManager.poolNameFor(identity,connectionKey);
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
+
 
         // We have a single data source
         datasourceSpecifications = ConnectionPoolTestUtils.getDataSourceSpecifications();
         assertEquals(1, datasourceSpecifications.size());
 
         // We have a single data source for user1
-        DataSourceWithStatistics datasource1 = this.getDatasourceForUser(this.getDatasourceBykey(datasourceSpecifications, key), identity);
+        DataSourceWithStatistics datasource1 = this.getDatasourceByPool(key);
 
         // User gets another connection to db1
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
@@ -94,7 +102,7 @@ public class TestDatasourceCreation
         // We still have a single data source for user1
         datasourceSpecifications = ConnectionPoolTestUtils.getDataSourceSpecifications();
         assertEquals(1, datasourceSpecifications.size());
-        DataSourceWithStatistics datasource2 = this.getDatasourceForUser(this.getDatasourceBykey(datasourceSpecifications, key), identity);
+        DataSourceWithStatistics datasource2 = this.getDatasourceByPool(key);
 
         assertSame("found distinct datasources when same datasource was expected", datasource1, datasource2);
     }
@@ -108,19 +116,22 @@ public class TestDatasourceCreation
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db2");
-        String key1 = String.format("Static_host:127.0.0.1_port:%d_db:db2_auth_type:TestDB", server.getPort());
+        ConnectionKey connectionKey = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database1);
+        String pool1 = this.connectionStateManager.poolNameFor(identity,connectionKey);
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
+
 
         // We have a single data source
         datasourceSpecifications = ConnectionPoolTestUtils.getDataSourceSpecifications();
         assertEquals(1, datasourceSpecifications.size());
 
         // We have a single data source for user1
-        DataSourceWithStatistics datasource1 = this.getDatasourceForUser(this.getDatasourceBykey(datasourceSpecifications, key1), identity);
+        DataSourceWithStatistics datasource1 = this.getDatasourceByPool(pool1);
 
         // User gets another connection to db2
         RelationalDatabaseConnection database2 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db3");
-        String key3 = String.format("Static_host:127.0.0.1_port:%d_db:db3_auth_type:TestDB", server.getPort());
+        ConnectionKey key2 = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database2);
+        String pool2 = this.connectionStateManager.poolNameFor(identity,key2);
 
         this.connectionManagerSelector.getDatabaseConnection(identity, database2);
 
@@ -129,7 +140,7 @@ public class TestDatasourceCreation
         assertEquals(2, datasourceSpecifications.size());
 
         // We have a single data source for user2
-        DataSourceWithStatistics datasource2 = this.getDatasourceForUser(this.getDatasourceBykey(datasourceSpecifications, key3), identity);
+        DataSourceWithStatistics datasource2 = this.getDatasourceByPool(pool2);
 
         assertNotSame("found same datasource when distinct datasources was expected", datasource1, datasource2);
     }
@@ -143,22 +154,27 @@ public class TestDatasourceCreation
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db4");
-        String key1 = String.format("Static_host:127.0.0.1_port:%d_db:db4_auth_type:TestDB", server.getPort());
+        ConnectionKey connectionKey = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database1);
+        String key1 = this.connectionStateManager.poolNameFor(identity1,connectionKey);
 
         this.connectionManagerSelector.getDatabaseConnection(identity1, database1);
+
+        DataSourceSpecification ds = builStaticDataSourceSpecification("127.0.0.1", server.getPort(), "db4");
+        assertEquals(ds.getConnectionKey(),connectionKey);
 
         // We have a single data source
         datasourceSpecifications = ConnectionPoolTestUtils.getDataSourceSpecifications();
         assertEquals(1, datasourceSpecifications.size());
 
         // We have a single data source for user1
-        DataSourceWithStatistics datasource1 = this.getDatasourceForUser(this.getDatasourceBykey(datasourceSpecifications, key1), identity1);
+        DataSourceWithStatistics datasource1 = this.getDatasourceByPool(key1);
 
         Identity identity2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser2");
 
         // User gets another connection to db2
         RelationalDatabaseConnection database2 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db5");
-        String key2 = String.format("Static_host:127.0.0.1_port:%d_db:db5_auth_type:TestDB", server.getPort());
+        ConnectionKey key2 = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database2);
+        String pool2 = this.connectionStateManager.poolNameFor(identity2,key2);
         this.connectionManagerSelector.getDatabaseConnection(identity2, database2);
 
         // We now have 2 data sources one per database + user
@@ -166,7 +182,7 @@ public class TestDatasourceCreation
         assertEquals(2, datasourceSpecifications.size());
 
         // We have a single data source for user2
-        DataSourceWithStatistics datasource2 = this.getDatasourceForUser(this.getDatasourceBykey(datasourceSpecifications, key2), identity2);
+        DataSourceWithStatistics datasource2 = this.getDatasourceByPool(pool2);
 
         assertNotSame("found same datasource when distinct datasources was expected", datasource1, datasource2);
     }
@@ -183,14 +199,16 @@ public class TestDatasourceCreation
         return relationalDatabaseConnection;
     }
 
-    private DataSourceWithStatistics getDatasourceForUser(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification dataSourceSpecification, Identity identity) throws Exception
+    private DataSourceWithStatistics getDatasourceByPool(String pool)
     {
-        ConcurrentMutableMap pools = (ConcurrentMutableMap)ReflectionUtils.getFieldUsingReflection(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification.class, dataSourceSpecification, "connectionPoolByUser");
-        return (DataSourceWithStatistics) pools.get(identity.getName());
+        return ConnectionStateManager.getInstance().get(pool);
     }
 
-    private StaticDataSourceSpecification getDatasourceBykey(ConcurrentMutableMap datasourceSpecifications, String key)
+    public StaticDataSourceSpecification builStaticDataSourceSpecification(String host, int port, String databaseName)
     {
-        return (org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification)datasourceSpecifications.get(key);
+        return  new StaticDataSourceSpecification(
+                new StaticDataSourceSpecificationKey(host,port,databaseName),
+                new H2Manager(),
+                new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy());
     }
 }

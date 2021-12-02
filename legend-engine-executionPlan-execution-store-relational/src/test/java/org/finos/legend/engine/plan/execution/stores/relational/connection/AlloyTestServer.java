@@ -25,23 +25,24 @@ import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.h2.tools.Server;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.slf4j.Logger;
 
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Map;
 
 import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
 
 public abstract class AlloyTestServer
 {
+    protected static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TestRelationalExecutionStatistics.class);
     private static final String DRIVER_CLASS_NAME = "org.h2.Driver";
     protected static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
@@ -115,9 +116,9 @@ public abstract class AlloyTestServer
 
     protected abstract void insertTestData(Statement statement) throws SQLException;
 
-    protected RelationalExecutorInfo getRelationalExecutorInfo()
+    protected String executePlan(SingleExecutionPlan singleExecutionPlan)
     {
-        return (RelationalExecutorInfo)planExecutor.getPlanExecutorInfo().getStoreExecutionInfos().get(0);
+        return  executePlan(singleExecutionPlan, Collections.emptyMap());
     }
 
 

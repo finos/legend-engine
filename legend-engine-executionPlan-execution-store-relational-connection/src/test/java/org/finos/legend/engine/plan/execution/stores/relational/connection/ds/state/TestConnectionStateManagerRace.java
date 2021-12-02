@@ -14,59 +14,58 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public class TestConnectionStateManagerRace
+public class TestConnectionStateManagerRace extends TestConnectionManagement
 {
-    private FakeClock clock;
-    private long startTime;
-    private InstrumentedConnectionStateManager connectionStateManager;
     private CountDownLatch countDownLatch;
 
     @Before
     public void setup() throws Exception
     {
-        resetSingleton();
-
-        this.startTime = System.currentTimeMillis();
-        this.clock = new FakeClock(startTime);
+        super.setup();
         this.countDownLatch = new CountDownLatch(1);
-        this.connectionStateManager = new InstrumentedConnectionStateManager(clock, countDownLatch);
+
+        this.connectionStateManager = new InstrumentedConnectionStateManager(clock, countDownLatch, 2);
+        ConnectionStateManager.setInstanceForTesting(connectionStateManager);
     }
 
-    private void resetSingleton() throws Exception
-    {
-        Field field = ConnectionStateManager.class.getDeclaredField("INSTANCE");
-        field.setAccessible(true);
-        field.set(null, null);
-    }
 
     @Test
     public void testEvictionRace() throws InterruptedException
     {
         // cache has 2 state objects
-        connectionStateManager.registerState("pool1", null, Optional.empty());
-        ConnectionState pool1Version1 = connectionStateManager.getState("pool1");
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool1");
+        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool2");
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1;"));
+        String pool1 = connectionStateManager.poolNameFor(user1,ds1.getConnectionKey());
+        String pool2 = connectionStateManager.poolNameFor(user2,ds1.getConnectionKey());
 
-        connectionStateManager.registerState("pool2", null, Optional.empty());
-        ConnectionState pool2Version1 = connectionStateManager.getState("pool2");
-
+        requestConnection(user1, ds1);
+        Assert.assertEquals(1, connectionStateManager.get(pool1).getStatistics().getRequestedConnections());
+        requestConnection(user1, ds1);
+        requestConnection(user2, ds1);
+        DataSourceStatistics pool1Version1 = DataSourceStatistics.clone(connectionStateManager.get(pool1).getStatistics());
         assertEquals(2, connectionStateManager.size());
-        assertStateExists("pool1", "pool2");
+        assertPoolStateExists(pool1, pool2);
+        Assert.assertEquals(2, connectionStateManager.get(pool1).getStatistics().getRequestedConnections());
+        Assert.assertEquals(1, connectionStateManager.get(pool2).getStatistics().getRequestedConnections());
 
         // advance clock by 4 minutes and invoke eviction (to simulate eviction task)
         clock.advance(Duration.ofMinutes(4));
@@ -77,24 +76,16 @@ public class TestConnectionStateManagerRace
         Thread.sleep(Duration.ofSeconds(2).toMillis());
 
         // update the state for pool1
-        connectionStateManager.registerState("pool1", null, Optional.empty());
-
+        requestConnection(user1, ds1);
+        Assert.assertEquals(3, connectionStateManager.get(pool1).getStatistics().getRequestedConnections());
         // now let the state manager continue with the eviction
         countDownLatch.countDown();
         Thread.sleep(Duration.ofSeconds(2).toMillis());
         assertTrue("Background eviction task has not completed", evictionTask.isDone());
-
+        Assert.assertNotSame("mismatch in cached state", pool1Version1.getLastConnectionRequestAge(), connectionStateManager.get(pool1).getStatistics().getLastConnectionRequestAge());
         assertEquals(1, connectionStateManager.size());
-        assertStateExists("pool1");
+        assertPoolStateExists(pool1);
 
-        assertNotSame("mismatch in cached state", pool1Version1, connectionStateManager.getState("pool1"));
-    }
 
-    private void assertStateExists(String ...poolNames)
-    {
-        for (String poolName : poolNames)
-        {
-            assertNotNull("State not found for pool="+ poolName, connectionStateManager.getState(poolName));
-        }
     }
 }

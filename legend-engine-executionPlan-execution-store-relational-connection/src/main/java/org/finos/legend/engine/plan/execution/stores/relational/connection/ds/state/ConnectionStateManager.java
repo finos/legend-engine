@@ -14,18 +14,38 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
-import java.time.Clock;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zaxxer.hikari.HikariDataSource;
+import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
-import org.finos.legend.engine.authentication.credential.CredentialSupplier;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
+import java.time.Clock;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManagerPOJO.buildConnectionPool;
 
 /*
     This class implements a least-recently-used cache of state objects.
@@ -87,13 +107,14 @@ import org.slf4j.LoggerFactory;
 public class ConnectionStateManager
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStateManager.class);
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private static ScheduledExecutorService EXECUTOR_SERVICE;
 
     public static final long DEFAULT_EVICTION_DURATION_IN_SECONDS = Duration.ofMinutes(10).getSeconds();
     public static String EVICTION_DURATION_SYSTEM_PROPERTY = "org.finos.legend.engine.execution.connectionStateEvictionDurationInSeconds";
 
     public static String POOL_NAME_KEY = "POOL_NAME_KEY";
+    private static final String SEPARATOR = "_";
 
     private static ConnectionStateManager INSTANCE;
 
@@ -101,13 +122,13 @@ public class ConnectionStateManager
     {
         ThreadFactory threadFactory = r -> new Thread(r, "ConnectionStateManager Housekeeper");
         long evictionDurationInSeconds = resolveEvictionDuration();
-        ConnectionStateEvictionTask connectionStateEvictionTask = new ConnectionStateEvictionTask(evictionDurationInSeconds);
+        ConnectionStateHousekeepingTask connectionStateEvictionTask = new ConnectionStateHousekeepingTask(evictionDurationInSeconds);
         EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1, threadFactory);
         EXECUTOR_SERVICE.scheduleWithFixedDelay(connectionStateEvictionTask, 0, evictionDurationInSeconds, TimeUnit.SECONDS);
-        LOGGER.info("Connection state eviction thread frequency. Time period={}, Time unit={}", evictionDurationInSeconds, TimeUnit.SECONDS);
+        LOGGER.info("ConnectionStateManager eviction thread frequency. Time period={}, Time unit={}", evictionDurationInSeconds, TimeUnit.SECONDS);
     }
 
-    public static long resolveEvictionDuration()
+    static long resolveEvictionDuration()
     {
         Long evictionDurationInSeconds = Long.getLong(EVICTION_DURATION_SYSTEM_PROPERTY);
         if (evictionDurationInSeconds == null)
@@ -127,9 +148,14 @@ public class ConnectionStateManager
         return getInstanceImpl(Clock.systemUTC());
     }
 
-    public static synchronized final ConnectionStateManager getInstanceForTesting(Clock clock)
+    static synchronized final ConnectionStateManager getInstanceForTesting(Clock clock)
     {
         return getInstanceImpl(clock);
+    }
+
+    static synchronized final void setInstanceForTesting(ConnectionStateManager connectionStateManager)
+    {
+        INSTANCE = connectionStateManager;
     }
 
     private static ConnectionStateManager getInstanceImpl(Clock clock)
@@ -141,9 +167,15 @@ public class ConnectionStateManager
         return INSTANCE;
     }
 
-    private final ConcurrentMutableMap<String, ConnectionState> stateByPool = ConcurrentHashMap.newMap();
+    private final KeyLockManager<String> poolLockManager = KeyLockManager.newManager();
+    private final ConcurrentMutableMap<String, DataSourceWithStatistics> connectionPools = ConcurrentHashMap.newMap();
 
     private Clock clock;
+
+    public Clock getClock()
+    {
+        return clock;
+    }
 
     ConnectionStateManager(Clock clock)
     {
@@ -152,90 +184,131 @@ public class ConnectionStateManager
     }
 
     // Synchronizes using concurrent map's locks
-    public void registerState(String poolName, Identity identity, Optional<CredentialSupplier> databaseCredentialSupplier)
-    {
-        this.stateByPool.put(poolName, new ConnectionState(this.clock.millis(), identity, databaseCredentialSupplier));
-    }
-
-    // Synchronizes using concurrent map's locks
-    public ConnectionState getStateUsing(Properties properties)
+    public IdentityState getStateUsing(Properties properties)
     {
         String poolName = properties.getProperty(ConnectionStateManager.POOL_NAME_KEY);
         return this.getState(poolName);
     }
 
     // Synchronizes using concurrent map's locks
-    public ConnectionState getState(String poolName)
+    public IdentityState getState(String poolName)
     {
-        return this.stateByPool.get(poolName);
+        DataSourceWithStatistics dataSourceWithStatistics = this.connectionPools.get(poolName);
+        return dataSourceWithStatistics != null ? dataSourceWithStatistics.getIdentityState() : null;
     }
 
     // Synchronizes using concurrent map's locks
-    public void atomicallyRemove(String poolName, ConnectionState expectedStateValue)
+    public DataSourceWithStatistics get(String poolName)
     {
-        this.stateByPool.remove(poolName, expectedStateValue);
+        return this.connectionPools.get(poolName);
     }
 
-    public Set<Map.Entry<String, ConnectionState>> findStateOlderThan(Duration duration)
+    private void atomicallyRemovePool(String pool, DataSourceStatistics expectedState)
     {
-        return this.stateByPool.entrySet().stream()
-                .filter(entry -> entry.getValue().ageInMillis(this.clock) > duration.toMillis())
+        DataSourceWithStatistics currentState = this.connectionPools.get(pool);
+        if (currentState.getStatistics().equals(expectedState))
+        {
+            this.connectionPools.remove(pool);
+            currentState.close();
+            LOGGER.info("removed and closed pool {}", pool);
+        }
+    }
+
+    protected Set<Pair<String, DataSourceStatistics>> findPoolsOlderThan(Duration duration)
+    {
+        return this.connectionPools.values().stream()
+                .filter(ds -> ds.getStatistics().getLastConnectionRequestAge() > duration.toMillis())
+                .map(ds -> Tuples.pair(ds.getPoolName(), DataSourceStatistics.clone(ds.getStatistics())))
                 .collect(Collectors.toSet());
     }
 
     public void evictStateOlderThan(Duration duration)
     {
-        // step 1 - gather entries to be deleted without acquiring a global lock
-        Set<Map.Entry<String, ConnectionState>> entriesToPurge = this.findStateOlderThan(duration);
-        for (Map.Entry<String, ConnectionState> entry : entriesToPurge)
-        {
-            String poolName = entry.getKey();
-            ConnectionState state = entry.getValue();
-            // step 2 - remove atomically - i.e remove iff the state has not been updated since it was read in step 1
-            this.atomicallyRemove(poolName, state);
-        }
+        // step 1 - gather pools to be deleted without acquiring a global lock
+        Set<Pair<String, DataSourceStatistics>> entriesToPurge = this.findPoolsOlderThan(duration);
+        LOGGER.info(" Datasource state purgePoolStates : pool {} to be evicted", entriesToPurge.size());
+        // step 2 - remove atomically - i.e remove iff the state has not been updated since it was read in step 1
+        entriesToPurge.forEach(pool -> this.atomicallyRemovePool(pool.getOne(), pool.getTwo()));
     }
 
     public int size()
     {
-        return this.stateByPool.size();
+        return this.connectionPools.size();
     }
 
-    public void dump()
+    public String poolNameFor(Identity identity, ConnectionKey key)
     {
-        LOGGER.debug("Connection state dump");
-        for (String key : this.stateByPool.keySet())
+        return "DBPool_" + key.shortId() + SEPARATOR + identity.getName();
+    }
+
+    public Object softEvictConnections(String poolName)
+    {
+        StringBuffer result = new StringBuffer();
+        DataSourceWithStatistics datasource = this.connectionPools.get(poolName);
+        if (datasource != null)
         {
-            ConnectionState state = this.stateByPool.get(key);
-            boolean credentialSupplierExists = state.getCredentialSupplier().isPresent();
-            LOGGER.debug("Connection state : AgeInMillis={}, CredentialSupplierExists={}, Key={}", state.ageInMillis(clock), credentialSupplierExists, key);
+            HikariDataSource hds = (HikariDataSource)datasource.getDataSource();
+            result.append("found [").append(hds.getPoolName());
+            result.append("], active connections [");
+            result.append(hds.getHikariPoolMXBean().getActiveConnections());
+            result.append("] ,idle connections [");
+            result.append(hds.getHikariPoolMXBean().getIdleConnections());
+            result.append("] ,total connections [");
+            result.append(hds.getHikariPoolMXBean().getTotalConnections());
+            result.append("]");
+            hds.getHikariPoolMXBean().softEvictConnections();
         }
+        return result.toString();
     }
 
-    public List<ConnectionStatePOJO> getAll()
+    public ConnectionStateManagerPOJO getState()
     {
-        List<ConnectionStatePOJO> statePOJOS = this.stateByPool.entrySet().stream()
-                .map(entry -> new ConnectionStatePOJO(entry.getKey(), entry.getValue().getCredentialSupplier().isPresent(), entry.getValue().ageInMillis(clock)))
-                .collect(Collectors.toList());
-        return statePOJOS;
+        return new ConnectionStateManagerPOJO(this.connectionPools);
     }
 
-    public synchronized void purge(long durationInSeconds)
+    private synchronized void purge(long durationInSeconds)
     {
         int sizeBeforePurge = this.size();
-        LOGGER.info("Connection state purge : Starting purge with cache size={}", sizeBeforePurge);
+        LOGGER.info("DataSource state : Starting  with cache size={}", sizeBeforePurge);
         this.evictStateOlderThan(Duration.ofSeconds(durationInSeconds));
         int sizeAfterPurge = this.size();
-        LOGGER.info("Connection state purge : Evicted={}", sizeBeforePurge-sizeAfterPurge);
-        this.dump();
-        LOGGER.info("Connection state purge : Completed purge with cache size={}", sizeAfterPurge);
+        LOGGER.info("Datasource state : Evicted={}", sizeBeforePurge - sizeAfterPurge);
     }
 
-    public static class ConnectionStateEvictionTask implements Runnable
+    public Optional<ConnectionStateManagerPOJO.ConnectionPool> findByPoolName(String poolName)
+    {
+        DataSourceWithStatistics found = this.connectionPools.get(poolName);
+        return found == null ? Optional.empty() : Optional.of(buildConnectionPool(found));
+    }
+
+    public DataSourceWithStatistics getDataSourceByPoolName(String poolName)
+    {
+        return this.connectionPools.get(poolName);
+    }
+
+    public List<ConnectionStateManagerPOJO.ConnectionPool> getPoolInformationByUser(String user)
+    {
+        List<ConnectionStateManagerPOJO.ConnectionPool> connectionPools = new ArrayList<>();
+        this.connectionPools.valuesView().forEach(pool -> {
+            if (pool.getPoolPrincipal().equals(user))
+            {
+                connectionPools.add(buildConnectionPool(pool));
+            }
+        });
+        return connectionPools;
+    }
+
+
+//    public DataSourceSpecification getDatasource(ConnectionKey connectionKey)
+//    {
+//        return dataSourceSpecifications.get(connectionKey);
+//    }
+
+    static class ConnectionStateHousekeepingTask implements Runnable
     {
         private final long durationInSeconds;
 
-        public ConnectionStateEvictionTask(long durationInSeconds)
+        public ConnectionStateHousekeepingTask(long durationInSeconds)
         {
             this.durationInSeconds = durationInSeconds;
         }
@@ -244,47 +317,114 @@ public class ConnectionStateManager
         public void run()
         {
             ConnectionStateManager instance = ConnectionStateManager.getInstance();
-            instance.purge(durationInSeconds);
+            try
+            {
+                instance.purge(durationInSeconds);
+            }
+            catch (Exception e)
+            {
+                LOGGER.error("Datasource Connection State purge failed {}", e);
+            }
         }
     }
 
-    public static class ConnectionStatePOJO
+    public DataSourceWithStatistics getDataSourceForIdentityIfAbsentBuild(IdentityState identityState, DataSourceSpecification dataSourceSpecification, Supplier<DataSource> dataSourceBuilder)
     {
-        String poolName;
-        boolean credentialSupplierPresent;
-        long ageInMillis;
 
-        public ConnectionStatePOJO() {
+        String principal = identityState.getIdentity().getName();
+        String poolName = poolNameFor(identityState.getIdentity(), dataSourceSpecification.getConnectionKey());
+        ConnectionKey connectionKey = dataSourceSpecification.getConnectionKey();
+        //thread safe as concurrent map;
+        Function0<DataSourceWithStatistics> dsSupplier = () -> new DataSourceWithStatistics(poolName,identityState,dataSourceSpecification);
+        DataSource dataSource = this.connectionPools.getIfAbsentPut(poolName, dsSupplier).getDataSource();
+        if (dataSource == null)
+        {
+            synchronized (poolLockManager.getLock(poolName))
+            {
+                dataSource = this.connectionPools.getIfAbsentPut(poolName, dsSupplier).getDataSource();
+                if (dataSource == null)
+                {
+                    LOGGER.info("Pool not found for [{}] for datasource [{}], creating one", principal, connectionKey.shortId());
+                    try
+                    {
+                        DataSourceWithStatistics dataSourceWithStatistics = new DataSourceWithStatistics(poolName,dataSourceBuilder.get(), identityState, dataSourceSpecification);
+                        this.connectionPools.put(poolName, dataSourceWithStatistics);
+                        LOGGER.info("Pool created for [{}] for datasource [{}], name {}", principal, connectionKey.shortId(), poolName);
+                    }
+                    catch (Exception e)
+                    {
+                        LOGGER.error("Error creating pool {} {}", poolName, e);
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
         }
 
-        public ConnectionStatePOJO(String poolName, boolean credentialSupplierPresent, long ageInMillis) {
-            this.poolName = poolName;
-            this.credentialSupplierPresent = credentialSupplierPresent;
-            this.ageInMillis = ageInMillis;
+        LOGGER.info("Found pool for [{}] in datasource [{}] : pool Name [{}]", principal, connectionKey.shortId(), poolName);
+        return this.connectionPools.get(poolName);
+    }
+
+    public Object getPoolStatisticsAsJSON(DataSourceWithStatistics poolState)
+    {
+        try
+        {
+            return objectMapper.writeValueAsString(ConnectionStateManagerPOJO.buildConnectionPool(poolState));
+        }
+        catch (JsonProcessingException e)
+        {
+            LOGGER.error(e.getMessage());
+            return null;
+        }
+    }
+
+    public Object getPoolStatisticsAsJSON(String poolName)
+    {
+        DataSourceWithStatistics pool = connectionPools.get(poolName);
+        try
+        {
+            return objectMapper.writeValueAsString(ConnectionStateManagerPOJO.buildConnectionPool(pool));
+        }
+        catch (JsonProcessingException e)
+        {
+            LOGGER.error(e.getMessage());
+            return null;
+        }
+    }
+
+
+    private static class KeyLockManager<K>
+    {
+        private static final Function0<Object> NEW_LOCK = (Function0<Object>)() -> new Object();
+        private final ConcurrentMutableMap<K, Object> locks = ConcurrentHashMap.newMap();
+
+        private KeyLockManager()
+        {
         }
 
-        public String getPoolName() {
-            return poolName;
+        /**
+         * Get a lock for key.  This "lock" is simply an Object
+         * whose intrinsic lock may be used in a synchronized
+         * statement.  Each key yields a unique lock.  Each call
+         * to this method with a given key will yield the same
+         * lock.  This method supports concurrent access.
+         *
+         * @param key lock key
+         * @return key lock
+         */
+        public Object getLock(K key)
+        {
+            return this.locks.getIfAbsentPut(key, NEW_LOCK);
         }
 
-        public void setPoolName(String poolName) {
-            this.poolName = poolName;
-        }
-
-        public boolean isCredentialSupplierPresent() {
-            return credentialSupplierPresent;
-        }
-
-        public void setCredentialSupplierPresent(boolean credentialSupplierPresent) {
-            this.credentialSupplierPresent = credentialSupplierPresent;
-        }
-
-        public long getAgeInMillis() {
-            return ageInMillis;
-        }
-
-        public void setAgeInMillis(long ageInMillis) {
-            this.ageInMillis = ageInMillis;
+        /**
+         * Create a new key lock manager.
+         *
+         * @param <T> key type
+         * @return new key lock manager
+         */
+        static <T> KeyLockManager<T> newManager()
+        {
+            return new KeyLockManager<T>();
         }
     }
 }

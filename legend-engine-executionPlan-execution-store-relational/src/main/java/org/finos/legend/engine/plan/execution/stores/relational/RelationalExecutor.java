@@ -76,7 +76,6 @@ public class RelationalExecutor
 
     private final ConnectionManagerSelector connectionManager;
     private final RelationalExecutionConfiguration relationalExecutionConfiguration;
-    private final RelationalExecutorInfo relationalExecutorInfo;
     private MutableList<Function2<ExecutionState, List<Map<String, Object>>, Result>> resultInterpreterExtensions;
 
     private static final MutableMap<String, String> DATA_TYPE_RELATIONAL_TYPE_MAP = Maps.mutable.empty();
@@ -96,15 +95,9 @@ public class RelationalExecutor
 
     public RelationalExecutor(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration)
     {
-        this.relationalExecutorInfo = new RelationalExecutorInfo();
-        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, this.relationalExecutorInfo);
+        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles);
         this.relationalExecutionConfiguration = relationalExecutionConfiguration;
         this.resultInterpreterExtensions = Iterate.addAllTo(ServiceLoader.load(ResultInterpreterExtension.class), Lists.mutable.empty()).collect(ResultInterpreterExtension::additionalResultBuilder);
-    }
-
-    public RelationalExecutorInfo getRelationalExecutorInfo()
-    {
-        return this.relationalExecutorInfo;
     }
 
     public RelationalExecutionConfiguration getRelationalExecutionConfiguration()

@@ -14,11 +14,36 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds;
 
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DataSourceStatistics
 {
-    private final AtomicInteger requestedConnections = new AtomicInteger(0);
+    private final AtomicInteger builtConnections ;
+    private AtomicLong lastConnectionRequest ;
+    private final AtomicInteger requestedConnections ;
+
+    public DataSourceStatistics()
+    {
+        this.builtConnections = new AtomicInteger(0);
+        this.lastConnectionRequest = new AtomicLong(getCurrentTimeInInMillis());
+        this.requestedConnections = new AtomicInteger(0);
+    }
+
+    private DataSourceStatistics(int builtConnections, long lastConnectionRequest, int requestedConnections)
+    {
+        this.builtConnections = new AtomicInteger(builtConnections);
+        this.lastConnectionRequest = new AtomicLong(lastConnectionRequest);
+        this.requestedConnections = new AtomicInteger(requestedConnections);
+    }
+
+    public static DataSourceStatistics clone(DataSourceStatistics statistics)
+    {
+        return new DataSourceStatistics(statistics.builtConnections.get(),statistics.lastConnectionRequest.get(),statistics.requestedConnections.get());
+    }
 
     public int getRequestedConnections()
     {
@@ -27,6 +52,49 @@ public class DataSourceStatistics
 
     public int requestConnection()
     {
+        lastConnectionRequest.set(getCurrentTimeInInMillis());
         return requestedConnections.incrementAndGet();
+    }
+
+    private long getCurrentTimeInInMillis()
+    {
+        return ConnectionStateManager.getInstance().getClock().millis();
+    }
+
+    public long getLastConnectionRequest()
+    {
+        return lastConnectionRequest.get();
+    }
+
+    public long getLastConnectionRequestAge()
+    {
+        return getCurrentTimeInInMillis() - this.lastConnectionRequest.get();
+    }
+
+    public int buildConnection()
+    {
+        return builtConnections.incrementAndGet();
+    }
+
+    public int getBuiltConnections()
+    {
+        return builtConnections.get();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DataSourceStatistics that = (DataSourceStatistics)o;
+        return Objects.equals(getBuiltConnections(), that.getBuiltConnections()) &&
+                Objects.equals(getLastConnectionRequest(), that.getLastConnectionRequest()) &&
+                Objects.equals(getRequestedConnections(), that.getRequestedConnections());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(getBuiltConnections(), getLastConnectionRequest(), getRequestedConnections());
     }
 }

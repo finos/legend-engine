@@ -3,7 +3,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.api;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -12,18 +11,24 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
+
 
 @Api(tags = "Server")
 @Path("server/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class RelationalExecutorInformation
 {
-    private final RelationalStoreExecutor relationalStoreExecutor;
-
-    public RelationalExecutorInformation(RelationalStoreExecutor relationalStoreExecutor)
+    private final ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
+    public RelationalExecutorInformation()
     {
-        this.relationalStoreExecutor = relationalStoreExecutor;
+    }
+
+    @GET
+    @Path("executorInfo")
+    @ApiOperation(value = "Provides information about executors (like connections pools, etc.)")
+    public Response executePureGet()
+    {
+        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(connectionStateManager.getState()).build();
     }
 
     @GET
@@ -31,7 +36,7 @@ public class RelationalExecutorInformation
     @ApiOperation(value = "Provides database pool information ")
     public Response getPoolInformation(@PathParam("poolName") String poolName)
     {
-        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(relationalStoreExecutor.getStoreState().getStoreExecutionInfo().findByPoolName(poolName)).build();
+        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(connectionStateManager.findByPoolName(poolName)).build();
     }
 
     @DELETE
@@ -39,7 +44,7 @@ public class RelationalExecutorInformation
     @ApiOperation(value = "soft evict connections in this  database pool ")
     public Response sofEvict(@PathParam("poolName") String poolName)
     {
-        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(relationalStoreExecutor.getStoreState().getStoreExecutionInfo().softEvictConnections(poolName)).build();
+        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(connectionStateManager.softEvictConnections(poolName)).build();
     }
 
     @GET
@@ -47,16 +52,7 @@ public class RelationalExecutorInformation
     @ApiOperation(value = "Provides pool information by user ")
     public Response getUserInformation(@PathParam("user") String user)
     {
-        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(relationalStoreExecutor.getStoreState().getStoreExecutionInfo().getPoolInformationByUser(user)).build();
+        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(connectionStateManager.getPoolInformationByUser(user)).build();
     }
 
-    @GET
-    @Path("executorInfo/connectionState")
-    @ApiOperation(value = "Provides connection state information")
-    public Response getConnectionState()
-    {
-        ConnectionStateManager stateManager = ConnectionStateManager.getInstance();
-        List<ConnectionStateManager.ConnectionStatePOJO> states = stateManager.getAll();
-        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(states).build();
-    }
 }

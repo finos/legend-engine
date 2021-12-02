@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
@@ -24,8 +23,8 @@ import java.util.Properties;
 
 public abstract class DynamicDataSourceSpecification extends DataSourceSpecification
 {
-    public DynamicDataSourceSpecification(DataSourceSpecificationKey key, DatabaseManager databaseDriver, AuthenticationStrategy authenticationStrategy, Properties extraUserDataSourceProperties, RelationalExecutorInfo relationalExecutorInfo)
+    public DynamicDataSourceSpecification(DataSourceSpecificationKey key, DatabaseManager databaseDriver, AuthenticationStrategy authenticationStrategy, Properties extraUserDataSourceProperties)
     {
-        super(key, databaseDriver, authenticationStrategy, extraUserDataSourceProperties, relationalExecutorInfo);
+        super(key, databaseDriver, authenticationStrategy, extraUserDataSourceProperties);
     }
 }

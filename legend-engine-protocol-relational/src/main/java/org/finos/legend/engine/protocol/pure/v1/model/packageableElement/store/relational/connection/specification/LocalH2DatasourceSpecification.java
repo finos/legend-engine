@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification;
 
-import java.util.Collections;
 import java.util.List;
 
 public class LocalH2DatasourceSpecification extends DatasourceSpecification

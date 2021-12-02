@@ -30,7 +30,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.SnowflakePublicAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionState;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -82,13 +82,13 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
 
     private PrivateKeyCredential resolveCredential(Properties properties, String privateKeyVaultReference, String passPhraseVaultReference, String publicUserName)
     {
-        ConnectionState connectionState = ConnectionStateManager.getInstance().getStateUsing(properties);
-        if (!connectionState.getCredentialSupplier().isPresent())
+        IdentityState identityState = ConnectionStateManager.getInstance().getStateUsing(properties);
+        if (!identityState.getCredentialSupplier().isPresent())
         {
             PrivateKey privateKey = this.getEncryptedPrivateKey(privateKeyVaultReference, passPhraseVaultReference);
             return new PrivateKeyCredential(publicUserName, privateKey);
         }
-        return (PrivateKeyCredential)super.getDatabaseCredential(connectionState);
+        return (PrivateKeyCredential)super.getDatabaseCredential(identityState);
     }
 
     private PrivateKey getEncryptedPrivateKey(String privateKeyVaultReference, String passPhraseVaultReference)

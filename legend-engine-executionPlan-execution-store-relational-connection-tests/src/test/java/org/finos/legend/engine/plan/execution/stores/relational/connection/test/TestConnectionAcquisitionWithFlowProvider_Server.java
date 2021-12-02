@@ -65,7 +65,7 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
         installFlowProvider();
         assertSnowflakeKeyPairFlowIsAvailable();
 
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
 
     private void installFlowProvider()
