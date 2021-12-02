@@ -87,7 +87,6 @@ public abstract class DataSourceSpecification
         this.authenticationStrategy = authenticationStrategy;
         this.connectionKey = new ConnectionKey(this.datasourceKey, this.authenticationStrategy.getKey());
         this.extraDatasourceProperties.putAll(extraUserProperties);
-    //    this.connectionStateManager.registerDataSourceSpecificationIfAbsent(connectionKey,this);
         this.maxPoolSize  = maxPoolSize;
         this.minPoolSize = minPoolSize;
         MetricsHandler.observeCount("datastore specifications");
