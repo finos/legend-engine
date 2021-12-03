@@ -75,7 +75,7 @@ public abstract class TestConnectionManagement
     {
         for (String poolName : poolNames)
         {
-            assertNotNull("State not found for pool=" + poolName, connectionStateManager.getState(poolName));
+            assertNotNull("State not found for pool=" + poolName, connectionStateManager.getConnectionStateManagerPOJO(poolName));
         }
     }
 }

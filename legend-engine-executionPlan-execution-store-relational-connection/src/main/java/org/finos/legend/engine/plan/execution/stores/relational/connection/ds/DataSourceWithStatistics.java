@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zaxxer.hikari.HikariDataSource;
+import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
@@ -23,6 +24,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.st
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import javax.sql.DataSource;
+import java.util.Objects;
+import java.util.Optional;
 
 public class DataSourceWithStatistics
 {
@@ -98,7 +101,7 @@ public class DataSourceWithStatistics
         return identityState.getIdentity();
     }
 
-    public Object getCredentialSupplier()
+    public Optional<CredentialSupplier> getCredentialSupplier()
     {
         return identityState.getCredentialSupplier();
     }
@@ -127,6 +130,7 @@ public class DataSourceWithStatistics
     {
         return dataSourceSpecification;
     }
+
 }
 
 

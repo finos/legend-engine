@@ -82,7 +82,7 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
 
     private PrivateKeyCredential resolveCredential(Properties properties, String privateKeyVaultReference, String passPhraseVaultReference, String publicUserName)
     {
-        IdentityState identityState = ConnectionStateManager.getInstance().getStateUsing(properties);
+        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
         if (!identityState.getCredentialSupplier().isPresent())
         {
             PrivateKey privateKey = this.getEncryptedPrivateKey(privateKeyVaultReference, passPhraseVaultReference);

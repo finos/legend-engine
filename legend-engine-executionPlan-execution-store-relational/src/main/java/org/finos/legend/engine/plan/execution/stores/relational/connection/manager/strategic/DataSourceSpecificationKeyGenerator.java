@@ -33,8 +33,8 @@ import java.io.File;
 
 public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificationVisitor<DataSourceSpecificationKey>
 {
-    public static final String LOCAL_HOST = "127.0.0.1";
-    public static final String TEST_DB = "testDB";
+    private static final String LOCAL_HOST = "127.0.0.1";
+    private static final String TEST_DB = "testDB";
     private final int testDbPort;
     private final RelationalDatabaseConnection connection;
 

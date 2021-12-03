@@ -52,5 +52,4 @@ public class StaticDataSourceSpecification extends DataSourceSpecification
                 ((StaticDataSourceSpecificationKey)this.datasourceKey).getDatabaseName(),
                 properties);
     }
-
 }

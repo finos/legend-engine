@@ -79,9 +79,9 @@ public class TestConnectionState
 
         //verify connection state for user1 exists
         String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
-        IdentityState connectionState = ConnectionStateManager.getInstance().getState(poolName);
-        assertEquals("testuser1", connectionState.getIdentity().getName());
-        assertNotNull(connectionState.getCredentialSupplier());
+        IdentityState identityState = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
+        assertEquals("testuser1", identityState.getIdentity().getName());
+        assertNotNull(identityState.getCredentialSupplier());
     }
 
     @Test
@@ -95,20 +95,20 @@ public class TestConnectionState
 
         //verify connection state for user1 exists
         String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
-        DataSourceWithStatistics connectionState1 = ConnectionStateManager.getInstance().getDataSourceByPoolName(poolName);
-        assertEquals("testuser1", connectionState1.getIdentity().getName());
-        assertNotNull(connectionState1.getCredentialSupplier());
+        DataSourceWithStatistics identityState1 = ConnectionStateManager.getInstance().getDataSourceByPoolName(poolName);
+        assertEquals("testuser1", identityState1.getIdentity().getName());
+        assertNotNull(identityState1.getCredentialSupplier());
 
         // User gets another connection to db1
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        IdentityState connectionState2 = ConnectionStateManager.getInstance().getState(poolName);
-        assertEquals("testuser1", connectionState2.getIdentity().getName());
-        assertNotNull(connectionState2.getCredentialSupplier());
+        IdentityState identityState2 = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
+        assertEquals("testuser1", identityState2.getIdentity().getName());
+        assertNotNull(identityState2.getCredentialSupplier());
 
         // Verify connection state has been reset
-        assertNotSame("expected distinct state objects but got the same one", connectionState1, connectionState2);
+        assertNotSame("expected distinct state objects but got the same one", identityState1, identityState2);
     }
 
     @Test
@@ -122,24 +122,24 @@ public class TestConnectionState
 
         //verify connection state for user1 exists
         String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
-        IdentityState connectionState1 = ConnectionStateManager.getInstance().getState(poolName);
-        assertEquals("testuser1", connectionState1.getIdentity().getName());
-        assertNotNull(connectionState1.getCredentialSupplier());
+        IdentityState identityState1 = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
+        assertEquals("testuser1", identityState1.getIdentity().getName());
+        assertNotNull(identityState1.getCredentialSupplier());
 
         // Reset connection state - This simulates a case where the state manager evicts state objects
-        ConnectionStateManager.getInstance().evictStateOlderThan(Duration.ofMillis(1));
-        IdentityState connectionState = ConnectionStateManager.getInstance().getState(poolName);
-        assertNull(connectionState);
+        ConnectionStateManager.getInstance().evictPoolsOlderThan(Duration.ofMillis(1));
+        IdentityState identityState = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
+        assertNull(identityState);
 
         // User gets another connection to db1
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //Verify new connection state has been created for user
-        IdentityState connectionState2 = ConnectionStateManager.getInstance().getState(poolName);
-        assertEquals("testuser1", connectionState2.getIdentity().getName());
-        assertNotNull(connectionState2.getCredentialSupplier());
+        IdentityState identityState2 = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
+        assertEquals("testuser1", identityState2.getIdentity().getName());
+        assertNotNull(identityState2.getCredentialSupplier());
 
-        assertNotSame("expected distinct state objects but got the same one", connectionState1, connectionState2);
+        assertNotSame("expected distinct state objects but got the same one", identityState1, identityState2);
     }
 
     public RelationalDatabaseConnection buildStaticDatabaseSpec(String host, int port, String databaseName) throws Exception

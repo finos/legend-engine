@@ -59,21 +59,21 @@ public abstract class DriverWrapper implements Driver
         DataSourceWithStatistics ds = null;
         try
         {
-            String poolIdentifier = (String)info.get(ConnectionStateManager.POOL_NAME_KEY);
-            if (poolIdentifier == null)
+            String poolName = (String)info.get(ConnectionStateManager.POOL_NAME_KEY);
+            if (poolName == null)
             {
-                throw new IllegalStateException("Connection properties dont have pool Id " + ConnectionStateManager.POOL_NAME_KEY);
+                throw new IllegalStateException("Connection properties dont have " + ConnectionStateManager.POOL_NAME_KEY);
             }
-            ds = this.connectionStateManager.getDataSourceByPoolName(poolIdentifier);
+            ds = this.connectionStateManager.getDataSourceByPoolName(poolName);
             if (ds == null)
             {
-                throw new IllegalStateException("Cannot find state for pool " + poolIdentifier);
+                throw new IllegalStateException("Cannot find state for pool " + poolName);
             }
 
             Pair<String, Properties> res = ds.getAuthenticationStrategy().handleConnection(url, info, ds.getDatabaseManager());
-            LOGGER.info("Handled connection by [{}] Authentication strategy for [{}]", ds.getAuthenticationStrategy().getKey().shortId(), poolIdentifier);
+            LOGGER.info("Handled connection by [{}] Authentication strategy for [{}]", ds.getAuthenticationStrategy().getKey().shortId(), poolName);
             int builtConnections = ds.buildConnection();
-            LOGGER.info("Total [{}] connections built for data source [{}]", builtConnections, poolIdentifier);
+            LOGGER.info("Total [{}] connections built for data source [{}]", builtConnections, poolName);
             Connection dbConnection = driver.connect(res.getOne(), handlePropertiesPriorToJDBCDriverConnection(res.getTwo()));
             LOGGER.info("[{}] Driver connected ", driver.getClass().getCanonicalName());
             return dbConnection;

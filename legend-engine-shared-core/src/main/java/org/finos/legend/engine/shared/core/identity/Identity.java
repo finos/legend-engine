@@ -16,6 +16,7 @@ package org.finos.legend.engine.shared.core.identity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Identity
@@ -59,5 +60,18 @@ public class Identity
     public int countCredentials()
     {
         return this.credentials.size();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Identity identity = (Identity) o;
+        return Objects.equals(name, identity.name) && Objects.equals(credentials, identity.credentials);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, credentials);
     }
 }

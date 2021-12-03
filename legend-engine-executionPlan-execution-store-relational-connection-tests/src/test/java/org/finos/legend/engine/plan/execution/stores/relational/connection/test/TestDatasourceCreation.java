@@ -88,7 +88,6 @@ public class TestDatasourceCreation
         String key = this.connectionStateManager.poolNameFor(identity,connectionKey);
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
-
         // We have a single data source
         datasourceSpecifications = ConnectionPoolTestUtils.getDataSourceSpecifications();
         assertEquals(1, datasourceSpecifications.size());

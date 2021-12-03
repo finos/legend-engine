@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils;
 
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
-import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;

@@ -28,7 +28,7 @@ public class RelationalExecutorInformation
     @ApiOperation(value = "Provides information about executors (like connections pools, etc.)")
     public Response executePureGet()
     {
-        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(connectionStateManager.getState()).build();
+        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(connectionStateManager.getConnectionStateManagerPOJO()).build();
     }
 
     @GET

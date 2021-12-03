@@ -60,8 +60,8 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
     public void setup() throws Exception
     {
         // The manager is a singleton. Reset singleton to avoid interference from other tests
-        ConcurrentHashMap stateByPool = (ConcurrentHashMap) ReflectionUtils.getFieldUsingReflection(ConnectionStateManager.class, ConnectionStateManager.getInstance(), "connectionPools");
-        stateByPool.clear();
+        ConcurrentHashMap connectionPools = (ConcurrentHashMap) ReflectionUtils.getFieldUsingReflection(ConnectionStateManager.class, ConnectionStateManager.getInstance(), "connectionPools");
+        connectionPools.clear();
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
 
@@ -88,12 +88,12 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
 
     private RelationalDatabaseConnection buildLocalH2DatasourceSpec() throws Exception {
 
-        LocalH2DatasourceSpecification localH2DatasourceSpec = buildDataSource(SETUP_SQLS);
+        LocalH2DatasourceSpecification localH2DatasourceSpec = buildDataSourceSpecification(SETUP_SQLS);
         TestDatabaseAuthenticationStrategy testDatabaseAuthSpec = new TestDatabaseAuthenticationStrategy();
         return new RelationalDatabaseConnection(localH2DatasourceSpec, testDatabaseAuthSpec, DatabaseType.H2);
     }
 
-    private LocalH2DatasourceSpecification buildDataSource(MutableList<String> setupSqls)
+    private LocalH2DatasourceSpecification buildDataSourceSpecification(MutableList<String> setupSqls)
     {
         return new LocalH2DatasourceSpecification(null, setupSqls);
     }

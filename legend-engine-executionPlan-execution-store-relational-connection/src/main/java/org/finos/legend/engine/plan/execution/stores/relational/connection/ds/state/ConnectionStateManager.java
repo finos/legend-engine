@@ -48,30 +48,29 @@ import java.util.stream.Collectors;
 import static org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManagerPOJO.buildConnectionPool;
 
 /*
-    This class implements a least-recently-used cache of state objects.
+    This class implements a least-recently-used cache of pool state objects.
     The objects are keyed by pool name and maintained in a concurrent hash map.
     An eviction thread removes state objects which have not been used in the last N minutes.
 
     Thread safety:
     ----------------
-    The state manager is **mostly** thread safe.
+    The connection state manager is **mostly** thread safe.
 
     Threads:
     ----------------
-    The state manager is accessed by three types of threads :
+    The connection state manager is accessed by three types of threads :
 
     1/ Connection serving thread - This thread serves user connection requests.
-    For every connection request, irrespective of whether a physical database connection is created or not, this thread creates a new state object for the pool from which the connection is requested.
-    The created state object captures the current timestamp. This timestamp which is later used to evict the state object.
-    If a state object for this pool already exists, it is replaced with a new state object with an updated timestamp.
+    For every connection request, irrespective of whether a physical database connection is created or not, this thread updates lastConnectionRequest for the pool statistics from which the connection is requested.
+    This timestamp is later used to evict the pool state object.
 
     2/ Connection creation thread - This thread actually creates the database connection. This can either be the connection serving thread or a Hikari pool thread.
-    When the connection serving thread initializes the Hikari datasource, Hikari *synchronously* creates a connection.
+    When the connection serving thread initializes the Hikari datasource, Hikari *synchronously* creates a connection( due to fail fast setting in Hikari).
     After a Hikari datasource has been initialized, Hikari can refresh the pool by creating connections in its own threads.
-    In both cases, the thread creating the connection reads the state object that was previously written.
+    In both cases, the thread creating the connection reads the pool object that was previously written.
 
-    3/ State manager eviction thread - A scheduled task evicts state objects.
-    The eviction thread evicts state objects that have not been used in the last N minutes. It iterates over the map and removes objects based on the last used timestamp.
+    3/ Connection State manager HouseKeeper thread - A scheduled task evicts pool state objects.
+    The thread evicts pool state objects that have not been used in the last N minutes. It iterates over the map and removes objects based on lastConnectionRequest timestamp.
 
     4/ "DevOps" thread - These are other threads that read the state map for debugging/logging purposes.
     The state manager exposes "get/getAll/dump" methods that iterate over the map.
@@ -81,14 +80,14 @@ import static org.finos.legend.engine.plan.execution.stores.relational.connectio
     1/ The DevOps threads can observe an inconsistent state of the map. This is because we do not lock the entire map when it is being read. While this can produce an inconsistent view, it does not affect correctness/safety.
 
     2/ The connection serving threads and connection creation threads are properly synchronized.
-    The state objects are keyed by the name of the pool. Writes and reads to this pool's state are synchronized using a lock. We do not use an explicit lock but instead use the lock used by the concurrent map implementation.
-    This pool specific lock enforces a "happens before" relationship between the write in the serving thread and read in the creation thread.
+    The state objects are keyed by the name of the pool. Writes and reads to this pool's state are synchronized using a lock. We do use an explicit lock,
+    this pool specific lock enforces a "happens before" relationship between the write in the serving thread and read in the creation thread.
 
     3/ The eviction thread races with connection serving/creation threads.
     Consider the following sequence :
-        time t0 : Eviction Thread : State object S1 with key K1 becomes eligible for eviction
+        time t0 : Eviction Thread : Pool state object S1 with key K1 becomes eligible for eviction
         time t1 : Eviction Thread : Thread is ready to evict S1. It has a reference to S1 but has not yet removed S1 from the map
-        time t2 : Connection Serving Thread : Thread "touches" key K1 with a new state object S2
+        time t2 : Connection Serving Thread : Thread "touches" key K1 with a new pool state object S2
         time t3 : Eviction thread : Thread evicts S1 by removing the map entry with key K1
         time t4 : Connection Thread : Thread fetches state object for key K1 but does not find it (and encounters a null pointer exception)
     To protect against this scenario, the eviction thread uses a two step eviction process.
@@ -107,6 +106,7 @@ import static org.finos.legend.engine.plan.execution.stores.relational.connectio
 public class ConnectionStateManager
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStateManager.class);
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static ScheduledExecutorService EXECUTOR_SERVICE;
 
@@ -115,17 +115,17 @@ public class ConnectionStateManager
 
     public static String POOL_NAME_KEY = "POOL_NAME_KEY";
     private static final String SEPARATOR = "_";
-
+    private static final String DBPOOL = "DBPool_";
     private static ConnectionStateManager INSTANCE;
 
     static
     {
-        ThreadFactory threadFactory = r -> new Thread(r, "ConnectionStateManager Housekeeper");
+        ThreadFactory threadFactory = r -> new Thread(r, "ConnectionStateManager.Housekeeper");
         long evictionDurationInSeconds = resolveEvictionDuration();
-        ConnectionStateHousekeepingTask connectionStateEvictionTask = new ConnectionStateHousekeepingTask(evictionDurationInSeconds);
+        ConnectionStateHousekeepingTask connectionStateHousekeepingTask = new ConnectionStateHousekeepingTask(evictionDurationInSeconds);
         EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1, threadFactory);
-        EXECUTOR_SERVICE.scheduleWithFixedDelay(connectionStateEvictionTask, 0, evictionDurationInSeconds, TimeUnit.SECONDS);
-        LOGGER.info("ConnectionStateManager eviction thread frequency. Time period={}, Time unit={}", evictionDurationInSeconds, TimeUnit.SECONDS);
+        EXECUTOR_SERVICE.scheduleWithFixedDelay(connectionStateHousekeepingTask, 0, evictionDurationInSeconds, TimeUnit.SECONDS);
+        LOGGER.info("ConnectionStateManager.HouseKeeper thread frequency. Time period={}, Time unit={}", evictionDurationInSeconds, TimeUnit.SECONDS);
     }
 
     static long resolveEvictionDuration()
@@ -184,14 +184,14 @@ public class ConnectionStateManager
     }
 
     // Synchronizes using concurrent map's locks
-    public IdentityState getStateUsing(Properties properties)
+    public IdentityState getIdentityStateUsing(Properties properties)
     {
         String poolName = properties.getProperty(ConnectionStateManager.POOL_NAME_KEY);
-        return this.getState(poolName);
+        return this.getConnectionStateManagerPOJO(poolName);
     }
 
     // Synchronizes using concurrent map's locks
-    public IdentityState getState(String poolName)
+    public IdentityState getConnectionStateManagerPOJO(String poolName)
     {
         DataSourceWithStatistics dataSourceWithStatistics = this.connectionPools.get(poolName);
         return dataSourceWithStatistics != null ? dataSourceWithStatistics.getIdentityState() : null;
@@ -203,14 +203,15 @@ public class ConnectionStateManager
         return this.connectionPools.get(poolName);
     }
 
-    private void atomicallyRemovePool(String pool, DataSourceStatistics expectedState)
+    private void atomicallyRemovePool(String poolName, DataSourceStatistics expectedState)
     {
-        DataSourceWithStatistics currentState = this.connectionPools.get(pool);
-        if (currentState.getStatistics().equals(expectedState))
-        {
-            this.connectionPools.remove(pool);
-            currentState.close();
-            LOGGER.info("removed and closed pool {}", pool);
+        synchronized (poolLockManager.getLock(poolName)) {
+            DataSourceWithStatistics currentState = this.connectionPools.get(poolName);
+            if (currentState.getStatistics().equals(expectedState)) {
+                currentState.close();
+                this.connectionPools.remove(poolName);
+                LOGGER.info("Removed and closed pool {}", poolName);
+            }
         }
     }
 
@@ -222,11 +223,11 @@ public class ConnectionStateManager
                 .collect(Collectors.toSet());
     }
 
-    public void evictStateOlderThan(Duration duration)
+    public void evictPoolsOlderThan(Duration duration)
     {
         // step 1 - gather pools to be deleted without acquiring a global lock
         Set<Pair<String, DataSourceStatistics>> entriesToPurge = this.findPoolsOlderThan(duration);
-        LOGGER.info(" Datasource state purgePoolStates : pool {} to be evicted", entriesToPurge.size());
+        LOGGER.info("ConnectionStateManager.HouseKeeper : pools {} to be evicted", entriesToPurge.size());
         // step 2 - remove atomically - i.e remove iff the state has not been updated since it was read in step 1
         entriesToPurge.forEach(pool -> this.atomicallyRemovePool(pool.getOne(), pool.getTwo()));
     }
@@ -238,10 +239,10 @@ public class ConnectionStateManager
 
     public String poolNameFor(Identity identity, ConnectionKey key)
     {
-        return "DBPool_" + key.shortId() + SEPARATOR + identity.getName();
+        return DBPOOL + key.shortId() + SEPARATOR + identity.getName();
     }
 
-    public Object softEvictConnections(String poolName)
+    public String softEvictConnections(String poolName)
     {
         StringBuffer result = new StringBuffer();
         DataSourceWithStatistics datasource = this.connectionPools.get(poolName);
@@ -261,7 +262,7 @@ public class ConnectionStateManager
         return result.toString();
     }
 
-    public ConnectionStateManagerPOJO getState()
+    public ConnectionStateManagerPOJO getConnectionStateManagerPOJO()
     {
         return new ConnectionStateManagerPOJO(this.connectionPools);
     }
@@ -269,10 +270,10 @@ public class ConnectionStateManager
     private synchronized void purge(long durationInSeconds)
     {
         int sizeBeforePurge = this.size();
-        LOGGER.info("DataSource state : Starting  with cache size={}", sizeBeforePurge);
-        this.evictStateOlderThan(Duration.ofSeconds(durationInSeconds));
+        LOGGER.info("ConnectionStateManager.HouseKeeper : Starting  with cache size={}", sizeBeforePurge);
+        this.evictPoolsOlderThan(Duration.ofSeconds(durationInSeconds));
         int sizeAfterPurge = this.size();
-        LOGGER.info("Datasource state : Evicted={}", sizeBeforePurge - sizeAfterPurge);
+        LOGGER.info("ConnectionStateManager.HouseKeeper: Evicted={}", sizeBeforePurge - sizeAfterPurge);
     }
 
     public Optional<ConnectionStateManagerPOJO.ConnectionPool> findByPoolName(String poolName)
@@ -298,12 +299,6 @@ public class ConnectionStateManager
         return connectionPools;
     }
 
-
-//    public DataSourceSpecification getDatasource(ConnectionKey connectionKey)
-//    {
-//        return dataSourceSpecifications.get(connectionKey);
-//    }
-
     static class ConnectionStateHousekeepingTask implements Runnable
     {
         private final long durationInSeconds;
@@ -323,7 +318,7 @@ public class ConnectionStateManager
             }
             catch (Exception e)
             {
-                LOGGER.error("Datasource Connection State purge failed {}", e);
+                LOGGER.error("ConnectionStateManager.HouseKeeper purge failed {}", e);
             }
         }
     }
@@ -334,9 +329,17 @@ public class ConnectionStateManager
         String principal = identityState.getIdentity().getName();
         String poolName = poolNameFor(identityState.getIdentity(), dataSourceSpecification.getConnectionKey());
         ConnectionKey connectionKey = dataSourceSpecification.getConnectionKey();
-        //thread safe as concurrent map;
+        //why do we need getIfAbsentPut?  the first ever pool creation request will create a new Hikari Data Source
+        //because we have configured hikari to fail fast a new connection will be created.
+        //This will invoke the DriverWrapper connect method, for this method to create that test connection we need to pass minimal state
         Function0<DataSourceWithStatistics> dsSupplier = () -> new DataSourceWithStatistics(poolName,identityState,dataSourceSpecification);
         DataSource dataSource = this.connectionPools.getIfAbsentPut(poolName, dsSupplier).getDataSource();
+        //why this thread safety pattern?  Consider this scenario: poolOne does not exist, then two threads concurrently request poolOne
+        //both threads check if pool has been created and both evaluate to true
+        //to avoid both threads to create a pool, we enter a sync block to ensure only one thread at a time attempt pool creation
+        //thread1 creates poolOne , thread2 enters block and check if indeed the pools does not exist, so will skip
+        //this will ensure threads will wait for pool creation while only locking in the scenario there is no pool
+        //not for every pool request
         if (dataSource == null)
         {
             synchronized (poolLockManager.getLock(poolName))
@@ -360,7 +363,7 @@ public class ConnectionStateManager
             }
         }
 
-        LOGGER.info("Found pool for [{}] in datasource [{}] : pool Name [{}]", principal, connectionKey.shortId(), poolName);
+        LOGGER.info("Pool found for [{}] in datasource [{}] : pool Name [{}]", principal, connectionKey.shortId(), poolName);
         return this.connectionPools.get(poolName);
     }
 
@@ -394,7 +397,7 @@ public class ConnectionStateManager
 
     private static class KeyLockManager<K>
     {
-        private static final Function0<Object> NEW_LOCK = (Function0<Object>)() -> new Object();
+        private static final Function0<Object> NEW_LOCK = () -> new Object();
         private final ConcurrentMutableMap<K, Object> locks = ConcurrentHashMap.newMap();
 
         private KeyLockManager()

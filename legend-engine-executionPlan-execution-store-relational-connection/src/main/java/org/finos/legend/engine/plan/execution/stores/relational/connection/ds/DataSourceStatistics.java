@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DataSourceStatistics
 {
     private final AtomicInteger builtConnections ;
-    private AtomicLong lastConnectionRequest ;
     private final AtomicInteger requestedConnections ;
+    private AtomicLong lastConnectionRequest ;
 
     public DataSourceStatistics()
     {

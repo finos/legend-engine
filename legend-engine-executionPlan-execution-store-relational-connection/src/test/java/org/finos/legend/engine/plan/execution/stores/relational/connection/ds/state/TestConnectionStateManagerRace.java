@@ -70,7 +70,7 @@ public class TestConnectionStateManagerRace extends TestConnectionManagement
         // advance clock by 4 minutes and invoke eviction (to simulate eviction task)
         clock.advance(Duration.ofMinutes(4));
         ExecutorService executorService = Executors.newFixedThreadPool(1);
-        Future<?> evictionTask = executorService.submit(() -> connectionStateManager.evictStateOlderThan(Duration.ofMinutes(3)));
+        Future<?> evictionTask = executorService.submit(() -> connectionStateManager.evictPoolsOlderThan(Duration.ofMinutes(3)));
 
         // the instrumented state manager is given a countdown latch to artificially introduce a delay after it has found entries to evict
         Thread.sleep(Duration.ofSeconds(2).toMillis());

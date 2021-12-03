@@ -54,8 +54,8 @@ import org.slf4j.LoggerFactory;
 
 public class RelationalConnectionManager implements ConnectionManager
 {
-    public static final String LOCAL_HOST = "127.0.0.1";
-    public static final String TEST_DB = "testDB";
+    private static final String LOCAL_HOST = "127.0.0.1";
+    private static final String TEST_DB = "testDB";
     private static final Logger LOGGER = LoggerFactory.getLogger(RelationalConnectionManager.class);
     private final int testDbPort;
     private MutableList<AuthenticationStrategyVisitor<AuthenticationStrategyKey>> authenticationStrategyKeyVisitors;

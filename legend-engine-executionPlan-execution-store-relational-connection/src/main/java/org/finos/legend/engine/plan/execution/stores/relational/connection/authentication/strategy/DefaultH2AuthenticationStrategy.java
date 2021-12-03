@@ -33,8 +33,8 @@ import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPass
 
 public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
 {
-    public static final String SA_USER = "sa";
-    public static final String SA_PASSWORD = "";
+    private static final String SA_USER = "sa";
+    private static final String SA_PASSWORD = "";
 
     @Override
     public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
@@ -66,7 +66,7 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
      */
     private PlaintextUserPasswordCredential resolveCredential(Properties properties)
     {
-        IdentityState identityState = ConnectionStateManager.getInstance().getStateUsing(properties);
+        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
         if (identityState == null || !identityState.getCredentialSupplier().isPresent())
         {
             return new PlaintextUserPasswordCredential(SA_USER, SA_PASSWORD);
