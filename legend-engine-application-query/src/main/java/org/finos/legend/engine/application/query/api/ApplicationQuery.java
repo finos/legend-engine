@@ -20,10 +20,9 @@ import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
-import org.finos.legend.engine.application.query.model.QueryProjectCoordinates;
+import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -42,8 +41,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Objects;
 
 @Api(tags = "Application - Query")
 @Path("pure/v1/query")
@@ -63,30 +60,15 @@ public class ApplicationQuery
         return profile != null ? profile.getId() : null;
     }
 
-    @GET
-    @ApiOperation(value = "Get queries")
+    @POST
+    @Path("search")
+    @ApiOperation(value = "Search queries")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response getQueries(@QueryParam("search") @ApiParam("The search string") String search,
-                               @QueryParam("projectCoordinates") @ApiParam("The list of projects the queries are associated with") List<String> projectCoordinates,
-                               @QueryParam("limit") @ApiParam("Limit the number of queries returned") Integer limit,
-                               @QueryParam("showCurrentUserQueriesOnly") @ApiParam("Limit to queries which belong to the current user") boolean showCurrentUserQueriesOnly,
-                               @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response searchQueries(QuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
         try
         {
-            List<QueryProjectCoordinates> coordinates = ListIterate.distinct(projectCoordinates).collect((projectCoordinate) ->
-            {
-                QueryProjectCoordinates coordinate = new QueryProjectCoordinates();
-                String[] gaCoordinate = projectCoordinate.split(":");
-                if (gaCoordinate.length != 2)
-                {
-                    return null;
-                }
-                coordinate.groupId = gaCoordinate[0];
-                coordinate.artifactId = gaCoordinate[1];
-                return coordinate;
-            }).select(Objects::nonNull);
-            return Response.ok().entity(this.queryStoreManager.getQueries(search, coordinates, limit, showCurrentUserQueriesOnly, getCurrentUser(profileManager))).build();
+            return Response.ok().entity(this.queryStoreManager.getQueries(searchSpecification, getCurrentUser(profileManager))).build();
         }
         catch (Exception e)
         {
