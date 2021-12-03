@@ -62,16 +62,4 @@ public class Identity
         return this.credentials.size();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Identity identity = (Identity) o;
-        return Objects.equals(name, identity.name) && Objects.equals(credentials, identity.credentials);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, credentials);
-    }
 }
