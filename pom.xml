@@ -1572,6 +1572,12 @@
                 <artifactId>snowflake-jdbc</artifactId>
                 <version>${snowflake.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.microsoft.sqlserver</groupId>
+                <artifactId>mssql-jdbc</artifactId>
+                <version>6.2.1.jre7</version>
+                <scope>runtime</scope>
+            </dependency>
             <!-- Database -->
 
             <dependency>

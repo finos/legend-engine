@@ -31,6 +31,23 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  };\n" +
                 "  auth: DefaultH2;\n" +
                 "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::StaticConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: SqlServer;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: DelegatedKerberos\n" +
+                "  {\n" +
+                "    serverPrincipal: 'dummyPrincipal';\n" +
+                "  };\n" +
+                "}\n");
     }
 
     @Test
