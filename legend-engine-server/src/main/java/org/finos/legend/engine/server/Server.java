@@ -47,6 +47,7 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlan;
 import org.finos.legend.engine.plan.execution.api.ExecutorInfo;
+import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.relational.api.RelationalExecutorInformation;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
@@ -179,6 +180,9 @@ public class Server extends Application<ServerConfiguration>
         // Execution
         environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
         environment.jersey().register(new ExecutePlan(planExecutor));
+
+        // Service
+        environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode));
 
         // Query
         environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getMongoClient()));

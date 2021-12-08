@@ -9,6 +9,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 
@@ -22,6 +23,11 @@ public class DatabaseIdentifiersCaseSensitiveVisitor implements ConnectionVisito
             //By default Legend expects DatabaseIdentifiers to be case-sensitive
             if (connection instanceof RelationalDatabaseConnection)
             {
+                if( ((RelationalDatabaseConnection) connection).type != null && ((RelationalDatabaseConnection) connection).type.equals(DatabaseType.Redshift))
+                {  //redshift always returns column names as lower case in the metadata
+                    return false;
+                }
+
                 DatasourceSpecificationVisitor<Boolean> datasourceSpecificationVisitor = new DataSourceIdentifiersCaseSensitiveVisitor();
                 Boolean isDatabaseIdentifiersCaseSensitive = ((RelationalDatabaseConnection) connection).datasourceSpecification.accept(datasourceSpecificationVisitor);
                 return isDatabaseIdentifiersCaseSensitive != null ? isDatabaseIdentifiersCaseSensitive : true;

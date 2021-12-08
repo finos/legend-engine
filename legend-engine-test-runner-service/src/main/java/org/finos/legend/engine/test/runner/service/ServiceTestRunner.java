@@ -29,7 +29,6 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.service.generation.ServicePlanGenerator;
 import org.finos.legend.engine.language.pure.dsl.service.generation.extension.ServiceExecutionExtension;
-import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
@@ -65,8 +64,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
@@ -83,6 +85,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.Class;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +118,7 @@ public class ServiceTestRunner
         this.extensions = extensions;
         this.transformers = transformers;
         this.pureVersion = pureVersion;
+        MetricsHandler.createMetrics(this.getClass());
     }
 
     @Deprecated
@@ -194,11 +198,28 @@ public class ServiceTestRunner
             RichIterable<? extends String> sqlStatements = extractSetUpSQLFromTestRuntime(testRuntime);
             PureSingleExecution testPureSingleExecution = shallowCopySingleExecution(execution);
             testPureSingleExecution.runtime = testRuntime;
-            ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, extensions, transformers);
+            ExecutionPlan executionPlan = generatePlan(testPureSingleExecution);
             SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
-            JavaHelper.compilePlan(singleExecutionPlan, null);
+            compilePlan(singleExecutionPlan);
             return executeTestAsserts(singleExecutionPlan, asserts, sqlStatements, scope);
         }
+    }
+
+    @Prometheus(name = "service test generate plan", doc = "Plan generation duration summary within service test execution")
+    private ExecutionPlan generatePlan(PureSingleExecution pureSingleExecution)
+    {
+        long start = System.currentTimeMillis();
+        ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(pureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, extensions, transformers);
+        MetricsHandler.observe("service test generate plan", start, System.currentTimeMillis());
+        return executionPlan;
+    }
+
+    @Prometheus(name = "service test compile plan", doc = "Plan compilation duration summary within service test execution")
+    private void compilePlan(SingleExecutionPlan singleExecutionPlan) throws JavaCompileException
+    {
+        long start = System.currentTimeMillis();
+        JavaHelper.compilePlan(singleExecutionPlan, null);
+        MetricsHandler.observe("service test compile plan", start, System.currentTimeMillis());
     }
 
     private Pair<ExecutionPlan, RichIterable<? extends String>> getExtraServiceExecutionPlan(MutableList<ServiceExecutionExtension> extensions, Execution execution, String testData)
@@ -232,8 +253,10 @@ public class ServiceTestRunner
         return shallowCopy;
     }
 
+    @Prometheus(name = "service test execute", doc = "Execution duration summary within service test execution")
     private RichServiceTestResult executeTestAsserts(SingleExecutionPlan executionPlan, List<TestContainer> asserts, RichIterable<? extends String> sqlStatements, Scope scope) throws IOException
     {
+        long start = System.currentTimeMillis();
         if (ExecutionNodeTDSResultHelper.isResultTDS(executionPlan.rootExecutionNode) || (executionPlan.rootExecutionNode.isResultPrimitiveType() && "String".equals(executionPlan.rootExecutionNode.getDataTypeResultType())))
         {
             // Java
@@ -273,9 +296,13 @@ public class ServiceTestRunner
                     {
                         parameters = ListIterate.zip(((PureExecution) this.service.execution).func.parameters, tc.getOne().parametersValues).toMap(
                                 p -> p.getOne().name,
-                                p -> new ConstantResult(p.getTwo() instanceof PureList
-                                        ? ListIterate.collect(((PureList) p.getTwo()).values, v -> v.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withValueSpecificationAsExternalParameter().build()))
-                                        : p.getTwo().accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withValueSpecificationAsExternalParameter().build())));
+                                p -> p.getTwo() instanceof Collection   // Condition evoked in case of studio-flow
+                                    ? new ConstantResult(
+                                    ListIterate.collect(( (Collection) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
+                                    : p.getTwo() instanceof PureList   // Condition evoked in case of pureIDE-flow
+                                    ? new ConstantResult(
+                                    ListIterate.collect(( (PureList) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
+                                    : p.getTwo().accept(new ValueSpecificationToResultVisitor()));
                     }
 
                     // Execute Plan
@@ -324,6 +351,7 @@ public class ServiceTestRunner
                 {
                     execScope.close();
                 }
+                MetricsHandler.observe("service test execute", start, System.currentTimeMillis());
             }
 
             return testRun;

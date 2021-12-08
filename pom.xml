@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>2.50.1-SNAPSHOT</version>
+    <version>2.51.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -94,6 +94,8 @@
         <module>legend-engine-query-pure</module>
         <module>legend-engine-shared-core</module>
         <module>legend-engine-shared-javaCompiler</module>
+        <module>legend-engine-services-model</module>
+        <module>legend-engine-services-model-api</module>
         <module>legend-engine-server</module>
         <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
@@ -128,7 +130,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.42.0</legend.pure.version>
+        <legend.pure.version>1.43.1</legend.pure.version>
         <legend.shared.version>0.17.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -759,6 +761,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-application-query</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-services-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-services-model-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->

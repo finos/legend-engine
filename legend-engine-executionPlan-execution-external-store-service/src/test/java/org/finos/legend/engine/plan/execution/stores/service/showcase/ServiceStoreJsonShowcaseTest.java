@@ -287,6 +287,47 @@ public class ServiceStoreJsonShowcaseTest
     }
 
     @Test
+    public void serviceStoreConcatenateExample()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {productId:String[1]|meta::external::store::service::showcase::domain::S_Product.all()\n" +
+                "       ->filter(p | $p.s_productId == $productId)\n" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Product {\n" +
+                "               s_productId,\n" +
+                "               s_productName,\n" +
+                "               s_description\n" +
+                "           }\n" +
+                "         }#)\n" +
+                "       ->concatenate(meta::external::store::service::showcase::domain::S_Product.all()\n" +
+                "         ->filter(p | $p.s_productName == 'product 30' && $p.s_description == 'product 30 description')\n" +
+                "         ->graphFetch(#{\n" +
+                "             meta::external::store::service::showcase::domain::S_Product {\n" +
+                "                   s_productId,\n" +
+                "                   s_productName,\n" +
+                "                  s_description\n" +
+                "             }\n" +
+                "           }#)\n" +
+                "       )\n" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Product {\n" +
+                "               s_productId,\n" +
+                "               s_productName,\n" +
+                "               s_description\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(SERVICE_STORE + "\n\n" + SERVICE_STORE_CONNECTION + "\n\n" + SERVICE_STORE_MAPPING + "\n\n" + MODELS + "\n\n" + query);
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_productId\":\"31\",\"s_productName\":\"Product 31\",\"s_description\":\"Product 31 description\"},{\"s_productId\":\"30\",\"s_productName\":\"Product 30\",\"s_description\":\"Product 30 description\"}]}";
+
+        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan, Maps.mutable.with("productId", "31")));
+    }
+
+    @Test
     public void serviceStoreM2MChainingExample()
     {
         String query = "###Pure\n" +

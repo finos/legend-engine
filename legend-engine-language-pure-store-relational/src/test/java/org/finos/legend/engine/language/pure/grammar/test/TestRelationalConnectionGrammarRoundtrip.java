@@ -307,6 +307,20 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
+    public void testSingleMapperPostProcessorsWithTableMappingWithinSameSchema()
+    {
+        testPostProcessor(
+                "    mapper\n" +
+                        "    {\n" +
+                        "      mappers:\n" +
+                        "      [\n" +
+                        "        table {from: 'a'; to: 'A'; schemaFrom: 'B'; schemaTo: 'B';},\n" +
+                        "        schema {from: 'c'; to: 'C';}\n" +
+                        "      ];\n" +
+                        "    }");
+    }
+
+    @Test
     public void testMultipleMapperPostProcessors()
     {
         testPostProcessor(

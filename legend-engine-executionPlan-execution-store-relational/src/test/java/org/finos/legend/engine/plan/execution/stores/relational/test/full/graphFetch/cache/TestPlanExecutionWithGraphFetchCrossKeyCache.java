@@ -16,6 +16,8 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.full.graph
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.apache.commons.io.input.ClassLoaderObjectInputStream;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -25,10 +27,12 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutionContext;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCacheStats;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByTargetCrossKeys;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToPureFormatSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
@@ -39,17 +43,24 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServer
@@ -431,6 +442,72 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
         assertCacheStats(addressCaches.get(0).getExecutionCache(), 5, 12, 7, 5);
     }
 
+    @Test
+    public void testCrossPropertyCachingWithSerializableCache() throws JavaCompileException, IOException, ClassNotFoundException
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): String[1]\n" +
+                "{\n" +
+                "  test::Person.all()\n" +
+                "    ->graphFetch(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firm {\n" +
+                "          name,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#, 1)\n" +
+                "    ->serialize(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firm {\n" +
+                "          name,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        String expectedRes = "[" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"address\":{\"name\":\"A3\"}}}," +
+                "{\"fullName\":\"P3\",\"firm\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}}}" +
+                "]";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
+        EngineJavaCompiler compiler = JavaHelper.compilePlan(plan, null);
+        GraphFetchCrossAssociationKeys graphFetchCrossAssociationKeys = GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm>")).findFirst().orElse(null);
+
+        try (JavaHelper.ThreadContextClassLoaderScope ignored = JavaHelper.withCurrentThreadContextClassLoader(compiler.getClassLoader()))
+        {
+            Map<GraphFetchCacheKey, List<Object>> firmMap1 = Maps.mutable.empty();
+            GraphFetchCacheByTargetCrossKeys firmCache1 = ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(buildExecutionCacheFromMap(firmMap1), graphFetchCrossAssociationKeys);
+            Assert.assertEquals(expectedRes, executePlan(plan, new PlanExecutionContext(firmCache1)));
+            assertCacheStats(firmCache1.getExecutionCache(), 3, 5, 2, 3);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            objectOutputStream.writeObject(firmMap1);
+            objectOutputStream.flush();
+
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+            ClassLoaderObjectInputStream objectInputStream = new ClassLoaderObjectInputStream(compiler.getClassLoader(), byteArrayInputStream);
+            Object o = objectInputStream.readObject();
+
+            @SuppressWarnings("unchecked") Map<GraphFetchCacheKey, List<Object>> firmMap2 = (Map<GraphFetchCacheKey, List<Object>>) o;
+            GraphFetchCacheByTargetCrossKeys firmCache2 = ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(buildExecutionCacheFromMap(firmMap2), graphFetchCrossAssociationKeys);
+            Assert.assertEquals(expectedRes, executePlan(plan, new PlanExecutionContext(firmCache2)));
+            assertCacheStats(firmCache2.getExecutionCache(), 3, 5, 5, 0);
+        }
+    }
+
     private GraphFetchCacheByTargetCrossKeys getFirmEmptyCache(SingleExecutionPlan plan)
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
@@ -529,5 +606,134 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
         s.execute("insert into addressTable (name) values ('A3');");
         s.execute("insert into addressTable (name) values ('A4');");
         s.execute("insert into addressTable (name) values ('A5');");
+    }
+
+    private <K, V> ExecutionCache<K, V> buildExecutionCacheFromMap(Map<K, V> map)
+    {
+        Map<String, Integer> stats = Maps.mutable.of("requestCount", 0, "hitCount", 0, "missCount", 0, "size", 0);
+
+        return new ExecutionCache<K, V>() {
+            @Override
+            public V get(K key, Callable<? extends V> valueLoader) {
+                throw new UnsupportedOperationException("Not supported!");
+            }
+
+            @Override
+            public V getIfPresent(K key) {
+                V v = map.get(key);
+                stats.put("requestCount", stats.get("requestCount") + 1);
+                if (v != null)
+                {
+                    stats.put("hitCount", stats.get("hitCount") + 1);
+                }
+                else
+                {
+                    stats.put("missCount", stats.get("missCount") + 1);
+                }
+                return v;
+            }
+
+            @Override
+            public Map<? extends K, ? extends V> getAllPresent(Iterable<? extends K> keys) {
+                throw new UnsupportedOperationException("Not supported!");
+            }
+
+            @Override
+            public void put(K key, V value) {
+                map.put(key, value);
+                stats.put("size", map.size());
+            }
+
+            @Override
+            public void putAll(Map<? extends K, ? extends V> keyValues) {
+                map.putAll(keyValues);
+                stats.put("size", map.size());
+            }
+
+            @Override
+            public void invalidate(K key) {
+                throw new UnsupportedOperationException("Not supported!");
+            }
+
+            @Override
+            public void invalidateAll(Iterable<? extends K> keys) {
+                throw new UnsupportedOperationException("Not supported!");
+            }
+
+            @Override
+            public void invalidateAll() {
+                throw new UnsupportedOperationException("Not supported!");
+            }
+
+            @Override
+            public long estimatedSize() {
+                return map.size();
+            }
+
+            @Override
+            public ExecutionCacheStats stats() {
+                return new ExecutionCacheStats() {
+                    @Override
+                    public long requestCount() {
+                        return stats.get("requestCount");
+                    }
+
+                    @Override
+                    public long hitCount() {
+                        return stats.get("hitCount");
+                    }
+
+                    @Override
+                    public long missCount() {
+                        return stats.get("missCount");
+                    }
+
+                    @Override
+                    public long loadCount() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public long loadSuccessCount() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public long loadFailureCount() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public long evictionCount() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public double hitRate() {
+                        return hitCount()/(requestCount() * 1.0);
+                    }
+
+                    @Override
+                    public double missRate() {
+                        return missCount()/(requestCount() * 1.0);
+                    }
+
+                    @Override
+                    public double loadFailureRate() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public double averageLoadPenalty() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public long totalLoadTime() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+                };
+            }
+        };
     }
 }
