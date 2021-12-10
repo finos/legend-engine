@@ -105,9 +105,242 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     }
 
     @Test
+    public void testDeserializeCsvWithEnum()
+    {
+        String modelGrammar = "###Pure\n" +
+                "Enum test::Gender\n" +
+                "{\n" +
+                "  MALE, FEMALE, OTHER\n" +
+                "}\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  gender: test::Gender[1];\n" +
+                "}\n";
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::Person"));
+
+        String selfMapping =  "###Mapping\n" +
+                    "Mapping test::SelfMapping\n" +
+                    "(\n" +
+                    "   test::Person: Pure\n" +
+                    "   {\n" +
+                    "      ~src test::Person\n" +
+                    "   }\n" +
+                    ")\n";
+
+        String grammar = selfMapping + urlStreamRuntime("test::SelfMapping", "test::gen::TestBinding");
+        String personTree = "#{test::Person {name,gender}}#";
+        String result = runTest(generated,
+                                grammar,
+                                "|test::Person.all()->graphFetchChecked(" + personTree + ")->serialize(" + personTree + ")",
+                                "test::SelfMapping",
+                                "test::runtime",
+                                "name,gender\nJohn Doe,Male");
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithEnumResult.json")));
+    }
+
+    @Test
+    public void testDeserializeCsvWithEnumBadValue()
+    {
+        String modelGrammar = "###Pure\n" +
+                "Enum test::Gender\n" +
+                "{\n" +
+                "  MALE, FEMALE, OTHER\n" +
+                "}\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  gender: test::Gender[1];\n" +
+                "}\n";
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::Person"));
+
+        String selfMapping =  "###Mapping\n" +
+                "Mapping test::SelfMapping\n" +
+                "(\n" +
+                "   test::Person: Pure\n" +
+                "   {\n" +
+                "      ~src test::Person\n" +
+                "   }\n" +
+                ")\n";
+
+        String grammar = selfMapping + urlStreamRuntime("test::SelfMapping", "test::gen::TestBinding");
+        String personTree = "#{test::Person {name,gender}}#";
+        String result = runTest(generated,
+                                grammar,
+                                "|test::Person.all()->graphFetchChecked(" + personTree + ")->serialize(" + personTree + ")",
+                                "test::SelfMapping",
+                                "test::runtime",
+                                "name,gender\nJohn Doe,Neuter");
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithEnumBadValueResult.json")));
+    }
+
+    @Test
     public void testDeserializeCsvAndReserializeWithGeneratedModel()
     {
-        String schemaCode = newExternalSchemaSetGrammarBuilder("test::tradeSchema", "FlatData")
+        String schemaCode = tradeSchema();
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::tradeSchema"));
+
+        String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
+        String tradeTree = "#{test::gen::TradeRecord {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
+
+        String tradeData ="Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
+                "P1,10,2021-06-04T15:04:21.232Z,12.32,USD,EUR,2.4,2021-06-09,2021-06-04T15:12:31.000Z,2022-06-04,5\n" +
+                "P2,20,2021-06-04T15:04:21.999Z,34.7,EUR,,,2021-06-09,,,";
+
+        String result = runTest(generated,
+                                grammar,
+                                "|test::gen::TradeRecord.all()->graphFetchChecked("+tradeTree+")->externalize(test::gen::TestBinding)",
+                                "test::trade::SelfMapping",
+                                "test::runtime",
+                                tradeData);
+
+        Assert.assertEquals(tradeData, result);
+    }
+
+    @Test
+    public void testDeserializeCsvWithGeneratedModelCheckedForMissingData()
+    {
+        String schemaCode = tradeSchema();
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::tradeSchema"));
+
+        String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
+        String tradeTree = "#{test::gen::TradeRecord {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
+
+        String tradeData ="Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
+                ",10,2021-06-04T15:04:21.232Z,12.32,USD,EUR,2.4,2021-06-09,2021-06-04T15:12:31.000Z,2022-06-04,5\n" +
+                "P2,20,2021-06-04T15:04:21.999Z,34.7,EUR,,,2021-06-09,,,";
+
+        String result = runTest(generated,
+                                grammar,
+                                "|test::gen::TradeRecord.all()->graphFetchChecked("+tradeTree+")->serialize("+tradeTree+")",
+                                "test::trade::SelfMapping",
+                                "test::runtime",
+                                tradeData);
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithGeneratedModelCheckedForMissingDataResult.json")));
+    }
+
+    @Test
+    public void testDeserializeCsvWithGeneratedModelCheckedForBadData()
+    {
+        String schemaCode = tradeSchema();
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::tradeSchema"));
+
+        String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
+        String tradeTree = "#{test::gen::TradeRecord {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
+
+        String tradeData ="Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
+                "P1,XX,2021-06-04T15:04:21.232Z,12.32,USD,EUR,2.4,2021-06-09,2021-06-04T15:12:31.000Z,2022-06-04,5\n" +
+                "P2,20,2021-06-04T15:04:21.999Z,34.7,EUR,,,2021-06-09,,,";
+
+        String result = runTest(generated,
+                                grammar,
+                                "|test::gen::TradeRecord.all()->graphFetchChecked("+tradeTree+")->serialize("+tradeTree+")",
+                                "test::trade::SelfMapping",
+                                "test::runtime",
+                                tradeData);
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithGeneratedModelCheckedForBadDataResult.json")));
+    }
+
+    @Test
+    public void testDeserializeAndMapMultiSectionCsv()
+    {
+        String model = "###Pure\n" +
+                "Class test::LoanPrice\n" +
+                "{\n" +
+                "  accountNo: Integer[0..1];\n" +
+                "  productId: String[0..1];\n" +
+                "  productIdType: String[0..1];\n" +
+                "  eventDate: StrictDate[0..1];\n" +
+                "  currency: String[0..1];\n" +
+                "  closePrice: Float[0..1];\n" +
+                "  askPrice: Float[0..1];\n" +
+                "  bidPrice: Float[0..1];\n" +
+                "}\n";
+
+        String schemaCode = newExternalSchemaSetGrammarBuilder("test::WholeLoanPriceFileSchema", "FlatData")
+                .withSchemaText("section header: DelimitedWithoutHeadings\n" +
+                                        "{\n" +
+                                        "  delimiter: ' ';\n" +
+                                        "  scope.forNumberOfLines: 1;\n" +
+                                        "\n" +
+                                        "  Record\n" +
+                                        "  {\n" +
+                                        "    closeOfBusiness {3}: DATE(format='yyyyMMdd');\n" +
+                                        "  }\n" +
+                                        "}\n" +
+                                        "\n" +
+                                        "section prices: DelimitedWithoutHeadings\n" +
+                                        "{\n" +
+                                        "  scope.untilEof;\n" +
+                                        "  delimiter: '~';\n" +
+                                        "\n" +
+                                        "  Record\n" +
+                                        "  {\n" +
+                                        "    Account_ID   {1}: INTEGER;\n" +
+                                        "    Synonym_Type {2}: STRING;\n" +
+                                        "    Synonym      {3}: STRING;\n" +
+                                        "    Currency     {4}: STRING;\n" +
+                                        "    Close_Price  {9}: DECIMAL;\n" +
+                                        "  }\n" +
+                                        "}\n")
+                .build();
+
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::WholeLoanPriceFileSchema", "PriceFile"));
+
+        String mapping = "###Mapping\n" +
+                "Mapping test::PriceRowToLoanPrice\n" +
+                "(\n" +
+                "  *test::LoanPrice: Pure\n" +
+                "  {\n" +
+                "    ~src test::gen::PricesRecord\n" +
+                "    accountNo: $src.accountId,\n" +
+                "    productId: $src.synonym,\n" +
+                "    productIdType: $src.synonymType,\n" +
+                "    eventDate: $src.priceFile.header.closeOfBusiness,\n" +
+                "    currency: $src.currency,\n" +
+                "    closePrice: $src.closePrice\n" +
+                "  }\n" +
+                ")\n";
+
+        String grammar = model + schemaCode + mapping + urlStreamRuntime("test::PriceRowToLoanPrice", "test::gen::TestBinding");
+        String tree = "#{test::LoanPrice{accountNo,productIdType,productId,eventDate,currency,closePrice}}#";
+
+        String data ="C.O.B. ==> 20210608\n" +
+                "7010055601~GSN~6576V3~USD~~~~~0.01\n" +
+                "7010055601~GSN~6A8TY4~USD~~~~~91.997084\n" +
+                "7010055601~GSN~6A8UE6~USD~~~~~91.997084\n" +
+                "7010055601~GSN~6A8UJ5~USD~~~~~92.001084";
+
+        String result = runTest(generated,
+                                grammar,
+                                "|test::LoanPrice.all()->graphFetchChecked("+tree+")->serialize("+tree+")",
+                                "test::PriceRowToLoanPrice",
+                                "test::runtime",
+                                data);
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeAndMapMultiSectionCsvResult.json")));
+    }
+
+    private String tradeSelfMapping()
+    {
+        return "###Mapping\n" +
+                "\n" +
+                "Mapping test::trade::SelfMapping\n" +
+                "(\n" +
+                "   test::gen::TradeRecord: Pure\n" +
+                "   {\n" +
+                "      ~src test::gen::TradeRecord\n" +
+                "   }\n" +
+                ")\n";
+    }
+
+    private String tradeSchema()
+    {
+        return newExternalSchemaSetGrammarBuilder("test::tradeSchema", "FlatData")
                 .withSchemaText("section trade: DelimitedWithHeadings\n" +
                                         "{\n" +
                                         "  scope.untilEof;\n" +
@@ -130,37 +363,6 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                                         "  }\n" +
                                         "}")
                 .build();
-
-        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::tradeSchema"));
-
-        String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
-        String tradeTree = "#{test::gen::Trade {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
-
-        String tradeData ="Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
-                "P1,10,2021-06-04T15:04:21.232Z,12.32,USD,EUR,2.4,2021-06-09,2021-06-04T15:12:31.000Z,2022-06-04,5\n" +
-                "P2,20,2021-06-04T15:04:21.999Z,34.7,EUR,,,2021-06-09,,,";
-
-        String result = runTest(generated,
-                                grammar,
-                                "|test::gen::Trade.all()->graphFetchChecked("+tradeTree+")->externalize(test::gen::TestBinding)",
-                                "test::trade::SelfMapping",
-                                "test::runtime",
-                                tradeData);
-
-        Assert.assertEquals(tradeData, result);
-    }
-
-    private String tradeSelfMapping()
-    {
-        return "###Mapping\n" +
-                "\n" +
-                "Mapping test::trade::SelfMapping\n" +
-                "(\n" +
-                "   test::gen::Trade: Pure\n" +
-                "   {\n" +
-                "      ~src test::gen::Trade\n" +
-                "   }\n" +
-                ")\n";
     }
 
     private ModelToFlatDataConfiguration toFlatDataConfig(String className)
@@ -175,11 +377,17 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
     private FlatDataToModelConfiguration fromFlatDataConfig(String sourceSchemaSet)
     {
+        return fromFlatDataConfig(sourceSchemaSet, null);
+    }
+
+    private FlatDataToModelConfiguration fromFlatDataConfig(String sourceSchemaSet, String schemaClassName)
+    {
         FlatDataToModelConfiguration config = new FlatDataToModelConfiguration();
         config.sourceSchemaSet = sourceSchemaSet;
         config.targetBinding = "test::gen::TestBinding";
         config.targetPackage = "test::gen";
         config.purifyNames = true;
+        config.schemaClassName = schemaClassName;
         return config;
     }
 

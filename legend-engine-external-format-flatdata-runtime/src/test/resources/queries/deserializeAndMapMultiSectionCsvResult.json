@@ -1,0 +1,286 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": [
+    {
+      "defects": [
+        {
+          "id": null,
+          "externalId": null,
+          "message": "No Input Available",
+          "enforcementLevel": "Critical",
+          "ruleType": "NoInput",
+          "ruleDefinerPath": "test::LoanPrice",
+          "path": []
+        }
+      ],
+      "source": {
+        "defects": [
+          {
+            "id": null,
+            "externalId": null,
+            "message": "Input not directly returned to stream",
+            "enforcementLevel": "Warn",
+            "ruleType": "UnreturnedInput",
+            "ruleDefinerPath": "test::WholeLoanPriceFileSchema",
+            "path": []
+          }
+        ],
+        "source": {
+          "number": 0,
+          "lineNumber": 1,
+          "record": "C.O.B. ==> 20210608",
+          "recordValues": [
+            {
+              "address": 1,
+              "rawValue": "C.O.B."
+            },
+            {
+              "address": 2,
+              "rawValue": "==>"
+            },
+            {
+              "address": 3,
+              "rawValue": "20210608"
+            }
+          ]
+        },
+        "value": null
+      },
+      "value": null
+    },
+    {
+      "defects": [],
+      "source": {
+        "defects": [],
+        "source": {
+          "number": 1,
+          "lineNumber": 2,
+          "record": "7010055601~GSN~6576V3~USD~~~~~0.01",
+          "recordValues": [
+            {
+              "address": 1,
+              "rawValue": "7010055601"
+            },
+            {
+              "address": 2,
+              "rawValue": "GSN"
+            },
+            {
+              "address": 3,
+              "rawValue": "6576V3"
+            },
+            {
+              "address": 4,
+              "rawValue": "USD"
+            },
+            {
+              "address": 5,
+              "rawValue": ""
+            },
+            {
+              "address": 6,
+              "rawValue": ""
+            },
+            {
+              "address": 7,
+              "rawValue": ""
+            },
+            {
+              "address": 8,
+              "rawValue": ""
+            },
+            {
+              "address": 9,
+              "rawValue": "0.01"
+            }
+          ]
+        },
+        "value": {}
+      },
+      "value": {
+        "accountNo": 7010055601,
+        "productIdType": "GSN",
+        "productId": "6576V3",
+        "eventDate": "2021-06-08",
+        "currency": "USD",
+        "closePrice": 0.01
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "defects": [],
+        "source": {
+          "number": 2,
+          "lineNumber": 3,
+          "record": "7010055601~GSN~6A8TY4~USD~~~~~91.997084",
+          "recordValues": [
+            {
+              "address": 1,
+              "rawValue": "7010055601"
+            },
+            {
+              "address": 2,
+              "rawValue": "GSN"
+            },
+            {
+              "address": 3,
+              "rawValue": "6A8TY4"
+            },
+            {
+              "address": 4,
+              "rawValue": "USD"
+            },
+            {
+              "address": 5,
+              "rawValue": ""
+            },
+            {
+              "address": 6,
+              "rawValue": ""
+            },
+            {
+              "address": 7,
+              "rawValue": ""
+            },
+            {
+              "address": 8,
+              "rawValue": ""
+            },
+            {
+              "address": 9,
+              "rawValue": "91.997084"
+            }
+          ]
+        },
+        "value": {}
+      },
+      "value": {
+        "accountNo": 7010055601,
+        "productIdType": "GSN",
+        "productId": "6A8TY4",
+        "eventDate": "2021-06-08",
+        "currency": "USD",
+        "closePrice": 91.997084
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "defects": [],
+        "source": {
+          "number": 3,
+          "lineNumber": 4,
+          "record": "7010055601~GSN~6A8UE6~USD~~~~~91.997084",
+          "recordValues": [
+            {
+              "address": 1,
+              "rawValue": "7010055601"
+            },
+            {
+              "address": 2,
+              "rawValue": "GSN"
+            },
+            {
+              "address": 3,
+              "rawValue": "6A8UE6"
+            },
+            {
+              "address": 4,
+              "rawValue": "USD"
+            },
+            {
+              "address": 5,
+              "rawValue": ""
+            },
+            {
+              "address": 6,
+              "rawValue": ""
+            },
+            {
+              "address": 7,
+              "rawValue": ""
+            },
+            {
+              "address": 8,
+              "rawValue": ""
+            },
+            {
+              "address": 9,
+              "rawValue": "91.997084"
+            }
+          ]
+        },
+        "value": {}
+      },
+      "value": {
+        "accountNo": 7010055601,
+        "productIdType": "GSN",
+        "productId": "6A8UE6",
+        "eventDate": "2021-06-08",
+        "currency": "USD",
+        "closePrice": 91.997084
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "defects": [],
+        "source": {
+          "number": 4,
+          "lineNumber": 5,
+          "record": "7010055601~GSN~6A8UJ5~USD~~~~~92.001084",
+          "recordValues": [
+            {
+              "address": 1,
+              "rawValue": "7010055601"
+            },
+            {
+              "address": 2,
+              "rawValue": "GSN"
+            },
+            {
+              "address": 3,
+              "rawValue": "6A8UJ5"
+            },
+            {
+              "address": 4,
+              "rawValue": "USD"
+            },
+            {
+              "address": 5,
+              "rawValue": ""
+            },
+            {
+              "address": 6,
+              "rawValue": ""
+            },
+            {
+              "address": 7,
+              "rawValue": ""
+            },
+            {
+              "address": 8,
+              "rawValue": ""
+            },
+            {
+              "address": 9,
+              "rawValue": "92.001084"
+            }
+          ]
+        },
+        "value": {}
+      },
+      "value": {
+        "accountNo": 7010055601,
+        "productIdType": "GSN",
+        "productId": "6A8UJ5",
+        "eventDate": "2021-06-08",
+        "currency": "USD",
+        "closePrice": 92.001084
+      }
+    }
+  ]
+}

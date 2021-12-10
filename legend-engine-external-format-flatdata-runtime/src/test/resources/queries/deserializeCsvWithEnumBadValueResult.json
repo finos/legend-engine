@@ -1,0 +1,48 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": {
+    "defects": [
+      {
+        "id": null,
+        "externalId": null,
+        "message": "No Input Available",
+        "enforcementLevel": "Critical",
+        "ruleType": "NoInput",
+        "ruleDefinerPath": "test::Person",
+        "path": []
+      }
+    ],
+    "source": {
+      "defects": [
+        {
+          "id": null,
+          "externalId": null,
+          "message": "Neuter does not match to any value in Gender",
+          "enforcementLevel": "Critical",
+          "ruleType": "ClassStructure",
+          "ruleDefinerPath": "test::Person",
+          "path": []
+        }
+      ],
+      "source": {
+        "number": 1,
+        "lineNumber": 2,
+        "record": "John Doe,Neuter",
+        "recordValues": [
+          {
+            "address": "name",
+            "rawValue": "John Doe"
+          },
+          {
+            "address": "gender",
+            "rawValue": "Neuter"
+          }
+        ]
+      },
+      "value": null
+    },
+    "value": null
+  }
+}

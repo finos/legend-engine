@@ -27,8 +27,8 @@ public class FlatDataContext<T>
 
     public final FlatData schema;
     private final String definingPath;
-    private final Map<String, Function<FlatDataRecordType, ParsedFlatDataToObject<? extends T>>> toObjectFactories = Maps.mutable.empty();
-    private final Map<String, Function<FlatDataRecordType, ObjectToParsedFlatData<? extends T>>> fromObjectFactories = Maps.mutable.empty();
+    private final Map<String, Function<FlatDataRecordType, ParsedFlatDataToObject<?>>> toObjectFactories = Maps.mutable.empty();
+    private final Map<String, Function<FlatDataRecordType, ObjectToParsedFlatData<?>>> fromObjectFactories = Maps.mutable.empty();
 
     public FlatDataContext(FlatData schema, String definingPath)
     {
@@ -36,13 +36,13 @@ public class FlatDataContext<T>
         this.definingPath = definingPath;
     }
 
-    public FlatDataContext<T> withSectionToObjectFactory(String sectionName, Function<FlatDataRecordType, ParsedFlatDataToObject<? extends T>> factoryFactory)
+    public FlatDataContext<T> withSectionToObjectFactory(String sectionName, Function<FlatDataRecordType, ParsedFlatDataToObject<?>> factoryFactory)
     {
         toObjectFactories.put(sectionName, factoryFactory);
         return this;
     }
 
-    public FlatDataContext<T> withSectionFromObjectFactory(String sectionName, Function<FlatDataRecordType, ObjectToParsedFlatData<? extends T>> factoryFactory)
+    public FlatDataContext<T> withSectionFromObjectFactory(String sectionName, Function<FlatDataRecordType, ObjectToParsedFlatData<?>> factoryFactory)
     {
         fromObjectFactories.put(sectionName, factoryFactory);
         return this;
@@ -78,15 +78,15 @@ public class FlatDataContext<T>
         return drivers;
     }
 
-    private class SectionProcessingContext extends VariablesProcessingContext<T>
+    private class SectionProcessingContext extends VariablesProcessingContext
     {
         private final Connection connection;
         private final FlatDataSection section;
         private final FlatDataDriver nextDriver;
-        private final Function<FlatDataRecordType, ParsedFlatDataToObject<? extends T>> toObjectFactoryFactory;
-        private final Function<FlatDataRecordType, ObjectToParsedFlatData<? extends T>> fromObjectFactoryFactory;
+        private final Function<FlatDataRecordType, ParsedFlatDataToObject<?>> toObjectFactoryFactory;
+        private final Function<FlatDataRecordType, ObjectToParsedFlatData<?>> fromObjectFactoryFactory;
 
-        SectionProcessingContext(Connection connection, FlatDataDriverDescription description, FlatDataSection section, Function<FlatDataRecordType, ParsedFlatDataToObject<? extends T>> toObjectFactoryFactory, Function<FlatDataRecordType, ObjectToParsedFlatData<? extends T>> fromObjectFactoryFactory, ProcessingVariables variables, FlatDataDriver nextDriver)
+        SectionProcessingContext(Connection connection, FlatDataDriverDescription description, FlatDataSection section, Function<FlatDataRecordType, ParsedFlatDataToObject<?>> toObjectFactoryFactory, Function<FlatDataRecordType, ObjectToParsedFlatData<?>> fromObjectFactoryFactory, ProcessingVariables variables, FlatDataDriver nextDriver)
         {
             super(variables, description.getDeclares());
             this.connection = connection;
@@ -115,15 +115,15 @@ public class FlatDataContext<T>
         }
 
         @Override
-        public ParsedFlatDataToObject<? extends T> createToObjectFactory(FlatDataRecordType recordType)
+        public <T> ParsedFlatDataToObject<? extends T> createToObjectFactory(FlatDataRecordType recordType)
         {
-            return Objects.requireNonNull(toObjectFactoryFactory, "No factory for section '" + section.getName() + "'").apply(recordType);
+            return (ParsedFlatDataToObject<? extends T>) Objects.requireNonNull(toObjectFactoryFactory, "No factory for section '" + section.getName() + "'").apply(recordType);
         }
 
         @Override
-        public ObjectToParsedFlatData<? extends T> createFromObjectFactory(FlatDataRecordType recordType)
+        public <T> ObjectToParsedFlatData<? extends T> createFromObjectFactory(FlatDataRecordType recordType)
         {
-            return Objects.requireNonNull(fromObjectFactoryFactory, "No factory for section '" + section.getName() + "'").apply(recordType);
+            return (ObjectToParsedFlatData<? extends T>) Objects.requireNonNull(fromObjectFactoryFactory, "No factory for section '" + section.getName() + "'").apply(recordType);
         }
     }
 }
