@@ -130,7 +130,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.43.1</legend.pure.version>
+        <legend.pure.version>1.44.1</legend.pure.version>
         <legend.shared.version>0.17.0</legend.shared.version>
 
         <!-- Dependency versions -->
