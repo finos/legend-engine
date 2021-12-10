@@ -178,7 +178,7 @@
         <hamcrest.core.version>1.3</hamcrest.core.version>
         <openjdk.jol.version>0.9</openjdk.jol.version>
         <json-smart.version>2.4.7</json-smart.version>
-
+        <byte-buddy.version>1.11.20</byte-buddy.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -196,7 +196,7 @@
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
         <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
-        <byte-buddy.version>1.11.20</byte-buddy.version>
+        <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
     </properties>
 
     <scm>
@@ -291,6 +291,11 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
                     <version>${build-helper.maven.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>dockerfile-maven-plugin</artifactId>
+                    <version>${dockerfile.maven.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
