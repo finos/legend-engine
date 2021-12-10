@@ -27,7 +27,7 @@ public class DelimitedDriverHelper extends StreamingDriverHelper
         super(section, context);
 
         List<FlatDataProperty> properties = section.getSectionProperties();
-        this.delimiter = FlatDataUtils.getString(properties, DELIMITER).get();
+        this.delimiter = FlatDataUtils.getString(properties, DELIMITER).orElse(null);
         this.quoteChar = FlatDataUtils.getString(properties, QUOTE_CHAR).orElse(null);
         this.escapeChar = FlatDataUtils.getString(properties, ESCAPING_CHAR).orElse(null);
         this.nullStrings = FlatDataUtils.getStrings(properties, NULL_STRING);

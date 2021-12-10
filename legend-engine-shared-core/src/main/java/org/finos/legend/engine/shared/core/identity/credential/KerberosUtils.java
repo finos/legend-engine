@@ -23,13 +23,13 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 public class KerberosUtils {
 
     public static <T> T doAs(final Identity identity, final java.security.PrivilegedAction<T> action) {
-        LegendKerberosCredential wrapper = identity.getCredential(LegendKerberosCredential.class).get();
+        LegendKerberosCredential wrapper = identity.getCredential(LegendKerberosCredential.class).orElseThrow(()->new RuntimeException("No credential found"));
         return Subject.doAs(wrapper.getSubject(), action);
     }
 
     public static <T> T doAs(final Identity identity, final java.security.PrivilegedExceptionAction<T> action) throws PrivilegedActionException
     {
-        LegendKerberosCredential wrapper = identity.getCredential(LegendKerberosCredential.class).get();
+        LegendKerberosCredential wrapper = identity.getCredential(LegendKerberosCredential.class).orElseThrow(()->new RuntimeException("No credential found"));
         return Subject.doAs(wrapper.getSubject(), action);
     }
 }

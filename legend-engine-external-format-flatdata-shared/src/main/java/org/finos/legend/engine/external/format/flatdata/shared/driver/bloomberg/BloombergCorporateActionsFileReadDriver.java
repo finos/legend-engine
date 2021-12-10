@@ -123,7 +123,7 @@ public class BloombergCorporateActionsFileReadDriver<T> extends AbstractBloomber
             else
             {
                 unparsed = BasicRawFlatData.newRecord(++recordNumber, line.getLineNumber(), line.getText(), Arrays.asList(UNIVERSAL_FIELDS), Arrays.asList(values));
-                Optional<IChecked<T>> parsed = null; //factory.make(unparsed, defects);
+                Optional<IChecked<T>> parsed = Optional.empty(); //factory.make(unparsed, defects);
                 return parsed.map(Collections::singletonList).orElseGet(Collections::emptyList);
             }
         }
@@ -162,14 +162,14 @@ public class BloombergCorporateActionsFileReadDriver<T> extends AbstractBloomber
                 defects.add(BasicDefect.newInvalidInputCriticalDefect("Unable to interpret line: " + e.getMessage(), context.getDefiningPath()));
             }
 
-            Optional<IChecked<T>> parsed = null; //factory.make(unparsed, defects);
+            Optional<IChecked<T>> parsed = Optional.empty(); //factory.make(unparsed, defects);
             return parsed.map(Collections::singletonList).orElseGet(Collections::emptyList);
         }
         else
         {
             unparsed = new NoValuesRawFlatData(++recordNumber, line.getLineNumber(), line.getText());
             defects.add(BasicDefect.newInvalidInputCriticalDefect("Badly formed line, meaningless number of fields", context.getDefiningPath()));
-            Optional<IChecked<T>> parsed = null; //factory.make(unparsed, defects);
+            Optional<IChecked<T>> parsed = Optional.empty(); //factory.make(unparsed, defects);
             return parsed.map(Collections::singletonList).orElseGet(Collections::emptyList);
         }
     }

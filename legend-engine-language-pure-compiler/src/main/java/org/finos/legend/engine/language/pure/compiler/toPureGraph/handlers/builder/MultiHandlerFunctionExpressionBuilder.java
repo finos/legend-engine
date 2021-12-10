@@ -60,7 +60,7 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     @Override
     public Boolean supportFunctionHandler(FunctionHandler handler)
     {
-        return this.getParametersSize().isPresent() && this.getParametersSize().get() == handler.getParametersSize();
+        return this.getParametersSize().isPresent() && this.getParametersSize().orElse(-1) == handler.getParametersSize();
     }
 
     @Override

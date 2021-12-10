@@ -32,7 +32,7 @@ public class DatabaseAuthenticationFlowProviderSelector
 {
     public static final String DATABASE_AUTH_FLOW_PROVIDER_IMPL_CLASS = "org.finos.legend.engine.execution.databaseAuthFlowProviderImplClass";
 
-    public static Optional<DatabaseAuthenticationFlowProvider> INSTANCE = null;
+    private static Optional<DatabaseAuthenticationFlowProvider> INSTANCE = Optional.empty();
 
     private DatabaseAuthenticationFlowProviderSelector()
     {
@@ -72,8 +72,7 @@ public class DatabaseAuthenticationFlowProviderSelector
         {
             return Optional.empty();
         }
-
-        if (INSTANCE == null)
+        if (!INSTANCE.isPresent())
         {
             INSTANCE = initialize(locator, databaseAuthFlowProviderImplClass);
         }

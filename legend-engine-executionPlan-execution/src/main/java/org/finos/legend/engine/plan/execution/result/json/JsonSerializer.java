@@ -25,7 +25,7 @@ abstract class JsonSerializer extends Serializer
 {
     JsonGenerator createGenerator(OutputStream stream) throws IOException
     {
-        return new JsonFactory().createGenerator(stream)
+        return new JsonFactory().createGenerator(stream) //NOSONAR
                 .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
                 .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
     }

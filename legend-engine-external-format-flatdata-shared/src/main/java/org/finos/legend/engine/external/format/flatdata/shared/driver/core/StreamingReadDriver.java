@@ -103,7 +103,7 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
             CharCursor csr = (CharCursor) cursor.copy();
             try
             {
-                long untilLines = FlatDataUtils.getInteger(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.FOR_NUMBER_OF_LINES).get();
+                long untilLines = FlatDataUtils.getInteger(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.FOR_NUMBER_OF_LINES).orElse(-1l);
                 return canReadExpectedLines(csr, untilLines) && helper.context.isNextSectionReadyToStartAt(csr);
             }
             finally
@@ -245,12 +245,12 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
                 }
                 else if (FlatDataUtils.getString(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.UNTIL_LINE_EQUALS).isPresent())
                 {
-                    String untilText = FlatDataUtils.getString(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.UNTIL_LINE_EQUALS).get();
+                    String untilText = FlatDataUtils.getString(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.UNTIL_LINE_EQUALS).orElse(null);
                     sectionHasConsumedAllItsRawLines = () -> lastLine != null && untilText.equals(lastLine.getText());
                 }
                 else if (FlatDataUtils.getInteger(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.FOR_NUMBER_OF_LINES).isPresent())
                 {
-                    long untilLines = FlatDataUtils.getInteger(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.FOR_NUMBER_OF_LINES).get();
+                    long untilLines = FlatDataUtils.getInteger(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.FOR_NUMBER_OF_LINES).orElse(-1l);
                     sectionHasConsumedAllItsRawLines = () -> lineCount >= untilLines;
                 }
                 else

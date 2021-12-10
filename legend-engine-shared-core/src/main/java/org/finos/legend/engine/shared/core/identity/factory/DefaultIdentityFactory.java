@@ -43,7 +43,7 @@ public final class DefaultIdentityFactory implements IdentityFactory
         {
             throw new IllegalArgumentException("Subject does not contain a KerberosPrincipal");
         }
-        String name = principal != null ? principal.getName().split("@")[0] : null;
+        String name = principal.getName().split("@")[0];
         return new Identity(name, new LegendKerberosCredential(subject));
     }
 

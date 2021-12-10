@@ -53,14 +53,16 @@ public class TestInMemoryAlloyServer
         {
             Connection connection2 = selector2.getTestDatabaseConnection();
             Statement statement2 = connection2.createStatement();
-            statement2.execute("create table test(a varchar(100))");
-            fail("Failed to get exception");
+            try
+            {
+                statement2.execute("create table test(a varchar(100))");
+                fail("Failed to get exception");
+            }
+            catch (SQLException e)
+            {
+                assertTrue(e.getMessage().contains("Table \"TEST\" already exists; SQL statement:"));
+            }
         }
-        catch (SQLException e)
-        {
-            assertTrue(e.getMessage().contains("Table \"TEST\" already exists; SQL statement:"));
-        }
-
         finally
         {
             close(server1);

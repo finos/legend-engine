@@ -179,11 +179,10 @@ public class ServiceExecutor
     private static void processSecurityScheme(HttpClientBuilder httpClientBuilder, MutableList<CommonProfile> profiles, SecurityScheme securityScheme)
     {
         List<Function3<SecurityScheme, HttpClientBuilder, MutableList<CommonProfile>, Boolean>> processors = ListIterate.flatCollect(IServiceStoreExecutionExtension.getExtensions(), ext -> ext.getExtraSecuritySchemeProcessors());
-
-        ListIterate.collect(processors, processor -> processor.value(securityScheme, httpClientBuilder, profiles))
-                .select(Objects::nonNull)
-                .getFirstOptional()
-                .orElseThrow(() -> new RuntimeException("No processor found for given security scheme. Unsupported SecurityScheme - " + securityScheme.getClass().getSimpleName()));
+        if (ListIterate.collect(processors, processor -> processor.value(securityScheme, httpClientBuilder, profiles)).select(Objects::nonNull).isEmpty())
+        {
+            throw new RuntimeException("No processor found for given security scheme. Unsupported SecurityScheme - " + securityScheme.getClass().getSimpleName());
+        }
     }
 
     private static String serializePathParameter(Object value, ServiceParameter parameter)

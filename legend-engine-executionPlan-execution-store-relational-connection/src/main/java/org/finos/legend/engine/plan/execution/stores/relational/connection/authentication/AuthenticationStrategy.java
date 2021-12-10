@@ -109,7 +109,7 @@ public abstract class AuthenticationStrategy
         try
         {
             Identity identity = identityState.getIdentity();
-            CredentialSupplier credentialSupplier = identityState.getCredentialSupplier().get();
+            CredentialSupplier credentialSupplier = identityState.getCredentialSupplier().orElseThrow(()->new RuntimeException("Credential Supplier not found!"));
             return credentialSupplier.getCredential(identity);
         }
         catch (Exception e)

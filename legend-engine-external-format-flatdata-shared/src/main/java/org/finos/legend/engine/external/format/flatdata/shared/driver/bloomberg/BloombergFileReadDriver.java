@@ -90,7 +90,7 @@ public class BloombergFileReadDriver<T> extends AbstractBloombergReadDriver<T>
             defects.add(BasicDefect.newInvalidInputErrorDefect("Expected " + headings.length + " fields but got " + values.length, context.getDefiningPath()));
         }
         RawFlatData unparsed = BasicRawFlatData.newRecord(++recordNumber, line.getLineNumber(), line.getText(), Arrays.asList(headings), Arrays.asList(values));
-        Optional<IChecked<T>> parsed = null; //dataFactory.make(unparsed, defects);
+        Optional<IChecked<T>> parsed = Optional.empty(); //dataFactory.make(unparsed, defects);
         return parsed.map(Collections::singletonList).orElseGet(Collections::emptyList);
     }
 }
