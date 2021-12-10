@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class ConnectionKey
 {
-    private static final String AUTH = "_auth_";
+    private static final String SEPARATOR = "_";
     private final DataSourceSpecificationKey dataSourceSpecificationKey;
     private final AuthenticationStrategyKey authenticationStrategyKey;
 
@@ -41,7 +41,7 @@ public class ConnectionKey
 
     public String shortId()
     {
-        return this.dataSourceSpecificationKey.shortId() + AUTH + this.authenticationStrategyKey.shortId();
+        return this.dataSourceSpecificationKey.shortId() + SEPARATOR + this.authenticationStrategyKey.shortId();
     }
 
     @Override

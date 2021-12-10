@@ -28,7 +28,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Conne
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionState;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
@@ -81,12 +81,12 @@ public abstract class AuthenticationStrategy
         }
         catch (PrivilegedActionException e)
         {
-            LOGGER.error("PrivilegedActionException for subject {} {} []", subject, e);
+            LOGGER.error("PrivilegedActionException for subject {} {}", subject, e);
             throw new ConnectionException(e.getException());
         }
         catch (RuntimeException e)
         {
-            LOGGER.error("RuntimeException for subject {} {} []", subject, e);
+            LOGGER.error("RuntimeException for subject {} {}", subject, e);
             throw new ConnectionException(e);
         }
         return connection;
@@ -104,12 +104,12 @@ public abstract class AuthenticationStrategy
 
     public abstract AuthenticationStrategyKey getKey();
 
-    protected Credential getDatabaseCredential(ConnectionState connectionState)
+    protected Credential getDatabaseCredential(IdentityState identityState)
     {
         try
         {
-            Identity identity = connectionState.getIdentity();
-            CredentialSupplier credentialSupplier = connectionState.getCredentialSupplier().get();
+            Identity identity = identityState.getIdentity();
+            CredentialSupplier credentialSupplier = identityState.getCredentialSupplier().get();
             return credentialSupplier.getCredential(identity);
         }
         catch (Exception e)

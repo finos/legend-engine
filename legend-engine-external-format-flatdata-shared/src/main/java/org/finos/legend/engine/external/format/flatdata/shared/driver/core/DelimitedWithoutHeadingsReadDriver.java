@@ -1,14 +1,14 @@
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandlerRecordType;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.AbstractRawFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.NoValuesRawFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandlerRecordType;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.LineReader;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatDataValue;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.NoValuesRawFlatData;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 
 import java.util.Collection;
@@ -22,11 +22,11 @@ import java.util.stream.IntStream;
 public class DelimitedWithoutHeadingsReadDriver<T> extends DelimitedReadDriver<T>
 {
     public static final String ID = "DelimitedWithoutHeadings";
-    private final FlatDataProcessingContext<T> context;
+    private final FlatDataProcessingContext context;
 
     private long recordNumber = 0;
 
-    DelimitedWithoutHeadingsReadDriver(FlatDataSection section, FlatDataProcessingContext<T> context)
+    DelimitedWithoutHeadingsReadDriver(FlatDataSection section, FlatDataProcessingContext context)
     {
         super(section, context);
         this.context = context;
@@ -37,7 +37,7 @@ public class DelimitedWithoutHeadingsReadDriver<T> extends DelimitedReadDriver<T
     {
         super.start();
         this.fieldHandlers = computeFieldHandlers(Objects.requireNonNull(helper.section.getRecordType()), this::getRawDataAccessor);
-        this.objecFactory = context.createToObjectFactory(new FieldHandlerRecordType(helper.section.getRecordType(), fieldHandlers));
+        this.objectFactory = context.createToObjectFactory(new FieldHandlerRecordType(helper.section.getRecordType(), fieldHandlers));
     }
 
     private Function<RawFlatData, String> getRawDataAccessor(FlatDataRecordField field)

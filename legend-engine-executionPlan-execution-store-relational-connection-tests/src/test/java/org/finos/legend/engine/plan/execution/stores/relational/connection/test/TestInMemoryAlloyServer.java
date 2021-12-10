@@ -36,7 +36,7 @@ public class TestInMemoryAlloyServer
     {
         int port1 = DynamicPortGenerator.generatePort();
         Server server1 = AlloyH2Server.startServer(port1);
-        ConnectionManagerSelector selector1 = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(port1), Collections.emptyList(), new RelationalExecutorInfo());
+        ConnectionManagerSelector selector1 = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(port1), Collections.emptyList());
 
         // the first table creation is successful
         Connection connection1 = selector1.getTestDatabaseConnection();
@@ -45,7 +45,7 @@ public class TestInMemoryAlloyServer
 
         int port2 = DynamicPortGenerator.generatePort();
         Server server2 = AlloyH2Server.startServer(port2);
-        ConnectionManagerSelector selector2 = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(port2), Collections.emptyList(), new RelationalExecutorInfo());
+        ConnectionManagerSelector selector2 = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(port2), Collections.emptyList());
 
         // the second table creation fails, even though it uses a unique port, as the database names are the same.
         // with the memory mode, the port number does not provide for unqiue databases

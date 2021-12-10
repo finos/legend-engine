@@ -14,79 +14,27 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.time.Duration;
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
-public class TestConnectionStateManager
+public class TestConnectionStateManager extends TestConnectionManagement
 {
-    private FakeClock clock;
-    private long startTime;
-    private ConnectionStateManager connectionStateManager;
 
     @Before
     public void setup() throws Exception
     {
-        resetSingleton();
-
-        this.startTime = System.currentTimeMillis();
-        this.clock = new FakeClock(startTime);
+        super.setup();
         this.connectionStateManager = ConnectionStateManager.getInstanceForTesting(clock);
-    }
-
-    private void resetSingleton() throws Exception
-    {
-        Field field = ConnectionStateManager.class.getDeclaredField("INSTANCE");
-        field.setAccessible(true);
-        field.set(null, null);
-    }
-
-    @Test
-    public void testGetSet()
-    {
-        connectionStateManager.registerState("pool1", null, null);
-        connectionStateManager.registerState("pool2", null, null);
-        connectionStateManager.registerState("pool3", null, null);
-        connectionStateManager.registerState("pool4", null, null);
-
-        assertEquals(4, connectionStateManager.size());
-        assertStateExists("pool1", "pool2", "pool3", "pool4");
-    }
-
-    @Test
-    public void testEviction()
-    {
-        connectionStateManager.registerState("pool1", null, Optional.empty());
-        connectionStateManager.registerState("pool2", null, Optional.empty());
-
-        assertEquals(2, connectionStateManager.size());
-        assertStateExists("pool1", "pool2");
-
-        ConnectionStateManager.ConnectionStateEvictionTask houseKeeper = new ConnectionStateManager.ConnectionStateEvictionTask(Duration.ofMinutes(5).getSeconds());
-
-        // advance clock by 4 minutes and run housekeeper
-        clock.advance(Duration.ofMinutes(4));
-        houseKeeper.run();
-
-        assertEquals(2, connectionStateManager.size());
-        assertStateExists("pool1", "pool2");
-
-        connectionStateManager.registerState("pool3", null, Optional.empty());
-        connectionStateManager.registerState("pool4", null, Optional.empty());
-        connectionStateManager.registerState("pool5", null, Optional.empty());
-
-        // advance clock by 2 more minutes and run housekeeper
-        clock.advance(Duration.ofMinutes(2));
-        houseKeeper.run();
-
-        assertEquals(3, connectionStateManager.size());
-        assertStateExists("pool3", "pool4", "pool5");
     }
 
     @Test
@@ -105,11 +53,111 @@ public class TestConnectionStateManager
         assertEquals(4567, evictionDurationInSeconds);
     }
 
-    private void assertStateExists(String ...poolNames)
+
+    @Test
+    public void testDataSourceConnectionsRequest()
     {
-        for (String poolName : poolNames)
-        {
-            assertNotNull("State not found for pool="+ poolName, connectionStateManager.getState(poolName));
-        }
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
+        DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T2"));
+        DataSourceSpecification ds3 = buildLocalDataSourceSpecification(Collections.emptyList());
+        assertPoolExists(false,"user1",ds1.getConnectionKey());
+        assertPoolExists(false,"user2",ds2.getConnectionKey());
+        assertPoolExists(false,"user3",ds3.getConnectionKey());
+
+        requestConnection("user1",ds1);
+        requestConnection("user2",ds2);
+        requestConnection("user3",ds3);
+        requestConnection("user1",ds1);
+
+        Assert.assertEquals(3, connectionStateManager.size());
+        assertPoolExists(true,"user1",ds1.getConnectionKey());
+        assertPoolExists(true,"user2",ds2.getConnectionKey());
+        assertPoolExists(true,"user3",ds3.getConnectionKey());
+
+    }
+
+    @Test
+    public void testDataSourceRegistrationSequentialCalls()
+    {
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
+
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
+        assertPoolExists(false, user1.getName(), ds1.getConnectionKey());
+        Assert.assertEquals(0, connectionStateManager.size());
+
+
+        requestConnection(user1, ds1);
+        Assert.assertEquals(1, connectionStateManager.size());
+        assertPoolExists(true, user1.getName(), ds1.getConnectionKey());
+        assertPoolExists(false, user2.getName(), ds1.getConnectionKey());
+        String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
+        assertPoolStateExists(pool1);
+        Assert.assertEquals(1, connectionStateManager.size());
+
+        DataSourceSpecification ds11 = buildLocalDataSourceSpecification(Collections.emptyList());
+        requestConnection(user2, ds11);
+        Assert.assertEquals(ds11.getConnectionKey(), ds1.getConnectionKey());
+        Assert.assertEquals(2, connectionStateManager.size());
+        assertPoolExists(true, user1.getName(), ds1.getConnectionKey());
+        assertPoolExists(true, user2.getName(), ds1.getConnectionKey());
+        String pool2 = connectionStateManager.poolNameFor(user2, ds1.getConnectionKey());
+        assertPoolStateExists(pool1, pool2);;
+    }
+
+    @Test
+    public void testDataSourceEviction()
+    {
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
+        Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
+
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
+        DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Collections.emptyList());
+
+        String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
+        String pool2 = connectionStateManager.poolNameFor(user2, ds2.getConnectionKey());
+
+        Assert.assertEquals(0, connectionStateManager.size());
+        assertPoolExists(false, user1.getName(), ds1.getConnectionKey());
+        assertPoolExists(false, user1.getName(), ds2.getConnectionKey());
+
+        ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
+
+        requestConnection(user1, ds1);
+        requestConnection(user2, ds2);
+
+
+        // advance clock by 4 minutes and run housekeeper
+        clock.advance(Duration.ofMinutes(4));
+        houseKeeper.run();
+
+        Assert.assertEquals(2, connectionStateManager.size());
+        assertPoolExists(true, "user1", ds1.getConnectionKey());
+        assertPoolExists(true, "user2", ds2.getConnectionKey());
+        assertPoolExists(false, "user3", ds2.getConnectionKey());
+        assertPoolStateExists(pool1, pool2);
+        Assert.assertEquals(2, connectionStateManager.size());
+        clock.advance(Duration.ofMinutes(5));
+
+        requestConnection(user3, ds1);//new user makes a connection
+        String pool3 = connectionStateManager.poolNameFor(user3, ds1.getConnectionKey());
+        Assert.assertNotNull(pool3);
+
+        assertPoolExists(true, "user1", ds1.getConnectionKey());
+        assertPoolExists(true, "user2", ds2.getConnectionKey());
+        assertPoolExists(true, "user3", ds1.getConnectionKey());
+        Assert.assertEquals(3, connectionStateManager.size());
+
+        //default time is 10 mins , no new connection for user1 and 2 , should be removed
+        clock.advance(Duration.ofMinutes(2));
+        houseKeeper.run();
+
+        assertPoolExists(false, "user1", ds1.getConnectionKey());
+        assertPoolExists(false, "user2", ds2.getConnectionKey());
+        assertPoolExists(true, "user3", ds1.getConnectionKey());
+        Assert.assertEquals(1, connectionStateManager.size());
+        Assert.assertEquals(1, connectionStateManager.size());
+        assertPoolStateExists(pool3);
     }
 }

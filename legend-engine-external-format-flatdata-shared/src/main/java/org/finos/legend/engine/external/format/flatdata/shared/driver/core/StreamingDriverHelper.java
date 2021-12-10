@@ -2,8 +2,6 @@ package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.FlatDataUtils;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.IntegerVariable;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.StringVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.BooleanParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DateParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DateTimeParser;
@@ -11,6 +9,8 @@ import org.finos.legend.engine.external.format.flatdata.shared.driver.core.value
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.IntegerParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.StringParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.ValueParser;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.IntegerVariable;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.StringVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.VariableType;
@@ -48,12 +48,12 @@ public class StreamingDriverHelper
 
     public static final FlatDataVariable VARIABLE_LINE_NUMBER = new FlatDataVariable("lineNumber", VariableType.Integer);
 
-    public final FlatDataProcessingContext<?> context;
+    public final FlatDataProcessingContext context;
     public final FlatDataSection section;
     public final boolean skipBlankLines;
     public final String eol;
 
-    public StreamingDriverHelper(FlatDataSection section, FlatDataProcessingContext<?> context)
+    public StreamingDriverHelper(FlatDataSection section, FlatDataProcessingContext context)
     {
         this.section = section;
         List<FlatDataProperty> properties = section.getSectionProperties();

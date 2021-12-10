@@ -135,6 +135,11 @@ public class BasicDefect implements IDefect
         return BasicDefect.newDefect(null, null, "No Input Available", EnforcementLevel.Critical, ruleDefinerPath, RuleType.NoInput, Collections.emptyList());
     }
 
+    public static IDefect newNonReturnableDefect(String ruleDefinerPath)
+    {
+        return BasicDefect.newDefect(null, null, "Input not directly returned to stream", EnforcementLevel.Warn, ruleDefinerPath, RuleType.UnreturnedInput, Collections.emptyList());
+    }
+
     public static IDefect prefixPath(IDefect defect, RelativePathNode path)
     {
         return BasicDefect.prefixPath(defect, Collections.singletonList(path));

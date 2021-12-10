@@ -22,7 +22,7 @@ public class DelimitedDriverHelper extends StreamingDriverHelper
     final String escapeChar;
     final List<String> nullStrings;
 
-    DelimitedDriverHelper(FlatDataSection section, FlatDataProcessingContext<?> context)
+    DelimitedDriverHelper(FlatDataSection section, FlatDataProcessingContext context)
     {
         super(section, context);
 

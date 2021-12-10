@@ -1,21 +1,23 @@
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.CharCursor;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandler;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.LazyParsedFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.NonRecordRawFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandler;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.DelimitedLine;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.LineReader;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.TimeZone;
 import java.util.function.LongSupplier;
 
 public abstract class DelimitedReadDriver<T> extends StreamingReadDriver<T>
@@ -25,11 +27,9 @@ public abstract class DelimitedReadDriver<T> extends StreamingReadDriver<T>
     static final String ESCAPING_CHAR = "escapingChar";
     static final String NULL_STRING = "nullString";
 
-    private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
-
     protected final DelimitedDriverHelper helper;
 
-    protected ParsedFlatDataToObject<? extends T> objecFactory;
+    protected ParsedFlatDataToObject<? extends T> objectFactory;
     protected List<FieldHandler> fieldHandlers;
 
     DelimitedReadDriver(FlatDataSection section, FlatDataProcessingContext context)
@@ -42,6 +42,12 @@ public abstract class DelimitedReadDriver<T> extends StreamingReadDriver<T>
     protected LineReader createLineReader(CharCursor cursor, LongSupplier lineNumberSupplier)
     {
         return new DelimitedLineReader(cursor, helper.eol, helper.context.getDefiningPath(), lineNumberSupplier, helper.delimiter, helper.quoteChar, helper.escapeChar);
+    }
+
+    @Override
+    public void stop()
+    {
+        this.objectFactory.finished();
     }
 
     protected Optional<IChecked<RawFlatData>> readDelimitedLine()
@@ -99,8 +105,24 @@ public abstract class DelimitedReadDriver<T> extends StreamingReadDriver<T>
                     parseData.setMissing(handler);
                 }
             }
-            T value = objecFactory.make(parseData);
-            return Optional.of(BasicChecked.newChecked(value, unparsed.getValue(), parseData.getDefects()));
+
+            List<IDefect> defects = parseData.getDefects();
+            IChecked<? extends T> checkedValue = objectFactory.makeChecked(parseData);
+            defects.addAll(checkedValue.getDefects());
+            T value = checkedValue.getValue();
+            if (objectFactory.isReturnable())
+            {
+                if (defects.stream().anyMatch(d -> d.getEnforcementLevel() == EnforcementLevel.Critical))
+                {
+                    value = null;
+                }
+                return Optional.of(BasicChecked.newChecked(value, unparsed.getValue(), defects));
+            }
+            else
+            {
+                defects.add(BasicDefect.newNonReturnableDefect(helper.context.getDefiningPath()));
+                return Optional.of(BasicChecked.newChecked(null, new NonRecordRawFlatData(unparsed.getValue()), defects));
+            }
         }
     }
 

@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public abstract class VariablesProcessingContext<T> implements FlatDataProcessingContext<T>
+public abstract class VariablesProcessingContext implements FlatDataProcessingContext
 {
     private final ProcessingVariables variables;
     private final Set<String> declaredVariableNames = new HashSet<>();

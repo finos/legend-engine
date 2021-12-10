@@ -16,6 +16,7 @@ package org.finos.legend.engine.shared.core.identity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Identity
@@ -60,4 +61,5 @@ public class Identity
     {
         return this.credentials.size();
     }
+
 }

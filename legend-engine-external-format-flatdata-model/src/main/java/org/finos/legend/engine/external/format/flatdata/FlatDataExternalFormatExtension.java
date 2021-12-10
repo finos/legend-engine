@@ -107,7 +107,8 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
                 ._sourceSchemaId(config.sourceSchemaId)
                 ._targetBinding(config.targetBinding)
                 ._targetPackage(config.targetPackage)
-                ._purifyNames(config.purifyNames);
+                ._purifyNames(config.purifyNames)
+                ._schemaClassName(config.schemaClassName);
         return IN_DEBUG
                ? core_external_format_flatdata_binding_flatDataToPure.Root_meta_external_format_flatdata_binding_toPure_flatDataToPureWithDebug_SchemaSet_1__FlatDataToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport())
                : core_external_format_flatdata_binding_flatDataToPure.Root_meta_external_format_flatdata_binding_toPure_flatDataToPure_SchemaSet_1__FlatDataToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());

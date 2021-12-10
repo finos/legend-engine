@@ -28,7 +28,7 @@ public class TestRelationalConnectionManager
     @Test
     public void testConnection() throws Exception
     {
-        RelationalConnectionManager manager = new RelationalConnectionManager(22, Lists.mutable.empty(),new RelationalExecutorInfo());
+        RelationalConnectionManager manager = new RelationalConnectionManager(22, Lists.mutable.empty());
         String connectionStr =
                 "{\n" +
                 "  \"_type\": \"RelationalDatabaseConnection\",\n" +

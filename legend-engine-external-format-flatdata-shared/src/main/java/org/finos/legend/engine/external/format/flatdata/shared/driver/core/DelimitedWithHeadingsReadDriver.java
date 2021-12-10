@@ -1,16 +1,16 @@
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandlerRecordType;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.AbstractRawFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.FlatDataUtils;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.NoValuesRawFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandlerRecordType;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.FlatDataUtils;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.LineReader;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatDataValue;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
@@ -32,13 +32,13 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
 
     private final FlatDataSection section;
     private final FlatDataRecordType recordType;
-    private final FlatDataProcessingContext<T> context;
+    private final FlatDataProcessingContext context;
     private final List<IDefect> headingDefects = new ArrayList<>();
     private long recordNumber = 0;
     private List<String> headings = null;
     private IChecked<RawFlatData> headingsLine = null;
 
-    DelimitedWithHeadingsReadDriver(FlatDataSection section, FlatDataProcessingContext<T> context)
+    DelimitedWithHeadingsReadDriver(FlatDataSection section, FlatDataProcessingContext context)
     {
         super(section, context);
         this.section = section;
@@ -97,7 +97,7 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
         }
 
         this.fieldHandlers = computeFieldHandlers(recordType, this::getRawDataAccessor);
-        this.objecFactory = context.createToObjectFactory(new FieldHandlerRecordType(section.getRecordType(), fieldHandlers));
+        this.objectFactory = context.createToObjectFactory(new FieldHandlerRecordType(section.getRecordType(), fieldHandlers));
     }
 
     private Function<RawFlatData, String> getRawDataAccessor(FlatDataRecordField field)

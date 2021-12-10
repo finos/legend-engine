@@ -507,6 +507,252 @@ public class TestFlatDataBindingCompilation extends ExternalSchemaCompilationTes
         );
     }
 
+    @Test
+    public void testCompatibleModelMultiSectionWithFileClass()
+    {
+        test("###Pure\n" +
+                     "Class test::Header\n" +
+                     "{\n" +
+                     "  closeOfBusiness: StrictDate[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Class test::PriceRow\n" +
+                     "{\n" +
+                     "  accountId: Integer[1];\n" +
+                     "  synonymType: String[1];\n" +
+                     "  synonym: String[1];\n" +
+                     "  currency: String[1];\n" +
+                     "  closePrice: Float[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Class test::WholeLoanPriceFile\n" +
+                     "{\n" +
+                     "}\n" +
+                     "\n" +
+                     "Association test::File_Header\n" +
+                     "{\n" +
+                     "  file: test::WholeLoanPriceFile[1];\n" +
+                     "  header: test::Header[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Association test::File_PriceRow\n" +
+                     "{\n" +
+                     "  file: test::WholeLoanPriceFile[1];\n" +
+                     "  dataRows: test::PriceRow[*];\n" +
+                     "}\n" +
+                     "###ExternalFormat\n" +
+                     "SchemaSet test::SchemaSet\n" +
+                     "{\n" +
+                     "  format: FlatData;\n" +
+                     "  schemas: [ \n" +
+                     "    { id: fd1; content: " + PureGrammarComposerUtility.convertString("section header: DelimitedWithoutHeadings\n" +
+                                                                                                   "{\n" +
+                                                                                                   "  delimiter: ' ';\n" +
+                                                                                                   "  scope.forNumberOfLines: 1;\n" +
+                                                                                                   "\n" +
+                                                                                                   "  Record\n" +
+                                                                                                   "  {\n" +
+                                                                                                   "    closeOfBusiness {3}: DATE(format='yyyyMMdd');\n" +
+                                                                                                   "  }\n" +
+                                                                                                   "}\n" +
+                                                                                                   "\n" +
+                                                                                                   "section dataRows: DelimitedWithoutHeadings\n" +
+                                                                                                   "{\n" +
+                                                                                                   "  recordSeparator: '\\r\\n';\n" +
+                                                                                                   "  scope.untilEof;\n" +
+                                                                                                   "  delimiter: '~';\n" +
+                                                                                                   "\n" +
+                                                                                                   "  Record\n" +
+                                                                                                   "  {\n" +
+                                                                                                   "    Account_ID   {1}: INTEGER;\n" +
+                                                                                                   "    Synonym_Type {2}: STRING;\n" +
+                                                                                                   "    Synonym      {3}: STRING;\n" +
+                                                                                                   "    Currency     {4}: STRING;\n" +
+                                                                                                   "    Close_Price  {9}: DECIMAL;\n" +
+                                                                                                   "  }\n" +
+                                                                                                   "}\n", true) + "; }\n" +
+                     " ];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Binding test::Binding\n" +
+                     "{\n" +
+                     "  schemaSet: test::SchemaSet;\n" +
+                     "  schemaId: fd1;\n" +
+                     "  contentType: 'application/x.flatdata';\n" +
+                     "  modelIncludes: [ test::WholeLoanPriceFile, test::Header, test::PriceRow, test::File_Header, test::File_PriceRow ];\n" +
+                     "}\n"
+        );
+    }
+
+    @Test
+    public void testIncompatibleModelMultiSectionWithAmbiguousFileClasses()
+    {
+        test("###Pure\n" +
+                     "Class test::Header\n" +
+                     "{\n" +
+                     "  closeOfBusiness: StrictDate[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Class test::PriceRow\n" +
+                     "{\n" +
+                     "  accountId: Integer[1];\n" +
+                     "  synonymType: String[1];\n" +
+                     "  synonym: String[1];\n" +
+                     "  currency: String[1];\n" +
+                     "  closePrice: Float[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Class test::WholeLoanPriceFile\n" +
+                     "{\n" +
+                     "}\n" +
+                     "\n" +
+                     "Class test::WholeLoanPriceFile2\n" +
+                     "{\n" +
+                     "  header: test::Header[1];\n" +
+                     "  dataRows: test::PriceRow[*];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Association test::File_Header\n" +
+                     "{\n" +
+                     "  file: test::WholeLoanPriceFile[1];\n" +
+                     "  header: test::Header[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Association test::File_PriceRow\n" +
+                     "{\n" +
+                     "  file: test::WholeLoanPriceFile[1];\n" +
+                     "  dataRows: test::PriceRow[*];\n" +
+                     "}\n" +
+                     "###ExternalFormat\n" +
+                     "SchemaSet test::SchemaSet\n" +
+                     "{\n" +
+                     "  format: FlatData;\n" +
+                     "  schemas: [ \n" +
+                     "    { id: fd1; content: " + PureGrammarComposerUtility.convertString("section header: DelimitedWithoutHeadings\n" +
+                                                                                                   "{\n" +
+                                                                                                   "  delimiter: ' ';\n" +
+                                                                                                   "  scope.forNumberOfLines: 1;\n" +
+                                                                                                   "\n" +
+                                                                                                   "  Record\n" +
+                                                                                                   "  {\n" +
+                                                                                                   "    closeOfBusiness {3}: DATE(format='yyyyMMdd');\n" +
+                                                                                                   "  }\n" +
+                                                                                                   "}\n" +
+                                                                                                   "\n" +
+                                                                                                   "section dataRows: DelimitedWithoutHeadings\n" +
+                                                                                                   "{\n" +
+                                                                                                   "  recordSeparator: '\\r\\n';\n" +
+                                                                                                   "  scope.untilEof;\n" +
+                                                                                                   "  delimiter: '~';\n" +
+                                                                                                   "\n" +
+                                                                                                   "  Record\n" +
+                                                                                                   "  {\n" +
+                                                                                                   "    Account_ID   {1}: INTEGER;\n" +
+                                                                                                   "    Synonym_Type {2}: STRING;\n" +
+                                                                                                   "    Synonym      {3}: STRING;\n" +
+                                                                                                   "    Currency     {4}: STRING;\n" +
+                                                                                                   "    Close_Price  {9}: DECIMAL;\n" +
+                                                                                                   "  }\n" +
+                                                                                                   "}\n", true) + "; }\n" +
+                     " ];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Binding test::Binding\n" +
+                     "{\n" +
+                     "  schemaSet: test::SchemaSet;\n" +
+                     "  schemaId: fd1;\n" +
+                     "  contentType: 'application/x.flatdata';\n" +
+                     "  modelIncludes: [ test::WholeLoanPriceFile, test::WholeLoanPriceFile2, test::Header, test::PriceRow, test::File_Header, test::File_PriceRow ];\n" +
+                     "}\n",
+             "COMPILATION error at [46:1-52:1]: Model and schema are mismatched:\n" +
+                     "Ambiguous matches for schema sections against classes in the model: (WholeLoanPriceFile,WholeLoanPriceFile2)"
+        );
+    }
+
+    @Test
+    public void testIncompatibleModelMultiSectionWithFileClassMismatchesDetailClass()
+    {
+        test("###Pure\n" +
+                     "Class test::Header\n" +
+                     "{\n" +
+                     "  closeOfBusiness: StrictDate[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Class test::PriceRow\n" +
+                     "{\n" +
+                     "  accountId: Integer[1];\n" +
+                     "  synonymType: String[1];\n" +
+                     "  synonym: String[1];\n" +
+                     "  currency: String[1];\n" +
+                     "  closePrice: Float[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Class test::PriceRow2\n" +
+                     "{\n" +
+                     "  data: String[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Class test::WholeLoanPriceFile\n" +
+                     "{\n" +
+                     "}\n" +
+                     "\n" +
+                     "Association test::File_Header\n" +
+                     "{\n" +
+                     "  file: test::WholeLoanPriceFile[1];\n" +
+                     "  header: test::Header[1];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Association test::File_PriceRow\n" +
+                     "{\n" +
+                     "  file: test::WholeLoanPriceFile[1];\n" +
+                     "  dataRows: test::PriceRow2[*];\n" +
+                     "}\n" +
+                     "###ExternalFormat\n" +
+                     "SchemaSet test::SchemaSet\n" +
+                     "{\n" +
+                     "  format: FlatData;\n" +
+                     "  schemas: [ \n" +
+                     "    { id: fd1; content: " + PureGrammarComposerUtility.convertString("section header: DelimitedWithoutHeadings\n" +
+                                                                                                   "{\n" +
+                                                                                                   "  delimiter: ' ';\n" +
+                                                                                                   "  scope.forNumberOfLines: 1;\n" +
+                                                                                                   "\n" +
+                                                                                                   "  Record\n" +
+                                                                                                   "  {\n" +
+                                                                                                   "    closeOfBusiness {3}: DATE(format='yyyyMMdd');\n" +
+                                                                                                   "  }\n" +
+                                                                                                   "}\n" +
+                                                                                                   "\n" +
+                                                                                                   "section dataRows: DelimitedWithoutHeadings\n" +
+                                                                                                   "{\n" +
+                                                                                                   "  recordSeparator: '\\r\\n';\n" +
+                                                                                                   "  scope.untilEof;\n" +
+                                                                                                   "  delimiter: '~';\n" +
+                                                                                                   "\n" +
+                                                                                                   "  Record\n" +
+                                                                                                   "  {\n" +
+                                                                                                   "    Account_ID   {1}: INTEGER;\n" +
+                                                                                                   "    Synonym_Type {2}: STRING;\n" +
+                                                                                                   "    Synonym      {3}: STRING;\n" +
+                                                                                                   "    Currency     {4}: STRING;\n" +
+                                                                                                   "    Close_Price  {9}: DECIMAL;\n" +
+                                                                                                   "  }\n" +
+                                                                                                   "}\n", true) + "; }\n" +
+                     " ];\n" +
+                     "}\n" +
+                     "\n" +
+                     "Binding test::Binding\n" +
+                     "{\n" +
+                     "  schemaSet: test::SchemaSet;\n" +
+                     "  schemaId: fd1;\n" +
+                     "  contentType: 'application/x.flatdata';\n" +
+                     "  modelIncludes: [ test::WholeLoanPriceFile, test::Header, test::PriceRow, test::PriceRow2, test::File_Header, test::File_PriceRow ];\n" +
+                     "}\n",
+             "COMPILATION error at [45:1-51:1]: Model and schema are mismatched:\n" +
+                     "Section 'dataRows': Section found for schema for class test::PriceRow2 but in details for class test::PriceRow"
+        );
+    }
+
     private String flatDataSchemaSet(String flatData)
     {
         return "SchemaSet test::SchemaSet\n" +
