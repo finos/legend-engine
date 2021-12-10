@@ -24,7 +24,6 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabasePattern;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -57,7 +56,7 @@ public class TestSchemaExploration
     public void setup() {
         TemporaryTestDbConfiguration conf = new TemporaryTestDbConfiguration();
         conf.port = Integer.parseInt(System.getProperty("h2ServerPort", "1234"));
-        this.connectionManager = new ConnectionManagerSelector(conf, FastList.newList(), new RelationalExecutorInfo());
+        this.connectionManager = new ConnectionManagerSelector(conf, FastList.newList());
     }
 
     @Test

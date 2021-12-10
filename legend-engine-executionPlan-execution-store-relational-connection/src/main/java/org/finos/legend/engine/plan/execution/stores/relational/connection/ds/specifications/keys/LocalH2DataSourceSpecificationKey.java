@@ -14,19 +14,32 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys;
 
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.H2LocalServer;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
-public class LocalH2DataSourceSpecificationKey implements DataSourceSpecificationKey
+public class LocalH2DataSourceSpecificationKey extends StaticDataSourceSpecificationKey
 {
+    private static final String LOCAL_HOST = "127.0.0.1";
+    private static final String LOCAL_H2_DB_NAME = "";
     private final List<String> testDataSetupSqls;
+    private final long setupCheckSum;
+    private final int port;
+    private final Checksum crc32 = new CRC32();
 
-    public LocalH2DataSourceSpecificationKey(List<String> testDataSetupSqls)
+
+    public LocalH2DataSourceSpecificationKey( List<String> testDataSetupSqls)
     {
+        super(LOCAL_HOST, H2LocalServer.getInstance().getPort(), LOCAL_H2_DB_NAME);
         this.testDataSetupSqls = testDataSetupSqls;
+        this.port = H2LocalServer.getInstance().getPort();
+        byte[] bytes = this.testDataSetupSqls.stream().collect(Collectors.joining(";")).getBytes();
+        crc32.update(bytes, 0, bytes.length);
+        this.setupCheckSum = crc32.getValue();
     }
 
     public List<String> getTestDataSetupSqls()
@@ -37,7 +50,9 @@ public class LocalH2DataSourceSpecificationKey implements DataSourceSpecificatio
     @Override
     public String shortId()
     {
-        return "LocalH2_testDataSetupSqls:" + ListIterate.collect(testDataSetupSqls, v -> v.substring(0, Math.min(v.length(), 30))+ System.identityHashCode(v)).makeString("");
+        return "LocalH2_" +
+                "port:" + port + "_" +
+                "sqlCS:" + setupCheckSum;
     }
 
     @Override
@@ -51,13 +66,14 @@ public class LocalH2DataSourceSpecificationKey implements DataSourceSpecificatio
         {
             return false;
         }
-        LocalH2DataSourceSpecificationKey that = (LocalH2DataSourceSpecificationKey) o;
-        return  Objects.equals(testDataSetupSqls, that.testDataSetupSqls);
+        LocalH2DataSourceSpecificationKey that = (LocalH2DataSourceSpecificationKey)o;
+        return Objects.equals(testDataSetupSqls, that.testDataSetupSqls)
+                && Objects.equals(port, that.port);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(testDataSetupSqls);
+        return Objects.hash(testDataSetupSqls, port);
     }
 }

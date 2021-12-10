@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import java.sql.Connection;
 
 import com.zaxxer.hikari.pool.HikariProxyConnection;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 import org.h2.jdbc.JdbcConnection;
 
 public class H2TestUtils
@@ -26,9 +25,7 @@ public class H2TestUtils
     {
         try
         {
-            LocalH2DataSourceSpecification.WrappedH2Connection wrapped = (LocalH2DataSourceSpecification.WrappedH2Connection) connection;
-            HikariProxyConnection hikariProxyConnection = (HikariProxyConnection) ReflectionUtils.getFieldUsingReflection(LocalH2DataSourceSpecification.WrappedH2Connection.class, wrapped, "conn");
-            return (JdbcConnection) ReflectionUtils.getFieldUsingReflection(HikariProxyConnection.class, hikariProxyConnection, "delegate");
+            return (JdbcConnection) ReflectionUtils.getFieldUsingReflection(HikariProxyConnection.class, connection, "delegate");
         }
         catch (Exception e)
         {

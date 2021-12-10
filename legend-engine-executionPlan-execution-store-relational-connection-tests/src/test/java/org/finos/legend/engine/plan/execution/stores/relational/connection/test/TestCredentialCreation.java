@@ -19,7 +19,6 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.H2TestUtils;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ReflectionUtils;
@@ -36,7 +35,6 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -60,7 +58,7 @@ public class TestCredentialCreation
         installTestFlowProvider();
         assertStaticH2FlowIsAvailable();
 
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), new RelationalExecutorInfo());
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
 
     @After

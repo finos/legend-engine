@@ -20,8 +20,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         super(new SnowflakeDataSourceSpecificationKey("dummy", "dummy", "dummy", "dummy", "dummy", null),
                 new SnowflakeManager(),
                 new SnowflakePublicAuthenticationStrategy("dummy", "dummy", "dummy"),
-                new Properties(),
-                new RelationalExecutorInfo());
+                new Properties());
     }
 
     private SnowflakeDataSourceSpecification buildSnowflakeDataSource(String accountName, String region, String warehouse, String database, String cloudType, Boolean quoteIdentifiers)
@@ -34,8 +33,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         return new SnowflakeDataSourceSpecification(
                 new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, database, cloudType, quoteIdentifiers, proxyHost, proxyProt, nonProxyHosts, accountType, organisation,role),
                 new SnowflakeManager(),
-                new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"),
-                new RelationalExecutorInfo());
+                new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"));
     }
 
     private String extractURL(SnowflakeDataSourceSpecification snowflakeDataSourceSpecification)

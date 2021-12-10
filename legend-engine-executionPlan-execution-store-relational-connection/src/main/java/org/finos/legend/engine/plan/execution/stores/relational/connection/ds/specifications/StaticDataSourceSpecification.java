@@ -16,35 +16,40 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
-import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class StaticDataSourceSpecification extends DataSourceSpecification
 {
-    public StaticDataSourceSpecification(StaticDataSourceSpecificationKey key, DatabaseManager driver, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo info)
+    public StaticDataSourceSpecification(StaticDataSourceSpecificationKey key, DatabaseManager driver, AuthenticationStrategy authenticationStrategy)
     {
-        this(key, driver, authenticationStrategy, new Properties(), info);
+        this(key, driver, authenticationStrategy, new Properties());
     }
 
-    public StaticDataSourceSpecification(StaticDataSourceSpecificationKey key, DatabaseManager driver, AuthenticationStrategy authenticationStrategy, Properties extraUserDataSourceProperties, RelationalExecutorInfo info)
+    public StaticDataSourceSpecification(StaticDataSourceSpecificationKey key, DatabaseManager driver, AuthenticationStrategy authenticationStrategy,int maxPoolSize, int minPoolSize)
     {
-        super(key, driver, authenticationStrategy, extraUserDataSourceProperties, info);
+        this(key, driver, authenticationStrategy, new Properties(),maxPoolSize,minPoolSize);
+    }
+
+    public StaticDataSourceSpecification(StaticDataSourceSpecificationKey key, DatabaseManager driver, AuthenticationStrategy authenticationStrategy,Properties extraUserDataSourceProperties,int maxPoolSize, int minPoolSize)
+    {
+        super(key, driver, authenticationStrategy, extraUserDataSourceProperties,maxPoolSize,minPoolSize);
+    }
+
+    public StaticDataSourceSpecification(StaticDataSourceSpecificationKey key, DatabaseManager driver, AuthenticationStrategy authenticationStrategy,Properties extraUserDataSourceProperties)
+    {
+        super(key, driver, authenticationStrategy, extraUserDataSourceProperties);
     }
 
     @Override
-    protected DataSource buildDataSource(Identity identity)
+    protected String getJdbcUrl(String host, int port, String databaseName, Properties properties)
     {
-        return this.buildDataSource(
+        return super.getJdbcUrl(
                 ((StaticDataSourceSpecificationKey)this.datasourceKey).getHost(),
                 ((StaticDataSourceSpecificationKey)this.datasourceKey).getPort(),
                 ((StaticDataSourceSpecificationKey)this.datasourceKey).getDatabaseName(),
-                identity
-        );
+                properties);
     }
 }

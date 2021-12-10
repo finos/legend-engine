@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
@@ -28,7 +27,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -36,14 +34,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 public class DataSourceSpecificationTransformer implements DatasourceSpecificationVisitor<DataSourceSpecification>
 {
-    private final RelationalExecutorInfo relationalExecutorInfo;
+
     private final DataSourceSpecificationKey key;
     private final RelationalDatabaseConnection connection;
     private final AuthenticationStrategy authenticationStrategy;
 
-    public DataSourceSpecificationTransformer(RelationalExecutorInfo relationalExecutorInfo, DataSourceSpecificationKey key, AuthenticationStrategy authenticationStrategy, RelationalDatabaseConnection connection)
+    public DataSourceSpecificationTransformer(DataSourceSpecificationKey key, AuthenticationStrategy authenticationStrategy, RelationalDatabaseConnection connection)
     {
-        this.relationalExecutorInfo = relationalExecutorInfo;
         this.key = key;
         this.authenticationStrategy = authenticationStrategy;
         this.connection = connection;
@@ -62,10 +59,9 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
             if (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
             {
                 return new LocalH2DataSourceSpecification(
-                        (LocalH2DataSourceSpecificationKey) key,
+                        localH2DatasourceSpecification.testDataSetupSqls,
                         new H2Manager(),
-                        new TestDatabaseAuthenticationStrategy(),
-                        relationalExecutorInfo
+                        new TestDatabaseAuthenticationStrategy()
                 );
             }
             else
@@ -73,8 +69,7 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
                 return new StaticDataSourceSpecification(
                         (StaticDataSourceSpecificationKey) key,
                         new H2Manager(),
-                        this.authenticationStrategy,
-                        relationalExecutorInfo
+                        this.authenticationStrategy
                 );
             }
         }
@@ -83,8 +78,7 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
             return new StaticDataSourceSpecification(
                     (StaticDataSourceSpecificationKey) key,
                     DatabaseManager.fromString(connection.type.name()),
-                    authenticationStrategy,
-                    relationalExecutorInfo
+                    authenticationStrategy
             );
         }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
@@ -92,17 +86,14 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
             return new SnowflakeDataSourceSpecification(
                     (SnowflakeDataSourceSpecificationKey) key,
                     new SnowflakeManager(),
-                    authenticationStrategy,
-                    relationalExecutorInfo
-                    );
+                    authenticationStrategy );
         }
         else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {
             return new BigQueryDataSourceSpecification(
                     (BigQueryDataSourceSpecificationKey) key,
                     new BigQueryManager(),
-                    authenticationStrategy,
-                    relationalExecutorInfo
+                    authenticationStrategy
             );
         }
         return null;

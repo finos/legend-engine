@@ -42,14 +42,14 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public static final String SNOWFLAKE_USE_PROXY = "useProxy";
     public static final String SNOWFLAKE_ROLE = "role";
 
-    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
+    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
-        super(key, databaseManager, authenticationStrategy, extraUserProperties, relationalExecutorInfo);
+        super(key, databaseManager, authenticationStrategy, extraUserProperties);
 
         String warehouseName = updateSnowflakeIdentifiers(key.getWarehouseName(), key.getQuoteIdentifiers());
         String databaseName = updateSnowflakeIdentifiers(key.getDatabaseName(), key.getQuoteIdentifiers());
-        String roleName= updateSnowflakeIdentifiers(key.getRole(),key.getQuoteIdentifiers());
-        putIfNotEmpty(this.extraDatasourceProperties,SNOWFLAKE_ROLE, roleName);
+        String roleName = updateSnowflakeIdentifiers(key.getRole(), key.getQuoteIdentifiers());
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_ROLE, roleName);
 
         this.extraDatasourceProperties.put(SNOWFLAKE_ACCOUNT_NAME, key.getAccountName());
         this.extraDatasourceProperties.put(SNOWFLAKE_REGION, key.getRegion());
@@ -74,8 +74,11 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_PROXY_PORT, key.getProxyPort());
         putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_NON_PROXY_HOSTS, key.getNonProxyHosts());
         this.extraDatasourceProperties.put(SNOWFLAKE_USE_PROXY, this.extraDatasourceProperties.get(SNOWFLAKE_PROXY_HOST) != null);
+    }
 
-
+    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy )
+    {
+        this(key, databaseManager, authenticationStrategy, new Properties());
     }
 
     private static void putIfNotEmpty(Properties connectionProperties, String propName, String propValue)
@@ -83,10 +86,7 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         Optional.ofNullable(propValue).ifPresent(x -> connectionProperties.put(propName, propValue));
     }
 
-    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
-    {
-        this(key, databaseManager, authenticationStrategy, new Properties(), relationalExecutorInfo);
-    }
+
 
     public static String updateSnowflakeIdentifiers(String identifier, boolean quoteIdentifiers)
     {

@@ -14,57 +14,63 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils;
 
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ConnectionPoolTestUtils
 {
-    public static int countNumHikariPools(String identityName)
+    public static int countNumHikariPools(String identityName) throws Exception
     {
-        try
-        {
-            List<DataSourceWithStatistics> pools = getConnectionPoolByUser(identityName);
-            return pools.size();
-        }
-        catch (NoSuchFieldException | IllegalAccessException e)
-        {
-            throw new RuntimeException(e);
-        }
+        List<DataSourceWithStatistics> pools = getConnectionPoolByUser(identityName);
+        return pools.size();
     }
 
-    public static List<DataSourceWithStatistics> getConnectionPoolByUser(String identityName) throws NoSuchFieldException, IllegalAccessException
+    public static List<DataSourceWithStatistics> getConnectionPoolByUser(String identityName) throws Exception
     {
-        ConcurrentMutableMap<String, DataSourceSpecification> specifications = getDataSourceSpecifications();
-        List<DataSourceWithStatistics> connectionPoolsForUser = getAllConnectionPoolsForUser(identityName, specifications);
+        ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> specifications = getDataSourceSpecifications();
+        List<DataSourceWithStatistics> connectionPoolsForUser = getAllConnectionPoolsForUser(identityName, specifications.keySet());
         return connectionPoolsForUser;
     }
 
-    public static ConcurrentMutableMap getDataSourceSpecifications() throws NoSuchFieldException, IllegalAccessException
+    public static ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> getDataSourceSpecifications() throws Exception
     {
-        Field field = DataSourceSpecification.class.getDeclaredField("dataSourceSpecifications");
-        field.setAccessible(true);
-        return (ConcurrentMutableMap) field.get(null);
+        ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dataSourceSpecifications = ConcurrentHashMap.newMap();
+        getConnectionPools().valuesView().forEach(pool-> dataSourceSpecifications.putIfAbsent(pool.getConnectionKey(),pool.getDataSourceSpecification()));
+
+        return dataSourceSpecifications;
+    }
+
+
+    public static ConcurrentMutableMap<String, DataSourceWithStatistics> getConnectionPools() throws Exception
+    {
+        return (ConcurrentHashMap) ReflectionUtils.getFieldUsingReflection(ConnectionStateManager.class, ConnectionStateManager.getInstance(), "connectionPools");
     }
 
     public static void resetDatasourceSpecificationSingletonState() throws Exception
     {
-        ConcurrentMutableMap dataSourceSpecifications = ConnectionPoolTestUtils.getDataSourceSpecifications();
-        dataSourceSpecifications.clear();
+        getConnectionPools().clear();
     }
 
-    private static List<DataSourceWithStatistics> getAllConnectionPoolsForUser(String identityName, ConcurrentMutableMap<String, DataSourceSpecification> connectionPoolsBySpecification ) throws NoSuchFieldException, IllegalAccessException
+    private static List<DataSourceWithStatistics> getAllConnectionPoolsForUser(String identityName, Set<ConnectionKey> connectionKeys)
     {
-        List<DataSourceWithStatistics> connectionPoolsForUser = connectionPoolsBySpecification.stream()
-                .map(DataSourceSpecification::getConnectionPoolByUser)
-                .flatMap(m -> m.entrySet().stream())
-                .filter(e -> e.getKey().contains(identityName))
-                .map(Map.Entry::getValue)
+        ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting(identityName);
+        Stream<String> poolNames = connectionKeys.stream().map(key -> connectionStateManager.poolNameFor(identity,key));
+        List<DataSourceWithStatistics> connectionPoolsForUser = poolNames
+                .map(poolName -> connectionStateManager.get(poolName))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         return connectionPoolsForUser;
     }

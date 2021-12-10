@@ -14,28 +14,34 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
+import org.junit.Assert;
+
 import java.time.Clock;
 import java.time.Duration;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 public class InstrumentedConnectionStateManager extends ConnectionStateManager
 {
     private CountDownLatch countDownLatch;
+    private final int expectedSize;
 
-    InstrumentedConnectionStateManager(Clock clock, CountDownLatch countDownLatch)
+    InstrumentedConnectionStateManager(Clock clock, CountDownLatch countDownLatch, int expectedSize)
     {
         super(clock);
         this.countDownLatch = countDownLatch;
+        this.expectedSize = expectedSize;
     }
 
     @Override
-    public Set<Map.Entry<String, ConnectionState>> findStateOlderThan(Duration duration)
+    protected Set<Pair<String, DataSourceStatistics>> findPoolsOlderThan(Duration duration)
     {
-        Set<Map.Entry<String, ConnectionState>> set = super.findStateOlderThan(duration);
-
-        try {
+        Set<Pair<String, DataSourceStatistics>> set = super.findPoolsOlderThan(duration);
+        Assert.assertEquals(expectedSize,set.size());
+        try
+        {
             this.countDownLatch.await();
         }
         catch (InterruptedException e)

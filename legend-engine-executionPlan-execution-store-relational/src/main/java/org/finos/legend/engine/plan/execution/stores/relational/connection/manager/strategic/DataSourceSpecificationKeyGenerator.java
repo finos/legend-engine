@@ -33,6 +33,8 @@ import java.io.File;
 
 public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificationVisitor<DataSourceSpecificationKey>
 {
+    private static final String LOCAL_HOST = "127.0.0.1";
+    private static final String TEST_DB = "testDB";
     private final int testDbPort;
     private final RelationalDatabaseConnection connection;
 
@@ -60,7 +62,7 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
             {
                 return new LocalH2DataSourceSpecificationKey(localH2DatasourceSpecification.testDataSetupSqls);
             }
-            return new StaticDataSourceSpecificationKey("127.0.0.1", testDbPort, "testDB");
+            return new StaticDataSourceSpecificationKey(LOCAL_HOST, testDbPort, TEST_DB);
         }
         else if (datasourceSpecification instanceof StaticDatasourceSpecification)
         {

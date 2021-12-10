@@ -55,7 +55,9 @@ public class EmbeddedH2DataSourceSpecificationKey implements DataSourceSpecifica
     public String shortId()
     {
         return "EmbeddedH2_" +
-                "db:" + databaseName;
+                "db:" + databaseName +
+                "dir:" + directory != null ? directory.getPath(): "" +
+                "auto:" + autoServerMode;
     }
 
     @Override

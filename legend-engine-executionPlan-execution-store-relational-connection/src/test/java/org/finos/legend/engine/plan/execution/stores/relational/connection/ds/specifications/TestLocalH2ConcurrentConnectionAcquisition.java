@@ -129,10 +129,9 @@ public class TestLocalH2ConcurrentConnectionAcquisition
         private Connection initConnection()
         {
             LocalH2DataSourceSpecification specification = new LocalH2DataSourceSpecification(
-                    new LocalH2DataSourceSpecificationKey(Lists.mutable.empty()),
+                    Lists.mutable.empty(),
                     new H2Manager(),
-                    new TestDatabaseAuthenticationStrategy(),
-                    new RelationalExecutorInfo());
+                    new TestDatabaseAuthenticationStrategy());
             Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
             return specification.getConnectionUsingIdentity(identity, plainTextCredentialSupplier());
         }
@@ -160,9 +159,7 @@ public class TestLocalH2ConcurrentConnectionAcquisition
         {
             try
             {
-                LocalH2DataSourceSpecification.WrappedH2Connection wrapped = (LocalH2DataSourceSpecification.WrappedH2Connection) connection;
-                HikariProxyConnection hikariProxyConnection = (HikariProxyConnection) getFieldUsingReflection(LocalH2DataSourceSpecification.WrappedH2Connection.class, wrapped, "conn");
-                JdbcConnection h2Connection = (JdbcConnection) getFieldUsingReflection(HikariProxyConnection.class, hikariProxyConnection, "delegate");
+                JdbcConnection h2Connection = (JdbcConnection) getFieldUsingReflection(HikariProxyConnection.class, connection, "delegate");
                 return h2Connection;
             }
             catch (Exception e)
@@ -193,7 +190,7 @@ public class TestLocalH2ConcurrentConnectionAcquisition
         return value;
     }
 
-    private static Optional<CredentialSupplier> plainTextCredentialSupplier()
+    public static Optional<CredentialSupplier> plainTextCredentialSupplier()
     {
         CredentialSupplier credentialSupplier = new CredentialSupplier(new H2LocalWithDefaultUserPasswordFlow(), null, null);
         return Optional.of(credentialSupplier);
