@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.result;
 
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 
 import io.opentracing.Span;
 import org.eclipse.collections.api.block.procedure.Procedure;
@@ -80,6 +81,10 @@ public class SQLExecutionResult extends Result
         {
             this.connection = connection;
             this.statement = connection.createStatement();
+
+            if(DatabaseType.MemSQL.name().equals(databaseType)){
+                this.statement.setFetchSize(100);
+            }            
 
             long start = System.currentTimeMillis();
             String sql = ((RelationalExecutionActivity) activities.get(activities.size() - 1)).sql;
