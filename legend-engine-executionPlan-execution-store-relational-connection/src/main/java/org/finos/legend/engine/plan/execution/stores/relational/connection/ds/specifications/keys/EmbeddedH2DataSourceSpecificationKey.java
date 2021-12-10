@@ -47,17 +47,18 @@ public class EmbeddedH2DataSourceSpecificationKey implements DataSourceSpecifica
         return this.directory;
     }
 
-    public boolean isAutoServerMode() {
-        return autoServerMode;
+    public boolean isAutoServerMode()
+    {
+        return this.autoServerMode;
     }
 
     @Override
     public String shortId()
     {
         return "EmbeddedH2_" +
-                "db:" + databaseName +
-                "dir:" + directory != null ? directory.getPath(): "" +
-                "auto:" + autoServerMode;
+                "db:" + this.databaseName +
+                "dir:" + (null != this.directory ? this.directory.getPath() : "") +
+                "auto:" + this.autoServerMode;
     }
 
     @Override
@@ -72,14 +73,14 @@ public class EmbeddedH2DataSourceSpecificationKey implements DataSourceSpecifica
             return false;
         }
         EmbeddedH2DataSourceSpecificationKey that = (EmbeddedH2DataSourceSpecificationKey) o;
-        return autoServerMode == that.autoServerMode &&
-                Objects.equals(databaseName, that.databaseName) &&
-                Objects.equals(directory, that.directory);
+        return this.autoServerMode == that.autoServerMode &&
+                Objects.equals(this.databaseName, that.databaseName) &&
+                Objects.equals(this.directory, that.directory);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(databaseName, directory, autoServerMode);
+        return Objects.hash(this.databaseName, this.directory, this.autoServerMode);
     }
 }
