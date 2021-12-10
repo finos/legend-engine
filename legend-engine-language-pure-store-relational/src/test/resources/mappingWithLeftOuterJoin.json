@@ -1,0 +1,138 @@
+{
+  "origin": {
+    "sdlcInfo": {
+      "baseVersion": "-1",
+      "_type": "pure",
+      "version": "none",
+      "packageableElementPointers": [
+        {
+          "path": "testDB",
+          "type": "PACKAGE"
+        }
+      ]
+    },
+    "_type": "pointer",
+    "serializer": {
+      "name": "pure",
+      "version": "vX_X_X"
+    }
+  },
+  "elements": [
+    {
+      "package": "testDB",
+      "_type": "mapping",
+      "name": "test",
+      "classMappings": [
+        {
+          "mainTable": {
+            "schema": "default",
+            "database": "meta::relational::tests::mapping::join::model::store::db",
+            "_type": "table",
+            "mainTableDb": "meta::relational::tests::mapping::join::model::store::db",
+            "table": "personTable"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "FIRSTNAME",
+                "tableAlias": "personTable",
+                "table": {
+                  "schema": "default",
+                  "database": "meta::relational::tests::mapping::join::model::store::db",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::tests::mapping::join::model::store::db",
+                  "table": "personTable"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "firstName",
+                "class": "meta::relational::tests::model::simple::Person"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "LASTNAME",
+                "tableAlias": "personTable",
+                "table": {
+                  "schema": "default",
+                  "database": "meta::relational::tests::mapping::join::model::store::db",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::tests::mapping::join::model::store::db",
+                  "table": "personTable"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "lastName",
+                "class": "meta::relational::tests::model::simple::Person"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "Person_MiddleTable",
+                    "db": "meta::relational::tests::mapping::join::model::store::db"
+                  },
+                  {
+                    "joinType": "LEFT_OUTER",
+                    "name": "MiddleTable_PersonExtension",
+                    "db": "meta::relational::tests::mapping::join::model::store::db"
+                  }
+                ],
+                "_type": "elemtWithJoins",
+                "relationalElement": {
+                  "_type": "column",
+                  "column": "AGE",
+                  "tableAlias": "personExtensionTable",
+                  "table": {
+                    "schema": "default",
+                    "database": "meta::relational::tests::mapping::join::model::store::db",
+                    "_type": "table",
+                    "mainTableDb": "meta::relational::tests::mapping::join::model::store::db",
+                    "table": "personExtensionTable"
+                  }
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "age",
+                "class": "meta::relational::tests::model::simple::Person"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_tests_model_simple_Person",
+          "class": "meta::relational::tests::model::simple::Person",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "ID",
+              "tableAlias": "",
+              "table": {
+                "schema": "default",
+                "database": "meta::relational::tests::mapping::join::model::store::db",
+                "_type": "table",
+                "mainTableDb": "meta::relational::tests::mapping::join::model::store::db",
+                "table": "personTable"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}
