@@ -292,18 +292,17 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
                             List<Object> parentsInScope = parentMap.getWithSecondKey(childObject);
 
-                            if(parentsInScope == null)
+                            if(parentsInScope != null)
                             {
-                                throw new RuntimeException("No parent was found for a child object");
-                            }
-                            for (Object parentObject : parentsInScope)
-                            {
-                                boolean isChildAdded = nodeSpecifics.attemptAddingChildToParent(parentObject, childObject);
-
-                                if (isChildAdded)
+                                for (Object parentObject : parentsInScope)
                                 {
-                                    graphObjectsBatch.addObjectMemoryUtilization(childGraphInstance.instanceSize());
-                                    childObjects.add(childObject);
+                                    boolean isChildAdded = nodeSpecifics.attemptAddingChildToParent(parentObject, childObject);
+
+                                    if (isChildAdded)
+                                    {
+                                        graphObjectsBatch.addObjectMemoryUtilization(childGraphInstance.instanceSize());
+                                        childObjects.add(childObject);
+                                    }
                                 }
                             }
                         });
