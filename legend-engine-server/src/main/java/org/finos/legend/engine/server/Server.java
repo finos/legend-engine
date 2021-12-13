@@ -60,8 +60,7 @@ import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
 import org.finos.legend.engine.server.core.api.Memory;
-import org.finos.legend.engine.server.core.configuration.PropertyVaultConfiguration;
-import org.finos.legend.engine.server.core.configuration.VaultConfiguration;
+import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
@@ -71,8 +70,8 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
-import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
+import org.finos.legend.engine.shared.core.vault.VaultFactory;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
@@ -82,11 +81,9 @@ import org.slf4j.Logger;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
-import java.io.FileInputStream;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.ServiceLoader;
 
 public class Server extends Application<ServerConfiguration>
@@ -119,6 +116,7 @@ public class Server extends Application<ServerConfiguration>
         bootstrap.addBundle(new SessionAttributeBundle());
         bootstrap.addBundle(new MultiPartBundle());
         PureProtocolObjectMapperFactory.withPureProtocolExtensions(bootstrap.getObjectMapper());
+        VaultFactory.withVaultConfigurationExtensions(bootstrap.getObjectMapper());
         ObjectMapperFactory.withStandardConfigurations(bootstrap.getObjectMapper());
     }
 
@@ -196,22 +194,7 @@ public class Server extends Application<ServerConfiguration>
     {
         if (vaultConfigurations != null)
         {
-            ListIterate.forEach(vaultConfigurations, (v) ->
-            {
-                if (v instanceof PropertyVaultConfiguration)
-                {
-                    try
-                    {
-                        Properties properties = new Properties();
-                        properties.load(new FileInputStream(((PropertyVaultConfiguration) v).location));
-                        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
-                    }
-                    catch (Exception e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            ListIterate.forEach(vaultConfigurations, v -> Vault.INSTANCE.registerImplementation(VaultFactory.generateVaultImplementationFromConfiguration(v)));
         }
     }
 
