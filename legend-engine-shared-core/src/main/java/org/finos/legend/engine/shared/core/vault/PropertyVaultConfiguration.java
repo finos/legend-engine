@@ -1,4 +1,4 @@
-package org.finos.legend.engine.server.core.configuration;
+package org.finos.legend.engine.shared.core.vault;
 
 public class PropertyVaultConfiguration extends VaultConfiguration
 {

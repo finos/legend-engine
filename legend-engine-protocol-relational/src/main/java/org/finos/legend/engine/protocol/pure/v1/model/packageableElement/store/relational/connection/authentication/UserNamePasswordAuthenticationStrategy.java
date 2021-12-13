@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DriverWrapper;
-
-public class SqlServerDriver extends DriverWrapper
+public class UserNamePasswordAuthenticationStrategy extends AuthenticationStrategy
 {
+    public String baseVaultReference;
+    public String userNameVaultReference;
+    public String passwordVaultReference;
+
     @Override
-    protected String getClassName()
+    public <T> T accept(AuthenticationStrategyVisitor<T> authenticationStrategyVisitor)
     {
-        return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+        return authenticationStrategyVisitor.visit(this);
     }
 }

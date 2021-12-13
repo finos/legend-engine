@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper;
@@ -652,6 +653,18 @@ public class HelperRelationalGrammarComposer
                             context.getIndentationString() + getTabString(baseIndentation) + "}")
                             : ""
                     );
+        }
+        else if (_auth instanceof UserNamePasswordAuthenticationStrategy)
+        {
+            UserNamePasswordAuthenticationStrategy auth = (UserNamePasswordAuthenticationStrategy) _auth;
+            int baseIndentation = 1;
+            return "UserNamePassword" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    (auth.baseVaultReference == null ? "" : context.getIndentationString() + getTabString(baseIndentation + 1) + "baseVaultReference: " + convertString(auth.baseVaultReference, true) + ";\n") +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "userNameVaultReference: " + convertString(auth.userNameVaultReference, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "passwordVaultReference: " + convertString(auth.passwordVaultReference, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         else if (_auth instanceof SnowflakePublicAuthenticationStrategy)
         {

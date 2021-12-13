@@ -12,15 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver;
+package org.finos.legend.engine.shared.core.vault;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DriverWrapper;
+import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.tuple.Pair;
 
-public class SqlServerDriver extends DriverWrapper
+import java.util.Collections;
+import java.util.List;
+
+public interface VaultExtension
 {
-    @Override
-    protected String getClassName()
+    default List<Pair<String, Class<? extends VaultConfiguration>>> getExtraVaultConfigurationSubTypes()
     {
-        return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+        return Collections.emptyList();
+    }
+
+    default List<Function<VaultConfiguration, VaultImplementation>> getExtraVaultImplementationGenerators()
+    {
+        return Collections.emptyList();
     }
 }
