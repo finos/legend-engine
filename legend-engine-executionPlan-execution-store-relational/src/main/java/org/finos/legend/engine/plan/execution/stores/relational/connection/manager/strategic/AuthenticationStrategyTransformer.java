@@ -40,6 +40,14 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
                     delegatedKerberosAuthenticationStrategy.serverPrincipal
             );
         }
+        if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
+        {
+            UserNamePasswordAuthenticationStrategy userNamePasswordAuthenticationStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
+            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.UserNamePasswordAuthenticationStrategy(
+                    userNamePasswordAuthenticationStrategy.baseVaultReference == null ? userNamePasswordAuthenticationStrategy.userNameVaultReference : userNamePasswordAuthenticationStrategy.baseVaultReference + userNamePasswordAuthenticationStrategy.userNameVaultReference,
+                    userNamePasswordAuthenticationStrategy.baseVaultReference == null ? userNamePasswordAuthenticationStrategy.passwordVaultReference : userNamePasswordAuthenticationStrategy.baseVaultReference + userNamePasswordAuthenticationStrategy.passwordVaultReference
+            );
+        }
         else if (authenticationStrategy instanceof TestDatabaseAuthenticationStrategy)
         {
             return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy();
