@@ -40,7 +40,7 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
                     delegatedKerberosAuthenticationStrategy.serverPrincipal
             );
         }
-        if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
+        else if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
         {
             UserNamePasswordAuthenticationStrategy userNamePasswordAuthenticationStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
             return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.UserNamePasswordAuthenticationStrategy(
