@@ -19,4 +19,5 @@ import org.finos.legend.engine.external.shared.format.model.toModel.SchemaToMode
 public class FlatDataToModelConfiguration extends SchemaToModelConfiguration
 {
     public boolean purifyNames;
+    public String schemaClassName;
 }

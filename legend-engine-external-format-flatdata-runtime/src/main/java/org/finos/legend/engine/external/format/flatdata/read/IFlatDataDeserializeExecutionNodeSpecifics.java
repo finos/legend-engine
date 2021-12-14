@@ -19,4 +19,6 @@ import org.finos.legend.engine.external.format.flatdata.FlatDataContext;
 public interface IFlatDataDeserializeExecutionNodeSpecifics<T>
 {
     FlatDataContext<T> createContext();
+
+    default void setMaximumSchemaObjectSize(long maxSize) {}
 }

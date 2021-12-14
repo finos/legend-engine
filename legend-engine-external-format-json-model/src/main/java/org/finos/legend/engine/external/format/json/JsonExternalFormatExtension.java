@@ -1,6 +1,6 @@
 package org.finos.legend.engine.external.format.json;
 
-import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.engine.external.format.json.compile.JsonSchemaCompiler;
 import org.finos.legend.engine.external.format.json.fromModel.ModelToJsonSchemaConfiguration;
 import org.finos.legend.engine.external.format.json.toModel.JsonSchemaToModelConfiguration;
@@ -8,10 +8,10 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.pure.generated.*;
 
 import java.lang.management.ManagementFactory;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -79,7 +79,7 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     @Override
     public List<String> getRegisterablePackageableElementNames()
     {
-        List<String> versions = Arrays.asList("vX_X_X");
-        return ListIterate.collect(versions, v -> "meta::protocols::pure::" + v + "::external::format::json::serializerExtension_String_1__SerializerExtension_1_");
+        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_22_0");
+        return versions.collect(v -> "meta::protocols::pure::" + v + "::external::format::json::serializerExtension_String_1__SerializerExtension_1_").toList();
     }
 }

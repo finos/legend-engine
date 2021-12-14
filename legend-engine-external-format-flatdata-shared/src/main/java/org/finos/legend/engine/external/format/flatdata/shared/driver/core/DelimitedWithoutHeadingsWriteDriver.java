@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 
 public class DelimitedWithoutHeadingsWriteDriver<T> extends DelimitedWriteDriver<T>
 {
-    DelimitedWithoutHeadingsWriteDriver(FlatDataSection section, FlatDataProcessingContext<T> context)
+    DelimitedWithoutHeadingsWriteDriver(FlatDataSection section, FlatDataProcessingContext context)
     {
         super(new DelimitedDriverHelper(section, context));
     }

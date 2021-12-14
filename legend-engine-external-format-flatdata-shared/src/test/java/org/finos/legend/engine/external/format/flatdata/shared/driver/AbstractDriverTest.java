@@ -15,25 +15,25 @@
 package org.finos.legend.engine.external.format.flatdata.shared.driver;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.InputStreamConnection;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.ProcessingVariables;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.VariablesProcessingContext;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.Connection;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.Cursor;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriver;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriverDescription;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataReadDriver;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ObjectToParsedFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.InputStreamConnection;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.Connection;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataReadDriver;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
-import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatDataValue;
+import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParser;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.junit.Assert;
 
@@ -117,7 +117,7 @@ public class AbstractDriverTest
         return records;
     }
 
-    private class SectionProcessingContext<T> extends VariablesProcessingContext<T>
+    private class SectionProcessingContext<T> extends VariablesProcessingContext
     {
         private final Connection connection;
         private final FlatDataDriver nextDriver;
@@ -150,13 +150,13 @@ public class AbstractDriverTest
         }
 
         @Override
-        public ParsedFlatDataToObject createToObjectFactory(FlatDataRecordType recordType)
+        public <T> ParsedFlatDataToObject createToObjectFactory(FlatDataRecordType recordType)
         {
             return reflectiveToObject(clazz, recordType);
         }
 
         @Override
-        public ObjectToParsedFlatData createFromObjectFactory(FlatDataRecordType recordType)
+        public <T> ObjectToParsedFlatData createFromObjectFactory(FlatDataRecordType recordType)
         {
             return null;
         }

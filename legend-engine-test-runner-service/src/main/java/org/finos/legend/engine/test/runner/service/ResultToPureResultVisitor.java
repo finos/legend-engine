@@ -21,15 +21,12 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.MultiResult;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResultVisitor;
-import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.VoidRelationalResult;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.finos.legend.engine.plan.execution.stores.relational.result.*;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TDSColumn_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TDSNull;
@@ -158,5 +155,13 @@ public class ResultToPureResultVisitor implements RelationalResultVisitor<Result
     public Result<Object> visit(SQLExecutionResult sqlExecutionResult)
     {
         return null;
+    }
+
+    @Override
+    public Result<Object> visit(StreamingResult streamingResult) {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result<Object> res = new org.finos.legend.pure.generated.Root_meta_pure_mapping_Result_Impl<Object>("Res");
+        String output = streamingResult.flush(streamingResult.getSerializer(SerializationFormat.DEFAULT));
+        res._valuesAdd(output);
+        return res;
     }
 }
