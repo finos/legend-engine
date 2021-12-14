@@ -11,10 +11,12 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 
+import javax.sql.DataSource;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ConnectionStateManagerPOJO
 {
@@ -34,21 +36,37 @@ public class ConnectionStateManagerPOJO
         return dataSourceSpecificationSet;
     }
 
-    static class RelationalStoreInfo
+    public static class RelationalStoreInfo
     {
         public final String connectionKeyShortId;
         public final String datasourceName;
         public final ConnectionKey connectionKey;
         public final AuthenticationStrategy authenticationStrategy;
         public final AuthenticationStatistics authenticationStatistics;
+        public final PoolDynamic aggregatedPoolStats;
 
-        public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification)
-        {
+        public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification) {
             this.connectionKey = dataSourceSpecification.getConnectionKey();
             this.connectionKeyShortId = connectionKey.shortId();
             this.datasourceName = dataSourceSpecification.toString();
             this.authenticationStrategy = dataSourceSpecification.getAuthenticationStrategy();
             this.authenticationStatistics = this.authenticationStrategy.getAuthenticationStatistics();
+            this.aggregatedPoolStats = null;
+        }
+
+        public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification, Stream<DataSourceWithStatistics> poolsForDatasource) {
+            this.connectionKey = dataSourceSpecification.getConnectionKey();
+            this.connectionKeyShortId = connectionKey.shortId();
+            this.datasourceName = dataSourceSpecification.toString();
+            this.authenticationStrategy = dataSourceSpecification.getAuthenticationStrategy();
+            this.authenticationStatistics = this.authenticationStrategy.getAuthenticationStatistics();
+            this.aggregatedPoolStats = buildAggregatedPoolStats(poolsForDatasource);
+        }
+
+        private PoolDynamic buildAggregatedPoolStats(Stream<DataSourceWithStatistics> poolsForDatasource) {
+            PoolDynamic aggregated = new PoolDynamic(0, 0, 0, 0);
+            poolsForDatasource.forEach(pool -> aggregated.addPoolStats(pool.getDataSource()));
+            return aggregated;
         }
     }
 
@@ -69,7 +87,7 @@ public class ConnectionStateManagerPOJO
             this.name = dataSourceWithStatistics.getPoolName();
             this.user = dataSourceWithStatistics.getPoolPrincipal();
             this.statistics = dataSourceWithStatistics.getStatistics();
-            HikariDataSource hikariDataSource = (HikariDataSource)dataSourceWithStatistics.getDataSource();
+            HikariDataSource hikariDataSource = (HikariDataSource) dataSourceWithStatistics.getDataSource();
             this._static = buildPoolStaticConfiguration(hikariDataSource);
             this.dynamic = buildPoolDynamicStats(hikariDataSource);
             this.connectionKeyShortId = relationalStoreInfo.connectionKeyShortId;
@@ -131,6 +149,14 @@ public class ConnectionStateManagerPOJO
             this.threadsAwaitingConnection = threadsAwaitingConnection;
             this.totalConnections = totalConnections;
         }
+
+        public void addPoolStats(DataSource dataSource) {
+            HikariPoolMXBean mxBean =((HikariDataSource) dataSource).getHikariPoolMXBean();
+            this.activeConnections +=mxBean.getActiveConnections();
+            this.idleConnections += mxBean.getIdleConnections();
+            this.threadsAwaitingConnection +=mxBean.getThreadsAwaitingConnection();
+            this.totalConnections +=mxBean.getTotalConnections();
+        }
     }
 
     @JsonProperty(value = "totalPools", required = true)
@@ -147,7 +173,7 @@ public class ConnectionStateManagerPOJO
     @JsonProperty(value = "stores", required = true)
     public Set<RelationalStoreInfo> getStores()
     {
-        return this.dataSourceSpecifications.stream().map(k -> new RelationalStoreInfo(k)).collect(Collectors.toSet());
+        return this.dataSourceSpecifications.stream().map(k -> new RelationalStoreInfo(k, this.pools.values().stream().filter(pool -> pool.getConnectionKey().equals(k.getConnectionKey())))).collect(Collectors.toSet());
     }
 
     @JsonProperty(value = "pools", required = true)
