@@ -16,14 +16,10 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import org.eclipse.collections.api.block.function.Function;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Test;
@@ -69,23 +65,6 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
             testConnection(connection, "select * from KNOEMA_RENEWABLES_DATA_ATLAS.RENEWABLES.DATASETS");
         }
 
-    }
-
-    private void testSqlServerUserPassConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
-    {
-        Properties properties = new Properties();
-        properties.load(new FileInputStream("../legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/sqlServer.properties"));
-        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
-
-        StaticDataSourceSpecification ds =
-                new StaticDataSourceSpecification(
-                        new StaticDataSourceSpecificationKey("dummy.sqlserver", 12345, "mydb"),
-                        new SqlServerManager(),
-                        new UserNamePasswordAuthenticationStrategy("user", "password"));
-        try (Connection connection = toDBConnection.valueOf(ds))
-        {
-            testConnection(connection, "SELECT * FROM INFORMATION_SCHEMA.TABLES");
-        }
     }
 
 }

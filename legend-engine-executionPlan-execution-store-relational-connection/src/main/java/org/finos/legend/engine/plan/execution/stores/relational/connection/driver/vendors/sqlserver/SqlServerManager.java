@@ -34,7 +34,7 @@ public class SqlServerManager extends DatabaseManager
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
         String hostWithPort = host + ":" + port;
-        return "jdbc:sqlserver://" + hostWithPort + ";databaseName=" + databaseName + ";integratedSecurity=true;authenticationScheme=JavaKerberos";
+        return "jdbc:sqlserver://" + hostWithPort + ";databaseName=" + databaseName;
     }
 
     @Override

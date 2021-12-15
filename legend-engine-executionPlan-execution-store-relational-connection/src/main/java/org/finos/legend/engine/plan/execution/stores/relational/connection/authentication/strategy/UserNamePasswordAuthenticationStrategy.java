@@ -22,7 +22,10 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.UserNamePasswordAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -55,7 +58,13 @@ public class UserNamePasswordAuthenticationStrategy extends AuthenticationStrate
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
-        return Tuples.pair(url, properties);
+        Properties connectionProperties = new Properties();
+        connectionProperties.putAll(properties);
+        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
+        PlaintextUserPasswordCredential credential = (PlaintextUserPasswordCredential) getDatabaseCredential(identityState);
+        connectionProperties.put("user", credential.getUser());
+        connectionProperties.put("password", credential.getPassword());
+        return Tuples.pair(url, connectionProperties);
     }
 
     @Override
