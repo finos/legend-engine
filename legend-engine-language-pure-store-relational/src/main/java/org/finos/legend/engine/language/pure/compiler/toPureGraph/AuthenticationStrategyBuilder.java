@@ -41,7 +41,11 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
         }
         else if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
         {
-            throw new UnsupportedOperationException();
+            UserNamePasswordAuthenticationStrategy userNamePasswordAuthenticationStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
+            return new Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl("")
+                    ._baseVaultReference(userNamePasswordAuthenticationStrategy.baseVaultReference)
+                    ._userNameVaultReference(userNamePasswordAuthenticationStrategy.userNameVaultReference)
+                    ._passwordVaultReference(userNamePasswordAuthenticationStrategy.passwordVaultReference);
         }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {
