@@ -1303,6 +1303,10 @@ public class HelperRelationalBuilder
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping propMapping = ListIterate.detect(legendPropertyMappings, propertyMapping -> propertyMapping.property.property.equals(propertyAndJoinTreeNode.getOne()));
             SourceInformation srcInfo = propMapping == null ? classMapping.sourceInformation : propMapping.sourceInformation;
+            if(propertyAndJoinTreeNode.getTwo()._joinType() != null)
+            {
+                throw new EngineException("Do not support specifying join type for the first join in the classMapping.", srcInfo, EngineErrorType.COMPILATION);
+            }
             HelperRelationalBuilder.validateJoinTreeNode(propertyAndJoinTreeNode.getTwo(), mainTable, srcInfo);
         });
     }
