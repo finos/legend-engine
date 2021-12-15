@@ -210,4 +210,66 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                 ")\n", "PARSER error at [9:48-53]: Mapping test relational input data does not support format 'RANDOM'. Possible values: SQL, CSV");
     }
 
+    @Test
+    public void testClassMappingFilterWithInnerJoin()
+    {
+        String model = "import other::*;\n" +
+                "\n" +
+                "Class other::Person\n" +
+                "{\n" +
+                "    firstName:String[1];\n" +
+                "    firm:Firm[1];\n" +
+                "}\n" +
+                "Class other::Firm\n" +
+                "{\n" +
+                "    legalName:String[1];\n" +
+                "    employees:Person[1];\n" +
+                "}\n" +
+                "###Relational\n" +
+                "Database mapping::db(\n" +
+                "   Table personTable\n" +
+                "   (\n" +
+                "    id INT PRIMARY KEY,\n" +
+                "    firstName VARCHAR(200),\n" +
+                "    firmId INT,\n" +
+                "    legalName VARCHAR(200)\n" +
+                "   )\n" +
+                "   Table firmTable\n" +
+                "   (\n" +
+                "    id INT PRIMARY KEY,\n" +
+                "    legalName VARCHAR(200)\n" +
+                "   )\n" +
+                "   View personFirmView\n"+
+                "   (\n" +
+                "    id : personTable.id,\n" +
+                "    firstName : personTable.firstName,\n" +
+                "    firmId : personTable.firmId\n" +
+                "   )\n" +
+                "   Filter FirmFilter(firmTable.legalName = 'A')\n" +
+                "   Join Firm_Person(firmTable.id = personTable.firmId)\n" +
+                ")\n";
+        test(model + "###Mapping\n" +
+                "import other::*;\n" +
+                "import mapping::*;\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "    Person: Relational\n" +
+                "    {\n" +
+                "        ~filter [mapping::db] (INNER) @Firm_Person | [mapping::db] FirmFilter \n" +
+                "        firstName : [db]personTable.firstName\n" +
+                "    }\n" +
+                ")\n");
+
+        test(model + "###Mapping\n" +
+                "import other::*;\n" +
+                "import mapping::*;\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "    Person: Relational\n" +
+                "    {\n" +
+                "        ~filter [mapping::db] (inner) @Firm_Person | [mapping::db] FirmFilter \n" +
+                "        firstName : [db]personTable.firstName\n" +
+                "    }\n" +
+                ")\n", "PARSER error at [43:32-36]: Unsupported join type 'inner'. The supported join types are: [INNER, OUTER]");
+    }
 }

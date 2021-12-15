@@ -83,4 +83,18 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
             "\n" +
             ")\n");
     }
+
+    @Test
+    public void testClassMappingFilterWithInnerJoin()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  Person: Relational\n" +
+                "  {\n" +
+                "    ~filter [mapping::db] (INNER) @Firm_Person | [mapping::db]FirmFilter\n" +
+                "    firstName: [db]personTable.firstName\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

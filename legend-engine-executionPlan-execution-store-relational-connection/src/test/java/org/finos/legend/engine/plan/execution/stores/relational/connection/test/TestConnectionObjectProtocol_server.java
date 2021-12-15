@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.eclipse.collections.api.block.function.Function;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
@@ -67,6 +66,5 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
         }
 
     }
-
 
 }
