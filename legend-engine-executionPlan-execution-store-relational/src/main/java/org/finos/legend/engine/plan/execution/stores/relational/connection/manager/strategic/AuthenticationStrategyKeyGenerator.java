@@ -27,6 +27,13 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
         {
             return new DelegatedKerberosAuthenticationStrategyKey(((DelegatedKerberosAuthenticationStrategy) authenticationStrategy).serverPrincipal);
         }
+        else if(authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
+        {
+            UserNamePasswordAuthenticationStrategy userNamePasswordAuthStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
+            String userNameVaultReference = userNamePasswordAuthStrategy.baseVaultReference == null ? userNamePasswordAuthStrategy.userNameVaultReference : userNamePasswordAuthStrategy.baseVaultReference + userNamePasswordAuthStrategy.userNameVaultReference;
+            String passwordVaultReference = userNamePasswordAuthStrategy.baseVaultReference == null ? userNamePasswordAuthStrategy.passwordVaultReference : userNamePasswordAuthStrategy.baseVaultReference + userNamePasswordAuthStrategy.passwordVaultReference;
+            return new UserNamePasswordAuthenticationStrategyKey(userNameVaultReference, passwordVaultReference);
+        }
         else if(authenticationStrategy instanceof TestDatabaseAuthenticationStrategy)
         {
             return new TestDatabaseAuthenticationStrategyKey();
