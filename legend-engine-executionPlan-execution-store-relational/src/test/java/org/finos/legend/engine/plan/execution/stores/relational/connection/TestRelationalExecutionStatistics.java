@@ -4,25 +4,15 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManagerPOJO;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManagerPOJO.RelationalStoreInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.Logger;
 
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestRelationalExecutionStatistics extends AlloyTestServer
 {
@@ -90,7 +80,7 @@ public class TestRelationalExecutionStatistics extends AlloyTestServer
             "  ];\n" +
             "}\n";
 
-    private static final String TEST_EXECUTION_PLAN = LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + TEST_FUNCTION;
+    public static final String TEST_EXECUTION_PLAN = LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + TEST_FUNCTION;
 
 
     @Override
@@ -107,7 +97,7 @@ public class TestRelationalExecutionStatistics extends AlloyTestServer
     }
 
 
-    public String getPoolName()
+    public static String getPoolName()
     {
         return "DBPool_Static_host:127.0.0.1_port:" + serverPort + "_db:testDB_type:DefaultH2__UNKNOWN_";
     }
@@ -116,27 +106,26 @@ public class TestRelationalExecutionStatistics extends AlloyTestServer
     @Test
     public void canGetConnectionStatistics()
     {
+        ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
 
         SingleExecutionPlan executionPlan = buildPlan(TEST_EXECUTION_PLAN);
         Assert.assertNotNull(executionPlan);
 
-        Assert.assertFalse(getRelationalExecutorInfo().findByPoolName(getPoolName()).isPresent());
+        Assert.assertFalse(connectionStateManager.findByPoolName(getPoolName()).isPresent());
         Assert.assertNotNull(executePlan(executionPlan, Maps.mutable.empty()));
 
-        RelationalExecutorInfo info = getRelationalExecutorInfo();
-        Assert.assertNotNull(info);
-        Optional<RelationalExecutorInfo.ConnectionPool> pool = info.findByPoolName(getPoolName());
+
+        Optional<ConnectionStateManagerPOJO.ConnectionPool> pool = connectionStateManager.findByPoolName(getPoolName());
         Assert.assertTrue(pool.isPresent());
         Assert.assertEquals(1, pool.get().dynamic.totalConnections);
         Assert.assertEquals(1, pool.get().dynamic.idleConnections);
         Assert.assertEquals(0, pool.get().dynamic.activeConnections);
         Assert.assertEquals(0, pool.get().dynamic.threadsAwaitingConnection);
+        Assert.assertEquals(1, pool.get().statistics.getRequestedConnections());
 
         Assert.assertNotNull(executePlan(executionPlan, Maps.mutable.empty()));
 
-        RelationalExecutorInfo infoAfter = getRelationalExecutorInfo();
-        Assert.assertNotNull(infoAfter);
-        Optional<RelationalExecutorInfo.ConnectionPool> poolAfter = infoAfter.findByPoolName(getPoolName());
+        Optional<ConnectionStateManagerPOJO.ConnectionPool> poolAfter = connectionStateManager.findByPoolName(getPoolName());
         Assert.assertTrue(poolAfter.isPresent());
         Assert.assertEquals(1, poolAfter.get().dynamic.totalConnections);
         Assert.assertEquals(1, poolAfter.get().dynamic.idleConnections);
@@ -156,7 +145,7 @@ public class TestRelationalExecutionStatistics extends AlloyTestServer
         Assert.assertNotNull(executePlan(executionPlan, Maps.mutable.empty()));
 
 
-        List<RelationalStoreInfo> stores = new ArrayList<>(connectionStateManager.getConnectionStateManagerPOJO().getStores());
+        List<ConnectionStateManagerPOJO.RelationalStoreInfo> stores = new ArrayList<>(connectionStateManager.getConnectionStateManagerPOJO().getStores());
         Assert.assertFalse(stores.isEmpty());
         Assert.assertEquals(1, stores.get(0).aggregatedPoolStats.totalConnections);
         Assert.assertEquals(1, stores.get(0).aggregatedPoolStats.idleConnections);
