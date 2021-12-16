@@ -58,6 +58,9 @@ public class CompileContext
     private static final ImmutableSet<String> SPECIAL_TYPES = _Package.SPECIAL_TYPES;
     private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
     private static final String META_PACKAGE_NAME = "meta";
+    private static final MutableMap<String, String> commonMetaPaths = Maps.mutable.empty();
+    private static final int MAX_SIZE_COMMON_META_PATHS = 1000;
+
     // NOTE: this list is taken from m3.pure in PURE
     private static final ImmutableSet<String> META_IMPORTS = Sets.immutable.with(
             "meta::pure::metamodel",
@@ -159,6 +162,11 @@ public class CompileContext
         return getCompilerExtensions().getExtraProcessorOrThrow(element);
     }
 
+    public static MutableMap<String, String> getCommonMetaPaths()
+    {
+        return commonMetaPaths;
+    }
+
     public <T> T resolve(String path, SourceInformation sourceInformation, Function<String, T> resolver)
     {
         if (path == null)
@@ -176,6 +184,12 @@ public class CompileContext
         if (path.contains(PACKAGE_SEPARATOR))
         {
             return resolver.apply(path);
+        }
+
+        // Resolve import if available in commonMetaPaths and auto-imports were not added
+        if (this.imports.size() == META_IMPORTS.size() && commonMetaPaths.containsKey(path))
+        {
+            return resolver.apply(commonMetaPaths.get(path));
         }
 
         // NOTE: here we make the assumption that we have populated the indices properly so the same element
@@ -406,6 +420,12 @@ public class CompileContext
             return functionHandlerMap.get(extractedFunctionName);
         }
 
+        // Resolve import if available in commonMetaPaths and auto-imports were not added
+        if (this.imports.size() == META_IMPORTS.size() && commonMetaPaths.containsKey(extractedFunctionName))
+        {
+            return functionHandlerMap.get(commonMetaPaths.get(extractedFunctionName));
+        }
+
         MutableMap<String, FunctionExpressionBuilder> results = searchImports(extractedFunctionName, functionHandlerMap::get);
         switch (results.size())
         {
@@ -462,6 +482,10 @@ public class CompileContext
                 results.put(fullPath, result);
             }
         });
+        if (results.size() == 1 && results.keysView().getAny().startsWith("meta") && commonMetaPaths.size() < MAX_SIZE_COMMON_META_PATHS)
+        {
+            commonMetaPaths.put(name, results.keysView().getAny());
+        }
         return results;
     }
 }
