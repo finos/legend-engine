@@ -133,25 +133,4 @@ public class TestRelationalExecutionStatistics extends AlloyTestServer
         Assert.assertEquals(0, poolAfter.get().dynamic.threadsAwaitingConnection);
         Assert.assertEquals(2, poolAfter.get().statistics.getRequestedConnections());
     }
-
-    @Test
-    public void canGetAggregatedStats()
-    {
-        ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
-
-        SingleExecutionPlan executionPlan = buildPlan(TEST_EXECUTION_PLAN);
-        Assert.assertNotNull(executionPlan);
-        Assert.assertNotNull(executePlan(executionPlan, Maps.mutable.empty()));
-        Assert.assertNotNull(executePlan(executionPlan, Maps.mutable.empty()));
-
-
-        List<ConnectionStateManagerPOJO.RelationalStoreInfo> stores = new ArrayList<>(connectionStateManager.getConnectionStateManagerPOJO().getStores());
-        Assert.assertFalse(stores.isEmpty());
-        Assert.assertEquals(1, stores.get(0).aggregatedPoolStats.totalConnections);
-        Assert.assertEquals(1, stores.get(0).aggregatedPoolStats.idleConnections);
-        Assert.assertEquals(0, stores.get(0).aggregatedPoolStats.activeConnections);
-        Assert.assertEquals(0, stores.get(0).aggregatedPoolStats.threadsAwaitingConnection);
-    }
-
-
 }

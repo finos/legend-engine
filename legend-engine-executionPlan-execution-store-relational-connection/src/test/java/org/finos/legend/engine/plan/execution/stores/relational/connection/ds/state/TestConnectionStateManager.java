@@ -22,8 +22,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -159,5 +161,27 @@ public class TestConnectionStateManager extends TestConnectionManagement
         Assert.assertEquals(1, connectionStateManager.size());
         Assert.assertEquals(1, connectionStateManager.size());
         assertPoolStateExists(pool3);
+    }
+
+    @Test
+    public void canGetAggregatedStats()
+    {
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
+        Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
+
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
+
+        requestConnection(user1, ds1);
+        requestConnection(user2, ds1);
+        requestConnection(user3, ds1);
+
+
+        List<ConnectionStateManagerPOJO.RelationalStoreInfo> stores = new ArrayList<>(connectionStateManager.getConnectionStateManagerPOJO().getStores());
+        Assert.assertFalse(stores.isEmpty());
+        Assert.assertEquals(3, stores.get(0).aggregatedPoolStats.totalConnections);
+        Assert.assertEquals(0, stores.get(0).aggregatedPoolStats.idleConnections);
+        Assert.assertEquals(3, stores.get(0).aggregatedPoolStats.activeConnections);
+        Assert.assertEquals(0, stores.get(0).aggregatedPoolStats.threadsAwaitingConnection);
     }
 }

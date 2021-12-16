@@ -42,7 +42,6 @@ public class ConnectionStateManagerPOJO
         public final String datasourceName;
         public final ConnectionKey connectionKey;
         public final AuthenticationStrategy authenticationStrategy;
-        public final AuthenticationStatistics authenticationStatistics;
         public final PoolDynamic aggregatedPoolStats;
 
         public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification) {
@@ -50,7 +49,6 @@ public class ConnectionStateManagerPOJO
             this.connectionKeyShortId = connectionKey.shortId();
             this.datasourceName = dataSourceSpecification.toString();
             this.authenticationStrategy = dataSourceSpecification.getAuthenticationStrategy();
-            this.authenticationStatistics = this.authenticationStrategy.getAuthenticationStatistics();
             this.aggregatedPoolStats = null;
         }
 
@@ -59,7 +57,6 @@ public class ConnectionStateManagerPOJO
             this.connectionKeyShortId = connectionKey.shortId();
             this.datasourceName = dataSourceSpecification.toString();
             this.authenticationStrategy = dataSourceSpecification.getAuthenticationStrategy();
-            this.authenticationStatistics = this.authenticationStrategy.getAuthenticationStatistics();
             this.aggregatedPoolStats = buildAggregatedPoolStats(poolsForDatasource);
         }
 
