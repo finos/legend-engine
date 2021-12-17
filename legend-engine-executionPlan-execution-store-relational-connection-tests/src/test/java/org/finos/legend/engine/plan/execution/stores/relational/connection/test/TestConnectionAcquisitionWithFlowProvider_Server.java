@@ -30,10 +30,9 @@ import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.*;
 import org.pac4j.core.profile.CommonProfile;
+import org.testcontainers.containers.MSSQLServerContainer;
 
 import javax.security.auth.Subject;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.Optional;
@@ -41,9 +40,12 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
 
-@Ignore
 public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
+    @Rule
+    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer()
+            .acceptLicense();
+
     private ConnectionManagerSelector connectionManagerSelector;
 
     @Override
@@ -53,10 +55,11 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
     }
 
     @BeforeClass
-    public static void setupTest() throws IOException
+    public static void setupTest()
     {
         Properties properties = new Properties();
-        properties.load(new FileInputStream("../legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/snowflake.properties"));
+        properties.put("sqlServerAccount.user", "SA");
+        properties.put("sqlServerAccount.password", "A_Str0ng_Required_Password");
         Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
     }
 
@@ -95,7 +98,7 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
     }
 
     // TODO - Enable tests when we have Snowflake network connectivity
-    @Test
+    @Ignore
     public void testSnowflakePublicConnection_subject() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
@@ -136,7 +139,7 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
     {
         StaticDatasourceSpecification sqlServerDatasourceSpecification = new StaticDatasourceSpecification();
         sqlServerDatasourceSpecification.host = "localhost";
-        sqlServerDatasourceSpecification.port = 12345;
+        sqlServerDatasourceSpecification.port = mssqlserver.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT);
         sqlServerDatasourceSpecification.databaseName = "master";
         UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
         authSpec.baseVaultReference = "sqlServerAccount.";
