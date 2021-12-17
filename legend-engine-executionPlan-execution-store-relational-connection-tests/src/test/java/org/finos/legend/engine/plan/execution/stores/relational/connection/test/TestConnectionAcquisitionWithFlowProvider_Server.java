@@ -67,7 +67,7 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
     public void setup()
     {
         installFlowProvider();
-        //assertSnowflakeKeyPairFlowIsAvailable();
+        assertSnowflakeKeyPairFlowIsAvailable();
 
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
@@ -87,6 +87,7 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
         relationalDatabaseConnection.type = DatabaseType.Snowflake;
 
         DatabaseAuthenticationFlowProvider flowProvider = DatabaseAuthenticationFlowProviderSelector.getProvider().get();
+        System.out.println("FlowProviderClassName: " + flowProvider.getClass().getSimpleName());
         Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
         assertTrue("snowflake keypair flow does not exist ", flow.isPresent());
     }
