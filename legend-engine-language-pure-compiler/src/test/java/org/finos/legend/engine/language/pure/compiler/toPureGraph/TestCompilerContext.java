@@ -17,7 +17,7 @@ public class TestCompilerContext
 
         CompileContext compileContext = new CompileContext.Builder(pureModel).build();
         compileContext.resolve("doc", null, path -> pureModel.getProfile(path, null));
-        Assert.assertTrue(CompileContext.getCommonMetaPaths().size() > 0);
+        Assert.assertEquals(1, pureModel.getCommonPaths().size());
     }
 
     @Test
@@ -26,7 +26,7 @@ public class TestCompilerContext
         PureModel pureModel = Compiler.compile(PureModelContextData.newPureModelContextData(), null, null);
         CompileContext compileContext = new CompileContext.Builder(pureModel).build();
         compileContext.resolve("doc", null, path -> pureModel.getProfile(path, null));
-        Assert.assertTrue(CompileContext.getCommonMetaPaths().size() > 0);
+        Assert.assertEquals(1, pureModel.getCommonPaths().size());
 
         String grammar = "import test::*;\n" +
                 "\n" +
@@ -57,7 +57,7 @@ public class TestCompilerContext
                 "   prop1: one[1];\n" +
                 "}";
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(grammar);
-        Compiler.compile(contextData, null, null);
-        Assert.assertFalse(CompileContext.getCommonMetaPaths().contains("test::one"));
+        PureModel pureModel = Compiler.compile(contextData, null, null);
+        Assert.assertTrue(pureModel.getCommonPaths().contains("test::one"));
     }
 }

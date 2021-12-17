@@ -116,6 +116,8 @@ public class PureModel implements IPureModel
     final CompilerExtensions extensions;
 
     final Handlers handlers;
+    private final MutableMap<String, String> commonPaths = Maps.mutable.empty();
+    private static final int MAX_SIZE_COMMON_PATHS = 1000;
 
     private final MutableSet<String> immutables = Sets.mutable.empty();
     private final MutableMap<String, Multiplicity> multiplicitiesIndex = Maps.mutable.empty();
@@ -933,6 +935,19 @@ public class PureModel implements IPureModel
     public CompileContext getContext(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
         return new CompileContext.Builder(this).withElement(element).build();
+    }
+
+    public MutableMap<String, String> getCommonPaths()
+    {
+        return this.commonPaths;
+    }
+
+    public void addCommonPath(String key, String value)
+    {
+        if (this.commonPaths.size() < MAX_SIZE_COMMON_PATHS)
+        {
+            this.commonPaths.put(key, value);
+        }
     }
 
     public Section getSection(String fullPath)
