@@ -54,8 +54,8 @@ public abstract class AuthenticationStrategy
         }
         catch (ConnectionException ce)
         {
-            this.authenticationStatistics.logConnectionError();
-            LOGGER.error("error getting connection (total : {}) {}", this.authenticationStatistics.getTotalConnectionErrors(), ce);
+            ds.logConnectionError();
+            LOGGER.error("error getting connection (total : {}) {}", ds.getStatistics().getTotalConnectionErrors(), ce);
             throw ce;
         }
     }
@@ -83,6 +83,7 @@ public abstract class AuthenticationStrategy
         }
         catch (PrivilegedActionException e)
         {
+            this.authenticationStatistics.logAuthenticationError();
             LOGGER.error("PrivilegedActionException for subject {} {}", subject, e);
             throw new ConnectionException(e.getException());
         }

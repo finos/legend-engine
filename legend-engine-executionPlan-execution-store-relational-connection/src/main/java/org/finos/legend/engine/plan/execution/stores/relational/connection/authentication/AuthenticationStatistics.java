@@ -18,15 +18,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AuthenticationStatistics
 {
-    private final AtomicInteger connectionErrors = new AtomicInteger();
+    private final AtomicInteger authenticationErrors = new AtomicInteger();
 
-    public void logConnectionError()
+    public void logAuthenticationError()
     {
-        this.connectionErrors.incrementAndGet();
+        this.authenticationErrors.incrementAndGet();
     }
 
-    public int getTotalConnectionErrors()
+    public int getTotalAuthenticationErrors()
     {
-        return this.connectionErrors.get();
+        return this.authenticationErrors.get();
     }
 }
