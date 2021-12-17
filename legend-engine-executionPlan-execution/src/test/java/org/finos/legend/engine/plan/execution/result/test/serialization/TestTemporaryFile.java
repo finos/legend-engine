@@ -38,8 +38,8 @@ public class TestTemporaryFile
         }
         else
         {
-            Assert.assertEquals(1, (int) tempFileWithoutEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '\\').count());
-            Assert.assertEquals(1, (int) tempFileWithEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '\\').count());
+            Assert.assertTrue((int) tempFileWithoutEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '\\').count() >= 1);
+            Assert.assertTrue((int) tempFileWithEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '\\').count() >= 1);
         }
     }
 }

@@ -33,7 +33,7 @@ import java.util.Random;
 public class TemporaryFile implements Closeable
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    private static final String localDevTempPath = "Z:/";
+    private static final String localDevTempPath = System.getProperty("java.io.tmpdir");
     private String fileName;
     public Path path;
     private final String tempPath;
@@ -86,8 +86,10 @@ public class TemporaryFile implements Closeable
         catch (Exception e)
         {
             LOGGER.error(new LogInfo(null, LoggingEventType.TEMP_FILE_DELETE_ERROR, new ErrorResult(1, e).getMessage()).toString());
-
         }
+    }
 
+    public static void main(String[] args) {
+        System.out.println(System.getProperty("java.io.tmpdir"));
     }
 }
