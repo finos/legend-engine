@@ -20,6 +20,7 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ReflectionUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
@@ -64,7 +65,7 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
     }
 
     @Before
-    public void setup()
+    public void setup() throws Exception
     {
         installFlowProvider();
         assertSnowflakeKeyPairFlowIsAvailable();
@@ -72,8 +73,9 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
 
-    private void installFlowProvider()
+    private void installFlowProvider() throws Exception
     {
+        ReflectionUtils.resetStaticField(DatabaseAuthenticationFlowProviderSelector.class, "INSTANCE");
         DatabaseAuthenticationFlowProviderSelector.enableLegendDefaultFlowProvider();
         boolean flowProviderPresent = DatabaseAuthenticationFlowProviderSelector.getProvider().isPresent();
         assertTrue("Flow provider is not available", flowProviderPresent);
