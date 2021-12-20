@@ -115,9 +115,12 @@ public class PureModel implements IPureModel
     // this as part of `CompileContext`
     final CompilerExtensions extensions;
 
-    final Handlers handlers;
+    // NOTE: since we resolve the same types across different pure elements, we have to keep commonPaths local
+    // to `PureModel` rather than having this as part of `CompileContext`
     private final MutableMap<String, String> commonPaths = Maps.mutable.empty();
     private static final int MAX_SIZE_COMMON_PATHS = 1000;
+
+    final Handlers handlers;
 
     private final MutableSet<String> immutables = Sets.mutable.empty();
     private final MutableMap<String, Multiplicity> multiplicitiesIndex = Maps.mutable.empty();
