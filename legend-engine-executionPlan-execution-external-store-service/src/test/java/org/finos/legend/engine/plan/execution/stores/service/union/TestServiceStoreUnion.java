@@ -34,6 +34,11 @@ public class TestServiceStoreUnion
                         "{\n" +
                         "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                         "    baseUrl : 'http://127.0.0.1:" + PORT + "';\n" +
+                        "}\n\n" +
+                        "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection2\n" +
+                        "{\n" +
+                        "    store   : meta::external::store::service::showcase::store::EmployeeServiceStore;\n" +
+                        "    baseUrl : 'http://127.0.0.1:" + PORT + "';\n" +
                         "}";
         SERVICE_STORE_MAPPING = ServiceStoreTestUtils.readGrammarFromPureFile("/union/mapping.pure");
         MODELS = ServiceStoreTestUtils.readGrammarFromPureFile("/union/model.pure");
@@ -160,5 +165,35 @@ public class TestServiceStoreUnion
         String expectedRes2 = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_productId\":\"41\",\"s_productName\":\"Product 41\",\"s_description\":\"Product 41 description\",\"s_synonyms\":[{\"s_name\":\"product 41 synonym 1\",\"s_type\":\"isin\"},{\"s_name\":\"product 41 synonym 2\",\"s_type\":\"cusip\"}]}}";
 
         Assert.assertEquals(expectedRes2, executePlan(plan, Maps.mutable.with("productId", "41")));
+    }
+
+    @Test
+    public void serviceStoreMultipleUnionElementsExample()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::Person.all()" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               lastName,\n" +
+                "               firmId\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               lastName,\n" +
+                "               firmId\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(SERVICE_STORE + "\n\n" + SERVICE_STORE_CONNECTION + "\n\n" + SERVICE_STORE_MAPPING + "\n\n" + MODELS + "\n\n" + query);
+
+        String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName Model\",\"lastName\":\"LastName Model\",\"firmId\":\"Model\"}]}";
+
+        Assert.assertEquals(expectedRes, executePlan(plan));
     }
 }
