@@ -48,7 +48,7 @@ public class TemporaryFile implements Closeable
 
     public String getTemporaryPathForFile()
     {
-        Path parentPath = Paths.get(SystemUtils.IS_OS_LINUX ? this.tempPath : localDevTempPath);
+        Path parentPath = Paths.get(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX ? this.tempPath : localDevTempPath);
         return parentPath.resolve(fileName).toString();
     }
 
