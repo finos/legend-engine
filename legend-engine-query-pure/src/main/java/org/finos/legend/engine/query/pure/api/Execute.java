@@ -99,7 +99,7 @@ public class Execute
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
         {
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.production : executeInput.clientVersion;
-            return exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, executeInput.function.parameters, pureModel.getContext()),
+            return exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, Lists.fixedSize.<Variable>empty(), pureModel.getContext()),
                     () -> modelManager.loadModel(executeInput.model, clientVersion, profiles, null),
                     this.planExecutor,
                     executeInput.mapping,
