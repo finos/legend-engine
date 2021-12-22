@@ -20,20 +20,18 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ReflectionUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.*;
 import org.pac4j.core.profile.CommonProfile;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 import javax.security.auth.Subject;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.Optional;
@@ -43,10 +41,6 @@ import static org.junit.Assert.assertTrue;
 
 public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
-    @Rule
-    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer()
-            .acceptLicense();
-
     private ConnectionManagerSelector connectionManagerSelector;
 
     @Override
@@ -56,16 +50,15 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
     }
 
     @BeforeClass
-    public static void setupTest()
+    public static void setupTest() throws IOException
     {
         Properties properties = new Properties();
-        properties.put("sqlServerAccount.user", "SA");
-        properties.put("sqlServerAccount.password", "A_Str0ng_Required_Password");
+        properties.load(new FileInputStream("../legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/snowflake.properties"));
         Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
     }
 
     @Before
-    public void setup() throws Exception
+    public void setup()
     {
         installFlowProvider();
         assertSnowflakeKeyPairFlowIsAvailable();
@@ -73,9 +66,8 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
 
-    private void installFlowProvider() throws Exception
+    private void installFlowProvider()
     {
-        ReflectionUtils.resetStaticField(DatabaseAuthenticationFlowProviderSelector.class, "INSTANCE");
         DatabaseAuthenticationFlowProviderSelector.enableLegendDefaultFlowProvider();
         boolean flowProviderPresent = DatabaseAuthenticationFlowProviderSelector.getProvider().isPresent();
         assertTrue("Flow provider is not available", flowProviderPresent);
@@ -89,7 +81,6 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
         relationalDatabaseConnection.type = DatabaseType.Snowflake;
 
         DatabaseAuthenticationFlowProvider flowProvider = DatabaseAuthenticationFlowProviderSelector.getProvider().get();
-        System.out.println("FlowProviderClassName: " + flowProvider.getClass().getSimpleName());
         Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
         assertTrue("snowflake keypair flow does not exist ", flow.isPresent());
     }
@@ -128,28 +119,5 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
         snowflakeDatasourceSpecification.cloudType = "aws";
         SnowflakePublicAuthenticationStrategy authSpec = new SnowflakePublicAuthenticationStrategy();
         return new RelationalDatabaseConnection(snowflakeDatasourceSpecification, authSpec, DatabaseType.Snowflake);
-    }
-
-    @Test
-    public void testSqlServerUserNamePasswordConnection() throws Exception
-    {
-        RelationalDatabaseConnection systemUnderTest = this.sqlServerWithUserNamePassword();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
-        testConnection(connection, "select db_name() as dbname");
-    }
-
-    private RelationalDatabaseConnection sqlServerWithUserNamePassword()
-    {
-        StaticDatasourceSpecification sqlServerDatasourceSpecification = new StaticDatasourceSpecification();
-        sqlServerDatasourceSpecification.host = "localhost";
-        sqlServerDatasourceSpecification.port = mssqlserver.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT);
-        sqlServerDatasourceSpecification.databaseName = "master";
-        UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
-        authSpec.baseVaultReference = "sqlServerAccount.";
-        authSpec.userNameVaultReference = "user";
-        authSpec.passwordVaultReference = "password";
-        RelationalDatabaseConnection conn = new RelationalDatabaseConnection(sqlServerDatasourceSpecification, authSpec, DatabaseType.SqlServer);
-        conn.type = DatabaseType.SqlServer;
-        return conn;
     }
 }
