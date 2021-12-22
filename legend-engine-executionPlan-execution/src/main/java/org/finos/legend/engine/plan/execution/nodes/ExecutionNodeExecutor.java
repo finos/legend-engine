@@ -77,6 +77,7 @@ import org.pac4j.core.profile.ProfileManager;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -415,6 +416,8 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
             // Handle batching at root level
             final AtomicLong rowCount = new AtomicLong(0L);
+            final AtomicLong objectCount = new AtomicLong(0L);
+            final DoubleSummaryStatistics memoryStatistics = new DoubleSummaryStatistics();
             GraphFetchResult graphFetchResult = (GraphFetchResult) globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
 
             Stream<?> objectStream = graphFetchResult.getGraphObjectsBatchStream().map(batch ->
@@ -429,6 +432,20 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 }
 
                 rowCount.addAndGet(batch.getRowCount());
+
+                if (nonEmptyObjectList)
+                {
+                    long currentObjectCount = objectCount.addAndGet(parentObjects.size());
+                    memoryStatistics.accept(batch.getTotalObjectMemoryUtilization()/(parentObjects.size() * 1.0));
+
+                    if (graphFetchResult.getGraphFetchSpan() != null)
+                    {
+                        Span graphFetchSpan = graphFetchResult.getGraphFetchSpan();
+                        graphFetchSpan.setTag("batchCount", memoryStatistics.getCount());
+                        graphFetchSpan.setTag("objectCount", currentObjectCount);
+                        graphFetchSpan.setTag("avgMemoryUtilizationInBytesPerObject", memoryStatistics.getAverage());
+                    }
+                }
 
                 if (!nonEmptyObjectList)
                 {
@@ -459,7 +476,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             {
                 return new ConstantResult(objectStream.findFirst().orElseThrow(() -> new RuntimeException("Constant value not found")));
             }
-            return new StreamingObjectResult<>(objectStream, new PartialClassBuilder(globalGraphFetchExecutionNode), graphFetchResult.getRootResult());
+            return new StreamingObjectResult<>(objectStream, new PartialClassBuilder(globalGraphFetchExecutionNode), graphFetchResult);
         }
         else
         {

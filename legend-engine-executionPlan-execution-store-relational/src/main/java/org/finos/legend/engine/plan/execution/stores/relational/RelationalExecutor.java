@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.block.function.Function;
@@ -284,7 +285,7 @@ public class RelationalExecutor
     private void prepareTempTable(Connection connectionManagerConnection, StreamingResult res, String tempTableName, String databaseTypeName, String databaseTimeZone, List<String> tempTableList)
     {
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
-        try
+        try (Scope ignored = GlobalTracer.get().buildSpan("create temp table").withTag("tempTableName", tempTableName).withTag("databaseType", databaseTypeName).startActive(true))
         {
             databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalExecutionConfiguration, connectionManagerConnection, res, tempTableName, databaseTimeZone));
         }
