@@ -518,4 +518,60 @@ public class ServiceStoreJsonShowcaseTest
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
     }
+
+    @Test
+    public void serviceStoreM2MChainingWithCrossStoreExampleWithBatchSize()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::Trade.all()\n" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::Trade {\n" +
+                "               tradeId,\n" +
+                "               quantity,\n" +
+                "               trader {\n" +
+                "                   kerberos,\n" +
+                "                   firstName,\n" +
+                "                   lastName\n" +
+                "               },\n" +
+                "               product {\n" +
+                "                   productId,\n" +
+                "                   productName,\n" +
+                "                   description,\n" +
+                "                   synonyms {\n" +
+                "                       name,\n" +
+                "                       type\n" +
+                "                   }\n" +
+                "               }\n" +
+                "           }\n" +
+                "         }#, 10)\n" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::Trade {\n" +
+                "               tradeId,\n" +
+                "               quantity,\n" +
+                "               trader {\n" +
+                "                   kerberos,\n" +
+                "                   firstName,\n" +
+                "                   lastName\n" +
+                "               },\n" +
+                "               product {\n" +
+                "                   productId,\n" +
+                "                   productName,\n" +
+                "                   description,\n" +
+                "                   synonyms {\n" +
+                "                       name,\n" +
+                "                       type\n" +
+                "                   }\n" +
+                "               }\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(SERVICE_STORE + "\n\n" + SERVICE_STORE_CONNECTION + "\n\n" + SERVICE_STORE_MAPPING + "\n\n" + MODELS + "\n\n" + query);
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"tradeId\":\"1\",\"quantity\":100,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"},\"product\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\",\"synonyms\":[{\"name\":\"product 30 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 30 synonym 2\",\"type\":\"CUSIP\"}]}},{\"tradeId\":\"2\",\"quantity\":200,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"},\"product\":{\"productId\":\"31\",\"productName\":\"Product 31\",\"description\":\"Product 31 description\",\"synonyms\":[{\"name\":\"product 31 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 31 synonym 2\",\"type\":\"CUSIP\"}]}},{\"tradeId\":\"3\",\"quantity\":300,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"},\"product\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\",\"synonyms\":[{\"name\":\"product 30 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 30 synonym 2\",\"type\":\"CUSIP\"}]}},{\"tradeId\":\"4\",\"quantity\":400,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"},\"product\":{\"productId\":\"31\",\"productName\":\"Product 31\",\"description\":\"Product 31 description\",\"synonyms\":[{\"name\":\"product 31 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 31 synonym 2\",\"type\":\"CUSIP\"}]}}]}";
+
+        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
+    }
 }

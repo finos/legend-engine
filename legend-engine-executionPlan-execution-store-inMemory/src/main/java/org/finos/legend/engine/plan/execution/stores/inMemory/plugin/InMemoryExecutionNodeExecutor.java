@@ -267,16 +267,15 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
             if ((parentObjects != null) && !parentObjects.isEmpty())
             {
+                DoubleStrategyHashMap<Object, List<Object>, Object> parentMap = new DoubleStrategyHashMap<>(InMemoryGraphFetchUtils.parentChildDoubleHashStrategy(nodeSpecifics));
+                parentObjects.forEach(parentObject -> parentMap.getIfAbsentPut(parentObject, ArrayList::new).add(parentObject));
+
                 if (node.supportsBatching)
                 {
-                    DoubleStrategyHashMap<Object, List<Object>, Object> parentMap = new DoubleStrategyHashMap<>(InMemoryGraphFetchUtils.parentChildDoubleHashStrategy(nodeSpecifics));
                     Map<String, List<Object>> keyValuePairs = Maps.mutable.empty();
 
                     nodeSpecifics.getCrossStoreKeysValueForChildren(parentObjects.get(0)).keySet().forEach(key -> keyValuePairs.put(key, Lists.mutable.empty()));
-                    parentObjects.forEach(parentObject -> {
-                        parentMap.getIfAbsentPut(parentObject, ArrayList::new).add(parentObject);
-                        nodeSpecifics.getCrossStoreKeysValueForChildren(parentObject).forEach((key, value) -> keyValuePairs.get(key).add(value));
-                    });
+                    parentMap.keySet().forEach(parentObject -> nodeSpecifics.getCrossStoreKeysValueForChildren(parentObject).forEach((key, value) -> keyValuePairs.get(key).add(value)));
 
                     keyValuePairs.forEach((key, value) -> this.executionState.addResult(key, new ConstantResult(value)));
                     childResult = this.visit((InMemoryRootGraphFetchExecutionNode) node);
@@ -310,9 +309,9 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                 }
                 else
                 {
-                    for (Object parentObject : parentObjects)
+                    for (Map.Entry<Object, List<Object>> entry : parentMap.entrySet())
                     {
-                        Map<String, Object> keyValuePairs = nodeSpecifics.getCrossStoreKeysValueForChildren(parentObject);
+                        Map<String, Object> keyValuePairs = nodeSpecifics.getCrossStoreKeysValueForChildren(entry.getKey());
 
                         keyValuePairs.forEach((key, value) -> this.executionState.addResult(key, new ConstantResult(value)));
                         childResult = this.visit((InMemoryRootGraphFetchExecutionNode) node);
@@ -325,12 +324,20 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                             {
                                 IGraphInstance<?> childGraphInstance = nodeSpecifics.wrapChildInGraphInstance(child);
                                 Object childObject = childGraphInstance.getValue();
-                                boolean isChildAdded = nodeSpecifics.attemptAddingChildToParent(parentObject, childObject);
 
-                                if (isChildAdded)
+                                List<Object> parentsInScope = entry.getValue();
+                                if(parentsInScope != null)
                                 {
-                                    graphObjectsBatch.addObjectMemoryUtilization(childGraphInstance.instanceSize());
-                                    childObjects.add(childObject);
+                                    for (Object parentObject : parentsInScope)
+                                    {
+                                        boolean isChildAdded = nodeSpecifics.attemptAddingChildToParent(parentObject, childObject);
+
+                                        if (isChildAdded)
+                                        {
+                                            graphObjectsBatch.addObjectMemoryUtilization(childGraphInstance.instanceSize());
+                                            childObjects.add(childObject);
+                                        }
+                                    }
                                 }
                             });
                         });

@@ -37,12 +37,17 @@ public class TestServer
 
     public TestServer(int port, String resourcePath) throws Exception
     {
+        this(port, resourcePath, Lists.mutable.empty());
+    }
+
+    public TestServer(int port, String resourcePath, List<AbstractHandler> customHandlers) throws Exception
+    {
         this.server = new Server(port);
 
         Objects.requireNonNull(TestServer.class.getResource(resourcePath));
         Map<String, String> pathContentMap = new ObjectMapper().readValue(TestServer.class.getResourceAsStream(resourcePath), Map.class);
 
-        List<Handler> handlers = Lists.mutable.empty();
+        List<Handler> handlers = Lists.mutable.withAll(customHandlers);
         pathContentMap.forEach((path, content) -> handlers.add(registerService(path, content)));
 
         HandlerCollection handlerCollection = new HandlerCollection();
@@ -100,8 +105,8 @@ public class TestServer
             throw new RuntimeException("Unexpected parameters for request. Expected keys - " + expectedKeys + ". Actual keys - " + actualKeys);
         }
         expectedKeys.forEach(key -> {
-            List<String> expectedValue = expected.get(key);
-            List<String> actualValue = Lists.mutable.with(actual.get(key));
+            Set<String> expectedValue = new HashSet(expected.get(key));
+            Set<String> actualValue = new HashSet(Lists.mutable.with(actual.get(key)));
 
             if (!Objects.equals(expectedValue, actualValue))
             {
