@@ -34,10 +34,10 @@ import java.util.Collections;
 import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 public class TestSqlServerConnectionAcquisitionWithFlowProvider extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
-    @Rule
     public MSSQLServerContainer mssqlserver = new MSSQLServerContainer()
             .acceptLicense();
 
@@ -53,6 +53,7 @@ public class TestSqlServerConnectionAcquisitionWithFlowProvider extends org.fino
     @Before
     public void setup() throws Exception
     {
+        startMSSQLServerContainer();
         installFlowProvider();
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
 
@@ -61,6 +62,18 @@ public class TestSqlServerConnectionAcquisitionWithFlowProvider extends org.fino
         properties.put("sqlServerAccount.password", "A_Str0ng_Required_Password");
         this.vaultImplementation = new PropertiesVaultImplementation(properties);
         Vault.INSTANCE.registerImplementation(this.vaultImplementation);
+    }
+
+    private void startMSSQLServerContainer()
+    {
+        try
+        {
+            this.mssqlserver.start();
+        }
+        catch (Throwable ex)
+        {
+            assumeTrue("Cannot start MSSQLServerContainer", false);
+        }
     }
 
     private void installFlowProvider() throws Exception
@@ -76,6 +89,7 @@ public class TestSqlServerConnectionAcquisitionWithFlowProvider extends org.fino
     {
         DatabaseAuthenticationFlowProviderSelector.disableFlowProvider();
         Vault.INSTANCE.unregisterImplementation(this.vaultImplementation);
+        this.mssqlserver.stop();
     }
 
     @Test
@@ -90,7 +104,7 @@ public class TestSqlServerConnectionAcquisitionWithFlowProvider extends org.fino
     {
         StaticDatasourceSpecification sqlServerDatasourceSpecification = new StaticDatasourceSpecification();
         sqlServerDatasourceSpecification.host = "localhost";
-        sqlServerDatasourceSpecification.port = mssqlserver.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT);
+        sqlServerDatasourceSpecification.port = this.mssqlserver.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT);
         sqlServerDatasourceSpecification.databaseName = "master";
         UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
         authSpec.baseVaultReference = "sqlServerAccount.";
