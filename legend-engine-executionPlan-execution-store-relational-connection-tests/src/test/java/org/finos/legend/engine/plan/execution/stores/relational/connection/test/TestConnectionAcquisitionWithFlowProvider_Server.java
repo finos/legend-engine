@@ -39,6 +39,7 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
     private ConnectionManagerSelector connectionManagerSelector;
@@ -92,7 +93,7 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
     }
 
     // TODO - Enable tests when we have Snowflake network connectivity
-    @Ignore
+    @Test
     public void testSnowflakePublicConnection_subject() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
