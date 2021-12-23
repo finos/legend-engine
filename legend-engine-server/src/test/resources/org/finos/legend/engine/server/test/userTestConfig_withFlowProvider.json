@@ -63,16 +63,13 @@
     "port": 9092
   },
   "relationalexecution": {
-    "tempPath": "/tmp/",
     "temporarytestdb": {
       "port": 9092
+    },
+    "tempPath": "/tmp/",
+    "flowProviderClass": "org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider",
+    "flowProviderConfiguration": {
+      "_type" : "legendDefault"
     }
-  },
-  "vaults" :
-    [
-      {
-        "_type" : "property",
-        "location" : "legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/snowflake.properties"
-      }
-    ]
+  }
 }

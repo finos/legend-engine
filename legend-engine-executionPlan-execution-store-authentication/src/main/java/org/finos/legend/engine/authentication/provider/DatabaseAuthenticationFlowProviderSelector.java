@@ -24,9 +24,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 
 /*
-    The selector is used to select a flow provider. The following selection rules are applied :
-    1/ A provider is loaded via a ServiceLoader
-    2/ However, the implementation to use has to be explicitly indicated via a System property. This not only acts as a feature flag to enable/disable the flows but also provides deterministic resolution of the flow provider.
+    The selector is used to load a flow provider from the classpath.
  */
 public class DatabaseAuthenticationFlowProviderSelector
 {
@@ -60,6 +58,12 @@ public class DatabaseAuthenticationFlowProviderSelector
         return getProviderImpl(locator);
     }
 
+    public static synchronized Optional<DatabaseAuthenticationFlowProvider> getProvider(String flowProviderClass)
+    {
+        Supplier<MutableList<DatabaseAuthenticationFlowProvider>> locator = () -> Iterate.addAllTo(ServiceLoader.load(DatabaseAuthenticationFlowProvider.class), Lists.mutable.empty());
+        return getProviderImpl(locator, flowProviderClass);
+    }
+
     public static synchronized Optional<DatabaseAuthenticationFlowProvider> getProviderForTests(Supplier<MutableList<DatabaseAuthenticationFlowProvider>> locator)
     {
         return getProviderImpl(locator);
@@ -72,7 +76,11 @@ public class DatabaseAuthenticationFlowProviderSelector
         {
             return Optional.empty();
         }
+        return getProviderImpl(locator, databaseAuthFlowProviderImplClass);
+    }
 
+    private static synchronized Optional<DatabaseAuthenticationFlowProvider> getProviderImpl(Supplier<MutableList<DatabaseAuthenticationFlowProvider>> locator, String databaseAuthFlowProviderImplClass)
+    {
         if (INSTANCE == null)
         {
             INSTANCE = initialize(locator, databaseAuthFlowProviderImplClass);
@@ -86,7 +94,7 @@ public class DatabaseAuthenticationFlowProviderSelector
         Optional<DatabaseAuthenticationFlowProvider> providerHolder = providers.select(provider -> provider.getClass().getCanonicalName().equals(databaseAuthFlowProviderImplClass)).getFirstOptional();
         if (!providerHolder.isPresent())
         {
-            throw new RuntimeException(String.format("Failed to locate database flow provider '%s'", databaseAuthFlowProviderImplClass));
+            throw new RuntimeException(String.format("Failed to locate database flow provider '%s' in the classpath", databaseAuthFlowProviderImplClass));
         }
         return providerHolder;
     }

@@ -18,6 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
@@ -40,14 +41,21 @@ import java.util.ServiceLoader;
 
 public class ConnectionManagerSelector
 {
+    private final Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder;
     private MutableList<ConnectionManager> connectionManagers;
 
     public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles)
     {
+        this(temporaryTestDb, oauthProfiles, Optional.empty());
+    }
+
+    public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
+    {
         MutableList<ConnectionManagerExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionManagerExtension.class), Lists.mutable.empty());
         this.connectionManagers = Lists.mutable.<ConnectionManager>with(
-                new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles)
+                new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, flowProviderHolder)
         ).withAll(extensions.collect(e -> e.getExtensionManager(temporaryTestDb.port, oauthProfiles)));
+        this.flowProviderHolder = flowProviderHolder;
     }
 
     public Connection getDatabaseConnection(MutableList<CommonProfile> profiles, DatabaseConnection databaseConnection)
@@ -85,7 +93,7 @@ public class ConnectionManagerSelector
         if (databaseConnection instanceof RelationalDatabaseConnection)
         {
             RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) databaseConnection;
-            Optional<CredentialSupplier> databaseCredentialHolder = RelationalConnectionManager.getCredential(relationalDatabaseConnection, identity);
+            Optional<CredentialSupplier> databaseCredentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, relationalDatabaseConnection, identity);
             return datasource.getConnectionUsingIdentity(identity, databaseCredentialHolder);
         }
         /*

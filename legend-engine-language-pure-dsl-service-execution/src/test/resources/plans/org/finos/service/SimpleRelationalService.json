@@ -1,0 +1,68 @@
+{
+  "_type" : "simple",
+  "authDependent" : false,
+  "rootExecutionNode" : {
+    "_type" : "relationalTdsInstantiation",
+    "executionNodes" : [ {
+      "_type" : "sql",
+      "connection" : {
+        "_type" : "RelationalDatabaseConnection",
+        "authenticationStrategy" : {
+          "_type" : "test"
+        },
+        "datasourceSpecification" : {
+          "_type" : "h2Local",
+          "testDataSetupSqls": [
+            "create schema MAIN_SCHEMA;",
+            "create table MAIN_SCHEMA.PERSON_TABLE(AGE INT, FIRST_NAME VARCHAR(100), LAST_NAME VARCHAR(100));",
+            "insert into MAIN_SCHEMA.PERSON_TABLE(AGE, FIRST_NAME, LAST_NAME) values(1, 'f1', 'l1');"
+          ]
+        },
+        "element" : "store::MyDatabase",
+        "postProcessorWithParameter" : [ ],
+        "postProcessors" : [ ],
+        "type" : "H2"
+      },
+      "executionNodes" : [ ],
+      "resultColumns" : [ {
+        "dataType" : "NUMERIC(38,0)",
+        "label" : "\"Age\""
+      }, {
+        "dataType" : "VARCHAR(16777216)",
+        "label" : "\"First Name\""
+      }, {
+        "dataType" : "VARCHAR(16777216)",
+        "label" : "\"Last Name\""
+      } ],
+      "resultType" : {
+        "_type" : "dataType",
+        "dataType" : "meta::pure::metamodel::type::Any"
+      },
+      "sqlQuery" : "select \"root\".AGE as \"Age\", \"root\".FIRST_NAME as \"First Name\", \"root\".LAST_NAME as \"Last Name\" from MAIN_SCHEMA.PERSON_TABLE as \"root\""
+    } ],
+    "resultType" : {
+      "_type" : "tds",
+      "tdsColumns" : [ {
+        "enumMapping" : { },
+        "name" : "Age",
+        "relationalType" : "NUMERIC(38,0)",
+        "type" : "Integer"
+      }, {
+        "enumMapping" : { },
+        "name" : "First Name",
+        "relationalType" : "VARCHAR(16777216)",
+        "type" : "String"
+      }, {
+        "enumMapping" : { },
+        "name" : "Last Name",
+        "relationalType" : "VARCHAR(16777216)",
+        "type" : "String"
+      } ]
+    }
+  },
+  "serializer" : {
+    "name" : "pure",
+    "version" : "vX_X_X"
+  },
+  "templateFunctions" : [ "<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>", "<#function collectionSize collection> <#return collection?size?c> </#function>" ]
+}
