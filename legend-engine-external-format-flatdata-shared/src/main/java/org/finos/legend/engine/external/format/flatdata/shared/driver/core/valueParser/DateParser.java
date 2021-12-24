@@ -18,48 +18,101 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DateParser implements ValueParser
 {
-    private final DateTimeFormatter formatter;
+    private final List<String> possibleFormats;
+    private final List<DateTimeFormatter> possibleFormatters;
+    private String format;
+    private DateTimeFormatter formatter;
 
-    private DateParser(String format)
+    private DateParser(List<String> formats)
     {
-        this.formatter = DateTimeFormatter.ofPattern(format);
+        this.possibleFormats = formats;
+        this.possibleFormatters = formats.stream().map(DateTimeFormatter::ofPattern).collect(Collectors.toList());
+        if (possibleFormats.size() == 1)
+        {
+            formatter = possibleFormatters.get(0);
+            format = possibleFormats.get(0);
+        }
     }
 
     public LocalDate parse(String s) throws ParseException
     {
-        try
+        if (formatter == null)
         {
-            return LocalDate.parse(s, formatter);
+            for (int i=0; i<possibleFormatters.size(); i++)
+            {
+                try
+                {
+                    LocalDate date = LocalDate.parse(s, possibleFormatters.get(i));
+                    formatter = possibleFormatters.get(i);
+                    format = possibleFormats.get(i);
+                    return date;
+                }
+                catch (DateTimeParseException e)
+                {
+                    // Ignore
+                }
+            }
+            throw new ParseException("Unable to parse date: " + s, 0);
         }
-        catch (DateTimeParseException e)
+        else
         {
-            throw new ParseException(e.getMessage(), 0);
+            try
+            {
+                return LocalDate.parse(s, formatter);
+            }
+            catch (DateTimeParseException e)
+            {
+                throw new ParseException(e.getMessage(), 0);
+            }
         }
     }
 
     @Override
     public String validate(String s)
     {
-        try
+        if (formatter == null)
         {
-            formatter.parse(s);
-            return null;
+            for (int i=0; i<possibleFormatters.size(); i++)
+            {
+                try
+                {
+                    possibleFormatters.get(i).parse(s);
+                    formatter = possibleFormatters.get(i);
+                    format = possibleFormats.get(i);
+                    return null;
+                }
+                catch (DateTimeParseException e)
+                {
+                    // Ignore
+                }
+            }
+            return "Unparseable date: \"" + s + "\" for formats " + possibleFormats.stream().map(f -> "'" + f + "'").collect(Collectors.joining(", "));
         }
-        catch (DateTimeParseException e)
+        else
         {
-            return "Unparseable date: \"" + s + "\"";
+            try
+            {
+                formatter.parse(s);
+                return null;
+            }
+            catch (DateTimeParseException e)
+            {
+                return "Unparseable date: \"" + s + "\" for format '" + format  + "'";
+            }
         }
     }
 
     public String toString(LocalDate date)
     {
-        return formatter.format(date);
+        return possibleFormatters.get(0).format(date);
     }
 
-    public static DateParser of(String format)
+    public static DateParser of(List<String> format)
     {
         return new DateParser(format);
     }

@@ -36,7 +36,7 @@ public class TestValidation
                      "  delimiter: ',';\n" +
                      "  quoteChar: '\\'';\n" +
                      "  escapingChar: '\\'';\n" +
-                     "  nullString: 'null';\n" +
+                     "  nullString: ['null', ''];\n" +
                      "\n" +
                      "  Record\n" +
                      "  {\n" +
@@ -95,23 +95,152 @@ public class TestValidation
     }
 
     @Test
+    public void invalidPropertyValue()
+    {
+        test("section default: DelimitedWithHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  delimiter: 1;\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid delimiter: 1 in section 'default'"
+        );
+
+        test("section default: DelimitedWithHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  delimiter: ['a', 'b'];\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid delimiter: ['a', 'b'] in section 'default'"
+        );
+
+        test("section default: DelimitedWithHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  delimiter: [1, 2];\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid delimiter: [1, 2] in section 'default'"
+        );
+
+        test("section default: DelimitedWithHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  delimiter: [];\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid delimiter: [] in section 'default'"
+        );
+
+        test("section default: DelimitedWithHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator: 3;\n" +
+                        "  delimiter: ',';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "    HEADING2: INTEGER;\n" +
+                        "    HEADING3: INTEGER(optional);\n" +
+                        "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid recordSeparator: 3 in section 'default'"
+        );
+
+        test("section default: DelimitedWithHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator;\n" +
+                        "  delimiter: ',';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "    HEADING2: INTEGER;\n" +
+                        "    HEADING3: INTEGER(optional);\n" +
+                        "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid recordSeparator: true in section 'default'"
+        );
+
+        test("section default: DelimitedWithHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  mayContainBlankLines: 'maybe';\n" +
+                        "  delimiter: ',';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "    HEADING2: INTEGER;\n" +
+                        "    HEADING3: INTEGER(optional);\n" +
+                        "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid mayContainBlankLines: 'maybe' in section 'default'"
+        );
+    }
+
+    @Test
     public void invalidExclusiveGroup()
     {
         test("section default: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  scope.forNumberOfLines: 6;\n" +
-                     "  delimiter: ',';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    HEADING1: STRING;\n" +
-                     "    HEADING2: INTEGER;\n" +
-                     "    HEADING3: INTEGER(optional);\n" +
-                     "    HEADING4: DATE(format='MM-DD-EE');\n" +
-                     "  }\n" +
-                     "}",
-             "scope can only have one subvalue in section 'default'"
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  scope.forNumberOfLines: 6;\n" +
+                        "  delimiter: ',';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "    HEADING2: INTEGER;\n" +
+                        "    HEADING3: INTEGER(optional);\n" +
+                        "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                        "  }\n" +
+                        "}",
+                "scope can only have one subvalue in section 'default'"
+        );
+    }
+
+    @Test
+    public void invalidRepeatedProperty()
+    {
+        test("section default: DelimitedWithHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  delimiter: ',';\n" +
+                        "  nullString: 'null';\n" +
+                        "  nullString: '-';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "    HEADING2: INTEGER;\n" +
+                        "    HEADING3: INTEGER(optional);\n" +
+                        "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                        "  }\n" +
+                        "}",
+                "Duplicate property 'nullString' in section 'default'"
         );
     }
 
@@ -132,57 +261,6 @@ public class TestValidation
                      "  }\n" +
                      "}",
              "Invalid property 'scope.unknown' in section 'default'"
-        );
-
-        test("section default: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  recordSeparator: 3;\n" +
-                     "  delimiter: ',';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    HEADING1: STRING;\n" +
-                     "    HEADING2: INTEGER;\n" +
-                     "    HEADING3: INTEGER(optional);\n" +
-                     "    HEADING4: DATE(format='MM-DD-EE');\n" +
-                     "  }\n" +
-                     "}",
-             "Invalid recordSeparator: '3' in section 'default'"
-        );
-
-        test("section default: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  recordSeparator;\n" +
-                     "  delimiter: ',';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    HEADING1: STRING;\n" +
-                     "    HEADING2: INTEGER;\n" +
-                     "    HEADING3: INTEGER(optional);\n" +
-                     "    HEADING4: DATE(format='MM-DD-EE');\n" +
-                     "  }\n" +
-                     "}",
-             "Invalid recordSeparator: 'true' in section 'default'"
-        );
-
-        test("section default: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  mayContainBlankLines: 'maybe';\n" +
-                     "  delimiter: ',';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    HEADING1: STRING;\n" +
-                     "    HEADING2: INTEGER;\n" +
-                     "    HEADING3: INTEGER(optional);\n" +
-                     "    HEADING4: DATE(format='MM-DD-EE');\n" +
-                     "  }\n" +
-                     "}",
-             "Invalid mayContainBlankLines: 'maybe' in section 'default'"
         );
 
         test("section s1: DelimitedWithHeadings\n" +

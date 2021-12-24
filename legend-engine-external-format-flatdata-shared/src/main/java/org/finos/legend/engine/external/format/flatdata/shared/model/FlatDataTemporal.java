@@ -14,22 +14,25 @@
 
 package org.finos.legend.engine.external.format.flatdata.shared.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FlatDataTemporal extends FlatDataDataType
 {
-    private String format;
+    private List<String> format = new ArrayList<>();
 
     public FlatDataTemporal(boolean optional)
     {
         super(optional);
     }
 
-    public FlatDataTemporal withFormat(String format)
+    public FlatDataTemporal addFormat(String format)
     {
-        this.format = format;
+        this.format.add(format);
         return this;
     }
 
-    public String getFormat()
+    public List<String> getFormat()
     {
         return format;
     }

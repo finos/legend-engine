@@ -5,6 +5,7 @@ import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDa
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataProperty;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -30,6 +31,6 @@ public class DelimitedDriverHelper extends StreamingDriverHelper
         this.delimiter = FlatDataUtils.getString(properties, DELIMITER).get();
         this.quoteChar = FlatDataUtils.getString(properties, QUOTE_CHAR).orElse(null);
         this.escapeChar = FlatDataUtils.getString(properties, ESCAPING_CHAR).orElse(null);
-        this.nullStrings = FlatDataUtils.getStrings(properties, NULL_STRING);
+        this.nullStrings = FlatDataUtils.getStrings(properties, NULL_STRING).orElse(Collections.emptyList());
     }
 }
