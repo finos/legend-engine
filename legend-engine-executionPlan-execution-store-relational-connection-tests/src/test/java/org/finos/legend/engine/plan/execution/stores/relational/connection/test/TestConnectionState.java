@@ -35,6 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.sql.Connection;
 import java.time.Duration;
 import java.util.Collections;
 
@@ -118,14 +119,14 @@ public class TestConnectionState
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
-        this.connectionManagerSelector.getDatabaseConnection(identity, database1);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
         String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
         IdentityState identityState1 = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
         assertEquals("testuser1", identityState1.getIdentity().getName());
         assertNotNull(identityState1.getCredentialSupplier());
-
+        connection.close();
         // Reset connection state - This simulates a case where the state manager evicts state objects
         ConnectionStateManager.getInstance().evictUnusedPoolsOlderThan(Duration.ofMillis(1));
         IdentityState identityState = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
