@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -256,4 +257,23 @@ public class TestConnectionStateManager extends TestConnectionManagement
     }
 
 
+    @Test
+    public void testShutdown() throws IOException {
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
+        Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
+
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
+
+        requestConnection(user1, ds1);
+        requestConnection(user2, ds1);
+        requestConnection(user3, ds1);
+
+        connectionStateManager.close();
+        Assert.assertEquals(0, connectionStateManager.size());
+        assertPoolExists(false, user1.getName(), ds1.getConnectionKey());
+        assertPoolExists(false, user2.getName(), ds1.getConnectionKey());
+        assertPoolExists(false, user3.getName(), ds1.getConnectionKey());
+
+    }
 }
