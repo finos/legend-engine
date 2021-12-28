@@ -215,18 +215,18 @@ public class ConnectionStateManager
         }
     }
 
-    protected Set<Pair<String, DataSourceStatistics>> findPoolsOlderThan(Duration duration)
+    protected Set<Pair<String, DataSourceStatistics>> findUnusedPoolsOlderThan(Duration duration)
     {
         return this.connectionPools.values().stream()
-                .filter(ds -> ds.getStatistics().getLastConnectionRequestAge() > duration.toMillis())
+                .filter(ds -> ds.getStatistics().getLastConnectionRequestAge() > duration.toMillis() && !ds.hasActiveConnections())
                 .map(ds -> Tuples.pair(ds.getPoolName(), DataSourceStatistics.clone(ds.getStatistics())))
                 .collect(Collectors.toSet());
     }
 
-    public void evictPoolsOlderThan(Duration duration)
+    public void evictUnusedPoolsOlderThan(Duration duration)
     {
         // step 1 - gather pools to be deleted without acquiring a global lock
-        Set<Pair<String, DataSourceStatistics>> entriesToPurge = this.findPoolsOlderThan(duration);
+        Set<Pair<String, DataSourceStatistics>> entriesToPurge = this.findUnusedPoolsOlderThan(duration);
         LOGGER.info("ConnectionStateManager.HouseKeeper : pools {} to be evicted", entriesToPurge.size());
         // step 2 - remove atomically - i.e remove iff the state has not been updated since it was read in step 1
         entriesToPurge.forEach(pool -> this.atomicallyRemovePool(pool.getOne(), pool.getTwo()));
@@ -271,7 +271,7 @@ public class ConnectionStateManager
     {
         int sizeBeforePurge = this.size();
         LOGGER.info("ConnectionStateManager.HouseKeeper : Starting  with cache size={}", sizeBeforePurge);
-        this.evictPoolsOlderThan(Duration.ofSeconds(durationInSeconds));
+        this.evictUnusedPoolsOlderThan(Duration.ofSeconds(durationInSeconds));
         int sizeAfterPurge = this.size();
         LOGGER.info("ConnectionStateManager.HouseKeeper: Evicted={}", sizeBeforePurge - sizeAfterPurge);
     }

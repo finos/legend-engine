@@ -127,7 +127,7 @@ public class TestConnectionState
         assertNotNull(identityState1.getCredentialSupplier());
 
         // Reset connection state - This simulates a case where the state manager evicts state objects
-        ConnectionStateManager.getInstance().evictPoolsOlderThan(Duration.ofMillis(1));
+        ConnectionStateManager.getInstance().evictUnusedPoolsOlderThan(Duration.ofMillis(1));
         IdentityState identityState = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
         assertNull(identityState);
 
