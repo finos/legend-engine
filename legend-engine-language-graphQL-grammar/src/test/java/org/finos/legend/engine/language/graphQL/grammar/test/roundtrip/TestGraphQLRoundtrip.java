@@ -60,9 +60,9 @@ public class TestGraphQLRoundtrip
     public void testEnumRoundtrip()
     {
         check("enum Direction {\n"+
-                    "  NORTH,\n"+
-                    "  SOUTH,\n"+
-                    "  EAST,\n"+
+                    "  NORTH\n"+
+                    "  SOUTH\n"+
+                    "  EAST\n"+
                     "  WEST\n"+
                     "}");
     }
@@ -139,6 +139,193 @@ public class TestGraphQLRoundtrip
                 "\n" +
                 "fragment properties {\n" +
                 "  firstname(x: null, x: $ok)\n" +
+                "}");
+    }
+
+    @Test
+    public void testSchemaQueryRoundtrip()
+    {
+        check("query IntrospectionQuery {\n" +
+                "  __schema {\n" +
+                "    queryType {\n" +
+                "      name\n" +
+                "    }\n" +
+                "    mutationType {\n" +
+                "      name\n" +
+                "    }\n" +
+                "    subscriptionType {\n" +
+                "      name\n" +
+                "    }\n" +
+                "    types {\n" +
+                "      ... FullType\n" +
+                "    }\n" +
+                "    directives {\n" +
+                "      name\n" +
+                "      description\n" +
+                "      locations\n" +
+                "      args {\n" +
+                "        ... InputValue\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n\n" +
+                "fragment FullType on __Type {\n" +
+                "  kind\n" +
+                "  name\n" +
+                "  description\n" +
+                "  fields(includeDeprecated: true) {\n" +
+                "    name\n" +
+                "    description\n" +
+                "    args {\n" +
+                "      ... InputValue\n" +
+                "    }\n" +
+                "    type {\n" +
+                "      ... TypeRef\n" +
+                "    }\n" +
+                "    isDeprecated\n" +
+                "    deprecationReason\n" +
+                "  }\n" +
+                "  inputFields {\n" +
+                "    ... InputValue\n" +
+                "  }\n" +
+                "  interfaces {\n" +
+                "    ... TypeRef\n" +
+                "  }\n" +
+                "  enumValues(includeDeprecated: true) {\n" +
+                "    name\n" +
+                "    description\n" +
+                "    isDeprecated\n" +
+                "    deprecationReason\n" +
+                "  }\n" +
+                "  possibleTypes {\n" +
+                "    ... TypeRef\n" +
+                "  }\n" +
+                "}\n\n" +
+                "fragment InputValue on __InputValue {\n" +
+                "  name\n" +
+                "  description\n" +
+                "  type {\n" +
+                "    ... TypeRef\n" +
+                "  }\n" +
+                "  defaultValue\n" +
+                "}\n\n" +
+                "fragment TypeRef on __Type {\n" +
+                "  kind\n" +
+                "  name\n" +
+                "  ofType {\n" +
+                "    kind\n" +
+                "    name\n" +
+                "    ofType {\n" +
+                "      kind\n" +
+                "      name\n" +
+                "      ofType {\n" +
+                "        kind\n" +
+                "        name\n" +
+                "        ofType {\n" +
+                "          kind\n" +
+                "          name\n" +
+                "          ofType {\n" +
+                "            kind\n" +
+                "            name\n" +
+                "            ofType {\n" +
+                "              kind\n" +
+                "              name\n" +
+                "              ofType {\n" +
+                "                kind\n" +
+                "                name\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}");
+    }
+
+    @Test
+    public void testIntrospectionRoundTrip()
+    {
+        check("type __Schema {\n" +
+                "  types: [__Type!]!\n" +
+                "  queryType: __Type!\n" +
+                "  mutationType: __Type\n" +
+                "  subscriptionType: __Type\n" +
+                "  directives: [__Directive!]!\n" +
+                "}\n" +
+                "\n" +
+                "type __Type {\n" +
+                "  kind: __TypeKind!\n" +
+                "  name: String\n" +
+                "  description: String\n" +
+                "  fields(includeDeprecated: Boolean = false): [__Field!]\n" +
+                "  interfaces: [__Type!]\n" +
+                "  possibleTypes: [__Type!]\n" +
+                "  enumValues(includeDeprecated: Boolean = false): [__EnumValue!]\n" +
+                "  inputFields: [__InputValue!]\n" +
+                "  ofType: __Type\n" +
+                "}\n" +
+                "\n" +
+                "type __Field {\n" +
+                "  name: String!\n" +
+                "  description: String\n" +
+                "  args: [__InputValue!]!\n" +
+                "  type: __Type!\n" +
+                "  isDeprecated: Boolean!\n" +
+                "  deprecationReason: String\n" +
+                "}\n" +
+                "\n" +
+                "type __InputValue {\n" +
+                "  name: String!\n" +
+                "  description: String\n" +
+                "  type: __Type!\n" +
+                "  defaultValue: String\n" +
+                "}\n" +
+                "\n" +
+                "type __EnumValue {\n" +
+                "  name: String!\n" +
+                "  description: String\n" +
+                "  isDeprecated: Boolean!\n" +
+                "  deprecationReason: String\n" +
+                "}\n" +
+                "\n" +
+                "enum __TypeKind {\n" +
+                "  SCALAR\n" +
+                "  OBJECT\n" +
+                "  INTERFACE\n" +
+                "  UNION\n" +
+                "  ENUM\n" +
+                "  INPUT_OBJECT\n" +
+                "  LIST\n" +
+                "  NON_NULL\n" +
+                "}\n" +
+                "\n" +
+                "type __Directive {\n" +
+                "  name: String!\n" +
+                "  description: String\n" +
+                "  locations: [__DirectiveLocation!]!\n" +
+                "  args: [__InputValue!]!\n" +
+                "}\n" +
+                "\n" +
+                "enum __DirectiveLocation {\n" +
+                "  QUERY\n" +
+                "  MUTATION\n" +
+                "  SUBSCRIPTION\n" +
+                "  FIELD\n" +
+                "  FRAGMENT_DEFINITION\n" +
+                "  FRAGMENT_SPREAD\n" +
+                "  INLINE_FRAGMENT\n" +
+                "  SCHEMA\n" +
+                "  SCALAR\n" +
+                "  OBJECT\n" +
+                "  FIELD_DEFINITION\n" +
+                "  ARGUMENT_DEFINITION\n" +
+                "  INTERFACE\n" +
+                "  UNION\n" +
+                "  ENUM\n" +
+                "  ENUM_VALUE\n" +
+                "  INPUT_OBJECT\n" +
+                "  INPUT_FIELD_DEFINITION\n" +
                 "}");
     }
 
