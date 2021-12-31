@@ -56,7 +56,7 @@ public class GraphQLGrammarComposer
             public String visit(EnumTypeDefinition enumTypeDefinition)
             {
                 return "enum " + enumTypeDefinition.name + " {\n" +
-                        ListIterate.collect(enumTypeDefinition.values, v -> "  " + v.value).makeString(",\n") +
+                        ListIterate.collect(enumTypeDefinition.values, v -> "  " + v.value).makeString("\n") +
                         "\n}";
             }
 
@@ -97,7 +97,7 @@ public class GraphQLGrammarComposer
             @Override
             public String visit(FragmentDefinition fragmentDefinition)
             {
-                return "fragment " + fragmentDefinition.name + " {\n" + renderSelectionSet(fragmentDefinition.selectionSet, "  ") + "\n}";
+                return "fragment " + fragmentDefinition.name + (fragmentDefinition.typeCondition != null ? " on " + fragmentDefinition.typeCondition + " " : " ") + "{\n" + renderSelectionSet(fragmentDefinition.selectionSet, "  ") + "\n}";
             }
 
             @Override
@@ -180,7 +180,20 @@ public class GraphQLGrammarComposer
 
     private String renderType(TypeReference type)
     {
-        return (type.list ? "[" : "") + type.name + (type.list ? "]" : "") + (type.nullable ? "!" : "");
+        return type.accept(new TypeReferenceVisitor<String>()
+        {
+            @Override
+            public String visit(ListTypeReference val)
+            {
+                return "[" + renderType(val.itemType) + "]";
+            }
+
+            @Override
+            public String visit(NamedTypeReference val)
+            {
+                return val.name;
+            }
+        }) + (type.nullable ? "" : "!");
     }
 
     public String renderInputValueDefinition(InputValueDefinition inputValueDefinition)
