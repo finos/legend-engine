@@ -23,26 +23,24 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.manag
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
-import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
+import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
 
-@Ignore
-public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
+public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowflake extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
     private ConnectionManagerSelector connectionManagerSelector;
 
@@ -55,9 +53,7 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
     @BeforeClass
     public static void setupTest() throws IOException
     {
-        Properties properties = new Properties();
-        properties.load(new FileInputStream("../legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/snowflake.properties"));
-        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
+        Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
     }
 
     @Before
@@ -94,22 +90,20 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
         DatabaseAuthenticationFlowProviderSelector.disableFlowProvider();
     }
 
-    // TODO - Enable tests when we have Snowflake network connectivity
     @Test
     public void testSnowflakePublicConnection_subject() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
-        testConnection(connection, "select * from KNOEMA_RENEWABLES_DATA_ATLAS.RENEWABLES.DATASETS");
+        testConnection(connection, "select * from LEGEND_INTEGRATION_DB1.SCHEMA1.TABLE1");
     }
 
-    // TODO - Enable tests when we have Snowflake network connectivity
-    @Ignore
+    @Test
     public void testSnowflakePublicConnection_profile() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>)null, systemUnderTest);
-        testConnection(connection, "select * from KNOEMA_RENEWABLES_DATA_ATLAS.RENEWABLES.DATASETS");
+        testConnection(connection, "select * from LEGEND_INTEGRATION_DB1.SCHEMA1.TABLE1");
     }
 
     private RelationalDatabaseConnection snowflakeWithKeyPairSpec() throws Exception
@@ -117,33 +111,14 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
         SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = new SnowflakeDatasourceSpecification();
         snowflakeDatasourceSpecification.accountName = "ki79827";
         snowflakeDatasourceSpecification.region = "us-east-2";
-        snowflakeDatasourceSpecification.warehouseName = "LEGENDRO_WH";
-        snowflakeDatasourceSpecification.databaseName = "KNOEMA_RENEWABLES_DATA_ATLAS";
+        snowflakeDatasourceSpecification.warehouseName = "LEGEND_INTEGRATION_WH1";
+        snowflakeDatasourceSpecification.databaseName = "LEGEND_INTEGRATION_DB1";
+        snowflakeDatasourceSpecification.role = "LEGEND_INTEGRATION_ROLE1";
         snowflakeDatasourceSpecification.cloudType = "aws";
         SnowflakePublicAuthenticationStrategy authSpec = new SnowflakePublicAuthenticationStrategy();
+        authSpec.publicUserName = "LEGEND_INTEG_RO1";
+        authSpec.passPhraseVaultReference = "SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD";
+        authSpec.privateKeyVaultReference = "SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY";
         return new RelationalDatabaseConnection(snowflakeDatasourceSpecification, authSpec, DatabaseType.Snowflake);
-    }
-
-    @Test
-    public void testSqlServerUserNamePasswordConnection() throws Exception
-    {
-        RelationalDatabaseConnection systemUnderTest = this.sqlServerWithUserNamePassword();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
-        testConnection(connection, "select db_name() as dbname");
-    }
-
-    private RelationalDatabaseConnection sqlServerWithUserNamePassword()
-    {
-        StaticDatasourceSpecification sqlServerDatasourceSpecification = new StaticDatasourceSpecification();
-        sqlServerDatasourceSpecification.host = "localhost";
-        sqlServerDatasourceSpecification.port = 12345;
-        sqlServerDatasourceSpecification.databaseName = "master";
-        UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
-        authSpec.baseVaultReference = "sqlServerAccount.";
-        authSpec.userNameVaultReference = "user";
-        authSpec.passwordVaultReference = "password";
-        RelationalDatabaseConnection conn = new RelationalDatabaseConnection(sqlServerDatasourceSpecification, authSpec, DatabaseType.SqlServer);
-        conn.type = DatabaseType.SqlServer;
-        return conn;
     }
 }

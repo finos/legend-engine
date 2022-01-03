@@ -259,4 +259,37 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         Assert.assertNull(properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_PROXY_PORT));
         Assert.assertNull(properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_NON_PROXY_HOSTS));
     }
+
+    @Test
+    public void testSnowflakeDataSourceSpecificationWithoutPrivateLink()
+    {
+        SnowflakeDataSourceSpecification profile = buildSnowflakeDataSource(
+                "account1",
+                "us-east-1",
+                "DEMO_WH",
+                "test",
+                "aws",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        String url = extractURL(profile);
+        Assert.assertEquals("jdbc:snowflake://account1.us-east-1.aws.snowflakecomputing.com", url);
+
+        Properties properties = profile.getConnectionProperties();
+        Assert.assertEquals("us-east-1", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION));
+        Assert.assertEquals("aws", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE));
+        Assert.assertEquals(false, properties.get(SnowflakeDataSourceSpecification.SNOWFLAKE_QUOTE_IDENTIFIERS));
+        Assert.assertEquals("test", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_DATABASE_NAME));
+        Assert.assertEquals("DEMO_WH", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME));
+        Assert.assertFalse(Boolean.parseBoolean(properties.getProperty("useProxy")));
+
+        Assert.assertNull(properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_PROXY_HOST));
+        Assert.assertNull(properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_PROXY_PORT));
+        Assert.assertNull(properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_NON_PROXY_HOSTS));
+    }
 }
