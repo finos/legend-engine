@@ -29,6 +29,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.*;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PropertyPathElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -352,6 +354,11 @@ public class ServiceStoreParseTreeWalker
 
         serviceMapping.service = buildServicePtr(ctx.mappingService());
 
+        if(ctx.pathMappingBlock() != null)
+        {
+            serviceMapping.pathOffset = visitPathOffset(ctx.pathMappingBlock());
+        }
+
         List<ServiceParameterMapping> parameterMappings = Lists.mutable.empty();
         if (ctx.parametersMappingBlock() != null)
         {
@@ -364,6 +371,30 @@ public class ServiceStoreParseTreeWalker
         serviceMapping.parameterMappings = parameterMappings;
 
         return serviceMapping;
+    }
+
+
+    private Path visitPathOffset(ServiceStoreParserGrammar.PathMappingBlockContext ctx)
+    {
+        Path p = new Path();
+
+        //This is replaced with response class in compilation phase
+        p.startType = "$service.response";
+
+        if(ctx.identifier() != null && !ctx.identifier().isEmpty())
+        {
+            p.path = Lists.mutable.empty();
+            for (ServiceStoreParserGrammar.IdentifierContext idCtx : ctx.identifier())
+            {
+                PropertyPathElement ppe = new PropertyPathElement();
+                ppe.property = PureGrammarParserUtility.fromIdentifier(idCtx);
+                ppe.parameters = Lists.mutable.empty();
+
+                p.path.add(ppe);
+            }
+        }
+
+        return p;
     }
 
     private List<ServiceParameterMapping> buildParameterIndexedParameterMappings(ServiceStoreParserGrammar.ParametersMappingBlockContext ctx)

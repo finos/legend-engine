@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
@@ -111,13 +112,27 @@ public class HelperServiceStoreClassMappingBuilder
 
         pureServiceMapping._owner(owner);
         pureServiceMapping._service(service);
+        if(serviceMapping.pathOffset != null)
+        {
+            pureServiceMapping._path(compilePath(serviceMapping.pathOffset, service, context));
+        }
+
         if (serviceMapping.parameterMappings != null && !serviceMapping.parameterMappings.isEmpty())
         {
             pureServiceMapping._parameterMappings(FastList.newList(compileServiceParametersMapping(serviceMapping.parameterMappings, owner, service, context)));
         }
 
-        validateServiceMapping(pureServiceMapping, owner._class(), serviceMapping.sourceInformation);
+        validateServiceMapping(pureServiceMapping, owner._class(), serviceMapping.sourceInformation, context);
         return pureServiceMapping;
+    }
+
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path compilePath(Path pathOffset, Root_meta_external_store_service_metamodel_Service service, CompileContext ctx)
+    {
+        pathOffset.startType = getElementFullPath(service._response()._type(), ctx.pureModel.getExecutionSupport());
+
+        Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl instanceValue = (Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) pathOffset.accept(new ValueSpecificationBuilder(ctx, Lists.mutable.empty(), new ProcessingContext("")));
+
+        return (Root_meta_pure_metamodel_path_Path_Impl) instanceValue._values.getOnly();
     }
 
     private static List<Root_meta_external_store_service_metamodel_mapping_ServiceParameterMapping> compileServiceParametersMapping(List<ServiceParameterMapping> parameterMappings, Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation owner, Root_meta_external_store_service_metamodel_Service service, CompileContext context)
@@ -275,12 +290,21 @@ public class HelperServiceStoreClassMappingBuilder
         }
     }
 
-    private static void validateServiceMapping(Root_meta_external_store_service_metamodel_mapping_ServiceMapping serviceMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, SourceInformation sourceInformation)
+    private static void validateServiceMapping(Root_meta_external_store_service_metamodel_mapping_ServiceMapping serviceMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, SourceInformation sourceInformation, CompileContext context)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class responseClass = serviceMapping._service()._response()._type();
-        if (responseClass != pureClass)
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type sourceDataType;
+        if(serviceMapping._path() == null)
         {
-            throw new EngineException("Response type of source service should match mapping class. Found response type : " + responseClass.getFullSystemPath() + " does not match mapping class : " + pureClass.getFullSystemPath(), sourceInformation, EngineErrorType.COMPILATION);
+            sourceDataType = serviceMapping._service()._response()._type();
+        }
+        else
+        {
+            sourceDataType = ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PropertyPathElement) serviceMapping._path()._path().getLast())._property()._genericType()._rawType();
+        }
+
+        if (sourceDataType != pureClass)
+        {
+            throw new EngineException("Response type of source service should match mapping class. Found response type : " + getElementFullPath(sourceDataType, context.pureModel.getExecutionSupport())+ " does not match mapping class : " + getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
         }
 
         RichIterable<String> serviceParameters = serviceMapping._service()._parameters().collect(param -> param._name());
