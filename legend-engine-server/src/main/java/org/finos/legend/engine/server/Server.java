@@ -174,6 +174,7 @@ public class Server extends Application<ServerConfiguration>
         genExtensions.forEach(p -> environment.jersey().register(p.getService(modelManager)));
 
         // Execution
+        environment.jersey().register(new org.finos.legend.engine.query.graphQL.api.Execute(modelManager));
         environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
         environment.jersey().register(new ExecutePlan(planExecutor));
 

@@ -35,7 +35,7 @@
 grammar GraphQL;
 
 //https://spec.graphql.org/June2018/#sec-Language.Document
-document: definition+;
+document: definition+ EOF;
 
 definition:
 	executableDefinition
@@ -51,7 +51,7 @@ operationDefinition:
 	| selectionSet
 	;
 
-operationType: 'query' | 'mutation' | 'subscription';
+operationType: QUERY | MUTATION | SUBSCRIPTION;
 
 //https://spec.graphql.org/June2018/#sec-Selection-Sets
 selectionSet: '{' selection+ '}';
@@ -73,7 +73,7 @@ alias: name ':';
 //https://spec.graphql.org/June2018/#sec-Language.Fragments
 fragmentSpread: '...' fragmentName directives?;
 fragmentDefinition:
-	'fragment' fragmentName typeCondition directives? selectionSet;
+	FRAGMENT fragmentName typeCondition directives? selectionSet;
 fragmentName: name; // except on
 
 //https://spec.graphql.org/June2018/#sec-Type-Conditions
@@ -103,8 +103,8 @@ floatValue: FLOAT;
 
 //https://spec.graphql.org/June2018/#sec-Boolean-Value
 booleanValue
-	:	'true'
-	|	'false'
+	:	TRUE
+	|	FALSE
 	;
 
 //https://spec.graphql.org/June2018/#sec-String-Value
@@ -158,14 +158,14 @@ typeSystemExtension: schemaExtension
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Schema
 schemaDefinition:
-	 'schema' directives? '{' rootOperationTypeDefinition+ '}';
+	 SCHEMA directives? '{' rootOperationTypeDefinition+ '}';
 
 rootOperationTypeDefinition: operationType ':' namedType;
 
 //https://spec.graphql.org/June2018/#sec-Schema-Extension
 schemaExtension:
-    'extend' 'schema' directives? '{' operationTypeDefinition+ '}'
-    | 'extend' 'schema' directives
+    EXTEND SCHEMA directives? '{' operationTypeDefinition+ '}'
+    | EXTEND SCHEMA directives
     ;
 
 //https://spec.graphql.org/June2018/#OperationTypeDefinition
@@ -194,14 +194,14 @@ typeExtension : scalarTypeExtension
     ;
 
 //https://spec.graphql.org/June2018/#sec-Scalars
-scalarTypeDefinition: description? 'scalar' name directives?;
+scalarTypeDefinition: description? SCALAR name directives?;
 
 //https://spec.graphql.org/June2018/#sec-Scalar-Extensions
-scalarTypeExtension:  'extends' 'scalar' name directives;
+scalarTypeExtension:  EXTEND SCALAR name directives;
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Objects
 objectTypeDefinition :
-    description?   'type' name implementsInterfaces?  directives? fieldsDefinition?;
+    description?   TYPE name implementsInterfaces?  directives? fieldsDefinition?;
 
 implementsInterfaces: 'implements' '&'? namedType
     | implementsInterfaces '&' namedType
@@ -217,45 +217,45 @@ inputValueDefinition:  description? name ':' type_ defaultValue? directives?;
 
 //https://spec.graphql.org/June2018/#sec-Object-Extensions
 objectTypeExtension:
-    'extend' 'type' name implementsInterfaces? directives? fieldsDefinition
-    | 'extend' 'type' name implementsInterfaces? directives
-    | 'extend' 'type' name implementsInterfaces
+    EXTEND TYPE name implementsInterfaces? directives? fieldsDefinition
+    | EXTEND TYPE name implementsInterfaces? directives
+    | EXTEND TYPE name implementsInterfaces
     ;
 
 //https://spec.graphql.org/June2018/#sec-Interfaces
-interfaceTypeDefinition: description? 'interface' name directives? fieldsDefinition?;
+interfaceTypeDefinition: description? INTERFACE name directives? fieldsDefinition?;
 
 //https://spec.graphql.org/June2018/#sec-Interface-Extensions
-interfaceTypeExtension:  'extend' 'interface' name directives? fieldsDefinition
-    | 'extend' 'interface' name directives
+interfaceTypeExtension:  EXTEND INTERFACE name directives? fieldsDefinition
+    | EXTEND INTERFACE name directives
     ;
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Unions
-unionTypeDefinition:  description? 'union' name directives? unionMemberTypes?;
+unionTypeDefinition:  description? UNION name directives? unionMemberTypes?;
 unionMemberTypes: '=' '|'?  namedType ('|'namedType)* ;
 
 //https://spec.graphql.org/June2018/#sec-Union-Extensions
-unionTypeExtension : 'extend' 'union' name directives? unionMemberTypes
-    | 'extend' 'union' name directives
+unionTypeExtension : EXTEND UNION name directives? unionMemberTypes
+    | EXTEND UNION name directives
     ;
 
 //https://spec.graphql.org/June2018/#sec-Enums
-enumTypeDefinition:  description? 'enum' name directives? enumValuesDefinition?;
+enumTypeDefinition:  description? ENUM name directives? enumValuesDefinition?;
 enumValuesDefinition: '{' enumValueDefinition+  '}';
 enumValueDefinition: description? enumValue  directives?;
 
 //https://spec.graphql.org/June2018/#sec-Enum-Extensions
-enumTypeExtension: 'extend' 'enum' name directives? enumValuesDefinition
-    | 'extend' 'enum' name directives
+enumTypeExtension: EXTEND ENUM name directives? enumValuesDefinition
+    | EXTEND ENUM name directives
     ;
 
 //https://spec.graphql.org/June2018/#sec-Input-Objects
-inputObjectTypeDefinition: description? 'input' name directives? inputFieldsDefinition?;
+inputObjectTypeDefinition: description? INPUT name directives? inputFieldsDefinition?;
 inputFieldsDefinition: '{' inputValueDefinition+ '}';
 
 //https://spec.graphql.org/June2018/#sec-Input-Object-Extensions
-inputObjectTypeExtension:  'extend' 'input' name directives? inputFieldsDefinition
-    | 'extend' 'input' name directives
+inputObjectTypeExtension:  EXTEND INPUT name directives? inputFieldsDefinition
+    | EXTEND INPUT name directives
     ;
 
 //https://spec.graphql.org/June2018/#sec-Type-System.Directives
@@ -264,13 +264,13 @@ directiveLocations: directiveLocation ('|' directiveLocation)*;
 directiveLocation: executableDirectiveLocation | typeSystemDirectiveLocation;
 
 executableDirectiveLocation:
-     'QUERY'
-    | 'MUTATION'
-    | 'SUBSCRIPTION'
-    | 'FIELD'
-    | 'FRAGMENT_DEFINITION'
-    | 'FRAGMENT_SPREAD'
-    | 'INLINE_FRAGMENT'
+     QUERY_U
+    | MUTATION_U
+    | SUBSCRIPTION_U
+    | FIELD_U
+    | FRAGMENT_DEFINITION_U
+    | FRAGMENT_SPREAD_U
+    | INLINE_FRAGMENT_U
     ;
 
 typeSystemDirectiveLocation:
@@ -287,9 +287,63 @@ typeSystemDirectiveLocation:
     | 'INPUT_FIELD_DEFINITION'
     ;
 
-name: NAME;
+
+
+name: NAME | TYPE | QUERY | MUTATION | SUBSCRIPTION | FRAGMENT |
+      INTERFACE | ENUM | UNION | INPUT | SCALAR | SCHEMA | EXTEND | TRUE | FALSE |
+      QUERY_U | MUTATION_U | SUBSCRIPTION_U | FIELD_U | FRAGMENT_DEFINITION_U | FRAGMENT_SPREAD_U | INLINE_FRAGMENT_U |
+      SCHEMA_U | SCALAR_U | OBJECT_U | FIELD_DEFINITION_U | ARGUMENT_DEFINITION_U | INTERFACE_U | UNION_U | ENUM_U | ENUM_VALUE_U | INPUT_OBJECT_U | INPUT_FIELD_DEFINITION_U;
+
 
 //Start lexer
+TYPE : 'type';
+
+QUERY : 'query';
+QUERY_U : 'QUERY';
+
+MUTATION : 'mutation';
+MUTATION_U : 'MUTATION';
+
+SUBSCRIPTION : 'subscription';
+SUBSCRIPTION_U : 'SUBSCRIPTION';
+
+FIELD_U : 'FIELD';
+FRAGMENT_DEFINITION_U : 'FRAGMENT_DEFINITION';
+FRAGMENT_SPREAD_U: 'FRAGMENT_SPREAD';
+INLINE_FRAGMENT_U : 'INLINE_FRAGMENT';
+
+FRAGMENT : 'fragment';
+
+INTERFACE : 'interface';
+
+ENUM : 'enum';
+
+UNION : 'union';
+
+INPUT : 'input';
+
+SCALAR : 'scalar';
+
+SCHEMA : 'schema';
+
+EXTEND : 'extend';
+
+TRUE : 'true';
+
+FALSE : 'false';
+
+SCHEMA_U : 'SCHEMA';
+SCALAR_U : 'SCALAR';
+OBJECT_U : 'OBJECT';
+FIELD_DEFINITION_U : 'FIELD_DEFINITION';
+ARGUMENT_DEFINITION_U :'ARGUMENT_DEFINITION';
+INTERFACE_U : 'INTERFACE';
+UNION_U : 'UNION';
+ENUM_U : 'ENUM';
+ENUM_VALUE_U : 'ENUM_VALUE';
+INPUT_OBJECT_U : 'INPUT_OBJECT';
+INPUT_FIELD_DEFINITION_U : 'INPUT_FIELD_DEFINITION';
+
 NAME: [_A-Za-z] [_0-9A-Za-z]*;
 
 fragment CHARACTER: ( ESC | ~ ["\\]);

@@ -92,6 +92,7 @@
         <module>legend-engine-protocol-graphQL</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
+        <module>legend-engine-query-graphQL</module>
         <module>legend-engine-shared-core</module>
         <module>legend-engine-shared-javaCompiler</module>
         <module>legend-engine-services-model</module>
@@ -130,7 +131,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.45.0</legend.pure.version>
+        <legend.pure.version>1.46.0</legend.pure.version>
         <legend.shared.version>0.18.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -430,6 +431,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-query-graphQL</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-executionPlan-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -548,6 +554,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-graphQL-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-graphQL-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

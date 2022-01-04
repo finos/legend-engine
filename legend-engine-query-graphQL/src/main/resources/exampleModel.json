@@ -1,0 +1,78 @@
+{
+  "origin": {
+    "sdlcInfo": {
+      "baseVersion": "vX_X_X",
+      "_type": "pure",
+      "version": "none",
+      "packageableElementPointers": [
+        {
+          "path": "meta::external::query::graphQL::introspection::tests",
+          "type": "PACKAGE"
+        }
+      ]
+    },
+    "_type": "pointer",
+    "serializer": {
+      "name": "pure",
+      "version": "vX_X_X"
+    }
+  },
+  "elements": [
+    {
+      "superTypes": [
+        "meta::pure::metamodel::type::Any"
+      ],
+      "package": "meta::external::query::graphQL::introspection::tests",
+      "_type": "class",
+      "name": "Firm",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "legalName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "employees",
+          "type": "meta::external::query::graphQL::introspection::tests::Person"
+        }
+      ]
+    },
+    {
+      "superTypes": [
+        "meta::pure::metamodel::type::Any"
+      ],
+      "package": "meta::external::query::graphQL::introspection::tests",
+      "_type": "class",
+      "name": "Person",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "lastName",
+          "type": "String"
+        }
+      ]
+    }
+  ],
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}
