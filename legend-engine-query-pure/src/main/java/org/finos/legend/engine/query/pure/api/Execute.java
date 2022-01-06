@@ -137,7 +137,7 @@ public class Execute
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_START, "").toString());
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.production : executeInput.clientVersion;
             PureModel pureModel = modelManager.loadModel(executeInput.model, clientVersion, profiles, null);
-            LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, Lists.fixedSize.empty(), pureModel.getContext());
+            LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, executeInput.function.parameters, pureModel.getContext());
             Mapping mapping = executeInput.mapping == null ? null : pureModel.getMapping(executeInput.mapping);
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(executeInput.runtime, pureModel.getContext());
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInput.context, pureModel.getContext());
