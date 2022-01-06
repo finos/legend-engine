@@ -29,6 +29,7 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
 {
     static final String MODELLED_COUMNNS_REQIURED = "modelledColumnsMustBePresent";
     static final String ONLY_MODELLED_COLUMNS = "onlyModelledColumnsAllowed";
+    static final String MATCH_COLUMNS_CASE_INSENSITIVE = "columnsHeadingsAreCaseInsensitive";
 
     private final FlatDataSection section;
     private final FlatDataRecordType recordType;
@@ -61,6 +62,7 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
 
         boolean headingsRequired = FlatDataUtils.getBoolean(section.getSectionProperties(), MODELLED_COUMNNS_REQIURED);
         boolean onlyModelled = FlatDataUtils.getBoolean(section.getSectionProperties(), ONLY_MODELLED_COLUMNS);
+        boolean caseInsensitive = FlatDataUtils.getBoolean(section.getSectionProperties(), MATCH_COLUMNS_CASE_INSENSITIVE);
 
         if (headingsLine.getValue() == null || !headingsLine.getDefects().isEmpty() || headings == null)
         {
@@ -69,6 +71,24 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
         }
         else
         {
+            if (caseInsensitive)
+            {
+                List<String> newHeadings = new ArrayList<>();
+                for (String heading: headings)
+                {
+                    String newHeading = heading;
+                    for (FlatDataRecordField field : recordType.getFields())
+                    {
+                        if (heading.equalsIgnoreCase(field.getLabel()))
+                        {
+                            newHeading = field.getLabel();
+                        }
+                    }
+                    newHeadings.add(newHeading);
+                }
+                headings = newHeadings;
+            }
+
             for (FlatDataRecordField field : recordType.getFields())
             {
                 if (headingsRequired && !headings.contains(field.getLabel()))
