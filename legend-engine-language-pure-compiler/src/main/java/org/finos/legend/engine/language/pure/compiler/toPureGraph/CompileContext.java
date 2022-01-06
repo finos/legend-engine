@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 public class CompileContext
@@ -402,11 +403,11 @@ public class CompileContext
         }
     }
 
-    public FunctionExpressionBuilder resolveFunctionBuilder(String functionName, Map<String, FunctionExpressionBuilder> functionHandlerMap, SourceInformation sourceInformation, ProcessingContext processingContext)
+    public FunctionExpressionBuilder resolveFunctionBuilder(String functionName, Set<String> metaPackages, Map<String, FunctionExpressionBuilder> functionHandlerMap, SourceInformation sourceInformation, ProcessingContext processingContext)
     {
         // First do an optimistic check in the current handler to see if the function we are finding is available
         // so we don't waste time going through all of the auto-imports
-        String extractedFunctionName = extractMetaFunctionName(functionName);
+        String extractedFunctionName = extractMetaFunctionName(functionName, metaPackages);
 
         if (functionHandlerMap.containsKey(extractedFunctionName))
         {
@@ -440,14 +441,14 @@ public class CompileContext
         }
     }
 
-    private String extractMetaFunctionName(String functionName)
+    private String extractMetaFunctionName(String functionName, Set<String> metaPackages)
     {
         String extractedFunctionName = functionName;
-        if(functionName.contains(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
+        if (functionName.contains(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
         {
             String packageName = functionName.substring(0, functionName.lastIndexOf(this.PACKAGE_SEPARATOR));
             String name = functionName.substring(functionName.lastIndexOf(this.PACKAGE_SEPARATOR) + this.PACKAGE_SEPARATOR.length());
-            if(this.META_IMPORTS.contains(packageName))
+            if(metaPackages.contains(packageName))
             {
                 extractedFunctionName = name;
             }
