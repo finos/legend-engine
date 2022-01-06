@@ -68,7 +68,7 @@ public class TestCompileApi
         try
         {
             PureModelContextData pureModelContextData = objectMapper.readValue(pureModelContextDataJsonStr, PureModelContextData.class);
-            Object response = compileApi.compile(pureModelContextData, null).getEntity();
+            Object response = compileApi.compile(pureModelContextData, null, null).getEntity();
             actual = response instanceof EngineException ? objectMapper.writeValueAsString(response) : response.toString();
             // NOTE when we call `toString` we most likely call it on `EngineException` which will return something that does not really make sense
             // and it's not a JSON object (since the verbose stack-trace info is also included), so it's hard to just print out everything

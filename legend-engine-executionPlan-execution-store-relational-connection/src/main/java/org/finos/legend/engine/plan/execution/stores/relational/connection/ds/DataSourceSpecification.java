@@ -90,6 +90,7 @@ public abstract class DataSourceSpecification
         this.maxPoolSize  = maxPoolSize;
         this.minPoolSize = minPoolSize;
         MetricsHandler.observeCount("datastore specifications");
+        MetricsHandler.incrementDatastoreSpecCount();
         LOGGER.info("Created new {}", this);
     }
 
