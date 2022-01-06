@@ -33,10 +33,12 @@ import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 public abstract class AuthenticationStrategy
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AuthenticationStrategy.class);
-    private static final int CONNECTION_TIMEOUT = 30000;
+    private static final int CONNECTION_TIMEOUT = Math.toIntExact(SECONDS.toMillis(30L));
     public static String AUTHENTICATION_STRATEGY_KEY = "AUTHENTICATION_STRATEGY_KEY";
     protected AuthenticationStatistics authenticationStatistics = new AuthenticationStatistics();
 
@@ -52,8 +54,8 @@ public abstract class AuthenticationStrategy
         }
         catch (ConnectionException ce)
         {
-            this.authenticationStatistics.logConnectionError();
-            LOGGER.error("error getting connection (total : {}) {}", this.authenticationStatistics.getTotalConnectionErrors(), ce);
+            ds.logConnectionError();
+            LOGGER.error("error getting connection (total : {}) {}", ds.getStatistics().getTotalConnectionErrors(), ce);
             throw ce;
         }
     }
@@ -81,6 +83,7 @@ public abstract class AuthenticationStrategy
         }
         catch (PrivilegedActionException e)
         {
+            this.authenticationStatistics.logAuthenticationError();
             LOGGER.error("PrivilegedActionException for subject {} {}", subject, e);
             throw new ConnectionException(e.getException());
         }
@@ -97,6 +100,7 @@ public abstract class AuthenticationStrategy
         return this.authenticationStatistics;
     }
 
+    //this should return an int
     public int getConnectionTimeout()
     {
         return CONNECTION_TIMEOUT;

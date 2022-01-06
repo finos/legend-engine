@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class TestRelationalExecutionStatistics extends AlloyTestServer
@@ -131,6 +133,4 @@ public class TestRelationalExecutionStatistics extends AlloyTestServer
         Assert.assertEquals(0, poolAfter.get().dynamic.threadsAwaitingConnection);
         Assert.assertEquals(2, poolAfter.get().statistics.getRequestedConnections());
     }
-
-
 }

@@ -69,17 +69,17 @@ public abstract class DriverWrapper implements Driver
             {
                 throw new IllegalStateException("Cannot find state for pool " + poolName);
             }
-
             Pair<String, Properties> res = ds.getAuthenticationStrategy().handleConnection(url, info, ds.getDatabaseManager());
             LOGGER.info("Handled connection by [{}] Authentication strategy for [{}]", ds.getAuthenticationStrategy().getKey().shortId(), poolName);
-            int builtConnections = ds.buildConnection();
-            LOGGER.info("Total [{}] connections built for data source [{}]", builtConnections, poolName);
             Connection dbConnection = driver.connect(res.getOne(), handlePropertiesPriorToJDBCDriverConnection(res.getTwo()));
             LOGGER.info("[{}] Driver connected ", driver.getClass().getCanonicalName());
+            int builtConnections = ds.buildConnection();
+            LOGGER.info("Total [{}] connections built for data source [{}]", builtConnections, poolName);
             return dbConnection;
         }
         catch (Exception e)
         {
+            ds.logConnectionError();
             LOGGER.error("Error connecting to db [{}], pool stats [{}]", url,connectionStateManager.getPoolStatisticsAsJSON(ds),e);
             if (e instanceof SQLException)
             {

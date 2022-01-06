@@ -22,6 +22,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -48,8 +50,7 @@ public class TestConnectionStateManagerRace extends TestConnectionManagement
 
 
     @Test
-    public void testEvictionRace() throws InterruptedException
-    {
+    public void testEvictionRace() throws InterruptedException, SQLException {
         // cache has 2 state objects
         Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool1");
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool2");
@@ -57,26 +58,29 @@ public class TestConnectionStateManagerRace extends TestConnectionManagement
         String pool1 = connectionStateManager.poolNameFor(user1,ds1.getConnectionKey());
         String pool2 = connectionStateManager.poolNameFor(user2,ds1.getConnectionKey());
 
-        requestConnection(user1, ds1);
+        Connection c = requestConnection(user1, ds1);
+        c.close();
         Assert.assertEquals(1, connectionStateManager.get(pool1).getStatistics().getRequestedConnections());
-        requestConnection(user1, ds1);
-        requestConnection(user2, ds1);
+        Connection c1 =requestConnection(user1, ds1);
+        Connection c2 =requestConnection(user2, ds1);
         DataSourceStatistics pool1Version1 = DataSourceStatistics.clone(connectionStateManager.get(pool1).getStatistics());
         assertEquals(2, connectionStateManager.size());
         assertPoolStateExists(pool1, pool2);
         Assert.assertEquals(2, connectionStateManager.get(pool1).getStatistics().getRequestedConnections());
         Assert.assertEquals(1, connectionStateManager.get(pool2).getStatistics().getRequestedConnections());
-
+        c1.close();
+        c2.close();
         // advance clock by 4 minutes and invoke eviction (to simulate eviction task)
         clock.advance(Duration.ofMinutes(4));
         ExecutorService executorService = Executors.newFixedThreadPool(1);
-        Future<?> evictionTask = executorService.submit(() -> connectionStateManager.evictPoolsOlderThan(Duration.ofMinutes(3)));
+        Future<?> evictionTask = executorService.submit(() -> connectionStateManager.evictUnusedPoolsOlderThan(Duration.ofMinutes(3)));
 
         // the instrumented state manager is given a countdown latch to artificially introduce a delay after it has found entries to evict
         Thread.sleep(Duration.ofSeconds(2).toMillis());
 
         // update the state for pool1
-        requestConnection(user1, ds1);
+        Connection c3 = requestConnection(user1, ds1);
+        c3.close();
         Assert.assertEquals(3, connectionStateManager.get(pool1).getStatistics().getRequestedConnections());
         // now let the state manager continue with the eviction
         countDownLatch.countDown();
