@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.inMemory.plugin;
 
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
@@ -116,6 +118,8 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
         Result childResult = null;
 
+        Span graphFetchSpan = GlobalTracer.get().buildSpan("graph fetch").withTag("rootStoreType", "inMemory").withTag("batchSizeConfig", batchSize).start();
+        GlobalTracer.get().activateSpan(graphFetchSpan);
         try
         {
             IInMemoryRootGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
@@ -231,13 +235,17 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
             Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
 
-            return new GraphFetchResult(graphObjectsBatchStream, childResult);
+            return new GraphFetchResult(graphObjectsBatchStream, childResult).withGraphFetchSpan(graphFetchSpan);
         }
         catch (Exception e)
         {
             if (childResult != null)
             {
                 childResult.close();
+            }
+            if (graphFetchSpan != null)
+            {
+                graphFetchSpan.finish();
             }
 
             if (e instanceof RuntimeException)

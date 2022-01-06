@@ -100,4 +100,9 @@ public class GraphObjectsBatch
             throw new RuntimeException("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.");
         }
     }
+
+    public long getTotalObjectMemoryUtilization()
+    {
+        return this.totalObjectMemoryUtilization;
+    }
 }
