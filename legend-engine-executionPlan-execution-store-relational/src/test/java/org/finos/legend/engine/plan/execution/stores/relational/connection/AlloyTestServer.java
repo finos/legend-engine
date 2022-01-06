@@ -84,8 +84,24 @@ public abstract class AlloyTestServer
     @Before
     public void setupServer() throws Exception
     {
-        serverPort = DynamicPortGenerator.generatePort();
-        server = AlloyH2Server.startServer(serverPort);
+        boolean successful = false;
+        for (int attempts=0; !successful && attempts<3; attempts++)
+        {
+            try
+            {
+                serverPort = DynamicPortGenerator.generatePort();
+                server = AlloyH2Server.startServer(serverPort);
+                successful = true;
+            }
+            catch (Exception e)
+            {
+                // Maybe try again
+            }
+        }
+        if (!successful)
+        {
+            throw new IllegalStateException("Unable to create H2 Server");
+        }
         insertTestData(serverPort);
         planExecutor = buildRelationalPlanExecutor();
         System.out.println("Finished setup");
