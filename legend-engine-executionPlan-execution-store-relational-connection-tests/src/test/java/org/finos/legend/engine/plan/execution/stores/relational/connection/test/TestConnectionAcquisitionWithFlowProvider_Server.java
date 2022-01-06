@@ -23,9 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.manag
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.*;
@@ -122,28 +120,5 @@ public class TestConnectionAcquisitionWithFlowProvider_Server extends org.finos.
         snowflakeDatasourceSpecification.cloudType = "aws";
         SnowflakePublicAuthenticationStrategy authSpec = new SnowflakePublicAuthenticationStrategy();
         return new RelationalDatabaseConnection(snowflakeDatasourceSpecification, authSpec, DatabaseType.Snowflake);
-    }
-
-    @Test
-    public void testSqlServerUserNamePasswordConnection() throws Exception
-    {
-        RelationalDatabaseConnection systemUnderTest = this.sqlServerWithUserNamePassword();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
-        testConnection(connection, "select db_name() as dbname");
-    }
-
-    private RelationalDatabaseConnection sqlServerWithUserNamePassword()
-    {
-        StaticDatasourceSpecification sqlServerDatasourceSpecification = new StaticDatasourceSpecification();
-        sqlServerDatasourceSpecification.host = "localhost";
-        sqlServerDatasourceSpecification.port = 12345;
-        sqlServerDatasourceSpecification.databaseName = "master";
-        UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
-        authSpec.baseVaultReference = "sqlServerAccount.";
-        authSpec.userNameVaultReference = "user";
-        authSpec.passwordVaultReference = "password";
-        RelationalDatabaseConnection conn = new RelationalDatabaseConnection(sqlServerDatasourceSpecification, authSpec, DatabaseType.SqlServer);
-        conn.type = DatabaseType.SqlServer;
-        return conn;
     }
 }
