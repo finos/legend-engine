@@ -1,0 +1,20 @@
+{
+  "_type": "legacyRuntime",
+  "connections": [
+    {
+      "_type": "RelationalDatabaseConnection",
+      "authenticationStrategy": {
+        "_type": "test"
+      },
+      "timeZone": "GMT",
+      "type": "H2",
+      "datasourceSpecification": {
+        "_type": "h2Local",
+        "testDataSetupSqls": [
+          "drop table if exists FirmTable;\ncreate table FirmTable(id INT, legal_name VARCHAR(200));\ninsert into FirmTable (id, legal_name) values (1, 'FirmA');\ninsert into FirmTable (id, legal_name) values (2, 'FirmB');\ndrop table if exists PersonTable;\ncreate table PersonTable(id INT, firm_id INT, first_name VARCHAR(200), last_name VARCHAR(200));\ninsert into PersonTable (id, firm_id, first_name, last_name) values (1, 1, 'John', 'Doe');\ninsert into PersonTable (id, firm_id, first_name, last_name) values (2, 1, 'Jane', 'Smith');\ninsert into PersonTable (id, firm_id, first_name, last_name) values (3, 2, 'Mark', 'Moe');insert into PersonTable (id, firm_id, first_name, last_name) values (4, 2, 'Jane', 'Doe');\n"
+        ]
+      },
+      "element": "meta::relational::graphFetch::tests::domain::TestStore"
+    }
+  ]
+}
