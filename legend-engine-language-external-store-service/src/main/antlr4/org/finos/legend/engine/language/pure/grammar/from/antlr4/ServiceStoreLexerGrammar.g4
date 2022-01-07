@@ -26,6 +26,7 @@ ENUM:                                            'enum';
 
 // Mapping
 SERVICE_MAPPING:                                 '~service';
+PATH_MAPPING:                                    '~path';
 PARAM_MAPPING:                                   '~paramMapping';
 SERVICE_REFERENCE:                               '$service';
 

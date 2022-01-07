@@ -112,11 +112,13 @@ classMapping:                               (localPropertyDefinition)*
 localPropertyDefinition:                    PLUS identifier COLON type multiplicity SEMI_COLON
 ;
 serviceMapping:                             SERVICE_MAPPING mappingService
-                                            (PAREN_OPEN (parametersMappingBlock)? (mappingBlock)? PAREN_CLOSE)?
+                                            (PAREN_OPEN (pathMappingBlock)? (parametersMappingBlock)? (mappingBlock)? PAREN_CLOSE)?
 ;
 mappingService:                             BRACKET_OPEN qualifiedName BRACKET_CLOSE servicePath
 ;
 servicePath:                                identifier (DOT identifier)*
+;
+pathMappingBlock:                           PATH_MAPPING SERVICE_REFERENCE DOT RESPONSE (DOT identifier)*
 ;
 parametersMappingBlock:                     PARAM_MAPPING PAREN_OPEN (parameterMapping (COMMA parameterMapping)*) PAREN_CLOSE
 ;
