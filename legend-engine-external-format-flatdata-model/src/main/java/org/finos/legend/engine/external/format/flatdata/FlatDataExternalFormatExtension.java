@@ -16,22 +16,10 @@ package org.finos.legend.engine.external.format.flatdata;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.flatdata.compile.FlatDataSchemaCompiler;
 import org.finos.legend.engine.external.format.flatdata.fromModel.ModelToFlatDataConfiguration;
 import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataGrammarHelper;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataBoolean;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDataType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDate;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDateTime;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDecimal;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataInteger;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataProperty;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
+import org.finos.legend.engine.external.format.flatdata.shared.model.*;
 import org.finos.legend.engine.external.format.flatdata.toModel.FlatDataToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
@@ -41,7 +29,6 @@ import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.pure.generated.*;
 
 import java.lang.management.ManagementFactory;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -186,12 +173,16 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
         else if (field._type() instanceof Root_meta_external_format_flatdata_metamodel_FlatDataDate)
         {
             Root_meta_external_format_flatdata_metamodel_FlatDataDate d = (Root_meta_external_format_flatdata_metamodel_FlatDataDate) field._type();
-            type = new FlatDataDate(d._optional()).withFormat(d._format());
+            FlatDataTemporal date = new FlatDataDate(d._optional());
+            d._format().forEach(date::addFormat);
+            type = date;
         }
         else if (field._type() instanceof Root_meta_external_format_flatdata_metamodel_FlatDataDateTime)
         {
             Root_meta_external_format_flatdata_metamodel_FlatDataDateTime dt = (Root_meta_external_format_flatdata_metamodel_FlatDataDateTime) field._type();
-            type = new FlatDataDateTime(dt._optional()).withTimeZone(dt._timeZone()).withFormat(dt._format());
+            FlatDataTemporal dateTime = new FlatDataDateTime(dt._optional()).withTimeZone(dt._timeZone());
+            dt._format().forEach(dateTime::addFormat);
+            type = dateTime;
         }
         else
         {
