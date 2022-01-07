@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.flatdata;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.flatdata.compile.FlatDataSchemaCompiler;
@@ -37,27 +38,7 @@ import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompil
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatData;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataBoolean;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataDate;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataDateTime;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataDecimal;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataInteger;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataProperty;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataRecordField;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataRecordType;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataSection;
-import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataString;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
-import org.finos.legend.pure.generated.core_external_format_flatdata_binding_flatDataToPure;
-import org.finos.legend.pure.generated.core_external_format_flatdata_binding_pureToFlatData;
-import org.finos.legend.pure.generated.core_external_format_flatdata_binding_validation;
+import org.finos.legend.pure.generated.*;
 
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
@@ -101,10 +82,21 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
     }
 
     @Override
+    public boolean supportsModelGeneration()
+    {
+        return true;
+    }
+
+    @Override
+    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
+    {
+        return core_external_format_flatdata_binding_flatDataToPure.Root_meta_external_format_flatdata_binding_toPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());
+    }
+
+    @Override
     public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, FlatDataToModelConfiguration config, PureModel pureModel)
     {
         Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration configuration = new Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration_Impl("")
-                ._sourceSchemaId(config.sourceSchemaId)
                 ._targetBinding(config.targetBinding)
                 ._targetPackage(config.targetPackage)
                 ._purifyNames(config.purifyNames)
@@ -112,6 +104,18 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
         return IN_DEBUG
                ? core_external_format_flatdata_binding_flatDataToPure.Root_meta_external_format_flatdata_binding_toPure_flatDataToPureWithDebug_SchemaSet_1__FlatDataToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport())
                : core_external_format_flatdata_binding_flatDataToPure.Root_meta_external_format_flatdata_binding_toPure_flatDataToPure_SchemaSet_1__FlatDataToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());
+    }
+
+    @Override
+    public boolean supportsSchemaGeneration()
+    {
+        return true;
+    }
+
+    @Override
+    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getSchemaGenerationProperties(PureModel pureModel)
+    {
+        return core_external_format_flatdata_binding_pureToFlatData.Root_meta_external_format_flatdata_binding_fromPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());
     }
 
     @Override

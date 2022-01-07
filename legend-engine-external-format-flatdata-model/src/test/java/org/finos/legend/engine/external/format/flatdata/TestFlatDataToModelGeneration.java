@@ -173,6 +173,7 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
     private FlatDataToModelConfiguration config(String sourceSchemaSet, String targetPackage, boolean purify, String schemaClassName)
     {
         FlatDataToModelConfiguration config = new FlatDataToModelConfiguration();
+        config.format = "FlatData";
         config.sourceSchemaSet = sourceSchemaSet;
         config.targetBinding = targetPackage + "::TestBinding";
         config.targetPackage = targetPackage;
