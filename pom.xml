@@ -170,8 +170,6 @@
         <hibernate-validator.version>7.0.2.Final</hibernate-validator.version>
         <log4j.version>1.2.17</log4j.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <jaxrs.version>2.0.1</jaxrs.version>
-        <jakarta.ws.rs.version>2.1.6</jakarta.ws.rs.version>
         <commons-codec.version>1.15</commons-codec.version>
         <commons-compress.version>1.21</commons-compress.version>
         <commons-lang3.version>3.7</commons-lang3.version>
@@ -186,15 +184,15 @@
         <httpcore.version>4.4.13</httpcore.version>
         <janino.version>3.1.0</janino.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
-        <pac4j.version>3.7.0</pac4j.version>
-        <pac4j.jaxrs.version>3.0.0</pac4j.jaxrs.version>
-        <pac4j.jersey.version>3.0.0</pac4j.jersey.version>
+        <pac4j.version>3.9.0</pac4j.version>
+        <pac4j.jaxrs.version>3.0.3</pac4j.jaxrs.version>
+        <pac4j.jersey.version>3.0.3</pac4j.jersey.version>
         <antlr.version>4.8-1</antlr.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
         <jersey.version>2.35</jersey.version>
+        <jakarta.ws.rs.version>2.1.6</jakarta.ws.rs.version>
         <jakarta.servlet.version>4.0.4</jakarta.servlet.version>
-        <javax.servlet.version>3.1.0</javax.servlet.version>
-        <javax.inject.version>1</javax.inject.version>
+        <jakarta.inject.version>1.0.5</jakarta.inject.version>
         <swagger.annotation.version>1.5.20</swagger.annotation.version>
         <joda.time.version>2.10.6</joda.time.version>
         <zipkin.reporter.version>2.15.0</zipkin.reporter.version>
@@ -1235,12 +1233,7 @@
                 <groupId>org.finos.legend.shared</groupId>
                 <artifactId>legend-shared-server</artifactId>
                 <version>${legend.shared.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </exclusion>
-                </exclusions>
+                <!-- TODO-ivan check if jaxb-api exclusion is needed here-->
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.shared</groupId>
@@ -1624,11 +1617,6 @@
                 <version>${hibernate-validator.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${jaxrs.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.ws.rs</groupId>
                 <artifactId>jakarta.ws.rs-api</artifactId>
                 <version>${jakarta.ws.rs.version}</version>
@@ -1644,14 +1632,9 @@
                 <version>${jakarta.servlet.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${javax.servlet.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.inject</groupId>
-                <artifactId>javax.inject</artifactId>
-                <version>${javax.inject.version}</version>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${jakarta.inject.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.prometheus</groupId>
