@@ -28,6 +28,30 @@ ServiceStore meta::external::store::service::showcase::store::TradeProductServic
          security : [];
          response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
       )
+
+      Service TradeByIdService
+      (
+         path : '/{trade id}';
+         method : GET;
+         parameters :
+         (
+            "trade id" : String (location = path)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+
+      Service TradeByTradeDetailsService
+      (
+         path : '/details';
+         method : GET;
+         parameters :
+         (
+            "trade.details" : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
    )
 
    ServiceGroup ProductServices

@@ -149,7 +149,7 @@ public class ServiceExecutor
         Map<String, String> pathVarValueMap = Maps.mutable.empty();
         for (ServiceParameter param : pathParams)
         {
-            url = url.replace("{" + param.name + "}", "${" + param.name + "}");
+            url = url.replace("{" + param.name + "}", "${.data_model[\"" + param.name + "\"]}");
 
             Result paramResult = state.getResult(param.name);
             if (paramResult == null)

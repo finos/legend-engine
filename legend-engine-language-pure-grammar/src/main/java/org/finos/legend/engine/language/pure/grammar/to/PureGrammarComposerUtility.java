@@ -85,18 +85,48 @@ public class PureGrammarComposerUtility
      */
     public static String convertString(String val, boolean escape)
     {
-        StringBuilder builder = new StringBuilder().append("'");
-        if (escape)
+        return convertString(val, escape, false);
+    }
+
+    public static String convertString(String val, boolean escape, boolean doubleQuotes)
+    {
+        StringBuilder builder = new StringBuilder();
+        if(doubleQuotes)
         {
-            // since Pure grammar is syntactically close to Java, we use `escapeJava`
-            // so that `\r\n` in strings are properly escaped, but this method also escape quotes and because
-            // Pure uses single quotes for string, we have to do some further processing
-            val = StringEscapeUtils.escapeJava(val);
-            // since Pure grammar uses single quotes to surround string, we need to handle quotes in a special way
-            val = val.replace("'", "\\'");
-            val = val.replace("\\\"", "\"");
+            builder.append("\"");
+
+            if (escape)
+            {
+                // since Pure grammar is syntactically close to Java, we use `escapeJava`
+                // so that `\r\n` in strings are properly escaped, but this method also escape quotes and because
+                // Pure uses single quotes for string, we have to do some further processing
+                val = StringEscapeUtils.escapeJava(val);
+                // since Pure grammar uses single quotes to surround string, we need to handle quotes in a special way
+                val = val.replace("'", "\\'");
+            }
+            builder.append(val);
+
+            builder.append("\"");
         }
-        builder.append(val).append("'");
+        else
+        {
+            builder.append("'");
+
+            if (escape)
+            {
+                // since Pure grammar is syntactically close to Java, we use `escapeJava`
+                // so that `\r\n` in strings are properly escaped, but this method also escape quotes and because
+                // Pure uses single quotes for string, we have to do some further processing
+                val = StringEscapeUtils.escapeJava(val);
+                // since Pure grammar uses single quotes to surround string, we need to handle quotes in a special way
+                val = val.replace("'", "\\'");
+                val = val.replace("\\\"", "\"");
+            }
+            builder.append(val);
+
+            builder.append("'");
+        }
+
         return builder.toString();
     }
 
@@ -109,13 +139,18 @@ public class PureGrammarComposerUtility
 
     public static String convertIdentifier(String val)
     {
+        return convertIdentifier(val, false);
+    }
+
+    public static String convertIdentifier(String val, boolean doubleQuotes)
+    {
         if (val == null || val.isEmpty())
         {
             return "";
         }
         else
         {
-            return UNQUOTED_IDENTIFIER_PATTERN.matcher(val).matches() ? val : convertString(val, true);
+            return UNQUOTED_IDENTIFIER_PATTERN.matcher(val).matches() ? val : convertString(val, true, doubleQuotes);
         }
     }
 

@@ -207,7 +207,7 @@ public class ServiceStoreParseTreeWalker
         param.sourceInformation = this.walkerSourceInformation.getSourceInformation(paramCtx);
 
         // name
-        param.name = PureGrammarParserUtility.fromIdentifier(paramCtx.parameterName().identifier());
+        param.name = visitServiceParameterName(paramCtx.parameterName());
 
         // type
         ServiceStoreParserGrammar.TypeReferenceDefinitionContext typeCtx = paramCtx.typeReferenceDefinition();
@@ -261,6 +261,18 @@ public class ServiceStoreParseTreeWalker
         param.serializationFormat = serializationFormat;
 
         return param;
+    }
+
+    private String visitServiceParameterName(ServiceStoreParserGrammar.ParameterNameContext paramCtx)
+    {
+        if(paramCtx.unquotedIdentifier() != null)
+        {
+            return PureGrammarParserUtility.fromIdentifier(paramCtx.unquotedIdentifier());
+        }
+        else
+        {
+            return PureGrammarParserUtility.fromGrammarString(paramCtx.QUOTED_STRING().getText(), true);
+        }
     }
 
     private TypeReference visitTypeReference(ServiceStoreParserGrammar.TypeReferenceDefinitionContext ctx)
@@ -405,7 +417,7 @@ public class ServiceStoreParseTreeWalker
     private ServiceParameterMapping buildParameterIndexedParameterMapping(ServiceStoreParserGrammar.ParameterMappingContext ctx)
     {
         ParameterIndexedParameterMapping parameterMapping = new ParameterIndexedParameterMapping();
-        parameterMapping.serviceParameter = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        parameterMapping.serviceParameter = visitServiceParameterName(ctx.parameterName());
         parameterMapping.transform = visitLambda(ctx.combinedExpression());
         parameterMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
@@ -420,8 +432,8 @@ public class ServiceStoreParseTreeWalker
     private ServiceParameterMapping buildPropertyIndexedParameterMapping(ServiceStoreParserGrammar.ElementMappingContext ctx)
     {
         PropertyIndexedParameterMapping parameterMapping = new PropertyIndexedParameterMapping();
-        parameterMapping.serviceParameter = PureGrammarParserUtility.fromIdentifier(ctx.identifier().get(1));
-        parameterMapping.property = PureGrammarParserUtility.fromIdentifier(ctx.identifier().get(0));
+        parameterMapping.serviceParameter = visitServiceParameterName(ctx.parameterName());
+        parameterMapping.property = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         parameterMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
         return parameterMapping;

@@ -78,6 +78,38 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  }\n" +
                 ")\n");
 
+        //With ParameterMapping & special character in param name
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      \"serialization.Format\" : String ( location = query )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        \"serialization.Format\" : 'CSV'\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
         //With single level service group
         test(FLATDATA_BINDING +
                 "###ServiceStore\n" +
