@@ -27,6 +27,7 @@ abstract class JsonSerializer extends Serializer
     {
         return new JsonFactory().createGenerator(stream)
                 .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
+                .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
                 .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
     }
 }
