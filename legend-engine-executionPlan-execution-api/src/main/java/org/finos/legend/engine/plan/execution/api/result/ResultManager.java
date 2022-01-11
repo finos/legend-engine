@@ -25,13 +25,15 @@ import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 public class ResultManager
 {
@@ -53,7 +55,7 @@ public class ResultManager
         }
         else if (result instanceof StreamingResult)
         {
-            return Response.ok((StreamingOutput) outputStream -> ((StreamingResult) result).stream(outputStream, format)).build();
+            return Response.ok(new StreamingResultHandler((StreamingResult) result, format)).build();
         }
         else if (result instanceof ConstantResult)
         {
@@ -78,6 +80,51 @@ public class ResultManager
         {
             this.code = code;
             this.message = message;
+        }
+    }
+
+    private static class StreamingResultHandler implements StreamingOutput
+    {
+        private final StreamingResult result;
+        private final SerializationFormat format;
+
+        public StreamingResultHandler(StreamingResult result, SerializationFormat format)
+        {
+            this.result = result;
+            this.format = format;
+        }
+
+        @Override
+        public void write(OutputStream output) throws IOException, WebApplicationException
+        {
+            try
+            {
+                this.result.stream(output, this.format);
+            }
+            catch (Exception e)
+            {
+                this.printErrorOnStream(output, e);
+                throw e;
+            }
+        }
+
+        private void printErrorOnStream(OutputStream output, Exception e)
+        {
+            try
+            {
+                PrintStream printStream = new PrintStream(output, true);
+                printStream.println();
+                printStream.println();
+                printStream.println("*************************************ERROR*************************************");
+                printStream.println('*');
+                e.printStackTrace(printStream);
+                printStream.println('*');
+                printStream.println("*******************************************************************************");
+            }
+            catch (Exception onPrint)
+            {
+                e.addSuppressed(onPrint);
+            }
         }
     }
 }
