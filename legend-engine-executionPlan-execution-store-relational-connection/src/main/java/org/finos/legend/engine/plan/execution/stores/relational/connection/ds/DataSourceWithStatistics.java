@@ -24,7 +24,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.st
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import javax.sql.DataSource;
-import java.util.Objects;
 import java.util.Optional;
 
 public class DataSourceWithStatistics
@@ -121,6 +120,10 @@ public class DataSourceWithStatistics
         return statistics.buildConnection();
     }
 
+    public void logConnectionError() {
+        this.statistics.logConnectionError();
+    }
+
     public ConnectionKey getConnectionKey()
     {
         return dataSourceSpecification.getConnectionKey();
@@ -131,6 +134,9 @@ public class DataSourceWithStatistics
         return dataSourceSpecification;
     }
 
+    public boolean hasActiveConnections() {
+        return this.dataSource!=null && ((HikariDataSource)dataSource).getHikariPoolMXBean().getActiveConnections()>0;
+    }
 }
 
 

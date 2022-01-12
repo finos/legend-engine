@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 public class CompileContext
@@ -58,6 +59,7 @@ public class CompileContext
     private static final ImmutableSet<String> SPECIAL_TYPES = _Package.SPECIAL_TYPES;
     private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
     private static final String META_PACKAGE_NAME = "meta";
+
     // NOTE: this list is taken from m3.pure in PURE
     private static final ImmutableSet<String> META_IMPORTS = Sets.immutable.with(
             "meta::pure::metamodel",
@@ -176,6 +178,12 @@ public class CompileContext
         if (path.contains(PACKAGE_SEPARATOR))
         {
             return resolver.apply(path);
+        }
+
+        // Resolve import if available in commonMetaPaths and auto-imports were not added
+        if (this.pureModel.getCommonPaths().containsKey(path))
+        {
+            return resolver.apply(this.pureModel.getCommonPaths().get(path));
         }
 
         // NOTE: here we make the assumption that we have populated the indices properly so the same element
@@ -395,15 +403,21 @@ public class CompileContext
         }
     }
 
-    public FunctionExpressionBuilder resolveFunctionBuilder(String functionName, Map<String, FunctionExpressionBuilder> functionHandlerMap, SourceInformation sourceInformation, ProcessingContext processingContext)
+    public FunctionExpressionBuilder resolveFunctionBuilder(String functionName, Set<String> metaPackages, Map<String, FunctionExpressionBuilder> functionHandlerMap, SourceInformation sourceInformation, ProcessingContext processingContext)
     {
         // First do an optimistic check in the current handler to see if the function we are finding is available
         // so we don't waste time going through all of the auto-imports
-        String extractedFunctionName = extractMetaFunctionName(functionName);
+        String extractedFunctionName = extractMetaFunctionName(functionName, metaPackages);
 
         if (functionHandlerMap.containsKey(extractedFunctionName))
         {
             return functionHandlerMap.get(extractedFunctionName);
+        }
+
+        // Resolve import if available in commonMetaPaths and auto-imports were not added
+        if (this.pureModel.getCommonPaths().containsKey(extractedFunctionName))
+        {
+            return functionHandlerMap.get(this.pureModel.getCommonPaths().get(extractedFunctionName));
         }
 
         MutableMap<String, FunctionExpressionBuilder> results = searchImports(extractedFunctionName, functionHandlerMap::get);
@@ -427,14 +441,14 @@ public class CompileContext
         }
     }
 
-    private String extractMetaFunctionName(String functionName)
+    private String extractMetaFunctionName(String functionName, Set<String> metaPackages)
     {
         String extractedFunctionName = functionName;
-        if(functionName.contains(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
+        if (functionName.contains(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
         {
             String packageName = functionName.substring(0, functionName.lastIndexOf(this.PACKAGE_SEPARATOR));
             String name = functionName.substring(functionName.lastIndexOf(this.PACKAGE_SEPARATOR) + this.PACKAGE_SEPARATOR.length());
-            if(this.META_IMPORTS.contains(packageName))
+            if(metaPackages.contains(packageName))
             {
                 extractedFunctionName = name;
             }
@@ -462,6 +476,10 @@ public class CompileContext
                 results.put(fullPath, result);
             }
         });
+        if (results.size() == 1)
+        {
+            this.pureModel.addCommonPath(name, results.keysView().getAny());
+        }
         return results;
     }
 }

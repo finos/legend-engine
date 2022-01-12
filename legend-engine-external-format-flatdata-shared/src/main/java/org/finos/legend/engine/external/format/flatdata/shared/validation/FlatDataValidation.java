@@ -1,7 +1,9 @@
 package org.finos.legend.engine.external.format.flatdata.shared.validation;
 
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataGrammarHelper;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataProperty;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriverDescription;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.PropertyDescription;
@@ -11,6 +13,8 @@ import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.Record
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FlatDataValidation
 {
@@ -34,7 +38,14 @@ public class FlatDataValidation
         }
         else
         {
-            ListIterate.forEach(description.getSectionProperties(), propertyDesc -> defects.addAll(checkPropertyMultiplicity(propertyDesc, null, store, section)));
+            ListIterate.forEach(description.getSectionProperties(), propertyDesc -> defects.addAll(checkGroupsAndMandatoryProperties(propertyDesc, null, store, section)));
+
+            section.getSectionProperties().stream()
+                    .collect(Collectors.groupingBy(FlatDataProperty::getName))
+                    .entrySet().stream()
+                    .filter(e -> e.getValue().size() > 1)
+                    .map(e -> e.getKey())
+                    .forEach(name -> defects.add(new FlatDataDefect(store, section, "Duplicate property '" + name + "'")));
 
             ListIterate.forEach(section.getSectionProperties(), prop ->
             {
@@ -56,13 +67,27 @@ public class FlatDataValidation
                 }
                 else
                 {
-                    boolean validValue = (propertyDescription.getType() == PropertyType.String && prop.getValue() instanceof String)
-                            || (propertyDescription.getType() == PropertyType.Integer && prop.getValue() instanceof Long)
-                            || (propertyDescription.getType() == PropertyType.Boolean && prop.getValue() instanceof Boolean);
-
-                    if (!validValue)
+                    boolean isValidValue = false;
+                    int minValues = (int) propertyDescription.getMinOccurrences();
+                    int maxValues = propertyDescription.getMaxOccurrences() == null ? Integer.MAX_VALUE : propertyDescription.getMaxOccurrences().intValue();
+                    if (propertyDescription.getType() == PropertyType.String)
                     {
-                        defects.add(new FlatDataDefect(store, section, "Invalid " + prop.getName() + ": '" + prop.getValue() + "'"));
+                        isValidValue = prop.getValues().size() >= minValues && prop.getValues().size() <= maxValues
+                                && prop.getValues().stream().allMatch(String.class::isInstance);
+                    }
+                    else if (propertyDescription.getType() == PropertyType.Integer)
+                    {
+                        isValidValue = prop.getValues().size() >= minValues && prop.getValues().size() <= maxValues
+                                && prop.getValues().stream().allMatch(Long.class::isInstance);
+                    }
+                    else if (propertyDescription.getType() == PropertyType.Boolean)
+                    {
+                        isValidValue = prop.getValues().size() == 1 && prop.getValues().get(0) instanceof Boolean;
+                    }
+
+                    if (!isValidValue)
+                    {
+                        defects.add(new FlatDataDefect(store, section, "Invalid " + prop.getName() + ": " + FlatDataGrammarHelper.convertValues(prop.getValues())));
                     }
                 }
             });
@@ -78,7 +103,7 @@ public class FlatDataValidation
         return defects;
     }
 
-    private static List<FlatDataDefect> checkPropertyMultiplicity(PropertyDescription propertyDesc, String prefix, FlatData store, FlatDataSection section)
+    private static List<FlatDataDefect> checkGroupsAndMandatoryProperties(PropertyDescription propertyDesc, String prefix, FlatData store, FlatDataSection section)
     {
         List<FlatDataDefect> defects = new ArrayList<>();
 
@@ -110,21 +135,15 @@ public class FlatDataValidation
 
                 for (PropertyDescription child : propertyDesc.getChildren())
                 {
-                    defects.addAll(checkPropertyMultiplicity(child, path, store, section));
+                    defects.addAll(checkGroupsAndMandatoryProperties(child, path, store, section));
                 }
             }
         }
         else
         {
-            long occurrences = section.getSectionProperties().stream().filter(p -> p.getName().equals(path)).count();
-            if (occurrences < propertyDesc.getMinOccurrences())
+            if (propertyDesc.getMinOccurrences() > 0 && section.getSectionProperties().stream().noneMatch(p -> p.getName().equals(path)))
             {
-                String explanation = occurrences == 0 ? "not specified" : ("only specified " + occurrences + " times (required at least " + propertyDesc.getMinOccurrences() + ")");
-                defects.add(new FlatDataDefect(store, section, propertyDesc.getName() + " " + explanation));
-            }
-            else if (propertyDesc.getMaxOccurrences() != null && occurrences > propertyDesc.getMaxOccurrences())
-            {
-                defects.add(new FlatDataDefect(store, section, propertyDesc.getName() + " specified more than " + propertyDesc.getMaxOccurrences() + " times"));
+                defects.add(new FlatDataDefect(store, section, propertyDesc.getName() + " not specified"));
             }
         }
 
@@ -148,7 +167,8 @@ public class FlatDataValidation
                 defects.add(new FlatDataDefect(store, section, "Must not specify a record type"));
             }
 
-            ListIterate.forEach(section.getRecordType().getFields(), field -> {
+            ListIterate.forEach(section.getRecordType().getFields(), field ->
+            {
                 if (description.isSelfDescribing() && field.getAddress() != null)
                 {
                     defects.add(new FlatDataDefect(store, section, "Address should not be specified for " + field.getLabel()));

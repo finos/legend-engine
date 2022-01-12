@@ -41,10 +41,10 @@ public class RelationalExecutorInformation
 
     @DELETE
     @Path("executorInfo/relational/pools/{poolName}")
-    @ApiOperation(value = "soft evict connections in this  database pool ")
-    public Response sofEvict(@PathParam("poolName") String poolName)
+    @ApiOperation(value = "delete and evict connections in this database pool ")
+    public Response delete(@PathParam("poolName") String poolName)
     {
-        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(connectionStateManager.softEvictConnections(poolName)).build();
+        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(connectionStateManager.closeAndRemoveConnectionPool(poolName)).build();
     }
 
     @GET

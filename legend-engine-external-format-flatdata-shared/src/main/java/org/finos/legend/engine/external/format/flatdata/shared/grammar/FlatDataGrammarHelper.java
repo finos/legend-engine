@@ -29,6 +29,7 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSec
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FlatDataGrammarHelper
 {
@@ -45,9 +46,74 @@ public class FlatDataGrammarHelper
         for (FlatDataProperty property : section.getSectionProperties())
         {
             builder.append("\n  ").append(property.getName());
-            if (property.getValue() instanceof String)
+            if (property.getValues().size() == 1)
             {
-                builder.append(": ").append(convertString((String) property.getValue()));
+                Object value = property.getValues().get(0);
+                if (value instanceof List && ((List<?>) value).size() == 1)
+                {
+                    value = ((List<?>) value).get(0);
+                }
+
+                if (value instanceof String)
+                {
+                    builder.append(": ").append(convertString((String) value));
+                }
+                else if (value instanceof Long)
+                {
+                    builder.append(": ").append(value);
+                }
+                else if (value instanceof Boolean)
+                {
+                    // Do nothing
+                }
+                else if (value instanceof List && ((List<?>) value).isEmpty())
+                {
+                    builder.append(": []");
+                }
+                else if (value instanceof List && ((List<?>) value).get(0) instanceof String)
+                {
+                    builder.append(": [").append(((List<?>) value).stream().map(v -> convertString((String) v)).collect(Collectors.joining(", "))).append("]");
+                }
+                else if (value instanceof List && ((List<?>) value).get(0) instanceof Long)
+                {
+                    builder.append(": [").append(((List<?>) value).stream().map(Object::toString).collect(Collectors.joining(", "))).append("]");
+                }
+                else
+                {
+                    throw new IllegalStateException("Unrecognized property value type: " + value.getClass().getSimpleName());
+                }
+            }
+            else if (property.getValues().isEmpty())
+            {
+                builder.append(": []");
+            }
+            else
+            {
+                builder.append(": [");
+                Object value = property.getValues().get(0);
+                if (value instanceof String)
+                {
+                    builder.append(": ").append(convertString((String) value));
+                }
+                else if (value instanceof Long)
+                {
+                    builder.append(": ").append(value);
+                }
+                else
+                {
+                    throw new IllegalStateException("Unrecognized property array value type: " + value.getClass().getSimpleName());
+                }
+                for (int i=1; i<property.getValues().size(); i++)
+                {
+                    Object nextValue = property.getValues().get(i);
+                    if (! value.getClass().isInstance(nextValue))
+                    {
+                        throw new IllegalStateException("Inconsistent property array value types");
+                    }
+                    builder.append(", ").append(nextValue instanceof String ? convertString((String) value) : value);
+                }
+
+                builder.append("]");
             }
             builder.append(";");
         }
@@ -97,9 +163,9 @@ public class FlatDataGrammarHelper
         {
             builder.append("DATETIME");
             FlatDataDateTime dateTime = (FlatDataDateTime) type;
-            if (dateTime.getFormat() != null)
+            if (dateTime.getFormat() != null && !dateTime.getFormat().isEmpty())
             {
-                attributes.add("format=" + convertString(dateTime.getFormat()));
+                attributes.add("format=" + convertValues(dateTime.getFormat()));
             }
             if (dateTime.getTimeZone() != null)
             {
@@ -110,9 +176,9 @@ public class FlatDataGrammarHelper
         {
             builder.append("DATE");
             FlatDataDate date = (FlatDataDate) type;
-            if (date.getFormat() != null)
+            if (date.getFormat() != null && !date.getFormat().isEmpty())
             {
-                attributes.add("format=" + convertString(date.getFormat()));
+                attributes.add("format=" + convertValues(date.getFormat()));
             }
         }
         else if (type instanceof FlatDataString)
@@ -136,6 +202,23 @@ public class FlatDataGrammarHelper
             builder.append("(").append(String.join(", ", attributes)).append(")");
         }
         return builder.toString();
+    }
+
+    public static String convertValue(Object value)
+    {
+        return value instanceof String ? convertString((String) value) : value.toString();
+    }
+
+    public static String convertValues(List<? extends Object> values)
+    {
+        if (values.size() == 1)
+        {
+            return convertValue(values.get(0));
+        }
+        else
+        {
+            return "[" + values.stream().map(FlatDataGrammarHelper::convertValue).collect(Collectors.joining(", ")) + "]";
+        }
     }
 
     public static String convertString(String val)

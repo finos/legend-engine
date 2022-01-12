@@ -36,9 +36,9 @@ public class InstrumentedConnectionStateManager extends ConnectionStateManager
     }
 
     @Override
-    protected Set<Pair<String, DataSourceStatistics>> findPoolsOlderThan(Duration duration)
+    protected Set<Pair<String, DataSourceStatistics>> findUnusedPoolsOlderThan(Duration duration)
     {
-        Set<Pair<String, DataSourceStatistics>> set = super.findPoolsOlderThan(duration);
+        Set<Pair<String, DataSourceStatistics>> set = super.findUnusedPoolsOlderThan(duration);
         Assert.assertEquals(expectedSize,set.size());
         try
         {

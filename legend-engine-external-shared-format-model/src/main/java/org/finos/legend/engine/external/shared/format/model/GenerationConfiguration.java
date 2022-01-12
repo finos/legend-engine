@@ -16,5 +16,6 @@ package org.finos.legend.engine.external.shared.format.model;
 
 public class GenerationConfiguration
 {
+    public String format;
     public String targetBinding;
 }

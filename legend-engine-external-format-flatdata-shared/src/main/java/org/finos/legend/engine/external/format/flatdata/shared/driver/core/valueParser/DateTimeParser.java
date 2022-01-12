@@ -15,64 +15,184 @@
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser;
 
 import java.text.ParseException;
-import java.time.DateTimeException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class DateTimeParser implements ValueParser
+public abstract class DateTimeParser implements ValueParser
 {
-    private final DateTimeFormatter formatter;
-    private final ZoneId timeZone;
+    public abstract Instant parse(String s) throws ParseException;
+    public abstract String toString(Instant dateTime);
 
-    private DateTimeParser(String format, String timeZone)
+    public static DateTimeParser of(List<String> format, String timeZone)
     {
-        this.timeZone = ZoneId.of(timeZone, ZoneId.SHORT_IDS);
-        this.formatter = DateTimeFormatter.ofPattern(format).withZone(this.timeZone);
+        return new BasicDateTimeParser(format, timeZone);
     }
 
-    public Instant parse(String s) throws ParseException
+    public static DateTimeParser of(DateTimeParser base, String timeZone)
     {
-        try
+        if (!(base instanceof  BasicDateTimeParser))
         {
-            try
+            throw new IllegalArgumentException("Can only override timezone on a BasicDateTimeParser");
+        }
+        return new OverrideTimezoneDateTimeParser((BasicDateTimeParser) base, timeZone);
+    }
+
+    private static class BasicDateTimeParser extends DateTimeParser
+    {
+        private final List<String> possibleFormats;
+        private final List<DateTimeFormatter> possibleFormatters;
+        private final ZoneId timeZone;
+        private String format;
+        private DateTimeFormatter formatter;
+
+        private BasicDateTimeParser(List<String> formats, String timeZone)
+        {
+            this.possibleFormats = formats;
+            this.possibleFormatters = formats.stream().map(DateTimeFormatter::ofPattern).collect(Collectors.toList());
+            this.timeZone = ZoneId.of(timeZone, ZoneId.SHORT_IDS);
+            if (possibleFormats.size() == 1)
             {
-                return Instant.from(formatter.parse(s));
+                formatter = possibleFormatters.get(0);
+                format = possibleFormats.get(0);
             }
-            catch (DateTimeException e)
+        }
+
+        @Override
+        public Instant parse(String s) throws ParseException
+        {
+            return doParse(s, timeZone);
+        }
+
+        private Instant doParse(String s, ZoneId tz) throws ParseException
+        {
+            if (formatter == null)
             {
-                return LocalDateTime.from(formatter.parse(s)).atZone(timeZone).toInstant();
+                for (int i=0; i<possibleFormatters.size(); i++)
+                {
+                    try
+                    {
+                        try
+                        {
+                            Instant dateTime = Instant.from(possibleFormatters.get(i).withZone(tz).parse(s));
+                            formatter = possibleFormatters.get(i);
+                            format = possibleFormats.get(i);
+                            return dateTime;
+                        }
+                        catch (DateTimeException e)
+                        {
+                            Instant dateTime = LocalDateTime.from(possibleFormatters.get(i).parse(s)).atZone(tz).toInstant();
+                            formatter = possibleFormatters.get(i);
+                            format = possibleFormats.get(i);
+                            return dateTime;
+                        }
+                    }
+                    catch (DateTimeParseException e)
+                    {
+                        // Ignore
+                    }
+                }
+                throw new ParseException("Unable to parse datetime: " + s, 0);
+            }
+            else
+            {
+                try
+                {
+                    try
+                    {
+                        return Instant.from(formatter.withZone(tz).parse(s));
+                    }
+                    catch (DateTimeException e)
+                    {
+                        return LocalDateTime.from(formatter.parse(s)).atZone(tz).toInstant();
+                    }
+                }
+                catch (DateTimeParseException e)
+                {
+                    throw new ParseException(e.getMessage(), 0);
+                }
             }
         }
-        catch (DateTimeParseException e)
+        @Override
+        public String validate(String s)
         {
-            throw new ParseException(e.getMessage(), 0);
+            return doValidate(s, timeZone);
+        }
+
+        public String doValidate(String s, ZoneId tz)
+        {
+            if (formatter == null)
+            {
+                for (int i=0; i<possibleFormatters.size(); i++)
+                {
+                    try
+                    {
+                        possibleFormatters.get(i).withZone(tz).parse(s);
+                        formatter = possibleFormatters.get(i);
+                        format = possibleFormats.get(i);
+                        return null;
+                    }
+                    catch (DateTimeParseException e)
+                    {
+                        // Ignore
+                    }
+                }
+                return "Unparseable datetime: \"" + s + "\" for formats " + possibleFormats.stream().map(f -> "'" + f + "'").collect(Collectors.joining(", "));
+            }
+            else
+            {
+                try
+                {
+                    formatter.withZone(tz).parse(s);
+                    return null;
+                }
+                catch (DateTimeParseException e)
+                {
+                    return "Unparseable datetime: \"" + s + "\" for format '" + format  + "'";
+                }
+            }
+        }
+
+        public String toString(Instant dateTime)
+        {
+            return doToString(dateTime, timeZone);
+        }
+
+        public String doToString(Instant dateTime, ZoneId tz)
+        {
+            return possibleFormatters.get(0).withZone(tz).format(dateTime);
         }
     }
 
-    @Override
-    public String validate(String s)
+    private static class OverrideTimezoneDateTimeParser extends DateTimeParser
     {
-        try
-        {
-            formatter.parse(s);
-            return null;
-        }
-        catch (DateTimeParseException e)
-        {
-            return "Unparseable datetime: \"" + s + "\"";
-        }
-    }
+        private final BasicDateTimeParser base;
+        private final ZoneId timeZone;
 
-    public String toString(Instant dateTime)
-    {
-        return formatter.format(dateTime);
-    }
+        private OverrideTimezoneDateTimeParser(BasicDateTimeParser base, String timeZone)
+        {
+            this.base = base;
+            this.timeZone = ZoneId.of(timeZone, ZoneId.SHORT_IDS);
+        }
 
-    public static DateTimeParser of(String format, String timeZone)
-    {
-        return new DateTimeParser(format, timeZone);
+        @Override
+        public Instant parse(String s) throws ParseException
+        {
+            return base.doParse(s, timeZone);
+        }
+
+        @Override
+        public String validate(String s)
+        {
+            return base.doValidate(s, timeZone);
+        }
+
+        @Override
+        public String toString(Instant dateTime)
+        {
+            return base.doToString(dateTime, timeZone);
+        }
     }
 }

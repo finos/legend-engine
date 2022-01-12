@@ -37,9 +37,14 @@ nonBooleanSectionProperty:              sectionPropertyName COLON sectionPropert
 ;
 sectionPropertyName:                    identifier (DOT identifier)*
 ;
-sectionPropertyValue:                   INTEGER | STRING
+sectionPropertyValue:                   sectionPropertyValueLiteral | sectionPropertyValueArray
 ;
-
+sectionPropertyValueLiteral:            INTEGER | STRING
+;
+sectionPropertyValueLiterals:           ( INTEGER (COMMA INTEGER)* ) | ( STRING (COMMA STRING)* )
+;
+sectionPropertyValueArray:              BRACKET_OPEN sectionPropertyValueLiterals? BRACKET_CLOSE
+;
 sectionRecordType:                      recordTypeSignature
                                             BRACE_OPEN
                                                 recordTypeFields
@@ -65,5 +70,5 @@ recordTypeDataTypeAttribute:            (recordTypeDataTypeAttributeName EQUAL r
 ;
 recordTypeDataTypeAttributeName:        FORMAT | TIME_ZONE | TRUE_STRING | FALSE_STRING
 ;
-recordTypeDataTypeAttributeValue:       STRING
+recordTypeDataTypeAttributeValue:       STRING | BRACKET_OPEN STRING (COMMA STRING)* BRACKET_CLOSE
 ;

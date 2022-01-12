@@ -19,29 +19,20 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.flatdata.shared.antlr4.FlatDataLexerGrammar;
 import org.finos.legend.engine.external.format.flatdata.shared.antlr4.FlatDataParserGrammar;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataBoolean;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDataType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDate;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDateTime;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDecimal;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataInteger;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataProperty;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
+import org.finos.legend.engine.external.format.flatdata.shared.model.*;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FlatDataSchemaParser
 {
@@ -125,13 +116,38 @@ public class FlatDataSchemaParser
         {
             String name = ctx.nonBooleanSectionProperty().sectionPropertyName().getText();
             FlatDataParserGrammar.SectionPropertyValueContext value = ctx.nonBooleanSectionProperty().sectionPropertyValue();
-            if (value.STRING() != null)
+
+            if (value.sectionPropertyValueLiteral() != null)
             {
-                return new FlatDataProperty(name, fromGrammarString(value.STRING().getText()));
+                FlatDataParserGrammar.SectionPropertyValueLiteralContext literal = value.sectionPropertyValueLiteral();
+                if (literal.STRING() != null)
+                {
+                    return new FlatDataProperty(name, fromGrammarString(literal.STRING()));
+                }
+                else if (literal.INTEGER() != null)
+                {
+                    return new FlatDataProperty(name, fromGrammarInteger(literal.INTEGER()));
+                }
+                else
+                {
+                    throw error("No value for section property: " + name, value);
+                }
             }
-            else if (value.INTEGER() != null)
+            else  if (value.sectionPropertyValueArray() != null)
             {
-                return new FlatDataProperty(name, Long.parseLong(value.INTEGER().getText()));
+                FlatDataParserGrammar.SectionPropertyValueLiteralsContext arrayValues = value.sectionPropertyValueArray().sectionPropertyValueLiterals();
+                if (arrayValues == null)
+                {
+                    return new FlatDataProperty(name, Collections.emptyList());
+                }
+                else if (arrayValues.STRING().size() > 0)
+                {
+                    return new FlatDataProperty(name, arrayValues.STRING().stream().map(FlatDataSchemaParser::fromGrammarString).collect(Collectors.toList()));
+                }
+                else
+                {
+                    return new FlatDataProperty(name, arrayValues.INTEGER().stream().map(FlatDataSchemaParser::fromGrammarInteger).collect(Collectors.toList()));
+                }
             }
             else
             {
@@ -158,7 +174,7 @@ public class FlatDataSchemaParser
         List<FlatDataParserGrammar.RecordTypeDataTypeAttributeContext> attributes = ctx.recordTypeDataType().recordTypeDataTypeAttributes() != null
                                                                                     ? ctx.recordTypeDataType().recordTypeDataTypeAttributes().recordTypeDataTypeAttribute()
                                                                                     : Collections.emptyList();
-        Map<String, String> dataTypeAttributes = Maps.mutable.empty();
+        Map<String, List<String>> dataTypeAttributes = Maps.mutable.empty();
         boolean optional = false;
         for (FlatDataParserGrammar.RecordTypeDataTypeAttributeContext a : attributes)
         {
@@ -177,7 +193,11 @@ public class FlatDataSchemaParser
                 {
                     throw error("Attribute '" + name + "' duplicated for record type property", a.getStart());
                 }
-                dataTypeAttributes.put(name, fromGrammarString(a.recordTypeDataTypeAttributeValue().STRING().getText()));
+                List<String> values = a.recordTypeDataTypeAttributeValue().STRING().stream()
+                        .map(TerminalNode::getText)
+                        .map(FlatDataSchemaParser::fromGrammarString)
+                        .collect(Collectors.toList());
+                dataTypeAttributes.put(name, values);
             }
         }
 
@@ -187,8 +207,8 @@ public class FlatDataSchemaParser
             case "BOOLEAN":
             {
                 dataType = new FlatDataBoolean(optional)
-                        .withTrueString(dataTypeAttributes.containsKey("trueString") ? dataTypeAttributes.remove("trueString") : null)
-                        .withFalseString(dataTypeAttributes.containsKey("falseString") ? dataTypeAttributes.remove("falseString") : null);
+                        .withTrueString(singleOptionalAttributeValue(dataTypeAttributes, "trueString", ctx.recordTypeDataType()))
+                        .withFalseString(singleOptionalAttributeValue(dataTypeAttributes, "falseString", ctx.recordTypeDataType()));
                 break;
             }
             case "STRING":
@@ -199,26 +219,28 @@ public class FlatDataSchemaParser
             case "INTEGER":
             {
                 dataType = new FlatDataInteger(optional)
-                        .withFormat(dataTypeAttributes.containsKey("format") ? dataTypeAttributes.remove("format") : null);
+                        .withFormat(singleOptionalAttributeValue(dataTypeAttributes, "format", ctx.recordTypeDataType()));
                 break;
             }
             case "DECIMAL":
             {
                 dataType = new FlatDataDecimal(optional)
-                        .withFormat(dataTypeAttributes.containsKey("format") ? dataTypeAttributes.remove("format") : null);
+                        .withFormat(singleOptionalAttributeValue(dataTypeAttributes, "format", ctx.recordTypeDataType()));
                 break;
             }
             case "DATE":
             {
-                dataType = new FlatDataDate(optional)
-                        .withFormat(dataTypeAttributes.containsKey("format") ? dataTypeAttributes.remove("format") : null);
+                FlatDataDate dateType = new FlatDataDate(optional);
+                multiOptionalAttributeValue(dataTypeAttributes, "format").forEach(dateType::addFormat);
+                dataType = dateType;
                 break;
             }
             case "DATETIME":
             {
-                dataType = new FlatDataDateTime(optional)
-                        .withTimeZone(dataTypeAttributes.containsKey("timeZone") ? dataTypeAttributes.remove("timeZone") : null)
-                        .withFormat(dataTypeAttributes.containsKey("format") ? dataTypeAttributes.remove("format") : null);
+                FlatDataTemporal dateTimeType = new FlatDataDateTime(optional)
+                        .withTimeZone(singleOptionalAttributeValue(dataTypeAttributes, "timeZone", ctx.recordTypeDataType()));
+                multiOptionalAttributeValue(dataTypeAttributes, "format").forEach(dateTimeType::addFormat);
+                dataType = dateTimeType;
                 break;
             }
             default:
@@ -233,6 +255,35 @@ public class FlatDataSchemaParser
         }
 
         return new FlatDataRecordField(label, dataType, address);
+    }
+
+    private String singleOptionalAttributeValue(Map<String, List<String>> dataTypeAttributes, String attributeName, ParserRuleContext context)
+    {
+        if (dataTypeAttributes.containsKey(attributeName))
+        {
+            List<String> values = dataTypeAttributes.remove(attributeName);
+            if (values.size() != 1)
+            {
+                throw error("Attribute " + attributeName + " should only have one value, found " + values.size(), context);
+            }
+            return values.get(0);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private List<String> multiOptionalAttributeValue(Map<String, List<String>> dataTypeAttributes, String attributeName)
+    {
+        if (dataTypeAttributes.containsKey(attributeName))
+        {
+            return dataTypeAttributes.remove(attributeName);
+        }
+        else
+        {
+            return Collections.emptyList();
+        }
     }
 
     private FlatDataSchemaParseException error(String message, ParserRuleContext parserRuleContext)
@@ -253,6 +304,16 @@ public class FlatDataSchemaParser
     {
         String text = identifier.getText();
         return text.startsWith("'") ? fromGrammarString(text) : text;
+    }
+
+    public static Long fromGrammarInteger(TerminalNode node)
+    {
+        return Long.parseLong(node.getText());
+    }
+
+    public static String fromGrammarString(TerminalNode node)
+    {
+        return fromGrammarString(node.getText());
     }
 
     public static String fromGrammarString(String val)

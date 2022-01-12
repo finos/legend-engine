@@ -38,8 +38,8 @@ public class FlatDataUtils
     public static final String DEFAULT_INTEGER_FORMAT = "defaultIntegerFormat";
     public static final String DEFAULT_DECIMAL_FORMAT = "defaultDecimalFormat";
 
-    public static final FlatDataVariable VARIABLE_DEFAULT_DATE_FORMAT = new FlatDataVariable(DEFAULT_DATE_FORMAT, VariableType.String);
-    public static final FlatDataVariable VARIABLE_DEFAULT_DATETIME_FORMAT = new FlatDataVariable(DEFAULT_DATETIME_FORMAT, VariableType.String);
+    public static final FlatDataVariable VARIABLE_DEFAULT_DATE_FORMAT = new FlatDataVariable(DEFAULT_DATE_FORMAT, VariableType.StringList);
+    public static final FlatDataVariable VARIABLE_DEFAULT_DATETIME_FORMAT = new FlatDataVariable(DEFAULT_DATETIME_FORMAT, VariableType.StringList);
     public static final FlatDataVariable VARIABLE_DEFAULT_TIME_ZONE = new FlatDataVariable(DEFAULT_TIME_ZONE, VariableType.String);
     public static final FlatDataVariable VARIABLE_DEFAULT_TRUE_STRING = new FlatDataVariable(DEFAULT_TRUE_STRING, VariableType.String);
     public static final FlatDataVariable VARIABLE_DEFAULT_FALSE_STRING = new FlatDataVariable(DEFAULT_FALSE_STRING, VariableType.String);
@@ -75,25 +75,31 @@ public class FlatDataUtils
     public static Optional<String> getString(List<FlatDataProperty> properties, String... names)
     {
         String name = String.join(".", names);
-        return properties.stream().filter(p -> p.getName().equals(name)).findFirst().map(p -> (String) p.getValue());
+        return properties.stream().filter(p -> p.getName().equals(name)).findFirst().map(p -> (String) p.getValues().get(0));
     }
 
-    public static List<String> getStrings(List<FlatDataProperty> properties, String... names)
+    public static Optional<List<String>> getStrings(List<FlatDataProperty> properties, String... names)
     {
         String name = String.join(".", names);
-        return properties.stream().filter(p -> p.getName().equals(name)).map(p -> (String) p.getValue()).collect(Collectors.toList());
+        return properties.stream().filter(p -> p.getName().equals(name)).findFirst().map(p -> p.getValues().stream().map(String.class::cast).collect(Collectors.toList()));
     }
 
     public static Optional<Long> getInteger(List<FlatDataProperty> properties, String... names)
     {
         String name = String.join(".", names);
-        return properties.stream().filter(p -> p.getName().equals(name)).findFirst().map(p -> (Long) p.getValue());
+        return properties.stream().filter(p -> p.getName().equals(name)).findFirst().map(p -> (Long) p.getValues().get(0));
+    }
+
+    public static Optional<List<Long>> getIntegers(List<FlatDataProperty> properties, String... names)
+    {
+        String name = String.join(".", names);
+        return properties.stream().filter(p -> p.getName().equals(name)).findFirst().map(p -> p.getValues().stream().map(Long.class::cast).collect(Collectors.toList()));
     }
 
     public static boolean getBoolean(List<FlatDataProperty> properties, String... names)
     {
         String name = String.join(".", names);
-        return (boolean) properties.stream().filter(p -> p.getName().equals(name)).findFirst().map(p -> p.getValue()).orElse(false);
+        return (boolean) properties.stream().filter(p -> p.getName().equals(name)).findFirst().map(p -> p.getValues().get(0)).orElse(false);
     }
 
     public static void setString(String text, List<FlatDataProperty> properties, String... names)

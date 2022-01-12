@@ -1,13 +1,13 @@
 {
   "origin": {
     "sdlcInfo": {
-      "baseVersion": "vX_X_X",
+      "baseVersion": "-1",
       "_type": "pure",
       "version": "none",
       "packageableElementPointers": [
         {
-          "path": "meta::external::query::graphQL::introspection::tests",
-          "type": "PACKAGE"
+          "path": "meta::relational::graphFetch::tests::domain::TestMapping",
+          "type": "MAPPING"
         }
       ]
     },
@@ -20,26 +20,177 @@
   "elements": [
     {
       "superTypes": [
-        "meta::pure::metamodel::type::Any"
+        "meta::external::query::graphQL::introspection::BaseGraphQLType"
       ],
-      "package": "meta::external::query::graphQL::introspection::tests",
+      "qualifiedProperties": [
+        {
+          "name": "firmByLegalName",
+          "returnMultiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "body": [
+            {
+              "fControl": "first_T_MANY__T_$0_1$_",
+              "function": "first",
+              "_type": "func",
+              "parameters": [
+                {
+                  "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                  "function": "filter",
+                  "_type": "func",
+                  "parameters": [
+                    {
+                      "fControl": "getAll_Class_1__T_MANY_",
+                      "function": "getAll",
+                      "_type": "func",
+                      "parameters": [
+                        {
+                          "fullPath": "meta::external::query::graphQL::transformation::queryToPure::tests::Firm",
+                          "_type": "packageableElementPtr"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                          "function": "equal",
+                          "_type": "func",
+                          "parameters": [
+                            {
+                              "_type": "property",
+                              "property": "legalName",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "f"
+                                }
+                              ]
+                            },
+                            {
+                              "_type": "var",
+                              "name": "legalName"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "f"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "multiplicity": {
+                "upperBound": 1,
+                "lowerBound": 1
+              },
+              "_type": "var",
+              "name": "legalName",
+              "class": "String"
+            }
+          ],
+          "returnType": "meta::external::query::graphQL::transformation::queryToPure::tests::Firm"
+        },
+        {
+          "name": "employeeByLastName",
+          "returnMultiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "body": [
+            {
+              "fControl": "first_T_MANY__T_$0_1$_",
+              "function": "first",
+              "_type": "func",
+              "parameters": [
+                {
+                  "fControl": "filter_T_MANY__Function_1__T_MANY_",
+                  "function": "filter",
+                  "_type": "func",
+                  "parameters": [
+                    {
+                      "fControl": "getAll_Class_1__T_MANY_",
+                      "function": "getAll",
+                      "_type": "func",
+                      "parameters": [
+                        {
+                          "fullPath": "meta::external::query::graphQL::transformation::queryToPure::tests::Person",
+                          "_type": "packageableElementPtr"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "fControl": "equal_Any_MANY__Any_MANY__Boolean_1_",
+                          "function": "equal",
+                          "_type": "func",
+                          "parameters": [
+                            {
+                              "_type": "property",
+                              "property": "lastName",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "p"
+                                }
+                              ]
+                            },
+                            {
+                              "_type": "var",
+                              "name": "lastName"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "p"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "multiplicity": {
+                "upperBound": 1,
+                "lowerBound": 1
+              },
+              "_type": "var",
+              "name": "lastName",
+              "class": "String"
+            }
+          ],
+          "returnType": "meta::external::query::graphQL::transformation::queryToPure::tests::Person"
+        }
+      ],
+      "package": "meta::external::query::graphQL::transformation::queryToPure::tests",
       "_type": "class",
-      "name": "Firm",
+      "name": "Domain",
       "properties": [
         {
           "multiplicity": {
             "upperBound": 1,
             "lowerBound": 1
           },
-          "name": "legalName",
+          "name": "val",
           "type": "String"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 0
-          },
-          "name": "employees",
-          "type": "meta::external::query::graphQL::introspection::tests::Person"
         }
       ]
     },
@@ -47,7 +198,7 @@
       "superTypes": [
         "meta::pure::metamodel::type::Any"
       ],
-      "package": "meta::external::query::graphQL::introspection::tests",
+      "package": "meta::external::query::graphQL::transformation::queryToPure::tests",
       "_type": "class",
       "name": "Person",
       "properties": [
@@ -68,6 +219,399 @@
           "type": "String"
         }
       ]
+    },
+    {
+      "superTypes": [
+        "meta::pure::metamodel::type::Any"
+      ],
+      "package": "meta::external::query::graphQL::transformation::queryToPure::tests",
+      "_type": "class",
+      "name": "Firm",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "legalName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "employees",
+          "type": "meta::external::query::graphQL::transformation::queryToPure::tests::Person"
+        }
+      ]
+    },
+    {
+      "superTypes": [
+        "meta::pure::metamodel::type::Any"
+      ],
+      "package": "meta::external::query::graphQL::introspection",
+      "_type": "class",
+      "name": "BaseGraphQLType",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "__schema",
+          "type": "meta::external::query::graphQL::introspection::model::__Schema"
+        }
+      ]
+    },
+    {
+      "superTypes": [
+        "meta::pure::metamodel::type::Any"
+      ],
+      "package": "meta::external::query::graphQL::introspection::model",
+      "_type": "class",
+      "name": "__Schema",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "types",
+          "type": "meta::external::query::graphQL::introspection::model::__Type"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "queryType",
+          "type": "meta::external::query::graphQL::introspection::model::__Type"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "name": "mutationType",
+          "type": "meta::external::query::graphQL::introspection::model::__Type"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "name": "subscriptionType",
+          "type": "meta::external::query::graphQL::introspection::model::__Type"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "directives",
+          "type": "meta::external::query::graphQL::introspection::model::__Directive"
+        }
+      ]
+    },
+    {
+      "package": "meta::relational::graphFetch::tests::domain",
+      "_type": "mapping",
+      "name": "TestMapping",
+      "classMappings": [
+        {
+          "mainTable": {
+            "schema": "default",
+            "database": "meta::relational::graphFetch::tests::domain::TestStore",
+            "_type": "table",
+            "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+            "table": "PersonTable"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "first_name",
+                "tableAlias": "PersonTable",
+                "table": {
+                  "schema": "default",
+                  "database": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "table": "PersonTable"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "val",
+                "class": "meta::external::query::graphQL::transformation::queryToPure::tests::Domain"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_external_query_graphQL_transformation_queryToPure_tests_Domain",
+          "class": "meta::external::query::graphQL::transformation::queryToPure::tests::Domain",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "tableAlias": "",
+              "table": {
+                "schema": "default",
+                "database": "meta::relational::graphFetch::tests::domain::TestStore",
+                "_type": "table",
+                "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+                "table": "PersonTable"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "default",
+            "database": "meta::relational::graphFetch::tests::domain::TestStore",
+            "_type": "table",
+            "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+            "table": "PersonTable"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "first_name",
+                "tableAlias": "PersonTable",
+                "table": {
+                  "schema": "default",
+                  "database": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "table": "PersonTable"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "firstName",
+                "class": "meta::external::query::graphQL::transformation::queryToPure::tests::Person"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "last_name",
+                "tableAlias": "PersonTable",
+                "table": {
+                  "schema": "default",
+                  "database": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "table": "PersonTable"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "lastName",
+                "class": "meta::external::query::graphQL::transformation::queryToPure::tests::Person"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_external_query_graphQL_transformation_queryToPure_tests_Person",
+          "class": "meta::external::query::graphQL::transformation::queryToPure::tests::Person",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "tableAlias": "",
+              "table": {
+                "schema": "default",
+                "database": "meta::relational::graphFetch::tests::domain::TestStore",
+                "_type": "table",
+                "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+                "table": "PersonTable"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "default",
+            "database": "meta::relational::graphFetch::tests::domain::TestStore",
+            "_type": "table",
+            "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+            "table": "FirmTable"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "legal_name",
+                "tableAlias": "FirmTable",
+                "table": {
+                  "schema": "default",
+                  "database": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "table": "FirmTable"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "legalName",
+                "class": "meta::external::query::graphQL::transformation::queryToPure::tests::Firm"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "Firm_Person",
+                    "db": "meta::relational::graphFetch::tests::domain::TestStore"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "employees",
+                "class": "meta::external::query::graphQL::transformation::queryToPure::tests::Firm"
+              },
+              "target": "meta_external_query_graphQL_transformation_queryToPure_tests_Person"
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_external_query_graphQL_transformation_queryToPure_tests_Firm",
+          "class": "meta::external::query::graphQL::transformation::queryToPure::tests::Firm",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "tableAlias": "",
+              "table": {
+                "schema": "default",
+                "database": "meta::relational::graphFetch::tests::domain::TestStore",
+                "_type": "table",
+                "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+                "table": "FirmTable"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "joins": [
+        {
+          "name": "Firm_Person",
+          "operation": {
+            "funcName": "equal",
+            "_type": "dynaFunc",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "id",
+                "tableAlias": "FirmTable",
+                "table": {
+                  "schema": "default",
+                  "database": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "table": "FirmTable"
+                }
+              },
+              {
+                "_type": "column",
+                "column": "firm_id",
+                "tableAlias": "PersonTable",
+                "table": {
+                  "schema": "default",
+                  "database": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::graphFetch::tests::domain::TestStore",
+                  "table": "PersonTable"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "package": "meta::relational::graphFetch::tests::domain",
+      "schemas": [
+        {
+          "tables": [
+            {
+              "columns": [
+                {
+                  "nullable": false,
+                  "name": "id",
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "nullable": true,
+                  "name": "legal_name",
+                  "type": {
+                    "size": 200,
+                    "_type": "Varchar"
+                  }
+                }
+              ],
+              "name": "FirmTable",
+              "primaryKey": [
+                "id"
+              ]
+            },
+            {
+              "columns": [
+                {
+                  "nullable": false,
+                  "name": "id",
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "nullable": true,
+                  "name": "firm_id",
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "nullable": true,
+                  "name": "first_name",
+                  "type": {
+                    "size": 200,
+                    "_type": "Varchar"
+                  }
+                },
+                {
+                  "nullable": true,
+                  "name": "last_name",
+                  "type": {
+                    "size": 200,
+                    "_type": "Varchar"
+                  }
+                }
+              ],
+              "name": "PersonTable",
+              "primaryKey": [
+                "id"
+              ]
+            }
+          ],
+          "name": "default"
+        }
+      ],
+      "_type": "relational",
+      "name": "TestStore"
     }
   ],
   "_type": "data",

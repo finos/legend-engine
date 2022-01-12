@@ -92,7 +92,7 @@ public class ServiceModeling
     }
 
     @Prometheus(name = "service test model resolve", doc = "Model resolution duration summary within service test execution")
-    public List<TestResult> testService(MutableList<CommonProfile> profiles, PureModelContext context)
+    public List<TestResult> testService(MutableList<CommonProfile> profiles, PureModelContext context, String metricsContext)
     {
         try
         {
@@ -102,7 +102,9 @@ public class ServiceModeling
             PureModelContextData dataWithoutService = PureModelContextData.newBuilder().withOrigin(data.getOrigin()).withSerializer(data.getSerializer()).withElements(LazyIterate.select(data.getElements(), e -> e != service)).build();
             PureModel pureModel  = new PureModel(dataWithoutService, profiles, deploymentMode);
             Pair<PureModelContextData, PureModel> pureModelAndData  = Tuples.pair(dataWithoutService, pureModel);
-            MetricsHandler.observe("service test model resolve", start, System.currentTimeMillis());
+            long end = System.currentTimeMillis();
+            MetricsHandler.observe("service test model resolve", start, end);
+            MetricsHandler.observeServerOperation("model_resolve", metricsContext, start, end);
 
             if (service.execution instanceof PureMultiExecution)
             {
@@ -110,7 +112,7 @@ public class ServiceModeling
             }
             Root_meta_legend_service_metamodel_Service pureService = compileService(service, pureModel.getContext(service));
 
-            TestRun testRun = executeTests(service, pureService, pureModelAndData, PureClientVersions.production);
+            TestRun testRun = executeTests(service, pureService, pureModelAndData, PureClientVersions.production, metricsContext);
             if (!(testRun instanceof SingleTestRun))
             {
                 throw new UnsupportedOperationException("Expected a single test run result");
@@ -120,17 +122,18 @@ public class ServiceModeling
         }
         catch (IOException | JavaCompileException e)
         {
+            MetricsHandler.incrementErrorCount("model_resolve", 0);
             throw new RuntimeException(e);
         }
     }
 
-    private static TestRun executeTests(Service service, Root_meta_legend_service_metamodel_Service pureService, Pair<PureModelContextData, PureModel> pureModelPairs, String pureVersion) throws IOException, JavaCompileException
+    private static TestRun executeTests(Service service, Root_meta_legend_service_metamodel_Service pureService, Pair<PureModelContextData, PureModel> pureModelPairs, String pureVersion, String metricsContext) throws IOException, JavaCompileException
     {
         MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> routerExtensions = extensions.flatCollect(e -> e.getExtraRouterExtensions(pureModelPairs.getTwo()));
         MutableList<PlanTransformer> planTransformers = extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
-        ServiceTestRunner runner = new ServiceTestRunner(service, pureService, pureModelPairs.getOne(), pureModelPairs.getTwo(), objectMapper, planExecutor, routerExtensions, planTransformers, pureVersion);
+        ServiceTestRunner runner = new ServiceTestRunner(service, pureService, pureModelPairs.getOne(), pureModelPairs.getTwo(), objectMapper, planExecutor, routerExtensions, planTransformers, pureVersion, metricsContext);
         RichServiceTestResult richServiceTestResult = runner.executeTests().get(0);
 
         Map<String, Boolean> results = Maps.mutable.empty();

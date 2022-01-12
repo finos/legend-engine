@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.io.Closeable;
+import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -103,8 +105,7 @@ import static org.finos.legend.engine.plan.execution.stores.relational.connectio
     This is generally (??) safe. Since the racing threads are for the same pool and since the credential suppliers in the state objects are thread safe, it is safe for thread1 to use a state object created by thread2.
     However, the fact that thread1 uses thread2's identity might be confusing and in some cases cause connection failures. For e.g thread1 can create S1 with a valid OAuth token and thread2 can create S2 with an expired OAuth token
  */
-public class ConnectionStateManager
-{
+public class ConnectionStateManager implements Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStateManager.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -118,8 +119,7 @@ public class ConnectionStateManager
     private static final String DBPOOL = "DBPool_";
     private static ConnectionStateManager INSTANCE;
 
-    static
-    {
+    static {
         ThreadFactory threadFactory = r -> new Thread(r, "ConnectionStateManager.Housekeeper");
         long evictionDurationInSeconds = resolveEvictionDuration();
         ConnectionStateHousekeepingTask connectionStateHousekeepingTask = new ConnectionStateHousekeepingTask(evictionDurationInSeconds);
@@ -128,40 +128,31 @@ public class ConnectionStateManager
         LOGGER.info("ConnectionStateManager.HouseKeeper thread frequency. Time period={}, Time unit={}", evictionDurationInSeconds, TimeUnit.SECONDS);
     }
 
-    static long resolveEvictionDuration()
-    {
+    static long resolveEvictionDuration() {
         Long evictionDurationInSeconds = Long.getLong(EVICTION_DURATION_SYSTEM_PROPERTY);
-        if (evictionDurationInSeconds == null)
-        {
+        if (evictionDurationInSeconds == null) {
             LOGGER.info("Using default eviction duration of {}", DEFAULT_EVICTION_DURATION_IN_SECONDS);
             return DEFAULT_EVICTION_DURATION_IN_SECONDS;
-        }
-        else
-        {
+        } else {
             LOGGER.info("Using non default eviction duration of {}", evictionDurationInSeconds);
             return evictionDurationInSeconds;
         }
     }
 
-    public static synchronized final ConnectionStateManager getInstance()
-    {
+    public static synchronized final ConnectionStateManager getInstance() {
         return getInstanceImpl(Clock.systemUTC());
     }
 
-    static synchronized final ConnectionStateManager getInstanceForTesting(Clock clock)
-    {
+    static synchronized final ConnectionStateManager getInstanceForTesting(Clock clock) {
         return getInstanceImpl(clock);
     }
 
-    static synchronized final void setInstanceForTesting(ConnectionStateManager connectionStateManager)
-    {
+    static synchronized final void setInstanceForTesting(ConnectionStateManager connectionStateManager) {
         INSTANCE = connectionStateManager;
     }
 
-    private static ConnectionStateManager getInstanceImpl(Clock clock)
-    {
-        if (INSTANCE == null)
-        {
+    private static ConnectionStateManager getInstanceImpl(Clock clock) {
+        if (INSTANCE == null) {
             INSTANCE = new ConnectionStateManager(clock);
         }
         return INSTANCE;
@@ -172,39 +163,33 @@ public class ConnectionStateManager
 
     private Clock clock;
 
-    public Clock getClock()
-    {
+    public Clock getClock() {
         return clock;
     }
 
-    ConnectionStateManager(Clock clock)
-    {
+    ConnectionStateManager(Clock clock) {
         // singleton
         this.clock = clock;
     }
 
     // Synchronizes using concurrent map's locks
-    public IdentityState getIdentityStateUsing(Properties properties)
-    {
+    public IdentityState getIdentityStateUsing(Properties properties) {
         String poolName = properties.getProperty(ConnectionStateManager.POOL_NAME_KEY);
         return this.getConnectionStateManagerPOJO(poolName);
     }
 
     // Synchronizes using concurrent map's locks
-    public IdentityState getConnectionStateManagerPOJO(String poolName)
-    {
+    public IdentityState getConnectionStateManagerPOJO(String poolName) {
         DataSourceWithStatistics dataSourceWithStatistics = this.connectionPools.get(poolName);
         return dataSourceWithStatistics != null ? dataSourceWithStatistics.getIdentityState() : null;
     }
 
     // Synchronizes using concurrent map's locks
-    public DataSourceWithStatistics get(String poolName)
-    {
+    public DataSourceWithStatistics get(String poolName) {
         return this.connectionPools.get(poolName);
     }
 
-    private void atomicallyRemovePool(String poolName, DataSourceStatistics expectedState)
-    {
+    private void atomicallyRemovePool(String poolName, DataSourceStatistics expectedState) {
         synchronized (poolLockManager.getLock(poolName)) {
             DataSourceWithStatistics currentState = this.connectionPools.get(poolName);
             if (currentState.getStatistics().equals(expectedState)) {
@@ -215,116 +200,79 @@ public class ConnectionStateManager
         }
     }
 
-    protected Set<Pair<String, DataSourceStatistics>> findPoolsOlderThan(Duration duration)
-    {
+    protected Set<Pair<String, DataSourceStatistics>> findUnusedPoolsOlderThan(Duration duration) {
         return this.connectionPools.values().stream()
-                .filter(ds -> ds.getStatistics().getLastConnectionRequestAge() > duration.toMillis())
+                .filter(ds -> ds.getStatistics().getLastConnectionRequestAge() > duration.toMillis() && !ds.hasActiveConnections())
                 .map(ds -> Tuples.pair(ds.getPoolName(), DataSourceStatistics.clone(ds.getStatistics())))
                 .collect(Collectors.toSet());
     }
 
-    public void evictPoolsOlderThan(Duration duration)
-    {
+    public void evictUnusedPoolsOlderThan(Duration duration) {
         // step 1 - gather pools to be deleted without acquiring a global lock
-        Set<Pair<String, DataSourceStatistics>> entriesToPurge = this.findPoolsOlderThan(duration);
+        Set<Pair<String, DataSourceStatistics>> entriesToPurge = this.findUnusedPoolsOlderThan(duration);
         LOGGER.info("ConnectionStateManager.HouseKeeper : pools {} to be evicted", entriesToPurge.size());
         // step 2 - remove atomically - i.e remove iff the state has not been updated since it was read in step 1
         entriesToPurge.forEach(pool -> this.atomicallyRemovePool(pool.getOne(), pool.getTwo()));
     }
 
-    public int size()
-    {
+    public int size() {
         return this.connectionPools.size();
     }
 
-    public String poolNameFor(Identity identity, ConnectionKey key)
-    {
+    public String poolNameFor(Identity identity, ConnectionKey key) {
         return DBPOOL + key.shortId() + SEPARATOR + identity.getName();
     }
 
-    public String softEvictConnections(String poolName)
-    {
-        StringBuffer result = new StringBuffer();
-        DataSourceWithStatistics datasource = this.connectionPools.get(poolName);
-        if (datasource != null)
-        {
-            HikariDataSource hds = (HikariDataSource)datasource.getDataSource();
-            result.append("found [").append(hds.getPoolName());
-            result.append("], active connections [");
-            result.append(hds.getHikariPoolMXBean().getActiveConnections());
-            result.append("] ,idle connections [");
-            result.append(hds.getHikariPoolMXBean().getIdleConnections());
-            result.append("] ,total connections [");
-            result.append(hds.getHikariPoolMXBean().getTotalConnections());
-            result.append("]");
-            hds.getHikariPoolMXBean().softEvictConnections();
-        }
-        return result.toString();
-    }
-
-    public ConnectionStateManagerPOJO getConnectionStateManagerPOJO()
-    {
+    public ConnectionStateManagerPOJO getConnectionStateManagerPOJO() {
         return new ConnectionStateManagerPOJO(this.connectionPools);
     }
 
-    private synchronized void purge(long durationInSeconds)
-    {
+    private synchronized void purge(long durationInSeconds) {
         int sizeBeforePurge = this.size();
         LOGGER.info("ConnectionStateManager.HouseKeeper : Starting  with cache size={}", sizeBeforePurge);
-        this.evictPoolsOlderThan(Duration.ofSeconds(durationInSeconds));
+        this.evictUnusedPoolsOlderThan(Duration.ofSeconds(durationInSeconds));
         int sizeAfterPurge = this.size();
         LOGGER.info("ConnectionStateManager.HouseKeeper: Evicted={}", sizeBeforePurge - sizeAfterPurge);
     }
 
-    public Optional<ConnectionStateManagerPOJO.ConnectionPool> findByPoolName(String poolName)
-    {
+    public Optional<ConnectionStateManagerPOJO.ConnectionPool> findByPoolName(String poolName) {
         DataSourceWithStatistics found = this.connectionPools.get(poolName);
         return found == null ? Optional.empty() : Optional.of(buildConnectionPool(found));
     }
 
-    public DataSourceWithStatistics getDataSourceByPoolName(String poolName)
-    {
+    public DataSourceWithStatistics getDataSourceByPoolName(String poolName) {
         return this.connectionPools.get(poolName);
     }
 
-    public List<ConnectionStateManagerPOJO.ConnectionPool> getPoolInformationByUser(String user)
-    {
+    public List<ConnectionStateManagerPOJO.ConnectionPool> getPoolInformationByUser(String user) {
         List<ConnectionStateManagerPOJO.ConnectionPool> connectionPools = new ArrayList<>();
         this.connectionPools.valuesView().forEach(pool -> {
-            if (pool.getPoolPrincipal().equals(user))
-            {
+            if (pool.getPoolPrincipal().equals(user)) {
                 connectionPools.add(buildConnectionPool(pool));
             }
         });
         return connectionPools;
     }
 
-    static class ConnectionStateHousekeepingTask implements Runnable
-    {
+    static class ConnectionStateHousekeepingTask implements Runnable {
         private final long durationInSeconds;
 
-        public ConnectionStateHousekeepingTask(long durationInSeconds)
-        {
+        public ConnectionStateHousekeepingTask(long durationInSeconds) {
             this.durationInSeconds = durationInSeconds;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             ConnectionStateManager instance = ConnectionStateManager.getInstance();
-            try
-            {
+            try {
                 instance.purge(durationInSeconds);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 LOGGER.error("ConnectionStateManager.HouseKeeper purge failed {}", e);
             }
         }
     }
 
-    public DataSourceWithStatistics getDataSourceForIdentityIfAbsentBuild(IdentityState identityState, DataSourceSpecification dataSourceSpecification, Supplier<DataSource> dataSourceBuilder)
-    {
+    public DataSourceWithStatistics getDataSourceForIdentityIfAbsentBuild(IdentityState identityState, DataSourceSpecification dataSourceSpecification, Supplier<DataSource> dataSourceBuilder) {
 
         String principal = identityState.getIdentity().getName();
         String poolName = poolNameFor(identityState.getIdentity(), dataSourceSpecification.getConnectionKey());
@@ -332,7 +280,7 @@ public class ConnectionStateManager
         //why do we need getIfAbsentPut?  the first ever pool creation request will create a new Hikari Data Source
         //because we have configured hikari to fail fast a new connection will be created.
         //This will invoke the DriverWrapper connect method, for this method to create that test connection we need to pass minimal state
-        Function0<DataSourceWithStatistics> dsSupplier = () -> new DataSourceWithStatistics(poolName,identityState,dataSourceSpecification);
+        Function0<DataSourceWithStatistics> dsSupplier = () -> new DataSourceWithStatistics(poolName, identityState, dataSourceSpecification);
         DataSource dataSource = this.connectionPools.getIfAbsentPut(poolName, dsSupplier).getDataSource();
         //why this thread safety pattern?  Consider this scenario: poolOne does not exist, then two threads concurrently request poolOne
         //both threads check if pool has been created and both evaluate to true
@@ -340,22 +288,16 @@ public class ConnectionStateManager
         //thread1 creates poolOne , thread2 enters block and check if indeed the pools does not exist, so will skip
         //this will ensure threads will wait for pool creation while only locking in the scenario there is no pool
         //not for every pool request
-        if (dataSource == null)
-        {
-            synchronized (poolLockManager.getLock(poolName))
-            {
+        if (dataSource == null) {
+            synchronized (poolLockManager.getLock(poolName)) {
                 dataSource = this.connectionPools.getIfAbsentPut(poolName, dsSupplier).getDataSource();
-                if (dataSource == null)
-                {
+                if (dataSource == null) {
                     LOGGER.info("Pool not found for [{}] for datasource [{}], creating one", principal, connectionKey.shortId());
-                    try
-                    {
-                        DataSourceWithStatistics dataSourceWithStatistics = new DataSourceWithStatistics(poolName,dataSourceBuilder.get(), identityState, dataSourceSpecification);
+                    try {
+                        DataSourceWithStatistics dataSourceWithStatistics = new DataSourceWithStatistics(poolName, dataSourceBuilder.get(), identityState, dataSourceSpecification);
                         this.connectionPools.put(poolName, dataSourceWithStatistics);
                         LOGGER.info("Pool created for [{}] for datasource [{}], name {}", principal, connectionKey.shortId(), poolName);
-                    }
-                    catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         LOGGER.error("Error creating pool {} {}", poolName, e);
                         throw new RuntimeException(e);
                     }
@@ -367,41 +309,56 @@ public class ConnectionStateManager
         return this.connectionPools.get(poolName);
     }
 
-    public Object getPoolStatisticsAsJSON(DataSourceWithStatistics poolState)
-    {
-        try
-        {
+    public Object getPoolStatisticsAsJSON(DataSourceWithStatistics poolState) {
+        try {
             return objectMapper.writeValueAsString(ConnectionStateManagerPOJO.buildConnectionPool(poolState));
-        }
-        catch (JsonProcessingException e)
-        {
+        } catch (JsonProcessingException e) {
             LOGGER.error(e.getMessage());
             return null;
         }
     }
 
-    public Object getPoolStatisticsAsJSON(String poolName)
-    {
+    public Object getPoolStatisticsAsJSON(String poolName) {
         DataSourceWithStatistics pool = connectionPools.get(poolName);
-        try
-        {
+        try {
             return objectMapper.writeValueAsString(ConnectionStateManagerPOJO.buildConnectionPool(pool));
-        }
-        catch (JsonProcessingException e)
-        {
+        } catch (JsonProcessingException e) {
             LOGGER.error(e.getMessage());
             return null;
         }
     }
 
+    @Override
+    public void close() throws IOException {
+        synchronized (this.connectionPools) {
+            try
+            {
+                this.connectionPools.keySet().forEach(k -> closeAndRemoveConnectionPool(k));
+                EXECUTOR_SERVICE.shutdown();
+                EXECUTOR_SERVICE = null;
+            }
+            catch (Exception e)
+            {
+                LOGGER.error("Error closing connection manager",e);
+            }
+        }
+    }
 
-    private static class KeyLockManager<K>
-    {
+    public boolean closeAndRemoveConnectionPool(String poolKey) {
+       DataSourceWithStatistics ds =  this.connectionPools.remove(poolKey);
+       if( ds!=null)
+       {
+           LOGGER.info("Closing {} has active connections ? {}", ds.getPoolName(),ds.hasActiveConnections());
+           ds.close();
+       }
+       return true;
+    }
+
+    private static class KeyLockManager<K> {
         private static final Function0<Object> NEW_LOCK = () -> new Object();
         private final ConcurrentMutableMap<K, Object> locks = ConcurrentHashMap.newMap();
 
-        private KeyLockManager()
-        {
+        private KeyLockManager() {
         }
 
         /**
@@ -414,8 +371,7 @@ public class ConnectionStateManager
          * @param key lock key
          * @return key lock
          */
-        public Object getLock(K key)
-        {
+        public Object getLock(K key) {
             return this.locks.getIfAbsentPut(key, NEW_LOCK);
         }
 
@@ -425,8 +381,7 @@ public class ConnectionStateManager
          * @param <T> key type
          * @return new key lock manager
          */
-        static <T> KeyLockManager<T> newManager()
-        {
+        static <T> KeyLockManager<T> newManager() {
             return new KeyLockManager<T>();
         }
     }

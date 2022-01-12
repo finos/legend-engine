@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
+import io.opentracing.Scope;
+import io.opentracing.util.GlobalTracer;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 
 import org.apache.commons.csv.CSVFormat;
@@ -62,6 +64,7 @@ public class RealizedRelationalResultCSVSerializer extends CsvSerializer
     @Override
     public void stream(OutputStream targetStream)
     {
+        try (Scope ignored = GlobalTracer.get().buildSpan("realized relational result to csv").startActive(true))
         {
             CSVPrinter csvPrinter = null;
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

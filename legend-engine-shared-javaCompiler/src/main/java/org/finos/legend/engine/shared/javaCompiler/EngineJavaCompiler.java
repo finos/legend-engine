@@ -93,6 +93,7 @@ public class EngineJavaCompiler
     public EngineJavaCompiler compile(Iterable<? extends StringJavaSource> javaSources) throws JavaCompileException
     {
         MetricsHandler.observeCount("Java compilation");
+        MetricsHandler.incrementJavaCompilationCount();
         compile(this.compiler, this.javaVersion, javaSources, this.memoryFileManager);
         this.memoryClassLoader = parent == null ?
                 new MemoryClassLoader(this.memoryFileManager, Thread.currentThread().getContextClassLoader()) :

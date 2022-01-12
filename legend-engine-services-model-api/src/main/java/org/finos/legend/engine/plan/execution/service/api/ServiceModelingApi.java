@@ -38,11 +38,14 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import java.util.List;
 
@@ -73,7 +76,7 @@ public class ServiceModelingApi
     @ApiOperation(value = "Test a service. Only Full_Interactive mode is supported by giving appropriate PureModelContext (i.e. PureModelContextData)")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "service test", doc = "Service test execution duration")
-    public Response doTest(PureModelContext service, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response doTest(PureModelContext service, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles  = ProfileManagerHelper.extractProfiles(pm);
         long start = System.currentTimeMillis();
@@ -84,14 +87,18 @@ public class ServiceModelingApi
                 throw new RuntimeException("Only Full Interactive mode currently supported.  Received " + service.getClass().getName());
             }
             LOGGER.info(new LogInfo(profiles, LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
-            List<TestResult> results = this.serviceModeling.testService(profiles, service);
+            String metricContext = uriInfo != null ? uriInfo.getPath() : null;
+            List<TestResult> results = this.serviceModeling.testService(profiles, service, metricContext);
             MetricsHandler.observe("service test", start, System.currentTimeMillis());
+            MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
             return Response.ok(objectMapper.writeValueAsString(results), MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
             MetricsHandler.observe("service test error", start, System.currentTimeMillis());
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, profiles);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, profiles);
+            MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, response.getStatus());
+            return response;
         }
     }
 }

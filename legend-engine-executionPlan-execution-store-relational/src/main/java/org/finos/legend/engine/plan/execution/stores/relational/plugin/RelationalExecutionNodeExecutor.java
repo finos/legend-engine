@@ -77,6 +77,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.pac4j.core.profile.CommonProfile;
@@ -729,13 +731,16 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
     private void createTempTableFromRealizedRelationalResultInBlockConnection(RealizedRelationalResult realizedRelationalResult, String tempTableName, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone)
     {
-        RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational);
-        DatabaseManager databaseManager = DatabaseManager.fromString(databaseType);
-        BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, this.profiles);
-        databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalStoreExecutionState.getRelationalExecutor().getRelationalExecutionConfiguration(), blockConnection, realizedRelationalResult, tempTableName, databaseTimeZone));
-        blockConnection.addCommitQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
-        blockConnection.addRollbackQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
-        blockConnection.close();
+        try (Scope ignored = GlobalTracer.get().buildSpan("create temp table").withTag("tempTableName", tempTableName).withTag("databaseType", databaseType).startActive(true))
+        {
+            RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational);
+            DatabaseManager databaseManager = DatabaseManager.fromString(databaseType);
+            BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, this.profiles);
+            databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalStoreExecutionState.getRelationalExecutor().getRelationalExecutionConfiguration(), blockConnection, realizedRelationalResult, tempTableName, databaseTimeZone));
+            blockConnection.addCommitQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
+            blockConnection.addRollbackQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
+            blockConnection.close();
+        }
     }
 
     private void addKeyRowToRealizedRelationalResult(Object obj, List<Method> keyGetters, RealizedRelationalResult realizedRelationalResult) throws InvocationTargetException, IllegalAccessException
@@ -1133,6 +1138,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         boolean isLeaf = node.children == null || node.children.isEmpty();
         Result rootResult = null;
 
+        Span graphFetchSpan = GlobalTracer.get().buildSpan("graph fetch").withTag("rootStoreType", "relational").withTag("batchSizeConfig", batchSize).start();
+        GlobalTracer.get().activateSpan(graphFetchSpan);
         try
         {
             rootResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
@@ -1166,9 +1173,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     relationalStoreExecutionState.setBlockConnectionContext(new BlockConnectionContext());
                     relationalStoreExecutionState.setRetainConnection(true);
 
-                    try
+                    long currentBatch = batchIndex.incrementAndGet();
+                    try (Scope ignored = GlobalTracer.get().buildSpan("graph fetch batch").withTag("storeType", "relational").withTag("batchIndex", currentBatch).withTag("class", ((RootGraphFetchTree) node.graphFetchTree)._class).asChildOf(graphFetchSpan).startActive(true))
                     {
-                        long currentBatch = batchIndex.incrementAndGet();
                         RelationalGraphObjectsBatch relationalGraphObjectsBatch = new RelationalGraphObjectsBatch(currentBatch);
 
                         List<Object> resultObjects = new ArrayList<>();
@@ -1260,13 +1267,17 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             };
 
             Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
-            return new GraphFetchResult(graphObjectsBatchStream, rootResult);
+            return new GraphFetchResult(graphObjectsBatchStream, rootResult).withGraphFetchSpan(graphFetchSpan);
         }
         catch (RuntimeException e)
         {
             if (rootResult != null)
             {
                 rootResult.close();
+            }
+            if (graphFetchSpan != null)
+            {
+                graphFetchSpan.finish();
             }
             throw e;
         }
@@ -1275,6 +1286,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             if (rootResult != null)
             {
                 rootResult.close();
+            }
+            if (graphFetchSpan != null)
+            {
+                graphFetchSpan.finish();
             }
             throw new RuntimeException(e);
         }
@@ -1285,7 +1300,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         List<Object> childObjects = new ArrayList<>();
         Result childResult = null;
 
-        try
+        try (Scope ignored = GlobalTracer.get().buildSpan("local store property graph fetch").withTag("storeType", "relational").withTag("property", ((PropertyGraphFetchTree) node.graphFetchTree).property).startActive(true))
         {
             RelationalGraphObjectsBatch relationalGraphObjectsBatch = (RelationalGraphObjectsBatch) this.executionState.graphObjectsBatch;
 
@@ -1350,7 +1365,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         List<Pair<IGraphInstance<? extends IReferencedObject>, ExecutionCache<GraphFetchCacheKey, Object>>> childInstancesToDeepFetchAndCache = new ArrayList<>();
         Result childResult = null;
 
-        try
+        try (Scope ignored = GlobalTracer.get().buildSpan("local store property graph fetch").withTag("storeType", "relational").withTag("property", ((PropertyGraphFetchTree) node.graphFetchTree).property).startActive(true))
         {
             RelationalGraphObjectsBatch relationalGraphObjectsBatch = (RelationalGraphObjectsBatch) this.executionState.graphObjectsBatch;
 
@@ -1474,7 +1489,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         relationalStoreExecutionState.setBlockConnectionContext(new BlockConnectionContext());
         relationalStoreExecutionState.setRetainConnection(true);
 
-        try
+        try (Scope ignored = GlobalTracer.get().buildSpan("cross store property graph fetch").withTag("storeType", "relational").withTag("property", ((PropertyGraphFetchTree) node.graphFetchTree).property).startActive(true))
         {
             IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles);
 

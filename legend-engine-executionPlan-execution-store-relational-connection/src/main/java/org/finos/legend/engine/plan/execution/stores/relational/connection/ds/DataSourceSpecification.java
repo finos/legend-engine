@@ -90,6 +90,7 @@ public abstract class DataSourceSpecification
         this.maxPoolSize  = maxPoolSize;
         this.minPoolSize = minPoolSize;
         MetricsHandler.observeCount("datastore specifications");
+        MetricsHandler.incrementDatastoreSpecCount();
         LOGGER.info("Created new {}", this);
     }
 
@@ -204,7 +205,6 @@ public abstract class DataSourceSpecification
             jdbcConfig.addDataSourceProperty("prepStmtCacheSize", 0);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
             jdbcConfig.addDataSourceProperty("useServerPrepStmts", false);
-            jdbcConfig.addDataSourceProperty("privateProperty", "MyProperty");
 
             if (this.databaseManager.publishMetrics())
             {

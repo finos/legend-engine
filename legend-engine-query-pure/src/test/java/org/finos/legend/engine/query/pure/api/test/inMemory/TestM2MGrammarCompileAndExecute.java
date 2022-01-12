@@ -247,7 +247,7 @@ public class TestM2MGrammarCompileAndExecute
         PlanExecutor executor = PlanExecutor.newPlanExecutor(InMemory.build());
         HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[]{HttpServletRequest.class}, new ReflectiveInvocationHandler(new Request()));
         //Should use: core_pure_extensions_extension.Root_meta_pure_router_extension_defaultExtensions__RouterExtension_MANY_(modelManager.)
-        Response result = new Execute(modelManager, executor, (PureModel pureModel) -> Lists.mutable.empty(), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null);
+        Response result = new Execute(modelManager, executor, (PureModel pureModel) -> Lists.mutable.empty(), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null, null);
         Assert.assertEquals(200, result.getStatus());
         return result;
     }

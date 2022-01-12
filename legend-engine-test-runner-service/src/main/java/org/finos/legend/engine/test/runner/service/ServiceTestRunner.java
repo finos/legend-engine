@@ -106,8 +106,9 @@ public class ServiceTestRunner
     private final RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions;
     private final MutableList<PlanTransformer> transformers;
     private final String pureVersion;
+    private final String metricsContext;
 
-    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, String metricsContext)
     {
         this.service = service;
         this.pureService = (pureService == null) ? findPureService(service, pureModel) : pureService;
@@ -119,6 +120,12 @@ public class ServiceTestRunner
         this.transformers = transformers;
         this.pureVersion = pureVersion;
         MetricsHandler.createMetrics(this.getClass());
+        this.metricsContext = metricsContext;
+    }
+
+    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    {
+        this(service, pureService, pureModelContextData, pureModel, objectMapper, executor, extensions, transformers, pureVersion, null);
     }
 
     @Deprecated
@@ -210,7 +217,9 @@ public class ServiceTestRunner
     {
         long start = System.currentTimeMillis();
         ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(pureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, extensions, transformers);
-        MetricsHandler.observe("service test generate plan", start, System.currentTimeMillis());
+        long end = System.currentTimeMillis();
+        MetricsHandler.observeServerOperation("generate_plan", metricsContext, start, end);
+        MetricsHandler.observe("service test generate plan", start, end);
         return executionPlan;
     }
 
@@ -219,6 +228,8 @@ public class ServiceTestRunner
     {
         long start = System.currentTimeMillis();
         JavaHelper.compilePlan(singleExecutionPlan, null);
+        long end = System.currentTimeMillis();
+        MetricsHandler.observeServerOperation("compile_plan", metricsContext, start, end);
         MetricsHandler.observe("service test compile plan", start, System.currentTimeMillis());
     }
 
@@ -271,6 +282,7 @@ public class ServiceTestRunner
             }
             catch (JavaCompileException e)
             {
+                MetricsHandler.incrementErrorCount("test_execute", 0);
                 throw new RuntimeException("Error compiling test asserts for " + this.service.getPath(), e);
             }
 
@@ -339,10 +351,12 @@ public class ServiceTestRunner
 
                 testRun = new RichServiceTestResult(service.getPath(), results, assertExceptions, null, executionPlan, javaCode);
                 scope.span().log("Finished running tests " + results);
+                MetricsHandler.observeServerOperation("test_execute", metricsContext, start, System.currentTimeMillis());
             }
             catch (Exception e)
             {
                 LOGGER.error("Error running tests", e);
+                MetricsHandler.incrementErrorCount("test_execute", 0);
                 throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
             }
             finally

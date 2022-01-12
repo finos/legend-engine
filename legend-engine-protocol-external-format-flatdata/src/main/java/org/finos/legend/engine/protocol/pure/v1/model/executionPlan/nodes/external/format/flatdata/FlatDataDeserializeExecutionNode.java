@@ -15,11 +15,11 @@
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.flatdata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.ExternalFormatDeserializeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 
-public class FlatDataDeserializeExecutionNode extends ExecutionNode
+public class FlatDataDeserializeExecutionNode extends ExternalFormatDeserializeExecutionNode
 {
     @JsonProperty(required = false)
     public String binding;

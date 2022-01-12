@@ -36,6 +36,7 @@ import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGe
 import org.finos.legend.engine.external.shared.format.generations.loaders.SchemaGenerators;
 import org.finos.legend.engine.external.shared.format.imports.loaders.CodeImports;
 import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImports;
+import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.TransformGrammarToJson;
@@ -60,7 +61,6 @@ import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
 import org.finos.legend.engine.server.core.api.Memory;
-import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
@@ -71,6 +71,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.engine.shared.core.vault.Vault;
+import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultFactory;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
@@ -174,7 +175,7 @@ public class Server extends Application<ServerConfiguration>
         genExtensions.forEach(p -> environment.jersey().register(p.getService(modelManager)));
 
         // Execution
-        environment.jersey().register(new org.finos.legend.engine.query.graphQL.api.Execute(modelManager));
+        environment.jersey().register(new org.finos.legend.engine.query.graphQL.api.Execute(modelManager, planExecutor));
         environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
         environment.jersey().register(new ExecutePlan(planExecutor));
 
@@ -187,6 +188,9 @@ public class Server extends Application<ServerConfiguration>
         // Global
         environment.jersey().register(new JsonInformationExceptionMapper());
         environment.jersey().register(new CatchAllExceptionMapper());
+
+        // External Format
+        environment.jersey().register(new ExternalFormats(modelManager));
 
         enableCors(environment);
     }

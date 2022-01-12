@@ -14,15 +14,23 @@
 
 package org.finos.legend.engine.external.format.flatdata.shared.model;
 
+import java.util.Collections;
+import java.util.List;
+
 public class FlatDataProperty
 {
     private String name;
-    private Object value;
+    private List<Object> values;
 
     public FlatDataProperty(String name, Object value)
     {
+        this(name,  Collections.singletonList(value));
+    }
+
+    public FlatDataProperty(String name, List<Object> values)
+    {
         this.name = name;
-        this.value = value;
+        this.values = values;
     }
 
     public String getName()
@@ -30,8 +38,8 @@ public class FlatDataProperty
         return name;
     }
 
-    public Object getValue()
+    public List<Object> getValues()
     {
-        return value;
+        return values;
     }
 }

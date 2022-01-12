@@ -14,12 +14,10 @@
 
 package org.finos.legend.engine.external.format.xsd;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.xml.XmlExternalFormatPureExtension;
 import org.finos.legend.engine.external.format.xsd.compile.XsdCompiler;
-import org.finos.legend.engine.external.format.xsd.compile.XsdParser;
-import org.finos.legend.engine.external.format.xsd.compile.parseTree.XsdSchema;
 import org.finos.legend.engine.external.format.xsd.fromModel.ModelToXsdConfiguration;
 import org.finos.legend.engine.external.format.xsd.toModel.XsdToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
@@ -27,21 +25,11 @@ import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompil
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_Schema;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xsd_XsdSchema;
-import org.finos.legend.pure.generated.Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
-import org.finos.legend.pure.generated.core_external_format_xml_binding_xsdToPure;
+import org.finos.legend.pure.generated.*;
 
 import java.lang.management.ManagementFactory;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_xml_metamodel_xsd_XsdSchema, XsdToModelConfiguration, ModelToXsdConfiguration>
 {
@@ -71,6 +59,18 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     {
         // TODO XSD Correlation
         return null;
+    }
+
+    @Override
+    public boolean supportsModelGeneration()
+    {
+        return true;
+    }
+
+    @Override
+    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
+    {
+        return core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());
     }
 
     @Override
