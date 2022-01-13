@@ -193,7 +193,7 @@
         <jakarta.ws.rs.version>2.1.6</jakarta.ws.rs.version>
         <jakarta.servlet.version>4.0.4</jakarta.servlet.version>
         <jakarta.inject.version>1.0.5</jakarta.inject.version>
-        <swagger.annotation.version>1.5.20</swagger.annotation.version>
+        <swagger.annotation.version>1.6.4</swagger.annotation.version>
         <joda.time.version>2.10.6</joda.time.version>
         <zipkin.reporter.version>2.15.0</zipkin.reporter.version>
         <dropwizard.version>2.0.28</dropwizard.version>
@@ -1524,12 +1524,6 @@
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-jersey</artifactId>
                 <version>${dropwizard.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.javassist</groupId>
-                        <artifactId>javassist</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.smoketurner</groupId>
@@ -1791,6 +1785,21 @@
             <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-common</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-server</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.inject</groupId>
+                <artifactId>jersey-hk2</artifactId>
                 <version>${jersey.version}</version>
             </dependency>
             <dependency>
