@@ -22,6 +22,8 @@ import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import io.prometheus.client.CollectorRegistry;
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
@@ -54,6 +56,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.api.s
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.query.pure.api.Execute;
@@ -73,7 +76,7 @@ import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultFactory;
-import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
+import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
@@ -176,7 +179,9 @@ public class Server extends Application<ServerConfiguration>
 
         // Execution
         environment.jersey().register(new org.finos.legend.engine.query.graphQL.api.Execute(modelManager, planExecutor));
-        environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraRouterExtensions(pureModel));
+        environment.jersey().register(new Execute(modelManager, planExecutor, routerExtensions, LegendPlanTransformers.transformers));
         environment.jersey().register(new ExecutePlan(planExecutor));
 
         // Service
