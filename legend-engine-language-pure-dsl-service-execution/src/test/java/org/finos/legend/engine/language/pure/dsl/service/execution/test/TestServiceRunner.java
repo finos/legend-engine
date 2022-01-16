@@ -108,6 +108,26 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testRelationalServiceExecutionWithUsingTdsFromFunction()
+    {
+        SimpleRelationalServiceRunner simpleRelationalServiceRunner = new SimpleRelationalServiceRunner("test::fetchWithFrom", true);
+
+        ServiceRunnerInput serviceRunnerInput1 = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(Collections.singletonList("John")))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result1 = simpleRelationalServiceRunner.run(serviceRunnerInput1);
+        Assert.assertEquals("{\"firstName\":\"John\",\"lastName\":\"Johnson\"}", result1);
+
+        ServiceRunnerInput serviceRunnerInput2 = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(Arrays.asList("John", "Peter")))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result2 = simpleRelationalServiceRunner.run(serviceRunnerInput2);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"}]", result2);
+    }
+
+    @Test
     public void testSimpleRelationalServiceExecution()
     {
         SimpleRelationalServiceRunner simpleRelationalServiceRunner = new SimpleRelationalServiceRunner();
@@ -352,7 +372,12 @@ public class TestServiceRunner
     {
         SimpleRelationalServiceRunner()
         {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetch"), true);
+            this("test::fetch", false);
+        }
+
+        SimpleRelationalServiceRunner(String func, boolean fromFunction)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", func, fromFunction), true);
         }
 
         @Override
@@ -437,6 +462,11 @@ public class TestServiceRunner
 
     private static SingleExecutionPlan buildPlanForFetchFunction(String modelCodeResource, String fetchFunctionName)
     {
+        return buildPlanForFetchFunction(modelCodeResource, fetchFunctionName, false);
+    }
+
+    private static SingleExecutionPlan buildPlanForFetchFunction(String modelCodeResource, String fetchFunctionName, boolean funcWithFrom)
+    {
         InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(TestServiceRunner.class.getResourceAsStream(modelCodeResource)));
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(bufferedReader.lines().collect(Collectors.joining("\n")));
@@ -446,8 +476,8 @@ public class TestServiceRunner
 
         return PlanGenerator.generateExecutionPlan(
                 HelperValueSpecificationBuilder.buildLambda(fetchFunction.body, fetchFunction.parameters, new CompileContext.Builder(pureModel).build()),
-                pureModel.getMapping("test::Map"),
-                pureModel.getRuntime("test::Runtime"),
+                funcWithFrom ? null : pureModel.getMapping("test::Map"),
+                funcWithFrom ? null : pureModel.getRuntime("test::Runtime"),
                 null,
                 pureModel,
                 "vX_X_X",

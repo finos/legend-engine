@@ -257,7 +257,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     {
         // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableRuntime._package);
-        PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(packageableRuntime.name);
+        PackageableElement stub = new Root_meta_pure_runtime_PackageableRuntime_Impl("")._package(pack)._name(packageableRuntime.name);
         pack._childrenAdd(stub);
         return stub;
     }
@@ -267,7 +267,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     {
         // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableConnection._package);
-        PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(packageableConnection.name);
+        PackageableElement stub = new Root_meta_pure_runtime_PackageableConnection_Impl("")._package(pack)._name(packageableConnection.name);
         pack._childrenAdd(stub);
         // NOTE: the whole point of this processing is to put the Pure Connection in an index
         final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));

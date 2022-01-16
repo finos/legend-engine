@@ -36,6 +36,12 @@ function test::fetch(ip: String[*]): String[1]
    test::Person.all()->filter(x|$x.firstName->in($ip))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
 }
 
+function test::fetchWithFrom(ip: String[*]): String[1]
+{
+   test::Person.all()->filter(x|$x.firstName->in($ip))->from(test::Map, test::Runtime)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+
 
 ###Mapping
 Mapping test::Map

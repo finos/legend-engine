@@ -80,12 +80,14 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_Ge
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_AggregateValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_BasicColumnSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_SortInformation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapAggregation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapRank_Impl;
 import org.finos.legend.pure.generated.platform_pure_graph;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
@@ -132,7 +134,18 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr packageableElementPtr)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.context.resolvePackageableElement(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation);
+        PackageableElement packageableElement = this.context.resolvePackageableElement(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation);
+        if (packageableElement instanceof Root_meta_pure_runtime_PackageableRuntime)
+        {
+            return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+                    ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.resolveType("meta::pure::runtime::Runtime")))
+                    ._multiplicity(this.context.pureModel.getMultiplicity("one"))
+                    ._values(FastList.newListWith(this.context.resolveRuntime(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation)));
+        }
+        else if(packageableElement._classifierGenericType() == null)
+        {
+            throw new EngineException("Not supported as a value specification: " + packageableElementPtr.fullPath, packageableElementPtr.sourceInformation, EngineErrorType.COMPILATION);
+        }
 
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
                 ._genericType(packageableElement._classifierGenericType())
