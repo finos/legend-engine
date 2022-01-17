@@ -15,6 +15,7 @@
 package org.finos.legend.engine.external.format.flatdata.read.test;
 
 import net.javacrumbs.jsonunit.JsonMatchers;
+import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.external.format.flatdata.fromModel.ModelToFlatDataConfiguration;
 import org.finos.legend.engine.external.format.flatdata.toModel.FlatDataToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.test.ModelToSchemaGenerationTest;
@@ -25,12 +26,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Objects;
+import java.io.InputStream;
 
 import static org.finos.legend.engine.external.shared.format.model.test.SchemaToModelGenerationTest.newExternalSchemaSetGrammarBuilder;
 
@@ -325,6 +321,34 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeAndMapMultiSectionCsvResult.json")));
     }
 
+    @Test
+    public void testParameterInputFlatData()
+    {
+        String modelGrammar = firmModel();
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+
+        String grammar = firmSelfMapping() + parameterRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding", "flatDataInput");
+        String externalizeResult = runTest(generated,
+                grammar,
+                "{flatDataInput:String[1] | test::firm::model::Person.all()->graphFetch(" + personTree() + ")->externalize(test::gen::TestBinding)}",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                (InputStream) null,
+                Maps.mutable.of("flatDataInput", resourceAsString("queries/peopleWithExactHeadings.csv")));
+
+        Assert.assertEquals(resourceAsString("queries/peopleWithExactHeadings.csv"), externalizeResult);
+
+        String serializeResult = runTest(generated,
+                grammar,
+                "{flatDataInput:String[1] | test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")}",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                (InputStream) null,
+                Maps.mutable.of("flatDataInput", resourceAsString("queries/peopleWithExactHeadings.csv")));
+
+        MatcherAssert.assertThat(serializeResult, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
+    }
+
     private String tradeSelfMapping()
     {
         return "###Mapping\n" +
@@ -389,20 +413,5 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         config.purifyNames = true;
         config.schemaClassName = schemaClassName;
         return config;
-    }
-
-    private String resourceAsString(String path)
-    {
-        byte[] bytes;
-        try
-        {
-            bytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(path), "Failed to get resource " + path).toURI()));
-        }
-        catch (IOException | URISyntaxException e)
-        {
-            throw new RuntimeException(e);
-        }
-        String string = new String(bytes, StandardCharsets.UTF_8);
-        return string.replaceAll("\\R", "\n");
     }
 }
