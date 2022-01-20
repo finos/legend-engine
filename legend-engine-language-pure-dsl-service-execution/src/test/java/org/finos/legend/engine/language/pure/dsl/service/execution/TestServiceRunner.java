@@ -12,18 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.dsl.service.execution.test;
+package org.finos.legend.engine.language.pure.dsl.service.execution;
 
 import com.google.common.cache.CacheBuilder;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
-import org.finos.legend.engine.language.pure.dsl.service.execution.OperationalContext;
-import org.finos.legend.engine.language.pure.dsl.service.execution.ServiceRunnerInput;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
@@ -36,12 +34,17 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.DataTypeResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.internal.matchers.ThrowableMessageMatcher;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -55,6 +58,10 @@ import java.util.stream.Collectors;
 
 public class TestServiceRunner
 {
+
+    public static final Multiplicity PURE_ONE = new Multiplicity(1, 1);
+    public static final Multiplicity PURE_MANY = new Multiplicity(1, null);
+
     @Test
     public void testSimpleM2MServiceExecution()
     {
@@ -65,6 +72,18 @@ public class TestServiceRunner
 
         String result = simpleM2MServiceRunner.run(serviceRunnerInput);
         Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}}", result);
+        MatcherAssert.assertThat(simpleM2MServiceRunner.getResultType(), CoreMatchers.instanceOf(DataTypeResultType.class));
+    }
+
+    @Test
+    public void testNullParameterFailIfRequired()
+    {
+        SimpleM2MServiceRunner simpleM2MServiceRunner = new SimpleM2MServiceRunner();
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(null));
+        IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class, () -> simpleM2MServiceRunner.run(serviceRunnerInput));
+        MatcherAssert.assertThat(exception, ThrowableMessageMatcher.hasMessage(CoreMatchers.startsWith("Missing external parameter(s): input:String[1]")));
     }
 
     @Test
@@ -304,12 +323,9 @@ public class TestServiceRunner
         }
 
         @Override
-        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        public List<ServiceParameter> getParameters()
         {
-            newSingleParameterExecutionBuilder()
-                    .withParameter("input", serviceRunnerInput.getArgs().get(0))
-                    .withServiceRunnerInput(serviceRunnerInput)
-                    .executeToStream(outputStream);
+            return Collections.singletonList(new ServiceParameter("input", String.class, PURE_ONE));
         }
     }
 
@@ -321,13 +337,12 @@ public class TestServiceRunner
         }
 
         @Override
-        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        public List<ServiceParameter> getParameters()
         {
-            newExecutionBuilder()
-                    .withParameter("input1", serviceRunnerInput.getArgs().get(0))
-                    .withParameter("input2", serviceRunnerInput.getArgs().get(1))
-                    .withServiceRunnerInput(serviceRunnerInput)
-                    .executeToStream(outputStream);
+            return Lists.mutable.of(
+                    new ServiceParameter("input1", String.class, PURE_ONE),
+                    new ServiceParameter("input2", String.class, PURE_ONE)
+            );
         }
     }
 
@@ -339,12 +354,9 @@ public class TestServiceRunner
         }
 
         @Override
-        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        public List<ServiceParameter> getParameters()
         {
-            newSingleParameterExecutionBuilder()
-                    .withParameter("input", serviceRunnerInput.getArgs().get(0))
-                    .withServiceRunnerInput(serviceRunnerInput)
-                    .executeToStream(outputStream);
+            return Collections.singletonList(new ServiceParameter("input", String.class, PURE_ONE));
         }
     }
 
@@ -356,12 +368,9 @@ public class TestServiceRunner
         }
 
         @Override
-        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        public List<ServiceParameter> getParameters()
         {
-            newExecutionBuilder()
-                    .withParameter("ip", serviceRunnerInput.getArgs().get(0))
-                    .withServiceRunnerInput(serviceRunnerInput)
-                    .executeToStream(outputStream);
+            return Collections.singletonList(new ServiceParameter("ip", String.class, PURE_MANY));
         }
     }
 
@@ -376,11 +385,17 @@ public class TestServiceRunner
         }
 
         @Override
+        public List<ServiceParameter> getParameters()
+        {
+            return Collections.emptyList();
+        }
+
+        @Override
         public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
         {
             try (JavaHelper.ThreadContextClassLoaderScope ignored = JavaHelper.withCurrentThreadContextClassLoader(compiler.getClassLoader()))
             {
-                newExecutionBuilder().withServiceRunnerInput(serviceRunnerInput).executeToStream(outputStream);
+                super.run(serviceRunnerInput, outputStream);
             }
         }
     }

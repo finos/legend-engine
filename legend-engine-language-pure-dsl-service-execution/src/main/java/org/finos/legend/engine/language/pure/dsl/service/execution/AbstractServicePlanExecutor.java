@@ -24,14 +24,22 @@ import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
+import org.finos.legend.engine.plan.execution.result.MultiResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
+import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
@@ -43,11 +51,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public abstract class AbstractServicePlanExecutor implements ServiceRunner
@@ -122,19 +136,82 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         this(servicePath, executionPlanResource, DEFAULT_ALLOW_JAVA_COMPILATION, storeExecutors);
     }
 
+    @Override
     public String getServicePath()
     {
         return this.servicePath;
     }
 
+    @Override
     public PlanExecutorInfo getPlanExecutorInfo()
     {
         return this.executor.getPlanExecutorInfo();
     }
 
+    @Override
+    public ResultType getResultType()
+    {
+        if (this.plan instanceof SingleExecutionPlan)
+        {
+            return ((SingleExecutionPlan) this.plan).rootExecutionNode.resultType;
+        }
+        else if(this.plan instanceof CompositeExecutionPlan)
+        {
+            List<ResultType> resultTypes = ((CompositeExecutionPlan) this.plan).executionPlans.values()
+                    .stream()
+                    .map(x -> x.rootExecutionNode.resultType)
+                    .collect(Collectors.toList());
+
+            Assert.assertFalse(resultTypes.isEmpty(), () -> "Composite plan without any actual plan?");
+            Assert.assertTrue(resultTypes.stream().allMatch(x -> x.getClass().equals(resultTypes.get(0).getClass())), () -> "Composite with different result types among plans?");
+            return resultTypes.get(0);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Not supported: " + this.plan.getClass());
+        }
+    }
+
+    protected ExecutionBuilder executionBuilder(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
+    {
+        List<ServiceParameter> parameters = this.getParameters();
+
+        List<Object> args = serviceRunnerInput.getArgs();
+
+        if (args.size() != parameters.size())
+        {
+            throw new IllegalArgumentException("Unexpected number of parameters. Expected parameter size: " + parameters.size() +  ", Passed parameter size: " + args.size());
+        }
+
+        ExecutionBuilder executionBuilder = newExecutionBuilder(parameters.size()).withServiceRunnerInput(serviceRunnerInput).withStreamProvider(streamProvider);
+
+        for (int i = 0; i < parameters.size(); i++)
+        {
+            ServiceParameter executionParameter = parameters.get(i);
+            Object arg = args.get(i);
+            if (arg != null)
+            {
+                executionBuilder = executionBuilder.withParameter(executionParameter.getName(), arg);
+            }
+        }
+
+        return executionBuilder;
+    }
+
+    @Override
     public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
     {
-        throw new UnsupportedOperationException("Not supported!");
+        this.run(serviceRunnerInput, null, outputStream);
+    }
+
+    public void run(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider, OutputStream outputStream)
+    {
+        this.executionBuilder(serviceRunnerInput, streamProvider).executeToStream(outputStream);
+    }
+
+    public Result execute(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
+    {
+        return this.executionBuilder(serviceRunnerInput, streamProvider).execute();
     }
 
     @Override
@@ -194,40 +271,44 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         return new MultiParameterExecutionBuilder();
     }
 
-    protected Result execute(Map<String, ?> parameters, StreamProvider streamProvider)
-    {
-        return this.executor.execute(this.plan, parameters, streamProvider);
-    }
-
-    protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+    protected Result execute(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
     {
         MutableList<CommonProfile> profiles = Lists.mutable.empty();
-        Identity identity = serviceRunnerInput.getIdentity();
-        if (identity != null)
+        PlanExecutionContext planExecutionContext = null;
+
+        if(serviceRunnerInput != null)
         {
-            Optional<LegendKerberosCredential> credentialHolder = identity.getCredential(LegendKerberosCredential.class);
-            if (credentialHolder.isPresent())
+            Identity identity = serviceRunnerInput.getIdentity();
+            if (identity != null)
             {
-                LegendKerberosCredential legendKerberosCredential = credentialHolder.get();
-                KerberosProfile kerberosProfile = new KerberosProfile(legendKerberosCredential.getSubject(), null);
-                profiles.add(kerberosProfile);
+                Optional<LegendKerberosCredential> credentialHolder = identity.getCredential(LegendKerberosCredential.class);
+                if (credentialHolder.isPresent())
+                {
+                    LegendKerberosCredential legendKerberosCredential = credentialHolder.get();
+                    KerberosProfile kerberosProfile = new KerberosProfile(legendKerberosCredential.getSubject(), null);
+                    profiles.add(kerberosProfile);
+                }
+            }
+
+            if (serviceRunnerInput.getOperationalContext() != null && serviceRunnerInput.getOperationalContext().getGraphFetchCrossAssociationKeysCacheConfig() != null)
+            {
+                List<GraphFetchCache> graphFetchCaches = serviceRunnerInput
+                        .getOperationalContext()
+                        .getGraphFetchCrossAssociationKeysCacheConfig()
+                        .entrySet()
+                        .stream()
+                        .map(e -> ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(e.getValue(), e.getKey()))
+                        .collect(Collectors.toList());
+
+                planExecutionContext = new PlanExecutionContext(graphFetchCaches);
             }
         }
-        PlanExecutionContext planExecutionContext = null;
-        if (serviceRunnerInput.getOperationalContext() != null && serviceRunnerInput.getOperationalContext().getGraphFetchCrossAssociationKeysCacheConfig() != null)
-        {
-            List<GraphFetchCache> graphFetchCaches = serviceRunnerInput
-                    .getOperationalContext()
-                    .getGraphFetchCrossAssociationKeysCacheConfig()
-                    .entrySet()
-                    .stream()
-                    .map(e -> ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(e.getValue(), e.getKey()))
-                    .collect(Collectors.toList());
+        return this.executor.execute(this.plan, parameters, streamProvider, profiles, planExecutionContext);
+    }
 
-            planExecutionContext = new PlanExecutionContext(graphFetchCaches);
-        }
-
-        Result result = this.executor.execute(this.plan, parameters, null, profiles, planExecutionContext);
+    protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider, OutputStream outputStream)
+    {
+        Result result = execute(parameters, serviceRunnerInput, streamProvider);
         serializeResultToStream(result, serviceRunnerInput.getSerializationFormat(), outputStream);
     }
 
@@ -235,33 +316,60 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     {
         try
         {
-            if (result instanceof ErrorResult)
+            result.accept(new ResultVisitor<Void>()
             {
-                throw new RuntimeException("Error: " + ((ErrorResult) result).getMessage());
-            }
-            else if (result instanceof ConstantResult || result instanceof StreamingResult)
-            {
-                try
+                @Override
+                public Void visit(ErrorResult errorResult)
                 {
-                    if (result instanceof ConstantResult)
+                    throw new RuntimeException("Error: " + ((ErrorResult) result).getMessage());
+                }
+
+                @Override
+                public Void visit(StreamingObjectResult tStreamingObjectResult)
+                {
+                    return stream(tStreamingObjectResult);
+                }
+
+                @Override
+                public Void visit(JsonStreamingResult jsonStreamingResult)
+                {
+                    return stream(jsonStreamingResult);
+                }
+
+                @Override
+                public Void visit(ConstantResult constantResult)
+                {
+                    try
                     {
                         String serializedResult = ObjectMapperFactory.getNewStandardObjectMapper().writeValueAsString(((ConstantResult) result).getValue());
                         outputStream.write(serializedResult.getBytes());
+                        return null;
                     }
-                    else
+                    catch (IOException e)
                     {
-                        ((StreamingResult) result).stream(outputStream, serializationFormat);
+                        throw new UncheckedIOException("Error serializing result", e);
                     }
                 }
-                catch (IOException e)
+
+                @Override
+                public Void visit(MultiResult multiResult)
                 {
-                    throw new RuntimeException("Error serializing result", e);
+                    throw new RuntimeException("Unknown result type: " + result.getClass().getCanonicalName());
                 }
-            }
-            else
-            {
-                throw new RuntimeException("Unknown result type: " + result.getClass().getCanonicalName());
-            }
+
+                private Void stream(StreamingResult streamingResult)
+                {
+                    try
+                    {
+                        streamingResult.stream(outputStream, serializationFormat);
+                        return null;
+                    }
+                    catch (IOException e)
+                    {
+                        throw new UncheckedIOException("Error serializing result", e);
+                    }
+                }
+            });
         }
         finally
         {
@@ -294,12 +402,12 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
         public Result execute()
         {
-            return AbstractServicePlanExecutor.this.execute(getParameters(), this.streamProvider);
+            return AbstractServicePlanExecutor.this.execute(getParameters(), this.serviceRunnerInput, this.streamProvider);
         }
 
         public void executeToStream(OutputStream outputStream)
         {
-            AbstractServicePlanExecutor.this.executeToStream(getParameters(), this.serviceRunnerInput, outputStream);
+            AbstractServicePlanExecutor.this.executeToStream(getParameters(), this.serviceRunnerInput, this.streamProvider, outputStream);
         }
 
         protected abstract void addParameter(String name, Object value);
@@ -324,12 +432,12 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
     private class SingleParameterExecutionBuilder extends ExecutionBuilder
     {
-        private Map<String, Object> parameters;
+        private Map<String, Object> parameters = Collections.emptyMap();
 
         @Override
         protected void addParameter(String name, Object value)
         {
-            if (this.parameters != null)
+            if (!this.parameters.isEmpty())
             {
                 throw new IllegalStateException("Single parameter already exists");
             }

@@ -16,6 +16,8 @@ package org.finos.legend.engine.language.pure.dsl.service.execution;
 
 import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -47,6 +49,21 @@ public interface ServiceRunner
      * @return plan executor information
      */
     PlanExecutorInfo getPlanExecutorInfo();
+
+    /**
+     * Get the service result output type
+     * @return service result output type
+     */
+    ResultType getResultType();
+
+    /**
+     * Get the list of parameters the service expects
+     * @return service parameters
+     */
+    default List<ServiceParameter> getParameters()
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
     /**
      * Run the service and return the serialized result

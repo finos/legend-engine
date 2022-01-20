@@ -150,6 +150,11 @@ public class PlanExecutor
     // TODO: Build a user friendly API
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, PlanExecutionContext planExecutionContext)
     {
+        return execute(executionPlan, params, inputStreamProvider, null, planExecutionContext);
+    }
+
+    public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
+    {
         SingleExecutionPlan singleExecutionPlan = executionPlan.getSingleExecutionPlan(params);
         try
         {
@@ -159,7 +164,7 @@ public class PlanExecutor
             }
             Map<String, Result> vars = Maps.mutable.ofInitialCapacity(params.size());
             params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
-            return execute(singleExecutionPlan, vars, null, null, planExecutionContext);
+            return execute(singleExecutionPlan, vars, (String) null, profiles, planExecutionContext);
         }
         finally
         {
