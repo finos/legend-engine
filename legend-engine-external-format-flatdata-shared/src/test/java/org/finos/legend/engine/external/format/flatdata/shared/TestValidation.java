@@ -14,17 +14,9 @@
 
 package org.finos.legend.engine.external.format.flatdata.shared;
 
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParser;
-import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidation;
-import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidationResult;
-import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
-public class TestValidation
+public class TestValidation extends AbstractValidationTest
 {
     @Test
     public void valid()
@@ -362,36 +354,4 @@ public class TestValidation
              "Invalid address for 'Heading' (Expected column number) in section 'sectionName'"
         );
     }
-
-    private void test(String flatDataGrammar, String... expectedErrors)
-    {
-        FlatData flatData = new FlatDataSchemaParser(flatDataGrammar).parse();
-        FlatDataValidationResult result = FlatDataValidation.validate(flatData);
-        if (expectedErrors.length == 0)
-        {
-            if (!result.isValid())
-            {
-                Assert.fail("Result should be valid but has defects:\n" + result.getDefects().stream().map(Object::toString).collect(Collectors.joining("\n")));
-            }
-        }
-        else
-        {
-            Assert.assertFalse("Result should be invalid", result.isValid());
-            result.getDefects().forEach(d ->
-                                        {
-                                            if (!Arrays.asList(expectedErrors).contains(d.toString()))
-                                            {
-                                                Assert.fail("Unexpected defect: " + d);
-                                            }
-                                        });
-            Arrays.asList(expectedErrors).forEach(e ->
-                                                  {
-                                                      if (!result.getDefects().stream().anyMatch(d -> e.equals(d.toString())))
-                                                      {
-                                                          Assert.fail("Missing defect: " + e);
-                                                      }
-                                                  });
-        }
-    }
-
 }

@@ -23,15 +23,13 @@ import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDa
 import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
-/* Driver to access Bloomberg metadata from the preceeding Bloomberg driver */
-public class BloombergMetadataDriverDescription implements FlatDataDriverDescription, FlatDataValidator
+/* Driver to handle Bloomberg getactions format */
+public class BloombergActionsDriverDescription extends AbstractBloombergDriverDescription implements FlatDataValidator
 {
-    public static final String ID = "BloombergMetadata";
+    public static final String ID = "BloombergActions";
 
     @Override
     public String getId()
@@ -46,21 +44,23 @@ public class BloombergMetadataDriverDescription implements FlatDataDriverDescrip
         {
             throw new RuntimeException("Invalid connection type for this driver");
         }
-        return new BloombergMetadataReadDriver<>(section, context);
+        return new BloombergActionsReadDriver<>(section, context);
     }
 
     @Override
     public List<FlatDataVariable> getDeclares()
     {
-        List<FlatDataVariable> result = new ArrayList<>(CommonDataHandler.dataTypeParsingVariables());
-        result.add(BloombergKeyValues.VARIABLE_LAST_METADATA);
+        List<FlatDataVariable> result = new ArrayList<>(super.getDeclares());
+        result.add(BloombergActionsReadDriver.VARIABLE_ACTIONS_RECORD);
         return result;
     }
 
     @Override
     public List<PropertyDescription> getSectionProperties()
     {
-        return Collections.emptyList();
+        return new PropertyDescription.Builder(CommonDataHandler.dataTypeParsingProperties())
+                .booleanProperty(BloombergActionsReadDriver.INCLUDE_NO_ACTION_RECORDS)
+                .build();
     }
 
     @Override
@@ -70,35 +70,8 @@ public class BloombergMetadataDriverDescription implements FlatDataDriverDescrip
     }
 
     @Override
-    public boolean isSelfDescribing()
+    public List<FlatDataDefect> validate(FlatData store, FlatDataSection section)
     {
-        return true;
-    }
-
-    @Override
-    public List<FlatDataDefect> validate(FlatData flatData, FlatDataSection section)
-    {
-        List<FlatDataDefect> defects = new ArrayList<>();
-        List<String> allowedPredecessors = Arrays.asList(BloombergDataDriverDescription.ID, BloombergActionsDriverDescription.ID);
-        List<FlatDataSection> sections = flatData.getSections();
-        FlatDataSection predecessor = null;
-        for (int i = sections.indexOf(section) -1; predecessor == null && i>=0; i--)
-        {
-            if (!sections.get(i).getDriverId().equals(BloombergExtendActionDriverDescription.ID))
-            {
-                predecessor = sections.get(i);
-            }
-        }
-        if (predecessor == null || !allowedPredecessors.contains(predecessor.getDriverId()))
-        {
-            defects.add(new FlatDataDefect(flatData, section, "BloombergMetadata section must follow a Bloomberg section"));
-        }
-        return defects;
-    }
-
-    @Override
-    public <T> Function<FlatData, FlatDataProcessor.Builder<T>> getProcessorBuilderFactory()
-    {
-        return BloombergProcessor::newBuilder;
+        return Collections.emptyList();
     }
 }
