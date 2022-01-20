@@ -98,4 +98,83 @@ public class TestServiceStoreCompilationUtils
             "  contentType: 'application/x.flatdata';\n" +
             "  modelIncludes: [ test::model::B ];\n" +
             "}\n";
+
+    static final String JSON_BINDING =
+            "###Pure\n" +
+            "import meta::external::store::service::showcase::domain::*;\n" +
+            "\n" +
+            "Class meta::external::store::service::showcase::domain::ApiResponse\n" +
+            "{\n" +
+            "    metadata  : Metadata[1];\n" +
+            "    employees : Person[*];\n" +
+            "    firms     : Firm[*];\n" +
+            "}\n" +
+            "\n" +
+            "Class meta::external::store::service::showcase::domain::Metadata\n" +
+            "{\n" +
+            "    noOfRecords : Integer[1];\n" +
+            "}\n" +
+            "\n" +
+            "Class meta::external::store::service::showcase::domain::Person\n" +
+            "{\n" +
+            "    firstName  : String[1];\n" +
+            "    lastName   : String[1];\n" +
+            "    middleName : String[0..1];\n" +
+            "}\n" +
+            "\n" +
+            "Class meta::external::store::service::showcase::domain::Firm\n" +
+            "{\n" +
+            "    firmName : String[1];\n" +
+            "    firmId   : Integer[1];\n" +
+            "    address  : Address[*];\n" +
+            "}\n" +
+            "\n" +
+            "Class meta::external::store::service::showcase::domain::Address\n" +
+            "{\n" +
+            "    street : String[1];\n" +
+            "}\n" +
+            "\n" +
+            "Association meta::external::store::service::showcase::domain::Employment\n" +
+            "{\n" +
+            "    employees : Person[*];\n" +
+            "    firm      : Firm[0..1];\n" +
+            "}\n\n" +
+            "###ServiceStore\n" +
+            "ServiceStore meta::external::store::service::showcase::store::EmployeesServiceStore\n" +
+            "(\n" +
+            "   description : 'Showcase Service Store Fragment support';\n" +
+            "\n" +
+            "   Service EmployeesService\n" +
+            "   (\n" +
+            "      path     : '/employees';\n" +
+            "      method   : GET;\n" +
+            "      security : [];\n" +
+            "      response : [meta::external::store::service::showcase::domain::ApiResponse <- meta::external::store::service::showcase::store::ApiResponseSchemaBinding];\n" +
+            "   )\n" +
+            "\n" +
+            "   Service EmployeesServiceByFirmId\n" +
+            "   (\n" +
+            "      path     : '/employeesByFirmId/{firmId}';\n" +
+            "      method   : GET;\n" +
+            "      parameters :\n" +
+            "      (\n" +
+            "         firmId : Integer (location = path)\n" +
+            "      );\n" +
+            "      security : [];\n" +
+            "      response : [meta::external::store::service::showcase::domain::ApiResponse <- meta::external::store::service::showcase::store::ApiResponseSchemaBinding];\n" +
+            "   )\n" +
+            ")\n" +
+            "\n" +
+            "###ExternalFormat\n" +
+            "Binding meta::external::store::service::showcase::store::ApiResponseSchemaBinding\n" +
+            "{\n" +
+            "  contentType   : 'application/json';\n" +
+            "  modelIncludes : [\n" +
+            "                    meta::external::store::service::showcase::domain::Metadata,\n" +
+            "                    meta::external::store::service::showcase::domain::Person,\n" +
+            "                    meta::external::store::service::showcase::domain::Firm,\n" +
+            "                    meta::external::store::service::showcase::domain::Address,\n" +
+            "                    meta::external::store::service::showcase::domain::ApiResponse\n" +
+            "                  ];\n" +
+            "}\n\n";
 }
