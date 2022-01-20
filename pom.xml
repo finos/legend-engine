@@ -69,6 +69,7 @@
         <module>legend-engine-language-pure-dsl-text</module>
         <module>legend-engine-language-pure-dsl-data-space</module>
         <module>legend-engine-language-pure-dsl-generation</module>
+        <module>legend-engine-language-pure-dsl-persistence</module>
         <module>legend-engine-language-pure-dsl-service</module>
         <module>legend-engine-language-pure-dsl-service-generation</module>
         <module>legend-engine-language-pure-dsl-service-execution</module>
@@ -90,7 +91,6 @@
         <module>legend-engine-protocol-relational</module>
         <module>legend-engine-protocol-external-store-service</module>
         <module>legend-engine-protocol-graphQL</module>
-        <module>legend-engine-protocol-persistence</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
         <module>legend-engine-query-graphQL</module>
@@ -102,7 +102,6 @@
         <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
-        <module>legend-engine-language-pure-dsl-persistence</module>
     </modules>
 
     <properties>
@@ -674,6 +673,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-dsl-persistence</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
