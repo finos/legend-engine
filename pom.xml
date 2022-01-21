@@ -127,7 +127,7 @@
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
-        <h2.version>1.4.200</h2.version>
+        <h2.version>2.1.210</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
