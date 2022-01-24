@@ -359,6 +359,12 @@ public class DelimitedLineReader implements LineReader
                     skipChar();
                     return inQuotedValue;
                 }
+                else if (delimiterTest.test(LineParser.this))
+                {
+                    finishValue();
+                    delimiterConsumer.accept(LineParser.this);
+                    return startOfValue;
+                }
                 else
                 {
                     addCharToValue();

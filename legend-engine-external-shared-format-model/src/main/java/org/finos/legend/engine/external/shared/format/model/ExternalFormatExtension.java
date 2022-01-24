@@ -14,14 +14,13 @@
 
 package org.finos.legend.engine.external.shared.format.model;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
 import org.finos.legend.engine.external.shared.format.model.toModel.SchemaToModelConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.*;
 
 import java.util.List;
 
@@ -67,7 +66,7 @@ public interface ExternalFormatExtension<
      * are lexically and semantically valid. Errors are reported by throwing an
      * {@link org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException}.
      */
-    public abstract Metamodel compileSchema(ExternalSchemaCompileContext context);
+    Metamodel compileSchema(ExternalSchemaCompileContext context);
 
     /**
      * Called as part of Binding compilation to verify that the model and schema match such that serialization and deserialization
@@ -79,21 +78,61 @@ public interface ExternalFormatExtension<
     /**
      * Called to convert a compiled schema detail back to its textual (schema-specific grammar) form
      */
-    public abstract String metamodelToText(Metamodel schemaDetail);
+    String metamodelToText(Metamodel schemaDetail);
+
+    /**
+     * Determines whether this extension supports model generation.
+     */
+    default boolean supportsModelGeneration()
+    {
+        return false;
+    }
+
+    /**
+     * Provides the properties used to configure model generation.
+     */
+    default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter>  getModelGenerationProperties(PureModel pureModel)
+    {
+        if (this.supportsModelGeneration())
+        {
+            throw new IllegalStateException("Must supply properties if supporting generation");
+        }
+        return Lists.mutable.empty();
+    }
 
     /**
      * Called when an external schema of this format is used to generate a PURE model.
      */
-    public abstract Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schema, ModelGenConfig config, PureModel pureModel);
+    Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schema, ModelGenConfig config, PureModel pureModel);
+
+    /**
+     * Determines whether this extension supports schema generation.
+     */
+    default boolean supportsSchemaGeneration()
+    {
+        return false;
+    }
+
+    /**
+     * Provides the properties used to configure model generation.
+     */
+    default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter>  getSchemaGenerationProperties(PureModel pureModel)
+    {
+        if (this.supportsSchemaGeneration())
+        {
+            throw new IllegalStateException("Must supply properties if supporting generation");
+        }
+        return Lists.mutable.empty();
+    }
 
     /**
      * Called when a PURE model is used to generate an external schema of this format.
      */
-    public abstract Root_meta_external_shared_format_binding_Binding generateSchema(SchemaGenConfig config, PureModel pureModel);
+    Root_meta_external_shared_format_binding_Binding generateSchema(SchemaGenConfig config, PureModel pureModel);
 
     /**
      * Called to obtain the PackageableElement names (elementToPath) that are required to be registered for elementToPath.  This is usually the serializer
      * extension functions.
      */
-    public abstract List<String> getRegisterablePackageableElementNames();
+    List<String> getRegisterablePackageableElementNames();
 }

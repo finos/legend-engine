@@ -5,10 +5,10 @@ import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDa
 
 public class IntegerVariable
 {
-    private final FlatDataProcessingContext<?> context;
+    private final FlatDataProcessingContext context;
     private final FlatDataVariable variable;
 
-    private IntegerVariable(FlatDataProcessingContext<?> context, FlatDataVariable variable)
+    private IntegerVariable(FlatDataProcessingContext context, FlatDataVariable variable)
     {
         this.context = context;
         this.variable = variable;
@@ -57,7 +57,7 @@ public class IntegerVariable
         return result;
     }
 
-    public static IntegerVariable initializeIfMissing(FlatDataProcessingContext<?> context, FlatDataVariable variable, long value)
+    public static IntegerVariable initializeIfMissing(FlatDataProcessingContext context, FlatDataVariable variable, long value)
     {
         return IntegerVariable.initialize(context, variable, context.getVariableValue(variable.getName(), value));
     }

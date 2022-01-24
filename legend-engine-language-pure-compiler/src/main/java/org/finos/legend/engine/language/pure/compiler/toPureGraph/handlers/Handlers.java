@@ -50,6 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Tds
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -64,12 +65,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Handlers
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
+    private static final String META_PACKAGE_NAME = "meta";
+
+    private Set<String> registeredMetaPackages = Sets.mutable.empty();
 
     private static Collection toCollection(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification vs)
     {
@@ -1048,6 +1053,9 @@ public class Handlers
         register(h("meta::pure::functions::math::sum_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
                 h("meta::pure::functions::math::sum_Integer_MANY__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
                 h("meta::pure::functions::math::sum_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
+
+        register(m(m(h("meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> ps.size() == 4)),
+                m(h("meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> true))));
     }
 
     private void registerStdDeviations()
@@ -1081,8 +1089,24 @@ public class Handlers
 
     public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, CompileContext compileContext, ProcessingContext processingContext)
     {
-        FunctionExpressionBuilder builder = compileContext.resolveFunctionBuilder(functionName, this.map, sourceInformation, processingContext);
+        FunctionExpressionBuilder builder = compileContext.resolveFunctionBuilder(functionName, this.registeredMetaPackages, this.map, sourceInformation, processingContext);
         return builder.buildFunctionExpression(parameters, openVariables, compileContext, processingContext);
+    }
+
+    private void registerMetaPackage(FunctionHandler... handlers)
+    {
+        for (FunctionHandler handler: handlers)
+        {
+            org.finos.legend.pure.m3.coreinstance.Package pkg = handler.getFunc()._package();
+            if (pkg != null)
+            {
+                String path = platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(pkg, pureModel.getExecutionSupport());
+                if (path.startsWith(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
+                {
+                    registeredMetaPackages.add(path);
+                }
+            }
+        }
     }
 
     private void register(String name, boolean isNative, ReturnInference inference)
@@ -1095,7 +1119,6 @@ public class Handlers
         FunctionHandler[] handlers = {handler};
         register(handlers);
     }
-
 
     public void register(UserDefinedFunctionHandler handler)
     {
@@ -1128,6 +1151,7 @@ public class Handlers
         {
             mayReplace(h);
         }
+        handler.handlers().forEach(x -> registerMetaPackage(x));
         map.put(handler.getFunctionName(), handler);
     }
 
@@ -1138,6 +1162,7 @@ public class Handlers
         {
             mayReplace(h);
         }
+        handler.handlers().forEach(x -> registerMetaPackage(x));
         map.put(handler.getFunctionName(), handler);
     }
 
@@ -1766,6 +1791,8 @@ public class Handlers
         map.put("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::math::olap::rank_Any_MANY__Map_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
+        map.put("meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 4 && Sets.immutable.with("Nil","Number","Decimal","Float","Integer").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Float".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Boolean".equals(ps.get(2)._genericType()._rawType()._name())) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "Boolean".equals(ps.get(3)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 2 && Sets.immutable.with("Nil","Number","Decimal","Float","Integer").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Float".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::pi__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 0);
         map.put("meta::pure::functions::math::plus_Decimal_MANY__Decimal_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Decimal".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::plus_Float_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Float".equals(ps.get(0)._genericType()._rawType()._name())));

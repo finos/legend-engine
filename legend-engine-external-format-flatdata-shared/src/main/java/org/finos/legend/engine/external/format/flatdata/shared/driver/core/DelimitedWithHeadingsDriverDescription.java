@@ -20,6 +20,7 @@ public class DelimitedWithHeadingsDriverDescription extends DelimitedDriverDescr
         return new PropertyDescription.Builder(super.getSectionProperties())
                 .booleanProperty(DelimitedWithHeadingsReadDriver.MODELLED_COUMNNS_REQIURED)
                 .booleanProperty(DelimitedWithHeadingsReadDriver.ONLY_MODELLED_COLUMNS)
+                .booleanProperty(DelimitedWithHeadingsReadDriver.MATCH_COLUMNS_CASE_INSENSITIVE)
                 .build();
     }
 

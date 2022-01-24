@@ -107,6 +107,7 @@ public class TestExecutionScope implements Closeable
         }
         catch (Exception e)
         {
+            server.shutdown();
             server.stop();
             throw e;
         }

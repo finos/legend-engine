@@ -2,13 +2,13 @@ package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.ObjectCursor;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.ObjectStreamConnection;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.IntegerVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.BooleanParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DateParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DateTimeParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DecimalParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.IntegerParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.ValueParser;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.IntegerVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.Cursor;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataWriteDriver;
@@ -32,13 +32,13 @@ public abstract class DelimitedWriteDriver<T> implements FlatDataWriteDriver<T>
 {
     public final DelimitedDriverHelper helper;
     public final FlatDataRecordType recordType;
-    private final FlatDataProcessingContext<T> context;
+    private final FlatDataProcessingContext context;
     private final ObjectStreamConnection connection;
     private final String nullString;
 
     DelimitedWriteDriver(DelimitedDriverHelper helper)
     {
-        this.context = (FlatDataProcessingContext<T>) helper.context;
+        this.context = helper.context;
         this.helper = helper;
         this.recordType = Objects.requireNonNull(helper.section.getRecordType());
         this.connection = (ObjectStreamConnection) context.getConnection();

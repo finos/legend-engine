@@ -37,6 +37,21 @@ delegatedKerberosAuthConfig:            BRACE_OPEN
 ;
 serverPrincipalConfig:                  SERVER_PRINCIPAL COLON STRING SEMI_COLON
 ;
+userNamePasswordAuth:                   USERNAME_PASSWORD_AUTH
+                                            BRACE_OPEN
+                                                (
+                                                    userNamePasswordAuthBaseVaultRef
+                                                    | userNamePasswordAuthUserNameVaultRef
+                                                    | userNamePasswordAuthPasswordVaultRef
+                                                )*
+                                            BRACE_CLOSE
+;
+userNamePasswordAuthBaseVaultRef:       USERNAME_PASSWORD_AUTH_BASE_VAULT_REF COLON STRING SEMI_COLON
+;
+userNamePasswordAuthUserNameVaultRef:   USERNAME_PASSWORD_AUTH_USERNAME_VAULT_REF COLON STRING SEMI_COLON
+;
+userNamePasswordAuthPasswordVaultRef:   USERNAME_PASSWORD_AUTH_PASSWORD_VAULT_REF COLON STRING SEMI_COLON
+;
 
 snowflakePublicAuth:                    SNOWFLAKE_PUBLIC_AUTH
                                             BRACE_OPEN

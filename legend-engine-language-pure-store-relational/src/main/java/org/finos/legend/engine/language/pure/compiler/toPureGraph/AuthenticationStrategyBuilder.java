@@ -44,6 +44,14 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
             return new Root_meta_pure_alloy_connections_alloy_authentication_ApiTokenAuthenticationStrategy_Impl("")
                     ._apiToken(((ApiTokenAuthenticationStrategy) authenticationStrategy).apiToken);
         }
+        else if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
+        {
+            UserNamePasswordAuthenticationStrategy userNamePasswordAuthenticationStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
+            return new Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl("")
+                    ._baseVaultReference(userNamePasswordAuthenticationStrategy.baseVaultReference)
+                    ._userNameVaultReference(userNamePasswordAuthenticationStrategy.userNameVaultReference)
+                    ._passwordVaultReference(userNamePasswordAuthenticationStrategy.passwordVaultReference);
+        }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {
             return new Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy_Impl("")

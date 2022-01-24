@@ -15,6 +15,8 @@
 package org.finos.legend.engine.plan.execution.stores.relational;
 
 import com.google.common.collect.Iterators;
+import io.opentracing.Scope;
+import io.opentracing.util.GlobalTracer;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
@@ -23,6 +25,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
@@ -173,6 +176,12 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     }
 
     @Override
+    public Boolean visit(SqlServerCommands sqlServerCommands)
+    {
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    @Override
     public Boolean visit(BigQueryCommands bigQueryCommands)
     {
         throw new UnsupportedOperationException("not yet implemented");
@@ -180,7 +189,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
 
     private boolean checkedExecute(Statement statement, String sql)
     {
-        try
+        try (Scope ignored = GlobalTracer.get().buildSpan("temp table sql execution").withTag("sql", sql).startActive(true))
         {
             LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTION_RELATIONAL_COMMIT, sql, 0.0d).toString());
             return statement.execute(sql);

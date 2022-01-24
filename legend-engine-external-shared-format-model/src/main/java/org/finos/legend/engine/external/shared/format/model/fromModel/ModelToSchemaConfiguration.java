@@ -19,9 +19,8 @@ import org.finos.legend.engine.external.shared.format.model.GenerationConfigurat
 import java.util.ArrayList;
 import java.util.List;
 
-public class ModelToSchemaConfiguration extends GenerationConfiguration
+public abstract class ModelToSchemaConfiguration extends GenerationConfiguration
 {
     public List<String> sourceModel = new ArrayList<>();
     public String targetSchemaSet;
-    public String format;
 }

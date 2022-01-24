@@ -45,8 +45,8 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
 
         PureModelContextData model = generateModel(schemaCode, config("test::Simple", "test::gen", false));
 
-        String expected = ">>>test::gen::data\n" +
-                "Class test::gen::data extends meta::pure::metamodel::type::Any\n" +
+        String expected = ">>>test::gen::dataRecord\n" +
+                "Class test::gen::dataRecord extends meta::pure::metamodel::type::Any\n" +
                 "{\n" +
                 "  Name: String[1];\n" +
                 "  Employed: Integer[0..1];\n" +
@@ -81,8 +81,8 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
 
         PureModelContextData model = generateModel(schemaCode, config("test::Simple", "test::gen", true));
 
-        String expected = ">>>test::gen::Data\n" +
-                "Class test::gen::Data extends meta::pure::metamodel::type::Any\n" +
+        String expected = ">>>test::gen::DataRecord\n" +
+                "Class test::gen::DataRecord extends meta::pure::metamodel::type::Any\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "  employed: Integer[0..1];\n" +
@@ -94,13 +94,91 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
         Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
     }
 
+    @Test
+    public void testMultiSectionCsv()
+    {
+        String schemaCode = newExternalSchemaSetGrammarBuilder("test::Simple", "FlatData")
+                .withSchemaText("section header: DelimitedWithoutHeadings\n" +
+                                        "{\n" +
+                                        "  scope.forNumberOfLines: 1;\n" +
+                                        "  delimiter: ',';\n" +
+                                        "\n" +
+                                        "  Record\n" +
+                                        "  {\n" +
+                                        "    Nationality {1} : STRING;\n" +
+                                        "  }\n" +
+                                        "}" +
+                                        "section data: DelimitedWithHeadings\n" +
+                                        "{\n" +
+                                        "  scope.untilEof;\n" +
+                                        "  delimiter: ',';\n" +
+                                        "\n" +
+                                        "  Record\n" +
+                                        "  {\n" +
+                                        "    Name            : STRING;\n" +
+                                        "    Employed        : INTEGER(optional);\n" +
+                                        "    IQ              : INTEGER(optional);\n" +
+                                        "    'Weight KG'     : DECIMAL(optional);\n" +
+                                        "    'DATE OF BIRTH' : DATE;\n" +
+                                        "    TIME_OF_DEATH   : DATETIME;\n" +
+                                        "  }\n" +
+                                        "}")
+                .build();
+
+        PureModelContextData model = generateModel(schemaCode, config("test::Simple", "test::gen", true, "PeopleSet"));
+
+        String expected = ">>>test::gen::DataRecord\n" +
+                "Class test::gen::DataRecord extends meta::pure::metamodel::type::Any\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  employed: Integer[0..1];\n" +
+                "  iq: Integer[0..1];\n" +
+                "  weightKg: Float[0..1];\n" +
+                "  dateOfBirth: StrictDate[1];\n" +
+                "  timeOfDeath: DateTime[1];\n" +
+                "}\n" +
+                "\n" +
+                ">>>test::gen::HeaderRecord\n" +
+                "Class test::gen::HeaderRecord extends meta::pure::metamodel::type::Any\n" +
+                "{\n" +
+                "  nationality: String[1];\n" +
+                "}\n" +
+                "\n" +
+                ">>>test::gen::PeopleSet\n" +
+                "Class test::gen::PeopleSet extends meta::pure::metamodel::type::Any\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                ">>>test::gen::PeopleSet_DataRecord\n" +
+                "Association test::gen::PeopleSet_DataRecord\n" +
+                "{\n" +
+                "  peopleSet: test::gen::PeopleSet[1];\n" +
+                "  data: test::gen::DataRecord[*];\n" +
+                "}\n" +
+                "\n" +
+                ">>>test::gen::PeopleSet_HeaderRecord\n" +
+                "Association test::gen::PeopleSet_HeaderRecord\n" +
+                "{\n" +
+                "  peopleSet: test::gen::PeopleSet[1];\n" +
+                "  header: test::gen::HeaderRecord[1];\n" +
+                "}";
+        Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
+    }
+
     private FlatDataToModelConfiguration config(String sourceSchemaSet, String targetPackage, boolean purify)
     {
+        return config(sourceSchemaSet, targetPackage, purify, null);
+    }
+
+    private FlatDataToModelConfiguration config(String sourceSchemaSet, String targetPackage, boolean purify, String schemaClassName)
+    {
         FlatDataToModelConfiguration config = new FlatDataToModelConfiguration();
+        config.format = "FlatData";
         config.sourceSchemaSet = sourceSchemaSet;
         config.targetBinding = targetPackage + "::TestBinding";
         config.targetPackage = targetPackage;
         config.purifyNames = purify;
+        config.schemaClassName = schemaClassName;
         return config;
     }
 }

@@ -25,29 +25,38 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerManager;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DatabaseManager
 {
-    private static volatile ConcurrentHashMap<String, DatabaseManager> managersByName; //NOSONAR - ConcurrentHashMap is good enough
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DatabaseManager.class);
+    private static final ConcurrentHashMap<String, DatabaseManager> managersByName = ConcurrentHashMap.newMap();
+    private static final AtomicBoolean dbManagerReady = new AtomicBoolean();
 
     private static void initialize()
     {
-        if (managersByName == null)
+        if (!dbManagerReady.get())
         {
-            synchronized (DatabaseManager.class)
+            synchronized (dbManagerReady)
             {
-                if (managersByName == null)
+                if (!dbManagerReady.get())
                 {
-                    managersByName = ConcurrentHashMap.newMap();
+                    LOGGER.info("DatabaseManager starting initialization");
+                    long start = System.currentTimeMillis();
                     register(new H2Manager());
+                    register(new SqlServerManager());
                     register(new SnowflakeManager());
                     register(new BigQueryManager());
                     register(new DatabricksManager());
                     MutableList<ConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionExtension.class), Lists.mutable.empty());
                     extensions.flatCollect(ConnectionExtension::getAdditionalDatabaseManager).forEach(DatabaseManager::register);
+                    dbManagerReady.getAndSet(true);
+                    LOGGER.info("DatabaseManager initialisation took {}", System.currentTimeMillis() - start);
                 }
             }
         }
@@ -73,7 +82,10 @@ public abstract class DatabaseManager
 
     public abstract String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy);
 
-    public abstract Properties getExtraDataSourceProperties(AuthenticationStrategy authenticationStrategy);
+    public Properties getExtraDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
+    {
+        return new Properties();
+    }
 
     public abstract String getDriver();
 

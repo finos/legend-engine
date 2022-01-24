@@ -14,8 +14,14 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.PlanExecutionContext;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -24,7 +30,11 @@ import org.finos.legend.engine.plan.execution.result.serialization.Serialization
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
+import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
+import org.pac4j.core.profile.CommonProfile;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -37,10 +47,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class AbstractServicePlanExecutor implements ServiceRunner
 {
@@ -130,6 +138,18 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     }
 
     @Override
+    public List<GraphFetchCrossAssociationKeys> getGraphFetchCrossAssociationKeys()
+    {
+        return GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(this.plan);
+    }
+
+    @Override
+    public void setGraphFetchBatchMemoryLimit(long graphFetchBatchMemoryLimit)
+    {
+        this.executor.setGraphFetchBatchMemoryLimit(graphFetchBatchMemoryLimit);
+    }
+
+    @Override
     public String toString()
     {
         return "<" + getClass().getSimpleName() + " " + getServicePath() + ">";
@@ -181,7 +201,33 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
     protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
     {
-        Result result = this.executor.execute(this.plan, parameters);
+        MutableList<CommonProfile> profiles = Lists.mutable.empty();
+        Identity identity = serviceRunnerInput.getIdentity();
+        if (identity != null)
+        {
+            Optional<LegendKerberosCredential> credentialHolder = identity.getCredential(LegendKerberosCredential.class);
+            if (credentialHolder.isPresent())
+            {
+                LegendKerberosCredential legendKerberosCredential = credentialHolder.get();
+                KerberosProfile kerberosProfile = new KerberosProfile(legendKerberosCredential.getSubject(), null);
+                profiles.add(kerberosProfile);
+            }
+        }
+        PlanExecutionContext planExecutionContext = null;
+        if (serviceRunnerInput.getOperationalContext() != null && serviceRunnerInput.getOperationalContext().getGraphFetchCrossAssociationKeysCacheConfig() != null)
+        {
+            List<GraphFetchCache> graphFetchCaches = serviceRunnerInput
+                    .getOperationalContext()
+                    .getGraphFetchCrossAssociationKeysCacheConfig()
+                    .entrySet()
+                    .stream()
+                    .map(e -> ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(e.getValue(), e.getKey()))
+                    .collect(Collectors.toList());
+
+            planExecutionContext = new PlanExecutionContext(graphFetchCaches);
+        }
+
+        Result result = this.executor.execute(this.plan, parameters, null, profiles, planExecutionContext);
         serializeResultToStream(result, serviceRunnerInput.getSerializationFormat(), outputStream);
     }
 

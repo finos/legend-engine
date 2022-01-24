@@ -1,0 +1,3 @@
+{
+  "/trades/allTradesService" : "s_tradeId,s_traderDetails,s_tradeDetails\n1,abc:F_Name_1:L_Name_1,30:100\n2,abc:F_Name_1:L_Name_1,31:200\n3,abc:F_Name_2:L_Name_2,32:300\n4,abc:F_Name_2:L_Name_2,33:400\n5,abc:F_Name_1:L_Name_1,34:100\n6,abc:F_Name_1:L_Name_1,35:200\n7,abc:F_Name_2:L_Name_2,36:300\n8,abc:F_Name_2:L_Name_2,37:400\n9,abc:F_Name_2:L_Name_2,38:300\n10,abc:F_Name_2:L_Name_2,39:400\n11,abc:F_Name_1:L_Name_1,35:200"
+}

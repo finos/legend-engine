@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.eclipse.collections.api.block.function.Function;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
@@ -60,14 +59,12 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
                 new SnowflakeDataSourceSpecification(
                         new SnowflakeDataSourceSpecificationKey("ki79827", "us-east-2", "LEGENDRO_WH", "KNOEMA_RENEWABLES_DATA_ATLAS", "aws", null),
                         new SnowflakeManager(),
-                        new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"),
-                        new RelationalExecutorInfo());
+                        new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"));
         try (Connection connection = toDBConnection.valueOf(ds))
         {
             testConnection(connection, "select * from KNOEMA_RENEWABLES_DATA_ATLAS.RENEWABLES.DATASETS");
         }
 
     }
-
 
 }

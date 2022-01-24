@@ -31,6 +31,43 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  };\n" +
                 "  auth: DefaultH2;\n" +
                 "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::StaticConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: SqlServer;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: UserNamePassword\n" +
+                "  {\n" +
+                "    baseVaultReference: '1234trfdgh/';\n" +
+                "    userNameVaultReference: 'user';\n" +
+                "    passwordVaultReference: 'pwd';\n" +
+                "  };\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::StaticConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: SqlServer;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: UserNamePassword\n" +
+                "  {\n" +
+                "    userNameVaultReference: 'user';\n" +
+                "    passwordVaultReference: 'pwd';\n" +
+                "  };\n" +
+                "}\n");
     }
 
     @Test
@@ -143,6 +180,77 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "    passPhraseVaultReference: 'passRef';\n" +
                 "  };\n" +
                 "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    cloudType: 'aws';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    cloudType: 'aws';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: MultiTenant;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    cloudType: 'aws';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: BadOption;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
 
         test("###Connection\n" +
                 "RelationalDatabaseConnection meta::mySimpleConnection\n" +
@@ -203,6 +311,27 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "    passPhraseVaultReference: 'passRef';\n" +
                 "  };\n" +
                 "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: H2;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'okilkol.asdasd';\n" +
+                "    warehouse: 'warehousename';\n" +
+                "    region: 'EMEA';\n" +
+                "    quotedIdentifiersIgnoreCase: false;\n" +
+                "    role: 'aRole';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
     }
 
     @Test
@@ -231,6 +360,20 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                         "      mappers:\n" +
                         "      [\n" +
                         "        table {from: 'a'; to: 'A'; schemaFrom: 'b'; schemaTo: 'B';},\n" +
+                        "        schema {from: 'c'; to: 'C';}\n" +
+                        "      ];\n" +
+                        "    }");
+    }
+
+    @Test
+    public void testSingleMapperPostProcessorsWithTableMappingWithinSameSchema()
+    {
+        testPostProcessor(
+                "    mapper\n" +
+                        "    {\n" +
+                        "      mappers:\n" +
+                        "      [\n" +
+                        "        table {from: 'a'; to: 'A'; schemaFrom: 'B'; schemaTo: 'B';},\n" +
                         "        schema {from: 'c'; to: 'C';}\n" +
                         "      ];\n" +
                         "    }");

@@ -805,7 +805,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         return copy;
     }
 
-    public PureDate addMicroseconds(int microseconds)
+    public PureDate addMicroseconds(long microseconds)
     {
         if (microseconds == 0)
         {
@@ -819,7 +819,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         }
 
         PureDate copy = clone();
-        int seconds = microseconds / 1_000_000;
+        long seconds = microseconds / 1_000_000;
         if (seconds != 0)
         {
             copy.incrementSecond(seconds);
@@ -983,7 +983,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         this.day = day;
     }
 
-    private void incrementDay(int delta)
+    private void incrementDay(long delta)
     {
         if (delta < 0)
         {
@@ -1018,7 +1018,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         this.hour = hour;
     }
 
-    private void incrementHour(int delta)
+    private void incrementHour(long delta)
     {
         incrementDay(delta / 24);
         this.hour += (delta % 24);
@@ -1047,7 +1047,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         this.minute = minute;
     }
 
-    private void incrementMinute(int delta)
+    private void incrementMinute(long delta)
     {
         incrementHour(delta / 60);
         this.minute += (delta % 60);
@@ -1076,7 +1076,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         this.second = second;
     }
 
-    private void incrementSecond(int delta)
+    private void incrementSecond(long delta)
     {
         incrementMinute(delta / 60);
         this.second += (delta % 60);

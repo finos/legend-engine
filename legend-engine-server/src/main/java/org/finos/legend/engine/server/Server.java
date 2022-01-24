@@ -36,6 +36,7 @@ import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGe
 import org.finos.legend.engine.external.shared.format.generations.loaders.SchemaGenerators;
 import org.finos.legend.engine.external.shared.format.imports.loaders.CodeImports;
 import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImports;
+import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.TransformGrammarToJson;
@@ -46,10 +47,13 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlan;
+import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
+import org.finos.legend.engine.plan.execution.stores.relational.api.RelationalExecutorInformation;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.query.pure.api.Execute;
@@ -57,8 +61,6 @@ import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
 import org.finos.legend.engine.server.core.api.Memory;
-import org.finos.legend.engine.server.core.configuration.PropertyVaultConfiguration;
-import org.finos.legend.engine.server.core.configuration.VaultConfiguration;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
@@ -68,8 +70,9 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
-import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
+import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
+import org.finos.legend.engine.shared.core.vault.VaultFactory;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
@@ -79,11 +82,9 @@ import org.slf4j.Logger;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
-import java.io.FileInputStream;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.ServiceLoader;
 
 public class Server extends Application<ServerConfiguration>
@@ -116,6 +117,7 @@ public class Server extends Application<ServerConfiguration>
         bootstrap.addBundle(new SessionAttributeBundle());
         bootstrap.addBundle(new MultiPartBundle());
         PureProtocolObjectMapperFactory.withPureProtocolExtensions(bootstrap.getObjectMapper());
+        VaultFactory.withVaultConfigurationExtensions(bootstrap.getObjectMapper());
         ObjectMapperFactory.withStandardConfigurations(bootstrap.getObjectMapper());
     }
 
@@ -133,7 +135,7 @@ public class Server extends Application<ServerConfiguration>
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
         RelationalStoreExecutor relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.temporarytestdb, serverConfiguration.relationalexecution);
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, InMemory.build());
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();
@@ -149,6 +151,7 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new Info(serverConfiguration.deployment, serverConfiguration.opentracing));
         environment.jersey().register(new CurrentUser());
         environment.jersey().register(new Memory());
+        environment.jersey().register(new RelationalExecutorInformation());
 
         // Grammar
         environment.jersey().register(new TransformGrammarToJson());
@@ -172,8 +175,12 @@ public class Server extends Application<ServerConfiguration>
         genExtensions.forEach(p -> environment.jersey().register(p.getService(modelManager)));
 
         // Execution
+        environment.jersey().register(new org.finos.legend.engine.query.graphQL.api.Execute(modelManager, planExecutor));
         environment.jersey().register(new Execute(modelManager, planExecutor, (PureModel pureModel) -> core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
         environment.jersey().register(new ExecutePlan(planExecutor));
+
+        // Service
+        environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode));
 
         // Query
         environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getMongoClient()));
@@ -182,6 +189,9 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new JsonInformationExceptionMapper());
         environment.jersey().register(new CatchAllExceptionMapper());
 
+        // External Format
+        environment.jersey().register(new ExternalFormats(modelManager));
+
         enableCors(environment);
     }
 
@@ -189,22 +199,7 @@ public class Server extends Application<ServerConfiguration>
     {
         if (vaultConfigurations != null)
         {
-            ListIterate.forEach(vaultConfigurations, (v) ->
-            {
-                if (v instanceof PropertyVaultConfiguration)
-                {
-                    try
-                    {
-                        Properties properties = new Properties();
-                        properties.load(new FileInputStream(((PropertyVaultConfiguration) v).location));
-                        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
-                    }
-                    catch (Exception e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            ListIterate.forEach(vaultConfigurations, v -> Vault.INSTANCE.registerImplementation(VaultFactory.generateVaultImplementationFromConfiguration(v)));
         }
     }
 

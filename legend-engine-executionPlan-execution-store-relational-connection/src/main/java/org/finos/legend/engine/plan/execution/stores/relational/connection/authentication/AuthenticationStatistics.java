@@ -14,6 +14,19 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class AuthenticationStatistics
 {
+    private final AtomicInteger authenticationErrors = new AtomicInteger();
+
+    public void logAuthenticationError()
+    {
+        this.authenticationErrors.incrementAndGet();
+    }
+
+    public int getTotalAuthenticationErrors()
+    {
+        return this.authenticationErrors.get();
+    }
 }

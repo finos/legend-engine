@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.result.graphFetch;
 
+import io.opentracing.Span;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 
@@ -23,6 +24,7 @@ public class GraphFetchResult extends Result
 {
     private Stream<GraphObjectsBatch> graphObjectsBatchStream;
     private Result rootResult;
+    private Span graphFetchSpan;
 
     public GraphFetchResult(Stream<GraphObjectsBatch> graphObjectsBatchStream, Result rootResult)
     {
@@ -41,6 +43,17 @@ public class GraphFetchResult extends Result
         return this.rootResult;
     }
 
+    public GraphFetchResult withGraphFetchSpan(Span graphFetchSpan)
+    {
+        this.graphFetchSpan = graphFetchSpan;
+        return this;
+    }
+
+    public Span getGraphFetchSpan()
+    {
+        return this.graphFetchSpan;
+    }
+
     @Override
     public <T> T accept(ResultVisitor<T> resultVisitor)
     {
@@ -53,6 +66,10 @@ public class GraphFetchResult extends Result
         if (this.rootResult != null)
         {
             this.rootResult.close();
+        }
+        if (this.graphFetchSpan != null)
+        {
+            this.graphFetchSpan.finish();
         }
     }
 }

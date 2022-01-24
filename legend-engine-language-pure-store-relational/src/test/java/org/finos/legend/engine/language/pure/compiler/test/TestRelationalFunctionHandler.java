@@ -42,4 +42,56 @@ public class TestRelationalFunctionHandler
                 "   z(){test::A.all()->project([col(a|$a.name, 'Account_No')])->join(test::A.all()->project(col(a|$a.name, 'Equity_Account_No')), meta::relational::metamodel::join::JoinType.INNER, { p, e | $p.getStriXng('Account_No') == $e.getString('Equity_Account_No') })}:meta::pure::tds::TabularDataSet[1];" +
                 "}", "COMPILATION error at [1:242-251]: Can't find property 'getStriXng' in class 'meta::pure::tds::TDSRow'");
     }
+
+    @Test
+    public void testColumnValueDifferenceCompile()
+    {
+        test("Class test::Trade" +
+                "{"+
+                "   date : StrictDate[1];"+
+                "   quantity : Float[1];" +
+                "   id : Integer[1];" +
+                "}"+
+                "Class test::B"+
+                "{"+
+                "   z(){"+
+                "   test::Trade.all()"+
+                "       ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],"+
+                "       [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())],"+
+                "       ['tradeDate','quantity','count'])"+
+                "       ->columnValueDifference("+
+                "           test::Trade.all()"+
+                "               ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],"+
+                "               [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())],"+
+                "               ['tradeDate','quantity','count']),"+
+                "           ['tradeDate'],['quantity','count'])"+
+                "   }:meta::pure::tds::TabularDataSet[1];"+
+                "}");
+    }
+
+    @Test
+    public void testRowValueDifferenceCompile()
+    {
+        test("Class test::Trade" +
+                "{"+
+                "   date : StrictDate[1];"+
+                "   quantity : Float[1];" +
+                "   id : Integer[1];" +
+                "}"+
+                "Class test::B"+
+                "{"+
+                "   z(){"+
+                "   test::Trade.all()"+
+                "       ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],"+
+                "       [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())],"+
+                "       ['tradeDate','quantity','count'])"+
+                "       ->rowValueDifference("+
+                "           test::Trade.all()"+
+                "               ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],"+
+                "               [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())],"+
+                "               ['tradeDate','quantity','count']),"+
+                "           ['tradeDate'],['quantity','count'])"+
+                "   }:meta::pure::tds::TabularDataSet[1];"+
+                "}");
+    }
 }

@@ -33,7 +33,7 @@ import java.util.Random;
 public class TemporaryFile implements Closeable
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    private static final String localDevTempPath = "Z:/";
+    private static final String localDevTempPath = System.getProperty("java.io.tmpdir");
     private String fileName;
     public Path path;
     private final String tempPath;
@@ -48,7 +48,7 @@ public class TemporaryFile implements Closeable
 
     public String getTemporaryPathForFile()
     {
-        Path parentPath = Paths.get(SystemUtils.IS_OS_LINUX ? this.tempPath : localDevTempPath);
+        Path parentPath = Paths.get(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX ? this.tempPath : localDevTempPath);
         return parentPath.resolve(fileName).toString();
     }
 
@@ -57,6 +57,7 @@ public class TemporaryFile implements Closeable
 
         LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_CREATED, fileName).toString());
         MetricsHandler.observeCount("temp file created");
+        MetricsHandler.incrementTempFileCount();
         try (OutputStream outputStream = new FileOutputStream(path.toString()))
         {
             source.stream(outputStream);
@@ -81,13 +82,16 @@ public class TemporaryFile implements Closeable
         {
             Files.deleteIfExists(path);
             LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_DELETED, fileName).toString());
+            MetricsHandler.decrementTempFileCount();
             MetricsHandler.decrementCount("temp file created");
         }
         catch (Exception e)
         {
             LOGGER.error(new LogInfo(null, LoggingEventType.TEMP_FILE_DELETE_ERROR, new ErrorResult(1, e).getMessage()).toString());
-
         }
+    }
 
+    public static void main(String[] args) {
+        System.out.println(System.getProperty("java.io.tmpdir"));
     }
 }

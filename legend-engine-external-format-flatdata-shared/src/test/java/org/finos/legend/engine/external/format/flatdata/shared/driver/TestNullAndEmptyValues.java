@@ -50,7 +50,7 @@ public class TestNullAndEmptyValues extends AbstractDriverTest
     @Test
     public void canUseMultipleNullStrings()
     {
-        runTest(null, null, "C", ",null,C", "nullString: '';\nnullString: 'null';");
+        runTest(null, null, "C", ",null,C", "nullString: ['', 'null'];");
     }
 
     private void runTest(String expectedField1, String expectedField2, String expectedField3, String rawLine, String nullStringGrammar)

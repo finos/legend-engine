@@ -18,11 +18,13 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,8 +52,8 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
     @Override
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
     {
-        List<String> versions = Arrays.asList("vX_X_X");
-        List<String> elements = ListIterate.collect(versions, v -> "meta::protocols::pure::"  + v + "::external::shared::format::serializerExtension_String_1__SerializerExtension_1_");
+        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
+        List<String> elements = versions.collect(v -> "meta::protocols::pure::"  + v + "::external::shared::format::serializerExtension_String_1__SerializerExtension_1_").toList();
         externalFormatExtensions.values().forEach(x -> elements.addAll(x.getRegisterablePackageableElementNames()));
         return ListIterate.collect(elements, this::registerElement);
     }

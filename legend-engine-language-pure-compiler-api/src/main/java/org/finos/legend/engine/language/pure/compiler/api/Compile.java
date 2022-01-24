@@ -39,11 +39,14 @@ import org.slf4j.Logger;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -66,16 +69,17 @@ public class Compile
     @ApiOperation(value = "Loads the model and then compiles. It performs no action. Mostly used for testing")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "compile model", doc = "Pure model compilation duration summary")
-    public Response compile(PureModelContext model, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response compile(PureModelContext model, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        long start = System.currentTimeMillis();
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
         {
-            Long start = System.currentTimeMillis();
             CompilerExtensions.logAvailableExtensions();
             modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles, null);
-            Long end = System.currentTimeMillis();
+            long end = System.currentTimeMillis();
             MetricsHandler.observe("compile model", start, end);
+            MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
             // NOTE: we could change this to return 204 (No Content), but Pure client test will break
             // on the another hand, returning 200 Ok with no content is not appropriate. So we have to put this dummy message "OK"
             return Response.ok("{\"message\":\"OK\"}", MediaType.APPLICATION_JSON_TYPE).build();
@@ -83,12 +87,7 @@ public class Compile
         catch (Exception ex)
         {
             MetricsHandler.observeError("compile model");
-            Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, profiles);
-            if (ex instanceof EngineException)
-            {
-                return Response.status(Response.Status.BAD_REQUEST).entity(ex).build();
-            }
-            return errorResponse;
+            return handleException(uriInfo, profiles, start, ex);
         }
     }
 
@@ -97,18 +96,19 @@ public class Compile
     @ApiOperation(value = "Loads a given model and lambda. Returns the lambda return type")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "lambda return type")
-    public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        long start = System.currentTimeMillis();
         try
         {
-            Long start = System.currentTimeMillis();
             PureModelContext model = lambdaReturnTypeInput.model;
             Lambda lambda = lambdaReturnTypeInput.lambda;
             String typeName = modelManager.getLambdaReturnType(lambda, model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles);
             Map<String, String> result = new HashMap<>();
-            Long end = System.currentTimeMillis();
+            long end = System.currentTimeMillis();
             MetricsHandler.observe("lambda return type", start, end);
+            MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath(): null, start, end);
             // This is an object in case we want to add more information on the lambda.
             result.put("returnType", typeName);
             return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
@@ -116,12 +116,19 @@ public class Compile
         catch (Exception ex)
         {
             MetricsHandler.observeError("lambda return type");
-            Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, profiles);
-            if (ex instanceof EngineException)
-            {
-                return Response.status(Response.Status.BAD_REQUEST).entity(ex).build();
-            }
-            return errorResponse;
+            return handleException(uriInfo, profiles, start, ex);
         }
+    }
+
+    private Response handleException(UriInfo uriInfo, MutableList<CommonProfile> profiles, long start, Exception ex)
+    {
+        Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, profiles);
+        if (ex instanceof EngineException)
+        {
+            MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, Response.Status.BAD_REQUEST.getStatusCode());
+            return Response.status(Response.Status.BAD_REQUEST).entity(ex).build();
+        }
+        MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, errorResponse.getStatus());
+        return errorResponse;
     }
 }

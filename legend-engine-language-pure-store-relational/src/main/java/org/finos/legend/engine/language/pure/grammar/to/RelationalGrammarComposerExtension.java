@@ -275,7 +275,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 String data;
                 if (relationalInputData.inputType == RelationalInputType.SQL)
                 {
-                    MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(relationalInputData.data.replace("\n", "").split("(?<!\\\\);"));
+                    MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(relationalInputData.data.replace("\r", "").replace("\n", "").split("(?<!\\\\);"));
                     data = "\n" + lines.collect(l -> getTabString(5) + convertString(l + ";\n", true).replace("\\\\;", "\\;")).makeString("+\n");
                 }
                 else if (relationalInputData.inputType == RelationalInputType.CSV)

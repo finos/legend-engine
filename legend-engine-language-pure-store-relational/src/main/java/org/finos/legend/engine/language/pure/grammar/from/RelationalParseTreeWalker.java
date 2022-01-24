@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.collections.api.factory.Sets;
@@ -453,18 +454,24 @@ public class RelationalParseTreeWalker
         FilterPointer filterPointer = new FilterPointer();
         filterPointer.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         filterMapping.filter = filterPointer;
-        String database = null;
-        if (ctx.databasePointer() != null)
+        if(ctx.viewFilterMappingJoin() != null)
         {
-            String _database = this.visitDatabasePointer(ctx.databasePointer(0));
-            if (ctx.joinSequence() != null)
-            {
-                filterMapping.joins = this.visitJoinSequence(ctx.joinSequence(), _database, ScopeInfo.Builder.newInstance().withDatabase(_database).build());
-            }
-            database = this.visitDatabasePointer(ctx.databasePointer(1));
+            this.visitViewFilterMappingJoin(ctx.viewFilterMappingJoin(), filterMapping, filterPointer);
         }
-        filterPointer.db = database;
+        else
+        {
+            filterPointer.db = ctx.databasePointer() == null ? null : this.visitDatabasePointer(ctx.databasePointer());
+        }
         return filterMapping;
+    }
+
+    private void visitViewFilterMappingJoin(RelationalParserGrammar.ViewFilterMappingJoinContext ctx, FilterMapping filterMapping, FilterPointer filterPointer)
+    {
+        String database = this.visitDatabasePointer(ctx.databasePointer(0));
+        if (ctx.joinSequence() != null) {
+            filterMapping.joins = this.visitJoinSequence(ctx.joinSequence(), database, ScopeInfo.Builder.newInstance().withDatabase(database).build());
+        }
+        filterPointer.db = this.visitDatabasePointer(ctx.databasePointer(1));
     }
 
     public ColumnMapping visitViewColumnMapping(RelationalParserGrammar.ViewColumnMappingContext ctx, List<String> primaryKeys, ScopeInfo scopeInfo)
@@ -524,20 +531,15 @@ public class RelationalParseTreeWalker
 
     public RelationalOperationElement visitOperation(RelationalParserGrammar.OperationContext ctx, ScopeInfo scopeInfo)
     {
-        if (ctx.dynamicFunctionOperation() != null)
+        if (ctx.booleanOperation() != null)
         {
-            return this.visitDynaFuncOperation(ctx.dynamicFunctionOperation(), scopeInfo);
+            return this.visitBooleanOperation(ctx.booleanOperation(), scopeInfo);
         }
         else if (ctx.joinOperation() != null)
         {
             return this.visitJoinOperation(ctx.joinOperation(), scopeInfo);
         }
         throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitDynaFuncOperation(RelationalParserGrammar.DynamicFunctionOperationContext ctx, ScopeInfo scopeInfo)
-    {
-        return this.visitBooleanOperation(ctx.booleanOperation(), scopeInfo);
     }
 
     private RelationalOperationElement visitBooleanOperation(RelationalParserGrammar.BooleanOperationContext ctx, ScopeInfo scopeInfo)
@@ -569,6 +571,10 @@ public class RelationalParseTreeWalker
         else if (ctx.columnOperation() != null)
         {
             operationElement = this.visitColumnOperation(ctx.columnOperation(), scopeInfo);
+        }
+        else if (ctx.joinOperation() != null)
+        {
+            return this.visitJoinOperation(ctx.joinOperation(), scopeInfo);
         }
         if (operationElement == null)
         {
@@ -866,9 +872,9 @@ public class RelationalParseTreeWalker
         String database = ctx.databasePointer() != null ? this.visitDatabasePointer(ctx.databasePointer()) : (scopeInfo != null ? scopeInfo.database : null);
         ElementWithJoins operation = new ElementWithJoins();
         operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.dynamicFunctionOperation() != null)
+        if (ctx.booleanOperation() != null)
         {
-            operation.relationalElement = this.visitDynaFuncOperation(ctx.dynamicFunctionOperation(), ScopeInfo.Builder.newInstance(scopeInfo).withDatabase(database).build());
+            operation.relationalElement = this.visitBooleanOperation(ctx.booleanOperation(), ScopeInfo.Builder.newInstance(scopeInfo).withDatabase(database).build());
         }
         else if (ctx.tableAliasColumnOperation() != null)
         {
@@ -881,11 +887,16 @@ public class RelationalParseTreeWalker
     // NOTE: right now, for join we only support sequence (line), not tree
     private List<JoinPointer> visitJoinSequence(RelationalParserGrammar.JoinSequenceContext ctx, String database, ScopeInfo scopeInfo)
     {
+        ParserRuleContext joinType = ctx.identifier() != null ? ctx.identifier() : null;
+        if (joinType != null && !JOIN_TYPES.contains(PureGrammarParserUtility.fromIdentifier(joinType)))
+        {
+            throw new EngineException("Unsupported join type '" + joinType.getText() + "'. The supported join types are: " + JOIN_TYPES.toString(), this.walkerSourceInformation.getSourceInformation(ctx.identifier()), EngineErrorType.PARSER);
+        }
         List<JoinPointer> joins = new ArrayList<>();
-        joins.add(visitJoinPointer(ctx.joinPointer(), null, scopeInfo, database));
+        joins.add(visitJoinPointer(ctx.joinPointer(), joinType == null ? null : joinType.getText(), scopeInfo, database));
         for (RelationalParserGrammar.JoinPointerFullContext joinPointerFullContext : ctx.joinPointerFull())
         {
-            if (joinPointerFullContext.identifier() != null && !JOIN_TYPES.contains(PureGrammarParserUtility.fromIdentifier(joinPointerFullContext.identifier()).toUpperCase()))
+            if (joinPointerFullContext.identifier() != null && !JOIN_TYPES.contains(PureGrammarParserUtility.fromIdentifier(joinPointerFullContext.identifier())))
             {
                 throw new EngineException("Unsupported join type '" + joinPointerFullContext.identifier().getText() + "'", this.walkerSourceInformation.getSourceInformation(joinPointerFullContext.identifier()), EngineErrorType.PARSER);
             }

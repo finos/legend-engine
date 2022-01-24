@@ -14,25 +14,21 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+import java.util.Properties;
+
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
-import org.pac4j.core.profile.CommonProfile;
-
-import javax.sql.DataSource;
-import java.util.Properties;
 
 public class BigQueryDataSourceSpecification extends DataSourceSpecification
 {
     public static String BIGQUERY_PROJECT_ID = "bigquery_projectId";
     public static String BIGQUERY_DATASET_NAME = "bigquery_defaultDataset";
 
-    public BigQueryDataSourceSpecification(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
+    public BigQueryDataSourceSpecification(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
-        super(key, databaseManager, authenticationStrategy, extraUserProperties, relationalExecutorInfo);
+        super(key, databaseManager, authenticationStrategy, extraUserProperties);
         this.extraDatasourceProperties.put(BIGQUERY_PROJECT_ID, key.getProjectId());
         this.extraDatasourceProperties.put(BIGQUERY_DATASET_NAME, key.getDefaultDataset());
 
@@ -40,14 +36,8 @@ public class BigQueryDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put("defaultDataset", key.getDefaultDataset());
     }
 
-    public BigQueryDataSourceSpecification(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
+    public BigQueryDataSourceSpecification(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
     {
-        this(key, databaseManager, authenticationStrategy, new Properties(), relationalExecutorInfo);
-    }
-
-    @Override
-    protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
-    {
-        return this.buildDataSource(null, -1, null, profiles);
+        this(key, databaseManager, authenticationStrategy, new Properties());
     }
 }

@@ -14,53 +14,26 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+
+import java.util.Properties;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
-import org.eclipse.collections.api.list.MutableList;
-import org.pac4j.core.profile.CommonProfile;
 
-import javax.security.auth.Subject;
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
 
 public class EmbeddedH2DataSourceSpecification extends DataSourceSpecification
 {
     public static final String H2_DATA_DIRECTORY_PATH = "h2_data_directory_path";
     public static final String H2_AUTO_SERVER_MODE = "h2_auto_server_mode";
+    private static final int MAX_POOL_SIZE = 10;
+    private static final int MIN_POOL_SIZE = 0;
 
-    private EmbeddedH2DataSourceSpecificationKey key;
-    private DataSource dataSource;
-
-    public EmbeddedH2DataSourceSpecification(EmbeddedH2DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
+    public EmbeddedH2DataSourceSpecification(EmbeddedH2DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
     {
-        super(key, databaseManager, authenticationStrategy, new Properties(), relationalExecutorInfo);
+        super(key, databaseManager, authenticationStrategy, new Properties(), MAX_POOL_SIZE, MIN_POOL_SIZE);
         this.extraDatasourceProperties.put(H2_DATA_DIRECTORY_PATH, key.getDirectory().getAbsolutePath());
         this.extraDatasourceProperties.put(H2_AUTO_SERVER_MODE, String.valueOf(key.isAutoServerMode()).toUpperCase());
-        this.key = key;
-        this.dataSource = this.buildDataSource(null);
     }
 
-    @Override
-    protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
-    {
-        return this.buildDataSource(null, -1, this.key.getDatabaseName(), profiles);
-    }
-
-    @Override
-    public Connection getConnectionUsingSubject(Subject subject)
-    {
-        try
-        {
-            return this.dataSource.getConnection();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
 }

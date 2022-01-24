@@ -100,16 +100,16 @@ public class PlanGenerator
         }
     }
 
-    private static String serializeToJSON(Root_meta_pure_executionPlan_ExecutionPlan purePlan, String clientVersion, PureModel pureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
+    public static String serializeToJSON(Root_meta_pure_executionPlan_ExecutionPlan purePlan, String clientVersion, PureModel pureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
-        String cl = clientVersion == null ? PureClientVersions.latest : clientVersion;
+        String cl = clientVersion == null ? PureClientVersions.production : clientVersion;
         MutableList<? extends PlanTransformer> handlers = Iterate.selectWith(transformers, PlanTransformer::supports, cl, Lists.mutable.empty());
         Assert.assertTrue(handlers.size() == 1, () -> "Zero or more than one handler (" + handlers.size() + ") was found for protocol " + cl);
         Object transformed = handlers.get(0).transformToVersionedModel(purePlan, cl, extensions, pureModel.getExecutionSupport());
         return serializeToJSON(transformed, pureModel);
     }
 
-    private static SingleExecutionPlan stringToPlan(String plan)
+    public static SingleExecutionPlan stringToPlan(String plan)
     {
         try
         {

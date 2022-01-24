@@ -55,6 +55,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -112,6 +113,9 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         {
             this.connection = connection;
             this.statement = connection.createStatement();
+            if(DatabaseType.MemSQL.name().equals(databaseType)){
+                this.statement.setFetchSize(100);
+            }
             long start = System.currentTimeMillis();
             String sql = ((RelationalExecutionActivity) activities.getLast()).sql;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
@@ -133,6 +137,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         catch (Throwable e)
         {
+            LOGGER.error("error initialising RelationalResult" ,e);
             this.close();
             if (e instanceof Error)
             {
@@ -170,6 +175,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         catch (Throwable e)
         {
+            LOGGER.error("error initialising RelationalResult" ,e);
             this.close();
             if (e instanceof Error)
             {
@@ -330,6 +336,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             catch (Exception e)
             {
+                LOGGER.error("error closing result set", e);
             }
         }
         if (statement != null)
@@ -340,6 +347,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             catch (Exception e)
             {
+                LOGGER.error("error closing statement", e);
             }
         }
         if (connection != null)
@@ -350,6 +358,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             catch (Exception e)
             {
+                LOGGER.error("error closing connection", e);
             }
         }
     }

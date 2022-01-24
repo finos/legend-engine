@@ -175,6 +175,7 @@ public class GraphQLGrammarParser
         FragmentDefinition fragmentDefinition = new FragmentDefinition();
         fragmentDefinition.name = fragmentDefinitionContext.fragmentName().getText();
         fragmentDefinition.selectionSet = ListIterate.collect(fragmentDefinitionContext.selectionSet().selection(), this::visitSelectionSet);
+        fragmentDefinition.typeCondition = fragmentDefinitionContext.typeCondition().namedType() == null ? null : fragmentDefinitionContext.typeCondition().namedType().getText();
         return fragmentDefinition;
     }
 
@@ -183,7 +184,7 @@ public class GraphQLGrammarParser
         OperationDefinition operationDefinition = new OperationDefinition();
         operationDefinition.name = operationDefinitionContext.name().getText();
         operationDefinition.type = OperationType.valueOf(operationDefinitionContext.operationType().getText());
-        operationDefinition.variables = ListIterate.collect(operationDefinitionContext.variableDefinitions().variableDefinition(), this::visitVariableDefinition);
+        operationDefinition.variables = operationDefinitionContext.variableDefinitions() == null ? Lists.mutable.empty() : ListIterate.collect(operationDefinitionContext.variableDefinitions().variableDefinition(), this::visitVariableDefinition);
         operationDefinition.selectionSet = ListIterate.collect(operationDefinitionContext.selectionSet().selection(), this::visitSelectionSet);
         return operationDefinition;
     }
@@ -266,7 +267,7 @@ public class GraphQLGrammarParser
     {
         EnumTypeDefinition enumTypeDefinition = new EnumTypeDefinition();
         enumTypeDefinition.name = enumTypeDefinitionContext.name().getText();
-        enumTypeDefinition.values = ListIterate.collect(enumTypeDefinitionContext.enumValuesDefinition().enumValueDefinition(), o -> {
+        enumTypeDefinition.values = enumTypeDefinitionContext.enumValuesDefinition() == null ? Collections.emptyList() : ListIterate.collect(enumTypeDefinitionContext.enumValuesDefinition().enumValueDefinition(), o -> {
           EnumValueDefinition enumValueDefinition = new EnumValueDefinition();
             enumValueDefinition.value = o.enumValue().getText();
           return enumValueDefinition;
@@ -308,22 +309,25 @@ public class GraphQLGrammarParser
 
     private TypeReference visitType(GraphQLParser.Type_Context typeContext)
     {
-        TypeReference typeReference = new TypeReference();
+        TypeReference typeReference;
+
         if (typeContext.namedType() != null)
         {
-            typeReference.name = typeContext.namedType().getText();
-            typeReference.list = false;
+            NamedTypeReference namedTypeReference = new NamedTypeReference();
+            namedTypeReference.name = typeContext.namedType().getText();
+            typeReference = namedTypeReference;
         }
         else if (typeContext.listType() != null)
         {
-            typeReference.name = typeContext.listType().type_().namedType().getText();
-            typeReference.list = true;
+            ListTypeReference listTypeReference = new ListTypeReference();
+            listTypeReference.itemType = visitType(typeContext.listType().type_());
+            typeReference = listTypeReference;
         }
         else
         {
             throw new RuntimeException("ERROR");
         }
-        typeReference.nullable = typeContext.getText().trim().endsWith("!");
+        typeReference.nullable = !typeContext.getText().trim().endsWith("!");
         return typeReference;
     }
 

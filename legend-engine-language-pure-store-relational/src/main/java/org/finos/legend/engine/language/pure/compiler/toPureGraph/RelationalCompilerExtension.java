@@ -23,6 +23,7 @@ import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.Multimap;
@@ -459,6 +460,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                 handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
                                         handlers.m(handlers.h("meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true)))
                         ),
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
+                                        handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)))
+                        ),
                         new FunctionExpressionBuilderRegistrationInfo(Lists.mutable.with(3),
                                 handlers.m(handlers.h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__Function_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 3 && !handlers.typeOne(ps.get(2), "String")))
                         )
@@ -481,14 +486,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_"
             ));
 
-            PureClientVersions.versions.forEach(v -> {
-                if (PureClientVersions.versionAGreaterThanOrEqualsVersionB(v, "v1_20_0"))
-                {
-                    registerElementForPathToElement.value("meta::protocols::pure::"+v+"::extension", Lists.mutable.with(
-                            "getRelationalExtension_String_1__SerializerExtension_1_"
-                    ));
-                }
-            });
+            ImmutableList<String> versions = PureClientVersions.versionsSince("v1_20_0");
+            versions.forEach(v -> registerElementForPathToElement.value("meta::protocols::pure::"+v+"::extension", Lists.mutable.with("getRelationalExtension_String_1__SerializerExtension_1_")));
          });
     }
 

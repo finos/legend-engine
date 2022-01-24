@@ -14,7 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
 
-import org.eclipse.collections.api.list.MutableList;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
+
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
@@ -23,12 +26,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
-import org.pac4j.core.profile.CommonProfile;
-
-import javax.security.auth.Subject;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 /*
     This class represents authentication using GCP ADC (Application Default Credentials).
@@ -45,7 +43,7 @@ public class GCPApplicationDefaultCredentialsAuthenticationStrategy extends Auth
     }
 
     @Override
-    protected Connection getConnectionImpl(DataSourceWithStatistics ds, Subject subject, MutableList<CommonProfile> profiles) throws ConnectionException
+    public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
         try
         {
@@ -63,28 +61,9 @@ public class GCPApplicationDefaultCredentialsAuthenticationStrategy extends Auth
     }
 
     @Override
-    public String getAlternativePrincipal(MutableList<CommonProfile> profiles)
-    {
-        // TODO : Fix this
-        return "static_user";
-    }
-
-    @Override
     public AuthenticationStrategyKey getKey()
     {
         return new GCPApplicationDefaultCredentialsAuthenticationStrategyKey();
-    }
-
-    @Override
-    public String getLogin()
-    {
-        return "unused";
-    }
-
-    @Override
-    public String getPassword()
-    {
-        return "unused";
     }
 }
 

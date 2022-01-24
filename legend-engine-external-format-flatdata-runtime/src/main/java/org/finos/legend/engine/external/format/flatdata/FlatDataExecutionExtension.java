@@ -44,6 +44,8 @@ import java.util.stream.Stream;
 
 public class FlatDataExecutionExtension implements ExecutionExtension
 {
+    private static long DEFAULT_MAX_SCHEMA_OBJECT_SIZE = 50 *1024 * 1024;
+
     @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
@@ -94,9 +96,12 @@ public class FlatDataExecutionExtension implements ExecutionExtension
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
             IFlatDataDeserializeExecutionNodeSpecifics<?> specifics = (IFlatDataDeserializeExecutionNodeSpecifics<?>) specificsClass.getConstructor().newInstance();
+            // TODO Allow size to vary when run from jar
+            specifics.setMaximumSchemaObjectSize(DEFAULT_MAX_SCHEMA_OBJECT_SIZE);
             FlatDataContext<?> context = specifics.createContext();
 
-            InputStream stream = ExecutionHelper.inputStreamFromConnection(node.connection);
+            InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+
             FlatDataReader<?> deserializer = new FlatDataReader<>(context, stream);
             return new StreamingObjectResult<>(deserializer.startStream());
         }

@@ -59,7 +59,7 @@ public class PlanExecutor
     private final boolean isJavaCompilationAllowed;
     private final ImmutableList<StoreExecutor> extraExecutors;
     private final PlanExecutorInfo planExecutorInfo;
-    private final long graphFetchBatchMemoryLimit;
+    private long graphFetchBatchMemoryLimit;
 
     private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit)
     {
@@ -140,6 +140,13 @@ public class PlanExecutor
         return execute(executionPlan, params, inputStreamProvider, null);
     }
 
+    public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
+    {
+        Map<String, Result> vars = Maps.mutable.ofInitialCapacity(params.size());
+        params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
+        return execute(executionPlan.getSingleExecutionPlan(params), vars, user, profiles, planExecutionContext);
+    }
+
     // TODO: Build a user friendly API
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, PlanExecutionContext planExecutionContext)
     {
@@ -185,6 +192,11 @@ public class PlanExecutor
             // execute
             return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(profiles, state));
         }
+    }
+
+    public void setGraphFetchBatchMemoryLimit(long graphFetchBatchMemoryLimit)
+    {
+        this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
     }
 
     private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, MutableList<CommonProfile> profiles)

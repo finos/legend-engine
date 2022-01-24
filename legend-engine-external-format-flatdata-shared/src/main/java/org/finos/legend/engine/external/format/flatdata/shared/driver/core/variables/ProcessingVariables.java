@@ -74,6 +74,10 @@ public class ProcessingVariables
         {
             variableValues.put(variableName, value);
         }
+        else if (type == VariableType.StringList && value instanceof List && ((List<?>) value).stream().allMatch(String.class::isInstance))
+        {
+            variableValues.put(variableName, value);
+        }
         else
         {
             throw new IllegalArgumentException("Variable '" + variableName + "' is declared as " + type + " and cannot be assigned a " + value.getClass().getSimpleName());

@@ -18,12 +18,18 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
+import org.finos.legend.engine.external.format.flatdata.FlatDataExecutionExtension;
+import org.finos.legend.engine.external.format.json.JsonExecutionExtension;
+import org.finos.legend.engine.external.format.xml.XmlExecutionExtension;
+import org.finos.legend.engine.external.shared.runtime.ExternalFormatExecutionExtension;
 import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.service.ServiceStoreExecutionExtension;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,7 +42,12 @@ public class TestExtensions
     public void testExecutionExtensions()
     {
         MutableList<Class<? extends ExecutionExtension>> expectedExtensions = Lists.mutable.<Class<? extends ExecutionExtension>>empty()
-                .with(RelationalExecutionExtension.class);
+                .with(RelationalExecutionExtension.class)
+                .with(ExternalFormatExecutionExtension.class)
+                .with(FlatDataExecutionExtension.class)
+                .with(JsonExecutionExtension.class)
+                .with(XmlExecutionExtension.class)
+                .with(ServiceStoreExecutionExtension.class);
         assertHasExtensions(expectedExtensions, ExecutionExtension.class);
     }
 
@@ -45,7 +56,8 @@ public class TestExtensions
     {
         MutableList<Class<? extends StoreExecutorBuilder>> expectedExtensions = Lists.mutable.<Class<? extends StoreExecutorBuilder>>empty()
                 .with(InMemoryStoreExecutorBuilder.class)
-                .with(RelationalStoreExecutorBuilder.class);
+                .with(RelationalStoreExecutorBuilder.class)
+                .with(ServiceStoreExecutorBuilder.class);
         assertHasExtensions(expectedExtensions, StoreExecutorBuilder.class);
     }
 

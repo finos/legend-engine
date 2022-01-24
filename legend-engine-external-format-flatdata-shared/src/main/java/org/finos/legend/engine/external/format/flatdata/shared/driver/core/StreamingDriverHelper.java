@@ -2,8 +2,6 @@ package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.FlatDataUtils;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.IntegerVariable;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.StringVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.BooleanParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DateParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DateTimeParser;
@@ -11,6 +9,9 @@ import org.finos.legend.engine.external.format.flatdata.shared.driver.core.value
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.IntegerParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.StringParser;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.ValueParser;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.IntegerVariable;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.StringListVariable;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.StringVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.VariableType;
@@ -26,6 +27,7 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRec
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
 
+import java.util.Collections;
 import java.util.List;
 
 public class StreamingDriverHelper
@@ -42,18 +44,18 @@ public class StreamingDriverHelper
     final StringVariable defaultFalseString;
     final StringVariable defaultIntegerFormat;
     final StringVariable defaultDecimalFormat;
-    final StringVariable defaultDateFormat;
-    final StringVariable defaultDateTimeFormat;
+    final StringListVariable defaultDateFormat;
+    final StringListVariable defaultDateTimeFormat;
     final StringVariable defaultTimeZone;
 
     public static final FlatDataVariable VARIABLE_LINE_NUMBER = new FlatDataVariable("lineNumber", VariableType.Integer);
 
-    public final FlatDataProcessingContext<?> context;
+    public final FlatDataProcessingContext context;
     public final FlatDataSection section;
     public final boolean skipBlankLines;
     public final String eol;
 
-    public StreamingDriverHelper(FlatDataSection section, FlatDataProcessingContext<?> context)
+    public StreamingDriverHelper(FlatDataSection section, FlatDataProcessingContext context)
     {
         this.section = section;
         List<FlatDataProperty> properties = section.getSectionProperties();
@@ -77,8 +79,8 @@ public class StreamingDriverHelper
                                             .map(fmt -> StringVariable.initializeIfMissing(context, FlatDataUtils.VARIABLE_DEFAULT_DECIMAL_FORMAT, fmt))
                                             .orElse(StringVariable.reference(context, FlatDataUtils.VARIABLE_DEFAULT_DECIMAL_FORMAT));
 
-        defaultDateFormat = StringVariable.initializeIfMissing(context, FlatDataUtils.VARIABLE_DEFAULT_DATE_FORMAT, FlatDataUtils.getString(properties, FlatDataUtils.DEFAULT_DATE_FORMAT).orElse(FlatDataUtils.ISO_DATE_FORMAT));
-        defaultDateTimeFormat = StringVariable.initializeIfMissing(context, FlatDataUtils.VARIABLE_DEFAULT_DATETIME_FORMAT, FlatDataUtils.getString(properties, FlatDataUtils.DEFAULT_DATETIME_FORMAT).orElse(FlatDataUtils.ISO_DATETIME_FORMAT));
+        defaultDateFormat = StringListVariable.initializeIfMissing(context, FlatDataUtils.VARIABLE_DEFAULT_DATE_FORMAT, FlatDataUtils.getStrings(properties, FlatDataUtils.DEFAULT_DATE_FORMAT).orElse(Collections.singletonList(FlatDataUtils.ISO_DATE_FORMAT)));
+        defaultDateTimeFormat = StringListVariable.initializeIfMissing(context, FlatDataUtils.VARIABLE_DEFAULT_DATETIME_FORMAT, FlatDataUtils.getStrings(properties, FlatDataUtils.DEFAULT_DATETIME_FORMAT).orElse(Collections.singletonList(FlatDataUtils.ISO_DATETIME_FORMAT)));
         defaultTimeZone = StringVariable.initializeIfMissing(context, FlatDataUtils.VARIABLE_DEFAULT_TIME_ZONE, FlatDataUtils.getString(properties, FlatDataUtils.DEFAULT_TIME_ZONE).orElse(FlatDataUtils.TIME_ZONE));
     }
 
@@ -89,6 +91,9 @@ public class StreamingDriverHelper
 
     public List<ValueParser> computeValueParsers(FlatDataRecordType recordType)
     {
+        DateParser defaultDateParser = DateParser.of(defaultDateFormat.get());
+        DateTimeParser defaultDateTimeParser = DateTimeParser.of(defaultDateTimeFormat.get(), defaultTimeZone.get());
+
         List<ValueParser> result = Lists.mutable.withInitialCapacity(recordType.getFields().size());
         for (int i = 0; i < recordType.getFields().size(); i++)
         {
@@ -120,15 +125,27 @@ public class StreamingDriverHelper
             else if (type instanceof FlatDataDate)
             {
                 FlatDataDate dateType = (FlatDataDate) type;
-                String dateFormat = dateType.getFormat() == null ? defaultDateFormat.get() : dateType.getFormat();
-                result.add(DateParser.of(dateFormat));
+                if (!dateType.getFormat().isEmpty())
+                {
+                    result.add(DateParser.of(dateType.getFormat()));
+                }
+                else
+                {
+                    result.add(defaultDateParser);
+                }
             }
             else if (type instanceof FlatDataDateTime)
             {
-                FlatDataDateTime dateType = (FlatDataDateTime) type;
-                String dateTimeFormat = dateType.getFormat() == null ? defaultDateTimeFormat.get() : dateType.getFormat();
-                String timeZone = dateType.getTimeZone() == null ? defaultTimeZone.get() : dateType.getTimeZone();
-                result.add(DateTimeParser.of(dateTimeFormat, timeZone));
+                FlatDataDateTime dateTimeType = (FlatDataDateTime) type;
+                String timeZone = dateTimeType.getTimeZone() == null ? defaultTimeZone.get() : dateTimeType.getTimeZone();
+                if (!dateTimeType.getFormat().isEmpty())
+                {
+                    result.add(DateTimeParser.of(dateTimeType.getFormat(), timeZone));
+                }
+                else
+                {
+                    result.add(DateTimeParser.of(defaultDateTimeParser, timeZone));
+                }
             }
             else
             {

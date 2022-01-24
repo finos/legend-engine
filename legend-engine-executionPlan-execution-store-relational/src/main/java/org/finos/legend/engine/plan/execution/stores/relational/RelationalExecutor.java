@@ -14,24 +14,17 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.map.MutableMap;
-import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
-import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
-import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeClassResultHelper;
@@ -43,6 +36,14 @@ import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
+import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -63,7 +64,6 @@ import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -71,13 +71,13 @@ import java.util.function.Consumer;
 
 public class RelationalExecutor
 {
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+
     public static final String DEFAULT_DB_TIME_ZONE = "GMT";
 
-    private ConnectionManagerSelector connectionManager;
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    private RelationalExecutionConfiguration relationalExecutionConfiguration;
-    private RelationalExecutorInfo relationalExecutorInfo;
-    private MutableList<Function2<ExecutionState, List<Map<String, Object>>,Result>> resultInterpreterExtensions;
+    private final ConnectionManagerSelector connectionManager;
+    private final RelationalExecutionConfiguration relationalExecutionConfiguration;
+    private MutableList<Function2<ExecutionState, List<Map<String, Object>>, Result>> resultInterpreterExtensions;
 
     private static final MutableMap<String, String> DATA_TYPE_RELATIONAL_TYPE_MAP = Maps.mutable.empty();
 
@@ -96,15 +96,9 @@ public class RelationalExecutor
 
     public RelationalExecutor(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration)
     {
-        this.relationalExecutorInfo = new RelationalExecutorInfo();
-        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, this.relationalExecutorInfo);
+        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles);
         this.relationalExecutionConfiguration = relationalExecutionConfiguration;
         this.resultInterpreterExtensions = Iterate.addAllTo(ServiceLoader.load(ResultInterpreterExtension.class), Lists.mutable.empty()).collect(ResultInterpreterExtension::additionalResultBuilder);
-    }
-
-    public RelationalExecutorInfo getRelationalExecutorInfo()
-    {
-        return this.relationalExecutorInfo;
     }
 
     public RelationalExecutionConfiguration getRelationalExecutionConfiguration()
@@ -291,7 +285,7 @@ public class RelationalExecutor
     private void prepareTempTable(Connection connectionManagerConnection, StreamingResult res, String tempTableName, String databaseTypeName, String databaseTimeZone, List<String> tempTableList)
     {
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
-        try
+        try (Scope ignored = GlobalTracer.get().buildSpan("create temp table").withTag("tempTableName", tempTableName).withTag("databaseType", databaseTypeName).startActive(true))
         {
             databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalExecutionConfiguration, connectionManagerConnection, res, tempTableName, databaseTimeZone));
         }

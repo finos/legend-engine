@@ -21,7 +21,8 @@ public enum FileGenerationType
     jsonSchema("JSON Schema"),
     protobuf("Protobuf"),
     slang("Slang"),
-    rosetta("Rosetta");
+    rosetta("Rosetta"),
+    morphir("Morphir");
     private String label;
 
     private FileGenerationType(final String label)

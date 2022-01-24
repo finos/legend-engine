@@ -22,6 +22,12 @@ WAREHOUSE:                                  'warehouse';
 REGION:                                     'region';
 CLOUDTYPE:                                  'cloudType';
 QUOTED_IDENTIFIERS_IGNORE_CASE:             'quotedIdentifiersIgnoreCase';
+PROXYHOST:                                  'proxyHost';
+PROXYPORT:                                  'proxyPort';
+NONPROXYHOSTS:                              'nonProxyHosts';
+ACCOUNTTYPE:                                'accountType';
+ORGANIZATION:                               'organization';
+ROLE:                                       'role';
 
 BIGQUERY_DSP:                               'BigQuery';
 PROJECT:                                    'projectId';

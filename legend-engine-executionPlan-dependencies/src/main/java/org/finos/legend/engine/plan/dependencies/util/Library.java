@@ -89,7 +89,7 @@ public class Library
             }
             case "MICROSECONDS":
             {
-                return date.addMicroseconds((int) number);
+                return date.addMicroseconds(number);
             }
             case "NANOSECONDS":
             {

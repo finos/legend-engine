@@ -21,7 +21,8 @@ public enum RuleType
     ClassStructure,
     ClassConstraint,
     NoInput,
-    InvalidInput;
+    InvalidInput,
+    UnreturnedInput;
 
     public String getName()
     {

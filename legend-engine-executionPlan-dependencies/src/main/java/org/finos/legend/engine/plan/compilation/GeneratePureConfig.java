@@ -35,23 +35,25 @@ import org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingExcep
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IGraphFetchM2MExecutionNodeContext;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReader;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReadingExecutionNodeContext;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryPropertyGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer;
-import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.ISerializationWriter;
 import org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.classResult.IRelationalClassInstantiationNodeExecutor;
 import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalChildGraphNodeExecutor;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalCrossRootGraphNodeExecutor;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalRootGraphNodeExecutor;
 import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.serviceStore.IServiceParametersResolutionExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IConstantResult;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
 import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
@@ -152,8 +154,10 @@ public class GeneratePureConfig
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IInMemoryPropertyGraphFetchExecutionNodeSpecifics", IInMemoryPropertyGraphFetchExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics", IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics", IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics.class);
+        MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics", IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics", IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics", IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics.class);
+        MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IServiceParametersResolutionExecutionNodeSpecifics", IServiceParametersResolutionExecutionNodeSpecifics.class);
     }
 
     private final Class<?> extensionClass;
@@ -351,6 +355,11 @@ public class GeneratePureConfig
                 List<EncodeableType> params = Arrays.stream(typeParams).map(this::encodeType).collect(Collectors.toList());
                 return new FactoryType("javaParameterizedType", new FactoryType("javaClass", Pair.class.getCanonicalName()), params);
             }
+            else if (Map.class.equals(raw))
+            {
+                List<EncodeableType> params = Arrays.stream(typeParams).map(this::encodeType).collect(Collectors.toList());
+                return new FactoryType("javaParameterizedType", new FactoryType("javaClass", Map.class.getCanonicalName()), params);
+            }
             else if (javaClasses.containsKey(raw))
             {
                 List<EncodeableType> params = Arrays.stream(typeParams).map(this::encodeType).collect(Collectors.toList());
@@ -430,8 +439,8 @@ public class GeneratePureConfig
 
         out.lineOut("");
         out.lineOut("import " + purePackage + "*;");
-        out.lineOut("import meta::java::generation::convention::*;");
-        out.lineOut("import meta::java::metamodel::factory::*;");
+        out.lineOut("import meta::external::language::java::factory::*;");
+        out.lineOut("import meta::external::language::java::transform::*;");
         out.lineOut("");
 
         if (!classes.isEmpty())
@@ -724,7 +733,8 @@ public class GeneratePureConfig
 
         void computeDependencies()
         {
-            Arrays.stream(clazz.getDeclaredMethods())
+            Arrays.stream(clazz.getMethods())
+                  .filter(m -> m.getDeclaringClass() != Object.class)
                   .filter(m -> !m.isSynthetic())
                   .map(JavaMethod::new)
                   .forEach(methods::add);

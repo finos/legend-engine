@@ -49,7 +49,9 @@ jobs:
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
         run: mvn install javadoc:javadoc
-      - name: Build + Test + Sonar + Maven Deploy
+      - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
-        # TODO - remove skipTests
-        run: mvn javadoc:javadoc deploy -Psonar
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: mvn javadoc:javadoc deploy -P sonar,docker-snapshot

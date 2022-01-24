@@ -37,5 +37,45 @@ public class TestRelationalConnectionCompilationRoundtrip
 
         Assert.assertTrue(quoteIdentifiers);
         Assert.assertEquals("dummyPrincipal", serverPrincipal);
+
+        test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::StaticConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: SqlServer;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: DelegatedKerberos\n" +
+                "  {\n" +
+                "    serverPrincipal: 'dummyPrincipal';\n" +
+                "  };\n" +
+                "}\n");
+
+        test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::StaticConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: SqlServer;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: UserNamePassword\n" +
+                "  {\n" +
+                "    baseVaultReference: 'value';\n" +
+                "    userNameVaultReference: 'value';\n" +
+                "    passwordVaultReference: 'value';\n" +
+                "  };\n" +
+                "}\n");
     }
+
+
 }

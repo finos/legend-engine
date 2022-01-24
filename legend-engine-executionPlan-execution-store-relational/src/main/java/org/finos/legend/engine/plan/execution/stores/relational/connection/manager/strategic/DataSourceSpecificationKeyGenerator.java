@@ -22,12 +22,21 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
 import java.io.File;
 
 public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificationVisitor<DataSourceSpecificationKey>
 {
+    private static final String LOCAL_HOST = "127.0.0.1";
+    private static final String TEST_DB = "testDB";
     private final int testDbPort;
     private final RelationalDatabaseConnection connection;
 
@@ -42,7 +51,7 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
     {
         if (datasourceSpecification instanceof EmbeddedH2DatasourceSpecification)
         {
-            EmbeddedH2DatasourceSpecification embeddedH2DatasourceSpecification = (EmbeddedH2DatasourceSpecification) datasourceSpecification;
+            EmbeddedH2DatasourceSpecification embeddedH2DatasourceSpecification = (EmbeddedH2DatasourceSpecification)datasourceSpecification;
             return new EmbeddedH2DataSourceSpecificationKey(
                     embeddedH2DatasourceSpecification.databaseName,
                     new File(embeddedH2DatasourceSpecification.directory),
@@ -50,16 +59,16 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
         }
         else if (datasourceSpecification instanceof LocalH2DatasourceSpecification)
         {
-            LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) datasourceSpecification;
+            LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification)datasourceSpecification;
             if (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
             {
                 return new LocalH2DataSourceSpecificationKey(localH2DatasourceSpecification.testDataSetupSqls);
             }
-            return new StaticDataSourceSpecificationKey("127.0.0.1", testDbPort, "testDB");
+            return new StaticDataSourceSpecificationKey(LOCAL_HOST, testDbPort, TEST_DB);
         }
         else if (datasourceSpecification instanceof StaticDatasourceSpecification)
         {
-            StaticDatasourceSpecification staticDatasourceSpecification = (StaticDatasourceSpecification) datasourceSpecification;
+            StaticDatasourceSpecification staticDatasourceSpecification = (StaticDatasourceSpecification)datasourceSpecification;
             return new StaticDataSourceSpecificationKey(
                     staticDatasourceSpecification.host,
                     staticDatasourceSpecification.port,
@@ -69,25 +78,31 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
         {
             DatabricksDatasourceSpecification databricksSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
             return new DatabricksDataSourceSpecificationKey(
-                    databricksSpecification.hostname,
+                    databricksSpecification.host,
                     databricksSpecification.port,
                     databricksSpecification.protocol,
                     databricksSpecification.httpPath);
         }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
-            SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
+            SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification)datasourceSpecification;
             return new SnowflakeDataSourceSpecificationKey(
                     snowflakeDatasourceSpecification.accountName,
                     snowflakeDatasourceSpecification.region,
                     snowflakeDatasourceSpecification.warehouseName,
                     snowflakeDatasourceSpecification.databaseName,
                     snowflakeDatasourceSpecification.cloudType,
-                    connection.quoteIdentifiers);
+                    connection.quoteIdentifiers,
+                    snowflakeDatasourceSpecification.proxyHost,
+                    snowflakeDatasourceSpecification.proxyPort,
+                    snowflakeDatasourceSpecification.nonProxyHosts,
+                    snowflakeDatasourceSpecification.accountType,
+                    snowflakeDatasourceSpecification.organization,
+                    snowflakeDatasourceSpecification.role);
         }
         else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {
-            BigQueryDatasourceSpecification bigQueryDatasourceSpecification = (BigQueryDatasourceSpecification) datasourceSpecification;
+            BigQueryDatasourceSpecification bigQueryDatasourceSpecification = (BigQueryDatasourceSpecification)datasourceSpecification;
             return new BigQueryDataSourceSpecificationKey(
                     bigQueryDatasourceSpecification.projectId,
                     bigQueryDatasourceSpecification.defaultDataset);

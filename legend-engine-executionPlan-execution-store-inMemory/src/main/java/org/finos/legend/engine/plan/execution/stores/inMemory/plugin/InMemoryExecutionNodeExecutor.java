@@ -14,11 +14,16 @@
 
 package org.finos.legend.engine.plan.execution.stores.inMemory.plugin;
 
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryPropertyGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
@@ -31,6 +36,7 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.result.graphFetch.StoreStreamReadingResult;
+import org.finos.legend.engine.plan.execution.stores.inMemory.utils.InMemoryGraphFetchUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
@@ -46,10 +52,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Sequen
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryCrossStoreGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
+import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.ArrayList;
@@ -57,6 +65,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicLong;
@@ -109,6 +118,8 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
         Result childResult = null;
 
+        Span graphFetchSpan = GlobalTracer.get().buildSpan("graph fetch").withTag("rootStoreType", "inMemory").withTag("batchSizeConfig", batchSize).start();
+        GlobalTracer.get().activateSpan(graphFetchSpan);
         try
         {
             IInMemoryRootGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
@@ -132,10 +143,11 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
             AtomicLong batchIndex = new AtomicLong(0L);
 
-            Spliterator<GraphObjectsBatch> graphObjectsBatchSpliterator = new Spliterators.AbstractSpliterator<GraphObjectsBatch>(Long.MAX_VALUE, Spliterator.ORDERED) {
+            Spliterator<GraphObjectsBatch> graphObjectsBatchSpliterator = new Spliterators.AbstractSpliterator<GraphObjectsBatch>(Long.MAX_VALUE, Spliterator.ORDERED)
+            {
                 @Override
-                public boolean tryAdvance(Consumer<? super GraphObjectsBatch> action) {
-
+                public boolean tryAdvance(Consumer<? super GraphObjectsBatch> action)
+                {
                     long currentBatch = batchIndex.incrementAndGet();
                     GraphObjectsBatch inMemoryGraphObjectsBatch = new GraphObjectsBatch(currentBatch, executionState.getGraphFetchBatchMemoryLimit());
                     List<Object> resultObjects = new ArrayList<>();
@@ -146,7 +158,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                         while (sourceObjectsIterator.hasNext())
                         {
                             IChecked<?> checkedSource = (IChecked<?>) sourceObjectsIterator.next();
-                            Object value =  checkedSource.getValue();
+                            Object value = checkedSource.getValue();
                             if (value == null)
                             {
                                 resultObjects.add(newDynamicChecked(Collections.singletonList(BasicDefect.newNoInputDefect(_class)), checkedSource, null));
@@ -223,13 +235,17 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
             Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
 
-            return new GraphFetchResult(graphObjectsBatchStream, childResult);
+            return new GraphFetchResult(graphObjectsBatchStream, childResult).withGraphFetchSpan(graphFetchSpan);
         }
         catch (Exception e)
         {
             if (childResult != null)
             {
                 childResult.close();
+            }
+            if (graphFetchSpan != null)
+            {
+                graphFetchSpan.finish();
             }
 
             if (e instanceof RuntimeException)
@@ -241,6 +257,120 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
             if (cause instanceof RuntimeException) throw (RuntimeException) cause;
             if (cause instanceof Error) throw (Error) cause;
             throw new RuntimeException(cause);
+        }
+    }
+
+    @Override
+    public Result visit(InMemoryCrossStoreGraphFetchExecutionNode node)
+    {
+        List<Object> childObjects = new ArrayList<>();
+        Result childResult = null;
+
+        try
+        {
+            IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
+
+            GraphObjectsBatch graphObjectsBatch = new GraphObjectsBatch(this.executionState.graphObjectsBatch);
+            List<?> parentObjects = graphObjectsBatch.getObjectsForNodeIndex(node.parentIndex);
+
+            if ((parentObjects != null) && !parentObjects.isEmpty())
+            {
+                DoubleStrategyHashMap<Object, List<Object>, Object> parentMap = new DoubleStrategyHashMap<>(InMemoryGraphFetchUtils.parentChildDoubleHashStrategy(nodeSpecifics));
+                parentObjects.forEach(parentObject -> parentMap.getIfAbsentPut(parentObject, ArrayList::new).add(parentObject));
+
+                if (node.supportsBatching)
+                {
+                    Map<String, List<Object>> keyValuePairs = Maps.mutable.empty();
+
+                    nodeSpecifics.getCrossStoreKeysValueForChildren(parentObjects.get(0)).keySet().forEach(key -> keyValuePairs.put(key, Lists.mutable.empty()));
+                    parentMap.keySet().forEach(parentObject -> nodeSpecifics.getCrossStoreKeysValueForChildren(parentObject).forEach((key, value) -> keyValuePairs.get(key).add(value)));
+
+                    keyValuePairs.forEach((key, value) -> this.executionState.addResult(key, new ConstantResult(value)));
+                    childResult = this.visit((InMemoryRootGraphFetchExecutionNode) node);
+                    GraphFetchResult childGraphFetchResult = (GraphFetchResult) childResult;
+                    Stream<GraphObjectsBatch> graphObjectsBatchStream = childGraphFetchResult.getGraphObjectsBatchStream();
+
+                    graphObjectsBatchStream.forEach(batch ->
+                    {
+                        batch.getObjectsForNodeIndex(node.nodeIndex).forEach(child ->
+                        {
+                            IGraphInstance<?> childGraphInstance = nodeSpecifics.wrapChildInGraphInstance(child);
+                            Object childObject = childGraphInstance.getValue();
+
+                            List<Object> parentsInScope = parentMap.getWithSecondKey(childObject);
+
+                            if(parentsInScope != null)
+                            {
+                                for (Object parentObject : parentsInScope)
+                                {
+                                    boolean isChildAdded = nodeSpecifics.attemptAddingChildToParent(parentObject, childObject);
+
+                                    if (isChildAdded)
+                                    {
+                                        graphObjectsBatch.addObjectMemoryUtilization(childGraphInstance.instanceSize());
+                                        childObjects.add(childObject);
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+                else
+                {
+                    for (Map.Entry<Object, List<Object>> entry : parentMap.entrySet())
+                    {
+                        Map<String, Object> keyValuePairs = nodeSpecifics.getCrossStoreKeysValueForChildren(entry.getKey());
+
+                        keyValuePairs.forEach((key, value) -> this.executionState.addResult(key, new ConstantResult(value)));
+                        childResult = this.visit((InMemoryRootGraphFetchExecutionNode) node);
+                        GraphFetchResult childGraphFetchResult = (GraphFetchResult) childResult;
+                        Stream<GraphObjectsBatch> graphObjectsBatchStream = childGraphFetchResult.getGraphObjectsBatchStream();
+
+                        graphObjectsBatchStream.forEach(batch ->
+                        {
+                            batch.getObjectsForNodeIndex(node.nodeIndex).forEach(child ->
+                            {
+                                IGraphInstance<?> childGraphInstance = nodeSpecifics.wrapChildInGraphInstance(child);
+                                Object childObject = childGraphInstance.getValue();
+
+                                List<Object> parentsInScope = entry.getValue();
+                                if(parentsInScope != null)
+                                {
+                                    for (Object parentObject : parentsInScope)
+                                    {
+                                        boolean isChildAdded = nodeSpecifics.attemptAddingChildToParent(parentObject, childObject);
+
+                                        if (isChildAdded)
+                                        {
+                                            graphObjectsBatch.addObjectMemoryUtilization(childGraphInstance.instanceSize());
+                                            childObjects.add(childObject);
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    }
+                }
+
+                graphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, childObjects);
+            }
+
+            return new ConstantResult(childObjects);
+        }
+        catch (RuntimeException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        finally
+        {
+            if (childResult != null)
+            {
+                childResult.close();
+            }
         }
     }
 

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.flatdata.compile;
 
+import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataBoolean;
@@ -101,7 +102,7 @@ public class FlatDataSchemaCompiler
     {
         return new Root_meta_external_format_flatdata_metamodel_FlatDataProperty_Impl("")
                 ._name(property.getName())
-                ._value(property.getValue());
+                ._value(ListAdapter.adapt(property.getValues()));
     }
 
     private Root_meta_external_format_flatdata_metamodel_FlatDataRecordType convertFlatDataRecordType(FlatDataRecordType recordType)
@@ -136,13 +137,13 @@ public class FlatDataSchemaCompiler
         else if (field.getType() instanceof FlatDataDate)
         {
             type = new Root_meta_external_format_flatdata_metamodel_FlatDataDate_Impl("")
-                    ._format(((FlatDataDate) field.getType()).getFormat());
+                    ._format(ListAdapter.adapt(((FlatDataDate) field.getType()).getFormat()));
         }
         else if (field.getType() instanceof FlatDataDateTime)
         {
             type = new Root_meta_external_format_flatdata_metamodel_FlatDataDateTime_Impl("")
                     ._timeZone(((FlatDataDateTime) field.getType()).getTimeZone())
-                    ._format(((FlatDataDateTime) field.getType()).getFormat());
+                    ._format(ListAdapter.adapt(((FlatDataDateTime) field.getType()).getFormat()));
         }
         else
         {

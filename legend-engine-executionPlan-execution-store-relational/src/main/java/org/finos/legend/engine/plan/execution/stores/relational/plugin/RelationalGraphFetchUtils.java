@@ -16,11 +16,8 @@ package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
 
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
-import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByTargetCrossKeys;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
@@ -33,8 +30,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Col
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleHashingStrategy;
+import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -134,8 +137,11 @@ class RelationalGraphFetchUtils
 
     static class RelationalCrossObjectGraphFetchCacheKey extends GraphFetchCacheKey
     {
+        private static final long serialVersionUID = -5965677842102369070L;
+
         Object relationalObject;
         List<Method> keyGetters;
+        List<Object> values;
 
         RelationalCrossObjectGraphFetchCacheKey(Object relationalObject, List<Method> keyGetters)
         {
@@ -146,7 +152,7 @@ class RelationalGraphFetchUtils
         @Override
         protected int hash()
         {
-            return hashWithKeys(this.relationalObject, this.keyGetters);
+            return this.values != null ? hashWithValues(this.values) : hashWithKeys(this.relationalObject, this.keyGetters);
         }
 
         @Override
@@ -155,9 +161,42 @@ class RelationalGraphFetchUtils
             if (other instanceof RelationalCrossObjectGraphFetchCacheKey)
             {
                 RelationalCrossObjectGraphFetchCacheKey that = (RelationalCrossObjectGraphFetchCacheKey) other;
-                return equalsWithDifferentKeys(this.relationalObject, that.relationalObject, this.keyGetters, that.keyGetters);
+                return this.values != null ?
+                        (that.values != null ? equalsWithValues(this.values, that.values) : equalsWithKeysAndValues(that.relationalObject, that.keyGetters, this.values)) :
+                        (that.values != null ? equalsWithKeysAndValues(this.relationalObject, this.keyGetters, that.values) : equalsWithDifferentKeys(this.relationalObject, that.relationalObject, this.keyGetters, that.keyGetters));
             }
             return false;
+        }
+
+        private List<Object> getValues()
+        {
+            if (this.values == null)
+            {
+                this.values = new ArrayList<>();
+                try
+                {
+                    for (Method getter : this.keyGetters)
+                    {
+                        this.values.add(getter.invoke(this.relationalObject));
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+            return this.values;
+        }
+
+        private void writeObject(ObjectOutputStream objectOutputStream) throws IOException
+        {
+            objectOutputStream.writeObject(this.getValues());
+        }
+
+        @SuppressWarnings("unchecked")
+        private void readObject(ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException
+        {
+            this.values = (List<Object>) objectInputStream.readObject();
         }
     }
 
@@ -240,59 +279,6 @@ class RelationalGraphFetchUtils
         return matchingUtilizedCache;
     }
 
-    static GraphFetchCacheByTargetCrossKeys findCacheByCrossKeys(GraphFetchTree graphFetchTree, String mappingId, String sourceInstanceSetId, String targetInstanceSetId, List<String> targetPropertiesOrdered, List<GraphFetchCache> graphFetchCaches)
-    {
-        if (!subTreeValidForCaching(graphFetchTree))
-        {
-            return null;
-        }
-
-        String subTree = getSubTreeString(graphFetchTree);
-        Pair<String, String> mappingSetIdPair = Tuples.pair(mappingId, sourceInstanceSetId);
-
-        GraphFetchCacheByTargetCrossKeys matchingUtilizedCache = null;
-        for (GraphFetchCache c : graphFetchCaches)
-        {
-            if (c instanceof GraphFetchCacheByTargetCrossKeys)
-            {
-                GraphFetchCacheByTargetCrossKeys ce = (GraphFetchCacheByTargetCrossKeys) c;
-                if (ce.isCacheUtilized() && ce.getSourceSetIds().contains(mappingSetIdPair) && targetInstanceSetId.equals(ce.getTargetSetId()) && targetPropertiesOrdered.equals(ce.getTargetPropertiesOrdered()) && subTree.equals(ce.getSubTree()))
-                {
-                    matchingUtilizedCache = ce;
-                    break;
-                }
-            }
-        }
-
-        if (matchingUtilizedCache == null)
-        {
-            GraphFetchCacheByTargetCrossKeys unUtilizedCache = null;
-            for (GraphFetchCache c : graphFetchCaches)
-            {
-                if (c instanceof GraphFetchCacheByTargetCrossKeys)
-                {
-                    GraphFetchCacheByTargetCrossKeys ce = (GraphFetchCacheByTargetCrossKeys) c;
-                    if (!ce.isCacheUtilized() && ce.getSourceSetIds().contains(mappingSetIdPair) && targetInstanceSetId.equals(ce.getTargetSetId()))
-                    {
-                        unUtilizedCache = ce;
-                        break;
-                    }
-                }
-            }
-
-            if (unUtilizedCache != null)
-            {
-                unUtilizedCache.setSubTree(subTree);
-                unUtilizedCache.setTargetPropertiesOrdered(targetPropertiesOrdered);
-                return unUtilizedCache;
-            }
-
-            return null;
-        }
-
-        return matchingUtilizedCache;
-    }
-
     private static int hashWithKeys(Object obj, List<Method> getters)
     {
         try
@@ -311,6 +297,18 @@ class RelationalGraphFetchUtils
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private static int hashWithValues(List<Object> values)
+    {
+        int hash = 0;
+        int mul = 1;
+        for (Object val : values)
+        {
+            hash = hash + mul * (val == null ? -1 : val.hashCode());
+            mul = mul * 29;
+        }
+        return hash;
     }
 
     private static boolean equalsWithKeys(Object obj1, Object obj2, List<Method> getters)
@@ -361,6 +359,44 @@ class RelationalGraphFetchUtils
             {
                 Object obj1Val = getter1.invoke(obj1);
                 Object obj2Val = getters2.get(i).invoke(obj2);
+                if (!Objects.equals(obj1Val, obj2Val))
+                {
+                    return false;
+                }
+                i++;
+            }
+            return true;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static boolean equalsWithValues(List<Object> values1, List<Object> values2)
+    {
+        int i = 0;
+        for (Object val1 : values1)
+        {
+            Object val2 = values2.get(i);
+            if (!Objects.equals(val1, val2))
+            {
+                return false;
+            }
+            i++;
+        }
+        return true;
+    }
+
+    private static boolean equalsWithKeysAndValues(Object obj, List<Method> getters, List<Object> values)
+    {
+        try
+        {
+            int i = 0;
+            for (Method getter : getters)
+            {
+                Object obj1Val = getter.invoke(obj);
+                Object obj2Val = values.get(i);
                 if (!Objects.equals(obj1Val, obj2Val))
                 {
                     return false;

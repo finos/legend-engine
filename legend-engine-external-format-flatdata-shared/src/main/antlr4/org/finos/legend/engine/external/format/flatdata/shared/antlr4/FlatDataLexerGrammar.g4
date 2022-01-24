@@ -22,6 +22,8 @@ ADDRESS:                            '{'(Letter | Digit)+'}';
 STRING:                                     String;
 BRACE_OPEN:                                 '{';
 BRACE_CLOSE:                                '}';
+BRACKET_OPEN:                               '[';
+BRACKET_CLOSE:                              ']';
 PAREN_OPEN:                                 '(';
 PAREN_CLOSE:                                ')';
 COMMA:                                      ',';

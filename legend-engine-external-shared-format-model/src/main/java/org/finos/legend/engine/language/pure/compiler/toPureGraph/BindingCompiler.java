@@ -60,11 +60,8 @@ public class BindingCompiler
     // First pass - create and index schemas
     private PackageableElement firstPass(Binding srcSchemaOp, CompileContext context)
     {
-        org.finos.legend.pure.m3.coreinstance.Package pack = context.pureModel.getOrCreatePackage(srcSchemaOp._package);
-
         Root_meta_external_shared_format_binding_Binding binding = new Root_meta_external_shared_format_binding_Binding_Impl(srcSchemaOp.name)
                 ._name(srcSchemaOp.name)
-                ._package(pack)
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::external::shared::format::binding::Binding")));
 
         String path = context.pureModel.buildPackageString(srcSchemaOp._package, srcSchemaOp.name);

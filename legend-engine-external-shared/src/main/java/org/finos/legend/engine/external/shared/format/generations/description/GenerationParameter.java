@@ -57,7 +57,11 @@ public class GenerationParameter implements GenerationProperty
             @Override
             public List<GenerationItemType> getTypes()
             {
-                return parameter._items()._types().toList().stream().map(t -> GenerationItemType.valueOf(String.valueOf(t).toUpperCase())).collect(Collectors.toList());
+                return parameter._items()._types().toList().stream()
+                        .map(t -> String.valueOf(t).toUpperCase())
+                        .map(t -> "PACKAGEABLEELEMENT".equals(t) ? "STRING" : t)
+                        .map(t -> GenerationItemType.valueOf(t))
+                        .collect(Collectors.toList());
             }
 
             @Override

@@ -14,15 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
-import org.eclipse.collections.api.map.ConcurrentMutableMap;
 
 import java.util.List;
 
 public interface ConnectionManagerExtension
 {
-    ConnectionManager getExtensionManager(int testDbPort, List<OAuthProfile> oauthProfiles, ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dbSpecByKey, RelationalExecutorInfo relationalExecutorInfo);
+    ConnectionManager getExtensionManager(int testDbPort, List<OAuthProfile> oauthProfiles);
 }

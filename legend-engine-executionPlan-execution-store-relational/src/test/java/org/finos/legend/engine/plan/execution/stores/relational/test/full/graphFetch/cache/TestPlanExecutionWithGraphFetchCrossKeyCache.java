@@ -14,23 +14,28 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.full.graphFetch.cache;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.eclipse.collections.impl.tuple.Tuples;
+import org.apache.commons.io.input.ClassLoaderObjectInputStream;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutionContext;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCacheStats;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByTargetCrossKeys;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToPureFormatSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
-import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -38,30 +43,28 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
-import org.h2.tools.Server;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
-
-public class TestPlanExecutionWithGraphFetchCrossKeyCache
+public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServer
 {
-    private static Server server;
-    private static PlanExecutor planExecutor;
 
     private static final String LOGICAL_MODEL = "###Pure\n" +
             "Class test::Person\n" +
@@ -203,47 +206,6 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
             "  ];\n" +
             "}\n";
 
-    @BeforeClass
-    public static void setUp()
-    {
-        try
-        {
-            Class.forName("org.h2.Driver");
-
-            Enumeration<Driver> e = DriverManager.getDrivers();
-            while (e.hasMoreElements())
-            {
-                Driver d = e.nextElement();
-                if (!d.getClass().getName().equals("org.h2.Driver"))
-                {
-                    try
-                    {
-                        DriverManager.deregisterDriver(d);
-                    }
-                    catch (Exception ignored)
-                    {
-                    }
-                }
-            }
-
-            int port = DynamicPortGenerator.generatePort();
-            server = AlloyH2Server.startServer(port);
-            insertData(port);
-            planExecutor = PlanExecutor.newPlanExecutor(Relational.build(port));
-            System.out.println("Finished setup");
-        }
-        catch (Exception ignored)
-        {
-        }
-    }
-
-    @AfterClass
-    public static void tearDown()
-    {
-        server.shutdown();
-        server.stop();
-        System.out.println("Teardown complete");
-    }
 
     @Test
     public void testCrossCacheWithNoPropertyAccess() throws JavaCompileException
@@ -265,7 +227,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache();
+        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache(plan);
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache);
 
         String expectedRes = "[" +
@@ -277,7 +239,6 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertFalse(firmCache.isCacheUtilized());
         assertCacheStats(firmCache.getExecutionCache(), 0, 0, 0, 0);
     }
 
@@ -307,19 +268,18 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache();
+        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache(plan);
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache);
 
         String expectedRes = "[" +
-                    "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"}}," +
-                    "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"}}," +
-                    "{\"fullName\":\"P3\",\"firm\":null}," +
-                    "{\"fullName\":\"P4\",\"firm\":null}," +
-                    "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"}}" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"}}," +
+                "{\"fullName\":\"P3\",\"firm\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"}}" +
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertTrue(firmCache.isCacheUtilized());
         assertCacheStats(firmCache.getExecutionCache(), 3, 5, 2, 3);
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -352,7 +312,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys personCache = getPersonCache();
+        GraphFetchCacheByTargetCrossKeys personCache = getPersonCache(plan);
         PlanExecutionContext context = new PlanExecutionContext(plan, personCache);
 
         String expectedRes = "[" +
@@ -364,7 +324,6 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertTrue(personCache.isCacheUtilized());
         assertCacheStats(personCache.getExecutionCache(), 5, 5, 0, 5);
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -403,22 +362,20 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache();
-        GraphFetchCacheByTargetCrossKeys addressCache = getAddressEmptyCache();
+        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache(plan);
+        GraphFetchCacheByTargetCrossKeys addressCache = getAddressCache(plan);
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache, addressCache);
 
         String expectedRes = "[" +
-                    "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"},\"address\":{\"name\":\"A1\"}}," +
-                    "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"},\"address\":{\"name\":\"A2\"}}," +
-                    "{\"fullName\":\"P3\",\"firm\":null,\"address\":null}," +
-                    "{\"fullName\":\"P4\",\"firm\":null,\"address\":{\"name\":\"A3\"}}," +
-                    "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"},\"address\":{\"name\":\"A1\"}}" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"},\"address\":{\"name\":\"A1\"}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"},\"address\":{\"name\":\"A2\"}}," +
+                "{\"fullName\":\"P3\",\"firm\":null,\"address\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null,\"address\":{\"name\":\"A3\"}}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"},\"address\":{\"name\":\"A1\"}}" +
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertTrue(firmCache.isCacheUtilized());
         assertCacheStats(firmCache.getExecutionCache(), 3, 5, 2, 3);
-        Assert.assertTrue(addressCache.isCacheUtilized());
         assertCacheStats(addressCache.getExecutionCache(), 4, 5, 1, 4);
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -464,65 +421,139 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
                 "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache();
-        GraphFetchCacheByTargetCrossKeys addressCache = getAddressEmptyCache();
-        PlanExecutionContext context = new PlanExecutionContext(plan, firmCache, addressCache);
+        GraphFetchCacheByTargetCrossKeys firmCache = getFirmEmptyCache(plan);
+        List<GraphFetchCacheByTargetCrossKeys> addressCaches = getSharedAddressCaches(plan);
+        PlanExecutionContext context = new PlanExecutionContext(plan, Lists.mutable.of((GraphFetchCache) firmCache).withAll(addressCaches));
 
         String expectedRes = "[" +
-                    "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}," +
-                    "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"address\":{\"name\":\"A3\"}},\"address\":{\"name\":\"A2\"}}," +
-                    "{\"fullName\":\"P3\",\"firm\":null,\"address\":null}," +
-                    "{\"fullName\":\"P4\",\"firm\":null,\"address\":{\"name\":\"A3\"}}," +
-                    "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"address\":{\"name\":\"A3\"}},\"address\":{\"name\":\"A2\"}}," +
+                "{\"fullName\":\"P3\",\"firm\":null,\"address\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null,\"address\":{\"name\":\"A3\"}}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}" +
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
-        Assert.assertTrue(firmCache.isCacheUtilized());
         assertCacheStats(firmCache.getExecutionCache(), 3, 5, 2, 3);
-        Assert.assertTrue(addressCache.isCacheUtilized());
-        assertCacheStats(addressCache.getExecutionCache(), 5, 7, 2, 5);
+        assertCacheStats(addressCaches.get(0).getExecutionCache(), 5, 7, 2, 5);
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
         assertCacheStats(firmCache.getExecutionCache(), 3, 10, 7, 3);
-        assertCacheStats(addressCache.getExecutionCache(), 5, 12, 7, 5);
+        assertCacheStats(addressCaches.get(0).getExecutionCache(), 5, 12, 7, 5);
     }
 
-    private GraphFetchCacheByTargetCrossKeys getFirmEmptyCache()
+    @Test
+    public void testCrossPropertyCachingWithSerializableCache() throws JavaCompileException, IOException, ClassNotFoundException
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): String[1]\n" +
+                "{\n" +
+                "  test::Person.all()\n" +
+                "    ->graphFetch(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firm {\n" +
+                "          name,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#, 1)\n" +
+                "    ->serialize(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firm {\n" +
+                "          name,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        String expectedRes = "[" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"address\":{\"name\":\"A3\"}}}," +
+                "{\"fullName\":\"P3\",\"firm\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}}}" +
+                "]";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
+        EngineJavaCompiler compiler = JavaHelper.compilePlan(plan, null);
+        GraphFetchCrossAssociationKeys graphFetchCrossAssociationKeys = GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm>")).findFirst().orElse(null);
+
+        try (JavaHelper.ThreadContextClassLoaderScope ignored = JavaHelper.withCurrentThreadContextClassLoader(compiler.getClassLoader()))
+        {
+            Map<GraphFetchCacheKey, List<Object>> firmMap1 = Maps.mutable.empty();
+            GraphFetchCacheByTargetCrossKeys firmCache1 = ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(buildExecutionCacheFromMap(firmMap1), graphFetchCrossAssociationKeys);
+            Assert.assertEquals(expectedRes, executePlan(plan, new PlanExecutionContext(firmCache1)));
+            assertCacheStats(firmCache1.getExecutionCache(), 3, 5, 2, 3);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            objectOutputStream.writeObject(firmMap1);
+            objectOutputStream.flush();
+
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+            ClassLoaderObjectInputStream objectInputStream = new ClassLoaderObjectInputStream(compiler.getClassLoader(), byteArrayInputStream);
+            Object o = objectInputStream.readObject();
+
+            @SuppressWarnings("unchecked") Map<GraphFetchCacheKey, List<Object>> firmMap2 = (Map<GraphFetchCacheKey, List<Object>>) o;
+            GraphFetchCacheByTargetCrossKeys firmCache2 = ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(buildExecutionCacheFromMap(firmMap2), graphFetchCrossAssociationKeys);
+            Assert.assertEquals(expectedRes, executePlan(plan, new PlanExecutionContext(firmCache2)));
+            assertCacheStats(firmCache2.getExecutionCache(), 3, 5, 5, 0);
+        }
+    }
+
+    private GraphFetchCacheByTargetCrossKeys getFirmEmptyCache(SingleExecutionPlan plan)
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                "test::Map",
-                "test_Person",
-                "test_Firm"
+                GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm>")).findFirst().orElse(null)
         );
     }
 
-    private GraphFetchCacheByTargetCrossKeys getPersonCache()
+    private GraphFetchCacheByTargetCrossKeys getPersonCache(SingleExecutionPlan plan)
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                "test::Map",
-                "test_Address",
-                "test_Person"
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.persons>")).findFirst().orElse(null))
         );
     }
 
-    private GraphFetchCacheByTargetCrossKeys getAddressEmptyCache()
+    private GraphFetchCacheByTargetCrossKeys getAddressCache(SingleExecutionPlan plan)
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                Arrays.asList(Tuples.pair("test::Map", "test_Person"), Tuples.pair("test::Map", "test_Firm")),
-                "test_Address"
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address>")).findFirst().orElse(null))
+        );
+    }
+
+    private List<GraphFetchCacheByTargetCrossKeys> getSharedAddressCaches(SingleExecutionPlan plan)
+    {
+        Cache<GraphFetchCacheKey, List<Object>> cache = CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build();
+        return Arrays.asList(
+                ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
+                        cache,
+                        Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm.address>")).findFirst().orElse(null))
+                ),
+                ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
+                        cache,
+                        Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address>")).findFirst().orElse(null))
+                )
         );
     }
 
     private String executePlan(SingleExecutionPlan plan, PlanExecutionContext context)
     {
-        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(plan, Collections.emptyMap(), null, context);
+        JsonStreamingResult result = (JsonStreamingResult)planExecutor.execute(plan, Collections.emptyMap(), null, context);
         return result.flush(new JsonStreamToPureFormatSerializer(result));
     }
 
-    private void assertCacheStats(ExecutionCache<?,?> cache, int estimatedSize, int requestCount, int hitCount, int missCount)
+    private void assertCacheStats(ExecutionCache<?, ?> cache, int estimatedSize, int requestCount, int hitCount, int missCount)
     {
         Assert.assertEquals(estimatedSize, cache.estimatedSize());
         Assert.assertEquals(requestCount, cache.stats().requestCount());
@@ -551,64 +582,158 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache
         );
     }
 
-    private static void insertData(int port)
+    @Override
+    protected void insertTestData(Statement s) throws SQLException
     {
-        Connection c = null;
-        Statement s = null;
-        try
-        {
-            c = buildTestExecutor(port).getConnectionManager().getTestDatabaseConnection();
-            s = c.createStatement();
+        s.execute("Create Schema default;");
+        s.execute("Drop table if exists personTable;");
+        s.execute("Create Table personTable(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(fullName));");
+        s.execute("Drop table if exists firmTable;");
+        s.execute("Create Table firmTable(name VARCHAR(100) NOT NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(name));");
+        s.execute("Drop table if exists addressTable;");
+        s.execute("Create Table addressTable(name VARCHAR(100) NOT NULL, PRIMARY KEY(name));");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P1','F1','A1');");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P2','F2','A2');");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P3',null,null);");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P4',null,'A3');");
+        s.execute("insert into personTable (fullName,firmName,addressName) values ('P5','F1','A1');");
+        s.execute("insert into firmTable (name,addressName) values ('F1','A4');");
+        s.execute("insert into firmTable (name,addressName) values ('F2','A3');");
+        s.execute("insert into firmTable (name,addressName) values ('F3','A3');");
+        s.execute("insert into firmTable (name,addressName) values ('F4',null);");
+        s.execute("insert into addressTable (name) values ('A1');");
+        s.execute("insert into addressTable (name) values ('A2');");
+        s.execute("insert into addressTable (name) values ('A3');");
+        s.execute("insert into addressTable (name) values ('A4');");
+        s.execute("insert into addressTable (name) values ('A5');");
+    }
 
-            s.execute("Create Schema default;");
-            s.execute("Drop table if exists personTable;");
-            s.execute("Create Table personTable(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(fullName));");
-            s.execute("Drop table if exists firmTable;");
-            s.execute("Create Table firmTable(name VARCHAR(100) NOT NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(name));");
-            s.execute("Drop table if exists addressTable;");
-            s.execute("Create Table addressTable(name VARCHAR(100) NOT NULL, PRIMARY KEY(name));");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P1','F1','A1');");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P2','F2','A2');");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P3',null,null);");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P4',null,'A3');");
-            s.execute("insert into personTable (fullName,firmName,addressName) values ('P5','F1','A1');");
-            s.execute("insert into firmTable (name,addressName) values ('F1','A4');");
-            s.execute("insert into firmTable (name,addressName) values ('F2','A3');");
-            s.execute("insert into firmTable (name,addressName) values ('F3','A3');");
-            s.execute("insert into firmTable (name,addressName) values ('F4',null);");
-            s.execute("insert into addressTable (name) values ('A1');");
-            s.execute("insert into addressTable (name) values ('A2');");
-            s.execute("insert into addressTable (name) values ('A3');");
-            s.execute("insert into addressTable (name) values ('A4');");
-            s.execute("insert into addressTable (name) values ('A5');");
-        }
-        catch (Exception ignored)
-        {
-        }
-        finally
-        {
-            try
-            {
-                if (s != null)
+    private <K, V> ExecutionCache<K, V> buildExecutionCacheFromMap(Map<K, V> map)
+    {
+        Map<String, Integer> stats = Maps.mutable.of("requestCount", 0, "hitCount", 0, "missCount", 0, "size", 0);
+
+        return new ExecutionCache<K, V>() {
+            @Override
+            public V get(K key, Callable<? extends V> valueLoader) {
+                throw new UnsupportedOperationException("Not supported!");
+            }
+
+            @Override
+            public V getIfPresent(K key) {
+                V v = map.get(key);
+                stats.put("requestCount", stats.get("requestCount") + 1);
+                if (v != null)
                 {
-                    s.close();
+                    stats.put("hitCount", stats.get("hitCount") + 1);
                 }
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-            try
-            {
-                if (c != null)
+                else
                 {
-                    c.close();
+                    stats.put("missCount", stats.get("missCount") + 1);
                 }
+                return v;
             }
-            catch (Exception e)
-            {
-                e.printStackTrace();
+
+            @Override
+            public Map<? extends K, ? extends V> getAllPresent(Iterable<? extends K> keys) {
+                throw new UnsupportedOperationException("Not supported!");
             }
-        }
+
+            @Override
+            public void put(K key, V value) {
+                map.put(key, value);
+                stats.put("size", map.size());
+            }
+
+            @Override
+            public void putAll(Map<? extends K, ? extends V> keyValues) {
+                map.putAll(keyValues);
+                stats.put("size", map.size());
+            }
+
+            @Override
+            public void invalidate(K key) {
+                throw new UnsupportedOperationException("Not supported!");
+            }
+
+            @Override
+            public void invalidateAll(Iterable<? extends K> keys) {
+                throw new UnsupportedOperationException("Not supported!");
+            }
+
+            @Override
+            public void invalidateAll() {
+                throw new UnsupportedOperationException("Not supported!");
+            }
+
+            @Override
+            public long estimatedSize() {
+                return map.size();
+            }
+
+            @Override
+            public ExecutionCacheStats stats() {
+                return new ExecutionCacheStats() {
+                    @Override
+                    public long requestCount() {
+                        return stats.get("requestCount");
+                    }
+
+                    @Override
+                    public long hitCount() {
+                        return stats.get("hitCount");
+                    }
+
+                    @Override
+                    public long missCount() {
+                        return stats.get("missCount");
+                    }
+
+                    @Override
+                    public long loadCount() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public long loadSuccessCount() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public long loadFailureCount() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public long evictionCount() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public double hitRate() {
+                        return hitCount()/(requestCount() * 1.0);
+                    }
+
+                    @Override
+                    public double missRate() {
+                        return missCount()/(requestCount() * 1.0);
+                    }
+
+                    @Override
+                    public double loadFailureRate() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public double averageLoadPenalty() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+
+                    @Override
+                    public long totalLoadTime() {
+                        throw new UnsupportedOperationException("Not supported!");
+                    }
+                };
+            }
+        };
     }
 }

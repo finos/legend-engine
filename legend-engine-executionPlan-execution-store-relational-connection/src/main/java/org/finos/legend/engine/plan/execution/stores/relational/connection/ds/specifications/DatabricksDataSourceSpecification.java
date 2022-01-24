@@ -19,6 +19,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Relat
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -33,9 +34,9 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
     public static String DATABRICKS_PROTOCOL = "legend_databricks_protocol";
     public static String DATABRICKS_HTTP_PATH = "legend_databricks_http_path";
 
-    public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, RelationalExecutorInfo relationalExecutorInfo)
+    public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
-        super(key, databaseManager, authenticationStrategy, extraUserProperties, relationalExecutorInfo);
+        super(key, databaseManager, authenticationStrategy, extraUserProperties);
 
         this.extraDatasourceProperties.put(DATABRICKS_HOSTNAME, key.getHostname());
         this.extraDatasourceProperties.put(DATABRICKS_PORT, key.getPort());
@@ -47,14 +48,8 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put("httpPath", key.getHttpPath());
     }
 
-    public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, RelationalExecutorInfo relationalExecutorInfo)
+    public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
     {
-        this(key, databaseManager, authenticationStrategy, new Properties(), relationalExecutorInfo);
-    }
-
-    @Override
-    protected DataSource buildDataSource(MutableList<CommonProfile> profiles)
-    {
-        return this.buildDataSource(null, -1, null, profiles);
+        this(key, databaseManager, authenticationStrategy, new Properties());
     }
 }
