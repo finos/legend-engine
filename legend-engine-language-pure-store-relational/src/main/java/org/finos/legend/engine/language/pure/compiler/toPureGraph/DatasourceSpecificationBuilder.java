@@ -60,7 +60,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
         {
             DatabricksDatasourceSpecification staticDatasourceSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
             Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl("");
-            _static._hostname(staticDatasourceSpecification.host);
+            _static._host(staticDatasourceSpecification.host);
             _static._port(staticDatasourceSpecification.port);
             _static._protocol(staticDatasourceSpecification.protocol);
             _static._httpPath(staticDatasourceSpecification.httpPath);
