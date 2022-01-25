@@ -92,3 +92,10 @@ Association meta::external::store::service::showcase::domain::S_Trade_S_Product
   s_product : meta::external::store::service::showcase::domain::S_Product[0..1];
   s_trades  : meta::external::store::service::showcase::domain::S_Trade[*];
 }
+
+Class meta::external::store::service::showcase::domain::Person
+{
+  firstName : String[1];
+  lastName  : String[1];
+  firmId    : String[1];
+}

@@ -6,5 +6,6 @@
   "/products/getProductById1/31" : "[{\n    \"s_productId\": \"31\",\n    \"s_productName\": \"Product 31\",\n    \"s_description\": \"Product 31 description\",\n    \"s_synonyms\": [\n      {\n        \"s_name\": \"product 31 synonym 1\",\n        \"s_type\": \"isin\"\n      },\n      {\n        \"s_name\": \"product 31 synonym 2\",\n        \"s_type\": \"cusip\"\n      }\n    ]\n  }]",
   "/products/getProductById1/41" : "[]",
   "/products/getProductById2/31" : "[]",
-  "/products/getProductById2/41" : "[{\n    \"s_productId\": \"41\",\n    \"s_productName\": \"Product 41\",\n    \"s_description\": \"Product 41 description\",\n    \"s_synonyms\": [\n      {\n        \"s_name\": \"product 41 synonym 1\",\n        \"s_type\": \"isin\"\n      },\n      {\n        \"s_name\": \"product 41 synonym 2\",\n        \"s_type\": \"cusip\"\n      }\n    ]\n  }]"
+  "/products/getProductById2/41" : "[{\n    \"s_productId\": \"41\",\n    \"s_productName\": \"Product 41\",\n    \"s_description\": \"Product 41 description\",\n    \"s_synonyms\": [\n      {\n        \"s_name\": \"product 41 synonym 1\",\n        \"s_type\": \"isin\"\n      },\n      {\n        \"s_name\": \"product 41 synonym 2\",\n        \"s_type\": \"cusip\"\n      }\n    ]\n  }]",
+  "/employees" : "[{\"firstName\":\"FirstName ServiceStore\", \"lastName\" : \"LastName ServiceStore\", \"firmId\":\"ServiceStore\"}]"
 }
