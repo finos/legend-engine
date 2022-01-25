@@ -78,7 +78,7 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
         {
             DatabricksDatasourceSpecification databricksSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
             return new DatabricksDataSourceSpecificationKey(
-                    databricksSpecification.host,
+                    databricksSpecification.hostname,
                     databricksSpecification.port,
                     databricksSpecification.protocol,
                     databricksSpecification.httpPath);

@@ -64,8 +64,8 @@ public class DataSourceSpecificationParseTreeWalker
         DatabricksDatasourceSpecification dsSpec = new DatabricksDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
 
-        DataSourceSpecificationParserGrammar.HostnameContext hostnameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.hostname(), "host", dsSpec.sourceInformation);
-        dsSpec.host = PureGrammarParserUtility.fromGrammarString(hostnameCtx.STRING().getText(), true);
+        DataSourceSpecificationParserGrammar.HostnameContext hostnameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.hostname(), "hostname", dsSpec.sourceInformation);
+        dsSpec.hostname = PureGrammarParserUtility.fromGrammarString(hostnameCtx.STRING().getText(), true);
 
         DataSourceSpecificationParserGrammar.PortContext portCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.port(), "port", dsSpec.sourceInformation);
         dsSpec.port = PureGrammarParserUtility.fromGrammarString(portCtx.STRING().getText(), true);

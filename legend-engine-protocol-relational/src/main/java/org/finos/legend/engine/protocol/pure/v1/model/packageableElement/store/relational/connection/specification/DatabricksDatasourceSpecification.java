@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 
 public class DatabricksDatasourceSpecification extends DatasourceSpecification
 {
-    public String host;
+    public String hostname;
     public String port;
     public String protocol;
     public String httpPath;
