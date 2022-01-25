@@ -32,6 +32,7 @@ public class ExecutionResultObjectMapperFactory
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT);
+        objectMapper.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(PureDate.class, new ExecutionResultObjectMapperFactory.PureDateSerializer());
         objectMapper.registerModule(simpleModule);
