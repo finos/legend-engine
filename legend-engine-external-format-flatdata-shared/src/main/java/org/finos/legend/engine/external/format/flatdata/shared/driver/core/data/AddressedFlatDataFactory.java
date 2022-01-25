@@ -19,51 +19,30 @@ import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFla
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatDataValue;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class HeadedFlatDataFactory<T> extends AbstractDataFactory<T>
+public class AddressedFlatDataFactory<T> extends AbstractDataFactory<T>
 {
-    private final String[] headings;
+    private String[] addresses;
 
-    public HeadedFlatDataFactory(List<String> headings, String definingPath, List<String> nullStrings)
-    {
-        this(headings.toArray(new String[0]), definingPath, nullStrings);
-    }
-
-    public HeadedFlatDataFactory(String[] headings, String definingPath, List<String> nullStrings)
+    public AddressedFlatDataFactory(String[] addresses, String definingPath, List<String> nullStrings)
     {
         super(definingPath, nullStrings);
-        this.headings = headings;
-    }
-
-    public List<String> headings()
-    {
-        return Arrays.asList(headings);
-    }
-
-    public int headingsSize()
-    {
-        return headings.length;
-    }
-
-    public boolean containsHeading(String heading)
-    {
-        return headings().contains(heading);
+        this.addresses = addresses;
     }
 
     public Function<RawFlatData, String> getRawDataAccessor(FlatDataRecordField field)
     {
-        for (int i = 0; i < headings.length; i++)
+        for (int i = 0; i < addresses.length; i++)
         {
-            if (headings[i].equals(field.getLabel()))
+            if (addresses[i].equals(field.getAddress()))
             {
                 int index = i;
-                return (RawFlatData raw) -> ((HeadedRawFlatData) raw).getRawValue(index);
+                return (RawFlatData raw) -> ((AddressedRawFlatData) raw).getRawValue(index);
             }
         }
         return (RawFlatData raw) -> null;
@@ -76,28 +55,27 @@ public class HeadedFlatDataFactory<T> extends AbstractDataFactory<T>
 
     public RawFlatData createRawFlatData(long recordNumber, LineReader.Line line, String[] values)
     {
-        return new HeadedRawFlatData(nullStrings, headings, recordNumber, line.getLineNumber(), line.getText(), values);
+        return new AddressedRawFlatData(nullStrings, addresses, recordNumber, line.getLineNumber(), line.getText(), values);
     }
 
-    private static class HeadedRawFlatData extends AbstractRawFlatData
+    private static class AddressedRawFlatData extends AbstractRawFlatData
     {
         private final List<String> nullStrings;
-        private final String[] headings;
+        private String[] addresses;
         private final String[] values;
 
-        HeadedRawFlatData(List<String> nullStrings, String[] headings, long number, long lineNumber, String record, String[] values)
+        AddressedRawFlatData(List<String> nullStrings, String[] addresses, long number, long lineNumber, String record, String[] values)
         {
             super(number, lineNumber, record);
             this.nullStrings = nullStrings;
-            this.headings = headings;
+            this.addresses = addresses;
             this.values = values;
         }
 
         @Override
         protected List<RawFlatDataValue> createValues()
         {
-            int limit = Math.min(headings.length, values.length);
-            return IntStream.range(0, limit).mapToObj(HeadedValue::new).collect(Collectors.toList());
+            return IntStream.range(0, values.length).mapToObj(AddressedValue::new).collect(Collectors.toList());
         }
 
         String getRawValue(int index)
@@ -106,11 +84,11 @@ public class HeadedFlatDataFactory<T> extends AbstractDataFactory<T>
             return value != null && nullStrings.contains(value) ? null : value;
         }
 
-        private class HeadedValue implements RawFlatDataValue
+        private class AddressedValue implements RawFlatDataValue
         {
             private final int index;
 
-            HeadedValue(int index)
+            AddressedValue(int index)
             {
                 this.index = index;
             }
@@ -118,7 +96,7 @@ public class HeadedFlatDataFactory<T> extends AbstractDataFactory<T>
             @Override
             public Object getAddress()
             {
-                return headings[index];
+                return addresses[index];
             }
 
             @Override
@@ -130,25 +108,8 @@ public class HeadedFlatDataFactory<T> extends AbstractDataFactory<T>
             @Override
             public String toString()
             {
-                return "HeadedValue{label=" + getAddress() + ", value=" + getRawValue() + '}';
+                return "AddressedValue{label=" + getAddress() + ", value=" + getRawValue() + '}';
             }
         }
-    }
-
-    public static Function<RawFlatData, String> getDynamicRawDataAccessor(FlatDataRecordField field)
-    {
-        final String label = field.getLabel();
-        return (RawFlatData raw) ->
-        {
-            HeadedRawFlatData headedRaw = (HeadedRawFlatData) raw;
-            for (int i = 0; i < headedRaw.headings.length; i++)
-            {
-                if (headedRaw.headings[i].equals(label))
-                {
-                    return headedRaw.getRawValue(i);
-                }
-            }
-            return null;
-        };
     }
 }
