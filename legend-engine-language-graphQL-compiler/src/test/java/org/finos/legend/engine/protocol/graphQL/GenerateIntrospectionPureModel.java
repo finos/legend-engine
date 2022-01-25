@@ -1,12 +1,17 @@
 package org.finos.legend.engine.protocol.graphQL;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Translator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
-public class GenerateIntrospectionBuilder
+public class GenerateIntrospectionPureModel
 {
     public static void main(String args[])
     {
@@ -95,7 +100,8 @@ public class GenerateIntrospectionBuilder
 
         GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
         Document document = parser.parseDocument(introspection);
-        String res = org.finos.legend.pure.generated.core_pure_protocol_generation_builder_generation.Root_meta_protocols_generation_builder_builderGeneration_Any_1__String_1_(new Translator().translate(document, pureModel), pureModel.getExecutionSupport());
+        RichIterable<? extends Type> types =  org.finos.legend.pure.generated.core_external_query_graphql_transformation.Root_meta_external_query_graphQL_binding_toPure_typeSystem_graphQLTypeSystemtoPure_Document_1__String_1__Type_MANY_(new Translator().translate(document, pureModel), "meta::external::query::graphQL::introspection::model", pureModel.getExecutionSupport());
+        String res = types.collect(t -> core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_printType_Type_1__String_1_(t, pureModel.getExecutionSupport())).makeString("\n");
         System.out.println(res);
     }
 }

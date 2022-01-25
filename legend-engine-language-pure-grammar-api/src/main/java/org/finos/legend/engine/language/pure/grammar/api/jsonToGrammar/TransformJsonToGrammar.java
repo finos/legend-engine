@@ -48,11 +48,13 @@ import javax.ws.rs.core.Response;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
+@Deprecated
 @Api(tags = "Pure - Grammar")
 @Path("pure/v1/grammar")
 @Produces(MediaType.APPLICATION_JSON)
 public class TransformJsonToGrammar
 {
+    @Deprecated
     @POST
     @Path("transformJsonToGrammar")
     @ApiOperation(value = "Generates Pure language text from Pure protocol JSON")

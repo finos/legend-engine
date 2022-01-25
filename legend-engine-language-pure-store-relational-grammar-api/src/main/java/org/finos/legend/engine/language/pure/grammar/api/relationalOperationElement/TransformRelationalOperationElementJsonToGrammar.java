@@ -12,8 +12,10 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.MapIterate;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtensionLoader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -22,20 +24,22 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import java.util.Map;
+
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
+
+@Deprecated
 @Api(tags = "Pure - Grammar")
 @Path("pure/v1/grammar")
 @Produces(MediaType.APPLICATION_JSON)
 public class TransformRelationalOperationElementJsonToGrammar
 {
+    @Deprecated
     @POST
     @Path("transformRelationalOperationElementJsonToGrammar")
     @ApiOperation(value = "Generates Pure language text from Pure protocol JSON for relational operation elements")
@@ -52,8 +56,8 @@ public class TransformRelationalOperationElementJsonToGrammar
             if (input.operations != null)
             {
                 MapIterate.toListOfPairs(input.operations)
-                    .collect(p -> Tuples.pair(p.getOne(), RelationalGrammarComposerExtension.renderRelationalOperationElement(p.getTwo())))
-                    .forEach((Procedure<Pair<String, String>>) p -> operations.put(p.getOne(), p.getTwo()));
+                        .collect(p -> Tuples.pair(p.getOne(), RelationalGrammarComposerExtension.renderRelationalOperationElement(p.getTwo())))
+                        .forEach((Procedure<Pair<String, String>>) p -> operations.put(p.getOne(), p.getTwo()));
             }
             symmetricResult.operations = operations;
             return ManageConstantResult.manageResult(profiles, symmetricResult);

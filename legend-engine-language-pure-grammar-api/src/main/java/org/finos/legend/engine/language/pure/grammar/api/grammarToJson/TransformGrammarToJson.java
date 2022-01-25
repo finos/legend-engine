@@ -23,12 +23,12 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammarInput;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.LambdaInput;
-import org.finos.legend.engine.language.pure.grammar.from.ParserError;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.api.grammar.ParserError;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -38,14 +38,15 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
+@Deprecated
 @Api(tags = "Pure - Grammar")
 @Path("pure/v1/grammar")
 @Produces(MediaType.APPLICATION_JSON)
@@ -53,6 +54,7 @@ public class TransformGrammarToJson
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
+    @Deprecated
     @POST
     @Path("transformGrammarToJson")
     @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
@@ -120,4 +122,5 @@ public class TransformGrammarToJson
             return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
         }
     }
+
 }

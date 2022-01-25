@@ -30,7 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-@Api(tags = "Import - Code")
+@Api(tags = "External - Import - Code")
 @Path("pure/v1/codeImport")
 @Produces(MediaType.APPLICATION_JSON)
 public class CodeImports

@@ -22,7 +22,6 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.domain.StrictTimeParseTreeWalker;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
@@ -30,18 +29,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
@@ -60,49 +51,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ExecutionContextInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
@@ -115,7 +74,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     ConnectionVisitor<String>
 {
     private final String indentationString;
-    private final PureGrammarComposerContext.RenderStyle renderStyle;
+    private final RenderStyle renderStyle;
     /**
      * This flag will notify the transformer that the value specification should be treated as external parameter value
      * this is the use case in service test when we try to construct the parameter value map for running service Pure
@@ -161,7 +120,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return isValueSpecificationExternalParameter;
     }
 
-    public PureGrammarComposerContext.RenderStyle getRenderStyle()
+    public RenderStyle getRenderStyle()
     {
         return renderStyle;
     }
@@ -179,7 +138,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public static class Builder
     {
         private String indentationString = "";
-        private PureGrammarComposerContext.RenderStyle renderStyle = PureGrammarComposerContext.RenderStyle.STANDARD;
+        private RenderStyle renderStyle = RenderStyle.STANDARD;
         private boolean isValueSpecificationExternalParameter = false;
         private boolean isVariableInFunctionSignature = false;
         private boolean isPropertyBracketExpressionModeEnabled = false;
@@ -216,7 +175,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             return new Builder();
         }
 
-        public Builder withRenderStyle(PureGrammarComposerContext.RenderStyle renderStyle)
+        public Builder withRenderStyle(RenderStyle renderStyle)
         {
             this.renderStyle = renderStyle;
             return this;
@@ -247,8 +206,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
 
         public Builder withIndentation(int count, boolean indentInStandardRenderingMode)
         {
-            String space = PureGrammarComposerContext.RenderStyle.PRETTY_HTML.equals(this.renderStyle) ? "<span class='pureGrammar-space'></span>" : " ";
-            this.indentationString = PureGrammarComposerContext.RenderStyle.PRETTY.equals(this.renderStyle) || PureGrammarComposerContext.RenderStyle.PRETTY_HTML.equals(this.renderStyle) || indentInStandardRenderingMode
+            String space = RenderStyle.PRETTY_HTML.equals(this.renderStyle) ? "<span class='pureGrammar-space'></span>" : " ";
+            this.indentationString = RenderStyle.PRETTY.equals(this.renderStyle) || RenderStyle.PRETTY_HTML.equals(this.renderStyle) || indentInStandardRenderingMode
                 ? this.indentationString + StringUtils.repeat(space, count) : this.indentationString;
             return this;
         }
@@ -271,12 +230,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
 
     public boolean isRenderingPretty()
     {
-        return PureGrammarComposerContext.RenderStyle.PRETTY.equals(this.renderStyle) || PureGrammarComposerContext.RenderStyle.PRETTY_HTML.equals(this.renderStyle);
+        return RenderStyle.PRETTY.equals(this.renderStyle) || RenderStyle.PRETTY_HTML.equals(this.renderStyle);
     }
 
     public boolean isRenderingHTML()
     {
-        return PureGrammarComposerContext.RenderStyle.PRETTY_HTML.equals(this.renderStyle);
+        return RenderStyle.PRETTY_HTML.equals(this.renderStyle);
     }
 
     public String returnChar()

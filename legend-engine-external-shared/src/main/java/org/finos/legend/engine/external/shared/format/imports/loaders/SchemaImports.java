@@ -30,7 +30,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-@Api(tags = "Import - Schema")
+@Deprecated
+@Api(tags = "Z - Deprecated - Import - Schema")
 @Path("pure/v1/schemaImport")
 @Produces(MediaType.APPLICATION_JSON)
 public class SchemaImports
@@ -45,6 +46,7 @@ public class SchemaImports
     }
 
     @GET
+    @Deprecated
     @Path("availableImports")
     @ApiOperation(value = "Get all schema imports available alongside their configuration properties")
     @Consumes({MediaType.APPLICATION_JSON})

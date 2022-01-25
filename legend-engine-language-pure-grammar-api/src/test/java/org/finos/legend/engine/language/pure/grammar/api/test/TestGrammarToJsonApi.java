@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
 
+@Deprecated
 public class TestGrammarToJsonApi
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapper();
