@@ -34,7 +34,6 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.DataTypeResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
@@ -322,9 +321,9 @@ public class TestServiceRunner
         }
 
         @Override
-        public List<ServiceParameter> getParameters()
+        public List<ServiceVariable> getServiceVariables()
         {
-            return Collections.singletonList(new ServiceParameter("input", String.class, PURE_ONE));
+            return Collections.singletonList(new ServiceVariable("input", String.class, PURE_ONE));
         }
     }
 
@@ -336,11 +335,11 @@ public class TestServiceRunner
         }
 
         @Override
-        public List<ServiceParameter> getParameters()
+        public List<ServiceVariable> getServiceVariables()
         {
             return Lists.mutable.of(
-                    new ServiceParameter("input1", String.class, PURE_ONE),
-                    new ServiceParameter("input2", String.class, PURE_ONE)
+                    new ServiceVariable("input1", String.class, PURE_ONE),
+                    new ServiceVariable("input2", String.class, PURE_ONE)
             );
         }
     }
@@ -353,9 +352,9 @@ public class TestServiceRunner
         }
 
         @Override
-        public List<ServiceParameter> getParameters()
+        public List<ServiceVariable> getServiceVariables()
         {
-            return Collections.singletonList(new ServiceParameter("input", String.class, PURE_ONE));
+            return Collections.singletonList(new ServiceVariable("input", String.class, PURE_ONE));
         }
     }
 
@@ -367,9 +366,9 @@ public class TestServiceRunner
         }
 
         @Override
-        public List<ServiceParameter> getParameters()
+        public List<ServiceVariable> getServiceVariables()
         {
-            return Collections.singletonList(new ServiceParameter("ip", String.class, PURE_MANY));
+            return Collections.singletonList(new ServiceVariable("ip", String.class, PURE_MANY));
         }
     }
 
@@ -384,7 +383,7 @@ public class TestServiceRunner
         }
 
         @Override
-        public List<ServiceParameter> getParameters()
+        public List<ServiceVariable> getServiceVariables()
         {
             return Collections.emptyList();
         }

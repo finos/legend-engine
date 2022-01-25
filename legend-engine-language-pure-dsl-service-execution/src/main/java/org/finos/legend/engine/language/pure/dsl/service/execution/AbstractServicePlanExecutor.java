@@ -32,14 +32,10 @@ import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
-import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
@@ -150,20 +146,20 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
     protected ExecutionBuilder executionBuilder(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
     {
-        List<ServiceParameter> parameters = this.getParameters();
+        List<ServiceVariable> variables = this.getServiceVariables();
 
         List<Object> args = serviceRunnerInput.getArgs();
 
-        if (args.size() != parameters.size())
+        if (args.size() != variables.size())
         {
-            throw new IllegalArgumentException("Unexpected number of parameters. Expected parameter size: " + parameters.size() +  ", Passed parameter size: " + args.size());
+            throw new IllegalArgumentException("Unexpected number of parameters. Expected parameter size: " + variables.size() +  ", Passed parameter size: " + args.size());
         }
 
-        ExecutionBuilder executionBuilder = newExecutionBuilder(parameters.size()).withServiceRunnerInput(serviceRunnerInput).withStreamProvider(streamProvider);
+        ExecutionBuilder executionBuilder = newExecutionBuilder(variables.size()).withServiceRunnerInput(serviceRunnerInput).withStreamProvider(streamProvider);
 
-        for (int i = 0; i < parameters.size(); i++)
+        for (int i = 0; i < variables.size(); i++)
         {
-            ServiceParameter executionParameter = parameters.get(i);
+            ServiceVariable executionParameter = variables.get(i);
             Object arg = args.get(i);
             if (arg != null)
             {
