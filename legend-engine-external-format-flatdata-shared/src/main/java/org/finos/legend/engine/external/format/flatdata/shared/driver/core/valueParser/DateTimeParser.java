@@ -15,9 +15,13 @@
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser;
 
 import java.text.ParseException;
-import java.time.*;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,7 +80,7 @@ public abstract class DateTimeParser implements ValueParser
                     {
                         try
                         {
-                            Instant dateTime = Instant.from(possibleFormatters.get(i).withZone(tz).parse(s));
+                            Instant dateTime = Instant.from(possibleFormatters.get(i).withZone(tz).parse(fixTimezone(s, possibleFormats.get(i))));
                             formatter = possibleFormatters.get(i);
                             format = possibleFormats.get(i);
                             return dateTime;
@@ -102,7 +106,7 @@ public abstract class DateTimeParser implements ValueParser
                 {
                     try
                     {
-                        return Instant.from(formatter.withZone(tz).parse(s));
+                        return Instant.from(formatter.withZone(tz).parse(fixTimezone(s, format)));
                     }
                     catch (DateTimeException e)
                     {
@@ -121,7 +125,7 @@ public abstract class DateTimeParser implements ValueParser
             return doValidate(s, timeZone);
         }
 
-        public String doValidate(String s, ZoneId tz)
+        String doValidate(String s, ZoneId tz)
         {
             if (formatter == null)
             {
@@ -129,7 +133,7 @@ public abstract class DateTimeParser implements ValueParser
                 {
                     try
                     {
-                        possibleFormatters.get(i).withZone(tz).parse(s);
+                        possibleFormatters.get(i).withZone(tz).parse(fixTimezone(s, possibleFormats.get(i)));
                         formatter = possibleFormatters.get(i);
                         format = possibleFormats.get(i);
                         return null;
@@ -145,7 +149,7 @@ public abstract class DateTimeParser implements ValueParser
             {
                 try
                 {
-                    formatter.withZone(tz).parse(s);
+                    formatter.withZone(tz).parse(fixTimezone(s, format));
                     return null;
                 }
                 catch (DateTimeParseException e)
@@ -160,9 +164,17 @@ public abstract class DateTimeParser implements ValueParser
             return doToString(dateTime, timeZone);
         }
 
-        public String doToString(Instant dateTime, ZoneId tz)
+        String doToString(Instant dateTime, ZoneId tz)
         {
             return possibleFormatters.get(0).withZone(tz).format(dateTime);
+        }
+
+        // TODO Allow configuration of this - in the interim zz implies do this while z or zzz will not invoke it
+        private String fixTimezone(String s, String fmt)
+        {
+            return Arrays.asList(fmt.split(" ")).contains("zz")
+                    ? s.replace("BST", "+01:00")
+                    : s;
         }
     }
 

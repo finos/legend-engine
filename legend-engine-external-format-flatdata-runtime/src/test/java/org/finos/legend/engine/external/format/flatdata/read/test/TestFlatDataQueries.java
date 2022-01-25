@@ -388,6 +388,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         config.targetPackage = "test::gen";
         config.purifyNames = true;
         config.schemaClassName = schemaClassName;
+        config.format = "FlatData";
         return config;
     }
 
