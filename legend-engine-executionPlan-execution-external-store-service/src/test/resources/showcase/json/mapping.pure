@@ -18,6 +18,22 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
   *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: ServiceStore
   {
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.AllTradeService
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByIdService
+     (
+         ~paramMapping
+         (
+            "trade id" : $this.s_tradeId
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByTradeDetailsService
+     (
+         ~paramMapping
+         (
+            "trade.details" : $this.s_tradeDetails
+         )
+     )
   }
    
   *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore

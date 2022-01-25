@@ -97,7 +97,7 @@ public class HelperServiceStoreGrammarComposer
         StringBuilder builder = new StringBuilder();
 
         builder.append(getTabString(baseIndentation))
-                .append(param.name)
+                .append(renderServiceParameterName(param.name))
                 .append(" : ")
                 .append(renderTypeReference(param.type))
                 .append(" ( ")
@@ -235,12 +235,17 @@ public class HelperServiceStoreGrammarComposer
 
     private static String visitParameterIndexedParameterMapping(ParameterIndexedParameterMapping serviceParameterMapping, int baseIndentation)
     {
-        return getTabString(baseIndentation) + PureGrammarComposerUtility.convertIdentifier(serviceParameterMapping.serviceParameter) + " : " + serviceParameterMapping.transform.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()).replaceFirst("\\|", "");
+        return getTabString(baseIndentation) + renderServiceParameterName(serviceParameterMapping.serviceParameter) + " : " + serviceParameterMapping.transform.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()).replaceFirst("\\|", "");
     }
 
     private static String visitPropertyIndexedParameterMapping(PropertyIndexedParameterMapping serviceParameterMapping, int baseIndentation)
     {
-        return getTabString(baseIndentation) + PureGrammarComposerUtility.convertIdentifier(serviceParameterMapping.property) + " : $service.parameters." + PureGrammarComposerUtility.convertIdentifier(serviceParameterMapping.serviceParameter);
+        return getTabString(baseIndentation) + PureGrammarComposerUtility.convertIdentifier(serviceParameterMapping.property) + " : $service.parameters." + renderServiceParameterName(serviceParameterMapping.serviceParameter);
+    }
+
+    private static String renderServiceParameterName(String serviceParameter)
+    {
+        return PureGrammarComposerUtility.convertIdentifier(serviceParameter, true);
     }
 
     private static String renderServicePtr(ServicePtr servicePtr)

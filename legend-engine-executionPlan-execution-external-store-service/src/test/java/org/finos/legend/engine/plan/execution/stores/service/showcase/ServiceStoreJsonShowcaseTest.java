@@ -154,6 +154,68 @@ public class ServiceStoreJsonShowcaseTest
     }
 
     @Test
+    public void serviceStoreFilterExampleWithSpecialCharactersInPathParams()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::S_Trade.all()" +
+                "       ->filter(p | $p.s_tradeId == '1')\n" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(SERVICE_STORE + "\n\n" + SERVICE_STORE_CONNECTION + "\n\n" + SERVICE_STORE_MAPPING + "\n\n" + MODELS + "\n\n" + query);
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"}}";
+
+        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
+    }
+
+    @Test
+    public void serviceStoreFilterExampleWithSpecialCharactersInQueryParams()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::S_Trade.all()" +
+                "       ->filter(p | $p.s_tradeDetails == '30:100')\n" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(SERVICE_STORE + "\n\n" + SERVICE_STORE_CONNECTION + "\n\n" + SERVICE_STORE_MAPPING + "\n\n" + MODELS + "\n\n" + query);
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"}}";
+
+        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
+    }
+
+    @Test
     public void serviceStoreFilterWithConstantMappingExample()
     {
         String query = "###Pure\n" +
