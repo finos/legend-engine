@@ -46,6 +46,8 @@ public class ServiceStoreParseTreeWalker
     private final Consumer<PackageableElement> elementConsumer;
     private final DefaultCodeSection section;
 
+    public static final String SERVICE_MAPPING_PATH_PREFIX = "$service.response";
+
     public ServiceStoreParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
     {
         this.walkerSourceInformation = walkerSourceInformation;
@@ -379,7 +381,7 @@ public class ServiceStoreParseTreeWalker
         Path p = new Path();
 
         //This is replaced with response class in compilation phase
-        p.startType = "$service.response";
+        p.startType = SERVICE_MAPPING_PATH_PREFIX;
 
         if(ctx.identifier() != null && !ctx.identifier().isEmpty())
         {

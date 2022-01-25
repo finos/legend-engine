@@ -232,4 +232,37 @@ public class TestServiceStoreMappingGrammarRoundtrip extends TestGrammarRoundtri
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testServiceStoreMappingPathOffset()
+    {
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                "    (\n" +
+                "      ~path $service.response.pathProperty\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                "    (\n" +
+                "      ~path $service.response.pathProperty\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param : $this.prop,\n" +
+                "        param2 : 1\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

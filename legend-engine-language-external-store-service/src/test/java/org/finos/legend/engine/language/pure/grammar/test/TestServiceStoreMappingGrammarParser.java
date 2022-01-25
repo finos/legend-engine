@@ -114,4 +114,32 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "  }\n" +
                 ")\n", "PARSER error at [8:24-29]: Unexpected token");
     }
+
+    @Test
+    public void testServiceStoreMappingPathOffset()
+    {
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                "    (\n" +
+                "      ~path response.pathProperty\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [8:13-20]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                "    (\n" +
+                "      ~path \n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [9:5]: Unexpected token");
+    }
 }
