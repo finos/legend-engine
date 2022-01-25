@@ -144,7 +144,7 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         return this.executor.getPlanExecutorInfo();
     }
 
-    protected ExecutionBuilder executionBuilder(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
+    private ExecutionBuilder newExecutionBuilder(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
     {
         List<ServiceVariable> variables = this.getServiceVariables();
 
@@ -178,12 +178,12 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
     public void run(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider, OutputStream outputStream)
     {
-        this.executionBuilder(serviceRunnerInput, streamProvider).executeToStream(outputStream);
+        this.newExecutionBuilder(serviceRunnerInput, streamProvider).executeToStream(outputStream);
     }
 
     public Result execute(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
     {
-        return this.executionBuilder(serviceRunnerInput, streamProvider).execute();
+        return this.newExecutionBuilder(serviceRunnerInput, streamProvider).execute();
     }
 
     @Override
