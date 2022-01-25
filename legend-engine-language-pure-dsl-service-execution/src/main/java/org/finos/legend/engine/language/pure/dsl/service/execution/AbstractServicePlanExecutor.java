@@ -148,30 +148,6 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         return this.executor.getPlanExecutorInfo();
     }
 
-    @Override
-    public ResultType getResultType()
-    {
-        if (this.plan instanceof SingleExecutionPlan)
-        {
-            return ((SingleExecutionPlan) this.plan).rootExecutionNode.resultType;
-        }
-        else if(this.plan instanceof CompositeExecutionPlan)
-        {
-            List<ResultType> resultTypes = ((CompositeExecutionPlan) this.plan).executionPlans.values()
-                    .stream()
-                    .map(x -> x.rootExecutionNode.resultType)
-                    .collect(Collectors.toList());
-
-            Assert.assertFalse(resultTypes.isEmpty(), () -> "Composite plan without any actual plan?");
-            Assert.assertTrue(resultTypes.stream().allMatch(x -> x.getClass().equals(resultTypes.get(0).getClass())), () -> "Composite with different result types among plans?");
-            return resultTypes.get(0);
-        }
-        else
-        {
-            throw new UnsupportedOperationException("Not supported: " + this.plan.getClass());
-        }
-    }
-
     protected ExecutionBuilder executionBuilder(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
     {
         List<ServiceParameter> parameters = this.getParameters();

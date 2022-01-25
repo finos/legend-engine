@@ -51,12 +51,6 @@ public interface ServiceRunner
     PlanExecutorInfo getPlanExecutorInfo();
 
     /**
-     * Get the service result output type
-     * @return service result output type
-     */
-    ResultType getResultType();
-
-    /**
      * Get the list of parameters the service expects
      * @return service parameters
      */

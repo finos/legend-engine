@@ -72,7 +72,6 @@ public class TestServiceRunner
 
         String result = simpleM2MServiceRunner.run(serviceRunnerInput);
         Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}}", result);
-        MatcherAssert.assertThat(simpleM2MServiceRunner.getResultType(), CoreMatchers.instanceOf(DataTypeResultType.class));
     }
 
     @Test
