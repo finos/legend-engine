@@ -291,21 +291,29 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
             result.accept(new ResultVisitor<Void>()
             {
                 @Override
-                public Void visit(ErrorResult errorResult)
+                public Void visit(StreamingResult streamingResult)
                 {
-                    throw new RuntimeException("Error: " + ((ErrorResult) result).getMessage());
+                    try
+                    {
+                        streamingResult.stream(outputStream, serializationFormat);
+                        return null;
+                    }
+                    catch (IOException e)
+                    {
+                        throw new UncheckedIOException("Error serializing result", e);
+                    }
                 }
 
                 @Override
                 public Void visit(StreamingObjectResult tStreamingObjectResult)
                 {
-                    return stream(tStreamingObjectResult);
+                    return visit((StreamingResult) tStreamingObjectResult);
                 }
 
                 @Override
                 public Void visit(JsonStreamingResult jsonStreamingResult)
                 {
-                    return stream(jsonStreamingResult);
+                    return visit((StreamingResult) jsonStreamingResult);
                 }
 
                 @Override
@@ -324,22 +332,15 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
                 }
 
                 @Override
+                public Void visit(ErrorResult errorResult)
+                {
+                    throw new RuntimeException("Error: " + ((ErrorResult) result).getMessage());
+                }
+
+                @Override
                 public Void visit(MultiResult multiResult)
                 {
                     throw new RuntimeException("Unknown result type: " + result.getClass().getCanonicalName());
-                }
-
-                private Void stream(StreamingResult streamingResult)
-                {
-                    try
-                    {
-                        streamingResult.stream(outputStream, serializationFormat);
-                        return null;
-                    }
-                    catch (IOException e)
-                    {
-                        throw new UncheckedIOException("Error serializing result", e);
-                    }
                 }
             });
         }
