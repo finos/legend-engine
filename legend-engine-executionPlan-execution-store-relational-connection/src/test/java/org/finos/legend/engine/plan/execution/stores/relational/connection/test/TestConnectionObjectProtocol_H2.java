@@ -30,7 +30,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
 import org.junit.Test;
 
-public class TestConnectionObjectProtocol_local extends DbSpecificTests
+public class TestConnectionObjectProtocol_H2 extends DbSpecificTests
 {
     @Override
     protected Subject getSubject()

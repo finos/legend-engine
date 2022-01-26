@@ -59,6 +59,17 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         this.quoteIdentifiers = quoteIdentifiers == null ? false : quoteIdentifiers;
     }
 
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, String role)
+    {
+        this.accountName = accountName;
+        this.region = region;
+        this.warehouseName = warehouseName;
+        this.databaseName = databaseName;
+        this.cloudType = cloudType == null ? "privatelink" : cloudType;
+        this.quoteIdentifiers = quoteIdentifiers == null ? false : quoteIdentifiers;
+        this.role = role;
+    }
+
     public String getAccountName()
     {
         return accountName;

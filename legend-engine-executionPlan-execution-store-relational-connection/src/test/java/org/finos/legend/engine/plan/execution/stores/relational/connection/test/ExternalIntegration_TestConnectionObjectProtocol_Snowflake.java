@@ -20,16 +20,14 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
-import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
+import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Test;
 
 import javax.security.auth.Subject;
-import java.io.FileInputStream;
 import java.sql.Connection;
-import java.util.Properties;
 
-public class TestConnectionObjectProtocol_server extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
+public class ExternalIntegration_TestConnectionObjectProtocol_Snowflake extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
     @Override
     protected Subject getSubject()
@@ -49,22 +47,20 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
         testSnowflakePublicConnection(c -> c.getConnectionUsingProfiles(null));
     }
 
-    private void testSnowflakePublicConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
-    {
-        Properties properties = new Properties();
-        properties.load(new FileInputStream("../legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/snowflake.properties"));
-        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
+    private void testSnowflakePublicConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception {
+
+        Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
 
         SnowflakeDataSourceSpecification ds =
                 new SnowflakeDataSourceSpecification(
-                        new SnowflakeDataSourceSpecificationKey("ki79827", "us-east-2", "LEGENDRO_WH", "KNOEMA_RENEWABLES_DATA_ATLAS", "aws", null),
+                        new SnowflakeDataSourceSpecificationKey("ki79827", "us-east-2",
+                                "LEGEND_INTEGRATION_WH1",
+                                "LEGEND_INTEGRATION_DB1", "aws", null,
+                                "LEGEND_INTEGRATION_ROLE1"),
                         new SnowflakeManager(),
-                        new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"));
-        try (Connection connection = toDBConnection.valueOf(ds))
-        {
-            testConnection(connection, "select * from KNOEMA_RENEWABLES_DATA_ATLAS.RENEWABLES.DATASETS");
+                        new SnowflakePublicAuthenticationStrategy("SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY", "SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD", "LEGEND_INTEG_RO1"));
+        try (Connection connection = toDBConnection.valueOf(ds)) {
+            testConnection(connection, "select * from LEGEND_INTEGRATION_DB1.SCHEMA1.TABLE1");
         }
-
     }
-
 }
