@@ -14,21 +14,7 @@
 
 package org.finos.legend.engine.external.format.flatdata.shared.driver;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.InputStreamConnection;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.ProcessingVariables;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.VariablesProcessingContext;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.Connection;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.Cursor;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriver;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriverDescription;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataReadDriver;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataVariable;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ObjectToParsedFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatDataValue;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.*;
 import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParser;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
@@ -38,19 +24,17 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.junit.Assert;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class AbstractDriverTest
 {
-    private List<FlatDataDriverDescription> descriptions = FlatDataDriverDescription.loadAll();
+    private static List<FlatDataDriverDescription> descriptions = FlatDataDriverDescription.loadAll();
 
     protected FlatData parseFlatData(String flatDataGrammar)
     {
@@ -68,6 +52,11 @@ public class AbstractDriverTest
         return String.join(eol, lines) + trailing;
     }
 
+    protected InputStream resource(String name)
+    {
+        return Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(name), "Failed to find resource " + name);
+    }
+
     protected void assertNoDefects(IChecked<?> record)
     {
         Assert.assertTrue("Expected no defects but found: " + record, record.getDefects().isEmpty());
@@ -83,156 +72,169 @@ public class AbstractDriverTest
 
     protected <T> List<IChecked<T>> deserialize(Class<T> clazz, FlatData flatData, String data)
     {
-        List<IChecked<T>> records = Lists.mutable.empty();
-        try
-        {
-            Connection connection = new InputStreamConnection(new ByteArrayInputStream(data.getBytes()));
-            connection.open();
-
-            ProcessingVariables variables = new ProcessingVariables(flatData);
-            List<FlatDataReadDriver<T>> drivers = new LinkedList<>();
-            FlatDataReadDriver<T> drv = null;
-            for (int i = flatData.getSections().size() - 1; i >= 0; i--)
-            {
-                FlatDataSection section = flatData.getSections().get(i);
-                FlatDataDriverDescription description = descriptions.stream().filter(d -> d.getId().equals(section.getDriverId())).findFirst().orElseThrow(() -> new RuntimeException("No driver for: '" + section.getDriverId() + "'"));
-                drv = description.newReadDriver(section, new SectionProcessingContext(variables, description.getDeclares(), connection, drv, clazz));
-                drivers.add(0, drv);
-            }
-
-            for (FlatDataReadDriver<T> driver: drivers)
-            {
-                driver.start();
-                while (!driver.isFinished())
-                {
-                    driver.readCheckedObjects().forEach(records::add);
-                }
-                driver.stop();
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-        return records;
+        return deserialize(clazz, flatData, new ByteArrayInputStream(data.getBytes()));
     }
 
-    private class SectionProcessingContext<T> extends VariablesProcessingContext
+    protected <T> List<IChecked<T>> deserialize(Class<T> clazz, FlatData flatData, InputStream data)
     {
-        private final Connection connection;
-        private final FlatDataDriver nextDriver;
-        private final Class<T> clazz;
-
-        public SectionProcessingContext(ProcessingVariables variables, List<FlatDataVariable> declared, Connection connection, FlatDataDriver nextDriver, Class<T> clazz)
-        {
-            super(variables, declared);
-            this.connection = connection;
-            this.nextDriver = nextDriver;
-            this.clazz = clazz;
-        }
-
-        @Override
-        public String getDefiningPath()
-        {
-            return "test::Schema";
-        }
-
-        @Override
-        public Connection getConnection()
-        {
-            return connection;
-        }
-
-        @Override
-        public boolean isNextSectionReadyToStartAt(Cursor cursor)
-        {
-            return (nextDriver == null) ? cursor.isEndOfData() : nextDriver.canStartAt(cursor);
-        }
-
-        @Override
-        public <T> ParsedFlatDataToObject createToObjectFactory(FlatDataRecordType recordType)
-        {
-            return reflectiveToObject(clazz, recordType);
-        }
-
-        @Override
-        public <T> ObjectToParsedFlatData createFromObjectFactory(FlatDataRecordType recordType)
-        {
-            return null;
-        }
+        Deserializer<T> deserializer =  new Deserializer<>(flatData, data);
+        flatData.getSections().forEach(s -> deserializer.withSectionDetails(s.getName(), clazz, true));
+        return deserializer.deserialize();
     }
 
-    protected <T> ParsedFlatDataToObject<T> reflectiveToObject(Class<T> clazz, FlatDataRecordType type)
+    public static class Deserializer<T>
     {
-        return (ParsedFlatData parsedFlatData) ->
+        private final FlatData flatData;
+        private final InputStream data;
+        private Map<String, List<IChecked<?>>> result = new HashMap<>();
+        private Map<String, Class<?>> clazzBySectionName = new HashMap<>();
+        private Map<String, Boolean> returnableBySectionName = new HashMap<>();
+
+        public Deserializer(FlatData flatData, InputStream data)
         {
-            try
+
+            this.flatData = flatData;
+            this.data = data;
+        }
+
+        public Deserializer<T> withSectionDetails(String sectionId, Class<?> clazz, boolean isReturnable)
+        {
+            clazzBySectionName.put(sectionId, clazz);
+            returnableBySectionName.put(sectionId, isReturnable);
+            return this;
+        }
+
+        public <X> List<X> recordsCreatedBy(String sectionId)
+        {
+            return (List<X>) result.get(sectionId);
+        }
+
+        public List<IChecked<T>> deserialize()
+        {
+            List<IChecked<T>> recordsRead = new ArrayList<>();
+            FlatDataSection firstSection = flatData.getSections().get(0);
+            FlatDataProcessor.Builder<T> builder = descriptionFor(firstSection).<T>getProcessorBuilderFactory().apply(flatData).withDefiningPath("test");
+            flatData.getSections().forEach(s -> builder.withToObjectFactoryFactory(s.getName(), x -> reflectiveToObject(s.getName(), x)));
+            builder.build().readData(data, recordsRead::add);
+            return recordsRead;
+        }
+
+        private FlatDataDriverDescription descriptionFor(FlatDataSection section)
+        {
+            return descriptions.stream()
+                    .filter(d -> d.getId().equals(section.getDriverId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No driver for: '" + section.getDriverId() + "'"));
+        }
+
+        ParsedFlatDataToObject<?> reflectiveToObject(String sectionId, FlatDataRecordType type)
+        {
+            Class<?> clazz = Objects.requireNonNull(clazzBySectionName.get(sectionId), "No class for section " + sectionId);
+            List<IChecked<?>> records = new ArrayList<>();
+            result.put(sectionId, records);
+
+            return new ParsedFlatDataToObject()
             {
-                T result = clazz.getConstructor().newInstance();
-                for (Field field : clazz.getDeclaredFields())
+                @Override
+                public IChecked makeChecked(ParsedFlatData parsedFlatData)
                 {
-                    FlatDataRecordField fdField = type.getFields().stream().filter(f -> f.getLabel().equalsIgnoreCase(field.getName())).findFirst().orElse(null);
-                    if (fdField == null)
+                    IChecked parsed = ParsedFlatDataToObject.super.makeChecked(parsedFlatData);
+                    records.add(parsed);
+                    return parsed;
+                }
+
+                @Override
+                public boolean isReturnable()
+                {
+                    return returnableBySectionName.get(sectionId);
+                }
+
+                @Override
+                public Object make(ParsedFlatData parsedFlatData)
+                {
+                    try
                     {
-                        // Ignore
-                    }
-                    else if (field.getType().equals(String.class))
-                    {
-                        if (parsedFlatData.hasStringValue(fdField))
+                        Object result = clazz.getConstructor().newInstance();
+                        for (Field field : clazz.getFields())
                         {
-                            field.set(result, parsedFlatData.getString(fdField));
+                            List<Predicate<String>> matchers = Arrays.asList(
+                                    s -> s.equals(field.getName()),
+                                    s -> s.equalsIgnoreCase(field.getName()),
+                                    s -> s.replace("_", "").equals(field.getName()),
+                                    s -> s.replace("_", "").equalsIgnoreCase(field.getName())
+                            );
+                            FlatDataRecordField fdField = null;
+                            for (Predicate<String> matcher: matchers)
+                            {
+                                if (fdField == null)
+                                {
+                                    fdField = type.getFields().stream().filter(f -> matcher.test(f.getLabel())).findFirst().orElse(null);
+                                }
+                            }
+
+                            if (fdField == null)
+                            {
+                                // Ignore
+                            }
+                            else if (field.getType().equals(String.class))
+                            {
+                                if (parsedFlatData.hasStringValue(fdField))
+                                {
+                                    field.set(result, parsedFlatData.getString(fdField));
+                                }
+                            }
+                            else if (field.getType().equals(Boolean.TYPE) || field.getType().equals(Boolean.class))
+                            {
+                                if (parsedFlatData.hasBooleanValue(fdField))
+                                {
+                                    field.set(result, parsedFlatData.getBoolean(fdField));
+                                }
+                            }
+                            else if (field.getType().equals(Long.TYPE) || field.getType().equals(Long.class))
+                            {
+                                if (parsedFlatData.hasLongValue(fdField))
+                                {
+                                    field.set(result, parsedFlatData.getLong(fdField));
+                                }
+                            }
+                            else if (field.getType().equals(Double.TYPE) || field.getType().equals(Double.class))
+                            {
+                                if (parsedFlatData.hasDoubleValue(fdField))
+                                {
+                                    field.set(result, parsedFlatData.getDouble(fdField));
+                                }
+                            }
+                            else if (field.getType().equals(BigDecimal.class))
+                            {
+                                if (parsedFlatData.hasBigDecimalValue(fdField))
+                                {
+                                    field.set(result, parsedFlatData.getBigDecimal(fdField));
+                                }
+                            }
+                            else if (field.getType().equals(LocalDate.class))
+                            {
+                                if (parsedFlatData.hasLocalDateValue(fdField))
+                                {
+                                    field.set(result, parsedFlatData.getLocalDate(fdField));
+                                }
+                            }
+                            else if (field.getType().equals(Instant.class))
+                            {
+                                if (parsedFlatData.hasInstantValue(fdField))
+                                {
+                                    field.set(result, parsedFlatData.getInstant(fdField));
+                                }
+                            }
                         }
+                        return result;
                     }
-                    else if (field.getType().equals(Boolean.TYPE) || field.getType().equals(Boolean.class))
+                    catch (Exception e)
                     {
-                        if (parsedFlatData.hasBooleanValue(fdField))
-                        {
-                            field.set(result, parsedFlatData.getBoolean(fdField));
-                        }
-                    }
-                    else if (field.getType().equals(Long.TYPE) || field.getType().equals(Long.class))
-                    {
-                        if (parsedFlatData.hasLongValue(fdField))
-                        {
-                            field.set(result, parsedFlatData.getLong(fdField));
-                        }
-                    }
-                    else if (field.getType().equals(Double.TYPE) || field.getType().equals(Double.class))
-                    {
-                        if (parsedFlatData.hasDoubleValue(fdField))
-                        {
-                            field.set(result, parsedFlatData.getDouble(fdField));
-                        }
-                    }
-                    else if (field.getType().equals(BigDecimal.class))
-                    {
-                        if (parsedFlatData.hasBigDecimalValue(fdField))
-                        {
-                            field.set(result, parsedFlatData.getBigDecimal(fdField));
-                        }
-                    }
-                    else if (field.getType().equals(LocalDate.class))
-                    {
-                        if (parsedFlatData.hasLocalDateValue(fdField))
-                        {
-                            field.set(result, parsedFlatData.getLocalDate(fdField));
-                        }
-                    }
-                    else if (field.getType().equals(Instant.class))
-                    {
-                        if (parsedFlatData.hasInstantValue(fdField))
-                        {
-                            field.set(result, parsedFlatData.getInstant(fdField));
-                        }
+                        throw new RuntimeException(e);
                     }
                 }
-                return result;
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        };
+            };
+        }
     }
 
     protected static ExpectedRecordValue rValue(Object address, String raw)

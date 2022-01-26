@@ -17,8 +17,12 @@ package org.finos.legend.engine.language.pure.grammar.test;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -271,5 +275,24 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                 "        firstName : [db]personTable.firstName\n" +
                 "    }\n" +
                 ")\n", "PARSER error at [43:32-36]: Unsupported join type 'inner'. The supported join types are: [INNER, OUTER]");
+    }
+
+    @Test
+    public void testLocalMappingPropertyParsing() throws Exception
+    {
+        String val = "###Mapping\n" +
+                    "Mapping mappingPackage::myMapping\n" +
+                    "(\n" +
+                    "    Person: Relational\n" +
+                    "    {\n" +
+                    "        firstName : [db]personTable.firstName,\n" +
+                    "        +localProp : String[1] : [db]personTable.firstName\n" +
+                    "    }\n" +
+                    ")\n";
+
+        PureModelContextData data = PureGrammarParser.newInstance().parseModel(val);
+        String expected = "{\"_type\":\"data\",\"serializer\":null,\"origin\":null,\"elements\":[{\"_type\":\"mapping\",\"name\":\"myMapping\",\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":2,\"startColumn\":1,\"endLine\":9,\"endColumn\":1},\"classMappings\":[{\"_type\":\"relational\",\"id\":null,\"mappingClass\":null,\"extendsClassMappingId\":null,\"root\":false,\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":4,\"startColumn\":5,\"endLine\":8,\"endColumn\":5},\"classSourceInformation\":{\"sourceId\":\"\",\"startLine\":4,\"startColumn\":5,\"endLine\":4,\"endColumn\":10},\"primaryKey\":[],\"propertyMappings\":[{\"_type\":\"relationalPropertyMapping\",\"property\":{\"property\":\"firstName\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":9,\"endLine\":6,\"endColumn\":17},\"class\":\"Person\"},\"source\":null,\"target\":null,\"localMappingProperty\":null,\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":19,\"endLine\":6,\"endColumn\":45},\"enumMappingId\":null,\"relationalOperation\":{\"_type\":\"column\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":21,\"endLine\":6,\"endColumn\":45},\"table\":{\"_type\":\"Table\",\"table\":\"personTable\",\"schema\":\"default\",\"database\":\"db\",\"mainTableDb\":\"db\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":25,\"endLine\":6,\"endColumn\":35}},\"tableAlias\":\"personTable\",\"column\":\"firstName\"}},{\"_type\":\"relationalPropertyMapping\",\"property\":{\"property\":\"localProp\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":10,\"endLine\":7,\"endColumn\":18},\"class\":null},\"source\":null,\"target\":null,\"localMappingProperty\":{\"type\":\"String\",\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":20,\"endLine\":7,\"endColumn\":30}},\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":32,\"endLine\":7,\"endColumn\":58},\"enumMappingId\":null,\"relationalOperation\":{\"_type\":\"column\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":34,\"endLine\":7,\"endColumn\":58},\"table\":{\"_type\":\"Table\",\"table\":\"personTable\",\"schema\":\"default\",\"database\":\"db\",\"mainTableDb\":\"db\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":38,\"endLine\":7,\"endColumn\":48}},\"tableAlias\":\"personTable\",\"column\":\"firstName\"}}],\"mainTable\":null,\"distinct\":false,\"groupBy\":[],\"filter\":null,\"class\":\"Person\"}],\"includedMappings\":[],\"associationMappings\":[],\"enumerationMappings\":[],\"tests\":[],\"package\":\"mappingPackage\"},{\"_type\":\"sectionIndex\",\"name\":\"SectionIndex\",\"sourceInformation\":null,\"sections\":[{\"_type\":\"importAware\",\"parserName\":\"Pure\",\"elements\":[],\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":1,\"endColumn\":8},\"imports\":[]},{\"_type\":\"importAware\",\"parserName\":\"Mapping\",\"elements\":[\"mappingPackage::myMapping\"],\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":2,\"startColumn\":8,\"endLine\":11,\"endColumn\":2},\"imports\":[]}],\"package\":\"__internal__\"}]}";
+
+        Assert.assertEquals(expected, PureProtocolObjectMapperFactory.getNewObjectMapper().writeValueAsString(data));
     }
 }

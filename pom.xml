@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>2.54.2-SNAPSHOT</version>
+    <version>2.55.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -131,7 +131,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.47.1-SNAPSHOT</legend.pure.version>
+        <legend.pure.version>1.48.0</legend.pure.version>
         <legend.shared.version>0.18.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -191,9 +191,10 @@
         <maven.plugin.plugin.version>3.6.0</maven.plugin.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M1</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
-        <maven.deploy.plugin.version>2.5</maven.deploy.plugin.version>
+        <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
         <maven.checkstyle.plugin.version>3.1.1</maven.checkstyle.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
+        <nexus.staging.maven.plugin.version>1.6.8</nexus.staging.maven.plugin.version>
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
         <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
@@ -211,12 +212,17 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>${maven.javadoc.plugin.version}</version>
                     <configuration>
                         <skip>${javadoc.skip}</skip>
                         <source>8</source>
                         <doclint>none</doclint>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>${nexus.staging.maven.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -268,12 +274,6 @@
                     <version>${jacoco.maven.plugin.version}</version>
                 </plugin>
                 <plugin>
-                    <!-- Important: cbk-maven requires deploy plugin >= 2.5 (due to http://jira.codehaus.org/browse/MDEPLOY-50) -->
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.plugin.version}</version>
-                </plugin>
-                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${maven.checkstyle.plugin.version}</version>
@@ -307,8 +307,14 @@
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
             </plugin>
             <plugin>
                 <!-- Used to copy test results into test reports module -->
@@ -1639,7 +1645,6 @@
                     <plugin>
                         <groupId>com.spotify</groupId>
                         <artifactId>dockerfile-maven-plugin</artifactId>
-                        <version>1.4.13</version>
                         <inherited>false</inherited>
                         <configuration>
                             <skip>true</skip>

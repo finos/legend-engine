@@ -1,10 +1,26 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.finos.legend.engine.external.format.flatdata.shared.driver.spi;
 
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.function.Function;
 
 /**
  * Providers should implement this interface to describe the configuration of a {@link FlatDataReadDriver}.
@@ -102,4 +118,13 @@ public interface FlatDataDriverDescription
     {
         throw new UnsupportedOperationException("Write not supported for " + getId());
     }
+
+    /**
+     * Returns a function to create a {@link FlatDataProcessor.Builder} for this driver type.
+     * The processors for all sections in a FlatData need to be compatible.
+     * When processing a FlatData the <tt>FlatDataProcessor.Factory</tt> for the first section will be used to perform the reading/writing.
+     *
+     * @return the class of the processor for sections using this driver
+     */
+    <T> Function<FlatData, FlatDataProcessor.Builder<T>> getProcessorBuilderFactory();
 }

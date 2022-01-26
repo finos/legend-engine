@@ -24,9 +24,4 @@ public interface FlatDataDriver
      * @return the driver ID
      */
     String getId();
-
-    /**
-     * Called to determine whether this driver can process the data from the given cursor position.
-     */
-    boolean canStartAt(Cursor cursor);
 }

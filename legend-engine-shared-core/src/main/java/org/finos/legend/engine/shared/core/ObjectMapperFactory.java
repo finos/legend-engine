@@ -30,7 +30,8 @@ public class ObjectMapperFactory
         objectMapper
                 .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
                 .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
-                .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT);
+                .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
+                .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
         objectMapper.setTimeZone(TimeZone.getDefault());
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         return objectMapper;

@@ -1098,7 +1098,7 @@ public class RelationalParseTreeWalker
         multiplicity.setUpperBound("*".equals(toMultiplicityContext.getText()) ? null : Integer.parseInt(toMultiplicityContext.getText()));
         PropertyPointer propertyPointer = new PropertyPointer();
         propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        propertyPointer._class = localMappingPropertyInfo.type;
+        propertyPointer._class = null;
         propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.identifier());
         return visitRelationalPropertyMapping(ctx.relationalPropertyMapping(), propertyPointer, localMappingPropertyInfo, scopeInfo, classMappingId, null);
     }

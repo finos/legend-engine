@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
+import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static org.finos.legend.engine.language.pure.grammar.from.ServiceStoreParseTreeWalker.SERVICE_MAPPING_PATH_PREFIX;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class HelperServiceStoreGrammarComposer
@@ -95,7 +97,7 @@ public class HelperServiceStoreGrammarComposer
         StringBuilder builder = new StringBuilder();
 
         builder.append(getTabString(baseIndentation))
-                .append(param.name)
+                .append(renderServiceParameterName(param.name))
                 .append(" : ")
                 .append(renderTypeReference(param.type))
                 .append(" ( ")
@@ -201,11 +203,18 @@ public class HelperServiceStoreGrammarComposer
     {
         builder.append(getTabString(baseIndentation)).append("~service ").append(renderServicePtr(serviceMapping.service)).append("\n");
 
-        if (serviceMapping.parameterMappings != null && !serviceMapping.parameterMappings.isEmpty())
+        if ((serviceMapping.parameterMappings != null && !serviceMapping.parameterMappings.isEmpty()) || (serviceMapping.pathOffset != null && !(serviceMapping.pathOffset.path.isEmpty())))
         {
             List<ParameterIndexedParameterMapping> parameterIndexedParameterMappings = ListIterate.selectInstancesOf(serviceMapping.parameterMappings, ParameterIndexedParameterMapping.class);
             List<PropertyIndexedParameterMapping> propertyIndexedParameterMappings = ListIterate.selectInstancesOf(serviceMapping.parameterMappings, PropertyIndexedParameterMapping.class);
             builder.append(getTabString(baseIndentation)).append("(\n");
+
+            if (serviceMapping.pathOffset != null && !(serviceMapping.pathOffset.path.isEmpty()))
+            {
+                builder.append(getTabString(baseIndentation + 1)).append("~path " + SERVICE_MAPPING_PATH_PREFIX + ".")
+                        .append(ListAdapter.adapt(serviceMapping.pathOffset.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build())).makeString("."))
+                        .append("\n");
+            }
 
             if (!parameterIndexedParameterMappings.isEmpty())
             {
@@ -226,12 +235,17 @@ public class HelperServiceStoreGrammarComposer
 
     private static String visitParameterIndexedParameterMapping(ParameterIndexedParameterMapping serviceParameterMapping, int baseIndentation)
     {
-        return getTabString(baseIndentation) + PureGrammarComposerUtility.convertIdentifier(serviceParameterMapping.serviceParameter) + " : " + serviceParameterMapping.transform.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()).replaceFirst("\\|", "");
+        return getTabString(baseIndentation) + renderServiceParameterName(serviceParameterMapping.serviceParameter) + " : " + serviceParameterMapping.transform.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()).replaceFirst("\\|", "");
     }
 
     private static String visitPropertyIndexedParameterMapping(PropertyIndexedParameterMapping serviceParameterMapping, int baseIndentation)
     {
-        return getTabString(baseIndentation) + PureGrammarComposerUtility.convertIdentifier(serviceParameterMapping.property) + " : $service.parameters." + PureGrammarComposerUtility.convertIdentifier(serviceParameterMapping.serviceParameter);
+        return getTabString(baseIndentation) + PureGrammarComposerUtility.convertIdentifier(serviceParameterMapping.property) + " : $service.parameters." + renderServiceParameterName(serviceParameterMapping.serviceParameter);
+    }
+
+    private static String renderServiceParameterName(String serviceParameter)
+    {
+        return PureGrammarComposerUtility.convertIdentifier(serviceParameter, true);
     }
 
     private static String renderServicePtr(ServicePtr servicePtr)

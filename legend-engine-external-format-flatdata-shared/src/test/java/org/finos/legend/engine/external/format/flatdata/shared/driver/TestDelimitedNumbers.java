@@ -172,21 +172,24 @@ public class TestDelimitedNumbers extends AbstractDriverTest
                                      "}\n");
     }
 
+    @SuppressWarnings("WeakerAccess")  // Required for reflective access
     public static class PersonWithLong
     {
-        String name;
-        long age;
+        public String name;
+        public long age;
     }
 
+    @SuppressWarnings("WeakerAccess")  // Required for reflective access
     public static class PersonWithDouble
     {
-        String name;
-        double age;
+        public String name;
+        public double age;
     }
 
+    @SuppressWarnings("WeakerAccess")  // Required for reflective access
     public static class PersonWithBigDecimal
     {
-        String name;
-        BigDecimal age;
+        public String name;
+        public BigDecimal age;
     }
 }

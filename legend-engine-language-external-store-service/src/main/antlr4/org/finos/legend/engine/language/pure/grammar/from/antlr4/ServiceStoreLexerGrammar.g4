@@ -33,4 +33,5 @@ SERVICE_REFERENCE:                               '$service';
 
 // -------------------------------------- BUILDING_BLOCK --------------------------------------
 
-INVERTED_ARROW:                                      '<-';
+INVERTED_ARROW:                                  '<-';
+QUOTED_STRING:                                   ('"' ( EscSeq | ~["\r\n] )*  '"');

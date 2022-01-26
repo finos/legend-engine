@@ -75,6 +75,22 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    method : GET;\n" +
                 "    parameters :\n" +
                 "    (\n" +
+                "      \"abc.xyz\" : String ( location = query )\n" +
+                "    );\n" +
+                "    response : [ test::Person <- test::TestBinding ];\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n");
+
+        test(TEST_BINDING + "###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreCompilationWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
                 "      serializationFormat : [String] ( location = query, style = simple, explode = true )\n" +
                 "    );\n" +
                 "    response : [ test::Person <- test::TestBinding ];\n" +

@@ -15,10 +15,12 @@
 package org.finos.legend.engine.plan.execution.result.test.serialization;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.plan.execution.result.serialization.ExecutionResultObjectMapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -34,5 +36,21 @@ public class TestExecutionResultObjectMapperFactory
         generator.close();
 
         Assert.assertEquals("Generator should not autoclose JSON array and object", "[{", writer.toString());
+    }
+
+    @Test
+    public void doesNotAutocloseOutputStream() throws IOException
+    {
+        ByteArrayOutputStream os = new ByteArrayOutputStream()
+        {
+            @Override
+            public void close()
+            {
+                Assert.fail("Close should not be call");
+            }
+        };
+
+        ObjectMapper mapper = ExecutionResultObjectMapperFactory.getNewObjectMapper();
+        mapper.writeValue(os, "hello");
     }
 }

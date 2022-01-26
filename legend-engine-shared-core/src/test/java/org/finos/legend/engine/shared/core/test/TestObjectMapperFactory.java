@@ -21,6 +21,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -36,6 +37,22 @@ public class TestObjectMapperFactory
         generator.writeStartObject();
         generator.close();
         Assert.assertEquals("Generator should not autoclose JSON array and object", "[{", writer.toString());
+    }
+
+    @Test
+    public void doesNotAutocloseOutputStream() throws IOException
+    {
+        ByteArrayOutputStream os = new ByteArrayOutputStream()
+        {
+            @Override
+            public void close()
+            {
+                Assert.fail("Close should not be call");
+            }
+        };
+
+        ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapper();
+        mapper.writeValue(os, "hello");
     }
 
     @Test

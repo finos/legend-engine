@@ -602,7 +602,7 @@ public class HelperRelationalGrammarComposer
             int baseIndentation = 1;
             return "Databricks\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "host: " + convertString(spec.hostname, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "hostname: " + convertString(spec.hostname, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + convertString(spec.port, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "protocol: " + convertString(spec.protocol, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "httpPath: " + convertString(spec.httpPath, true) + ";\n" +
