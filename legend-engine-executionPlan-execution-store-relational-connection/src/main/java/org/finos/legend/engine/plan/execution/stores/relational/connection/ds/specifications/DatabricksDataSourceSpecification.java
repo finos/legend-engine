@@ -14,16 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
-import org.pac4j.core.profile.CommonProfile;
 
-import javax.sql.DataSource;
 import java.util.Properties;
 
 public class DatabricksDataSourceSpecification extends DataSourceSpecification
@@ -34,7 +29,12 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
     public static String DATABRICKS_PROTOCOL = "legend_databricks_protocol";
     public static String DATABRICKS_HTTP_PATH = "legend_databricks_http_path";
 
-    public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
+    public DatabricksDataSourceSpecification(
+            DatabricksDataSourceSpecificationKey key,
+            DatabaseManager databaseManager,
+            AuthenticationStrategy authenticationStrategy,
+            Properties extraUserProperties
+    )
     {
         super(key, databaseManager, authenticationStrategy, extraUserProperties);
 
@@ -51,5 +51,10 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
     public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
     {
         this(key, databaseManager, authenticationStrategy, new Properties());
+    }
+
+    public Properties getConnectionProperties()
+    {
+        return this.extraDatasourceProperties;
     }
 }

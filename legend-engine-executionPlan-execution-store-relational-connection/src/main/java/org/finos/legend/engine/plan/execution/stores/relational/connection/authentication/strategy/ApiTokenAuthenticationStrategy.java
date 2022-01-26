@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
@@ -22,7 +23,11 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
+import org.finos.legend.engine.shared.core.vault.Vault;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -55,9 +60,10 @@ public class ApiTokenAuthenticationStrategy extends AuthenticationStrategy
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
+        ApiTokenCredential apiTokenCredential = this.resolveCredential(properties, this.apiToken);
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        connectionProperties.put(API_TOKEN, this.apiToken);
+        connectionProperties.put(API_TOKEN, apiTokenCredential.getApiToken());
         return Tuples.pair(url, connectionProperties);
     }
 
@@ -65,6 +71,21 @@ public class ApiTokenAuthenticationStrategy extends AuthenticationStrategy
     public AuthenticationStrategyKey getKey()
     {
         return new ApiTokenAuthenticationStrategyKey(this.apiToken);
+    }
+
+    private ApiTokenCredential resolveCredential(Properties properties, String apiTokenKey)
+    {
+        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
+        if (!identityState.getCredentialSupplier().isPresent())
+        {
+            String apiToken = Vault.INSTANCE.getValue(apiTokenKey);
+            if (StringUtils.isEmpty(apiToken))
+            {
+                throw new ConnectionException(new Exception("Could not retrieve API token from default Vault"));
+            }
+            return new ApiTokenCredential(apiToken);
+        }
+        return (ApiTokenCredential)super.getDatabaseCredential(identityState);
     }
 
 }
