@@ -40,7 +40,7 @@
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <excludes>
-                        <exclude>**/DatabaseIntegration*.java</exclude>
+                        <exclude>**/ExternalIntegration*.java</exclude>
                     </excludes>
                     <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
                 </configuration>
