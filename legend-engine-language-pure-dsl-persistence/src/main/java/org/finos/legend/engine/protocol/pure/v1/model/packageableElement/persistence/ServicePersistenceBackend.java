@@ -3,14 +3,11 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.backend.Backend;
 
-public class ServicePersistence extends PackageableElement
-{
-    public String documentation;
-    public java.util.List<String> owners = java.util.Collections.<String>emptyList();
-    public org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventType trigger;
-    public PackageableElementPointer service;
-    public Persistence persistence;
+public class ServicePersistenceBackend extends PackageableElement {
+    public PackageableElementPointer servicePersistence;
+    public Backend backend;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor) {
