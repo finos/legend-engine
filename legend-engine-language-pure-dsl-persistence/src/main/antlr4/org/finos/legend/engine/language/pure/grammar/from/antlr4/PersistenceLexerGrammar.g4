@@ -1,10 +1,11 @@
 lexer grammar PersistenceLexerGrammar;
 
-import CoreLexerGrammar;
+import M3LexerGrammar;
 
 // -------------------------------------- KEYWORD --------------------------------------
 
 // COMMON
+IMPORT:                                 'import';
 NAME:                                   'name';
 NONE:                                   'none';
 OPAQUE:                                 'opaque';
@@ -37,12 +38,14 @@ TRANSACTION_MODE_ALL_DATASETS:          'allDatasets';
 
 TARGET:                                 'target';
 
-DATASTORE:                              'datastoreName';
+DATASTORE:                              'datastore';
 DATASTORE_NAME:                         NAME;
 
 DATASET:                                'dataset';
+DATASETS:                               'datasets';
 DATASET_NAME:                           NAME;
-DATASET_PARTITION_PROPERTIES:           'partitionProperties';
+
+PARTITION_PROPERTIES:                   'partitionProperties';
 
 DEDUPLICATION_STRATEGY:                 'deduplicationStrategy';
 DEDUPLICATION_STRATEGY_NONE:            NONE;
@@ -50,16 +53,14 @@ DEDUPLICATION_STRATEGY_ANY:             'any';
 DEDUPLICATION_STRATEGY_COUNT:           'count';
 DEDUPLICATION_STRATEGY_MAX_VERSION:     'maxVersion';
 
-MILESTONING_MODE:                       'milestoningMode';
-MILESTONING_MODE_MILESTONED:            'milestoned';
-MILESTONING_MODE_NON_MILESTONED:        'nonMilestoned';
-
-SNAPSHOT:                               'snapshot';
-DELTA:                                  'delta';
+BATCH_MODE:                             'batchMode';
+SNAPSHOT_NON_MILESTONED:                'nonMilestonedSnapshot';
+SNAPSHOT_UNITEMPORAL:                   'unitemporalSnapshot';
+SNAPSHOT_BITEMPORAL:                    'bitemporalSnapshot';
+DELTA_NON_MILESTONED:                   'nonMilestonedDelta';
+DELTA_UNITEMPORAL:                      'unitemporalDelta';
+DELTA_BITEMPORAL:                       'bitemporalDelta';
 APPEND_ONLY:                            'appendOnly';
-
-UNITEMPORAL:                            'unitemporal';
-BITEMPORAL:                             'bitemporal';
 
 AUDIT_SCHEME:                           'auditScheme';
 AUDIT_SCHEME_NONE:                      NONE;
