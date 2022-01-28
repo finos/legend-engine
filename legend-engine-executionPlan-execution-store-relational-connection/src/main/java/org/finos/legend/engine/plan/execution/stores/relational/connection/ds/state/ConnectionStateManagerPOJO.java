@@ -147,12 +147,19 @@ public class ConnectionStateManagerPOJO
             this.totalConnections = totalConnections;
         }
 
-        public void addPoolStats(DataSource dataSource) {
-            HikariPoolMXBean mxBean =((HikariDataSource) dataSource).getHikariPoolMXBean();
-            this.activeConnections +=mxBean.getActiveConnections();
-            this.idleConnections += mxBean.getIdleConnections();
-            this.threadsAwaitingConnection +=mxBean.getThreadsAwaitingConnection();
-            this.totalConnections +=mxBean.getTotalConnections();
+        public void addPoolStats(DataSource dataSource)
+        {
+            if (dataSource != null)
+            {
+                HikariPoolMXBean mxBean = ((HikariDataSource)dataSource).getHikariPoolMXBean();
+                if (mxBean != null)
+                {
+                    this.activeConnections += mxBean.getActiveConnections();
+                    this.idleConnections += mxBean.getIdleConnections();
+                    this.threadsAwaitingConnection += mxBean.getThreadsAwaitingConnection();
+                    this.totalConnections += mxBean.getTotalConnections();
+                }
+            }
         }
     }
 
