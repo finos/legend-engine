@@ -41,7 +41,7 @@ public class H2Manager extends DatabaseManager
             String autoServerMode =  extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_AUTO_SERVER_MODE);
             return "jdbc:h2:file:" + dataDirectoryPath + "/" + databaseName + ";AUTO_SERVER=" + autoServerMode;
         }
-        return "jdbc:h2:tcp://" + host + ":" + port + "/" + (isLocalH2DataSource(extraUserDataSourceProperties) ? "mem:" + databaseName : databaseName);
+        return "jdbc:h2:tcp://" + host + ":" + port + "/" + (isLocalH2DataSource(host, extraUserDataSourceProperties) ? "mem:" + databaseName : databaseName);
     }
 
     @Override
@@ -60,9 +60,9 @@ public class H2Manager extends DatabaseManager
         return properties.containsKey(EmbeddedH2DataSourceSpecification.H2_DATA_DIRECTORY_PATH);
     }
 
-    private boolean isLocalH2DataSource(Properties properties)
+    private boolean isLocalH2DataSource(String host, Properties properties)
     {
-        return properties.containsKey(LocalH2DataSourceSpecification.LOCAL_H2_DATA_SOURCE);
+        return properties.containsKey(LocalH2DataSourceSpecification.LOCAL_H2_DATA_SOURCE) || host.equals("127.0.0.1") || host.equalsIgnoreCase("localhost");
     }
 
     @Override

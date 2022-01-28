@@ -81,7 +81,7 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
         String staticDBName = tempFolder.newFolder().getAbsolutePath() + "/staticTestDB";
 
         int port1 = DynamicPortGenerator.generatePort();
-        StaticDataSourceSpecification ds1 = new StaticDataSourceSpecification(new StaticDataSourceSpecificationKey("127.0.0.1", port1, staticDBName), new H2Manager(), new DefaultH2AuthenticationStrategy());
+        StaticDataSourceSpecification ds1 = new StaticDataSourceSpecification(new StaticDataSourceSpecificationKey("0", port1, staticDBName), new H2Manager(), new DefaultH2AuthenticationStrategy());
         Server server1 = AlloyH2Server.startServer(port1);
         try (Connection connection = ds1.getConnectionUsingSubject(null))
         {
@@ -98,7 +98,7 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
         }
 
         int port2 = DynamicPortGenerator.generatePort();
-        StaticDataSourceSpecification ds2 = new StaticDataSourceSpecification(new StaticDataSourceSpecificationKey("127.0.0.1", port2, staticDBName), new H2Manager(), new DefaultH2AuthenticationStrategy());
+        StaticDataSourceSpecification ds2 = new StaticDataSourceSpecification(new StaticDataSourceSpecificationKey("0", port2, staticDBName), new H2Manager(), new DefaultH2AuthenticationStrategy());
         Server server2 = AlloyH2Server.startServer(port2);
         try (Connection connection = ds2.getConnectionUsingSubject(null))
         {
