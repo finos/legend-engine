@@ -22,15 +22,12 @@ env:
   SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY: ${{ secrets.SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY }}
   SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD: ${{ secrets.SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD }}
 
-on: 
+on:
+  schedule:
+    - cron: '0 0 * * 2' # every Tuesday on default/base branch
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
-  workflow_dispatch:      
-  
 jobs:
   build:
     runs-on: ubuntu-latest
