@@ -5,7 +5,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.backend.Backend;
 
-public class ServicePersistenceBackend extends PackageableElement {
+public class ServicePersistenceBackend extends PackageableElement
+{
     public PackageableElementPointer servicePersistence;
     public Backend backend;
 

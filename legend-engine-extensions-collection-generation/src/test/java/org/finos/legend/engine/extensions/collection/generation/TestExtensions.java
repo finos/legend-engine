@@ -25,6 +25,7 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatPlanGe
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.junit.Assert;
@@ -46,7 +47,7 @@ public class TestExtensions
             .with(org.finos.legend.engine.external.format.json.JsonProtocolExtension.class)
             .with(org.finos.legend.engine.external.format.xml.XmlProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
-            .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
+            .with(PersistenceProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)

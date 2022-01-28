@@ -179,7 +179,6 @@ deltaNonMilestoned:                         DELTA_NON_MILESTONED
 ;
 deltaUnitemporal:                           DELTA_UNITEMPORAL
                                                 BRACE_OPEN
-                                                BRACE_OPEN
                                                     (
                                                         mergeScheme
                                                         | transactionScheme
