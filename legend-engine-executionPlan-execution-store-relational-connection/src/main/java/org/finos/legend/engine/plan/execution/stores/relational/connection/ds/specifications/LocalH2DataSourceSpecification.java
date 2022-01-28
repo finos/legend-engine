@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
@@ -31,6 +30,7 @@ import java.util.function.Supplier;
 
 public class LocalH2DataSourceSpecification extends StaticDataSourceSpecification
 {
+    public static final String LOCAL_H2_DATA_SOURCE = "h2_local_data_source";
 
     private static final int MAX_POOL_SIZE = 100;
     private static final int MIN_POOL_SIZE = 0;
@@ -38,6 +38,7 @@ public class LocalH2DataSourceSpecification extends StaticDataSourceSpecificatio
     public LocalH2DataSourceSpecification(List<String> setupSQLs, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
     {
         super(new LocalH2DataSourceSpecificationKey(setupSQLs), databaseManager, authenticationStrategy, new Properties(), MAX_POOL_SIZE, MIN_POOL_SIZE);
+        this.extraDatasourceProperties.put(LOCAL_H2_DATA_SOURCE, true);
     }
 
     @Override

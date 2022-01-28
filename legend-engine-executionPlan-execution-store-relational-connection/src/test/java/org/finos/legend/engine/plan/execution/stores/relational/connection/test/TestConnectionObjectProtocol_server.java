@@ -15,18 +15,26 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.eclipse.collections.api.block.function.Function;
+import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
+import org.h2.tools.Server;
 import org.junit.Test;
 
 import javax.security.auth.Subject;
 import java.io.FileInputStream;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.util.Properties;
 
 public class TestConnectionObjectProtocol_server extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
@@ -67,4 +75,39 @@ public class TestConnectionObjectProtocol_server extends org.finos.legend.engine
 
     }
 
+    @Test
+    public void testStaticH2Connection() throws Exception
+    {
+        String staticDBName = tempFolder.newFolder().getAbsolutePath() + "/staticTestDB";
+
+        int port1 = DynamicPortGenerator.generatePort();
+        StaticDataSourceSpecification ds1 = new StaticDataSourceSpecification(new StaticDataSourceSpecificationKey("127.0.0.1", port1, staticDBName), new H2Manager(), new DefaultH2AuthenticationStrategy());
+        Server server1 = AlloyH2Server.startServer(port1);
+        try (Connection connection = ds1.getConnectionUsingSubject(null))
+        {
+            try (Statement stmt = connection.createStatement())
+            {
+                stmt.execute("CREATE TABLE personTable (ID INT, NAME VARCHAR(100))");
+                stmt.execute("INSERT INTO personTable VALUES (1,'Peter'), (2,'John')");
+            }
+        }
+        finally
+        {
+            server1.shutdown();
+            server1.stop();
+        }
+
+        int port2 = DynamicPortGenerator.generatePort();
+        StaticDataSourceSpecification ds2 = new StaticDataSourceSpecification(new StaticDataSourceSpecificationKey("127.0.0.1", port2, staticDBName), new H2Manager(), new DefaultH2AuthenticationStrategy());
+        Server server2 = AlloyH2Server.startServer(port2);
+        try (Connection connection = ds2.getConnectionUsingSubject(null))
+        {
+            testConnection(connection, "SELECT * FROM personTable");
+        }
+        finally
+        {
+            server2.shutdown();
+            server2.stop();
+        }
+    }
 }

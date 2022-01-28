@@ -20,6 +20,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.EmbeddedH2DataSourceSpecification;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 
 import java.util.Properties;
 
@@ -40,7 +41,7 @@ public class H2Manager extends DatabaseManager
             String autoServerMode =  extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_AUTO_SERVER_MODE);
             return "jdbc:h2:file:" + dataDirectoryPath + "/" + databaseName + ";AUTO_SERVER=" + autoServerMode;
         }
-        return "jdbc:h2:tcp://" + host + ":" + port + "/mem:" +databaseName;
+        return "jdbc:h2:tcp://" + host + ":" + port + "/" + (isLocalH2DataSource(extraUserDataSourceProperties) ? "mem:" + databaseName : databaseName);
     }
 
     @Override
@@ -57,6 +58,11 @@ public class H2Manager extends DatabaseManager
     private boolean isEmbeddedMode(Properties properties)
     {
         return properties.containsKey(EmbeddedH2DataSourceSpecification.H2_DATA_DIRECTORY_PATH);
+    }
+
+    private boolean isLocalH2DataSource(Properties properties)
+    {
+        return properties.containsKey(LocalH2DataSourceSpecification.LOCAL_H2_DATA_SOURCE);
     }
 
     @Override
