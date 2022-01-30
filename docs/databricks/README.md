@@ -98,8 +98,24 @@ RelationalDatabaseConnection databricks::lakehouse::environment
 ```
 
 Finally, users can query data from Delta Lake directly through the comfort of the legend studio interface.
+Without getting into too much details here as the work we've done on the legend engine and pure projects, you can see some fields generated
+from PURE expressions and translated as Databricks SQL (`age` is a derived property).
 
 ![lg-store-query.png](images/lg-store-query.png)
+
+The above was achieved from the generated execution Plan.
+
+```roomsql
+select 
+    `root`.first_name as `First Name`, 
+    `root`.last_name as `Last Name`, 
+    `root`.high_fives as `High Fives`, 
+    year(`root`.joined_date) - year(`root`.birth_date) as `Age` 
+from 
+    legend.employee as `root`
+```
+
+You can use the example [pure model](databricks.pure) attached here for reference. 
 
 ## Authors
 <antoine.amend@databricks.com>

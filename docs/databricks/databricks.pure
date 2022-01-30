@@ -1,0 +1,122 @@
+###Service
+Service databricks::lakehouse::get_employees
+{
+  pattern: '/06de4362-1754-4ddc-aba3-efc3de4d9ea8';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |databricks::employee.all()->project([x|$x.firstName, x|$x.lastName, x|$x.highFives, x|$x.age], ['First Name', 'Last Name', 'High Fives', 'Age']);
+    mapping: databricks::lakehouse::mapping;
+    runtime: databricks::lakehouse::runtime;
+  }
+  test: Single
+  {
+    data: '';
+    asserts:
+    [
+    ];
+  }
+}
+
+
+###Relational
+Database databricks::lakehouse::schema
+(
+  Schema legend
+  (
+    Table employee
+    (
+      id INTEGER PRIMARY KEY,
+      first_name VARCHAR(255),
+      last_name VARCHAR(255),
+      birth_date DATE,
+      gender VARCHAR(255),
+      sme VARCHAR(255),
+      role VARCHAR(255),
+      joined_date DATE,
+      high_fives INTEGER
+    )
+  )
+)
+
+
+###Pure
+Class databricks::employee extends databricks::person
+[
+  '[high five] should be positive': $this.highFives > 0,
+  '[age] should be > 20': $this.joinedDate->dateDiff($this.birthDate, DurationUnit.YEARS) > 20
+]
+{
+  {meta::pure::profiles::doc.doc = 'Unique identifier of a databricks employee'} id: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Programming skill that person truly masters'} sme: String[0..1];
+  {meta::pure::profiles::doc.doc = 'When did that person join Databricks'} joinedDate: Date[1];
+  {meta::pure::profiles::doc.doc = 'How many high fives did that person get'} highFives: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Employee age when joining databricks'} age() {$this.joinedDate->dateDiff($this.birthDate, DurationUnit.YEARS)}: Integer[1];
+}
+
+Class databricks::person
+{
+  {meta::pure::profiles::doc.doc = 'Person first name'} firstName: String[1];
+  {meta::pure::profiles::doc.doc = 'Person last name'} lastName: String[1];
+  {meta::pure::profiles::doc.doc = 'Person birth date'} birthDate: Date[1];
+  {meta::pure::profiles::doc.doc = 'Disclosed gender'} gender: String[0..1];
+}
+
+
+###Mapping
+Mapping databricks::lakehouse::mapping
+(
+  *databricks::employee: Relational
+  {
+    ~primaryKey
+    (
+      [databricks::lakehouse::schema]legend.employee.id
+    )
+    ~mainTable [databricks::lakehouse::schema]legend.employee
+    firstName: [databricks::lakehouse::schema]legend.employee.first_name,
+    lastName: [databricks::lakehouse::schema]legend.employee.last_name,
+    birthDate: [databricks::lakehouse::schema]legend.employee.birth_date,
+    id: [databricks::lakehouse::schema]legend.employee.id,
+    sme: [databricks::lakehouse::schema]legend.employee.sme,
+    gender: [databricks::lakehouse::schema]legend.employee.gender,
+    joinedDate: [databricks::lakehouse::schema]legend.employee.joined_date,
+    highFives: [databricks::lakehouse::schema]legend.employee.high_fives
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection databricks::lakehouse::environment
+{
+  store: databricks::lakehouse::schema;
+  type: Databricks;
+  specification: Databricks
+  {
+    hostname: 'legend.cloud.databricks.com';
+    port: '443';
+    protocol: 'https';
+    httpPath: 'sql/protocolv1/o/1356153761291484/0130-184128-j8y6rrz';
+  };
+  auth: ApiToken
+  {
+    apiToken: 'databricks.api.token';
+  };
+}
+
+
+###Runtime
+Runtime databricks::lakehouse::runtime
+{
+  mappings:
+  [
+    databricks::lakehouse::mapping
+  ];
+  connections:
+  [
+    databricks::lakehouse::schema:
+    [
+      environment: databricks::lakehouse::environment
+    ]
+  ];
+}
