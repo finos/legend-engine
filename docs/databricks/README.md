@@ -5,7 +5,9 @@
 *Part of the Linux foundation, [Delta Lake](https://delta.io/) is an open source storage layer that brings reliability to data lakes. 
 Delta Lake provides ACID transactions, scalable metadata handling, and unifies streaming and batch data processing. 
 Running on top of your existing data lake and fully compatible with the Apache Spark APIs, Delta brings the best of both 
-data warehousing and data lakes functionality onto one unified platform.*
+data warehousing and data lakes functionality onto one unified platform. By integrating the Legend Framework in a Lakehouse architecture, 
+Databricks and FINOS bring the best of open data standard and open source technologies together, 
+improving data exchange across the financial services industry and supporting key organizations in their digital transformation.*
 
 ### Backend
 
