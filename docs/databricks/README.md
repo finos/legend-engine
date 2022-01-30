@@ -1,31 +1,57 @@
 ## Databricks Integration
 
-*Combining best of open data standards with open source technologies*
-
-___
-
-Part of the Linux foundation, [Delta Lake](https://delta.io/) is an open source storage layer that brings reliability to data lakes. 
+*Part of the Linux foundation, [Delta Lake](https://delta.io/) is an open source storage layer that brings reliability to data lakes. 
 Delta Lake provides ACID transactions, scalable metadata handling, and unifies streaming and batch data processing. 
 Running on top of your existing data lake and fully compatible with the Apache Spark APIs, Delta brings the best of both 
-data warehousing and data lakes functionality onto one unified platform. 
+data warehousing and data lakes functionality onto one unified platform.*
 
-### Usage
+### Backend
 
-Create a new database source of type `Databricks`, providing both a Datasource specification and authentication.
-For JDBC connection details, please refer to your Databricks environment and create a personal access token as per below screenshot.
+We connect legend stack to Databricks backend through a JDBC connection to an active cluster. 
+On a Databricks workspace, we start a new cluster as follows. 
+More information on cluster management [here](https://docs.databricks.com/clusters/index.html).
 
-![endpoint](images/endpoint_jdbc.png)
+![db-cluster.png](images/db-cluster.png)
 
-The same can be reported back on the legend studio as follows
+Active clusters offer a SQL endpoint through ODBC/JDBC. Details of the connection can be found under "advanced options" menu.
+Please note the JDBC details that will be used later to integrate this active cluster with the Legend engine 
+(namely `hostname`, `port`, `protocol`, `httpPath`). 
+More information on JDBC endpoint [here](https://docs.databricks.com/data/data-sources/sql-databases.html)
 
-![legend](images/database.png)
+![db-cluster-jdbc.png](images/db-cluster-jdbc.png)
 
-See [pure](databricks.pure) model for reference. Finally, users can query data from Delta Lake directly through 
-the comfort of the legend studio interface.
+The easiest way to authenticate through a Databricks backend (hence a JDBC connection) is via API tokens. 
+We can create a new API token under user settings.
+See [documentation](https://docs.databricks.com/dev-tools/api/latest/authentication.html) for more information.
 
-![legend](images/query_builder.png)
+![db-token-create.png](images/db-token-create.png)
 
-### Configuration
+With an active cluster and a valid API token, we can proceed and define this endpoint on the legend studio interface.
+
+### Vault configuration
+
+It would pose a risk for any organisation to store their personal access token as plain text alongside their pure model on gitlab. 
+Furthermore, token could expire or get updated without having to push for a new change in the underlying pure model.
+Instead, we leverage the Vault functionality of the legend engine to store our tokens as property files on legend server,
+
+ ```json
+ {
+     "vaults": [
+         {
+           "location": "/path/to/engine/vault.properties"
+         }
+     ]
+ }
+ ```
+
+We can store our different tokens (e.g. for different workspaces) in our `vault.properties` that we can reference
+accordingly through the legend studio interface (or its underlying pure model).
+
+```shell script
+databricks.api.token = dapibd0d233ddaXXXXXXXXXXXXXXX
+```
+
+### Server configuration
 
 Spark JDBC driver is not OSS and as such not available through maven central. Please download JDBC driver from Databricks
 [website](https://databricks.com/spark/jdbc-drivers-download) and extract jar file to a specific location.
@@ -38,4 +64,42 @@ java -cp \
   server \
   config.json
 ```
+
+### Frontend
+
+Create a new database source of type `Databricks`, and report information of your newly created cluster as follows. 
+Please note the authentication layer that now expects the property value set in our vault configuration (`databricks.api.token`).
+
+![lg-store-create.png](images/lg-store-create.png)
+
+The same can be expressed as a pure object of type `Connection`
+
+```pure
+###Connection
+RelationalDatabaseConnection databricks::lakehouse::environment
+{
+  store: databricks::lakehouse::schema;
+  type: Databricks;
+  specification: Databricks
+  {
+    hostname: 'legend.cloud.databricks.com';
+    port: '443';
+    protocol: 'https';
+    httpPath: 'sql/protocolv1/o/1356153761291484/0130-184128-j8y6rrz';
+  };
+  auth: ApiToken
+  {
+    apiToken: 'databricks.api.token';
+  };
+}
+```
+
+Finally, users can query data from Delta Lake directly through the comfort of the legend studio interface.
+
+![lg-store-query.png](images/lg-store-query.png)
+
+## Author
+
+<antoine.amend@databricks.com>
+
 
