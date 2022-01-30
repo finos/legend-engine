@@ -1,3 +1,5 @@
+![db-lakehouse-logo.png](images/db-lakehouse-logo.png)
+
 ## Databricks Integration
 
 *Part of the Linux foundation, [Delta Lake](https://delta.io/) is an open source storage layer that brings reliability to data lakes. 
@@ -9,7 +11,8 @@ data warehousing and data lakes functionality onto one unified platform.*
 
 We connect legend stack to Databricks backend through a JDBC connection to an active cluster. 
 On a Databricks workspace, we start a new cluster as follows. 
-More information on cluster management [here](https://docs.databricks.com/clusters/index.html).
+More information on cluster management [here](https://docs.databricks.com/clusters/index.html). 
+Note that the same can be done programmatically using the databricks cluster [API](https://docs.databricks.com/dev-tools/api/latest/clusters.html).
 
 ![db-cluster.png](images/db-cluster.png)
 
@@ -98,8 +101,7 @@ Finally, users can query data from Delta Lake directly through the comfort of th
 
 ![lg-store-query.png](images/lg-store-query.png)
 
-## Author
-
+## Authors
 <antoine.amend@databricks.com>
 
 
