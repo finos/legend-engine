@@ -22,7 +22,6 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.domain.StrictTimeParseTreeWalker;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
@@ -36,12 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
@@ -457,13 +451,22 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return unsupported(propertyMapping.getClass());
     }
 
-    @Override
     public String visit(OperationClassMapping operationClassMapping)
     {
-        return ": " + "Operation\n" +
-            getTabString() + "{\n" +
-            getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
-            getTabString() + "}";
+        if (operationClassMapping instanceof MergeOperationClassMapping)
+        {
+            return ": " + "Operation\n" +
+                    getTabString() + "{\n" +
+                    getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + "([" + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + "]," +
+                    ((MergeOperationClassMapping) operationClassMapping).validationFunction.body.get(0).accept(this) + ")\n" +
+                    getTabString() + "}";
+        } else
+        {
+            return ": " + "Operation\n" +
+                    getTabString() + "{\n" +
+                    getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
+                    getTabString() + "}";
+        }
     }
 
     @Override
