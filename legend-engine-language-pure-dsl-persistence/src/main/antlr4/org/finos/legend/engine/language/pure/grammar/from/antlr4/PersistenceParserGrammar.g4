@@ -56,6 +56,7 @@ persistence:                                PERSISTENCE COLON
                                                     streamingPersistence
                                                     | batchPersistence
                                                 )
+                                            SEMI_COLON
 ;
 streamingPersistence:                       PERSISTENCE_STREAMING
                                                 BRACE_OPEN
