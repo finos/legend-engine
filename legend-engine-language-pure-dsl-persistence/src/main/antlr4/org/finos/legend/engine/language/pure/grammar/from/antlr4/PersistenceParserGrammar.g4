@@ -10,6 +10,22 @@ options
 // -------------------------------------- IDENTIFIER --------------------------------------
 
 identifier:                                 VALID_STRING | STRING
+                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
+                                            | IMPORT | NAME | NONE | OPAQUE | DATE_TIME
+                                            | SERVICE_PERSISTENCE | SERVICE_PERSISTENCE_DOCUMENTATION | SERVICE_PERSISTENCE_OWNERS | SERVICE_PERSISTENCE_TRIGGER | SERVICE_PERSISTENCE_SERVICE
+                                            | EVENT_TYPE_SCHEDULE_TRIGGERED | EVENT_TYPE_REGISTRY_DATASET_AVAILABLE
+                                            | PERSISTENCE | PERSISTENCE_STREAMING | PERSISTENCE_BATCH
+                                            | INPUT_SHAPE | INPUT_SHAPE_FLAT | INPUT_SHAPE_GROUPED_FLAT | INPUT_SHAPE_NESTED | INPUT_CLASS
+                                            | TRANSACTION_MODE | TRANSACTION_MODE_SINGLE_DATASET | TRANSACTION_MODE_ALL_DATASETS
+                                            | TARGET | DATASTORE | DATASTORE_NAME | DATASET | DATASETS | DATASET_NAME
+                                            | PARTITION_PROPERTIES
+                                            | DEDUPLICATION_STRATEGY | DEDUPLICATION_STRATEGY_NONE | DEDUPLICATION_STRATEGY_ANY | DEDUPLICATION_STRATEGY_COUNT | DEDUPLICATION_STRATEGY_MAX_VERSION
+                                            | BATCH_MODE | SNAPSHOT_NON_MILESTONED | SNAPSHOT_UNITEMPORAL | SNAPSHOT_BITEMPORAL | DELTA_NON_MILESTONED | DELTA_UNITEMPORAL | DELTA_BITEMPORAL | APPEND_ONLY
+                                            | AUDIT_SCHEME | AUDIT_SCHEME_NONE | AUDIT_SCHEME_BATCH_DATE_TIME | AUDIT_SCHEME_OPAQUE
+                                            | TRANSACTION_SCHEME | TRANSACTION_SCHEME_BATCH_ID | TRANSACTION_SCHEME_DATE_TIME | TRANSACTION_SCHEME_BOTH | TRANSACTION_SCHEME_OPAQUE
+                                            | VALIDITY_SCHEME | VALIDITY_SCHEME_DATE_TIME | VALIDITY_SCHEME_OPAQUE
+                                            | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU
+                                            | MERGE_SCHEME | MERGE_SCHEME_NO_DELETES | MERGE_SCHEME_DELETE_INDICATOR
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -111,22 +127,21 @@ datasets:                                   DATASETS COLON
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
-dataset:                                    DATASET
-                                                BRACE_OPEN
+dataset:                                    BRACE_OPEN
                                                 (
                                                     datasetName
                                                     | partitionProperties
                                                     | deduplicationStrategy
                                                     | batchMode
                                                 )*
-                                                BRACE_CLOSE
+                                            BRACE_CLOSE
 
 ;
 datasetName:                                DATASET_NAME COLON identifier SEMI_COLON
 ;
 partitionProperties:                        PARTITION_PROPERTIES COLON
                                                 BRACKET_OPEN
-                                                    (identifier (COMMA identifier)*)
+                                                    (identifier (COMMA identifier)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
