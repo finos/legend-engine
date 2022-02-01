@@ -274,10 +274,10 @@ public class RelationalExecutor
         }
         catch (Exception e)
         {
-            LOGGER.info("Exception while reprocessing SQL Query. Detail: " + e.getMessage() + ".");
+            throw new IllegalStateException("Reprocessing sql failed with vars " + executionState.getResults().keySet(), e);
         }
 
-        LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_REPROCESS_SQL, "Reprocessing sql with vars [" + executionState.getResults().keySet() + "]: " + sqlQuery).toString());
+        LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_REPROCESS_SQL, "Reprocessing sql with vars " + executionState.getResults().keySet() + ": " + sqlQuery).toString());
 
         executionState.activities.add(new RelationalExecutionActivity(sqlQuery));
     }

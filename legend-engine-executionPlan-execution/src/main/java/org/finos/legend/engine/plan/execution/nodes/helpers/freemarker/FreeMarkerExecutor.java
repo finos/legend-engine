@@ -73,7 +73,7 @@ public class FreeMarkerExecutor
 
     private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        String result;
+        StringWriter stringWriter = new StringWriter();
         try
         {
             Configuration cfg = new Configuration();
@@ -82,14 +82,12 @@ public class FreeMarkerExecutor
             Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
             template.setCustomDateFormats(customDateFormats);
             template.setDateFormat("@alloyDate");
-            StringWriter stringWriter = new StringWriter();
             template.process(variableMap, stringWriter);
-            result = stringWriter.toString();
+            return stringWriter.toString();
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Issue processing freemarker function: " + e.getMessage(), e);
+            throw new RuntimeException("Issue processing freemarker function.  Template with error: " + stringWriter.toString(), e);
         }
-        return result;
     }
 }
