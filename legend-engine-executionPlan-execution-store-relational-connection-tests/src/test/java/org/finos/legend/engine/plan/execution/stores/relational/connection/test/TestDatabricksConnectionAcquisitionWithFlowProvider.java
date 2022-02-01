@@ -29,6 +29,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
@@ -38,7 +39,8 @@ import java.util.ResourceBundle;
 
 import static org.junit.Assert.assertTrue;
 
-public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Databricks extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
+@Category(ExternalIntegrationTest.class)
+public class TestDatabricksConnectionAcquisitionWithFlowProvider extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
     private ConnectionManagerSelector connectionManagerSelector;
     private static final ResourceBundle env = ResourceBundle.getBundle("environment");
@@ -96,7 +98,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Datab
     {
         RelationalDatabaseConnection systemUnderTest = this.databricksSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
-        testConnection(connection, "SELECT 'hello world'");
+        testConnection(connection, "SELECT 'supported' AS databricks");
     }
 
     private RelationalDatabaseConnection databricksSpec() throws Exception

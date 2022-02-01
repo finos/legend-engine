@@ -24,6 +24,10 @@
     <artifactId>legend-engine-executionPlan-execution-store-relational-connection-tests</artifactId>
     <name>Legend Engine - Execution Plan - Execution - Store Relational - Connection - Tests</name>
 
+    <properties>
+        <databricks.api.token>will be injected</databricks.api.token>
+    </properties>
+
     <build>
         <plugins>
             <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
@@ -38,10 +42,11 @@
                 </dependencies>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
-                    <excludes>
-                        <exclude>**/*_Server.java</exclude>
-                    </excludes>
                     <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                    <excludedGroups>org.finos.legend.engine.plan.execution.stores.relational.connection.test.ExternalIntegrationTest</excludedGroups>
+                    <excludes>
+                        <exclude>**/TestDatabricksConnectionAcquisitionWithFlowProvider.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
@@ -100,22 +105,50 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>download-files</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <get src="https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.22/SimbaSparkJDBC42-2.6.22.1040.zip"
+                                             dest="${project.build.directory}/spark-simba-driver.zip"
+                                             verbose="false"
+                                             usetimestamp="true"
+                                        />
+                                        <unzip src="${project.build.directory}/spark-simba-driver.zip"
+                                               dest="${project.build.directory}/spark-simba-driver-jars"
+                                        />
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <dependencies>
-                            <!-- This stops Surefire from running the test suite's suite() method twice. -->
                             <dependency>
                                 <groupId>org.apache.maven.surefire</groupId>
                                 <artifactId>surefire-junit47</artifactId>
                                 <version>2.22.0</version>
                             </dependency>
                         </dependencies>
-                        <configuration>
+                        <!-- Without override, surefire configuration would have skipped our integration tests -->
+                        <configuration combine.self="override">
                             <useSystemClassLoader>false</useSystemClassLoader>
-                            <includes>
-                                <include>**/Test*.java</include>
-                            </includes>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1
-                            </argLine>
+                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${project.build.directory}/spark-simba-driver-jars/*</additionalClasspathElement>
+                            </additionalClasspathElements>
+                            <environmentVariables>
+                                <!-- To enable this test, please pass the following property to maven build, -Ddatabricks.api.token=XYZ -->
+                                <DATABRICKS_API_TOKEN>${databricks.api.token}</DATABRICKS_API_TOKEN>
+                            </environmentVariables>
                         </configuration>
                     </plugin>
                 </plugins>
