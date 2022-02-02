@@ -137,7 +137,7 @@ public class PersistenceParseTreeWalker
 
         // input class
         PersistenceParserGrammar.InputClassContext inputClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputClass(), "inputClass", batch.sourceInformation);
-        batch.inputClass = PureGrammarParserUtility.fromQualifiedName(inputClassContext.qualifiedName().packagePath() == null ? Collections.emptyList() : inputClassContext.qualifiedName().packagePath().identifier(), inputClassContext.qualifiedName().identifier());
+        batch.inputClassPath = PureGrammarParserUtility.fromQualifiedName(inputClassContext.qualifiedName().packagePath() == null ? Collections.emptyList() : inputClassContext.qualifiedName().packagePath().identifier(), inputClassContext.qualifiedName().identifier());
 
         // transaction mode
         PersistenceParserGrammar.TransactionModeContext transactionModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMode(), "transactionMode", batch.sourceInformation);
@@ -222,7 +222,7 @@ public class PersistenceParseTreeWalker
 
         // partition properties -- currently parsing as a list of strings, to change to Property
         PersistenceParserGrammar.PartitionPropertiesContext partitionPropertiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitionProperties(), "partitionProperties", dataset.sourceInformation);
-        dataset.partitionProperties = partitionPropertiesContext != null && partitionPropertiesContext.STRING() != null ? ListIterate.collect(partitionPropertiesContext.STRING(), partitionPropertyCtx -> PureGrammarParserUtility.fromGrammarString(partitionPropertyCtx.getText(), true)) : Collections.emptyList();
+//        dataset.partitionProperties = partitionPropertiesContext != null && partitionPropertiesContext.STRING() != null ? ListIterate.collect(partitionPropertiesContext.STRING(), partitionPropertyCtx -> PureGrammarParserUtility.fromGrammarString(partitionPropertyCtx.getText(), true)) : Collections.emptyList();
 
         // deduplication strategy
         PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationStrategy(), "deduplicationStrategy", dataset.sourceInformation);
@@ -299,8 +299,8 @@ public class PersistenceParseTreeWalker
         appendOnly.auditScheme = visitAuditScheme(auditSchemeContext);
 
         // filter duplicates
-        PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.filterDuplicates(), "filterDuplicates", appendOnly.sourceInformation);
-        appendOnly.filterDuplicates = filterDuplicatesContext != null ? PureGrammarParserUtility.fromIdentifier(filterDuplicatesContext.identifier()) : null;
+        PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.filterDuplicates()), "filterDuplicates", appendOnly.sourceInformation);
+        appendOnly.filterDuplicates = Boolean.parseBoolean(filterDuplicatesContext.FILTER_DUPLICATES().getText());
 
         return appendOnly;
     }
@@ -412,7 +412,7 @@ public class PersistenceParseTreeWalker
 
         // input class
         PersistenceParserGrammar.InputClassContext inputClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputClass(), "inputClass", streaming.sourceInformation);
-        streaming.inputClass = PureGrammarParserUtility.fromQualifiedName(inputClassContext.qualifiedName().packagePath() == null ? Collections.emptyList() : inputClassContext.qualifiedName().packagePath().identifier(), inputClassContext.qualifiedName().identifier());
+        streaming.inputClassPath = PureGrammarParserUtility.fromQualifiedName(inputClassContext.qualifiedName().packagePath() == null ? Collections.emptyList() : inputClassContext.qualifiedName().packagePath().identifier(), inputClassContext.qualifiedName().identifier());
 
         return streaming;
     }

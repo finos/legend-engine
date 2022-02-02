@@ -21,7 +21,7 @@ identifier:                                 VALID_STRING | STRING
                                             | PARTITION_PROPERTIES
                                             | DEDUPLICATION_STRATEGY | DEDUPLICATION_STRATEGY_NONE | DEDUPLICATION_STRATEGY_ANY | DEDUPLICATION_STRATEGY_COUNT | DEDUPLICATION_STRATEGY_MAX_VERSION
                                             | BATCH_MODE | SNAPSHOT_NON_MILESTONED | SNAPSHOT_UNITEMPORAL | SNAPSHOT_BITEMPORAL | DELTA_NON_MILESTONED | DELTA_UNITEMPORAL | DELTA_BITEMPORAL | APPEND_ONLY
-                                            | AUDIT_SCHEME | AUDIT_SCHEME_NONE | AUDIT_SCHEME_BATCH_DATE_TIME | AUDIT_SCHEME_OPAQUE
+                                            | FILTER_DUPLICATES | AUDIT_SCHEME | AUDIT_SCHEME_NONE | AUDIT_SCHEME_BATCH_DATE_TIME | AUDIT_SCHEME_OPAQUE
                                             | TRANSACTION_SCHEME | TRANSACTION_SCHEME_BATCH_ID | TRANSACTION_SCHEME_DATE_TIME | TRANSACTION_SCHEME_BOTH | TRANSACTION_SCHEME_OPAQUE
                                             | VALIDITY_SCHEME | VALIDITY_SCHEME_DATE_TIME | VALIDITY_SCHEME_OPAQUE
                                             | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU
@@ -210,6 +210,7 @@ deltaBitemporal:                           DELTA_BITEMPORAL
 appendOnly:                                 APPEND_ONLY
                                                 BRACE_OPEN
                                                     auditScheme
+                                                    filterDuplicates
                                                 BRACE_CLOSE
 ;
 //TODO: ledav - support config for all flags below
@@ -220,6 +221,8 @@ auditScheme:                                AUDIT_SCHEME COLON
                                                     | AUDIT_SCHEME_OPAQUE
                                                 )
                                             SEMI_COLON
+;
+filterDuplicates:                           FILTER_DUPLICATES COLON (TRUE | FALSE)
 ;
 transactionScheme:                          TRANSACTION_SCHEME COLON
                                                 (

@@ -58,6 +58,8 @@ DELTA_UNITEMPORAL:                      'UnitemporalDelta';
 DELTA_BITEMPORAL:                       'BitemporalDelta';
 APPEND_ONLY:                            'AppendOnly';
 
+FILTER_DUPLICATES:                      'filterDuplicates';
+
 AUDIT_SCHEME:                           'auditScheme';
 AUDIT_SCHEME_NONE:                      'NoAudit';
 AUDIT_SCHEME_BATCH_DATE_TIME:           'BatchDateTime';

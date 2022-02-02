@@ -59,7 +59,7 @@ public class HelperPersistenceBuilder
     public static Root_meta_pure_persist_metamodel_Persistence buildPersistence(Persistence persistence, CompileContext context)
     {
         Enum inputShape = context.resolveEnumValue(PERSIST_PACKAGE_PREFIX + "::DataShape", persistence.inputShape.name());
-        Class<?> inputClass = context.resolveClass(persistence.inputClass.getPath());
+        Class<?> inputClass = context.resolveClass(persistence.inputClassPath);
 
         return persistence.accept(new PersistenceBuilder(inputShape, inputClass, context));
     }
