@@ -14,10 +14,14 @@
 
 package org.finos.legend.engine.shared.core.identity;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Identity
 {
@@ -33,6 +37,7 @@ public class Identity
     public Identity(String name)
     {
         this.name = name;
+        this.credentials.add(new AnonymousCredential());
     }
 
     public String getName()
@@ -57,9 +62,29 @@ public class Identity
         return Optional.of(credentialType.cast(raw));
     }
 
+    public Credential getFirstCredential()
+    {
+        if (this.credentials.isEmpty())
+        {
+            String message = String.format("Invalid method call. Calling code assumes single credential but none was found");
+            throw new RuntimeException(message);
+        }
+        if (this.credentials.size() > 1)
+        {
+            String credentialNames = this.credentials.stream().map(c -> c.getClass().getCanonicalName()).collect(Collectors.joining(","));
+            String message = String.format("Invalid method call. Cannot return 'first' credential when the identity has more than one credential. Credentials=%s", credentialNames);
+            throw new RuntimeException(message);
+        }
+        return this.credentials.get(0);
+    }
+
     public int countCredentials()
     {
         return this.credentials.size();
     }
 
+    public ImmutableList<Credential> getCredentials()
+    {
+        return Lists.immutable.withAll(this.credentials);
+    }
 }
