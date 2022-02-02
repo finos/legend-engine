@@ -19,10 +19,40 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     public String getParserGrammarIdentifierInclusionTestCode(List<String> keywords)
     {
         return "###Persistence\n" +
+                "\n" +
+                "import test::input::*;\n" +
+                "\n" +
                 "ServicePersistence " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
                 "  owners: ['test1', 'test2'];\n" +
+                "  trigger: ScheduleTriggered;\n" +
+                "  service: test::service::Service;\n" +
+                "  persistence: Batch\n" +
+                "  {\n" +
+                "    inputShape: GROUPED_FLAT;\n" +
+                "    inputClass: test::InputClass;\n" +
+                "    transactionMode: ALL_DATASETS;\n" +
+                "    target: Datastore\n" +
+                "    {\n" +
+                "      datastoreName: TestDatastore;\n" +
+                "      datasets:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          datasetName: TestDataset1;\n" +
+                "          partitionProperties: [test::InputClass->property1, test::InputClass->property2];\n" +
+                "          deduplicationStrategy: NoDedup;\n" +
+                "          batchMode: BitemporalDelta\n" +
+                "          {\n" +
+                "            mergeScheme: NoDeletes;\n" +
+                "            transactionMilestoning: BatchIdOnly;\n" +
+                "            validityMilestoning: DateTime;\n" +
+                "            validityDerivation: SourceProvidesFromAndThruDateTime;\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
                 "}\n";
     }
 }

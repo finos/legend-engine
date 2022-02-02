@@ -11,7 +11,7 @@ options
 
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
-                                            | IMPORT | NAME | NONE | OPAQUE | DATE_TIME
+                                            | IMPORT
                                             | SERVICE_PERSISTENCE | SERVICE_PERSISTENCE_DOCUMENTATION | SERVICE_PERSISTENCE_OWNERS | SERVICE_PERSISTENCE_TRIGGER | SERVICE_PERSISTENCE_SERVICE
                                             | EVENT_TYPE_SCHEDULE_TRIGGERED | EVENT_TYPE_REGISTRY_DATASET_AVAILABLE
                                             | PERSISTENCE | PERSISTENCE_STREAMING | PERSISTENCE_BATCH
@@ -72,7 +72,6 @@ persistence:                                PERSISTENCE COLON
                                                     streamingPersistence
                                                     | batchPersistence
                                                 )
-                                            SEMI_COLON
 ;
 streamingPersistence:                       PERSISTENCE_STREAMING
                                                 BRACE_OPEN
@@ -109,21 +108,21 @@ transactionMode:                            TRANSACTION_MODE COLON
                                                 )
                                             SEMI_COLON
 ;
-targetSpecification:                        TARGET COLON datastore SEMI_COLON
+targetSpecification:                        TARGET COLON datastore
 ;
 datastore:                                  DATASTORE
                                                 BRACE_OPEN
                                                     (
                                                         datastoreName
                                                         | datasets
-                                                    )
+                                                    )*
                                                 BRACE_CLOSE
 ;
 datastoreName:                              DATASTORE_NAME COLON identifier SEMI_COLON
 ;
 datasets:                                   DATASETS COLON
                                                 BRACKET_OPEN
-                                                    (dataset (COMMA dataset)*)
+                                                    (dataset (COMMA dataset)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
@@ -141,7 +140,7 @@ datasetName:                                DATASET_NAME COLON identifier SEMI_C
 ;
 partitionProperties:                        PARTITION_PROPERTIES COLON
                                                 BRACKET_OPEN
-                                                    (identifier (COMMA identifier)*)?
+                                                    (qualifiedName ARROW identifier (COMMA qualifiedName ARROW identifier)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
@@ -156,18 +155,15 @@ deduplicationStrategy:                      DEDUPLICATION_STRATEGY COLON
                                             SEMI_COLON
 ;
 batchMode:                                  BATCH_MODE COLON
-                                                BRACE_OPEN
-                                                    (
-                                                        snapshotNonMilestoned
-                                                        | snapshotUnitemporal
-                                                        | snapshotBitemporal
-                                                        | deltaNonMilestoned
-                                                        | deltaUnitemporal
-                                                        | deltaBitemporal
-                                                        | appendOnly
-                                                    )
-                                                BRACE_CLOSE
-                                            SEMI_COLON
+                                                (
+                                                    snapshotNonMilestoned
+                                                    | snapshotUnitemporal
+                                                    | snapshotBitemporal
+                                                    | deltaNonMilestoned
+                                                    | deltaUnitemporal
+                                                    | deltaBitemporal
+                                                    | appendOnly
+                                                )
 ;
 snapshotNonMilestoned:                      SNAPSHOT_NON_MILESTONED
                                                 BRACE_OPEN
