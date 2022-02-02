@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.audit.BatchDateTimeAuditScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.audit.NoAuditScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.audit.OpaqueAuditScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.deduplication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningMode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.appendonly.AppendOnly;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.BitemporalDelta;
@@ -32,6 +33,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.NonMilestonedSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.UnitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.transactionmilestoned.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoned.DateTimeValidityMilestoningScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoned.OpaqueValidityMilestoningScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoned.ValidityMilestoningScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoned.derivation.SourceSpecifiesValidFromAndThruDate;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoned.derivation.SourceSpecifiesValidFromDate;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoned.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.RegistryDatasetAvailable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.ScheduleTriggered;
@@ -219,13 +226,34 @@ public class PersistenceParseTreeWalker
 
         // deduplication strategy
         PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationStrategy(), "deduplicationStrategy", dataset.sourceInformation);
-        dataset.deduplicationStrategy = deduplicationStrategyContext != null ? PureGrammarParserUtility.fromIdentifier(deduplicationStrategyContext.identifier()) : null;
+        dataset.deduplicationStrategy = visitDeduplicationStrategy(deduplicationStrategyContext);
 
         // batch mode
         PersistenceParserGrammar.BatchModeContext batchModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchMode(), "batchMode", dataset.sourceInformation);
         dataset.milestoningMode = visitBatchMilestoningMode(batchModeContext);
 
         return dataset;
+    }
+
+    private DeduplicationStrategy visitDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyContext ctx)
+    {
+        if (ctx.DEDUPLICATION_STRATEGY_NONE() != null)
+        {
+            return new NoDeduplicationStrategy();
+        }
+        else if (ctx.DEDUPLICATION_STRATEGY_ANY() != null)
+        {
+            return new AnyDeduplicationStrategy();
+        }
+        else if (ctx.DEDUPLICATION_STRATEGY_COUNT() != null)
+        {
+            return new CountDeduplicationStrategy();
+        }
+        else if (ctx.DEDUPLICATION_STRATEGY_MAX_VERSION() != null)
+        {
+            return new MaxVersionDeduplicationStrategy();
+        }
+        throw new UnsupportedOperationException();
     }
 
     private BatchMilestoningMode visitBatchMilestoningMode(PersistenceParserGrammar.BatchModeContext ctx)
@@ -308,11 +336,11 @@ public class PersistenceParseTreeWalker
 
         // validity milestoning scheme -- could perhaps make the names more uniform, referred to as validityScheme, validityMilestoningScheme, and validityMilestoning in different files/uses
         PersistenceParserGrammar.ValiditySchemeContext validitySchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityScheme(), "validityMilestoning", deltaBitemporal.sourceInformation);
-        deltaBitemporal.validityMilestoningScheme = validitySchemeContext != null ? PureGrammarParserUtility.fromIdentifier(validitySchemeContext.identifier()) : null;
+        deltaBitemporal.validityMilestoningScheme = visitValidityMilestoningScheme(validitySchemeContext);
 
         // validity derivation
         PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", deltaBitemporal.sourceInformation);
-        deltaBitemporal.validityDerivation = validityDerivationContext != null ? PureGrammarParserUtility.fromIdentifier(validityDerivationContext.identifier()) : null;
+        deltaBitemporal.validityDerivation = visitValidityDerivation(validityDerivationContext);
 
         return deltaBitemporal;
     }
@@ -352,11 +380,11 @@ public class PersistenceParseTreeWalker
 
         // validity milestoning scheme -- could perhaps make the names more uniform, referred to as validityScheme, validityMilestoningScheme, and validityMilestoning in different files/uses
         PersistenceParserGrammar.ValiditySchemeContext validitySchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityScheme(), "validityMilestoning", snapshotBitemporal.sourceInformation);
-        snapshotBitemporal.validityMilestoningScheme = validitySchemeContext != null ? PureGrammarParserUtility.fromIdentifier(validitySchemeContext.identifier()) : null;
+        snapshotBitemporal.validityMilestoningScheme = visitValidityMilestoningScheme(validitySchemeContext);
 
         // validity derivation
         PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", snapshotBitemporal.sourceInformation);
-        snapshotBitemporal.validityDerivation = validityDerivationContext != null ? PureGrammarParserUtility.fromIdentifier(validityDerivationContext.identifier()) : null;
+        snapshotBitemporal.validityDerivation = visitValidityDerivation(validityDerivationContext);
 
         return snapshotBitemporal;
     }
@@ -372,7 +400,6 @@ public class PersistenceParseTreeWalker
 
         return snapshotNonMilestoned;
     }
-
 
     private StreamingPersistence visitStreamingPersistence(PersistenceParserGrammar.StreamingPersistenceContext ctx)
     {
@@ -409,23 +436,51 @@ public class PersistenceParseTreeWalker
     }
 
     //TODO: ledav -- populate properties
-    private TransactionMilestoningScheme visitTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeContext ctz)
+    private TransactionMilestoningScheme visitTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeContext ctx)
     {
-        if (ctz.TRANSACTION_SCHEME_BATCH_ID() != null)
+        if (ctx.TRANSACTION_SCHEME_BATCH_ID() != null)
         {
             return new BatchIdTransactionMilestoningScheme();
         }
-        else if (ctz.TRANSACTION_SCHEME_DATE_TIME() != null)
+        else if (ctx.TRANSACTION_SCHEME_DATE_TIME() != null)
         {
             return new DateTimeTransactionMilestoningScheme();
         }
-        else if (ctz.TRANSACTION_SCHEME_BOTH() != null)
+        else if (ctx.TRANSACTION_SCHEME_BOTH() != null)
         {
             return new BatchIdAndDateTimeTransactionMilestoningScheme();
         }
-        else if (ctz.TRANSACTION_SCHEME_OPAQUE() != null)
+        else if (ctx.TRANSACTION_SCHEME_OPAQUE() != null)
         {
             return new OpaqueTransactionMilestoningScheme();
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    //TODO: ledav -- populate properties
+    private ValidityMilestoningScheme visitValidityMilestoningScheme(PersistenceParserGrammar.ValiditySchemeContext ctx)
+    {
+        if (ctx.VALIDITY_SCHEME_DATE_TIME() != null)
+        {
+            return new DateTimeValidityMilestoningScheme();
+        }
+        else if (ctx.VALIDITY_SCHEME_OPAQUE() != null)
+        {
+            return new OpaqueValidityMilestoningScheme();
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    //TODO: ledav -- populate properties
+    private ValidityDerivation visitValidityDerivation(PersistenceParserGrammar.ValidityDerivationContext ctx)
+    {
+        if (ctx.VALIDITY_DERIVATION_SOURCE_FROM() != null)
+        {
+            return new SourceSpecifiesValidFromDate();
+        }
+        else if (ctx.VALIDITY_DERIVATION_SOURCE_FROM_THRU() != null)
+        {
+            return new SourceSpecifiesValidFromAndThruDate();
         }
         throw new UnsupportedOperationException();
     }
