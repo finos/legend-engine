@@ -13,7 +13,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistencePars
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
 import java.util.function.Consumer;
@@ -28,13 +28,13 @@ public class PersistenceParserExtension implements PureGrammarParserExtension
         return Lists.immutable.with(SectionParser.newParser(NAME, PersistenceParserExtension::parseSection));
     }
 
-    private static Section parseSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext pureGrammarParserContext)
+    private static Section parseSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
     {
         SourceCodeParserInfo parserInfo = getPersistenceParserInfo(sectionSourceCode);
-        DefaultCodeSection section = new DefaultCodeSection();
+        ImportAwareCodeSection section = new ImportAwareCodeSection();
         section.parserName = sectionSourceCode.sectionType;
         section.sourceInformation = parserInfo.sourceInformation;
-        PersistenceParseTreeWalker walker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        PersistenceParseTreeWalker walker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, context);
         walker.visit((PersistenceParserGrammar.DefinitionContext) parserInfo.rootContext);
         return section;
     }
