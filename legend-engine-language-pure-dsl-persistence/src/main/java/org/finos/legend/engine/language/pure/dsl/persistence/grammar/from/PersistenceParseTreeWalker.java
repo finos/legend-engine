@@ -1,5 +1,6 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
@@ -8,20 +9,29 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistencePars
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.DataShape;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.ServicePersistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchDatasetSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchDatastoreSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.TargetSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchTransactionMode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.audit.AuditScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.audit.BatchDateTimeAuditScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.audit.NoAuditScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.audit.OpaqueAuditScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningMode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.appendonly.AppendOnly;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.BitemporalDelta;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.NonMilestonedDelta;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.UnitemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.DeleteIndicatorMergeScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.MergeScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.NoDeletesMergeScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.NonMilestonedSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.transactionmilestoned.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.RegistryDatasetAvailable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.ScheduleTriggered;
@@ -116,7 +126,7 @@ public class PersistenceParseTreeWalker
 
         // input shape
         PersistenceParserGrammar.InputShapeContext inputShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputShape(), "inputShape", batch.sourceInformation);
-        batch.inputShape = inputShapeContext != null ? PureGrammarParserUtility.fromIdentifier(inputShapeContext.identifier()) : null;
+        batch.inputShape = visitInputShape(inputShapeContext);
 
         // input class
         PersistenceParserGrammar.InputClassContext inputClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputClass(), "inputClass", batch.sourceInformation);
@@ -124,7 +134,7 @@ public class PersistenceParseTreeWalker
 
         // transaction mode
         PersistenceParserGrammar.TransactionModeContext transactionModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMode(), "transactionMode", batch.sourceInformation);
-        batch.transactionMode = transactionModeContext != null ? PureGrammarParserUtility.fromIdentifier(transactionModeContext.identifier()) : null;
+        batch.transactionMode = visitTransactionMode(transactionModeContext);
 
         // target specification -- check if names match with corresponding java classes
         PersistenceParserGrammar.TargetSpecificationContext targetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetSpecification(), "target", batch.sourceInformation);
@@ -133,7 +143,38 @@ public class PersistenceParseTreeWalker
         return batch;
     }
 
-    private TargetSpecification visitTargetSpecification(PersistenceParserGrammar.TargetSpecificationContext ctx)
+    private DataShape visitInputShape(PersistenceParserGrammar.InputShapeContext ctx)
+    {
+        if (ctx.INPUT_SHAPE_FLAT() != null)
+        {
+            return DataShape.FLAT;
+        }
+        else if (ctx.INPUT_SHAPE_GROUPED_FLAT() != null)
+        {
+            return DataShape.GROUPED_FLAT;
+        }
+        else if (ctx.INPUT_SHAPE_NESTED() != null)
+        {
+            return DataShape.NESTED;
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private BatchTransactionMode visitTransactionMode(PersistenceParserGrammar.TransactionModeContext ctx)
+    {
+        if (ctx.TRANSACTION_MODE_SINGLE_DATASET() != null)
+        {
+            return BatchTransactionMode.SINGLE_DATASET;
+        }
+        if (ctx.TRANSACTION_MODE_ALL_DATASETS() != null)
+        {
+            return BatchTransactionMode.ALL_DATASETS;
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    //TODO: ledav -- generalize to TargetSpecification
+    private BatchDatastoreSpecification visitTargetSpecification(PersistenceParserGrammar.TargetSpecificationContext ctx)
     {
         if (ctx.datastore() != null)
         {
@@ -226,8 +267,8 @@ public class PersistenceParseTreeWalker
         appendOnly.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // audit scheme
-        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditScheme(), "auditScheme", appendOnly.sourceInformation);
-        appendOnly.auditScheme = auditSchemeContext != null ? PureGrammarParserUtility.fromIdentifier(auditSchemeContext.identifier()) : null;
+        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditScheme()), "auditScheme", appendOnly.sourceInformation);
+        appendOnly.auditScheme = visitAuditScheme(auditSchemeContext);
 
         // filter duplicates
         PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.filterDuplicates(), "filterDuplicates", appendOnly.sourceInformation);
@@ -243,11 +284,11 @@ public class PersistenceParseTreeWalker
 
         // merge scheme
         PersistenceParserGrammar.MergeSchemeContext mergeSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeScheme(), "mergeScheme", deltaUnitemporal.sourceInformation);
-        deltaUnitemporal.mergeScheme = mergeSchemeContext != null ? PureGrammarParserUtility.fromIdentifier(mergeSchemeContext.identifier()) : null;
+        deltaUnitemporal.mergeScheme = visitMergeScheme(mergeSchemeContext);
 
         // transaction milestoning scheme
-        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMilestoningScheme(), "transactionScheme", deltaUnitemporal.sourceInformation);
-        deltaUnitemporal.transactionMilestoningScheme = transactionSchemeContext != null ? PureGrammarParserUtility.fromIdentifier(transactionSchemeContext.identifier()) : null;
+        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionScheme(), "transactionScheme", deltaUnitemporal.sourceInformation);
+        deltaUnitemporal.transactionMilestoningScheme = visitTransactionMilestoningScheme(transactionSchemeContext);
 
         return deltaUnitemporal;
     }
@@ -259,14 +300,14 @@ public class PersistenceParseTreeWalker
 
         // merge scheme -- is this an abstract class, or contains enums? need to modify grammar file if former
         PersistenceParserGrammar.MergeSchemeContext mergeSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeScheme(), "mergeScheme", deltaBitemporal.sourceInformation);
-        deltaBitemporal.mergeScheme = mergeSchemeContext != null ? PureGrammarParserUtility.fromIdentifier(mergeSchemeContext.identifier()) : null;
+        deltaBitemporal.mergeScheme = visitMergeScheme(mergeSchemeContext);
 
         // transaction milestoning scheme
-        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMilestoningScheme(), "transactionScheme", deltaBitemporal.sourceInformation);
-        deltaBitemporal.transactionMilestoningScheme = transactionSchemeContext != null ? PureGrammarParserUtility.fromIdentifier(transactionSchemeContext.identifier()) : null;
+        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionScheme(), "transactionScheme", deltaBitemporal.sourceInformation);
+        deltaBitemporal.transactionMilestoningScheme = visitTransactionMilestoningScheme(transactionSchemeContext);
 
         // validity milestoning scheme -- could perhaps make the names more uniform, referred to as validityScheme, validityMilestoningScheme, and validityMilestoning in different files/uses
-        PersistenceParserGrammar.ValiditySchemeContext validitySchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityMilestoningScheme(), "validityMilestoning", deltaBitemporal.sourceInformation);
+        PersistenceParserGrammar.ValiditySchemeContext validitySchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityScheme(), "validityMilestoning", deltaBitemporal.sourceInformation);
         deltaBitemporal.validityMilestoningScheme = validitySchemeContext != null ? PureGrammarParserUtility.fromIdentifier(validitySchemeContext.identifier()) : null;
 
         // validity derivation
@@ -282,8 +323,8 @@ public class PersistenceParseTreeWalker
         deltaNonMilestoned.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // audit scheme
-        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditScheme(), "auditScheme", deltaNonMilestoned.sourceInformation);
-        deltaNonMilestoned.auditScheme = auditSchemeContext != null ? PureGrammarParserUtility.fromIdentifier(auditSchemeContext.identifier()) : null;
+        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditScheme()), "auditScheme", deltaNonMilestoned.sourceInformation);
+        deltaNonMilestoned.auditScheme = visitAuditScheme(auditSchemeContext);
 
         return deltaNonMilestoned;
     }
@@ -294,8 +335,8 @@ public class PersistenceParseTreeWalker
         snapshotUnitemporal.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // transaction milestoning scheme
-        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionScheme(), "transactionScheme", snapshotUnitemporal.sourceInformation);
-        snapshotUnitemporal.transactionMilestoningScheme = transactionSchemeContext != null ? PureGrammarParserUtility.fromIdentifier(transactionSchemeContext.identifier()) : null;
+        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.transactionScheme()), "transactionScheme", snapshotUnitemporal.sourceInformation);
+        snapshotUnitemporal.transactionMilestoningScheme = visitTransactionMilestoningScheme(transactionSchemeContext);
 
         return snapshotUnitemporal;
     }
@@ -307,7 +348,7 @@ public class PersistenceParseTreeWalker
 
         // transaction milestoning scheme
         PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionScheme(), "transactionScheme", snapshotBitemporal.sourceInformation);
-        snapshotBitemporal.transactionMilestoningScheme = transactionSchemeContext != null ? PureGrammarParserUtility.fromIdentifier(transactionSchemeContext.identifier()) : null;
+        snapshotBitemporal.transactionMilestoningScheme = visitTransactionMilestoningScheme(transactionSchemeContext);
 
         // validity milestoning scheme -- could perhaps make the names more uniform, referred to as validityScheme, validityMilestoningScheme, and validityMilestoning in different files/uses
         PersistenceParserGrammar.ValiditySchemeContext validitySchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityScheme(), "validityMilestoning", snapshotBitemporal.sourceInformation);
@@ -326,8 +367,8 @@ public class PersistenceParseTreeWalker
         snapshotNonMilestoned.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // audit scheme
-        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditScheme(), "auditScheme", snapshotNonMilestoned.sourceInformation);
-        snapshotNonMilestoned.auditScheme = auditSchemeContext != null ? PureGrammarParserUtility.fromIdentifier(auditSchemeContext.identifier()) : null;
+        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditScheme()), "auditScheme", snapshotNonMilestoned.sourceInformation);
+        snapshotNonMilestoned.auditScheme = visitAuditScheme(auditSchemeContext);
 
         return snapshotNonMilestoned;
     }
@@ -340,12 +381,66 @@ public class PersistenceParseTreeWalker
 
         // input shape
         PersistenceParserGrammar.InputShapeContext inputShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputShape(), "inputShape", streaming.sourceInformation);
-        streaming.inputShape = inputShapeContext != null ? PureGrammarParserUtility.fromIdentifier(inputShapeContext.identifier()) : null;
+        streaming.inputShape = visitInputShape(inputShapeContext);
 
         // input class
         PersistenceParserGrammar.InputClassContext inputClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputClass(), "inputClass", streaming.sourceInformation);
         streaming.inputClass = PureGrammarParserUtility.fromQualifiedName(inputClassContext.qualifiedName().packagePath() == null ? Collections.emptyList() : inputClassContext.qualifiedName().packagePath().identifier(), inputClassContext.qualifiedName().identifier());
 
         return streaming;
+    }
+
+    private AuditScheme visitAuditScheme(PersistenceParserGrammar.AuditSchemeContext ctx)
+    {
+        if (ctx.AUDIT_SCHEME_NONE() != null)
+        {
+            return new NoAuditScheme();
+        }
+        if (ctx.AUDIT_SCHEME_BATCH_DATE_TIME() != null)
+        {
+            //TODO: ledav -- populate properties
+            return new BatchDateTimeAuditScheme();
+        }
+        if (ctx.AUDIT_SCHEME_OPAQUE() != null)
+        {
+            return new OpaqueAuditScheme();
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    //TODO: ledav -- populate properties
+    private TransactionMilestoningScheme visitTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeContext ctz)
+    {
+        if (ctz.TRANSACTION_SCHEME_BATCH_ID() != null)
+        {
+            return new BatchIdTransactionMilestoningScheme();
+        }
+        else if (ctz.TRANSACTION_SCHEME_DATE_TIME() != null)
+        {
+            return new DateTimeTransactionMilestoningScheme();
+        }
+        else if (ctz.TRANSACTION_SCHEME_BOTH() != null)
+        {
+            return new BatchIdAndDateTimeTransactionMilestoningScheme();
+        }
+        else if (ctz.TRANSACTION_SCHEME_OPAQUE() != null)
+        {
+            return new OpaqueTransactionMilestoningScheme();
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private MergeScheme visitMergeScheme(PersistenceParserGrammar.MergeSchemeContext ctx)
+    {
+        if (ctx.MERGE_SCHEME_NO_DELETES() != null)
+        {
+            return new NoDeletesMergeScheme();
+        }
+        if (ctx.MERGE_SCHEME_DELETE_INDICATOR() != null)
+        {
+            //TODO: ledav -- populate delete property and values
+            return new DeleteIndicatorMergeScheme();
+        }
+        throw new UnsupportedOperationException();
     }
 }
