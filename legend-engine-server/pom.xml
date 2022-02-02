@@ -386,7 +386,6 @@
             <groupId>org.finos.legend.shared</groupId>
             <artifactId>legend-shared-pac4j-gitlab</artifactId>
             <scope>runtime</scope>
-            <!--TODO-ivan : check if exclusion of jakarta activation is necessary here-->
         </dependency>
         <!-- Authentication -->
 

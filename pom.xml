@@ -1233,7 +1233,6 @@
                 <groupId>org.finos.legend.shared</groupId>
                 <artifactId>legend-shared-server</artifactId>
                 <version>${legend.shared.version}</version>
-                <!-- TODO-ivan check if jaxb-api exclusion is needed here-->
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.shared</groupId>
