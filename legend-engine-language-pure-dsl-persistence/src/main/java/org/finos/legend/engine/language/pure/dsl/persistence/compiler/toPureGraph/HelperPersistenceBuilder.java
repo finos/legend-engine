@@ -102,9 +102,9 @@ public class HelperPersistenceBuilder
 
     // helper methods
 
-    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> resolveInputClassProperty(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property property, Class<?> inputClass, CompileContext context)
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> resolveInputClassProperty(String propertyName, Class<?> inputClass, CompileContext context)
     {
-        return inputClass._properties().detect(p -> p._name().equals(property.name));
+        return inputClass._properties().detect(p -> p._name().equals(propertyName));
     }
 
     // helper visitors for class hierarchies

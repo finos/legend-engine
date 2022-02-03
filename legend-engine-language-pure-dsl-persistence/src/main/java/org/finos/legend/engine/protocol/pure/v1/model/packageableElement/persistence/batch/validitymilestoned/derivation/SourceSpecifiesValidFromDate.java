@@ -1,10 +1,8 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoned.derivation;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
-
 public class SourceSpecifiesValidFromDate extends ValidityDerivation
 {
-    public Property sourceValidDateTimeFromProperty;
+    public String sourceValidDateTimeFromProperty;
 
     public <T> T accept(ValidityDerivationVisitor<T> visitor)
     {

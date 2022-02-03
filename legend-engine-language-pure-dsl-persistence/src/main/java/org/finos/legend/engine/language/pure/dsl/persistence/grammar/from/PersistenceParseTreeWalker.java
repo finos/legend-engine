@@ -46,6 +46,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class PersistenceParseTreeWalker
@@ -222,7 +223,7 @@ public class PersistenceParseTreeWalker
 
         // partition properties -- currently parsing as a list of strings, to change to Property
         PersistenceParserGrammar.PartitionPropertiesContext partitionPropertiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitionProperties(), "partitionProperties", dataset.sourceInformation);
-//        dataset.partitionProperties = partitionPropertiesContext != null && partitionPropertiesContext.STRING() != null ? ListIterate.collect(partitionPropertiesContext.STRING(), partitionPropertyCtx -> PureGrammarParserUtility.fromGrammarString(partitionPropertyCtx.getText(), true)) : Collections.emptyList();
+        dataset.partitionProperties = visitPartitionProperties(partitionPropertiesContext);
 
         // deduplication strategy
         PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationStrategy(), "deduplicationStrategy", dataset.sourceInformation);
@@ -233,6 +234,12 @@ public class PersistenceParseTreeWalker
         dataset.milestoningMode = visitBatchMilestoningMode(batchModeContext);
 
         return dataset;
+    }
+
+    private List<String> visitPartitionProperties(PersistenceParserGrammar.PartitionPropertiesContext ctx)
+    {
+        List<PersistenceParserGrammar.QualifiedNameContext> qualifiedNameContexts = ctx.qualifiedName();
+        return Lists.immutable.ofAll(qualifiedNameContexts).collect(context -> PureGrammarParserUtility.fromQualifiedName(context.packagePath() == null ? Collections.emptyList() : context.packagePath().identifier(), context.identifier())).castToList();
     }
 
     private DeduplicationStrategy visitDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyContext ctx)

@@ -1,10 +1,8 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.deduplication;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
-
 public class MaxVersionDeduplicationStrategy extends DeduplicationStrategy
 {
-    public Property versionProperty;
+    public String versionProperty;
 
     public <T> T accept(DeduplicationStrategyVisitor<T> visitor)
     {
