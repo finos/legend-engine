@@ -53,22 +53,22 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 //                "            }\n" +
 //                "            filterDuplicates: false;\n" +
 //                "          }\n" +
-//                "          batchMode: UnitemporalDelta\n" +
-//                "          {\n" +
-//                "            mergeScheme: NoDeletes;\n" +
-//                "            transactionMilestoning: BatchIdOnly;\n" +
-//                "          }\n" +
-                "          batchMode: BitemporalDelta\n" +
+                "          batchMode: UnitemporalDelta\n" +
                 "          {\n" +
-                "            mergeScheme: DeleteIndicator\n" +
-                "            {\n" +
-                "              deleteProperty: 'deleted';\n" +
-                "              deleteValues: ['Y', '1', 'true'];\n" +
-                "            }\n" +
+                "            mergeScheme: NoDeletes;\n" +
                 "            transactionMilestoning: BatchIdOnly;\n" +
-                "            validityMilestoning: DateTime;\n" +
-                "            validityDerivation: SourceProvidesFromAndThruDateTime;\n" +
                 "          }\n" +
+//                "          batchMode: BitemporalDelta\n" +
+//                "          {\n" +
+//                "            mergeScheme: DeleteIndicator\n" +
+//                "            {\n" +
+//                "              deleteProperty: 'deleted';\n" +
+//                "              deleteValues: ['Y', '1', 'true'];\n" +
+//                "            }\n" +
+//                "            transactionMilestoning: BatchIdOnly;\n" +
+//                "            validityMilestoning: DateTime;\n" +
+//                "            validityDerivation: SourceProvidesFromAndThruDateTime;\n" +
+//                "          }\n" +
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +

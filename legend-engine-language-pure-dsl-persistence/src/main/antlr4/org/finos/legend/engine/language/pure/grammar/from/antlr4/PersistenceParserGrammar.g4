@@ -23,7 +23,9 @@ identifier:                                 VALID_STRING | STRING
                                             | BATCH_MODE | SNAPSHOT_NON_MILESTONED | SNAPSHOT_UNITEMPORAL | SNAPSHOT_BITEMPORAL | DELTA_NON_MILESTONED | DELTA_UNITEMPORAL | DELTA_BITEMPORAL | APPEND_ONLY
                                             | FILTER_DUPLICATES | AUDIT_SCHEME | AUDIT_SCHEME_NONE | AUDIT_SCHEME_BATCH_DATE_TIME | AUDIT_SCHEME_BATCH_DATE_TIME_PROPERTY | AUDIT_SCHEME_OPAQUE
                                             | TRANSACTION_SCHEME | TRANSACTION_SCHEME_BATCH_ID | TRANSACTION_SCHEME_DATE_TIME | TRANSACTION_SCHEME_BOTH | TRANSACTION_SCHEME_OPAQUE
+                                            | BATCH_ID_IN_PROPERTY | BATCH_ID_OUT_PROPERTY | TRANSACTION_DATE_TIME_IN_PROPERTY | TRANSACTION_DATE_TIME_OUT_PROPERTY
                                             | VALIDITY_SCHEME | VALIDITY_SCHEME_DATE_TIME | VALIDITY_SCHEME_OPAQUE
+                                            | VALIDITY_DATE_TIME_FROM_PROPERTY | VALIDITY_DATE_TIME_THRU_PROPERTY
                                             | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU
                                             | MERGE_SCHEME | MERGE_SCHEME_NO_DELETES | MERGE_SCHEME_DELETE_INDICATOR | MERGE_SCHEME_DELETE_INDICATOR_PROPERTY | MERGE_SCHEME_DELETE_INDICATOR_VALUES
 ;
@@ -255,19 +257,68 @@ filterDuplicates:                           FILTER_DUPLICATES COLON (TRUE | FALS
 ;
 transactionScheme:                          TRANSACTION_SCHEME COLON
                                                 (
-                                                    TRANSACTION_SCHEME_BATCH_ID
-                                                    | TRANSACTION_SCHEME_DATE_TIME
-                                                    | TRANSACTION_SCHEME_BOTH
-                                                    | TRANSACTION_SCHEME_OPAQUE
+                                                    transactionSchemeBatchId
+                                                    | transactionSchemeDateTime
+                                                    | transactionSchemeBoth
+                                                    | transactionSchemeOpaque
                                                 )
-                                            SEMI_COLON
+;
+transactionSchemeBatchId:                   TRANSACTION_SCHEME_BATCH_ID
+                                                BRACE_OPEN
+                                                    (
+                                                        batchIdInProperty
+                                                        | batchIdOutProperty
+                                                    )*
+                                                BRACE_CLOSE
+;
+batchIdInProperty:                          BATCH_ID_IN_PROPERTY COLON identifier SEMI_COLON
+;
+batchIdOutProperty:                         BATCH_ID_OUT_PROPERTY COLON identifier SEMI_COLON
+;
+transactionSchemeDateTime:                  TRANSACTION_SCHEME_DATE_TIME
+                                                BRACE_OPEN
+                                                    (
+                                                        transactionDateTimeInProperty
+                                                        | transactionDateTimeOutProperty
+                                                    )*
+                                                BRACE_CLOSE
+;
+transactionDateTimeInProperty:              TRANSACTION_DATE_TIME_IN_PROPERTY COLON identifier SEMI_COLON
+;
+transactionDateTimeOutProperty:             TRANSACTION_DATE_TIME_OUT_PROPERTY COLON identifier SEMI_COLON
+;
+transactionSchemeBoth:                      TRANSACTION_SCHEME_BOTH
+                                                BRACE_OPEN
+                                                    (
+                                                        batchIdInProperty
+                                                        | batchIdOutProperty
+                                                        | transactionDateTimeInProperty
+                                                        | transactionDateTimeOutProperty
+                                                    )*
+                                                BRACE_CLOSE
+;
+transactionSchemeOpaque:                    TRANSACTION_SCHEME_OPAQUE SEMI_COLON
 ;
 validityScheme:                             VALIDITY_SCHEME COLON
                                                 (
-                                                    VALIDITY_SCHEME_DATE_TIME
-                                                    | VALIDITY_SCHEME_OPAQUE
+                                                    validitySchemeDateTime
+                                                    | validitySchemeOpaque
                                                 )
                                             SEMI_COLON
+;
+validitySchemeDateTime:                     VALIDITY_SCHEME_DATE_TIME
+                                                BRACE_OPEN
+                                                    (
+                                                        validityDateTimeFromProperty
+                                                        | validityDateTimeThruProperty
+                                                    )*
+                                                BRACE_CLOSE
+;
+validityDateTimeFromProperty:               VALIDITY_DATE_TIME_FROM_PROPERTY COLON identifier SEMI_COLON
+;
+validityDateTimeThruProperty:               VALIDITY_DATE_TIME_THRU_PROPERTY COLON identifier SEMI_COLON
+;
+validitySchemeOpaque:                       VALIDITY_SCHEME_OPAQUE SEMI_COLON
 ;
 validityDerivation:                         VALIDITY_DERIVATION COLON
                                                 (

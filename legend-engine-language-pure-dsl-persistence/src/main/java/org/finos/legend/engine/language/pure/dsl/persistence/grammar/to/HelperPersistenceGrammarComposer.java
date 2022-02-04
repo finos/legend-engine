@@ -1,28 +1,19 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
-import org.eclipse.collections.api.block.function.Function3;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.ServicePersistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.StreamingPersistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.BatchPersistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.BatchDatastoreSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.BatchDatasetSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.BitemporalDelta;
-
-
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchDatasetSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchDatastoreSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.BitemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersistence;
 
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-
 
 public class HelperPersistenceGrammarComposer
 {
@@ -40,11 +31,11 @@ public class HelperPersistenceGrammarComposer
     {
         if (persistence instanceof BatchPersistence)
         {
-            return renderBatchPersistence((BatchPersistence) persistence, context)
+            return renderBatchPersistence((BatchPersistence) persistence, context);
         }
         else if (persistence instanceof StreamingPersistence)
         {
-            return renderStreamingPersistence((StreamingPersistence) persistence, context)
+            return renderStreamingPersistence((StreamingPersistence) persistence, context);
         }
         throw new UnsupportedOperationException();
     }
@@ -56,7 +47,7 @@ public class HelperPersistenceGrammarComposer
         builder.append(getTabString()).append("persistence: Streaming\n");
         builder.append(getTabString()).append("{\n");
         builder.append(getTabString(baseIndentation)).append("inputShape: ").append(streaming.inputShape).append(";\n");
-        builder.append(getTabString(baseIndentation)).append("inputClass: ").append(streaming.inputClass).append(";\n");
+        builder.append(getTabString(baseIndentation)).append("inputClass: ").append(streaming.inputClassPath).append(";\n");
         builder.append(getTabString()).append("}");
 
         return builder.toString();
@@ -69,12 +60,12 @@ public class HelperPersistenceGrammarComposer
         builder.append(getTabString()).append("persistence: Batch\n");
         builder.append(getTabString()).append("{\n");
         builder.append(getTabString(baseIndentation)).append("inputShape: ").append(batch.inputShape).append(";\n");
-        builder.append(getTabString(baseIndentation)).append("inputClass: ").append(batch.inputClass).append(";\n");
+        builder.append(getTabString(baseIndentation)).append("inputClass: ").append(batch.inputClassPath).append(";\n");
         builder.append(getTabString(baseIndentation)).append("transactionMode: ").append(batch.transactionMode).append(";\n");
 
         if (batch.targetSpecification instanceof BatchDatastoreSpecification)
         {
-            builder.append(getTabString(baseIndentation)).append(renderDatastore((BatchDatastoreSpecification) persistence.targetSpecification, context));
+            builder.append(getTabString(baseIndentation)).append(renderDatastore((BatchDatastoreSpecification) batch.targetSpecification, context));
         }
 
         builder.append(getTabString()).append("}");
@@ -111,7 +102,7 @@ public class HelperPersistenceGrammarComposer
         builder.append(getTabString(baseIndentation)).append("partitionProperties: ").append("[");
         if (!dataset.partitionProperties.isEmpty())
         {
-            builder.append(LazyIterate.collect(partitionProperties, p -> convertString(p, true)).makeString(", "));
+            builder.append(LazyIterate.collect(dataset.partitionProperties, p -> convertString(p, true)).makeString(", "));
         }
         builder.append("];\n");
         builder.append(getTabString(baseIndentation)).append("deduplicationStrategy: ").append(dataset.deduplicationStrategy).append(";\n");
@@ -136,8 +127,6 @@ public class HelperPersistenceGrammarComposer
         builder.append(getTabString(baseIndentation)+1).append("validityMilestoning: ").append(milestoningMode.validityMilestoningScheme).append(";\n");
         builder.append(getTabString(baseIndentation)+1).append("validityDerivation: ").append(milestoningMode.validityDerivation).append(";\n");
         builder.append(getTabString(baseIndentation)).append("}\n");
-
         return builder.toString();
     }
-
 }

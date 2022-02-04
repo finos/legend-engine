@@ -75,10 +75,16 @@ TRANSACTION_SCHEME_BATCH_ID:            'BatchIdOnly';
 TRANSACTION_SCHEME_DATE_TIME:           'DateTimeOnly';
 TRANSACTION_SCHEME_BOTH:                'BatchIdAndDateTime';
 TRANSACTION_SCHEME_OPAQUE:              'OpaqueTransactionMilestoning';
+BATCH_ID_IN_PROPERTY:                   'batchIdInProperty';
+BATCH_ID_OUT_PROPERTY:                  'batchIdOutProperty';
+TRANSACTION_DATE_TIME_IN_PROPERTY:      'transactionDateTimeInProperty';
+TRANSACTION_DATE_TIME_OUT_PROPERTY:     'transactionDateTimeOutProperty';
 
 VALIDITY_SCHEME:                        'validityMilestoning';
 VALIDITY_SCHEME_DATE_TIME:              'DateTime';
 VALIDITY_SCHEME_OPAQUE:                 'OpaqueValidityMilestoning';
+VALIDITY_DATE_TIME_FROM_PROPERTY:       'validityDateTimeFromProperty';
+VALIDITY_DATE_TIME_THRU_PROPERTY:       'validityDateTimeThruProperty';
 
 VALIDITY_DERIVATION:                    'validityDerivation';
 VALIDITY_DERIVATION_SOURCE_FROM:        'SourceProvidesFromDateTime';

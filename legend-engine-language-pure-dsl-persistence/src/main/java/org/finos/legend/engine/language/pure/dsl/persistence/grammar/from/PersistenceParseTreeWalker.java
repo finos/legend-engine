@@ -478,40 +478,111 @@ public class PersistenceParseTreeWalker
         return auditScheme;
     }
 
-    //TODO: ledav -- populate properties
     private TransactionMilestoningScheme visitTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeContext ctx)
     {
-        if (ctx.TRANSACTION_SCHEME_BATCH_ID() != null)
+        if (ctx.transactionSchemeBatchId() != null)
         {
-            return new BatchIdTransactionMilestoningScheme();
+            return visitBatchIdTransactionMilestoningScheme(ctx.transactionSchemeBatchId());
         }
-        else if (ctx.TRANSACTION_SCHEME_DATE_TIME() != null)
+        else if (ctx.transactionSchemeDateTime() != null)
         {
-            return new DateTimeTransactionMilestoningScheme();
+            return visitDateTimeTransactionMilestoningScheme(ctx.transactionSchemeDateTime());
         }
-        else if (ctx.TRANSACTION_SCHEME_BOTH() != null)
+        else if (ctx.transactionSchemeBoth() != null)
         {
-            return new BatchIdAndDateTimeTransactionMilestoningScheme();
+            return visitBatchIdAndDateTimeTransactionMilestoningScheme(ctx.transactionSchemeBoth());
         }
-        else if (ctx.TRANSACTION_SCHEME_OPAQUE() != null)
+        else if (ctx.transactionSchemeOpaque() != null)
         {
             return new OpaqueTransactionMilestoningScheme();
         }
         throw new UnsupportedOperationException();
     }
 
+    private BatchIdTransactionMilestoningScheme visitBatchIdTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeBatchIdContext ctx)
+    {
+        BatchIdTransactionMilestoningScheme milestoningScheme = new BatchIdTransactionMilestoningScheme();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // batchId in property
+        PersistenceParserGrammar.BatchIdInPropertyContext batchIdInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchIdInProperty(), "batchIdInProperty", sourceInformation);
+        milestoningScheme.batchIdInName = PureGrammarParserUtility.fromIdentifier(batchIdInPropertyContext.identifier());
+
+        // batchId out property
+        PersistenceParserGrammar.BatchIdOutPropertyContext batchIdOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchIdOutProperty(), "batchIdOutProperty", sourceInformation);
+        milestoningScheme.batchIdOutName = PureGrammarParserUtility.fromIdentifier(batchIdOutPropertyContext.identifier());
+
+        return milestoningScheme;
+    }
+
+    private DateTimeTransactionMilestoningScheme visitDateTimeTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeDateTimeContext ctx)
+    {
+        DateTimeTransactionMilestoningScheme milestoningScheme = new DateTimeTransactionMilestoningScheme();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // datetime in property
+        PersistenceParserGrammar.TransactionDateTimeInPropertyContext transactionDateTimeInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDateTimeInProperty(), "transactionDateTimeInName", sourceInformation);
+        milestoningScheme.transactionDateTimeInName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeInPropertyContext.identifier());
+
+        // datetime out property
+        PersistenceParserGrammar.TransactionDateTimeOutPropertyContext transactionDateTimeOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDateTimeOutProperty(), "transactionDateTimeOutName", sourceInformation);
+        milestoningScheme.transactionDateTimeOutName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeOutPropertyContext.identifier());
+
+        return milestoningScheme;
+    }
+
+    private BatchIdAndDateTimeTransactionMilestoningScheme visitBatchIdAndDateTimeTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeBothContext ctx)
+    {
+        BatchIdAndDateTimeTransactionMilestoningScheme milestoningScheme = new BatchIdAndDateTimeTransactionMilestoningScheme();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // batchId in property
+        PersistenceParserGrammar.BatchIdInPropertyContext batchIdInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchIdInProperty(), "batchIdInProperty", sourceInformation);
+        milestoningScheme.batchIdInName = PureGrammarParserUtility.fromIdentifier(batchIdInPropertyContext.identifier());
+
+        // batchId out property
+        PersistenceParserGrammar.BatchIdOutPropertyContext batchIdOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchIdOutProperty(), "batchIdOutProperty", sourceInformation);
+        milestoningScheme.batchIdOutName = PureGrammarParserUtility.fromIdentifier(batchIdOutPropertyContext.identifier());
+
+        // datetime in property
+        PersistenceParserGrammar.TransactionDateTimeInPropertyContext transactionDateTimeInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDateTimeInProperty(), "transactionDateTimeInName", sourceInformation);
+        milestoningScheme.transactionDateTimeInName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeInPropertyContext.identifier());
+
+        // datetime out property
+        PersistenceParserGrammar.TransactionDateTimeOutPropertyContext transactionDateTimeOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDateTimeOutProperty(), "transactionDateTimeOutName", sourceInformation);
+        milestoningScheme.transactionDateTimeOutName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeOutPropertyContext.identifier());
+
+        return milestoningScheme;
+    }
+
     //TODO: ledav -- populate properties
     private ValidityMilestoningScheme visitValidityMilestoningScheme(PersistenceParserGrammar.ValiditySchemeContext ctx)
     {
-        if (ctx.VALIDITY_SCHEME_DATE_TIME() != null)
+        if (ctx.validitySchemeDateTime() != null)
         {
-            return new DateTimeValidityMilestoningScheme();
+            return visitDateTimeValidityMilestoningScheme(ctx.validitySchemeDateTime());
         }
-        else if (ctx.VALIDITY_SCHEME_OPAQUE() != null)
+        else if (ctx.validitySchemeOpaque() != null)
         {
             return new OpaqueValidityMilestoningScheme();
         }
         throw new UnsupportedOperationException();
+    }
+
+    private DateTimeValidityMilestoningScheme visitDateTimeValidityMilestoningScheme(PersistenceParserGrammar.ValiditySchemeDateTimeContext ctx)
+    {
+        DateTimeValidityMilestoningScheme milestoningScheme = new DateTimeValidityMilestoningScheme();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // datetime in property
+        PersistenceParserGrammar.ValidityDateTimeFromPropertyContext validityDateTimeFromPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDateTimeFromProperty(), "validityDateTimeFromName", sourceInformation);
+        milestoningScheme.validDateTimeFromName = PureGrammarParserUtility.fromIdentifier(validityDateTimeFromPropertyContext.identifier());
+
+        // datetime out property
+        PersistenceParserGrammar.ValidityDateTimeThruPropertyContext validityDateTimeThruPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDateTimeThruProperty(), "validityDateTimeThruName", sourceInformation);
+        milestoningScheme.validDateTimeThruName = PureGrammarParserUtility.fromIdentifier(validityDateTimeThruPropertyContext.identifier());
+
+        return milestoningScheme;
     }
 
     //TODO: ledav -- populate properties
@@ -550,9 +621,9 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.MergeSchemeDeleteIndicatorPropertyContext deleteIndicatorPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeSchemeDeleteIndicatorProperty(), "deleteIndicatorProperty", sourceInformation);
         mergeScheme.deleteProperty = PureGrammarParserUtility.fromIdentifier(deleteIndicatorPropertyContext.identifier());
 
-        //TODO: ledav -- handle non-strings
         // delete values
         PersistenceParserGrammar.MergeSchemeDeleteIndicatorValuesContext deleteIndicatorValuesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeSchemeDeleteIndicatorValues(), "deleteValues", sourceInformation);
+        //TODO: ledav -- handle non-strings
         mergeScheme.deleteValues = deleteIndicatorValuesContext != null && deleteIndicatorValuesContext.STRING() != null ? ListIterate.collect(deleteIndicatorValuesContext.STRING(), deleteIndicatorValueContext -> PureGrammarParserUtility.fromGrammarString(deleteIndicatorValueContext.getText(), true)) : Collections.emptyList();
         return mergeScheme;
     }
