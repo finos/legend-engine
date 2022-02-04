@@ -16,4 +16,8 @@ package org.finos.legend.engine.shared.core.identity;
 
 public interface Credential
 {
+    default boolean isValid()
+    {
+        return true;
+    }
 }

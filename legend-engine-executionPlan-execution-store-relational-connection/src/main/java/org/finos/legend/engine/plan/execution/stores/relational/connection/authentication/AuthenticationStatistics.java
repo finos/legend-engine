@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AuthenticationStatistics
 {
-    private final AtomicInteger authenticationErrors = new AtomicInteger();
+    private final AtomicInteger authenticationErrors = new AtomicInteger(0);
 
     public void logAuthenticationError()
     {

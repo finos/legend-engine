@@ -34,10 +34,10 @@ public class DataSourceWithStatistics
     private final IdentityState identityState;
     private final DataSourceSpecification dataSourceSpecification;
 
-    public DataSourceWithStatistics(String poolName, DataSource dataSource, IdentityState identityState, DataSourceSpecification dataSourceSpecification)
+    public DataSourceWithStatistics(String poolName, DataSource dataSource, IdentityState identityState, DataSourceSpecification dataSourceSpecification, DataSourceStatistics statistics)
     {
         this.poolName = poolName;
-        this.statistics = new DataSourceStatistics();
+        this.statistics = statistics;
         this.dataSource = dataSource;
         if (identityState == null)
         {
@@ -46,6 +46,11 @@ public class DataSourceWithStatistics
         this.identityState = identityState;
 
         this.dataSourceSpecification = dataSourceSpecification;
+    }
+
+    public DataSourceWithStatistics(String poolName, DataSource dataSource, IdentityState identityState, DataSourceSpecification dataSourceSpecification)
+    {
+        this(poolName,dataSource,identityState,dataSourceSpecification,new DataSourceStatistics());
     }
 
     public DataSourceWithStatistics(String poolName, IdentityState identityState, DataSourceSpecification dataSourceSpecification)

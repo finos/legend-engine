@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.util.Properties;
 
 import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosTicket;
 import javax.sql.DataSource;
 
 import org.eclipse.collections.api.tuple.Pair;
@@ -79,6 +80,13 @@ public abstract class AuthenticationStrategy
         Connection connection;
         try
         {
+            if (LOGGER.isDebugEnabled())
+            {
+                KerberosTicket kerberosTicket = subject.getPrivateCredentials(KerberosTicket.class).iterator().next();
+                boolean expired = kerberosTicket == null || !kerberosTicket.isCurrent();
+                boolean started = kerberosTicket.getStartTime() == null || kerberosTicket.getStartTime().getTime() <= System.currentTimeMillis();
+                LOGGER.debug("getConnectionUsingKerberos {}: started {} , ends {} expired {} ", subject.getPrincipals().iterator().next().getName(),started,kerberosTicket.getEndTime(),expired);
+            }
             connection = Subject.doAs(subject, (PrivilegedExceptionAction<Connection>)ds::getConnection);
         }
         catch (PrivilegedActionException e)
