@@ -33,9 +33,11 @@ import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResul
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
@@ -221,6 +223,12 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
                 return new MultiParameterExecutionBuilder(parameterCount);
             }
         }
+    }
+
+    protected ServiceVariable newServiceVariable(String name, Class<?> type, int multiplicityLoweBound, Integer multiplicityUpperBound)
+    {
+        Assert.assertFalse(type.isPrimitive(), () -> "type should not be the primitive class");
+        return new ServiceVariable(name, type, new Multiplicity(multiplicityLoweBound, multiplicityUpperBound));
     }
 
     protected ExecutionBuilder newNoParameterExecutionBuilder()
@@ -410,11 +418,10 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         @Override
         protected void addParameter(String name, Object value)
         {
-            if (!this.parameters.isEmpty())
+            if(value != null)
             {
-                throw new IllegalStateException("Single parameter already exists");
+                this.parameters = Collections.singletonMap(name, value);
             }
-            this.parameters = Collections.singletonMap(name, value);
         }
 
         @Override
@@ -441,7 +448,10 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         @Override
         protected void addParameter(String name, Object value)
         {
-            this.parameters.put(name, value);
+            if (value != null)
+            {
+                this.parameters.put(name, value);
+            }
         }
 
         @Override

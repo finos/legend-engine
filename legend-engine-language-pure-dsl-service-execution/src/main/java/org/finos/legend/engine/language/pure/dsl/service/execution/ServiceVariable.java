@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.shared.core.operational.Assert;
 
 public class ServiceVariable
 {
@@ -25,7 +24,6 @@ public class ServiceVariable
 
     public ServiceVariable(String name, Class<?> type, Multiplicity multiplicity)
     {
-        Assert.assertFalse(type.isPrimitive(), () -> "type should not be the primitive class");
         this.name = name;
         this.type = type;
         this.multiplicity = multiplicity;
