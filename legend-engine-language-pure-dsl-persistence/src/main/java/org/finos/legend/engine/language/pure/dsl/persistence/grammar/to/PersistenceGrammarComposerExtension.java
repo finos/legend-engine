@@ -12,6 +12,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+
 public class PersistenceGrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
@@ -44,8 +47,16 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
         });
     }
 
-    private static String renderServicePersistence(ServicePersistence servicePersistence)
+    private static String renderServicePersistence(ServicePersistence servicePersistence, PureGrammarComposerContext context)
     {
-        return null;
+        // add import package line
+        return "StreamingPersistence" + " " + PureGrammarComposerUtility.convertPath(streamingPersistence.getPath()) +
+        "\n{\n" +
+        getTabString() + "doc: " + convertString(streamingPersistence.documentation, true) + ";\n" +
+        (streamingPersistence.owners.isEmpty() ? "" : getTabString() + HelperPersistenceGrammarComposer.renderOwners(streamingPersistence.owners)) +
+        getTabString() + "trigger: " + streamingPersistence.trigger + ";\n" +
+        getTabString() + "service: " + streamingPersistence.service + ";\n" +
+        getTabString() + HelperPersistenceGrammarComposer.renderPersistence(streamingPersistence.persistence, context)) +
+        "}";
     }
 }
