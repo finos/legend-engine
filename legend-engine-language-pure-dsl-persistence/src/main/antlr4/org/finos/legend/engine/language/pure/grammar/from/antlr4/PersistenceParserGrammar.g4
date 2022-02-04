@@ -11,7 +11,7 @@ options
 
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
-                                            | IMPORT
+                                            | TRUE | FALSE | IMPORT
                                             | SERVICE_PERSISTENCE | SERVICE_PERSISTENCE_DOCUMENTATION | SERVICE_PERSISTENCE_OWNERS | SERVICE_PERSISTENCE_TRIGGER | SERVICE_PERSISTENCE_SERVICE
                                             | EVENT_TYPE_SCHEDULE_TRIGGERED | EVENT_TYPE_REGISTRY_DATASET_AVAILABLE
                                             | PERSISTENCE | PERSISTENCE_STREAMING | PERSISTENCE_BATCH
@@ -19,13 +19,13 @@ identifier:                                 VALID_STRING | STRING
                                             | TRANSACTION_MODE | TRANSACTION_MODE_SINGLE_DATASET | TRANSACTION_MODE_ALL_DATASETS
                                             | TARGET | DATASTORE | DATASTORE_NAME | DATASET | DATASETS | DATASET_NAME
                                             | PARTITION_PROPERTIES
-                                            | DEDUPLICATION_STRATEGY | DEDUPLICATION_STRATEGY_NONE | DEDUPLICATION_STRATEGY_ANY | DEDUPLICATION_STRATEGY_COUNT | DEDUPLICATION_STRATEGY_MAX_VERSION
+                                            | DEDUPLICATION_STRATEGY | DEDUPLICATION_STRATEGY_NONE | DEDUPLICATION_STRATEGY_ANY | DEDUPLICATION_STRATEGY_COUNT | DEDUPLICATION_STRATEGY_COUNT_PROPERTY | DEDUPLICATION_STRATEGY_MAX_VERSION | DEDUPLICATION_STRATEGY_VERSION_PROPERTY
                                             | BATCH_MODE | SNAPSHOT_NON_MILESTONED | SNAPSHOT_UNITEMPORAL | SNAPSHOT_BITEMPORAL | DELTA_NON_MILESTONED | DELTA_UNITEMPORAL | DELTA_BITEMPORAL | APPEND_ONLY
-                                            | FILTER_DUPLICATES | AUDIT_SCHEME | AUDIT_SCHEME_NONE | AUDIT_SCHEME_BATCH_DATE_TIME | AUDIT_SCHEME_OPAQUE
+                                            | FILTER_DUPLICATES | AUDIT_SCHEME | AUDIT_SCHEME_NONE | AUDIT_SCHEME_BATCH_DATE_TIME | AUDIT_SCHEME_BATCH_DATE_TIME_PROPERTY | AUDIT_SCHEME_OPAQUE
                                             | TRANSACTION_SCHEME | TRANSACTION_SCHEME_BATCH_ID | TRANSACTION_SCHEME_DATE_TIME | TRANSACTION_SCHEME_BOTH | TRANSACTION_SCHEME_OPAQUE
                                             | VALIDITY_SCHEME | VALIDITY_SCHEME_DATE_TIME | VALIDITY_SCHEME_OPAQUE
                                             | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU
-                                            | MERGE_SCHEME | MERGE_SCHEME_NO_DELETES | MERGE_SCHEME_DELETE_INDICATOR
+                                            | MERGE_SCHEME | MERGE_SCHEME_NO_DELETES | MERGE_SCHEME_DELETE_INDICATOR | MERGE_SCHEME_DELETE_INDICATOR_PROPERTY | MERGE_SCHEME_DELETE_INDICATOR_VALUES
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -122,7 +122,7 @@ datastoreName:                              DATASTORE_NAME COLON identifier SEMI
 ;
 datasets:                                   DATASETS COLON
                                                 BRACKET_OPEN
-                                                    (dataset (COMMA dataset)*)?
+                                                    dataset (COMMA dataset)*
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
@@ -147,12 +147,29 @@ partitionProperties:                        PARTITION_PROPERTIES COLON
 //TODO: ledav - support config within deduplication strategy
 deduplicationStrategy:                      DEDUPLICATION_STRATEGY COLON
                                                 (
-                                                    DEDUPLICATION_STRATEGY_NONE
-                                                    | DEDUPLICATION_STRATEGY_ANY
-                                                    | DEDUPLICATION_STRATEGY_COUNT
-                                                    | DEDUPLICATION_STRATEGY_MAX_VERSION
+                                                    deduplicationStrategyNone
+                                                    | deduplicationStrategyAny
+                                                    | deduplicationStrategyCount
+                                                    | deduplicationStrategyMaxVersion
                                                 )
-                                            SEMI_COLON
+;
+deduplicationStrategyNone:                  DEDUPLICATION_STRATEGY_NONE SEMI_COLON
+;
+deduplicationStrategyAny:                   DEDUPLICATION_STRATEGY_ANY SEMI_COLON
+;
+deduplicationStrategyCount:                 DEDUPLICATION_STRATEGY_COUNT
+                                                BRACE_OPEN
+                                                    deduplicationCountPropertyName
+                                                BRACE_CLOSE
+;
+deduplicationCountPropertyName:             DEDUPLICATION_STRATEGY_COUNT_PROPERTY COLON identifier SEMI_COLON
+;
+deduplicationStrategyMaxVersion:            DEDUPLICATION_STRATEGY_MAX_VERSION
+                                                BRACE_OPEN
+                                                    deduplicationVersionPropertyName
+                                                BRACE_CLOSE
+;
+deduplicationVersionPropertyName:           DEDUPLICATION_STRATEGY_VERSION_PROPERTY COLON identifier SEMI_COLON
 ;
 batchMode:                                  BATCH_MODE COLON
                                                 (
@@ -209,20 +226,32 @@ deltaBitemporal:                           DELTA_BITEMPORAL
 ;
 appendOnly:                                 APPEND_ONLY
                                                 BRACE_OPEN
-                                                    auditScheme
-                                                    filterDuplicates
+                                                    (
+                                                        auditScheme
+                                                        | filterDuplicates
+                                                    )*
                                                 BRACE_CLOSE
 ;
 //TODO: ledav - support config for all flags below
 auditScheme:                                AUDIT_SCHEME COLON
                                                 (
-                                                    AUDIT_SCHEME_NONE
-                                                    | AUDIT_SCHEME_BATCH_DATE_TIME
-                                                    | AUDIT_SCHEME_OPAQUE
+                                                    auditSchemeNone
+                                                    | auditSchemeBatchDateTime
+                                                    | auditSchemeOpaque
                                                 )
-                                            SEMI_COLON
 ;
-filterDuplicates:                           FILTER_DUPLICATES COLON (TRUE | FALSE)
+auditSchemeNone:                            AUDIT_SCHEME_NONE SEMI_COLON
+;
+auditSchemeBatchDateTime:                   AUDIT_SCHEME_BATCH_DATE_TIME
+                                                BRACE_OPEN
+                                                    transactionDateTimePropertyName
+                                                BRACE_CLOSE
+;
+transactionDateTimePropertyName:            AUDIT_SCHEME_BATCH_DATE_TIME_PROPERTY COLON identifier SEMI_COLON
+;
+auditSchemeOpaque:                          AUDIT_SCHEME_OPAQUE SEMI_COLON
+;
+filterDuplicates:                           FILTER_DUPLICATES COLON (TRUE | FALSE) SEMI_COLON
 ;
 transactionScheme:                          TRANSACTION_SCHEME COLON
                                                 (
@@ -249,8 +278,25 @@ validityDerivation:                         VALIDITY_DERIVATION COLON
 ;
 mergeScheme:                                MERGE_SCHEME COLON
                                                 (
-                                                    MERGE_SCHEME_NO_DELETES
-                                                    | MERGE_SCHEME_DELETE_INDICATOR
+                                                    mergeSchemeNoDeletes
+                                                    | mergeSchemeDeleteIndicator
                                                 )
+;
+mergeSchemeNoDeletes:                       MERGE_SCHEME_NO_DELETES SEMI_COLON
+;
+mergeSchemeDeleteIndicator:                 MERGE_SCHEME_DELETE_INDICATOR
+                                                BRACE_OPEN
+                                                    (
+                                                        mergeSchemeDeleteIndicatorProperty
+                                                        | mergeSchemeDeleteIndicatorValues
+                                                    )*
+                                                BRACE_CLOSE
+;
+mergeSchemeDeleteIndicatorProperty:         MERGE_SCHEME_DELETE_INDICATOR_PROPERTY COLON identifier SEMI_COLON
+;
+mergeSchemeDeleteIndicatorValues:           MERGE_SCHEME_DELETE_INDICATOR_VALUES COLON
+                                                BRACKET_OPEN
+                                                    STRING (COMMA STRING)*
+                                                BRACKET_CLOSE
                                             SEMI_COLON
 ;

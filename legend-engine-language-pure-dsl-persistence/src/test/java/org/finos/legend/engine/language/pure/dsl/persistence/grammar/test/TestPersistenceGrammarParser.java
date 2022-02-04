@@ -35,16 +35,36 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    transactionMode: ALL_DATASETS;\n" +
                 "    target: Datastore\n" +
                 "    {\n" +
-                "      datastoreName: TestDatastore;\n" +
+                "      datastoreName: 'TestDatastore';\n" +
                 "      datasets:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          datasetName: TestDataset1;\n" +
+                "          datasetName: 'TestDataset1';\n" +
                 "          partitionProperties: [test::InputClass->property1, test::InputClass->property2];\n" +
-                "          deduplicationStrategy: NoDedup;\n" +
+                "          deduplicationStrategy: MaxVersionDedup\n" +
+                "          {\n" +
+                "            versionProperty: 'updateDateTime';\n" +
+                "          }\n" +
+//                "          batchMode: AppendOnly\n" +
+//                "          {\n" +
+//                "            auditScheme: BatchDateTime\n" +
+//                "            {\n" +
+//                "              transactionDateTimePropertyName: 'insertDateTime';\n" +
+//                "            }\n" +
+//                "            filterDuplicates: false;\n" +
+//                "          }\n" +
+//                "          batchMode: UnitemporalDelta\n" +
+//                "          {\n" +
+//                "            mergeScheme: NoDeletes;\n" +
+//                "            transactionMilestoning: BatchIdOnly;\n" +
+//                "          }\n" +
                 "          batchMode: BitemporalDelta\n" +
                 "          {\n" +
-                "            mergeScheme: NoDeletes;\n" +
+                "            mergeScheme: DeleteIndicator\n" +
+                "            {\n" +
+                "              deleteProperty: 'deleted';\n" +
+                "              deleteValues: ['Y', '1', 'true'];\n" +
+                "            }\n" +
                 "            transactionMilestoning: BatchIdOnly;\n" +
                 "            validityMilestoning: DateTime;\n" +
                 "            validityDerivation: SourceProvidesFromAndThruDateTime;\n" +

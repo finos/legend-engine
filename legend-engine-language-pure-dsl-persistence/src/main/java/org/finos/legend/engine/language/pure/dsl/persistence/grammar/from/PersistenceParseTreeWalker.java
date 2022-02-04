@@ -6,6 +6,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -244,23 +245,47 @@ public class PersistenceParseTreeWalker
 
     private DeduplicationStrategy visitDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyContext ctx)
     {
-        if (ctx.DEDUPLICATION_STRATEGY_NONE() != null)
+        if (ctx.deduplicationStrategyNone() != null)
         {
             return new NoDeduplicationStrategy();
         }
-        else if (ctx.DEDUPLICATION_STRATEGY_ANY() != null)
+        else if (ctx.deduplicationStrategyAny() != null)
         {
             return new AnyDeduplicationStrategy();
         }
-        else if (ctx.DEDUPLICATION_STRATEGY_COUNT() != null)
+        else if (ctx.deduplicationStrategyCount() != null)
         {
-            return new CountDeduplicationStrategy();
+            return visitCountDeduplicationStrategy(ctx.deduplicationStrategyCount());
         }
-        else if (ctx.DEDUPLICATION_STRATEGY_MAX_VERSION() != null)
+        else if (ctx.deduplicationStrategyMaxVersion() != null)
         {
-            return new MaxVersionDeduplicationStrategy();
+            return visitMaxVersionDeduplicationStrategy(ctx.deduplicationStrategyMaxVersion());
         }
         throw new UnsupportedOperationException();
+    }
+
+    private CountDeduplicationStrategy visitCountDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyCountContext ctx)
+    {
+        CountDeduplicationStrategy deduplicationStrategy = new CountDeduplicationStrategy();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // duplicate count property
+        PersistenceParserGrammar.DeduplicationCountPropertyNameContext duplicateCountPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.deduplicationCountPropertyName()), "duplicateCountProperty", sourceInformation);
+        deduplicationStrategy.duplicateCountPropertyName = PureGrammarParserUtility.fromIdentifier(duplicateCountPropertyContext.identifier());
+
+        return deduplicationStrategy;
+    }
+
+    private MaxVersionDeduplicationStrategy visitMaxVersionDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyMaxVersionContext ctx)
+    {
+        MaxVersionDeduplicationStrategy deduplicationStrategy = new MaxVersionDeduplicationStrategy();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // duplicate count property
+        PersistenceParserGrammar.DeduplicationVersionPropertyNameContext versionPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.deduplicationVersionPropertyName()), "versionProperty", sourceInformation);
+        deduplicationStrategy.versionProperty = PureGrammarParserUtility.fromIdentifier(versionPropertyContext.identifier());
+
+        return deduplicationStrategy;
     }
 
     private BatchMilestoningMode visitBatchMilestoningMode(PersistenceParserGrammar.BatchModeContext ctx)
@@ -302,11 +327,11 @@ public class PersistenceParseTreeWalker
         appendOnly.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // audit scheme
-        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditScheme()), "auditScheme", appendOnly.sourceInformation);
+        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditScheme(), "auditScheme", appendOnly.sourceInformation);
         appendOnly.auditScheme = visitAuditScheme(auditSchemeContext);
 
         // filter duplicates
-        PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.filterDuplicates()), "filterDuplicates", appendOnly.sourceInformation);
+        PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.filterDuplicates(), "filterDuplicates", appendOnly.sourceInformation);
         appendOnly.filterDuplicates = Boolean.parseBoolean(filterDuplicatesContext.FILTER_DUPLICATES().getText());
 
         return appendOnly;
@@ -426,20 +451,31 @@ public class PersistenceParseTreeWalker
 
     private AuditScheme visitAuditScheme(PersistenceParserGrammar.AuditSchemeContext ctx)
     {
-        if (ctx.AUDIT_SCHEME_NONE() != null)
+        if (ctx.auditSchemeNone() != null)
         {
             return new NoAuditScheme();
         }
-        if (ctx.AUDIT_SCHEME_BATCH_DATE_TIME() != null)
+        if (ctx.auditSchemeBatchDateTime() != null)
         {
-            //TODO: ledav -- populate properties
-            return new BatchDateTimeAuditScheme();
+            return visitBatchDateTimeAuditScheme(ctx.auditSchemeBatchDateTime());
         }
-        if (ctx.AUDIT_SCHEME_OPAQUE() != null)
+        if (ctx.auditSchemeOpaque() != null)
         {
             return new OpaqueAuditScheme();
         }
         throw new UnsupportedOperationException();
+    }
+
+    private BatchDateTimeAuditScheme visitBatchDateTimeAuditScheme(PersistenceParserGrammar.AuditSchemeBatchDateTimeContext ctx)
+    {
+        BatchDateTimeAuditScheme auditScheme = new BatchDateTimeAuditScheme();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // transaction date time property
+        PersistenceParserGrammar.TransactionDateTimePropertyNameContext transactionDateTimePropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.transactionDateTimePropertyName()), "transactionDateTimePropertyName", sourceInformation);
+        auditScheme.transactionDateTimePropertyName = PureGrammarParserUtility.fromIdentifier(transactionDateTimePropertyContext.identifier());
+
+        return auditScheme;
     }
 
     //TODO: ledav -- populate properties
@@ -494,15 +530,30 @@ public class PersistenceParseTreeWalker
 
     private MergeScheme visitMergeScheme(PersistenceParserGrammar.MergeSchemeContext ctx)
     {
-        if (ctx.MERGE_SCHEME_NO_DELETES() != null)
+        if (ctx.mergeSchemeNoDeletes() != null)
         {
             return new NoDeletesMergeScheme();
         }
-        if (ctx.MERGE_SCHEME_DELETE_INDICATOR() != null)
+        if (ctx.mergeSchemeDeleteIndicator() != null)
         {
-            //TODO: ledav -- populate delete property and values
-            return new DeleteIndicatorMergeScheme();
+            return visitDeleteIndicatorMergeScheme(ctx.mergeSchemeDeleteIndicator());
         }
         throw new UnsupportedOperationException();
+    }
+
+    private DeleteIndicatorMergeScheme visitDeleteIndicatorMergeScheme(PersistenceParserGrammar.MergeSchemeDeleteIndicatorContext ctx)
+    {
+        DeleteIndicatorMergeScheme mergeScheme = new DeleteIndicatorMergeScheme();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // delete property
+        PersistenceParserGrammar.MergeSchemeDeleteIndicatorPropertyContext deleteIndicatorPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeSchemeDeleteIndicatorProperty(), "deleteIndicatorProperty", sourceInformation);
+        mergeScheme.deleteProperty = PureGrammarParserUtility.fromIdentifier(deleteIndicatorPropertyContext.identifier());
+
+        //TODO: ledav -- handle non-strings
+        // delete values
+        PersistenceParserGrammar.MergeSchemeDeleteIndicatorValuesContext deleteIndicatorValuesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeSchemeDeleteIndicatorValues(), "deleteValues", sourceInformation);
+        mergeScheme.deleteValues = deleteIndicatorValuesContext != null && deleteIndicatorValuesContext.STRING() != null ? ListIterate.collect(deleteIndicatorValuesContext.STRING(), deleteIndicatorValueContext -> PureGrammarParserUtility.fromGrammarString(deleteIndicatorValueContext.getText(), true)) : Collections.emptyList();
+        return mergeScheme;
     }
 }

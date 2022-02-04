@@ -5,6 +5,8 @@ import M3LexerGrammar;
 // -------------------------------------- KEYWORD --------------------------------------
 
 // COMMON
+TRUE:                                   'true';
+FALSE:                                  'false';
 IMPORT:                                 'import';
 
 // MODEL
@@ -46,8 +48,10 @@ PARTITION_PROPERTIES:                   'partitionProperties';
 DEDUPLICATION_STRATEGY:                 'deduplicationStrategy';
 DEDUPLICATION_STRATEGY_NONE:            'NoDedup';
 DEDUPLICATION_STRATEGY_ANY:             'AnyDedup';
-DEDUPLICATION_STRATEGY_COUNT:           'CountDed';
+DEDUPLICATION_STRATEGY_COUNT:           'CountDedup';
+DEDUPLICATION_STRATEGY_COUNT_PROPERTY:  'duplicateCountProperty';
 DEDUPLICATION_STRATEGY_MAX_VERSION:     'MaxVersionDedup';
+DEDUPLICATION_STRATEGY_VERSION_PROPERTY:'versionProperty';
 
 BATCH_MODE:                             'batchMode';
 SNAPSHOT_NON_MILESTONED:                'NonMilestonedSnapshot';
@@ -63,6 +67,7 @@ FILTER_DUPLICATES:                      'filterDuplicates';
 AUDIT_SCHEME:                           'auditScheme';
 AUDIT_SCHEME_NONE:                      'NoAudit';
 AUDIT_SCHEME_BATCH_DATE_TIME:           'BatchDateTime';
+AUDIT_SCHEME_BATCH_DATE_TIME_PROPERTY:  'transactionDateTimePropertyName';
 AUDIT_SCHEME_OPAQUE:                    'OpaqueAudit';
 
 TRANSACTION_SCHEME:                     'transactionMilestoning';
@@ -82,3 +87,5 @@ VALIDITY_DERIVATION_SOURCE_FROM_THRU:   'SourceProvidesFromAndThruDateTime';
 MERGE_SCHEME:                           'mergeScheme';
 MERGE_SCHEME_NO_DELETES:                'NoDeletes';
 MERGE_SCHEME_DELETE_INDICATOR:          'DeleteIndicator';
+MERGE_SCHEME_DELETE_INDICATOR_PROPERTY: 'deleteProperty';
+MERGE_SCHEME_DELETE_INDICATOR_VALUES:   'deleteValues';
