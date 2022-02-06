@@ -2,9 +2,11 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class TargetSpecification
+public abstract class TargetSpecification
 {
     public String targetName;
     public String modelClassPath;
     public SourceInformation sourceInformation;
+
+    public abstract <T> T accept(TargetSpecificationVisitor<T> visitor);
 }

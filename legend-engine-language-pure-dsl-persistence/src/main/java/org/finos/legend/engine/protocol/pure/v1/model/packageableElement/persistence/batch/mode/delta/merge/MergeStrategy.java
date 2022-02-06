@@ -6,5 +6,5 @@ public abstract class MergeStrategy
 {
     public SourceInformation sourceInformation;
 
-    public abstract <T> T accept(MergeSchemeVisitor<T> visitor);
+    public abstract <T> T accept(MergeStrategyVisitor<T> visitor);
 }

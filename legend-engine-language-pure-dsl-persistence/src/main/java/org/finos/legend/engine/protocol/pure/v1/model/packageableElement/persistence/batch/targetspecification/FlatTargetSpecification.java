@@ -10,4 +10,10 @@ public class FlatTargetSpecification extends TargetSpecification
     public List<String> partitionPropertyPaths;
     public DeduplicationStrategy deduplicationStrategy;
     public BatchMilestoningMode milestoningMode;
+
+    @Override
+    public <T> T accept(TargetSpecificationVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

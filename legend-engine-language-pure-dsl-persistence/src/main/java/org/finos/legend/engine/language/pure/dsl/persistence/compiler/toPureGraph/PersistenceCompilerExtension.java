@@ -5,7 +5,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
-import org.finos.legend.pure.generated.Root_meta_pure_persist_metamodel_ServicePersistence_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistencePipe_Impl;
 
 import java.util.Collections;
 
@@ -15,13 +15,14 @@ public class PersistenceCompilerExtension implements CompilerExtension {
         return Collections.singletonList(Processor.newProcessor(
                 PersistencePipe.class,
                 Lists.fixedSize.with(Service.class),
-                (servicePersistence, context) ->
-                        new Root_meta_pure_persist_metamodel_ServicePersistence_Impl("")
-                                ._documentation(servicePersistence.documentation)
-                                ._ownersAddAll(Lists.immutable.ofAll(servicePersistence.owners))
-                                ._trigger(HelperPersistenceBuilder.buildEventType(servicePersistence.trigger))
-                                ._persistence(HelperPersistenceBuilder.buildPersistence(servicePersistence.persistence, context)),
-                (servicePersistence, context) -> {}
+                (persistencePipe, context) ->
+                        new Root_meta_pure_persistence_metamodel_PersistencePipe_Impl("")
+                                ._documentation(persistencePipe.documentation)
+                                ._ownersAddAll(Lists.immutable.ofAll(persistencePipe.owners))
+                                ._trigger(HelperPersistenceBuilder.buildEventType(persistencePipe.trigger))
+                                ._inputSource(HelperPersistenceBuilder.buildInputSource(persistencePipe.inputSource, context))
+                                ._persistence(HelperPersistenceBuilder.buildPersistence(persistencePipe.persistence, context)),
+                (persistencePipe, context) -> {}
         ));
     }
 }
