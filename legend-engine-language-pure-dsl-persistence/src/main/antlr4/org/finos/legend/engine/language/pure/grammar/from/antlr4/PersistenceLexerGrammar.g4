@@ -64,7 +64,7 @@ APPEND_ONLY:                            'AppendOnly';
 
 FILTER_DUPLICATES:                      'filterDuplicates';
 
-AUDIT_SCHEME:                           'auditScheme';
+AUDIT_SCHEME:                           'auditing';
 AUDIT_SCHEME_NONE:                      'NoAudit';
 AUDIT_SCHEME_BATCH_DATE_TIME:           'BatchDateTime';
 AUDIT_SCHEME_BATCH_DATE_TIME_PROPERTY:  'transactionDateTimePropertyName';
@@ -89,8 +89,9 @@ VALIDITY_DATE_TIME_THRU_PROPERTY:       'validityDateTimeThruProperty';
 VALIDITY_DERIVATION:                    'validityDerivation';
 VALIDITY_DERIVATION_SOURCE_FROM:        'SourceProvidesFromDateTime';
 VALIDITY_DERIVATION_SOURCE_FROM_THRU:   'SourceProvidesFromAndThruDateTime';
+VALIDITY_DERIVATION_OPAQUE:             'OpaqueValidityDerivation';
 
-MERGE_SCHEME:                           'mergeScheme';
+MERGE_SCHEME:                           'mergeStrategy';
 MERGE_SCHEME_NO_DELETES:                'NoDeletes';
 MERGE_SCHEME_DELETE_INDICATOR:          'DeleteIndicator';
 MERGE_SCHEME_DELETE_INDICATOR_PROPERTY: 'deleteProperty';

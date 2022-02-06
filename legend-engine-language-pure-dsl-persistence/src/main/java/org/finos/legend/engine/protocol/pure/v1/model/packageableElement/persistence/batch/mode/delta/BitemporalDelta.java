@@ -1,20 +1,18 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningMode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningModeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.MergeScheme;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.transactionmilestoned.TransactionMilestoningScheme;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoned.ValidityMilestoningScheme;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoned.derivation.ValidityDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.MergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.transactionmilestoning.TransactionMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.ValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
 
 public class BitemporalDelta extends BatchMilestoningMode
 {
-    public MergeScheme mergeScheme;
-    public TransactionMilestoningScheme transactionMilestoningScheme;
-    public ValidityMilestoningScheme validityMilestoningScheme;
+    public MergeStrategy mergeStrategy;
+    public TransactionMilestoning transactionMilestoning;
+    public ValidityMilestoning validityMilestoning;
     public ValidityDerivation validityDerivation;
-    public SourceInformation sourceInformation;
 
     public <T> T accept(BatchMilestoningModeVisitor<T> visitor)
     {

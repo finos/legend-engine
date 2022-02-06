@@ -186,7 +186,7 @@ batchMode:                                  BATCH_MODE COLON
 ;
 snapshotNonMilestoned:                      SNAPSHOT_NON_MILESTONED
                                                 BRACE_OPEN
-                                                    auditScheme
+                                                    auditing
                                                 BRACE_CLOSE
 ;
 snapshotUnitemporal:                        SNAPSHOT_UNITEMPORAL
@@ -205,13 +205,13 @@ snapshotBitemporal:                        SNAPSHOT_BITEMPORAL
 ;
 deltaNonMilestoned:                         DELTA_NON_MILESTONED
                                                 BRACE_OPEN
-                                                    auditScheme
+                                                    auditing
                                                 BRACE_CLOSE
 ;
 deltaUnitemporal:                           DELTA_UNITEMPORAL
                                                 BRACE_OPEN
                                                     (
-                                                        mergeScheme
+                                                        mergeStrategy
                                                         | transactionScheme
                                                     )*
                                                 BRACE_CLOSE
@@ -219,7 +219,7 @@ deltaUnitemporal:                           DELTA_UNITEMPORAL
 deltaBitemporal:                           DELTA_BITEMPORAL
                                                 BRACE_OPEN
                                                     (
-                                                        mergeScheme
+                                                        mergeStrategy
                                                         | transactionScheme
                                                         | validityScheme
                                                         | validityDerivation
@@ -229,13 +229,13 @@ deltaBitemporal:                           DELTA_BITEMPORAL
 appendOnly:                                 APPEND_ONLY
                                                 BRACE_OPEN
                                                     (
-                                                        auditScheme
+                                                        auditing
                                                         | filterDuplicates
                                                     )*
                                                 BRACE_CLOSE
 ;
 //TODO: ledav - support config for all flags below
-auditScheme:                                AUDIT_SCHEME COLON
+auditing:                                AUDIT_SCHEME COLON
                                                 (
                                                     auditSchemeNone
                                                     | auditSchemeBatchDateTime
@@ -322,12 +322,32 @@ validitySchemeOpaque:                       VALIDITY_SCHEME_OPAQUE SEMI_COLON
 ;
 validityDerivation:                         VALIDITY_DERIVATION COLON
                                                 (
-                                                    VALIDITY_DERIVATION_SOURCE_FROM
-                                                    | VALIDITY_DERIVATION_SOURCE_FROM_THRU
+                                                    validityDerivationSourceProvidesFrom
+                                                    | validityDerivationSourceProvidesFromThru
+                                                    | validityDerivationOpaque
                                                 )
                                             SEMI_COLON
 ;
-mergeScheme:                                MERGE_SCHEME COLON
+validityDerivationSourceProvidesFrom:       VALIDITY_DERIVATION_SOURCE_FROM
+                                                BRACE_OPEN
+                                                    validityDerivationFromProperty
+                                                BRACE_CLOSE
+;
+validityDerivationSourceProvidesFromThru:   VALIDITY_DERIVATION_SOURCE_FROM_THRU
+                                                BRACE_OPEN
+                                                    (
+                                                        validityDerivationFromProperty
+                                                        | validityDerivationThruProperty
+                                                    )*
+                                                BRACE_CLOSE
+;
+validityDerivationFromProperty:
+;
+validityDerivationThruProperty:
+;
+validityDerivationOpaque:                   VALIDITY_DERIVATION_OPAQUE SEMI_COLON
+;
+mergeStrategy:                                MERGE_SCHEME COLON
                                                 (
                                                     mergeSchemeNoDeletes
                                                     | mergeSchemeDeleteIndicator

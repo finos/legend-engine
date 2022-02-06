@@ -8,7 +8,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.ServicePersistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.Builder
                         .newInstance(PackageableElement.class)
                         .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ServicePersistence.class, "persistence")
+                                Tuples.pair(PersistencePipe.class, "persistence")
                         )).build()
         ));
     }
@@ -30,6 +30,6 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(ServicePersistence.class, "meta::pure::persist::metamodel::ServicePersistence");
+        return Maps.mutable.with(PersistencePipe.class, "meta::pure::persist::metamodel::ServicePersistence");
     }
 }

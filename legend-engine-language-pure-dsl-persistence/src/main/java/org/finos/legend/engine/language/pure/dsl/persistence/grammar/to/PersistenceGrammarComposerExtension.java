@@ -7,7 +7,7 @@ import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.Persis
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.ServicePersistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
             }
             return ListIterate.collect(elements, element ->
             {
-                if (element instanceof ServicePersistence)
+                if (element instanceof PersistencePipe)
                 {
                     return null;
 //                    return renderServicePersistence((ServicePersistence) element);
@@ -45,7 +45,7 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
 //        });
     }
 
-    private static String renderServicePersistence(ServicePersistence servicePersistence, PureGrammarComposerContext context)
+    private static String renderServicePersistence(PersistencePipe servicePersistence, PureGrammarComposerContext context)
     {
         return null;
 //        // add import package line

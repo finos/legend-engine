@@ -1,14 +1,12 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningMode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningModeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.transactionmilestoned.TransactionMilestoningScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.transactionmilestoning.TransactionMilestoning;
 
 public class UnitemporalSnapshot extends BatchMilestoningMode
 {
-    public TransactionMilestoningScheme transactionMilestoningScheme;
-    public SourceInformation sourceInformation;
+    public TransactionMilestoning transactionMilestoning;
 
     public <T> T accept(BatchMilestoningModeVisitor<T> visitor)
     {

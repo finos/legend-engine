@@ -1,14 +1,12 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.TargetSpecification;
 
 public class BatchPersistence extends Persistence
 {
-    public BatchTransactionMode transactionMode;
-    public BatchDatastoreSpecification targetSpecification;
-    public SourceInformation sourceInformation;
+    public TargetSpecification targetSpecification;
 
     public <T> T accept(PersistenceVisitor<T> visitor)
     {
