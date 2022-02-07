@@ -41,7 +41,7 @@ import org.junit.rules.TemporaryFolder;
 import org.pac4j.core.profile.CommonProfile;
 import static org.junit.Assert.assertTrue;
 
-public class TestConnectionAcquisitionWithFlowProvider_Local extends DbSpecificTests
+public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTests
 {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
