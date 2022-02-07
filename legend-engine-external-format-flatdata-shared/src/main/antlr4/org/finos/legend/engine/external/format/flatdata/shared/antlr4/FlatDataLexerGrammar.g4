@@ -13,7 +13,7 @@ RECORD_DATA_TYPE:                   'STRING' | 'INTEGER' | 'BOOLEAN'| 'FLOAT' | 
 
 // ---------------------------------- BUILDING BLOCK --------------------------------------
 
-ADDRESS:                            '{'(Letter | Digit)+'}';
+ADDRESS:                            '{'(Letter | Digit)(~[{}])*'}';
 
 // -------------------------------- FROM CORE GRAMMAR -------------------------------------
 // Deliberately copied so that the FlatData sub-grammar of ExternalFormat can parse
