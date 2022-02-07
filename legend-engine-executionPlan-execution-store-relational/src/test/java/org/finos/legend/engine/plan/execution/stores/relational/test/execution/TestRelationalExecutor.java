@@ -40,7 +40,12 @@ import java.sql.Statement;
 import java.time.Instant;
 import java.time.ZoneId;
 
-public class TestRelationalTimeZoneProcessing extends AlloyTestServer
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.internal.matchers.ThrowableCauseMatcher.hasCause;
+import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
+
+public class TestRelationalExecutor extends AlloyTestServer
 {
     @Override
     protected void insertTestData(Statement statement) throws SQLException
@@ -164,6 +169,18 @@ public class TestRelationalTimeZoneProcessing extends AlloyTestServer
         SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
         RelationalResult result = (RelationalResult)executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(executionPlan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
         Assert.assertEquals("{\"builder\": {\"_type\":\"classBuilder\",\"mapping\":\"meta::relational::tests::milestoning::milestoningmap\",\"classMappings\":[{\"setImplementationId\":\"meta_relational_tests_milestoning_ProductSynonym\",\"properties\":[{\"property\":\"synonym\",\"type\":\"String\"},{\"property\":\"type\",\"type\":\"String\"},{\"property\":\"testDate\",\"type\":\"Date\"},{\"property\":\"testDateTime\",\"type\":\"DateTime\"}],\"class\":\"meta::relational::tests::milestoning::ProductSynonym\"}],\"class\":\"meta::relational::tests::milestoning::ProductSynonym\"}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"pk_0\\\", \\\"root\\\".synonym as \\\"pk_1\\\", \\\"root\\\".type as \\\"pk_2\\\", \\\"root\\\".synonym as \\\"synonym\\\", \\\"root\\\".type as \\\"type\\\", \\\"root\\\".testDate as \\\"testDate\\\", \\\"root\\\".testDateTime as \\\"testDateTime\\\", \\\"root\\\".from_z as \\\"k_businessDate\\\" from ProductSynonymTable as \\\"root\\\" where \\\"root\\\".testDateTime = '2014-12-04 15:22:23.123456789'\"}], \"result\" : {\"columns\" : [\"pk_0\",\"pk_1\",\"pk_2\",\"synonym\",\"type\",\"testDate\",\"testDateTime\",\"k_businessDate\"], \"rows\" : [{\"values\": [\"GS-ModA\",\"GS-Mod-S1\",\"STOCK\",\"GS-Mod-S1\",\"STOCK\",\"2015-06-26\",\"2014-12-04T15:22:23.123456789+0000\",\"2015-08-26T00:00:00.000000000+0000\"]}]}}", result.flush(new RelationalResultToJsonDefaultSerializer(result)));
+    }
+
+    @Test
+    public void testErrorFromSqlTemplateFreeMarkerProcessingBubblesUp() throws IOException
+    {
+        String planWithTz = getTemplatePlanWithNoTz().replace("%timeZone%", ",\"timeZone\": \"GMT\"").replace("%templateFunctions%", "\"templateFunctions\": [],");
+        String plan = planWithTz.replace("%dateTimeParam%", "testDateTime = '${GMTtoTZ( \\\"[US/Arizona]\\\" dt )}'");
+        SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
+        MutableMap<String, Result> vars = Maps.mutable.with("dt", new ConstantResult("2014-12-04T15:22:23"));
+        IllegalStateException exception = Assert.assertThrows(IllegalStateException.class, () -> executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(vars, Lists.mutable.withAll(executionPlan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort)))))));
+        assertThat(exception, hasMessage(startsWith("Reprocessing sql failed with vars [dt]")));
+        assertThat(exception, hasCause(hasMessage(startsWith("Issue processing freemarker function.  Template with error: select \"root\".name as \"pk_0\", \"root\".synonym as \"pk_1\", \"root\".type as \"pk_2\", \"root\".synonym as \"synonym\", \"root\".type as \"type\", \"root\".testDate as \"testDate\", \"root\".testDateTime as \"testDateTime\", \"root\".from_z as \"k_businessDate\" from ProductSynonymTable as \"root\" where \"root\".testDateTime = 'FreeMarker template error "))));
     }
 
     @Test
