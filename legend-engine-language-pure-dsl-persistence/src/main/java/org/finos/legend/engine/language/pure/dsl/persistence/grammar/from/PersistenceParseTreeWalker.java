@@ -3,7 +3,6 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -13,7 +12,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.TransactionScope;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.Auditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.NoAuditing;
@@ -39,6 +38,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.RegistryDatasetAvailable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.ScheduleTriggered;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.InputSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.ServiceInputSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 
@@ -51,77 +52,110 @@ public class PersistenceParseTreeWalker
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
-    private final PureGrammarParserContext context;
 
-    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, PureGrammarParserContext context)
+    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
-        this.context = context;
     }
 
     public void visit(PersistenceParserGrammar.DefinitionContext ctx)
     {
         this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
-//        ctx.servicePersistence().stream().map(this::visitServicePersistence).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        ctx.persistencePipe().stream().map(this::visitPersistencePipe).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
-/*
-    private PersistencePipe visitServicePersistence(PersistenceParserGrammar.ServicePersistenceContext ctx)
+
+    private PersistencePipe visitPersistencePipe(PersistenceParserGrammar.PersistencePipeContext ctx)
     {
-        PersistencePipe servicePersistence = new PersistencePipe();
-        servicePersistence.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
-        servicePersistence._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
-        servicePersistence.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        PersistencePipe persistencePipe = new PersistencePipe();
+        persistencePipe.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        persistencePipe._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        persistencePipe.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // documentation
-        PersistenceParserGrammar.DocumentationContext documentationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.documentation(), "doc", servicePersistence.sourceInformation);
-        servicePersistence.documentation = PureGrammarParserUtility.fromGrammarString(documentationContext.STRING().getText(), true);
+        PersistenceParserGrammar.DocumentationContext documentationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.documentation(), "doc", persistencePipe.sourceInformation);
+        persistencePipe.documentation = PureGrammarParserUtility.fromGrammarString(documentationContext.STRING().getText(), true);
 
         // owners
-        PersistenceParserGrammar.OwnersContext ownersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owners(), "owners", servicePersistence.sourceInformation);
-        servicePersistence.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : Collections.emptyList();
+        PersistenceParserGrammar.OwnersContext ownersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owners(), "owners", persistencePipe.sourceInformation);
+        persistencePipe.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : Collections.emptyList();
 
         // trigger
-        PersistenceParserGrammar.TriggerContext triggerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.trigger(), "trigger", servicePersistence.sourceInformation);
-        servicePersistence.trigger = visitEventType(triggerContext);
+        PersistenceParserGrammar.TriggerContext triggerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.trigger(), "trigger", persistencePipe.sourceInformation);
+        persistencePipe.trigger = visitEventType(triggerContext);
 
-        // service
-        PersistenceParserGrammar.ServiceContext serviceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.service(), "service", servicePersistence.sourceInformation);
-        servicePersistence.service = new PackageableElementPointer(
-                PackageableElementType.SERVICE_PERSISTENCE,
-                PureGrammarParserUtility.fromQualifiedName(serviceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : serviceContext.qualifiedName().packagePath().identifier(), serviceContext.qualifiedName().identifier()));
+        // input source
+        PersistenceParserGrammar.InputSourceContext inputSourceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputSource(), "inputSource", persistencePipe.sourceInformation);
+        persistencePipe.inputSource = visitInputSource(inputSourceContext);
 
         // persistence
-        PersistenceParserGrammar.PersistenceContext persistenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persistence(), "persistence", servicePersistence.sourceInformation);
-        servicePersistence.persistence = visitPersistence(persistenceContext);
+        PersistenceParserGrammar.PersistenceContext persistenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persistence(), "persistence", persistencePipe.sourceInformation);
+        persistencePipe.persistence = visitPersistence(persistenceContext);
 
-        return servicePersistence;
+        return persistencePipe;
     }
 
     private EventType visitEventType(PersistenceParserGrammar.TriggerContext ctx)
     {
-        if (ctx.EVENT_TYPE_SCHEDULE_TRIGGERED() != null) {
-            return new ScheduleTriggered();
-        }
-        else if (ctx.EVENT_TYPE_REGISTRY_DATASET_AVAILABLE() != null)
+        if (ctx.EVENT_SCHEDULE_TRIGGERED() != null)
         {
-            return new RegistryDatasetAvailable();
+            ScheduleTriggered scheduleTriggered = new ScheduleTriggered();
+            scheduleTriggered.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            return scheduleTriggered;
+        }
+        else if (ctx.EVENT_REGISTRY_DATASET_AVAILABLE() != null)
+        {
+            RegistryDatasetAvailable registryDatasetAvailable = new RegistryDatasetAvailable();
+            registryDatasetAvailable.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            return registryDatasetAvailable;
         }
         throw new UnsupportedOperationException();
     }
 
+    private InputSource visitInputSource(PersistenceParserGrammar.InputSourceContext ctx)
+    {
+        if (ctx.serviceInputSource() != null)
+        {
+            return visitServiceInputSource(ctx.serviceInputSource());
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private InputSource visitServiceInputSource(PersistenceParserGrammar.ServiceInputSourceContext ctx)
+    {
+        ServiceInputSource inputSource = new ServiceInputSource();
+        inputSource.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // service
+        inputSource.service = new PackageableElementPointer(
+                PackageableElementType.SERVICE,
+                PureGrammarParserUtility.fromQualifiedName(ctx.service().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.service().qualifiedName().packagePath().identifier(), ctx.service().qualifiedName().identifier()));
+
+        return inputSource;
+    }
+
     private Persistence visitPersistence(PersistenceParserGrammar.PersistenceContext ctx)
     {
-        if (ctx.batchPersistence() != null)
-        {
-            return visitBatchPersistence(ctx.batchPersistence());
-        }
-        else if (ctx.streamingPersistence() != null)
+        if (ctx.streamingPersistence() != null)
         {
             return visitStreamingPersistence(ctx.streamingPersistence());
         }
+        else if (ctx.batchPersistence() != null)
+        {
+            return visitBatchPersistence(ctx.batchPersistence());
+        }
         throw new UnsupportedOperationException();
+    }
+
+    private StreamingPersistence visitStreamingPersistence(PersistenceParserGrammar.StreamingPersistenceContext ctx)
+    {
+        StreamingPersistence streaming = new StreamingPersistence();
+        streaming.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        return streaming;
     }
 
     private BatchPersistence visitBatchPersistence(PersistenceParserGrammar.BatchPersistenceContext ctx)
@@ -129,149 +163,177 @@ public class PersistenceParseTreeWalker
         BatchPersistence batch = new BatchPersistence();
         batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // input shape
-        PersistenceParserGrammar.InputShapeContext inputShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputShape(), "inputShape", batch.sourceInformation);
-        batch.inputShape = visitInputShape(inputShapeContext);
-
-        // input class
-        PersistenceParserGrammar.InputClassContext inputClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputClass(), "inputClass", batch.sourceInformation);
-        batch.inputClassPath = PureGrammarParserUtility.fromQualifiedName(inputClassContext.qualifiedName().packagePath() == null ? Collections.emptyList() : inputClassContext.qualifiedName().packagePath().identifier(), inputClassContext.qualifiedName().identifier());
-
-        // transaction mode
-        PersistenceParserGrammar.TransactionModeContext transactionModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMode(), "transactionMode", batch.sourceInformation);
-        batch.transactionMode = visitTransactionMode(transactionModeContext);
-
-        // target specification -- check if names match with corresponding java classes
-        PersistenceParserGrammar.TargetSpecificationContext targetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetSpecification(), "target", batch.sourceInformation);
+        // target specification
+        PersistenceParserGrammar.TargetSpecificationContext targetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.targetSpecification()), "target", batch.sourceInformation);
         batch.targetSpecification = visitTargetSpecification(targetSpecificationContext);
 
         return batch;
     }
 
-    private DataShape visitInputShape(PersistenceParserGrammar.InputShapeContext ctx)
+    private TargetSpecification visitTargetSpecification(PersistenceParserGrammar.TargetSpecificationContext ctx)
     {
-        if (ctx.INPUT_SHAPE_FLAT() != null)
+        if (ctx.groupedTargetSpecification() != null)
         {
-            return DataShape.FLAT;
+            return visitGroupedFlatTargetSpecification(ctx.groupedTargetSpecification());
         }
-        else if (ctx.INPUT_SHAPE_GROUPED_FLAT() != null)
+        else if (ctx.flatTargetSpecification() != null)
         {
-            return DataShape.GROUPED_FLAT;
+            return visitFlatTargetSpecification(ctx.flatTargetSpecification().flatTargetSpecificationProperties());
         }
-        else if (ctx.INPUT_SHAPE_NESTED() != null)
+        else if (ctx.nestedTargetSpecification() != null)
         {
-            return DataShape.NESTED;
+            return visitNestedTargetSpecification(ctx.nestedTargetSpecification());
         }
         throw new UnsupportedOperationException();
     }
 
-    private TransactionScope visitTransactionMode(PersistenceParserGrammar.TransactionModeContext ctx)
+    private GroupedFlatTargetSpecification visitGroupedFlatTargetSpecification(PersistenceParserGrammar.GroupedTargetSpecificationContext ctx)
     {
-        if (ctx.TRANSACTION_MODE_SINGLE_DATASET() != null)
+        GroupedFlatTargetSpecification targetSpecification = new GroupedFlatTargetSpecification();
+        targetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // target name
+        PersistenceParserGrammar.TargetNameContext targetNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetName(), "targetName", targetSpecification.sourceInformation);
+        targetSpecification.targetName = visitTargetName(targetNameContext);
+
+        // model class
+        PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
+        targetSpecification.modelClassPath = visitModelClass(targetModelClassContext);
+
+        // transaction scope
+        PersistenceParserGrammar.TargetTransactionScopeContext targetTransactionScopeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetTransactionScope(), "transactionScope", targetSpecification.sourceInformation);
+        targetSpecification.transactionScope = visitTransactionScope(targetTransactionScopeContext);
+
+        // datasets
+        PersistenceParserGrammar.TargetComponentsContext targetComponentsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponents(), "components", targetSpecification.sourceInformation);
+        targetSpecification.components = ListIterate.collect(targetComponentsContext.targetComponent(), this::visitPropertyAndFlatTargetSpecification);
+
+        return targetSpecification;
+    }
+
+    private FlatTargetSpecification visitFlatTargetSpecification(PersistenceParserGrammar.FlatTargetSpecificationPropertiesContext ctx)
+    {
+        FlatTargetSpecification targetSpecification = new FlatTargetSpecification();
+        targetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // target name
+        PersistenceParserGrammar.TargetNameContext targetNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetName(), "targetName", targetSpecification.sourceInformation);
+        targetSpecification.targetName = visitTargetName(targetNameContext);
+
+        // model class
+        PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
+        targetSpecification.modelClassPath = visitModelClass(targetModelClassContext);
+
+        // partition properties -- currently parsing as a list of strings, to change to Property
+        PersistenceParserGrammar.PartitionPropertiesContext partitionPropertiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitionProperties(), "partitionProperties", targetSpecification.sourceInformation);
+        targetSpecification.partitionPropertyPaths = visitPartitionProperties(partitionPropertiesContext);
+
+        // deduplication strategy
+        PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationStrategy(), "deduplicationStrategy", targetSpecification.sourceInformation);
+        targetSpecification.deduplicationStrategy = visitDeduplicationStrategy(deduplicationStrategyContext);
+
+        // batch mode
+        PersistenceParserGrammar.BatchModeContext batchModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchMode(), "batchMode", targetSpecification.sourceInformation);
+        targetSpecification.milestoningMode = visitBatchMilestoningMode(batchModeContext);
+
+        return targetSpecification;
+    }
+
+    private TargetSpecification visitNestedTargetSpecification(PersistenceParserGrammar.NestedTargetSpecificationContext ctx)
+    {
+        NestedTargetSpecification targetSpecification = new NestedTargetSpecification();
+        targetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // target name
+        PersistenceParserGrammar.TargetNameContext targetNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetName(), "targetName", targetSpecification.sourceInformation);
+        targetSpecification.targetName = visitTargetName(targetNameContext);
+
+        // model class
+        PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
+        targetSpecification.modelClassPath = visitModelClass(targetModelClassContext);
+
+        return targetSpecification;
+    }
+
+    private String visitTargetName(PersistenceParserGrammar.TargetNameContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true) : null;
+    }
+
+    private String visitModelClass(PersistenceParserGrammar.TargetModelClassContext ctx)
+    {
+        PersistenceParserGrammar.QualifiedNameContext qualifiedNameContext = ctx.qualifiedName();
+        return PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
+    }
+
+    private TransactionScope visitTransactionScope(PersistenceParserGrammar.TargetTransactionScopeContext ctx)
+    {
+        if (ctx.TXN_SCOPE_SINGLE() != null)
         {
             return TransactionScope.SINGLE_TARGET;
         }
-        if (ctx.TRANSACTION_MODE_ALL_DATASETS() != null)
+        else if (ctx.TXN_SCOPE_ALL() != null)
         {
             return TransactionScope.ALL_TARGETS;
         }
         throw new UnsupportedOperationException();
     }
 
-    private BatchDatastoreSpecification visitTargetSpecification(PersistenceParserGrammar.TargetSpecificationContext ctx)
+    private PropertyAndFlatTargetSpecification visitPropertyAndFlatTargetSpecification(PersistenceParserGrammar.TargetComponentContext ctx)
     {
-        if (ctx.datastore() != null)
-        {
-            return visitBatchDatastoreSpecification(ctx.datastore());
-        }
-        throw new UnsupportedOperationException();
+        PropertyAndFlatTargetSpecification propertyAndFlatTargetSpecification = new PropertyAndFlatTargetSpecification();
+        propertyAndFlatTargetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // property
+        PersistenceParserGrammar.TargetComponentPropertyContext targetComponentPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponentProperty(), "property", propertyAndFlatTargetSpecification.sourceInformation);
+        propertyAndFlatTargetSpecification.propertyPath = visitTargetComponentProperty(targetComponentPropertyContext);
+
+        // target specification
+        PersistenceParserGrammar.TargetComponentTargetSpecificationContext targetComponentTargetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponentTargetSpecification(), "targetSpecification", propertyAndFlatTargetSpecification.sourceInformation);
+        propertyAndFlatTargetSpecification.targetSpecification = visitFlatTargetSpecification(targetComponentTargetSpecificationContext.flatTargetSpecificationProperties());
+
+        return propertyAndFlatTargetSpecification;
     }
 
-    private BatchDatastoreSpecification visitBatchDatastoreSpecification(PersistenceParserGrammar.DatastoreContext ctx)
+    private String visitTargetComponentProperty(PersistenceParserGrammar.TargetComponentPropertyContext ctx)
     {
-        BatchDatastoreSpecification batchDatastoreSpecification = new BatchDatastoreSpecification();
-        batchDatastoreSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        PersistenceParserGrammar.QualifiedNameContext qualifiedNameContext = ctx.qualifiedName();
+        String modelClass = PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
+        String modelProperty = ctx.identifier().getText();
 
-        // datastore name
-        PersistenceParserGrammar.DatastoreNameContext datastoreNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datastoreName(), "datastoreName", batchDatastoreSpecification.sourceInformation);
-        batchDatastoreSpecification.datastoreName = datastoreNameContext != null ? PureGrammarParserUtility.fromIdentifier(datastoreNameContext.identifier()) : null;
-
-        // datasets
-        PersistenceParserGrammar.DatasetsContext datasetsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasets(), "datasets", batchDatastoreSpecification.sourceInformation);
-        batchDatastoreSpecification.datasets = ListIterate.collect(datasetsContext.dataset(), this::visitBatchDatasetSpecification);
-
-        return batchDatastoreSpecification;
-    }
-
-    private BatchDatasetSpecification visitBatchDatasetSpecification(PersistenceParserGrammar.DatasetContext ctx)
-    {
-        BatchDatasetSpecification dataset = new BatchDatasetSpecification();
-        dataset.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // dataset name
-        PersistenceParserGrammar.DatasetNameContext datasetNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetName(), "datasetName", dataset.sourceInformation);
-        dataset.datasetName = datasetNameContext != null ? PureGrammarParserUtility.fromIdentifier(datasetNameContext.identifier()) : null;
-
-        // partition properties -- currently parsing as a list of strings, to change to Property
-        PersistenceParserGrammar.PartitionPropertiesContext partitionPropertiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitionProperties(), "partitionProperties", dataset.sourceInformation);
-        dataset.partitionProperties = visitPartitionProperties(partitionPropertiesContext);
-
-        // deduplication strategy
-        PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationStrategy(), "deduplicationStrategy", dataset.sourceInformation);
-        dataset.deduplicationStrategy = visitDeduplicationStrategy(deduplicationStrategyContext);
-
-        // batch mode
-        PersistenceParserGrammar.BatchModeContext batchModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchMode(), "batchMode", dataset.sourceInformation);
-        dataset.milestoningMode = visitBatchMilestoningMode(batchModeContext);
-
-        return dataset;
+        return modelClass + "->" + modelProperty;
     }
 
     private List<String> visitPartitionProperties(PersistenceParserGrammar.PartitionPropertiesContext ctx)
     {
+        //TODO: ledav -- reconstruct property path correctly
         List<PersistenceParserGrammar.QualifiedNameContext> qualifiedNameContexts = ctx.qualifiedName();
         return Lists.immutable.ofAll(qualifiedNameContexts).collect(context -> PureGrammarParserUtility.fromQualifiedName(context.packagePath() == null ? Collections.emptyList() : context.packagePath().identifier(), context.identifier())).castToList();
     }
 
     private DeduplicationStrategy visitDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyContext ctx)
     {
-        if (ctx.deduplicationStrategyNone() != null)
+        if (ctx.noDeduplicationStrategy() != null)
         {
             return new NoDeduplicationStrategy();
         }
-        else if (ctx.deduplicationStrategyAny() != null)
+        else if (ctx.anyVersionDeduplicationStrategy() != null)
         {
             return new AnyVersionDeduplicationStrategy();
         }
-        else if (ctx.deduplicationStrategyCount() != null)
+        else if (ctx.maxVersionDeduplicationStrategy() != null)
         {
-            return visitCountDeduplicationStrategy(ctx.deduplicationStrategyCount());
-        }
-        else if (ctx.deduplicationStrategyMaxVersion() != null)
-        {
-            return visitMaxVersionDeduplicationStrategy(ctx.deduplicationStrategyMaxVersion());
+            return visitMaxVersionDeduplicationStrategy(ctx.maxVersionDeduplicationStrategy());
         }
         throw new UnsupportedOperationException();
     }
 
-    private CountDeduplicationStrategy visitCountDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyCountContext ctx)
-    {
-        CountDeduplicationStrategy deduplicationStrategy = new CountDeduplicationStrategy();
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // duplicate count property
-        PersistenceParserGrammar.DeduplicationCountPropertyNameContext duplicateCountPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.deduplicationCountPropertyName()), "duplicateCountProperty", sourceInformation);
-        deduplicationStrategy.duplicateCountPropertyName = PureGrammarParserUtility.fromIdentifier(duplicateCountPropertyContext.identifier());
-
-        return deduplicationStrategy;
-    }
-
-    private MaxVersionDeduplicationStrategy visitMaxVersionDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyMaxVersionContext ctx)
+    private MaxVersionDeduplicationStrategy visitMaxVersionDeduplicationStrategy(PersistenceParserGrammar.MaxVersionDeduplicationStrategyContext ctx)
     {
         MaxVersionDeduplicationStrategy deduplicationStrategy = new MaxVersionDeduplicationStrategy();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // duplicate count property
+        // version property
         PersistenceParserGrammar.DeduplicationVersionPropertyNameContext versionPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.deduplicationVersionPropertyName()), "versionProperty", sourceInformation);
         deduplicationStrategy.versionProperty = PureGrammarParserUtility.fromIdentifier(versionPropertyContext.identifier());
 
@@ -280,35 +342,87 @@ public class PersistenceParseTreeWalker
 
     private BatchMilestoningMode visitBatchMilestoningMode(PersistenceParserGrammar.BatchModeContext ctx)
     {
-        if (ctx.appendOnly() != null)
+        if (ctx.nonMilestonedSnapshot() != null)
+        {
+            return visitNonMilestonedSnapshot(ctx.nonMilestonedSnapshot());
+        }
+        else if (ctx.unitemporalSnapshot() != null)
+        {
+            return visitUnitemporalSnapshot(ctx.unitemporalSnapshot());
+        }
+        else if (ctx.bitemporalSnapshot() != null)
+        {
+            return visitBitemporalSnapshot(ctx.bitemporalSnapshot());
+        }
+        else if (ctx.nonMilestonedDelta() != null)
+        {
+            return visitNonMilestonedDelta(ctx.nonMilestonedDelta());
+        }
+        else if (ctx.unitemporalDelta() != null)
+        {
+            return visitUnitemporalDelta(ctx.unitemporalDelta());
+        }
+        else if (ctx.bitemporalDelta() != null)
+        {
+            return visitBitemporalDelta(ctx.bitemporalDelta());
+        }
+        else if (ctx.appendOnly() != null)
         {
             return visitAppendOnly(ctx.appendOnly());
         }
-        else if (ctx.deltaUnitemporal() != null)
-        {
-            return visitDeltaUnitemporal(ctx.deltaUnitemporal());
-        }
-        else if (ctx.snapshotUnitemporal() != null)
-        {
-            return visitSnapshotUnitemporal(ctx.snapshotUnitemporal());
-        }
-        else if (ctx.deltaBitemporal() != null)
-        {
-            return visitDeltaBitemporal(ctx.deltaBitemporal());
-        }
-        else if (ctx.snapshotBitemporal() != null)
-        {
-            return visitSnapshotBitemporal(ctx.snapshotBitemporal());
-        }
-        else if (ctx.deltaNonMilestoned() != null)
-        {
-            return visitDeltaNonMilestoned(ctx.deltaNonMilestoned());
-        }
-        else if (ctx.snapshotNonMilestoned() != null)
-        {
-            return visitSnapshotNonMilestoned(ctx.snapshotNonMilestoned());
-        }
         throw new UnsupportedOperationException();
+    }
+
+    private NonMilestonedDelta visitNonMilestonedDelta(PersistenceParserGrammar.NonMilestonedDeltaContext ctx)
+    {
+        NonMilestonedDelta nonMilestonedDelta = new NonMilestonedDelta();
+        nonMilestonedDelta.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // auditing
+        PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditing()), "auditing", nonMilestonedDelta.sourceInformation);
+        nonMilestonedDelta.auditing = visitAuditing(auditingContext);
+
+        return nonMilestonedDelta;
+    }
+
+    private UnitemporalDelta visitUnitemporalDelta(PersistenceParserGrammar.UnitemporalDeltaContext ctx)
+    {
+        UnitemporalDelta unitemporalDelta = new UnitemporalDelta();
+        unitemporalDelta.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // merge strategy
+        PersistenceParserGrammar.MergeStrategyContext mergeStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategy(), "mergeStrategy", unitemporalDelta.sourceInformation);
+        unitemporalDelta.mergeStrategy = visitMergeStrategy(mergeStrategyContext);
+
+        // transaction milestoning
+        PersistenceParserGrammar.TransactionMilestoningContext transactionMilestoning = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMilestoning(), "transactionMilestoning", unitemporalDelta.sourceInformation);
+        unitemporalDelta.transactionMilestoning = visitTransactionMilestoning(transactionMilestoning);
+
+        return unitemporalDelta;
+    }
+
+    private BitemporalDelta visitBitemporalDelta(PersistenceParserGrammar.BitemporalDeltaContext ctx)
+    {
+        BitemporalDelta bitemporalDelta = new BitemporalDelta();
+        bitemporalDelta.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // merge strategy
+        PersistenceParserGrammar.MergeStrategyContext mergeStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategy(), "mergeStrategy", bitemporalDelta.sourceInformation);
+        bitemporalDelta.mergeStrategy = visitMergeStrategy(mergeStrategyContext);
+
+        // transaction milestoning
+        PersistenceParserGrammar.TransactionMilestoningContext transactionMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMilestoning(), "transactionMilestoning", bitemporalDelta.sourceInformation);
+        bitemporalDelta.transactionMilestoning = visitTransactionMilestoning(transactionMilestoningContext);
+
+        // validity milestoning
+        PersistenceParserGrammar.ValidityMilestoningContext validityMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityMilestoning(), "validityMilestoning", bitemporalDelta.sourceInformation);
+        bitemporalDelta.validityMilestoning = visitValidityMilestoning(validityMilestoningContext);
+
+        // validity derivation
+        PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", bitemporalDelta.sourceInformation);
+        bitemporalDelta.validityDerivation = visitValidityDerivation(validityDerivationContext);
+
+        return bitemporalDelta;
     }
 
     private AppendOnly visitAppendOnly(PersistenceParserGrammar.AppendOnlyContext ctx)
@@ -316,9 +430,9 @@ public class PersistenceParseTreeWalker
         AppendOnly appendOnly = new AppendOnly();
         appendOnly.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // audit scheme
-        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditScheme(), "auditScheme", appendOnly.sourceInformation);
-        appendOnly.auditing = visitAuditScheme(auditSchemeContext);
+        // auditing
+        PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditing(), "auditing", appendOnly.sourceInformation);
+        appendOnly.auditing = visitAuditing(auditingContext);
 
         // filter duplicates
         PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.filterDuplicates(), "filterDuplicates", appendOnly.sourceInformation);
@@ -327,162 +441,94 @@ public class PersistenceParseTreeWalker
         return appendOnly;
     }
 
-    private UnitemporalDelta visitDeltaUnitemporal(PersistenceParserGrammar.DeltaUnitemporalContext ctx)
+    private NonMilestonedSnapshot visitNonMilestonedSnapshot(PersistenceParserGrammar.NonMilestonedSnapshotContext ctx)
     {
-        UnitemporalDelta deltaUnitemporal = new UnitemporalDelta();
-        deltaUnitemporal.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        NonMilestonedSnapshot nonMilestonedSnapshot = new NonMilestonedSnapshot();
+        nonMilestonedSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // merge scheme
-        PersistenceParserGrammar.MergeSchemeContext mergeSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeScheme(), "mergeScheme", deltaUnitemporal.sourceInformation);
-        deltaUnitemporal.mergeStrategy = visitMergeScheme(mergeSchemeContext);
+        // auditing
+        PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditing()), "auditing", nonMilestonedSnapshot.sourceInformation);
+        nonMilestonedSnapshot.auditing = visitAuditing(auditingContext);
 
-        // transaction milestoning scheme
-        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionScheme(), "transactionScheme", deltaUnitemporal.sourceInformation);
-        deltaUnitemporal.transactionMilestoning = visitTransactionMilestoningScheme(transactionSchemeContext);
-
-        return deltaUnitemporal;
+        return nonMilestonedSnapshot;
     }
 
-    private BitemporalDelta visitDeltaBitemporal(PersistenceParserGrammar.DeltaBitemporalContext ctx)
+    private UnitemporalSnapshot visitUnitemporalSnapshot(PersistenceParserGrammar.UnitemporalSnapshotContext ctx)
     {
-        BitemporalDelta deltaBitemporal = new BitemporalDelta();
-        deltaBitemporal.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        UnitemporalSnapshot unitemporalSnapshot = new UnitemporalSnapshot();
+        unitemporalSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // merge scheme -- is this an abstract class, or contains enums? need to modify grammar file if former
-        PersistenceParserGrammar.MergeSchemeContext mergeSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeScheme(), "mergeScheme", deltaBitemporal.sourceInformation);
-        deltaBitemporal.mergeStrategy = visitMergeScheme(mergeSchemeContext);
+        // transaction milestoning
+        PersistenceParserGrammar.TransactionMilestoningContext transactionMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.transactionMilestoning()), "transactionMilestoning", unitemporalSnapshot.sourceInformation);
+        unitemporalSnapshot.transactionMilestoning = visitTransactionMilestoning(transactionMilestoningContext);
 
-        // transaction milestoning scheme
-        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionScheme(), "transactionScheme", deltaBitemporal.sourceInformation);
-        deltaBitemporal.transactionMilestoning = visitTransactionMilestoningScheme(transactionSchemeContext);
+        return unitemporalSnapshot;
+    }
 
-        // validity milestoning scheme -- could perhaps make the names more uniform, referred to as validityScheme, validityMilestoningScheme, and validityMilestoning in different files/uses
-        PersistenceParserGrammar.ValiditySchemeContext validitySchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityScheme(), "validityMilestoning", deltaBitemporal.sourceInformation);
-        deltaBitemporal.validityMilestoning = visitValidityMilestoningScheme(validitySchemeContext);
+    private BitemporalSnapshot visitBitemporalSnapshot(PersistenceParserGrammar.BitemporalSnapshotContext ctx)
+    {
+        BitemporalSnapshot bitemporalSnapshot = new BitemporalSnapshot();
+        bitemporalSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // transaction milestoning
+        PersistenceParserGrammar.TransactionMilestoningContext transactionMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMilestoning(), "transactionMilestoning", bitemporalSnapshot.sourceInformation);
+        bitemporalSnapshot.transactionMilestoning = visitTransactionMilestoning(transactionMilestoningContext);
+
+        // validity milestoning
+        PersistenceParserGrammar.ValidityMilestoningContext validityMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityMilestoning(), "validityMilestoning", bitemporalSnapshot.sourceInformation);
+        bitemporalSnapshot.validityMilestoning = visitValidityMilestoning(validityMilestoningContext);
 
         // validity derivation
-        PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", deltaBitemporal.sourceInformation);
-        deltaBitemporal.validityDerivation = visitValidityDerivation(validityDerivationContext);
+        PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", bitemporalSnapshot.sourceInformation);
+        bitemporalSnapshot.validityDerivation = visitValidityDerivation(validityDerivationContext);
 
-        return deltaBitemporal;
+        return bitemporalSnapshot;
     }
 
-    private NonMilestonedDelta visitDeltaNonMilestoned(PersistenceParserGrammar.DeltaNonMilestonedContext ctx)
+    private Auditing visitAuditing(PersistenceParserGrammar.AuditingContext ctx)
     {
-        NonMilestonedDelta deltaNonMilestoned = new NonMilestonedDelta();
-        deltaNonMilestoned.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // audit scheme
-        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditScheme()), "auditScheme", deltaNonMilestoned.sourceInformation);
-        deltaNonMilestoned.auditing = visitAuditScheme(auditSchemeContext);
-
-        return deltaNonMilestoned;
-    }
-
-    private UnitemporalSnapshot visitSnapshotUnitemporal(PersistenceParserGrammar.SnapshotUnitemporalContext ctx)
-    {
-        UnitemporalSnapshot snapshotUnitemporal = new UnitemporalSnapshot();
-        snapshotUnitemporal.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // transaction milestoning scheme
-        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.transactionScheme()), "transactionScheme", snapshotUnitemporal.sourceInformation);
-        snapshotUnitemporal.transactionMilestoning = visitTransactionMilestoningScheme(transactionSchemeContext);
-
-        return snapshotUnitemporal;
-    }
-
-    private BitemporalSnapshot visitSnapshotBitemporal(PersistenceParserGrammar.SnapshotBitemporalContext ctx)
-    {
-        BitemporalSnapshot snapshotBitemporal = new BitemporalSnapshot();
-        snapshotBitemporal.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // transaction milestoning scheme
-        PersistenceParserGrammar.TransactionSchemeContext transactionSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionScheme(), "transactionScheme", snapshotBitemporal.sourceInformation);
-        snapshotBitemporal.transactionMilestoning = visitTransactionMilestoningScheme(transactionSchemeContext);
-
-        // validity milestoning scheme -- could perhaps make the names more uniform, referred to as validityScheme, validityMilestoningScheme, and validityMilestoning in different files/uses
-        PersistenceParserGrammar.ValiditySchemeContext validitySchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityScheme(), "validityMilestoning", snapshotBitemporal.sourceInformation);
-        snapshotBitemporal.validityMilestoning = visitValidityMilestoningScheme(validitySchemeContext);
-
-        // validity derivation
-        PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", snapshotBitemporal.sourceInformation);
-        snapshotBitemporal.validityDerivation = visitValidityDerivation(validityDerivationContext);
-
-        return snapshotBitemporal;
-    }
-
-    private NonMilestonedSnapshot visitSnapshotNonMilestoned(PersistenceParserGrammar.SnapshotNonMilestonedContext ctx)
-    {
-        NonMilestonedSnapshot snapshotNonMilestoned = new NonMilestonedSnapshot();
-        snapshotNonMilestoned.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // audit scheme
-        PersistenceParserGrammar.AuditSchemeContext auditSchemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditScheme()), "auditScheme", snapshotNonMilestoned.sourceInformation);
-        snapshotNonMilestoned.auditing = visitAuditScheme(auditSchemeContext);
-
-        return snapshotNonMilestoned;
-    }
-
-    private StreamingPersistence visitStreamingPersistence(PersistenceParserGrammar.StreamingPersistenceContext ctx)
-    {
-        StreamingPersistence streaming = new StreamingPersistence();
-        streaming.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // input shape
-        PersistenceParserGrammar.InputShapeContext inputShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputShape(), "inputShape", streaming.sourceInformation);
-        streaming.inputShape = visitInputShape(inputShapeContext);
-
-        // input class
-        PersistenceParserGrammar.InputClassContext inputClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputClass(), "inputClass", streaming.sourceInformation);
-        streaming.inputClassPath = PureGrammarParserUtility.fromQualifiedName(inputClassContext.qualifiedName().packagePath() == null ? Collections.emptyList() : inputClassContext.qualifiedName().packagePath().identifier(), inputClassContext.qualifiedName().identifier());
-
-        return streaming;
-    }
-
-    private Auditing visitAuditScheme(PersistenceParserGrammar.AuditSchemeContext ctx)
-    {
-        if (ctx.auditSchemeNone() != null)
+        if (ctx.noAuditing() != null)
         {
             return new NoAuditing();
         }
-        if (ctx.auditSchemeBatchDateTime() != null)
+        if (ctx.batchDateTimeAuditing() != null)
         {
-            return visitBatchDateTimeAuditScheme(ctx.auditSchemeBatchDateTime());
+            return visitBatchDateTimeAuditScheme(ctx.batchDateTimeAuditing());
         }
-        if (ctx.auditSchemeOpaque() != null)
+        if (ctx.opaqueAuditing() != null)
         {
             return new OpaqueAuditing();
         }
         throw new UnsupportedOperationException();
     }
 
-    private BatchDateTimeAuditing visitBatchDateTimeAuditScheme(PersistenceParserGrammar.AuditSchemeBatchDateTimeContext ctx)
+    private BatchDateTimeAuditing visitBatchDateTimeAuditScheme(PersistenceParserGrammar.BatchDateTimeAuditingContext ctx)
     {
-        BatchDateTimeAuditing auditScheme = new BatchDateTimeAuditing();
+        BatchDateTimeAuditing auditing = new BatchDateTimeAuditing();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // transaction date time property
-        PersistenceParserGrammar.TransactionDateTimePropertyNameContext transactionDateTimePropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.transactionDateTimePropertyName()), "transactionDateTimePropertyName", sourceInformation);
-        auditScheme.dateTimePropertyName = PureGrammarParserUtility.fromIdentifier(transactionDateTimePropertyContext.identifier());
+        // batch date time property
+        PersistenceParserGrammar.BatchDateTimePropertyNameContext transactionDateTimePropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.batchDateTimePropertyName()), "batchDateTimePropertyName", sourceInformation);
+        auditing.dateTimePropertyName = PureGrammarParserUtility.fromIdentifier(transactionDateTimePropertyContext.identifier());
 
-        return auditScheme;
+        return auditing;
     }
 
-    private TransactionMilestoning visitTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeContext ctx)
+    private TransactionMilestoning visitTransactionMilestoning(PersistenceParserGrammar.TransactionMilestoningContext ctx)
     {
         if (ctx.transactionSchemeBatchId() != null)
         {
             return visitBatchIdTransactionMilestoningScheme(ctx.transactionSchemeBatchId());
         }
-        else if (ctx.transactionSchemeDateTime() != null)
+        else if (ctx.dateTimeTransactionMilestoning() != null)
         {
-            return visitDateTimeTransactionMilestoningScheme(ctx.transactionSchemeDateTime());
+            return visitDateTimeTransactionMilestoningScheme(ctx.dateTimeTransactionMilestoning());
         }
-        else if (ctx.transactionSchemeBoth() != null)
+        else if (ctx.bothTransactionMilestoning() != null)
         {
-            return visitBatchIdAndDateTimeTransactionMilestoningScheme(ctx.transactionSchemeBoth());
+            return visitBatchIdAndDateTimeTransactionMilestoningScheme(ctx.bothTransactionMilestoning());
         }
-        else if (ctx.transactionSchemeOpaque() != null)
+        else if (ctx.opaqueTransactionMilestoning() != null)
         {
             return new OpaqueTransactionMilestoning();
         }
@@ -491,130 +537,130 @@ public class PersistenceParseTreeWalker
 
     private BatchIdTransactionMilestoning visitBatchIdTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeBatchIdContext ctx)
     {
-        BatchIdTransactionMilestoning milestoningScheme = new BatchIdTransactionMilestoning();
+        BatchIdTransactionMilestoning milestoning = new BatchIdTransactionMilestoning();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // batchId in property
         PersistenceParserGrammar.BatchIdInPropertyContext batchIdInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchIdInProperty(), "batchIdInProperty", sourceInformation);
-        milestoningScheme.batchIdInName = PureGrammarParserUtility.fromIdentifier(batchIdInPropertyContext.identifier());
+        milestoning.batchIdInName = PureGrammarParserUtility.fromIdentifier(batchIdInPropertyContext.identifier());
 
         // batchId out property
         PersistenceParserGrammar.BatchIdOutPropertyContext batchIdOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchIdOutProperty(), "batchIdOutProperty", sourceInformation);
-        milestoningScheme.batchIdOutName = PureGrammarParserUtility.fromIdentifier(batchIdOutPropertyContext.identifier());
+        milestoning.batchIdOutName = PureGrammarParserUtility.fromIdentifier(batchIdOutPropertyContext.identifier());
 
-        return milestoningScheme;
+        return milestoning;
     }
 
-    private DateTimeTransactionMilestoning visitDateTimeTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeDateTimeContext ctx)
+    private DateTimeTransactionMilestoning visitDateTimeTransactionMilestoningScheme(PersistenceParserGrammar.DateTimeTransactionMilestoningContext ctx)
     {
-        DateTimeTransactionMilestoning milestoningScheme = new DateTimeTransactionMilestoning();
+        DateTimeTransactionMilestoning milestoning = new DateTimeTransactionMilestoning();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // datetime in property
-        PersistenceParserGrammar.TransactionDateTimeInPropertyContext transactionDateTimeInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDateTimeInProperty(), "transactionDateTimeInName", sourceInformation);
-        milestoningScheme.dateTimeInName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeInPropertyContext.identifier());
+        PersistenceParserGrammar.DateTimeInPropertyContext transactionDateTimeInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeInProperty(), "dateTimeInName", sourceInformation);
+        milestoning.dateTimeInName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeInPropertyContext.identifier());
 
         // datetime out property
-        PersistenceParserGrammar.TransactionDateTimeOutPropertyContext transactionDateTimeOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDateTimeOutProperty(), "transactionDateTimeOutName", sourceInformation);
-        milestoningScheme.dateTimeOutName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeOutPropertyContext.identifier());
+        PersistenceParserGrammar.DateTimeOutPropertyContext transactionDateTimeOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeOutProperty(), "dateTimeOutName", sourceInformation);
+        milestoning.dateTimeOutName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeOutPropertyContext.identifier());
 
-        return milestoningScheme;
+        return milestoning;
     }
 
-    private BatchIdAndDateTimeTransactionMilestoning visitBatchIdAndDateTimeTransactionMilestoningScheme(PersistenceParserGrammar.TransactionSchemeBothContext ctx)
+    private BatchIdAndDateTimeTransactionMilestoning visitBatchIdAndDateTimeTransactionMilestoningScheme(PersistenceParserGrammar.BothTransactionMilestoningContext ctx)
     {
-        BatchIdAndDateTimeTransactionMilestoning milestoningScheme = new BatchIdAndDateTimeTransactionMilestoning();
+        BatchIdAndDateTimeTransactionMilestoning milestoning = new BatchIdAndDateTimeTransactionMilestoning();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // batchId in property
         PersistenceParserGrammar.BatchIdInPropertyContext batchIdInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchIdInProperty(), "batchIdInProperty", sourceInformation);
-        milestoningScheme.batchIdInName = PureGrammarParserUtility.fromIdentifier(batchIdInPropertyContext.identifier());
+        milestoning.batchIdInName = PureGrammarParserUtility.fromIdentifier(batchIdInPropertyContext.identifier());
 
         // batchId out property
         PersistenceParserGrammar.BatchIdOutPropertyContext batchIdOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchIdOutProperty(), "batchIdOutProperty", sourceInformation);
-        milestoningScheme.batchIdOutName = PureGrammarParserUtility.fromIdentifier(batchIdOutPropertyContext.identifier());
+        milestoning.batchIdOutName = PureGrammarParserUtility.fromIdentifier(batchIdOutPropertyContext.identifier());
 
         // datetime in property
-        PersistenceParserGrammar.TransactionDateTimeInPropertyContext transactionDateTimeInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDateTimeInProperty(), "transactionDateTimeInName", sourceInformation);
-        milestoningScheme.dateTimeInName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeInPropertyContext.identifier());
+        PersistenceParserGrammar.DateTimeInPropertyContext dateTimeInPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeInProperty(), "dateTimeInName", sourceInformation);
+        milestoning.dateTimeInName = PureGrammarParserUtility.fromIdentifier(dateTimeInPropertyContext.identifier());
 
         // datetime out property
-        PersistenceParserGrammar.TransactionDateTimeOutPropertyContext transactionDateTimeOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDateTimeOutProperty(), "transactionDateTimeOutName", sourceInformation);
-        milestoningScheme.dateTimeOutName = PureGrammarParserUtility.fromIdentifier(transactionDateTimeOutPropertyContext.identifier());
+        PersistenceParserGrammar.DateTimeOutPropertyContext dateTimeOutPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeOutProperty(), "dateTimeOutName", sourceInformation);
+        milestoning.dateTimeOutName = PureGrammarParserUtility.fromIdentifier(dateTimeOutPropertyContext.identifier());
 
-        return milestoningScheme;
+        return milestoning;
     }
 
-    private ValidityMilestoning visitValidityMilestoningScheme(PersistenceParserGrammar.ValiditySchemeContext ctx)
+    private ValidityMilestoning visitValidityMilestoning(PersistenceParserGrammar.ValidityMilestoningContext ctx)
     {
-        if (ctx.validitySchemeDateTime() != null)
+        if (ctx.dateTimeValidityMilestoning() != null)
         {
-            return visitDateTimeValidityMilestoningScheme(ctx.validitySchemeDateTime());
+            return visitDateTimeValidityMilestoningScheme(ctx.dateTimeValidityMilestoning());
         }
-        else if (ctx.validitySchemeOpaque() != null)
+        else if (ctx.opaqueValidityMilestoning() != null)
         {
             return new OpaqueValidityMilestoning();
         }
         throw new UnsupportedOperationException();
     }
 
-    private DateTimeValidityMilestoning visitDateTimeValidityMilestoningScheme(PersistenceParserGrammar.ValiditySchemeDateTimeContext ctx)
+    private DateTimeValidityMilestoning visitDateTimeValidityMilestoningScheme(PersistenceParserGrammar.DateTimeValidityMilestoningContext ctx)
     {
-        DateTimeValidityMilestoning milestoningScheme = new DateTimeValidityMilestoning();
+        DateTimeValidityMilestoning milestoning = new DateTimeValidityMilestoning();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // datetime in property
-        PersistenceParserGrammar.ValidityDateTimeFromPropertyContext validityDateTimeFromPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDateTimeFromProperty(), "validityDateTimeFromName", sourceInformation);
-        milestoningScheme.dateTimeFromName = PureGrammarParserUtility.fromIdentifier(validityDateTimeFromPropertyContext.identifier());
+        // datetime from property
+        PersistenceParserGrammar.DateTimeFromPropertyContext validityDateTimeFromPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeFromProperty(), "dateTimeFromName", sourceInformation);
+        milestoning.dateTimeFromName = PureGrammarParserUtility.fromIdentifier(validityDateTimeFromPropertyContext.identifier());
 
-        // datetime out property
-        PersistenceParserGrammar.ValidityDateTimeThruPropertyContext validityDateTimeThruPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDateTimeThruProperty(), "validityDateTimeThruName", sourceInformation);
-        milestoningScheme.dateTimeThruName = PureGrammarParserUtility.fromIdentifier(validityDateTimeThruPropertyContext.identifier());
+        // datetime thru property
+        PersistenceParserGrammar.DateTimeThruPropertyContext validityDateTimeThruPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeThruProperty(), "dateTimeThruName", sourceInformation);
+        milestoning.dateTimeThruName = PureGrammarParserUtility.fromIdentifier(validityDateTimeThruPropertyContext.identifier());
 
-        return milestoningScheme;
+        return milestoning;
     }
 
     //TODO: ledav -- populate properties
     private ValidityDerivation visitValidityDerivation(PersistenceParserGrammar.ValidityDerivationContext ctx)
     {
-        if (ctx.VALIDITY_DERIVATION_SOURCE_FROM() != null)
+        if (ctx.sourceProvidesFromValidityDerivation() != null)
         {
             return new SourceSpecifiesValidFromDate();
         }
-        else if (ctx.VALIDITY_DERIVATION_SOURCE_FROM_THRU() != null)
+        else if (ctx.sourceProvidesFromThruValidityDerivation() != null)
         {
             return new SourceSpecifiesValidFromAndThruDate();
         }
         throw new UnsupportedOperationException();
     }
 
-    private MergeStrategy visitMergeScheme(PersistenceParserGrammar.MergeSchemeContext ctx)
+    private MergeStrategy visitMergeStrategy(PersistenceParserGrammar.MergeStrategyContext ctx)
     {
-        if (ctx.mergeSchemeNoDeletes() != null)
+        if (ctx.noDeletesMergeStrategy() != null)
         {
             return new NoDeletesMergeStrategy();
         }
-        if (ctx.mergeSchemeDeleteIndicator() != null)
+        if (ctx.deleteIndicatorMergeStrategy() != null)
         {
-            return visitDeleteIndicatorMergeScheme(ctx.mergeSchemeDeleteIndicator());
+            return visitDeleteIndicatorMergeScheme(ctx.deleteIndicatorMergeStrategy());
         }
         throw new UnsupportedOperationException();
     }
 
-    private DeleteIndicatorMergeStrategy visitDeleteIndicatorMergeScheme(PersistenceParserGrammar.MergeSchemeDeleteIndicatorContext ctx)
+    private DeleteIndicatorMergeStrategy visitDeleteIndicatorMergeScheme(PersistenceParserGrammar.DeleteIndicatorMergeStrategyContext ctx)
     {
-        DeleteIndicatorMergeStrategy mergeScheme = new DeleteIndicatorMergeStrategy();
+        DeleteIndicatorMergeStrategy mergeStrategy = new DeleteIndicatorMergeStrategy();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // delete property
-        PersistenceParserGrammar.MergeSchemeDeleteIndicatorPropertyContext deleteIndicatorPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeSchemeDeleteIndicatorProperty(), "deleteIndicatorProperty", sourceInformation);
-        mergeScheme.deleteProperty = PureGrammarParserUtility.fromIdentifier(deleteIndicatorPropertyContext.identifier());
+        PersistenceParserGrammar.MergeStrategyDeleteIndicatorPropertyContext deleteIndicatorPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategyDeleteIndicatorProperty(), "deleteIndicatorProperty", sourceInformation);
+        mergeStrategy.deleteProperty = PureGrammarParserUtility.fromIdentifier(deleteIndicatorPropertyContext.identifier());
 
         // delete values
-        PersistenceParserGrammar.MergeSchemeDeleteIndicatorValuesContext deleteIndicatorValuesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeSchemeDeleteIndicatorValues(), "deleteValues", sourceInformation);
+        PersistenceParserGrammar.MergeStrategyDeleteIndicatorValuesContext deleteIndicatorValuesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategyDeleteIndicatorValues(), "deleteValues", sourceInformation);
         //TODO: ledav -- handle non-strings
-        mergeScheme.deleteValues = deleteIndicatorValuesContext != null && deleteIndicatorValuesContext.STRING() != null ? ListIterate.collect(deleteIndicatorValuesContext.STRING(), deleteIndicatorValueContext -> PureGrammarParserUtility.fromGrammarString(deleteIndicatorValueContext.getText(), true)) : Collections.emptyList();
-        return mergeScheme;
+        mergeStrategy.deleteValues = deleteIndicatorValuesContext != null && deleteIndicatorValuesContext.STRING() != null ? ListIterate.collect(deleteIndicatorValuesContext.STRING(), deleteIndicatorValueContext -> PureGrammarParserUtility.fromGrammarString(deleteIndicatorValueContext.getText(), true)) : Collections.emptyList();
+
+        return mergeStrategy;
     }
-    */
 }

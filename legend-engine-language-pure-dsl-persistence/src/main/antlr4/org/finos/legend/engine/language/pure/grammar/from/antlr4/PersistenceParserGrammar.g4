@@ -47,7 +47,7 @@ persistencePipe:                            PERSISTENCE_PIPE qualifiedName
                                                         documentation
                                                         | owners
                                                         | trigger
-                                                        | input
+                                                        | inputSource
                                                         | persistence
                                                     )*
                                                 BRACE_CLOSE
@@ -68,9 +68,9 @@ trigger:                                    PERSISTENCE_PIPE_TRIGGER COLON
                                                 )
                                             SEMI_COLON
 ;
-input:                                      PERSISTENCE_PIPE_INPUT COLON inputService
+inputSource:                                PERSISTENCE_PIPE_INPUT COLON serviceInputSource
 ;
-inputService:                               INPUT_SERVICE
+serviceInputSource:                         INPUT_SERVICE
                                                 BRACE_OPEN
                                                     service
                                                 BRACE_CLOSE
