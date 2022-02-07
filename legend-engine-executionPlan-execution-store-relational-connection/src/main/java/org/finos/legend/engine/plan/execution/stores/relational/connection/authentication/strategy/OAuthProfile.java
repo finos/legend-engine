@@ -18,16 +18,40 @@ import org.eclipse.collections.api.factory.Maps;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-public class OAuthProfile
-{
+public class OAuthProfile {
     public String key, discoveryUrl, clientId, secret;
-    public Map<String,String> customParams = Maps.mutable.empty();
+    public Map<String, String> customParams = Maps.mutable.empty();
+
+    public static OAuthProfile makeUnknownProfile()
+    {
+        OAuthProfile oAuthProfile = new OAuthProfile();
+        oAuthProfile.clientId = "UNKNOWN";
+        oAuthProfile.key = "UNKNOWN";
+        oAuthProfile.discoveryUrl = "UNKNOWN";
+        oAuthProfile.secret = "UNKNOWN";
+        return oAuthProfile;
+    }
 
     public static OAuthProfile findOAuthProfile(List<OAuthProfile> profiles, String key)
     {
-        return profiles.stream().filter(profile -> profile.key.equals(key))
-                .findFirst().orElseThrow(() -> new RuntimeException("No OAuth profile for " + key));
-    }
+        /*
+            "Profile" is not an OAuth concept.
+            Legend is using "profile" as a way by which the Legend Engine server can look up OAuth client ids that are tied to specific database connections.
+            Also, as we add expand support for OAuth, OAuth client ids are not database specific.
+            Also, a database can be accessed in multiple ways. Some users might access the database using a database specific client id and some with a platform specific client id.
 
+            To support these use cases, we do not throw if we cannot find a matching profile.
+            Other code in the connection code path will handle this "null" profile.
+
+            Eventually the use of the profile will be deprecated.
+         */
+        Optional<OAuthProfile> holder = profiles.stream().filter(profile -> profile.key.equals(key)).findFirst();
+        if (holder.isPresent())
+        {
+            return holder.get();
+        }
+        return OAuthProfile.makeUnknownProfile();
+    }
 }
