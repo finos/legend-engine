@@ -13,7 +13,7 @@ identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT
                                             | PERSISTENCE_PIPE | PERSISTENCE_PIPE_DOC | PERSISTENCE_PIPE_OWNERS | PERSISTENCE_PIPE_TRIGGER | PERSISTENCE_PIPE_INPUT | PERSISTENCE_PIPE_PERSISTENCE
-                                            | EVENT_SCHEDULE_TRIGGERED | EVENT_REGISTRY_DATASET_AVAILABLE
+                                            | EVENT_SCHEDULE_TRIGGERED | EVENT_REGISTRY_DATASET_AVAILABLE | EVENT_OPAQUE
                                             | INPUT_SERVICE | INPUT_SERVICE_SERVICE
                                             | PERSISTENCE_STREAMING | PERSISTENCE_BATCH | PERSISTENCE_BATCH_TARGET
                                             | TARGET_SPEC_NAME | TARGET_SPEC_MODEL_CLASS
@@ -21,14 +21,14 @@ identifier:                                 VALID_STRING | STRING
                                             | TARGET_SPEC_FLAT | TARGET_SPEC_FLAT_PARTITION_PROPERTIES | TARGET_SPEC_FLAT_DEDUPLICATION | TARGET_SPEC_FLAT_BATCH_MODE
                                             | TARGET_SPEC_NESTED
                                             | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
-                                            | DEDUPLICATION_NONE | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_PROPERTY
+                                            | DEDUPLICATION_NONE | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_PROPERTY | DEDUPLICATION_OPAQUE
                                             | BATCH_MODE_NON_MILESTONED_SNAPSHOT | BATCH_MODE_UNITEMPORAL_SNAPSHOT | BATCH_MODE_BITEMPORAL_SNAPSHOT | BATCH_MODE_NON_MILESTONED_DELTA | BATCH_MODE_UNITEMPORAL_DELTA | BATCH_MODE_BITEMPORAL_DELTA | BATCH_MODE_APPEND_ONLY
                                             | FILTER_DUPLICATES
                                             | AUDITING | AUDITING_NONE | AUDITING_BATCH_DATE_TIME | AUDITING_BATCH_DATE_TIME_PROPERTY | AUDITING_OPAQUE
                                             | TXN_MILESTONING | TXN_MILESTONING_BATCH_ID | TXN_MILESTONING_DATE_TIME | TXN_MILESTONING_BOTH | TXN_MILESTONING_OPAQUE | BATCH_ID_IN_PROPERTY | BATCH_ID_OUT_PROPERTY | DATE_TIME_IN_PROPERTY | DATE_TIME_OUT_PROPERTY
                                             | VALIDITY_MILESTONING | VALIDITY_MILESTONING_DATE_TIME | VALIDITY_MILESTONING_OPAQUE | DATE_TIME_FROM_PROPERTY | DATE_TIME_THRU_PROPERTY
-                                            | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU | VALIDITY_DERIVATION_OPAQUE
-                                            | MERGE_STRATEGY | MERGE_STRATEGY_NO_DELETES | MERGE_STRATEGY_DELETE_INDICATOR | MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY | MERGE_STRATEGY_DELETE_INDICATOR_VALUES
+                                            | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU | VALIDITY_DERIVATION_OPAQUE | SOURCE_DATE_TIME_FROM_PROPERTY | SOURCE_DATE_TIME_THRU_PROPERTY
+                                            | MERGE_STRATEGY | MERGE_STRATEGY_NO_DELETES | MERGE_STRATEGY_DELETE_INDICATOR | MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY | MERGE_STRATEGY_DELETE_INDICATOR_VALUES | MERGE_STRATEGY_OPAQUE
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -65,6 +65,7 @@ trigger:                                    PERSISTENCE_PIPE_TRIGGER COLON
                                                 (
                                                     EVENT_SCHEDULE_TRIGGERED
                                                     | EVENT_REGISTRY_DATASET_AVAILABLE
+                                                    | EVENT_OPAQUE
                                                 )
                                             SEMI_COLON
 ;
@@ -102,8 +103,7 @@ targetSpecification:                        PERSISTENCE_BATCH_TARGET COLON
 groupedTargetSpecification:                 TARGET_SPEC_GROUPED
                                                 BRACE_OPEN
                                                     (
-                                                        targetName
-                                                        | targetModelClass
+                                                        targetModelClass
                                                         | targetTransactionScope
                                                         | targetComponents
                                                     )*
@@ -172,6 +172,7 @@ deduplicationStrategy:                      TARGET_SPEC_FLAT_DEDUPLICATION COLON
                                                     noDeduplicationStrategy
                                                     | anyVersionDeduplicationStrategy
                                                     | maxVersionDeduplicationStrategy
+                                                    | opaqueDeduplicationStrategy
                                                 )
 ;
 noDeduplicationStrategy:                    DEDUPLICATION_NONE SEMI_COLON
@@ -184,6 +185,8 @@ maxVersionDeduplicationStrategy:            DEDUPLICATION_MAX_VERSION
                                                 BRACE_CLOSE
 ;
 deduplicationVersionPropertyName:           DEDUPLICATION_MAX_VERSION_PROPERTY COLON identifier SEMI_COLON
+;
+opaqueDeduplicationStrategy:                DEDUPLICATION_OPAQUE SEMI_COLON
 ;
 batchMode:                                  TARGET_SPEC_FLAT_BATCH_MODE COLON
                                                 (
@@ -315,7 +318,6 @@ validityMilestoning:                        VALIDITY_MILESTONING COLON
                                                     dateTimeValidityMilestoning
                                                     | opaqueValidityMilestoning
                                                 )
-                                            SEMI_COLON
 ;
 dateTimeValidityMilestoning:                VALIDITY_MILESTONING_DATE_TIME
                                                 BRACE_OPEN
@@ -333,35 +335,35 @@ opaqueValidityMilestoning:                  VALIDITY_MILESTONING_OPAQUE SEMI_COL
 ;
 validityDerivation:                         VALIDITY_DERIVATION COLON
                                                 (
-                                                    sourceProvidesFromValidityDerivation
-                                                    | sourceProvidesFromThruValidityDerivation
+                                                    sourceSpecifiesFromValidityDerivation
+                                                    | sourceSpecifiesFromThruValidityDerivation
                                                     | opaqueValidityDerivation
                                                 )
-                                            SEMI_COLON
 ;
-sourceProvidesFromValidityDerivation:       VALIDITY_DERIVATION_SOURCE_FROM
+sourceSpecifiesFromValidityDerivation:      VALIDITY_DERIVATION_SOURCE_FROM
                                                 BRACE_OPEN
-//                                                    validityDerivationFromProperty
+                                                    validityDerivationFromProperty
                                                 BRACE_CLOSE
 ;
-sourceProvidesFromThruValidityDerivation:   VALIDITY_DERIVATION_SOURCE_FROM_THRU
+sourceSpecifiesFromThruValidityDerivation:  VALIDITY_DERIVATION_SOURCE_FROM_THRU
                                                 BRACE_OPEN
-//                                                    (
-//                                                        validityDerivationFromProperty
-//                                                        | validityDerivationThruProperty
-//                                                    )*
+                                                    (
+                                                        validityDerivationFromProperty
+                                                        | validityDerivationThruProperty
+                                                    )*
                                                 BRACE_CLOSE
 ;
-//validityDerivationFromProperty:
-//;
-//validityDerivationThruProperty:
-//;
+validityDerivationFromProperty:             SOURCE_DATE_TIME_FROM_PROPERTY COLON (qualifiedName ARROW identifier) SEMI_COLON
+;
+validityDerivationThruProperty:             SOURCE_DATE_TIME_THRU_PROPERTY COLON (qualifiedName ARROW identifier) SEMI_COLON
+;
 opaqueValidityDerivation:                   VALIDITY_DERIVATION_OPAQUE SEMI_COLON
 ;
 mergeStrategy:                              MERGE_STRATEGY COLON
                                                 (
                                                     noDeletesMergeStrategy
                                                     | deleteIndicatorMergeStrategy
+                                                    | opaqueMergeStrategy
                                                 )
 ;
 noDeletesMergeStrategy:                     MERGE_STRATEGY_NO_DELETES SEMI_COLON
@@ -381,4 +383,6 @@ mergeStrategyDeleteIndicatorValues:         MERGE_STRATEGY_DELETE_INDICATOR_VALU
                                                     STRING (COMMA STRING)*
                                                 BRACKET_CLOSE
                                             SEMI_COLON
+;
+opaqueMergeStrategy:                        MERGE_STRATEGY_OPAQUE SEMI_COLON
 ;

@@ -14,10 +14,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.BitemporalDelta;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.NonMilestonedDelta;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.UnitemporalDelta;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.DeleteIndicatorMergeStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.MergeStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.MergeStrategyVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.NoDeletesMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.NonMilestonedSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.UnitemporalSnapshot;
@@ -27,14 +24,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.OpaqueValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.ValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.ValidityMilestoningVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesValidFromAndThruDate;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesValidFromDate;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromAndThruDate;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventTypeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.RegistryDatasetAvailable;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.ScheduleTriggered;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.InputSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.InputSourceVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.ServiceInputSource;
@@ -135,6 +129,12 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_event_ScheduleTriggered_Impl("");
         }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_event_EventType visit(OpaqueEventType val)
+        {
+            return new Root_meta_pure_persistence_metamodel_event_EventType_Impl("");
+        }
     }
 
     private static class InputSourceBuilder implements InputSourceVisitor<Root_meta_pure_persistence_metamodel_input_InputSource>
@@ -201,7 +201,6 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification visit(GroupedFlatTargetSpecification val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_targetspecification_GroupedFlatTargetSpecification_Impl("")
-                    ._targetName(targetName)
                     ._modelClass(modelClass)
                     ._transactionScope(context.resolveEnumValue(PERSIST_PACKAGE_PREFIX + "::batch::targetspecification::TransactionScope", val.transactionScope.name()))
                     ._components(ListIterate.collect(val.components, c -> resolveComponent(c, modelClass, context)));
@@ -255,13 +254,18 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_batch_deduplication_MaxVersionDeduplicationStrategy_Impl("")
                     ._versionProperty(resolveModelClassProperty(val.versionProperty, modelClass, context));
-
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_batch_deduplication_DeduplicationStrategy visit(NoDeduplicationStrategy val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_deduplication_NoDeduplicationStrategy_Impl("");
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_batch_deduplication_DeduplicationStrategy visit(OpaqueDeduplicationStrategy val)
+        {
+            return new Root_meta_pure_persistence_metamodel_batch_deduplication_OpaqueDeduplicationStrategy_Impl("");
         }
     }
 
@@ -357,6 +361,12 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_batch_mode_delta_merge_NoDeletesMergeStrategy_Impl("");
         }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_batch_mode_delta_merge_MergeStrategy visit(OpaqueMergeStrategy val)
+        {
+            return new Root_meta_pure_persistence_metamodel_batch_mode_delta_merge_OpaqueMergeStrategy_Impl("");
+        }
     }
 
     private static class AuditingBuilder implements AuditingVisitor<Root_meta_pure_persistence_metamodel_batch_audit_Auditing>
@@ -445,7 +455,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesValidFromAndThruDate val)
+        public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromAndThruDate val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl("")
                     ._sourceDateTimeFromProperty(resolveModelClassProperty(val.sourceDateTimeFromProperty, modelClass, context))
@@ -453,7 +463,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesValidFromDate val)
+        public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromDate val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl("")
                     ._sourceDateTimeFromProperty(resolveModelClassProperty(val.sourceDateTimeFromProperty, modelClass, context));

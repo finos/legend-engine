@@ -4,6 +4,7 @@ public class BatchDateTimeAuditing extends Auditing
 {
     public String dateTimePropertyName;
 
+    @Override
     public <T> T accept(AuditingVisitor<T> visitor)
     {
         return visitor.visit(this);

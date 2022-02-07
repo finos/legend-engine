@@ -4,4 +4,5 @@ public interface MergeStrategyVisitor<T>
 {
     T visit(DeleteIndicatorMergeStrategy val);
     T visit(NoDeletesMergeStrategy val);
+    T visit(OpaqueMergeStrategy val);
 }

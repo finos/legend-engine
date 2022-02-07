@@ -23,6 +23,7 @@ PERSISTENCE_PIPE_PERSISTENCE:           'persistence';
 // EVENT
 EVENT_SCHEDULE_TRIGGERED:               'ScheduleTriggered';
 EVENT_REGISTRY_DATASET_AVAILABLE:       'RegistryDatasetAvailable';
+EVENT_OPAQUE:                           'OpaqueEvent';
 
 // INPUT
 INPUT_SERVICE:                          'Service';
@@ -66,6 +67,7 @@ DEDUPLICATION_NONE:                     'NoDeduplication';
 DEDUPLICATION_ANY_VERSION:              'AnyVersion';
 DEDUPLICATION_MAX_VERSION:              'MaxVersion';
 DEDUPLICATION_MAX_VERSION_PROPERTY:     'versionProperty';
+DEDUPLICATION_OPAQUE:                   'OpaqueDeduplication';
 
 // BATCH MODE VALUES
 BATCH_MODE_NON_MILESTONED_SNAPSHOT:     'NonMilestonedSnapshot';
@@ -107,6 +109,8 @@ DATE_TIME_THRU_PROPERTY:                'dateTimeThruProperty';
 VALIDITY_DERIVATION:                    'validityDerivation';
 VALIDITY_DERIVATION_SOURCE_FROM:        'SourceProvidesFromDateTime';
 VALIDITY_DERIVATION_SOURCE_FROM_THRU:   'SourceProvidesFromAndThruDateTime';
+SOURCE_DATE_TIME_FROM_PROPERTY:         'sourceDateTimeFromProperty';
+SOURCE_DATE_TIME_THRU_PROPERTY:         'sourceDateTimeThruProperty';
 VALIDITY_DERIVATION_OPAQUE:             'OpaqueValidityDerivation';
 
 MERGE_STRATEGY:                          'mergeStrategy';
@@ -114,3 +118,4 @@ MERGE_STRATEGY_NO_DELETES:               'NoDeletes';
 MERGE_STRATEGY_DELETE_INDICATOR:         'DeleteIndicator';
 MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY:'deleteProperty';
 MERGE_STRATEGY_DELETE_INDICATOR_VALUES:  'deleteValues';
+MERGE_STRATEGY_OPAQUE:                   'OpaqueMerge';

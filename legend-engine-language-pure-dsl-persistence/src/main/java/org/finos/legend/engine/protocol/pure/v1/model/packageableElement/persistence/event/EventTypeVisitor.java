@@ -4,4 +4,5 @@ public interface EventTypeVisitor<T>
 {
     T visit(RegistryDatasetAvailable val);
     T visit(ScheduleTriggered val);
+    T visit(OpaqueEventType val);
 }
