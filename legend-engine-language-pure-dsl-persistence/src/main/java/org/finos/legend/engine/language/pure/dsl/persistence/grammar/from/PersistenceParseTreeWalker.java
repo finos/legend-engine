@@ -64,9 +64,9 @@ public class PersistenceParseTreeWalker
     public void visit(PersistenceParserGrammar.DefinitionContext ctx)
     {
         this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
-        ctx.servicePersistence().stream().map(this::visitServicePersistence).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+//        ctx.servicePersistence().stream().map(this::visitServicePersistence).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
-
+/*
     private PersistencePipe visitServicePersistence(PersistenceParserGrammar.ServicePersistenceContext ctx)
     {
         PersistencePipe servicePersistence = new PersistencePipe();
@@ -184,11 +184,6 @@ public class PersistenceParseTreeWalker
         {
             return visitBatchDatastoreSpecification(ctx.datastore());
         }
-        /* else if (others)
-        {
-            return visitOthers());
-        }
-        */
         throw new UnsupportedOperationException();
     }
 
@@ -621,4 +616,5 @@ public class PersistenceParseTreeWalker
         mergeScheme.deleteValues = deleteIndicatorValuesContext != null && deleteIndicatorValuesContext.STRING() != null ? ListIterate.collect(deleteIndicatorValuesContext.STRING(), deleteIndicatorValueContext -> PureGrammarParserUtility.fromGrammarString(deleteIndicatorValueContext.getText(), true)) : Collections.emptyList();
         return mergeScheme;
     }
+    */
 }

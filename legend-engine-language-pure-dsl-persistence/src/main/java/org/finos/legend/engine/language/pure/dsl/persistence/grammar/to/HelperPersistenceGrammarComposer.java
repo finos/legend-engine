@@ -15,6 +15,7 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class HelperPersistenceGrammarComposer
 {
+    /*
     public static String renderOwners(List<String> owners)
     {
         StringBuilder builder = new StringBuilder();
@@ -127,4 +128,5 @@ public class HelperPersistenceGrammarComposer
         builder.append(getTabString(baseIndentation)).append("}\n");
         return builder.toString();
     }
+    */
 }

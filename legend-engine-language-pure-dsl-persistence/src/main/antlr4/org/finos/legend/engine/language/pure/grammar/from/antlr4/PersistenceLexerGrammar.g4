@@ -9,90 +9,108 @@ TRUE:                                   'true';
 FALSE:                                  'false';
 IMPORT:                                 'import';
 
-// MODEL
-SERVICE_PERSISTENCE:                    'ServicePersistence';
-SERVICE_PERSISTENCE_DOCUMENTATION:      'doc';
-SERVICE_PERSISTENCE_OWNERS:             'owners';
-SERVICE_PERSISTENCE_TRIGGER:            'trigger';
-SERVICE_PERSISTENCE_SERVICE:            'service';
+//**********
+// PERSISTENCE PIPE
+//**********
 
-EVENT_TYPE_SCHEDULE_TRIGGERED:          'ScheduleTriggered';
-EVENT_TYPE_REGISTRY_DATASET_AVAILABLE:  'RegistryDatasetAvailable';
+PERSISTENCE_PIPE:                       'PersistencePipe';
+PERSISTENCE_PIPE_DOC:                   'doc';
+PERSISTENCE_PIPE_OWNERS:                'owners';
+PERSISTENCE_PIPE_TRIGGER:               'trigger';
+PERSISTENCE_PIPE_INPUT:                 'input';
+PERSISTENCE_PIPE_PERSISTENCE:           'persistence';
 
-PERSISTENCE:                            'persistence';
+// EVENT
+EVENT_SCHEDULE_TRIGGERED:               'ScheduleTriggered';
+EVENT_REGISTRY_DATASET_AVAILABLE:       'RegistryDatasetAvailable';
+
+// INPUT
+INPUT_SERVICE:                          'Service';
+INPUT_SERVICE_SERVICE:                  'service';
+
+// PERSISTENCE
 PERSISTENCE_STREAMING:                  'Streaming';
 PERSISTENCE_BATCH:                      'Batch';
+PERSISTENCE_BATCH_TARGET:               'target';
 
-INPUT_SHAPE:                            'inputShape';
-INPUT_SHAPE_FLAT:                       'FLAT';
-INPUT_SHAPE_GROUPED_FLAT:               'GROUPED_FLAT';
-INPUT_SHAPE_NESTED:                     'NESTED';
+//**********
+// TARGET SPECIFICATION
+//**********
 
-INPUT_CLASS:                            'inputClass';
+TARGET_SPEC_NAME:                       'targetName';
+TARGET_SPEC_MODEL_CLASS:                'modelClass';
 
-TRANSACTION_MODE:                       'transactionMode';
-TRANSACTION_MODE_SINGLE_DATASET:        'SINGLE_DATASET';
-TRANSACTION_MODE_ALL_DATASETS:          'ALL_DATASETS';
+// GROUPED
+TARGET_SPEC_GROUPED:                    'GroupedFlat';
+TARGET_SPEC_GROUPED_TXN_SCOPE:          'transactionScope';
+TARGET_SPEC_GROUPED_COMPONENTS:         'components';
 
-TARGET:                                 'target';
+TARGET_COMPONENT_PROPERTY:              'property';
+TARGET_COMPONENT_TARGET_SPEC:           'targetSpecification';
 
-DATASTORE:                              'Datastore';
-DATASTORE_NAME:                         'datastoreName';
+// FLAT
+TARGET_SPEC_FLAT:                       'Flat';
+TARGET_SPEC_FLAT_PARTITION_PROPERTIES:  'partitionProperties';
+TARGET_SPEC_FLAT_DEDUPLICATION:         'deduplicationStrategy';
+TARGET_SPEC_FLAT_BATCH_MODE:            'batchMode';
 
-DATASET:                                'dataset';
-DATASETS:                               'datasets';
-DATASET_NAME:                           'datasetName';
+// NESTED
+TARGET_SPEC_NESTED:                     'Nested';
 
-PARTITION_PROPERTIES:                   'partitionProperties';
+// TXN_SCOPE VAUES
+TXN_SCOPE_SINGLE:                       'SINGLE_TARGET';
+TXN_SCOPE_ALL:                          'ALL_TARGETS';
 
-DEDUPLICATION_STRATEGY:                 'deduplicationStrategy';
-DEDUPLICATION_STRATEGY_NONE:            'NoDedup';
-DEDUPLICATION_STRATEGY_ANY:             'AnyDedup';
-DEDUPLICATION_STRATEGY_COUNT:           'CountDedup';
-DEDUPLICATION_STRATEGY_COUNT_PROPERTY:  'duplicateCountProperty';
-DEDUPLICATION_STRATEGY_MAX_VERSION:     'MaxVersionDedup';
-DEDUPLICATION_STRATEGY_VERSION_PROPERTY:'versionProperty';
+// DEDUPLICATION VALUES
+DEDUPLICATION_NONE:                     'NoDeduplication';
+DEDUPLICATION_ANY_VERSION:              'AnyVersion';
+DEDUPLICATION_MAX_VERSION:              'MaxVersion';
+DEDUPLICATION_MAX_VERSION_PROPERTY:     'versionProperty';
 
-BATCH_MODE:                             'batchMode';
-SNAPSHOT_NON_MILESTONED:                'NonMilestonedSnapshot';
-SNAPSHOT_UNITEMPORAL:                   'UnitemporalSnapshot';
-SNAPSHOT_BITEMPORAL:                    'BitemporalSnapshot';
-DELTA_NON_MILESTONED:                   'NonMilestonedDelta';
-DELTA_UNITEMPORAL:                      'UnitemporalDelta';
-DELTA_BITEMPORAL:                       'BitemporalDelta';
-APPEND_ONLY:                            'AppendOnly';
+// BATCH MODE VALUES
+BATCH_MODE_NON_MILESTONED_SNAPSHOT:     'NonMilestonedSnapshot';
+BATCH_MODE_UNITEMPORAL_SNAPSHOT:        'UnitemporalSnapshot';
+BATCH_MODE_BITEMPORAL_SNAPSHOT:         'BitemporalSnapshot';
+BATCH_MODE_NON_MILESTONED_DELTA:        'NonMilestonedDelta';
+BATCH_MODE_UNITEMPORAL_DELTA:           'UnitemporalDelta';
+BATCH_MODE_BITEMPORAL_DELTA:            'BitemporalDelta';
+BATCH_MODE_APPEND_ONLY:                 'AppendOnly';
+
+//**********
+// BATCH MODE MIX-INS
+//**********
 
 FILTER_DUPLICATES:                      'filterDuplicates';
 
-AUDIT_SCHEME:                           'auditing';
-AUDIT_SCHEME_NONE:                      'NoAudit';
-AUDIT_SCHEME_BATCH_DATE_TIME:           'BatchDateTime';
-AUDIT_SCHEME_BATCH_DATE_TIME_PROPERTY:  'transactionDateTimePropertyName';
-AUDIT_SCHEME_OPAQUE:                    'OpaqueAudit';
+AUDITING:                               'auditing';
+AUDITING_NONE:                          'NoAudit';
+AUDITING_BATCH_DATE_TIME:               'BatchDateTime';
+AUDITING_BATCH_DATE_TIME_PROPERTY:      'transactionDateTimePropertyName';
+AUDITING_OPAQUE:                        'OpaqueAudit';
 
-TRANSACTION_SCHEME:                     'transactionMilestoning';
-TRANSACTION_SCHEME_BATCH_ID:            'BatchIdOnly';
-TRANSACTION_SCHEME_DATE_TIME:           'DateTimeOnly';
-TRANSACTION_SCHEME_BOTH:                'BatchIdAndDateTime';
-TRANSACTION_SCHEME_OPAQUE:              'OpaqueTransactionMilestoning';
+TXN_MILESTONING:                        'transactionMilestoning';
+TXN_MILESTONING_BATCH_ID:               'BatchIdOnly';
+TXN_MILESTONING_DATE_TIME:              'DateTimeOnly';
+TXN_MILESTONING_BOTH:                   'BatchIdAndDateTime';
+TXN_MILESTONING_OPAQUE:                 'OpaqueTransactionMilestoning';
 BATCH_ID_IN_PROPERTY:                   'batchIdInProperty';
 BATCH_ID_OUT_PROPERTY:                  'batchIdOutProperty';
-TRANSACTION_DATE_TIME_IN_PROPERTY:      'transactionDateTimeInProperty';
-TRANSACTION_DATE_TIME_OUT_PROPERTY:     'transactionDateTimeOutProperty';
+DATE_TIME_IN_PROPERTY:                  'dateTimeInProperty';
+DATE_TIME_OUT_PROPERTY:                 'dateTimeOutProperty';
 
-VALIDITY_SCHEME:                        'validityMilestoning';
-VALIDITY_SCHEME_DATE_TIME:              'DateTime';
-VALIDITY_SCHEME_OPAQUE:                 'OpaqueValidityMilestoning';
-VALIDITY_DATE_TIME_FROM_PROPERTY:       'validityDateTimeFromProperty';
-VALIDITY_DATE_TIME_THRU_PROPERTY:       'validityDateTimeThruProperty';
+VALIDITY_MILESTONING:                   'validityMilestoning';
+VALIDITY_MILESTONING_DATE_TIME:         'DateTime';
+VALIDITY_MILESTONING_OPAQUE:            'OpaqueValidityMilestoning';
+DATE_TIME_FROM_PROPERTY:                'dateTimeFromProperty';
+DATE_TIME_THRU_PROPERTY:                'dateTimeThruProperty';
 
 VALIDITY_DERIVATION:                    'validityDerivation';
 VALIDITY_DERIVATION_SOURCE_FROM:        'SourceProvidesFromDateTime';
 VALIDITY_DERIVATION_SOURCE_FROM_THRU:   'SourceProvidesFromAndThruDateTime';
 VALIDITY_DERIVATION_OPAQUE:             'OpaqueValidityDerivation';
 
-MERGE_SCHEME:                           'mergeStrategy';
-MERGE_SCHEME_NO_DELETES:                'NoDeletes';
-MERGE_SCHEME_DELETE_INDICATOR:          'DeleteIndicator';
-MERGE_SCHEME_DELETE_INDICATOR_PROPERTY: 'deleteProperty';
-MERGE_SCHEME_DELETE_INDICATOR_VALUES:   'deleteValues';
+MERGE_STRATEGY:                          'mergeStrategy';
+MERGE_STRATEGY_NO_DELETES:               'NoDeletes';
+MERGE_STRATEGY_DELETE_INDICATOR:         'DeleteIndicator';
+MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY:'deleteProperty';
+MERGE_STRATEGY_DELETE_INDICATOR_VALUES:  'deleteValues';

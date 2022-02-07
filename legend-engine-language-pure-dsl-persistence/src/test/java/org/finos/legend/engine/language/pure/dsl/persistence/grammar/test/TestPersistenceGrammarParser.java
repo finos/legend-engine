@@ -20,56 +20,69 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         return "###Persistence\n" +
                 "\n" +
-                "import test::input::*;\n" +
+                "import test::*;\n" +
                 "\n" +
-                "ServicePersistence " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
+                "PersistencePipe " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
                 "  owners: ['test1', 'test2'];\n" +
                 "  trigger: ScheduleTriggered;\n" +
-                "  service: test::service::Service;\n" +
+                "  input: Service\n" +
+                "  {\n" +
+                "    service: test::service::Service;\n" +
+                "  }\n" +
                 "  persistence: Batch\n" +
                 "  {\n" +
-                "    inputShape: GROUPED_FLAT;\n" +
-                "    inputClass: test::InputClass;\n" +
-                "    transactionMode: ALL_DATASETS;\n" +
-                "    target: Datastore\n" +
+                "    target: GroupedFlat\n" +
                 "    {\n" +
-                "      datastoreName: 'TestDatastore';\n" +
-                "      datasets:\n" +
+                "      targetName: 'WrapperTarget';\n" +
+                "      modelClass: test::WrapperClass;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          datasetName: 'TestDataset1';\n" +
-                "          partitionProperties: [test::InputClass->property1, test::InputClass->property2];\n" +
-                "          deduplicationStrategy: MaxVersionDedup\n" +
+                "          property: test::WrapperClass->property1;\n" +
+                "          targetSpecification:\n" +
                 "          {\n" +
-                "            versionProperty: 'updateDateTime';\n" +
-                "          }\n" +
-//                "          batchMode: AppendOnly\n" +
-//                "          {\n" +
-//                "            auditScheme: BatchDateTime\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            modelClass: 'test::InnerClass1';\n" +
+                "            partitionProperties: [test::InnerClass1->property2, test::InnerClass1->property3];\n" +
+                "            deduplicationStrategy: MaxVersion\n" +
+                "            {\n" +
+                "              versionProperty: 'updateDateTime';\n" +
+                "            }\n" +
+//                "            batchMode: AppendOnly\n" +
 //                "            {\n" +
-//                "              transactionDateTimePropertyName: 'insertDateTime';\n" +
+//                "              auditing: BatchDateTime\n" +
+//                "              {\n" +
+//                "                dateTimePropertyName: 'insertDateTime';\n" +
+//                "              }\n" +
+//                "              filterDuplicates: false;\n" +
 //                "            }\n" +
-//                "            filterDuplicates: false;\n" +
-//                "          }\n" +
-                "          batchMode: UnitemporalDelta\n" +
-                "          {\n" +
-                "            mergeScheme: NoDeletes;\n" +
-                "            transactionMilestoning: BatchIdOnly;\n" +
+                "            batchMode: UnitemporalDelta\n" +
+                "            {\n" +
+                "              mergeStrategy: NoDeletes;\n" +
+                "              transactionMilestoning: BatchIdOnly\n" +
+                "              {\n" +
+                "                batchIdInProperty: 'inZ';\n" +
+                "                batchIdOutProperty: 'outZ';\n" +
+                "              }\n" +
+                "            }\n" +
                 "          }\n" +
-//                "          batchMode: BitemporalDelta\n" +
-//                "          {\n" +
-//                "            mergeScheme: DeleteIndicator\n" +
-//                "            {\n" +
-//                "              deleteProperty: 'deleted';\n" +
-//                "              deleteValues: ['Y', '1', 'true'];\n" +
-//                "            }\n" +
-//                "            transactionMilestoning: BatchIdOnly;\n" +
-//                "            validityMilestoning: DateTime;\n" +
-//                "            validityDerivation: SourceProvidesFromAndThruDateTime;\n" +
-//                "          }\n" +
                 "        }\n" +
+//                "        {\n" +
+//                "            batchMode: BitemporalDelta\n" +
+//                "            {\n" +
+//                "              mergeStrategy: DeleteIndicator\n" +
+//                "              {\n" +
+//                "                deleteProperty: 'deleted';\n" +
+//                "                deleteValues: ['Y', '1', 'true'];\n" +
+//                "              }\n" +
+//                "              transactionMilestoning: BatchIdOnly;\n" +
+//                "              validityMilestoning: DateTime;\n" +
+//                "              validityDerivation: SourceProvidesFromAndThruDateTime;\n" +
+//                "            }\n" +
+//                "        }\n" +
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +

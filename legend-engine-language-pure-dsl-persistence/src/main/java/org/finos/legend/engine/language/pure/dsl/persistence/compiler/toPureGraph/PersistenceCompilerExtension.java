@@ -21,8 +21,7 @@ public class PersistenceCompilerExtension implements CompilerExtension {
                                 ._ownersAddAll(Lists.immutable.ofAll(persistencePipe.owners))
                                 ._trigger(HelperPersistenceBuilder.buildEventType(persistencePipe.trigger))
                                 ._inputSource(HelperPersistenceBuilder.buildInputSource(persistencePipe.inputSource, context))
-                                ._persistence(HelperPersistenceBuilder.buildPersistence(persistencePipe.persistence, context)),
-                (persistencePipe, context) -> {}
+                                ._persistence(HelperPersistenceBuilder.buildPersistence(persistencePipe.persistence, context))
         ));
     }
 }

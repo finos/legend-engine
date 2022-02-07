@@ -12,64 +12,72 @@ options
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT
-                                            | SERVICE_PERSISTENCE | SERVICE_PERSISTENCE_DOCUMENTATION | SERVICE_PERSISTENCE_OWNERS | SERVICE_PERSISTENCE_TRIGGER | SERVICE_PERSISTENCE_SERVICE
-                                            | EVENT_TYPE_SCHEDULE_TRIGGERED | EVENT_TYPE_REGISTRY_DATASET_AVAILABLE
-                                            | PERSISTENCE | PERSISTENCE_STREAMING | PERSISTENCE_BATCH
-                                            | INPUT_SHAPE | INPUT_SHAPE_FLAT | INPUT_SHAPE_GROUPED_FLAT | INPUT_SHAPE_NESTED | INPUT_CLASS
-                                            | TRANSACTION_MODE | TRANSACTION_MODE_SINGLE_DATASET | TRANSACTION_MODE_ALL_DATASETS
-                                            | TARGET | DATASTORE | DATASTORE_NAME | DATASET | DATASETS | DATASET_NAME
-                                            | PARTITION_PROPERTIES
-                                            | DEDUPLICATION_STRATEGY | DEDUPLICATION_STRATEGY_NONE | DEDUPLICATION_STRATEGY_ANY | DEDUPLICATION_STRATEGY_COUNT | DEDUPLICATION_STRATEGY_COUNT_PROPERTY | DEDUPLICATION_STRATEGY_MAX_VERSION | DEDUPLICATION_STRATEGY_VERSION_PROPERTY
-                                            | BATCH_MODE | SNAPSHOT_NON_MILESTONED | SNAPSHOT_UNITEMPORAL | SNAPSHOT_BITEMPORAL | DELTA_NON_MILESTONED | DELTA_UNITEMPORAL | DELTA_BITEMPORAL | APPEND_ONLY
-                                            | FILTER_DUPLICATES | AUDIT_SCHEME | AUDIT_SCHEME_NONE | AUDIT_SCHEME_BATCH_DATE_TIME | AUDIT_SCHEME_BATCH_DATE_TIME_PROPERTY | AUDIT_SCHEME_OPAQUE
-                                            | TRANSACTION_SCHEME | TRANSACTION_SCHEME_BATCH_ID | TRANSACTION_SCHEME_DATE_TIME | TRANSACTION_SCHEME_BOTH | TRANSACTION_SCHEME_OPAQUE
-                                            | BATCH_ID_IN_PROPERTY | BATCH_ID_OUT_PROPERTY | TRANSACTION_DATE_TIME_IN_PROPERTY | TRANSACTION_DATE_TIME_OUT_PROPERTY
-                                            | VALIDITY_SCHEME | VALIDITY_SCHEME_DATE_TIME | VALIDITY_SCHEME_OPAQUE
-                                            | VALIDITY_DATE_TIME_FROM_PROPERTY | VALIDITY_DATE_TIME_THRU_PROPERTY
-                                            | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU
-                                            | MERGE_SCHEME | MERGE_SCHEME_NO_DELETES | MERGE_SCHEME_DELETE_INDICATOR | MERGE_SCHEME_DELETE_INDICATOR_PROPERTY | MERGE_SCHEME_DELETE_INDICATOR_VALUES
+                                            | PERSISTENCE_PIPE | PERSISTENCE_PIPE_DOC | PERSISTENCE_PIPE_OWNERS | PERSISTENCE_PIPE_TRIGGER | PERSISTENCE_PIPE_INPUT | PERSISTENCE_PIPE_PERSISTENCE
+                                            | EVENT_SCHEDULE_TRIGGERED | EVENT_REGISTRY_DATASET_AVAILABLE
+                                            | INPUT_SERVICE | INPUT_SERVICE_SERVICE
+                                            | PERSISTENCE_STREAMING | PERSISTENCE_BATCH | PERSISTENCE_BATCH_TARGET
+                                            | TARGET_SPEC_NAME | TARGET_SPEC_MODEL_CLASS
+                                            | TARGET_SPEC_GROUPED | TARGET_SPEC_GROUPED_TXN_SCOPE | TARGET_SPEC_GROUPED_COMPONENTS | TARGET_COMPONENT_PROPERTY | TARGET_COMPONENT_TARGET_SPEC
+                                            | TARGET_SPEC_FLAT | TARGET_SPEC_FLAT_PARTITION_PROPERTIES | TARGET_SPEC_FLAT_DEDUPLICATION | TARGET_SPEC_FLAT_BATCH_MODE
+                                            | TARGET_SPEC_NESTED
+                                            | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
+                                            | DEDUPLICATION_NONE | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_PROPERTY
+                                            | BATCH_MODE_NON_MILESTONED_SNAPSHOT | BATCH_MODE_UNITEMPORAL_SNAPSHOT | BATCH_MODE_BITEMPORAL_SNAPSHOT | BATCH_MODE_NON_MILESTONED_DELTA | BATCH_MODE_UNITEMPORAL_DELTA | BATCH_MODE_BITEMPORAL_DELTA | BATCH_MODE_APPEND_ONLY
+                                            | FILTER_DUPLICATES
+                                            | AUDITING | AUDITING_NONE | AUDITING_BATCH_DATE_TIME | AUDITING_BATCH_DATE_TIME_PROPERTY | AUDITING_OPAQUE
+                                            | TXN_MILESTONING | TXN_MILESTONING_BATCH_ID | TXN_MILESTONING_DATE_TIME | TXN_MILESTONING_BOTH | TXN_MILESTONING_OPAQUE | BATCH_ID_IN_PROPERTY | BATCH_ID_OUT_PROPERTY | DATE_TIME_IN_PROPERTY | DATE_TIME_OUT_PROPERTY
+                                            | VALIDITY_MILESTONING | VALIDITY_MILESTONING_DATE_TIME | VALIDITY_MILESTONING_OPAQUE | DATE_TIME_FROM_PROPERTY | DATE_TIME_THRU_PROPERTY
+                                            | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU | VALIDITY_DERIVATION_OPAQUE
+                                            | MERGE_STRATEGY | MERGE_STRATEGY_NO_DELETES | MERGE_STRATEGY_DELETE_INDICATOR | MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY | MERGE_STRATEGY_DELETE_INDICATOR_VALUES
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
 
 definition:                                 imports
-                                                (servicePersistence)*
+                                                (persistencePipe)*
                                             EOF
 ;
 imports:                                    (importStatement)*
 ;
 importStatement:                            IMPORT packagePath PATH_SEPARATOR STAR SEMI_COLON
 ;
-servicePersistence:                         SERVICE_PERSISTENCE qualifiedName
+persistencePipe:                            PERSISTENCE_PIPE qualifiedName
                                                 BRACE_OPEN
                                                     (
                                                         documentation
                                                         | owners
                                                         | trigger
-                                                        | service
+                                                        | input
                                                         | persistence
                                                     )*
                                                 BRACE_CLOSE
 ;
-documentation:                              SERVICE_PERSISTENCE_DOCUMENTATION COLON STRING SEMI_COLON
+documentation:                              PERSISTENCE_PIPE_DOC COLON STRING SEMI_COLON
 ;
-owners:                                     SERVICE_PERSISTENCE_OWNERS COLON
+owners:                                     PERSISTENCE_PIPE_OWNERS COLON
                                                 BRACKET_OPEN
                                                     (STRING (COMMA STRING)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
 //TODO: ledav - support config in event
-trigger:                                    SERVICE_PERSISTENCE_TRIGGER COLON
+trigger:                                    PERSISTENCE_PIPE_TRIGGER COLON
                                                 (
-                                                    EVENT_TYPE_SCHEDULE_TRIGGERED
-                                                    | EVENT_TYPE_REGISTRY_DATASET_AVAILABLE
+                                                    EVENT_SCHEDULE_TRIGGERED
+                                                    | EVENT_REGISTRY_DATASET_AVAILABLE
                                                 )
                                             SEMI_COLON
 ;
-service:                                    SERVICE_PERSISTENCE_SERVICE COLON qualifiedName SEMI_COLON
+input:                                      PERSISTENCE_PIPE_INPUT COLON inputService
 ;
-persistence:                                PERSISTENCE COLON
+inputService:                               INPUT_SERVICE
+                                                BRACE_OPEN
+                                                    service
+                                                BRACE_CLOSE
+;
+service:                                    INPUT_SERVICE_SERVICE COLON qualifiedName SEMI_COLON
+;
+persistence:                                PERSISTENCE_PIPE_PERSISTENCE COLON
                                                 (
                                                     streamingPersistence
                                                     | batchPersistence
@@ -77,156 +85,160 @@ persistence:                                PERSISTENCE COLON
 ;
 streamingPersistence:                       PERSISTENCE_STREAMING
                                                 BRACE_OPEN
-                                                    (
-                                                        inputShape
-                                                        | inputClass
-                                                    )*
                                                 BRACE_CLOSE
 ;
 batchPersistence:                           PERSISTENCE_BATCH
                                                 BRACE_OPEN
-                                                    (
-                                                        inputShape
-                                                        | inputClass
-                                                        | transactionMode
-                                                        | targetSpecification
-                                                    )*
+                                                    targetSpecification
                                                 BRACE_CLOSE
 ;
-inputShape:                                 INPUT_SHAPE COLON
+targetSpecification:                        PERSISTENCE_BATCH_TARGET COLON
                                                 (
-                                                    INPUT_SHAPE_FLAT
-                                                    | INPUT_SHAPE_GROUPED_FLAT
-                                                    | INPUT_SHAPE_NESTED
+                                                    groupedTargetSpecification
+                                                    | flatTargetSpecification
+                                                    | nestedTargetSpecification
                                                 )
-                                            SEMI_COLON
 ;
-inputClass:                                 INPUT_CLASS COLON qualifiedName SEMI_COLON
-;
-transactionMode:                            TRANSACTION_MODE COLON
-                                                (
-                                                    TRANSACTION_MODE_SINGLE_DATASET
-                                                    | TRANSACTION_MODE_ALL_DATASETS
-                                                )
-                                            SEMI_COLON
-;
-targetSpecification:                        TARGET COLON datastore
-;
-datastore:                                  DATASTORE
+groupedTargetSpecification:                 TARGET_SPEC_GROUPED
                                                 BRACE_OPEN
                                                     (
-                                                        datastoreName
-                                                        | datasets
+                                                        targetName
+                                                        | targetModelClass
+                                                        | targetTransactionScope
+                                                        | targetComponents
                                                     )*
                                                 BRACE_CLOSE
 ;
-datastoreName:                              DATASTORE_NAME COLON identifier SEMI_COLON
+flatTargetSpecification:                    TARGET_SPEC_FLAT
+                                                BRACE_OPEN
+                                                    flatTargetSpecificationProperties
+                                                BRACE_CLOSE
 ;
-datasets:                                   DATASETS COLON
+flatTargetSpecificationProperties:          (
+                                                targetName
+                                                | targetModelClass
+                                                | partitionProperties
+                                                | deduplicationStrategy
+                                                | batchMode
+                                            )*
+;
+nestedTargetSpecification:                  TARGET_SPEC_NESTED
+                                                BRACE_OPEN
+                                                    (
+                                                        targetName
+                                                        | targetModelClass
+                                                    )*
+                                                BRACE_CLOSE
+;
+targetName:                                 TARGET_SPEC_NAME COLON STRING SEMI_COLON
+;
+targetModelClass:                           TARGET_SPEC_MODEL_CLASS COLON qualifiedName SEMI_COLON
+;
+targetTransactionScope:                     TARGET_SPEC_GROUPED_TXN_SCOPE COLON
+                                                (
+                                                    TXN_SCOPE_SINGLE
+                                                    | TXN_SCOPE_ALL
+                                                )
+                                            SEMI_COLON
+;
+targetComponents:                           TARGET_SPEC_GROUPED_COMPONENTS COLON
                                                 BRACKET_OPEN
-                                                    dataset (COMMA dataset)*
+                                                    targetComponent (COMMA targetComponent)*
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
-dataset:                                    BRACE_OPEN
+targetComponent:                            BRACE_OPEN
                                                 (
-                                                    datasetName
-                                                    | partitionProperties
-                                                    | deduplicationStrategy
-                                                    | batchMode
+                                                    targetComponentProperty
+                                                    | targetComponentTargetSpecification
                                                 )*
                                             BRACE_CLOSE
-
 ;
-datasetName:                                DATASET_NAME COLON identifier SEMI_COLON
+targetComponentProperty:                    TARGET_COMPONENT_PROPERTY COLON (qualifiedName ARROW identifier) SEMI_COLON
 ;
-partitionProperties:                        PARTITION_PROPERTIES COLON
+targetComponentTargetSpecification:         TARGET_COMPONENT_TARGET_SPEC COLON
+                                                BRACE_OPEN
+                                                    flatTargetSpecificationProperties
+                                                BRACE_CLOSE
+;
+partitionProperties:                        TARGET_SPEC_FLAT_PARTITION_PROPERTIES COLON
                                                 BRACKET_OPEN
                                                     (qualifiedName ARROW identifier (COMMA qualifiedName ARROW identifier)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
-//TODO: ledav - support config within deduplication strategy
-deduplicationStrategy:                      DEDUPLICATION_STRATEGY COLON
+deduplicationStrategy:                      TARGET_SPEC_FLAT_DEDUPLICATION COLON
                                                 (
-                                                    deduplicationStrategyNone
-                                                    | deduplicationStrategyAny
-                                                    | deduplicationStrategyCount
-                                                    | deduplicationStrategyMaxVersion
+                                                    noDeduplicationStrategy
+                                                    | anyVersionDeduplicationStrategy
+                                                    | maxVersionDeduplicationStrategy
                                                 )
 ;
-deduplicationStrategyNone:                  DEDUPLICATION_STRATEGY_NONE SEMI_COLON
+noDeduplicationStrategy:                    DEDUPLICATION_NONE SEMI_COLON
 ;
-deduplicationStrategyAny:                   DEDUPLICATION_STRATEGY_ANY SEMI_COLON
+anyVersionDeduplicationStrategy:            DEDUPLICATION_ANY_VERSION SEMI_COLON
 ;
-deduplicationStrategyCount:                 DEDUPLICATION_STRATEGY_COUNT
-                                                BRACE_OPEN
-                                                    deduplicationCountPropertyName
-                                                BRACE_CLOSE
-;
-deduplicationCountPropertyName:             DEDUPLICATION_STRATEGY_COUNT_PROPERTY COLON identifier SEMI_COLON
-;
-deduplicationStrategyMaxVersion:            DEDUPLICATION_STRATEGY_MAX_VERSION
+maxVersionDeduplicationStrategy:            DEDUPLICATION_MAX_VERSION
                                                 BRACE_OPEN
                                                     deduplicationVersionPropertyName
                                                 BRACE_CLOSE
 ;
-deduplicationVersionPropertyName:           DEDUPLICATION_STRATEGY_VERSION_PROPERTY COLON identifier SEMI_COLON
+deduplicationVersionPropertyName:           DEDUPLICATION_MAX_VERSION_PROPERTY COLON identifier SEMI_COLON
 ;
-batchMode:                                  BATCH_MODE COLON
+batchMode:                                  TARGET_SPEC_FLAT_BATCH_MODE COLON
                                                 (
-                                                    snapshotNonMilestoned
-                                                    | snapshotUnitemporal
-                                                    | snapshotBitemporal
-                                                    | deltaNonMilestoned
-                                                    | deltaUnitemporal
-                                                    | deltaBitemporal
+                                                    nonMilestonedSnapshot
+                                                    | unitemporalSnapshot
+                                                    | bitemporalSnapshot
+                                                    | nonMilestonedDelta
+                                                    | unitemporalDelta
+                                                    | bitemporalDelta
                                                     | appendOnly
                                                 )
 ;
-snapshotNonMilestoned:                      SNAPSHOT_NON_MILESTONED
+nonMilestonedSnapshot:                      BATCH_MODE_NON_MILESTONED_SNAPSHOT
                                                 BRACE_OPEN
                                                     auditing
                                                 BRACE_CLOSE
 ;
-snapshotUnitemporal:                        SNAPSHOT_UNITEMPORAL
+unitemporalSnapshot:                        BATCH_MODE_UNITEMPORAL_SNAPSHOT
                                                 BRACE_OPEN
-                                                    transactionScheme
+                                                    transactionMilestoning
                                                 BRACE_CLOSE
 ;
-snapshotBitemporal:                        SNAPSHOT_BITEMPORAL
+bitemporalSnapshot:                         BATCH_MODE_BITEMPORAL_SNAPSHOT
                                                 BRACE_OPEN
                                                     (
-                                                        transactionScheme
-                                                        | validityScheme
+                                                        transactionMilestoning
+                                                        | validityMilestoning
                                                         | validityDerivation
                                                     )*
                                                 BRACE_CLOSE
 ;
-deltaNonMilestoned:                         DELTA_NON_MILESTONED
+nonMilestonedDelta:                         BATCH_MODE_NON_MILESTONED_DELTA
                                                 BRACE_OPEN
                                                     auditing
                                                 BRACE_CLOSE
 ;
-deltaUnitemporal:                           DELTA_UNITEMPORAL
+unitemporalDelta:                           BATCH_MODE_UNITEMPORAL_DELTA
                                                 BRACE_OPEN
                                                     (
                                                         mergeStrategy
-                                                        | transactionScheme
+                                                        | transactionMilestoning
                                                     )*
                                                 BRACE_CLOSE
 ;
-deltaBitemporal:                           DELTA_BITEMPORAL
+bitemporalDelta:                            BATCH_MODE_BITEMPORAL_DELTA
                                                 BRACE_OPEN
                                                     (
                                                         mergeStrategy
-                                                        | transactionScheme
-                                                        | validityScheme
+                                                        | transactionMilestoning
+                                                        | validityMilestoning
                                                         | validityDerivation
                                                     )*
                                                 BRACE_CLOSE
 ;
-appendOnly:                                 APPEND_ONLY
+appendOnly:                                 BATCH_MODE_APPEND_ONLY
                                                 BRACE_OPEN
                                                     (
                                                         auditing
@@ -234,36 +246,35 @@ appendOnly:                                 APPEND_ONLY
                                                     )*
                                                 BRACE_CLOSE
 ;
-//TODO: ledav - support config for all flags below
-auditing:                                AUDIT_SCHEME COLON
+auditing:                                   AUDITING COLON
                                                 (
-                                                    auditSchemeNone
-                                                    | auditSchemeBatchDateTime
-                                                    | auditSchemeOpaque
+                                                    noAuditing
+                                                    | batchDateTimeAuditing
+                                                    | opaqueAuditing
                                                 )
 ;
-auditSchemeNone:                            AUDIT_SCHEME_NONE SEMI_COLON
+noAuditing:                                 AUDITING_NONE SEMI_COLON
 ;
-auditSchemeBatchDateTime:                   AUDIT_SCHEME_BATCH_DATE_TIME
+batchDateTimeAuditing:                      AUDITING_BATCH_DATE_TIME
                                                 BRACE_OPEN
-                                                    transactionDateTimePropertyName
+                                                    batchDateTimePropertyName
                                                 BRACE_CLOSE
 ;
-transactionDateTimePropertyName:            AUDIT_SCHEME_BATCH_DATE_TIME_PROPERTY COLON identifier SEMI_COLON
+batchDateTimePropertyName:                  AUDITING_BATCH_DATE_TIME_PROPERTY COLON identifier SEMI_COLON
 ;
-auditSchemeOpaque:                          AUDIT_SCHEME_OPAQUE SEMI_COLON
+opaqueAuditing:                             AUDITING_OPAQUE SEMI_COLON
 ;
 filterDuplicates:                           FILTER_DUPLICATES COLON (TRUE | FALSE) SEMI_COLON
 ;
-transactionScheme:                          TRANSACTION_SCHEME COLON
+transactionMilestoning:                     TXN_MILESTONING COLON
                                                 (
                                                     transactionSchemeBatchId
-                                                    | transactionSchemeDateTime
-                                                    | transactionSchemeBoth
-                                                    | transactionSchemeOpaque
+                                                    | dateTimeTransactionMilestoning
+                                                    | bothTransactionMilestoning
+                                                    | opaqueTransactionMilestoning
                                                 )
 ;
-transactionSchemeBatchId:                   TRANSACTION_SCHEME_BATCH_ID
+transactionSchemeBatchId:                   TXN_MILESTONING_BATCH_ID
                                                 BRACE_OPEN
                                                     (
                                                         batchIdInProperty
@@ -275,97 +286,97 @@ batchIdInProperty:                          BATCH_ID_IN_PROPERTY COLON identifie
 ;
 batchIdOutProperty:                         BATCH_ID_OUT_PROPERTY COLON identifier SEMI_COLON
 ;
-transactionSchemeDateTime:                  TRANSACTION_SCHEME_DATE_TIME
+dateTimeTransactionMilestoning:             TXN_MILESTONING_DATE_TIME
                                                 BRACE_OPEN
                                                     (
-                                                        transactionDateTimeInProperty
-                                                        | transactionDateTimeOutProperty
+                                                        dateTimeInProperty
+                                                        | dateTimeOutProperty
                                                     )*
                                                 BRACE_CLOSE
 ;
-transactionDateTimeInProperty:              TRANSACTION_DATE_TIME_IN_PROPERTY COLON identifier SEMI_COLON
+dateTimeInProperty:                         DATE_TIME_IN_PROPERTY COLON identifier SEMI_COLON
 ;
-transactionDateTimeOutProperty:             TRANSACTION_DATE_TIME_OUT_PROPERTY COLON identifier SEMI_COLON
+dateTimeOutProperty:                        DATE_TIME_OUT_PROPERTY COLON identifier SEMI_COLON
 ;
-transactionSchemeBoth:                      TRANSACTION_SCHEME_BOTH
+bothTransactionMilestoning:                 TXN_MILESTONING_BOTH
                                                 BRACE_OPEN
                                                     (
                                                         batchIdInProperty
                                                         | batchIdOutProperty
-                                                        | transactionDateTimeInProperty
-                                                        | transactionDateTimeOutProperty
+                                                        | dateTimeInProperty
+                                                        | dateTimeOutProperty
                                                     )*
                                                 BRACE_CLOSE
 ;
-transactionSchemeOpaque:                    TRANSACTION_SCHEME_OPAQUE SEMI_COLON
+opaqueTransactionMilestoning:               TXN_MILESTONING_OPAQUE SEMI_COLON
 ;
-validityScheme:                             VALIDITY_SCHEME COLON
+validityMilestoning:                        VALIDITY_MILESTONING COLON
                                                 (
-                                                    validitySchemeDateTime
-                                                    | validitySchemeOpaque
+                                                    dateTimeValidityMilestoning
+                                                    | opaqueValidityMilestoning
                                                 )
                                             SEMI_COLON
 ;
-validitySchemeDateTime:                     VALIDITY_SCHEME_DATE_TIME
+dateTimeValidityMilestoning:                VALIDITY_MILESTONING_DATE_TIME
                                                 BRACE_OPEN
                                                     (
-                                                        validityDateTimeFromProperty
-                                                        | validityDateTimeThruProperty
+                                                        dateTimeFromProperty
+                                                        | dateTimeThruProperty
                                                     )*
                                                 BRACE_CLOSE
 ;
-validityDateTimeFromProperty:               VALIDITY_DATE_TIME_FROM_PROPERTY COLON identifier SEMI_COLON
+dateTimeFromProperty:                       DATE_TIME_FROM_PROPERTY COLON identifier SEMI_COLON
 ;
-validityDateTimeThruProperty:               VALIDITY_DATE_TIME_THRU_PROPERTY COLON identifier SEMI_COLON
+dateTimeThruProperty:                       DATE_TIME_THRU_PROPERTY COLON identifier SEMI_COLON
 ;
-validitySchemeOpaque:                       VALIDITY_SCHEME_OPAQUE SEMI_COLON
+opaqueValidityMilestoning:                  VALIDITY_MILESTONING_OPAQUE SEMI_COLON
 ;
 validityDerivation:                         VALIDITY_DERIVATION COLON
                                                 (
-                                                    validityDerivationSourceProvidesFrom
-                                                    | validityDerivationSourceProvidesFromThru
-                                                    | validityDerivationOpaque
+                                                    sourceProvidesFromValidityDerivation
+                                                    | sourceProvidesFromThruValidityDerivation
+                                                    | opaqueValidityDerivation
                                                 )
                                             SEMI_COLON
 ;
-validityDerivationSourceProvidesFrom:       VALIDITY_DERIVATION_SOURCE_FROM
+sourceProvidesFromValidityDerivation:       VALIDITY_DERIVATION_SOURCE_FROM
                                                 BRACE_OPEN
-                                                    validityDerivationFromProperty
+//                                                    validityDerivationFromProperty
                                                 BRACE_CLOSE
 ;
-validityDerivationSourceProvidesFromThru:   VALIDITY_DERIVATION_SOURCE_FROM_THRU
+sourceProvidesFromThruValidityDerivation:   VALIDITY_DERIVATION_SOURCE_FROM_THRU
                                                 BRACE_OPEN
-                                                    (
-                                                        validityDerivationFromProperty
-                                                        | validityDerivationThruProperty
-                                                    )*
+//                                                    (
+//                                                        validityDerivationFromProperty
+//                                                        | validityDerivationThruProperty
+//                                                    )*
                                                 BRACE_CLOSE
 ;
-validityDerivationFromProperty:
+//validityDerivationFromProperty:
+//;
+//validityDerivationThruProperty:
+//;
+opaqueValidityDerivation:                   VALIDITY_DERIVATION_OPAQUE SEMI_COLON
 ;
-validityDerivationThruProperty:
-;
-validityDerivationOpaque:                   VALIDITY_DERIVATION_OPAQUE SEMI_COLON
-;
-mergeStrategy:                                MERGE_SCHEME COLON
+mergeStrategy:                              MERGE_STRATEGY COLON
                                                 (
-                                                    mergeSchemeNoDeletes
-                                                    | mergeSchemeDeleteIndicator
+                                                    noDeletesMergeStrategy
+                                                    | deleteIndicatorMergeStrategy
                                                 )
 ;
-mergeSchemeNoDeletes:                       MERGE_SCHEME_NO_DELETES SEMI_COLON
+noDeletesMergeStrategy:                     MERGE_STRATEGY_NO_DELETES SEMI_COLON
 ;
-mergeSchemeDeleteIndicator:                 MERGE_SCHEME_DELETE_INDICATOR
+deleteIndicatorMergeStrategy:               MERGE_STRATEGY_DELETE_INDICATOR
                                                 BRACE_OPEN
                                                     (
-                                                        mergeSchemeDeleteIndicatorProperty
-                                                        | mergeSchemeDeleteIndicatorValues
+                                                        mergeStrategyDeleteIndicatorProperty
+                                                        | mergeStrategyDeleteIndicatorValues
                                                     )*
                                                 BRACE_CLOSE
 ;
-mergeSchemeDeleteIndicatorProperty:         MERGE_SCHEME_DELETE_INDICATOR_PROPERTY COLON identifier SEMI_COLON
+mergeStrategyDeleteIndicatorProperty:       MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY COLON identifier SEMI_COLON
 ;
-mergeSchemeDeleteIndicatorValues:           MERGE_SCHEME_DELETE_INDICATOR_VALUES COLON
+mergeStrategyDeleteIndicatorValues:         MERGE_STRATEGY_DELETE_INDICATOR_VALUES COLON
                                                 BRACKET_OPEN
                                                     STRING (COMMA STRING)*
                                                 BRACKET_CLOSE
