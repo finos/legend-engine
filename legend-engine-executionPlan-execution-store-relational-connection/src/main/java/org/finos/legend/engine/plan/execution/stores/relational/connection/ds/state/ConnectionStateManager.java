@@ -16,7 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zaxxer.hikari.HikariDataSource;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.eclipse.collections.api.tuple.Pair;
@@ -304,6 +303,29 @@ public class ConnectionStateManager implements Closeable {
                 }
             }
         }
+
+
+
+        //we need to recreate pools with an invalid identity state
+        //Example: for kerberos based identities, creating a hikari pool is done as a PrivilegedAction which sets the subject for that security context
+        //since each hikari pool run on its own thread, the pool implicit's subject is the creating one.
+        //eventually kerberos credentials will expire(ie invalid) so we need to recreate the pool with the latest subject from the incoming request
+        if (!this.connectionPools.get(poolName).getIdentityState().isValid())
+        {
+            LOGGER.info("Pool [{}] for datasource [{}] does not have a valid identity state", principal, connectionKey.shortId());
+            synchronized (poolLockManager.getLock(poolName))
+            {
+                DataSourceWithStatistics dataSourceWithStatistics = this.connectionPools.get(poolName);
+                if (!dataSourceWithStatistics.getIdentityState().isValid())
+                {
+                    DataSourceWithStatistics newDataSourceWithStatistics = new DataSourceWithStatistics(poolName, dataSourceBuilder.get(), identityState, dataSourceSpecification);
+                    this.connectionPools.put(poolName, newDataSourceWithStatistics);
+                    LOGGER.info("DataSource re-created for [{}] for datasource [{}], name {}", principal, connectionKey.shortId(), poolName);
+                    dataSourceWithStatistics.close();
+                }
+            }
+        }
+
 
         LOGGER.info("Pool found for [{}] in datasource [{}] : pool Name [{}]", principal, connectionKey.shortId(), poolName);
         return this.connectionPools.get(poolName);

@@ -87,4 +87,10 @@ public class Identity
     {
         return Lists.immutable.withAll(this.credentials);
     }
+  
+    public boolean hasValidCredentials()
+    {
+        return credentials.isEmpty()|| credentials.stream().allMatch( c -> c.isValid());
+    }
+
 }

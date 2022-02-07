@@ -15,6 +15,8 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Assert;
@@ -31,6 +33,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.intThat;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestConnectionStateManager extends TestConnectionManagement
 {
@@ -275,5 +281,32 @@ public class TestConnectionStateManager extends TestConnectionManagement
         assertPoolExists(false, user2.getName(), ds1.getConnectionKey());
         assertPoolExists(false, user3.getName(), ds1.getConnectionKey());
 
+    }
+
+
+    @Test
+    public void testPoolIdentityIsValid()
+    {
+        Credential mockCredential = mock(Credential.class);
+        Identity identityOne = new Identity("mock",mockCredential);
+        when(mockCredential.isValid()).thenReturn(true);
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
+        String poolName = connectionStateManager.poolNameFor(identityOne,ds1.getConnectionKey());
+        Assert.assertNotNull(poolName);
+
+        requestConnection(identityOne, ds1);
+        Assert.assertEquals(1, connectionStateManager.size());
+        DataSourceWithStatistics dataSourceWithStatistics = connectionStateManager.get(poolName);
+        requestConnection(identityOne, ds1);
+        Assert.assertEquals(1, connectionStateManager.size());
+        DataSourceWithStatistics dataSourceWithStatistics1 = connectionStateManager.get(poolName);
+        Assert.assertEquals(dataSourceWithStatistics.getStatistics().getFirstConnectionRequest(),dataSourceWithStatistics1.getStatistics().getFirstConnectionRequest());
+
+        //mock expiring of credentials
+        when(mockCredential.isValid()).thenReturn(false);
+        requestConnection(identityOne, ds1);
+        Assert.assertEquals(1, connectionStateManager.size());
+        DataSourceWithStatistics dataSourceWithStatisticsAfter = connectionStateManager.get(poolName);
+        Assert.assertNotEquals(dataSourceWithStatistics.getStatistics().getFirstConnectionRequest(),dataSourceWithStatisticsAfter.getStatistics().getFirstConnectionRequest());
     }
 }

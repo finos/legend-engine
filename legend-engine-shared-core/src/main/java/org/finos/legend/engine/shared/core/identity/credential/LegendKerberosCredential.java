@@ -15,6 +15,7 @@
 package org.finos.legend.engine.shared.core.identity.credential;
 
 import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosTicket;
 
 import org.finos.legend.engine.shared.core.identity.Credential;
 
@@ -39,5 +40,12 @@ public class LegendKerberosCredential implements Credential
     public void setSubject(Subject subject)
     {
         this.subject = subject;
+    }
+
+    @Override
+    public boolean isValid()
+    {
+        KerberosTicket kerberosTicket = subject.getPrivateCredentials(KerberosTicket.class).iterator().next();
+        return kerberosTicket!=null && kerberosTicket.isCurrent();
     }
 }

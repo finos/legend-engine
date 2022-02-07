@@ -52,12 +52,18 @@ public abstract class DataSourceSpecification
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataSourceSpecification.class);
 
-    // HikariCP Parameters
+    // HikariCP Parameters:
+    // Information parameters and its defaults: https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby
     public static final String HIKARICP_HOUSEKEEPING_PERIOD_MS = "com.zaxxer.hikari.housekeeping.periodMs";
     protected static final int HIKARICP_DEFAULT_MAX_POOL_SIZE = 100;
     protected static final int HIKARICP_DEFAULT_MIN_IDLE = 0;
+    // minIdle 0 means housekeeper will always try to keep the pool empty if there are not really active connection
+    private static final long HIKARICP_DEFAULT_HOUSEKEEPER_FREQ_IN_MS = SECONDS.toMillis(30L);
     //default house keeping interval is 30 seconds
-    protected static final long HIKARICP_DEFAULT_HOUSEKEEPER_FREQ_IN_MS = SECONDS.toMillis(30L);
+    //house keeper evicts connections if:
+    // - they are unused and idleTimeout is reached(defaults to 10 min)
+    // - they are unused and maxLifetime is reached(defaults to 30 min)
+
 
     static
     {  //house keeper frequency can only be altered via system property and will affect all pools!!
