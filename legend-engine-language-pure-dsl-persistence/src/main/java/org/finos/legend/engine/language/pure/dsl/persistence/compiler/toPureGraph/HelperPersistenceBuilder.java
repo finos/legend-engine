@@ -3,9 +3,9 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.deduplication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningMode;
@@ -28,11 +28,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.InputSource;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.InputSourceVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.ServiceInputSource;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventTypeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.OpaqueEventType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.ScheduleFired;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ReaderVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
@@ -54,14 +57,14 @@ public class HelperPersistenceBuilder
         return eventType.accept(EVENT_TYPE_BUILDER);
     }
 
-    public static Root_meta_pure_persistence_metamodel_input_InputSource buildInputSource(InputSource inputSource, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_reader_Reader buildReader(Reader reader, CompileContext context)
     {
-        return inputSource.accept(new InputSourceBuilder(context));
+        return reader.accept(new ReaderBuilder(context));
     }
 
-    public static Root_meta_pure_persistence_metamodel_Persistence buildPersistence(Persistence persistence, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_Persister buildPersister(Persister persister, CompileContext context)
     {
-        return persistence.accept(new PersistenceBuilder(context));
+        return persister.accept(new PersisterBuilder(context));
     }
 
     public static Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification buildTargetSpecification(TargetSpecification specification, CompileContext context)
@@ -119,15 +122,9 @@ public class HelperPersistenceBuilder
     private static class EventTypeBuilder implements EventTypeVisitor<Root_meta_pure_persistence_metamodel_event_EventType>
     {
         @Override
-        public Root_meta_pure_persistence_metamodel_event_EventType visit(RegistryDatasetAvailable val)
+        public Root_meta_pure_persistence_metamodel_event_EventType visit(ScheduleFired val)
         {
-            return new Root_meta_pure_persistence_metamodel_event_RegistryDatasetAvailable_Impl("");
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_event_EventType visit(ScheduleTriggered val)
-        {
-            return new Root_meta_pure_persistence_metamodel_event_ScheduleTriggered_Impl("");
+            return new Root_meta_pure_persistence_metamodel_event_ScheduleFired_Impl("");
         }
 
         @Override
@@ -137,44 +134,44 @@ public class HelperPersistenceBuilder
         }
     }
 
-    private static class InputSourceBuilder implements InputSourceVisitor<Root_meta_pure_persistence_metamodel_input_InputSource>
+    private static class ReaderBuilder implements ReaderVisitor<Root_meta_pure_persistence_metamodel_reader_Reader>
     {
         private final CompileContext context;
 
-        private InputSourceBuilder(CompileContext context)
+        private ReaderBuilder(CompileContext context)
         {
             this.context = context;
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_input_InputSource visit(ServiceInputSource val)
+        public Root_meta_pure_persistence_metamodel_reader_Reader visit(ServiceReader val)
         {
             //TODO: ledav -- resolve service
-            return new Root_meta_pure_persistence_metamodel_input_ServiceInputSource_Impl("");
+            return new Root_meta_pure_persistence_metamodel_reader_ServiceReader_Impl("");
 //                    ._service(context.pureModel.);
         }
     }
 
-    private static class PersistenceBuilder implements PersistenceVisitor<Root_meta_pure_persistence_metamodel_Persistence>
+    private static class PersisterBuilder implements PersistenceVisitor<Root_meta_pure_persistence_metamodel_Persister>
     {
         private final CompileContext context;
 
-        private PersistenceBuilder(CompileContext context)
+        private PersisterBuilder(CompileContext context)
         {
             this.context = context;
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_Persistence visit(BatchPersistence val)
+        public Root_meta_pure_persistence_metamodel_Persister visit(BatchPersister val)
         {
-            return new Root_meta_pure_persistence_metamodel_batch_BatchPersistence_Impl("")
+            return new Root_meta_pure_persistence_metamodel_batch_BatchPersister_Impl("")
                     ._targetSpecification(buildTargetSpecification(val.targetSpecification, context));
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_Persistence visit(StreamingPersistence val)
+        public Root_meta_pure_persistence_metamodel_Persister visit(StreamingPersister val)
         {
-            return new Root_meta_pure_persistence_metamodel_streaming_StreamingPersistence_Impl("");
+            return new Root_meta_pure_persistence_metamodel_streaming_StreamingPersister_Impl("");
         }
     }
 

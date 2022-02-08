@@ -12,10 +12,10 @@ options
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT
-                                            | PERSISTENCE_PIPE | PERSISTENCE_PIPE_DOC | PERSISTENCE_PIPE_OWNERS | PERSISTENCE_PIPE_TRIGGER | PERSISTENCE_PIPE_INPUT | PERSISTENCE_PIPE_PERSISTENCE
-                                            | EVENT_SCHEDULE_TRIGGERED | EVENT_REGISTRY_DATASET_AVAILABLE | EVENT_OPAQUE
-                                            | INPUT_SERVICE | INPUT_SERVICE_SERVICE
-                                            | PERSISTENCE_STREAMING | PERSISTENCE_BATCH | PERSISTENCE_BATCH_TARGET
+                                            | PERSISTENCE_PIPE | PERSISTENCE_PIPE_DOC | PERSISTENCE_PIPE_OWNERS | PERSISTENCE_PIPE_TRIGGER | PERSISTENCE_PIPE_READER | PERSISTENCE_PIPE_PERSISTER
+                                            | EVENT_SCHEDULE_FIRED | EVENT_OPAQUE
+                                            | SERViCE_READER | SERViCE_READER_SERVICE
+                                            | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_BATCH_TARGET
                                             | TARGET_SPEC_NAME | TARGET_SPEC_MODEL_CLASS
                                             | TARGET_SPEC_GROUPED | TARGET_SPEC_GROUPED_TXN_SCOPE | TARGET_SPEC_GROUPED_COMPONENTS | TARGET_COMPONENT_PROPERTY | TARGET_COMPONENT_TARGET_SPEC
                                             | TARGET_SPEC_FLAT | TARGET_SPEC_FLAT_PARTITION_PROPERTIES | TARGET_SPEC_FLAT_DEDUPLICATION | TARGET_SPEC_FLAT_BATCH_MODE
@@ -47,8 +47,8 @@ persistencePipe:                            PERSISTENCE_PIPE qualifiedName
                                                         documentation
                                                         | owners
                                                         | trigger
-                                                        | inputSource
-                                                        | persistence
+                                                        | reader
+                                                        | persister
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -60,40 +60,38 @@ owners:                                     PERSISTENCE_PIPE_OWNERS COLON
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
-//TODO: ledav - support config in event
 trigger:                                    PERSISTENCE_PIPE_TRIGGER COLON
                                                 (
-                                                    EVENT_SCHEDULE_TRIGGERED
-                                                    | EVENT_REGISTRY_DATASET_AVAILABLE
+                                                    EVENT_SCHEDULE_FIRED
                                                     | EVENT_OPAQUE
                                                 )
                                             SEMI_COLON
 ;
-inputSource:                                PERSISTENCE_PIPE_INPUT COLON serviceInputSource
+reader:                                     PERSISTENCE_PIPE_READER COLON serviceReader
 ;
-serviceInputSource:                         INPUT_SERVICE
+serviceReader:                              SERViCE_READER
                                                 BRACE_OPEN
                                                     service
                                                 BRACE_CLOSE
 ;
-service:                                    INPUT_SERVICE_SERVICE COLON qualifiedName SEMI_COLON
+service:                                    SERViCE_READER_SERVICE COLON qualifiedName SEMI_COLON
 ;
-persistence:                                PERSISTENCE_PIPE_PERSISTENCE COLON
+persister:                                  PERSISTENCE_PIPE_PERSISTER COLON
                                                 (
-                                                    streamingPersistence
-                                                    | batchPersistence
+                                                    streamingPersister
+                                                    | batchPersister
                                                 )
 ;
-streamingPersistence:                       PERSISTENCE_STREAMING
+streamingPersister:                         PERSISTER_STREAMING
                                                 BRACE_OPEN
                                                 BRACE_CLOSE
 ;
-batchPersistence:                           PERSISTENCE_BATCH
+batchPersister:                             PERSISTER_BATCH
                                                 BRACE_OPEN
                                                     targetSpecification
                                                 BRACE_CLOSE
 ;
-targetSpecification:                        PERSISTENCE_BATCH_TARGET COLON
+targetSpecification:                        PERSISTER_BATCH_TARGET COLON
                                                 (
                                                     groupedTargetSpecification
                                                     | flatTargetSpecification

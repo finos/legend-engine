@@ -1,9 +1,9 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceVisitor;
 
-public class StreamingPersistence extends Persistence
+public class StreamingPersister extends Persister
 {
     public <T> T accept(PersistenceVisitor<T> visitor)
     {

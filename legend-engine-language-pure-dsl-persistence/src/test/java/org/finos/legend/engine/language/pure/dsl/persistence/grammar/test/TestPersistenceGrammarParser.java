@@ -27,11 +27,11 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  doc: 'test doc';\n" +
                 "  owners: ['test1', 'test2'];\n" +
                 "  trigger: OpaqueEvent;\n" +
-                "  input: Service\n" +
+                "  reader: Service\n" +
                 "  {\n" +
                 "    service: test::service::Service;\n" +
                 "  }\n" +
-                "  persistence: Batch\n" +
+                "  persister: Batch\n" +
                 "  {\n" +
                 "    target: GroupedFlat\n" +
                 "    {\n" +

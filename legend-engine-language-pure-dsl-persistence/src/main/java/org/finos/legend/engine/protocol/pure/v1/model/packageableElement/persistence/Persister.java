@@ -2,7 +2,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public abstract class Persistence
+public abstract class Persister
 {
     public SourceInformation sourceInformation;
 

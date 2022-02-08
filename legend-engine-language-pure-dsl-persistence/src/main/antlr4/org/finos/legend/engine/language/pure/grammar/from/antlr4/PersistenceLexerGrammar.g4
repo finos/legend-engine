@@ -17,22 +17,21 @@ PERSISTENCE_PIPE:                           'PersistencePipe';
 PERSISTENCE_PIPE_DOC:                       'doc';
 PERSISTENCE_PIPE_OWNERS:                    'owners';
 PERSISTENCE_PIPE_TRIGGER:                   'trigger';
-PERSISTENCE_PIPE_INPUT:                     'input';
-PERSISTENCE_PIPE_PERSISTENCE:               'persistence';
+PERSISTENCE_PIPE_READER:                    'reader';
+PERSISTENCE_PIPE_PERSISTER:                 'persister';
 
 // EVENT
-EVENT_SCHEDULE_TRIGGERED:                   'ScheduleTriggered';
-EVENT_REGISTRY_DATASET_AVAILABLE:           'RegistryDatasetAvailable';
+EVENT_SCHEDULE_FIRED:                   'ScheduleTriggered';
 EVENT_OPAQUE:                               'OpaqueEvent';
 
-// INPUT
-INPUT_SERVICE:                              'Service';
-INPUT_SERVICE_SERVICE:                      'service';
+// READER
+SERViCE_READER:                             'Service';
+SERViCE_READER_SERVICE:                     'service';
 
-// PERSISTENCE
-PERSISTENCE_STREAMING:                      'Streaming';
-PERSISTENCE_BATCH:                          'Batch';
-PERSISTENCE_BATCH_TARGET:                   'target';
+// PERSISTER
+PERSISTER_STREAMING:                        'Streaming';
+PERSISTER_BATCH:                            'Batch';
+PERSISTER_BATCH_TARGET:                     'target';
 
 //**********
 // TARGET SPECIFICATION

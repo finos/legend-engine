@@ -9,14 +9,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.OpaqueMergeStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.Auditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.BatchDateTimeAuditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.NoAuditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.OpaqueAuditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.deduplication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningMode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.appendonly.AppendOnly;
@@ -26,9 +25,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.MergeStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.NoDeletesMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.OpaqueMergeStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.NonMilestonedSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.transactionmilestoning.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.DateTimeValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.OpaqueValidityMilestoning;
@@ -38,11 +39,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.OpaqueEventType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.RegistryDatasetAvailable;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.ScheduleTriggered;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.InputSource;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.input.ServiceInputSource;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.ScheduleFired;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 
 import java.util.Collections;
@@ -88,31 +88,24 @@ public class PersistenceParseTreeWalker
         persistencePipe.trigger = visitEventType(triggerContext);
 
         // input source
-        PersistenceParserGrammar.InputSourceContext inputSourceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.inputSource(), "inputSource", persistencePipe.sourceInformation);
-        persistencePipe.inputSource = visitInputSource(inputSourceContext);
+        PersistenceParserGrammar.ReaderContext readerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.reader(), "reader", persistencePipe.sourceInformation);
+        persistencePipe.reader = visitReader(readerContext);
 
         // persistence
-        PersistenceParserGrammar.PersistenceContext persistenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persistence(), "persistence", persistencePipe.sourceInformation);
-        persistencePipe.persistence = visitPersistence(persistenceContext);
+        PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persister(), "persister", persistencePipe.sourceInformation);
+        persistencePipe.persister = visitPersister(persisterContext);
 
         return persistencePipe;
     }
 
     private EventType visitEventType(PersistenceParserGrammar.TriggerContext ctx)
     {
-        if (ctx.EVENT_SCHEDULE_TRIGGERED() != null)
+        if (ctx.EVENT_SCHEDULE_FIRED() != null)
         {
-            ScheduleTriggered scheduleTriggered = new ScheduleTriggered();
-            scheduleTriggered.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            ScheduleFired scheduleFired = new ScheduleFired();
+            scheduleFired.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-            return scheduleTriggered;
-        }
-        else if (ctx.EVENT_REGISTRY_DATASET_AVAILABLE() != null)
-        {
-            RegistryDatasetAvailable registryDatasetAvailable = new RegistryDatasetAvailable();
-            registryDatasetAvailable.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-            return registryDatasetAvailable;
+            return scheduleFired;
         }
         else if (ctx.EVENT_OPAQUE() != null)
         {
@@ -124,52 +117,52 @@ public class PersistenceParseTreeWalker
         throw new UnsupportedOperationException();
     }
 
-    private InputSource visitInputSource(PersistenceParserGrammar.InputSourceContext ctx)
+    private Reader visitReader(PersistenceParserGrammar.ReaderContext ctx)
     {
-        if (ctx.serviceInputSource() != null)
+        if (ctx.serviceReader() != null)
         {
-            return visitServiceInputSource(ctx.serviceInputSource());
+            return visitServiceReader(ctx.serviceReader());
         }
         throw new UnsupportedOperationException();
     }
 
-    private InputSource visitServiceInputSource(PersistenceParserGrammar.ServiceInputSourceContext ctx)
+    private Reader visitServiceReader(PersistenceParserGrammar.ServiceReaderContext ctx)
     {
-        ServiceInputSource inputSource = new ServiceInputSource();
-        inputSource.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        ServiceReader reader = new ServiceReader();
+        reader.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // service
-        inputSource.service = new PackageableElementPointer(
+        reader.service = new PackageableElementPointer(
                 PackageableElementType.SERVICE,
                 PureGrammarParserUtility.fromQualifiedName(ctx.service().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.service().qualifiedName().packagePath().identifier(), ctx.service().qualifiedName().identifier()));
 
-        return inputSource;
+        return reader;
     }
 
-    private Persistence visitPersistence(PersistenceParserGrammar.PersistenceContext ctx)
+    private Persister visitPersister(PersistenceParserGrammar.PersisterContext ctx)
     {
-        if (ctx.streamingPersistence() != null)
+        if (ctx.streamingPersister() != null)
         {
-            return visitStreamingPersistence(ctx.streamingPersistence());
+            return visitStreamingPersister(ctx.streamingPersister());
         }
-        else if (ctx.batchPersistence() != null)
+        else if (ctx.batchPersister() != null)
         {
-            return visitBatchPersistence(ctx.batchPersistence());
+            return visitBatchPersister(ctx.batchPersister());
         }
         throw new UnsupportedOperationException();
     }
 
-    private StreamingPersistence visitStreamingPersistence(PersistenceParserGrammar.StreamingPersistenceContext ctx)
+    private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
     {
-        StreamingPersistence streaming = new StreamingPersistence();
+        StreamingPersister streaming = new StreamingPersister();
         streaming.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         return streaming;
     }
 
-    private BatchPersistence visitBatchPersistence(PersistenceParserGrammar.BatchPersistenceContext ctx)
+    private BatchPersister visitBatchPersister(PersistenceParserGrammar.BatchPersisterContext ctx)
     {
-        BatchPersistence batch = new BatchPersistence();
+        BatchPersister batch = new BatchPersister();
         batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // target specification
@@ -649,7 +642,7 @@ public class PersistenceParseTreeWalker
         validityDerivation.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // source date time from property
-        PersistenceParserGrammar.ValidityDerivationFromPropertyContext validityDerivationFromPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivationFromProperty(), "sourceDateTimeFromProperty", validityDerivation.sourceInformation);
+        PersistenceParserGrammar.ValidityDerivationFromPropertyContext validityDerivationFromPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.validityDerivationFromProperty()), "sourceDateTimeFromProperty", validityDerivation.sourceInformation);
         validityDerivation.sourceDateTimeFromProperty = visitValidityDerivationFromProperty(validityDerivationFromPropertyContext);
 
         return validityDerivation;

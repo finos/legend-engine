@@ -2,7 +2,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public interface EventTypeVisitor<T>
 {
-    T visit(RegistryDatasetAvailable val);
-    T visit(ScheduleTriggered val);
+    T visit(ScheduleFired val);
     T visit(OpaqueEventType val);
 }
