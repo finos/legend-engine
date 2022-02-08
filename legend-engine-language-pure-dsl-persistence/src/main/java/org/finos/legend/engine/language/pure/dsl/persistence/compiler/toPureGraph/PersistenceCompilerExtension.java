@@ -19,7 +19,7 @@ public class PersistenceCompilerExtension implements CompilerExtension {
                         new Root_meta_pure_persistence_metamodel_PersistencePipe_Impl("")
                                 ._documentation(persistencePipe.documentation)
                                 ._ownersAddAll(Lists.immutable.ofAll(persistencePipe.owners))
-                                ._trigger(HelperPersistenceBuilder.buildEventType(persistencePipe.trigger))
+                                ._trigger(HelperPersistenceBuilder.buildTrigger(persistencePipe.trigger))
                                 ._reader(HelperPersistenceBuilder.buildReader(persistencePipe.reader, context))
                                 ._persister(HelperPersistenceBuilder.buildPersister(persistencePipe.persister, context))
         ));

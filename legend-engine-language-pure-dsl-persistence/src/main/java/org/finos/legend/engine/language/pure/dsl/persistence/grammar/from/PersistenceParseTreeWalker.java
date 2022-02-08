@@ -37,12 +37,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromAndThruDate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.OpaqueEventType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.ScheduleFired;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 
 import java.util.Collections;
@@ -85,7 +84,7 @@ public class PersistenceParseTreeWalker
 
         // trigger
         PersistenceParserGrammar.TriggerContext triggerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.trigger(), "trigger", persistencePipe.sourceInformation);
-        persistencePipe.trigger = visitEventType(triggerContext);
+        persistencePipe.trigger = visitTrigger(triggerContext);
 
         // input source
         PersistenceParserGrammar.ReaderContext readerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.reader(), "reader", persistencePipe.sourceInformation);
@@ -98,21 +97,14 @@ public class PersistenceParseTreeWalker
         return persistencePipe;
     }
 
-    private EventType visitEventType(PersistenceParserGrammar.TriggerContext ctx)
+    private Trigger visitTrigger(PersistenceParserGrammar.TriggerContext ctx)
     {
-        if (ctx.EVENT_SCHEDULE_FIRED() != null)
+        if (ctx.TRIGGER_OPAQUE() != null)
         {
-            ScheduleFired scheduleFired = new ScheduleFired();
-            scheduleFired.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            OpaqueTrigger opaqueTrigger = new OpaqueTrigger();
+            opaqueTrigger.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-            return scheduleFired;
-        }
-        else if (ctx.EVENT_OPAQUE() != null)
-        {
-            OpaqueEventType opaqueEventType = new OpaqueEventType();
-            opaqueEventType.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-            return opaqueEventType;
+            return opaqueTrigger;
         }
         throw new UnsupportedOperationException();
     }

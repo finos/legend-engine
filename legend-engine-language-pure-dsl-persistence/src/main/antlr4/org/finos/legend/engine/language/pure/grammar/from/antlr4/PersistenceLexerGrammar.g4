@@ -20,13 +20,12 @@ PERSISTENCE_PIPE_TRIGGER:                   'trigger';
 PERSISTENCE_PIPE_READER:                    'reader';
 PERSISTENCE_PIPE_PERSISTER:                 'persister';
 
-// EVENT
-EVENT_SCHEDULE_FIRED:                   'ScheduleTriggered';
-EVENT_OPAQUE:                               'OpaqueEvent';
+// TRIGGER
+TRIGGER_OPAQUE:                             'OpaqueTrigger';
 
 // READER
-SERViCE_READER:                             'Service';
-SERViCE_READER_SERVICE:                     'service';
+SERVICE_READER:                             'Service';
+SERVICE_READER_SERVICE:                     'service';
 
 // PERSISTER
 PERSISTER_STREAMING:                        'Streaming';

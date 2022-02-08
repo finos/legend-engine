@@ -13,8 +13,8 @@ identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT
                                             | PERSISTENCE_PIPE | PERSISTENCE_PIPE_DOC | PERSISTENCE_PIPE_OWNERS | PERSISTENCE_PIPE_TRIGGER | PERSISTENCE_PIPE_READER | PERSISTENCE_PIPE_PERSISTER
-                                            | EVENT_SCHEDULE_FIRED | EVENT_OPAQUE
-                                            | SERViCE_READER | SERViCE_READER_SERVICE
+                                            | TRIGGER_OPAQUE
+                                            | SERVICE_READER | SERVICE_READER_SERVICE
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_BATCH_TARGET
                                             | TARGET_SPEC_NAME | TARGET_SPEC_MODEL_CLASS
                                             | TARGET_SPEC_GROUPED | TARGET_SPEC_GROUPED_TXN_SCOPE | TARGET_SPEC_GROUPED_COMPONENTS | TARGET_COMPONENT_PROPERTY | TARGET_COMPONENT_TARGET_SPEC
@@ -62,19 +62,18 @@ owners:                                     PERSISTENCE_PIPE_OWNERS COLON
 ;
 trigger:                                    PERSISTENCE_PIPE_TRIGGER COLON
                                                 (
-                                                    EVENT_SCHEDULE_FIRED
-                                                    | EVENT_OPAQUE
+                                                    TRIGGER_OPAQUE
                                                 )
                                             SEMI_COLON
 ;
 reader:                                     PERSISTENCE_PIPE_READER COLON serviceReader
 ;
-serviceReader:                              SERViCE_READER
+serviceReader:                              SERVICE_READER
                                                 BRACE_OPEN
                                                     service
                                                 BRACE_CLOSE
 ;
-service:                                    SERViCE_READER_SERVICE COLON qualifiedName SEMI_COLON
+service:                                    SERVICE_READER_SERVICE COLON qualifiedName SEMI_COLON
 ;
 persister:                                  PERSISTENCE_PIPE_PERSISTER COLON
                                                 (

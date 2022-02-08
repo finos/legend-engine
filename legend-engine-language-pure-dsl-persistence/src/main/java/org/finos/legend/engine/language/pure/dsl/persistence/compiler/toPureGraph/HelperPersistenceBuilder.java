@@ -28,14 +28,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.EventTypeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.OpaqueEventType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.event.ScheduleFired;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ReaderVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
@@ -43,7 +42,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 public class HelperPersistenceBuilder
 {
     private static final String PERSIST_PACKAGE_PREFIX = "meta::pure::persistence::metamodel";
-    private static final EventTypeBuilder EVENT_TYPE_BUILDER = new EventTypeBuilder();
+    private static final TriggerBuilder TRIGGER_BUILDER = new TriggerBuilder();
     private static final AuditingBuilder AUDITING_BUILDER = new AuditingBuilder();
     private static final TransactionMilestoningBuilder TRANSACTION_MILESTONING_BUILDER = new TransactionMilestoningBuilder();
     private static final ValidityMilestoningBuilder VALIDITY_MILESTONING_BUILDER = new ValidityMilestoningBuilder();
@@ -52,9 +51,9 @@ public class HelperPersistenceBuilder
     {
     }
 
-    public static Root_meta_pure_persistence_metamodel_event_EventType buildEventType(EventType eventType)
+    public static Root_meta_pure_persistence_metamodel_trigger_Trigger buildTrigger(Trigger trigger)
     {
-        return eventType.accept(EVENT_TYPE_BUILDER);
+        return trigger.accept(TRIGGER_BUILDER);
     }
 
     public static Root_meta_pure_persistence_metamodel_reader_Reader buildReader(Reader reader, CompileContext context)
@@ -119,18 +118,12 @@ public class HelperPersistenceBuilder
 
     // helper visitors for class hierarchies
 
-    private static class EventTypeBuilder implements EventTypeVisitor<Root_meta_pure_persistence_metamodel_event_EventType>
+    private static class TriggerBuilder implements TriggerVisitor<Root_meta_pure_persistence_metamodel_trigger_Trigger>
     {
         @Override
-        public Root_meta_pure_persistence_metamodel_event_EventType visit(ScheduleFired val)
+        public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(OpaqueTrigger val)
         {
-            return new Root_meta_pure_persistence_metamodel_event_ScheduleFired_Impl("");
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_event_EventType visit(OpaqueEventType val)
-        {
-            return new Root_meta_pure_persistence_metamodel_event_EventType_Impl("");
+            return new Root_meta_pure_persistence_metamodel_trigger_OpaqueTrigger_Impl("");
         }
     }
 
