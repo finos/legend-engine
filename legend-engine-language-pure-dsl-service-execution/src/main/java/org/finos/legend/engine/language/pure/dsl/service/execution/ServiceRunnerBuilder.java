@@ -9,12 +9,14 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 public class ServiceRunnerBuilder
 {
     private String serviceRunnerClass;
+    private ClassLoader classLoader;
     private boolean allowJavaCompilation;
     private StoreExecutorConfiguration[] storeExecutorConfigurations;
 
@@ -29,11 +31,18 @@ public class ServiceRunnerBuilder
 
     public ServiceRunnerBuilder withServiceRunnerClass(String serviceRunnerClass)
     {
+        return this.withServiceRunnerClass(serviceRunnerClass, Thread.currentThread().getContextClassLoader());
+    }
+
+    public ServiceRunnerBuilder withServiceRunnerClass(String serviceRunnerClass, ClassLoader classLoader)
+    {
         this.serviceRunnerClass = serviceRunnerClass;
+        Objects.requireNonNull(classLoader);
+        this.classLoader = classLoader;
         return this;
     }
 
-    public ServiceRunnerBuilder withStoreExecutorConfigurations(StoreExecutorConfiguration ...storeExecutorConfigurations)
+    public ServiceRunnerBuilder withStoreExecutorConfigurations(StoreExecutorConfiguration ...storeExecutorConfiguratiTestons)
     {
         this.storeExecutorConfigurations = storeExecutorConfigurations;
         return this;
@@ -47,24 +56,8 @@ public class ServiceRunnerBuilder
 
     public ServiceRunner build()
     {
-        List<ServiceRunner> serviceRunnerImplementations = Iterate
-                .select(ServiceLoader.load(ServiceRunner.class),
-                        runner -> runner.getCanonicalClassName().equals(this.serviceRunnerClass))
-                .stream().collect(Collectors.toList());
-
-        if (serviceRunnerImplementations.size() > 1)
-        {
-            String message = String.format("Found too many implementations of service class %s in classpath. Expected=1,Found=%d", this.serviceRunnerClass, serviceRunnerImplementations.size());
-            throw new RuntimeException(message);
-        }
-        if (serviceRunnerImplementations.isEmpty())
-        {
-            String message = String.format("Service class %s not found in classpath", this.serviceRunnerClass);
-            throw new RuntimeException(message);
-        }
-
         try {
-            Class<?> clazz = Class.forName(this.serviceRunnerClass);
+            Class<?> clazz = this.classLoader.loadClass(this.serviceRunnerClass);
             Constructor<?> constructor = clazz.getDeclaredConstructor(StoreExecutorConfiguration[].class);
             Object serviceRunner = constructor.newInstance((Object) this.storeExecutorConfigurations);
             return (ServiceRunner)serviceRunner;
