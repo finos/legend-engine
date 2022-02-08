@@ -19,6 +19,7 @@ PARAMETERS:                                      'parameters';
 RESPONSE:                                        'response';
 SECURITY_SCHEME:                                 'security';
 
+ALLOW_RESERVED:                                  'allowReserved';
 LOCATION:                                        'location';
 STYLE:                                           'style';
 EXPLODE:                                         'explode';

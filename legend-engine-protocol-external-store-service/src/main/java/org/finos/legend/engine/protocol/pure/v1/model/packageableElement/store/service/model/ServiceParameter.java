@@ -22,6 +22,7 @@ public class ServiceParameter
     public String name;
     public TypeReference type;
     public Location location;
+    public Boolean allowReserved;
 
     @JsonAlias({"_enum"})
     public String enumeration;

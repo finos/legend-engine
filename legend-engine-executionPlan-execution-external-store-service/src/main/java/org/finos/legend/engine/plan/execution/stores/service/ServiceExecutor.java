@@ -219,7 +219,7 @@ public class ServiceExecutor
                     throw new RuntimeException("Serialization Format [style : " + parameter.serializationFormat.style + ", explode : " + parameter.serializationFormat.explode + "] not supported for path parameter");
             }
         }
-        return encodeParameterValue(parameter.name, result);
+        return encodeParameterValue(parameter.name, result, parameter.allowReserved);
     }
 
     private static String serializeQueryParameter(Object value, ServiceParameter parameter)
@@ -227,7 +227,7 @@ public class ServiceExecutor
         String result;
         if (!(value instanceof List))
         {
-            result = parameter.name + "=" + encodeParameterValue(parameter.name, value.toString());
+            result = parameter.name + "=" + encodeParameterValue(parameter.name, value.toString(), parameter.allowReserved);
         }
         else
         {
@@ -236,19 +236,19 @@ public class ServiceExecutor
             switch (serializationFormat)
             {
                 case "form_false":
-                    result = parameter.name + "=" + String.join(",", ListIterate.collect((List) value, val -> encodeParameterValue(parameter.name, val.toString())));
+                    result = parameter.name + "=" + String.join(",", ListIterate.collect((List) value, val -> encodeParameterValue(parameter.name, val.toString(), parameter.allowReserved)));
                     break;
                 case "spaceDelimited_false":
-                    result = parameter.name + "=" + String.join("%20", ListIterate.collect((List) value, val -> encodeParameterValue(parameter.name, val.toString())));
+                    result = parameter.name + "=" + String.join("%20", ListIterate.collect((List) value, val -> encodeParameterValue(parameter.name, val.toString(), parameter.allowReserved)));
                     break;
                 case "pipeDelimited_false":
-                    result = parameter.name + "=" + String.join("|", ListIterate.collect((List) value, val -> encodeParameterValue(parameter.name, val.toString())));
+                    result = parameter.name + "=" + String.join("|", ListIterate.collect((List) value, val -> encodeParameterValue(parameter.name, val.toString(), parameter.allowReserved)));
                     break;
                 case "form_true":
                 case "spaceDelimited_true":
                 case "pipeDelimited_true":
                     String paramName = parameter.name;
-                    result = String.join("&", ListIterate.collect((List) value, val -> paramName + "=" + encodeParameterValue(parameter.name, val.toString())));
+                    result = String.join("&", ListIterate.collect((List) value, val -> paramName + "=" + encodeParameterValue(parameter.name, val.toString(), parameter.allowReserved)));
                     break;
                 default:
                     throw new RuntimeException("Serialization Format [style : " + parameter.serializationFormat.style + ", explode : " + parameter.serializationFormat.explode + "] not supported for query parameter");
@@ -257,15 +257,22 @@ public class ServiceExecutor
         return result;
     }
 
-    private static String encodeParameterValue(String name, String value)
+    private static String encodeParameterValue(String name, String value, Boolean allowReserved)
     {
-        try
+        if(allowReserved != null && allowReserved)
         {
-            return URLEncoder.encode(value, "UTF-8");
+            return value;
         }
-        catch (UnsupportedEncodingException e)
+        else
         {
-            throw new RuntimeException("Error encoding parameter : " + name + ". Found value - " + value);
+            try
+            {
+                return URLEncoder.encode(value, "UTF-8");
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                throw new RuntimeException("Error encoding parameter : " + name + ". Found value - " + value);
+            }
         }
     }
 }
