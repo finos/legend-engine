@@ -78,7 +78,7 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.DocumentationContext documentationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.documentation(), "doc", persistencePipe.sourceInformation);
         persistencePipe.documentation = PureGrammarParserUtility.fromGrammarString(documentationContext.STRING().getText(), true);
 
-        // owners
+        // owners (optional)
         PersistenceParserGrammar.OwnersContext ownersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owners(), "owners", persistencePipe.sourceInformation);
         persistencePipe.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : Collections.emptyList();
 
@@ -194,7 +194,7 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.TargetTransactionScopeContext targetTransactionScopeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetTransactionScope(), "transactionScope", targetSpecification.sourceInformation);
         targetSpecification.transactionScope = visitTransactionScope(targetTransactionScopeContext);
 
-        // datasets
+        // components
         PersistenceParserGrammar.TargetComponentsContext targetComponentsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponents(), "components", targetSpecification.sourceInformation);
         targetSpecification.components = ListIterate.collect(targetComponentsContext.targetComponent(), this::visitPropertyAndFlatTargetSpecification);
 
@@ -214,12 +214,12 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
         targetSpecification.modelClassPath = visitModelClass(targetModelClassContext);
 
-        // partition properties -- currently parsing as a list of strings, to change to Property
+        // partition properties (optional)
         PersistenceParserGrammar.PartitionPropertiesContext partitionPropertiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitionProperties(), "partitionProperties", targetSpecification.sourceInformation);
-        targetSpecification.partitionPropertyPaths = visitPartitionProperties(partitionPropertiesContext);
+        targetSpecification.partitionPropertyPaths = partitionPropertiesContext != null ? visitPartitionProperties(partitionPropertiesContext) : Collections.emptyList();
 
-        // deduplication strategy
-        PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationStrategy(), "deduplicationStrategy", targetSpecification.sourceInformation);
+        // deduplication strategy (optional)
+        PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplicationStrategy(), "deduplicationStrategy", targetSpecification.sourceInformation);
         targetSpecification.deduplicationStrategy = visitDeduplicationStrategy(deduplicationStrategyContext);
 
         // batch mode
@@ -303,6 +303,12 @@ public class PersistenceParseTreeWalker
 
     private DeduplicationStrategy visitDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyContext ctx)
     {
+        // default to none
+        if (ctx == null)
+        {
+            return new NoDeduplicationStrategy();
+        }
+
         if (ctx.noDeduplicationStrategy() != null)
         {
             return new NoDeduplicationStrategy();

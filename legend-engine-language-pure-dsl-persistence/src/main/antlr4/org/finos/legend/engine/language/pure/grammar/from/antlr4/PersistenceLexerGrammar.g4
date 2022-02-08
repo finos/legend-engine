@@ -83,10 +83,10 @@ BATCH_MODE_APPEND_ONLY:                     'AppendOnly';
 FILTER_DUPLICATES:                          'filterDuplicates';
 
 AUDITING:                                   'auditing';
-AUDITING_NONE:                              'NoAudit';
+AUDITING_NONE:                              'NoAuditing';
 AUDITING_BATCH_DATE_TIME:                   'BatchDateTime';
 AUDITING_BATCH_DATE_TIME_PROPERTY:          'transactionDateTimePropertyName';
-AUDITING_OPAQUE:                            'OpaqueAudit';
+AUDITING_OPAQUE:                            'OpaqueAuditing';
 
 TXN_MILESTONING:                            'transactionMilestoning';
 TXN_MILESTONING_BATCH_ID:                   'BatchIdOnly';
