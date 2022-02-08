@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.shared.format.model.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
@@ -27,6 +28,7 @@ import org.finos.legend.engine.external.shared.format.model.toModel.SchemaToMode
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -51,6 +53,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Produces(MediaType.APPLICATION_JSON)
 public class ExternalFormats
 {
+    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Legend Execution Server");
     static final Map<String, ExternalFormatExtension> extensions = ExternalFormatExtensionLoader.extensions();
 
@@ -102,7 +105,7 @@ public class ExternalFormats
             SchemaToModelGenerator generator = new SchemaToModelGenerator(pureModel, generateModelInput.clientVersion);
             PureModelContextData generated = generator.generate(generateModelInput.config);
             LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_STOP, (double)System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(profiles, generated);
+            return ManageConstantResult.manageResult(profiles, generated, objectMapper);
         }
         catch (Exception ex)
         {
@@ -131,7 +134,7 @@ public class ExternalFormats
             ModelToSchemaGenerator generator = new ModelToSchemaGenerator(pureModel);
             PureModelContextData generated = generator.generate(generateSchemaInput.config);
             LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_STOP, (double)System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(profiles, generated);
+            return ManageConstantResult.manageResult(profiles, generated, objectMapper);
         }
         catch (Exception ex)
         {
