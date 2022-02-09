@@ -128,6 +128,13 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <!-- JACKSON -->
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
