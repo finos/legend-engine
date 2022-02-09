@@ -36,25 +36,6 @@
                             </artifactItems>
                         </configuration>
                     </execution>
-<!--                    <execution>-->
-<!--                        <id>copy-antlr-service-grammar</id>-->
-<!--                        <phase>initialize</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>unpack</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <artifactItems>-->
-<!--                                <artifactItem>-->
-<!--                                    <groupId>org.finos.legend.engine</groupId>-->
-<!--                                    <artifactId>legend-engine-language-pure-dsl-service</artifactId>-->
-<!--                                    <type>jar</type>-->
-<!--                                    <overWrite>false</overWrite>-->
-<!--                                    <outputDirectory>${project.build.directory}</outputDirectory>-->
-<!--                                    <includes>antlr/*.g4</includes>-->
-<!--                                </artifactItem>-->
-<!--                            </artifactItems>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
                 </executions>
             </plugin>
             <plugin>
@@ -94,6 +75,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -3,6 +3,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
@@ -36,15 +37,19 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
 public class HelperPersistenceBuilder
 {
     private static final String PERSIST_PACKAGE_PREFIX = "meta::pure::persistence::metamodel";
+    private static final String PROPERTY_LITERAL = "->";
+
     private static final TriggerBuilder TRIGGER_BUILDER = new TriggerBuilder();
     private static final AuditingBuilder AUDITING_BUILDER = new AuditingBuilder();
     private static final TransactionMilestoningBuilder TRANSACTION_MILESTONING_BUILDER = new TransactionMilestoningBuilder();
@@ -114,9 +119,17 @@ public class HelperPersistenceBuilder
 
     // helper methods
 
-    private static Property<?, ?> resolveModelClassProperty(String propertyName, Class<?> inputClass, CompileContext context)
+    private static Property<?, ?> validateAndResolveProperty(Class<?> modelClass, String propertyPath, SourceInformation sourceInformation, CompileContext context)
     {
-        return inputClass._properties().detect(p -> p._name().equals(propertyName));
+        String classPath = propertyPath.substring(0, propertyPath.lastIndexOf(PROPERTY_LITERAL));
+        Class<?> resolvedClass = context.resolveClass(classPath);
+        Assert.assertTrue(resolvedClass == modelClass, () -> String.format("Target component property '%s' must be a property of class '%s::%s' in the grouped flat specification", propertyPath, modelClass._package(), modelClass._name()), sourceInformation, EngineErrorType.COMPILATION);
+
+        String propertyName = propertyPath.substring(propertyPath.lastIndexOf(PROPERTY_LITERAL) + PROPERTY_LITERAL.length());
+        Property<?, ?> property = modelClass._properties().detect(p -> p._name().equals(propertyName));
+        Assert.assertTrue(property != null, () -> String.format("Target component property '%s::%s%s%s' cannot be resolved", modelClass._package(), modelClass._name(), PROPERTY_LITERAL, propertyName), sourceInformation, EngineErrorType.COMPILATION);
+
+        return property;
     }
 
     // helper visitors for class hierarchies
@@ -151,7 +164,7 @@ public class HelperPersistenceBuilder
                 return new Root_meta_pure_persistence_metamodel_reader_ServiceReader_Impl("")
                         ._service((Root_meta_legend_service_metamodel_Service) packageableElement);
             }
-            throw new EngineException(String.format("PersistencePipe refers to a service '%s' that is not defined.", val.service), val.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException(String.format("PersistencePipe refers to a service '%s' that is not defined", val.service), val.sourceInformation, EngineErrorType.COMPILATION);
         }
     }
 
@@ -194,7 +207,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification visit(FlatTargetSpecification val)
         {
-            return buildFlatTargetSpecification(val);
+            return buildFlatTargetSpecification(val, modelClass, context);
         }
 
         @Override
@@ -214,21 +227,25 @@ public class HelperPersistenceBuilder
                     ._modelClass(modelClass);
         }
 
-        private Root_meta_pure_persistence_metamodel_batch_targetspecification_FlatTargetSpecification buildFlatTargetSpecification(FlatTargetSpecification specification)
+        private Root_meta_pure_persistence_metamodel_batch_targetspecification_FlatTargetSpecification buildFlatTargetSpecification(FlatTargetSpecification specification, Class<?> modelClass, CompileContext context)
         {
             return new Root_meta_pure_persistence_metamodel_batch_targetspecification_FlatTargetSpecification_Impl("")
                     ._targetName(targetName)
                     ._modelClass(modelClass)
-                    ._partitionProperties(ListIterate.collect(specification.partitionPropertyPaths, p -> resolveModelClassProperty(p, modelClass, context)))
+                    ._partitionProperties(ListIterate.collect(specification.partitionPropertyPaths, p -> validateAndResolveProperty(modelClass, p, specification.sourceInformation, context)))
                     ._deduplicationStrategy(buildDeduplicationStrategy(specification.deduplicationStrategy, modelClass, context))
                     ._batchMilestoningMode(buildMilestoningMode(specification.milestoningMode, modelClass, context));
         }
 
         private Root_meta_pure_persistence_metamodel_batch_targetspecification_PropertyAndFlatTargetSpecification resolveComponent(PropertyAndFlatTargetSpecification specification, Class<?> modelClass, CompileContext context)
         {
+            Property<?, ?> property = validateAndResolveProperty(modelClass, specification.propertyPath, specification.sourceInformation, context);
+            Type type = property._genericType()._rawType();
+            Assert.assertTrue(type instanceof Class, () -> String.format("Target component property must refer to a Class. The property '%s' refers to a %s", specification.propertyPath, type._name()), specification.sourceInformation, EngineErrorType.COMPILATION);
+
             return new Root_meta_pure_persistence_metamodel_batch_targetspecification_PropertyAndFlatTargetSpecification_Impl("")
-                    ._property(resolveModelClassProperty(specification.propertyPath, modelClass, context))
-                    ._targetSpecification(buildFlatTargetSpecification(specification.targetSpecification));
+                    ._property(property)
+                    ._targetSpecification(buildFlatTargetSpecification(specification.targetSpecification, (Class<?>) type, context));
         }
     }
 
@@ -253,7 +270,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_batch_deduplication_DeduplicationStrategy visit(MaxVersionDeduplicationStrategy val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_deduplication_MaxVersionDeduplicationStrategy_Impl("")
-                    ._versionProperty(resolveModelClassProperty(val.versionProperty, modelClass, context));
+                    ._versionProperty(validateAndResolveProperty(modelClass, val.versionProperty, val.sourceInformation, context));
         }
 
         @Override
@@ -352,7 +369,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_batch_mode_delta_merge_MergeStrategy visit(DeleteIndicatorMergeStrategy val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_mode_delta_merge_DeleteIndicatorMergeStrategy_Impl("")
-                    ._deleteProperty(resolveModelClassProperty(val.deleteProperty, modelClass, context))
+                    ._deleteProperty(validateAndResolveProperty(modelClass, val.deleteProperty, val.sourceInformation, context))
                     ._deleteValues(Lists.immutable.ofAll(val.deleteValues));
         }
 
@@ -458,15 +475,15 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromAndThruDate val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl("")
-                    ._sourceDateTimeFromProperty(resolveModelClassProperty(val.sourceDateTimeFromProperty, modelClass, context))
-                    ._sourceDateTimeThruProperty(resolveModelClassProperty(val.sourceDateTimeThruProperty, modelClass, context));
+                    ._sourceDateTimeFromProperty(validateAndResolveProperty(modelClass, val.sourceDateTimeFromProperty, val.sourceInformation, context))
+                    ._sourceDateTimeThruProperty(validateAndResolveProperty(modelClass, val.sourceDateTimeThruProperty, val.sourceInformation, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromDate val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl("")
-                    ._sourceDateTimeFromProperty(resolveModelClassProperty(val.sourceDateTimeFromProperty, modelClass, context));
+                    ._sourceDateTimeFromProperty(validateAndResolveProperty(modelClass, val.sourceDateTimeFromProperty, val.sourceInformation, context));
         }
     }
 }

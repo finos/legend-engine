@@ -8,13 +8,6 @@ import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.Persis
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.ServicePersistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.StreamingPersistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.BatchPersistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.BatchDatastoreSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.BatchDatasetSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.BitemporalDelta;
 
 
 import java.util.List;

@@ -45,9 +45,48 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
-    public void undefinedModelClass()
+    public void serviceUndefined()
     {
-        test("###Service\n" +
+        test("Class test::ModelClass {}\n" +
+                "\n" +
+                "###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [9:11-12:3]: PersistencePipe refers to a service 'test::Service' that is not defined");
+    }
+
+    @Test
+    public void flatModelClassUndefined()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
                 "Service test::Service \n" +
                 "{\n" +
                 "  pattern : 'test';\n" +
@@ -55,7 +94,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
                 "    mapping: test::Mapping;\n" +
                 "    runtime:\n" +
                 "    #{\n" +
@@ -83,7 +122,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    target: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
+                "      modelClass: test::ServiceResult;\n" +
                 "      batchMode: AppendOnly\n" +
                 "      {\n" +
                 "        auditing: NoAuditing;\n" +
@@ -91,19 +130,46 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [36:7-42:7]: Can't find class 'test::ModelClass'");
+                "}\n", "COMPILATION error at [44:7-50:7]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
-    public void undefinedService()
+    public void groupedFlatModelClassUndefined()
     {
-        test("Class test::ModelClass {}\n" +
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
                 "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
                 "###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "PersistencePipe test::TestPipe\n" +
                 "{\n" +
-                "  doc: 'This is test documentation.';\n" +
+                "  doc: 'test doc';\n" +
                 "  trigger: OpaqueTrigger;\n" +
                 "  reader: Service\n" +
                 "  {\n" +
@@ -111,31 +177,189 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: GroupedFlat\n" +
                 "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "      batchMode: AppendOnly\n" +
-                "      {\n" +
-                "        auditing: NoAuditing;\n" +
-                "        filterDuplicates: false;\n" +
-                "      }\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: test::ServiceResult->property1;\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            modelClass: test::InnerClass1;\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [9:11-12:3]: PersistencePipe refers to a service 'test::Service' that is not defined.");
+                "}\n", "COMPILATION error at [42:13-62:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
-    public void success()
+    public void groupedFlatModelPropertyUndefined()
     {
         test("Class test::Person\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +
+                "\n" +
                 "Class test::ServiceResult {}\n" +
                 "\n" +
                 "###Mapping\n" +
                 "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe\n" +
+                "{\n" +
+                "  doc: 'test doc';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: test::ServiceResult->property1;\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            modelClass: test::InnerClass1;\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [50:9-62:9]: Target component property 'test::ServiceResult->property1' cannot be resolved");
+    }
+
+    @Test
+    public void groupedFlatModelPropertyInvalidType()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::ServiceResult\n" +
+                "{\n" +
+                "  property1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe\n" +
+                "{\n" +
+                "  doc: 'test doc';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: test::ServiceResult->property1;\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            modelClass: test::InnerClass1;\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [53:9-65:9]: Target component property must refer to a Class. The property 'test::ServiceResult->property1' refers to a String");
+    }
+
+    @Test
+    public void flatSpecification()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::ServiceResult {}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
                 "###Service\n" +
                 "Service test::Service \n" +
                 "{\n" +
