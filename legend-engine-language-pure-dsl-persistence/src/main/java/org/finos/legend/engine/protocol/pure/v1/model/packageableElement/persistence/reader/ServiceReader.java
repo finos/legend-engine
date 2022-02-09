@@ -1,10 +1,8 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader;
 
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-
 public class ServiceReader extends Reader
 {
-    public PackageableElementPointer service;
+    public String service;
 
     @Override
     public <T> T accept(ReaderVisitor<T> visitor)

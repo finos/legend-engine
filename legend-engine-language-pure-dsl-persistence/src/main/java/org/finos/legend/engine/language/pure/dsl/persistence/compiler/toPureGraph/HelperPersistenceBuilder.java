@@ -3,6 +3,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
@@ -35,7 +36,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 
@@ -69,7 +72,7 @@ public class HelperPersistenceBuilder
     public static Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification buildTargetSpecification(TargetSpecification specification, CompileContext context)
     {
         String targetName = specification.targetName;
-        Class<?> modelClass = context.resolveClass(specification.modelClassPath);
+        Class<?> modelClass = context.resolveClass(specification.modelClassPath, specification.sourceInformation);
 
         return specification.accept(new TargetSpecificationBuilder(targetName, modelClass, context));
     }
@@ -139,9 +142,16 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_reader_Reader visit(ServiceReader val)
         {
-            //TODO: ledav -- resolve service
-            return new Root_meta_pure_persistence_metamodel_reader_ServiceReader_Impl("");
-//                    ._service(context.pureModel.);
+            String servicePath = val.service.substring(0, val.service.lastIndexOf("::"));
+            String serviceName = val.service.substring(val.service.lastIndexOf("::") + 2);
+            PackageableElement packageableElement = context.pureModel.getOrCreatePackage(servicePath)._children().detect(c -> serviceName.equals(c._name()));
+
+            if (packageableElement instanceof Root_meta_legend_service_metamodel_Service)
+            {
+                return new Root_meta_pure_persistence_metamodel_reader_ServiceReader_Impl("")
+                        ._service((Root_meta_legend_service_metamodel_Service) packageableElement);
+            }
+            throw new EngineException(String.format("PersistencePipe refers to a service '%s' that is not defined.", val.service), val.sourceInformation, EngineErrorType.COMPILATION);
         }
     }
 

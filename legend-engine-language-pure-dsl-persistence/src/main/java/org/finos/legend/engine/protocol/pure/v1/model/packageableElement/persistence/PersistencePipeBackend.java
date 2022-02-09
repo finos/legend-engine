@@ -6,7 +6,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 
 public abstract class PersistencePipeBackend extends PackageableElement
 {
-    public PackageableElementPointer servicePersistence;
+    public PackageableElementPointer persistencePipe;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor) {
