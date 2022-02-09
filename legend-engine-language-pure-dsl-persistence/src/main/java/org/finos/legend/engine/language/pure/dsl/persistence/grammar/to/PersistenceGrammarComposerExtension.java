@@ -48,14 +48,16 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
     private static String renderServicePersistence(PersistencePipe servicePersistence, PureGrammarComposerContext context)
     {
         return null;
-//        // add import package line
-//        return "StreamingPersistence" + " " + PureGrammarComposerUtility.convertPath(streamingPersistence.getPath()) +
-//        "\n{\n" +
-//        getTabString() + "doc: " + convertString(streamingPersistence.documentation, true) + ";\n" +
-//        (streamingPersistence.owners.isEmpty() ? "" : getTabString() + HelperPersistenceGrammarComposer.renderOwners(streamingPersistence.owners)) +
-//        getTabString() + "trigger: " + streamingPersistence.trigger + ";\n" +
-//        getTabString() + "service: " + streamingPersistence.service + ";\n" +
-//        getTabString() + HelperPersistenceGrammarComposer.renderPersistence(streamingPersistence.persistence, context)) +
-//        "}";
+        /*
+        // add import package line
+        return "PersistencePipe" + " " + PureGrammarComposerUtility.convertPath(persistencePipe.getPath()) +
+        "\n{\n" +
+        getTabString() + "doc: " + convertString(persistencePipe.documentation, true) + ";\n" +
+        (persistencePipe.owners.isEmpty() ? "" : getTabString() + HelperPersistenceGrammarComposer.renderOwners(persistencePipe.owners)) +
+        getTabString() + "trigger: " + persistencePipe.trigger + ";\n" +
+        getTabString() + HelperPersistenceGrammarComposer.renderReader(persistencePipe.reader, context) +
+        getTabString() + HelperPersistenceGrammarComposer.renderPersistence(persistencePipe.persistence, context)) +
+        "}";
+        */
     }
 }
