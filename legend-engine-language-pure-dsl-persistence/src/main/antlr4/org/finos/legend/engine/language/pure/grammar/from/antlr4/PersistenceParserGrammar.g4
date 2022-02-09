@@ -70,7 +70,7 @@ reader:                                     PERSISTENCE_PIPE_READER COLON servic
 ;
 serviceReader:                              SERVICE_READER
                                                 BRACE_OPEN
-                                                    service
+                                                    (service)*
                                                 BRACE_CLOSE
 ;
 service:                                    SERVICE_READER_SERVICE COLON qualifiedName SEMI_COLON
@@ -87,7 +87,7 @@ streamingPersister:                         PERSISTER_STREAMING
 ;
 batchPersister:                             PERSISTER_BATCH
                                                 BRACE_OPEN
-                                                    targetSpecification
+                                                    (targetSpecification)*
                                                 BRACE_CLOSE
 ;
 targetSpecification:                        PERSISTER_BATCH_TARGET COLON

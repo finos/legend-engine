@@ -34,7 +34,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    target: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass1;\n" +
+                "      modelClass: test::ModelClass;\n" +
                 "      batchMode: AppendOnly\n" +
                 "      {\n" +
                 "        auditing: NoAuditing;\n" +
@@ -208,6 +208,60 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
+    public void pipelineReaderService()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [7:11-9:3]: Field 'service' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [7:11-11:3]: Field 'service' should be specified only once");
+    }
+
+    @Test
     public void pipelinePersister()
     {
         test("###Persistence\n" +
@@ -262,6 +316,241 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
+    public void pipelinePersisterStreaming()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
+    public void pipelinePersisterBatch()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [11:14-13:3]: Field 'target' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [11:14-33:3]: Field 'target' should be specified only once");
+    }
+
+    @Test
+    public void pipelinePersisterBatchFlatTargetName()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [15:7-20:7]: Field 'targetName' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [15:7-22:7]: Field 'targetName' should be specified only once");
+    }
+
+    @Test
+    public void pipelinePersisterBatchFlatModelClass()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [15:7-20:7]: Field 'modelClass' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [15:7-22:7]: Field 'modelClass' should be specified only once");
+    }
+
+    @Test
+    public void pipelinePersisterBatchFlatBatchMode()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [15:7-16:35]: Field 'batchMode' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [15:7-26:7]: Field 'batchMode' should be specified only once");
+    }
+
+    @Test
     public void success()
     {
         test("###Persistence\n" +
@@ -271,7 +560,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "PersistencePipe test::TestPipe\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  owners: ['test1', 'test2'];\n" +
+                "  owners: ['owner1', 'owner2'];\n" +
                 "  trigger: OpaqueTrigger;\n" +
                 "  reader: Service\n" +
                 "  {\n" +

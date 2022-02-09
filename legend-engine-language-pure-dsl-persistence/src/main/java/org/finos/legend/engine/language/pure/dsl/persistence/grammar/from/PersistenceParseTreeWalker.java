@@ -86,11 +86,11 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.TriggerContext triggerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.trigger(), "trigger", persistencePipe.sourceInformation);
         persistencePipe.trigger = visitTrigger(triggerContext);
 
-        // input source
+        // reader
         PersistenceParserGrammar.ReaderContext readerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.reader(), "reader", persistencePipe.sourceInformation);
         persistencePipe.reader = visitReader(readerContext);
 
-        // persistence
+        // persister
         PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persister(), "persister", persistencePipe.sourceInformation);
         persistencePipe.persister = visitPersister(persisterContext);
 
@@ -124,9 +124,8 @@ public class PersistenceParseTreeWalker
         reader.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // service
-        reader.service = new PackageableElementPointer(
-                PackageableElementType.SERVICE,
-                PureGrammarParserUtility.fromQualifiedName(ctx.service().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.service().qualifiedName().packagePath().identifier(), ctx.service().qualifiedName().identifier()));
+        PersistenceParserGrammar.ServiceContext serviceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.service(), "service", reader.sourceInformation);
+        reader.service = new PackageableElementPointer(PackageableElementType.SERVICE, PureGrammarParserUtility.fromQualifiedName(serviceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : serviceContext.qualifiedName().packagePath().identifier(), serviceContext.qualifiedName().identifier()));
 
         return reader;
     }
@@ -158,7 +157,7 @@ public class PersistenceParseTreeWalker
         batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // target specification
-        PersistenceParserGrammar.TargetSpecificationContext targetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.targetSpecification()), "target", batch.sourceInformation);
+        PersistenceParserGrammar.TargetSpecificationContext targetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetSpecification(), "target", batch.sourceInformation);
         batch.targetSpecification = visitTargetSpecification(targetSpecificationContext);
 
         return batch;
