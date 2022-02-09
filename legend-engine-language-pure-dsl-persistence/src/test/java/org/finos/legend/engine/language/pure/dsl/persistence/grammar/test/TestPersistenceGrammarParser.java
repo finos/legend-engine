@@ -413,7 +413,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:7-20:7]: Field 'targetName' is required");
+                "}\n", "PARSER error at [13:13-21:5]: Field 'targetName' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -439,7 +439,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:7-22:7]: Field 'targetName' should be specified only once");
+                "}\n", "PARSER error at [13:13-23:5]: Field 'targetName' should be specified only once");
     }
 
     @Test
@@ -467,7 +467,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:7-20:7]: Field 'modelClass' is required");
+                "}\n", "PARSER error at [13:13-21:5]: Field 'modelClass' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -493,7 +493,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:7-22:7]: Field 'modelClass' should be specified only once");
+                "}\n", "PARSER error at [13:13-23:5]: Field 'modelClass' should be specified only once");
     }
 
     @Test
@@ -517,7 +517,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      modelClass: test::ModelClass;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:7-16:35]: Field 'batchMode' is required");
+                "}\n", "PARSER error at [13:13-17:5]: Field 'batchMode' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -547,7 +547,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:7-26:7]: Field 'batchMode' should be specified only once");
+                "}\n", "PARSER error at [13:13-27:5]: Field 'batchMode' should be specified only once");
     }
 
     @Test
@@ -579,7 +579,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            modelClass: test::InnerClass1;\n" +
                 "            partitionProperties: [test::InnerClass1->propertyA, test::InnerClass1->propertyB];\n" +
                 "            deduplicationStrategy: MaxVersion\n" +
                 "            {\n" +
@@ -601,7 +600,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
-                "            modelClass: test::InnerClass2;\n" +
                 "            partitionProperties: [];\n" +
                 "            deduplicationStrategy: OpaqueDeduplication;\n" +
                 "            batchMode: BitemporalDelta\n" +

@@ -130,7 +130,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [44:7-50:7]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [42:13-51:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -188,7 +188,6 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            modelClass: test::InnerClass1;\n" +
                 "            batchMode: AppendOnly\n" +
                 "            {\n" +
                 "              auditing: NoAuditing;\n" +
@@ -199,7 +198,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [42:13-62:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [42:13-61:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -259,7 +258,6 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            modelClass: test::InnerClass1;\n" +
                 "            batchMode: AppendOnly\n" +
                 "            {\n" +
                 "              auditing: NoAuditing;\n" +
@@ -270,7 +268,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [50:9-62:9]: Target component property 'test::ServiceResult->property1' cannot be resolved");
+                "}\n", "COMPILATION error at [50:9-61:9]: Target component property 'test::ServiceResult->property1' cannot be resolved");
     }
 
     @Test
@@ -333,7 +331,6 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            modelClass: test::InnerClass1;\n" +
                 "            batchMode: AppendOnly\n" +
                 "            {\n" +
                 "              auditing: NoAuditing;\n" +
@@ -344,7 +341,80 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [53:9-65:9]: Target component property must refer to a Class. The property 'test::ServiceResult->property1' refers to a String");
+                "}\n", "COMPILATION error at [53:9-64:9]: Target component property must refer to a Class. The property 'test::ServiceResult->property1' refers to a String");
+    }
+
+    @Test
+    public void groupedFlatModelPropertyUndefinedType()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::ServiceResult\n" +
+                "{\n" +
+                "  property1: Animal[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe\n" +
+                "{\n" +
+                "  doc: 'test doc';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: test::ServiceResult->property1;\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [8:14-19]: Can't find type 'Animal'");
     }
 
     @Test

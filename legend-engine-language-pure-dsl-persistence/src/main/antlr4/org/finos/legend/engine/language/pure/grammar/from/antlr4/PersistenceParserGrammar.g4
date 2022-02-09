@@ -108,16 +108,14 @@ groupedTargetSpecification:                 TARGET_SPEC_GROUPED
 ;
 flatTargetSpecification:                    TARGET_SPEC_FLAT
                                                 BRACE_OPEN
-                                                    flatTargetSpecificationProperties
+                                                    (
+                                                        targetName
+                                                        | targetModelClass
+                                                        | partitionProperties
+                                                        | deduplicationStrategy
+                                                        | batchMode
+                                                    )*
                                                 BRACE_CLOSE
-;
-flatTargetSpecificationProperties:          (
-                                                targetName
-                                                | targetModelClass
-                                                | partitionProperties
-                                                | deduplicationStrategy
-                                                | batchMode
-                                            )*
 ;
 nestedTargetSpecification:                  TARGET_SPEC_NESTED
                                                 BRACE_OPEN
@@ -155,7 +153,12 @@ targetComponentProperty:                    TARGET_COMPONENT_PROPERTY COLON (qua
 ;
 targetComponentTargetSpecification:         TARGET_COMPONENT_TARGET_SPEC COLON
                                                 BRACE_OPEN
-                                                    flatTargetSpecificationProperties
+                                                    (
+                                                        targetName
+                                                        | partitionProperties
+                                                        | deduplicationStrategy
+                                                        | batchMode
+                                                    )*
                                                 BRACE_CLOSE
 ;
 partitionProperties:                        TARGET_SPEC_FLAT_PARTITION_PROPERTIES COLON

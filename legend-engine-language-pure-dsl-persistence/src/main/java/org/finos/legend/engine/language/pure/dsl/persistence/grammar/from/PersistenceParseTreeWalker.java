@@ -6,8 +6,6 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
@@ -50,6 +48,8 @@ import java.util.function.Consumer;
 
 public class PersistenceParseTreeWalker
 {
+    private static final String PROPERTY_LITERAL = "->";
+
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
@@ -171,7 +171,7 @@ public class PersistenceParseTreeWalker
         }
         else if (ctx.flatTargetSpecification() != null)
         {
-            return visitFlatTargetSpecification(ctx.flatTargetSpecification().flatTargetSpecificationProperties());
+            return visitFlatTargetSpecification(ctx.flatTargetSpecification());
         }
         else if (ctx.nestedTargetSpecification() != null)
         {
@@ -200,29 +200,36 @@ public class PersistenceParseTreeWalker
         return targetSpecification;
     }
 
-    private FlatTargetSpecification visitFlatTargetSpecification(PersistenceParserGrammar.FlatTargetSpecificationPropertiesContext ctx)
+    private FlatTargetSpecification visitFlatTargetSpecification(PersistenceParserGrammar.FlatTargetSpecificationContext ctx)
     {
-        FlatTargetSpecification targetSpecification = new FlatTargetSpecification();
-        targetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // target name
-        PersistenceParserGrammar.TargetNameContext targetNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetName(), "targetName", targetSpecification.sourceInformation);
-        targetSpecification.targetName = visitTargetName(targetNameContext);
+        FlatTargetSpecification targetSpecification = createBaseFlatTargetSpecification(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.batchMode());
 
         // model class
         PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
         targetSpecification.modelClassPath = visitModelClass(targetModelClassContext);
 
+        return targetSpecification;
+    }
+
+    private FlatTargetSpecification createBaseFlatTargetSpecification(SourceInformation sourceInformation, List<PersistenceParserGrammar.TargetNameContext> targetNameContexts, List<PersistenceParserGrammar.PartitionPropertiesContext> partitionPropertiesContexts, List<PersistenceParserGrammar.DeduplicationStrategyContext> deduplicationStrategyContexts, List<PersistenceParserGrammar.BatchModeContext> batchModeContexts)
+    {
+        FlatTargetSpecification targetSpecification = new FlatTargetSpecification();
+        targetSpecification.sourceInformation = sourceInformation;
+
+        // target name
+        PersistenceParserGrammar.TargetNameContext targetNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(targetNameContexts, "targetName", targetSpecification.sourceInformation);
+        targetSpecification.targetName = visitTargetName(targetNameContext);
+
         // partition properties (optional)
-        PersistenceParserGrammar.PartitionPropertiesContext partitionPropertiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitionProperties(), "partitionProperties", targetSpecification.sourceInformation);
+        PersistenceParserGrammar.PartitionPropertiesContext partitionPropertiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(partitionPropertiesContexts, "partitionProperties", targetSpecification.sourceInformation);
         targetSpecification.partitionPropertyPaths = partitionPropertiesContext != null ? visitPartitionProperties(partitionPropertiesContext) : Collections.emptyList();
 
         // deduplication strategy (optional)
-        PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplicationStrategy(), "deduplicationStrategy", targetSpecification.sourceInformation);
+        PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractOptionalField(deduplicationStrategyContexts, "deduplicationStrategy", targetSpecification.sourceInformation);
         targetSpecification.deduplicationStrategy = visitDeduplicationStrategy(deduplicationStrategyContext);
 
         // batch mode
-        PersistenceParserGrammar.BatchModeContext batchModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchMode(), "batchMode", targetSpecification.sourceInformation);
+        PersistenceParserGrammar.BatchModeContext batchModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(batchModeContexts, "batchMode", targetSpecification.sourceInformation);
         targetSpecification.milestoningMode = visitBatchMilestoningMode(batchModeContext);
 
         return targetSpecification;
@@ -277,9 +284,9 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.TargetComponentPropertyContext targetComponentPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponentProperty(), "property", propertyAndFlatTargetSpecification.sourceInformation);
         propertyAndFlatTargetSpecification.propertyPath = visitTargetComponentProperty(targetComponentPropertyContext);
 
-        // target specification
+        // target specification (note: not expecting a model class in this context; compiler will populate based on target type of property above)
         PersistenceParserGrammar.TargetComponentTargetSpecificationContext targetComponentTargetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponentTargetSpecification(), "targetSpecification", propertyAndFlatTargetSpecification.sourceInformation);
-        propertyAndFlatTargetSpecification.targetSpecification = visitFlatTargetSpecification(targetComponentTargetSpecificationContext.flatTargetSpecificationProperties());
+        propertyAndFlatTargetSpecification.targetSpecification = visitComponentFlatTargetSpecification(targetComponentTargetSpecificationContext);
 
         return propertyAndFlatTargetSpecification;
     }
@@ -290,7 +297,12 @@ public class PersistenceParseTreeWalker
         String modelClass = PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
         String modelProperty = ctx.identifier().getText();
 
-        return modelClass + "->" + modelProperty;
+        return modelClass + PROPERTY_LITERAL + modelProperty;
+    }
+
+    private FlatTargetSpecification visitComponentFlatTargetSpecification(PersistenceParserGrammar.TargetComponentTargetSpecificationContext ctx)
+    {
+        return createBaseFlatTargetSpecification(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.batchMode());
     }
 
     private List<String> visitPartitionProperties(PersistenceParserGrammar.PartitionPropertiesContext ctx)
@@ -667,7 +679,7 @@ public class PersistenceParseTreeWalker
         String modelClass = PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
         String modelProperty = ctx.identifier().getText();
 
-        return modelClass + "->" + modelProperty;
+        return modelClass + PROPERTY_LITERAL + modelProperty;
     }
 
     private String visitValidityDerivationThruProperty(PersistenceParserGrammar.ValidityDerivationThruPropertyContext ctx)
@@ -676,7 +688,7 @@ public class PersistenceParseTreeWalker
         String modelClass = PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
         String modelProperty = ctx.identifier().getText();
 
-        return modelClass + "->" + modelProperty;
+        return modelClass + PROPERTY_LITERAL + modelProperty;
     }
 
     private MergeStrategy visitMergeStrategy(PersistenceParserGrammar.MergeStrategyContext ctx)

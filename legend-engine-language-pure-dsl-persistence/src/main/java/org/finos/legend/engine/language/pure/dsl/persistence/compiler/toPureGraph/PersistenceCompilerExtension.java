@@ -11,18 +11,19 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Pers
 
 import java.util.Collections;
 
-public class PersistenceCompilerExtension implements CompilerExtension {
+public class PersistenceCompilerExtension implements CompilerExtension
+{
     @Override
-    public Iterable<? extends Processor<?>> getExtraProcessors() {
+    public Iterable<? extends Processor<?>> getExtraProcessors()
+    {
         return Collections.singletonList(Processor.newProcessor(
                 PersistencePipe.class,
                 Lists.fixedSize.with(Service.class, Mapping.class),
-                (pipe, context) ->
-                        new Root_meta_pure_persistence_metamodel_PersistencePipe_Impl("")
-                                ._documentation(pipe.documentation)
-                                ._ownersAddAll(Lists.immutable.ofAll(pipe.owners))
-                                ._trigger(HelperPersistenceBuilder.buildTrigger(pipe.trigger))
-                                ._reader(HelperPersistenceBuilder.buildReader(pipe.reader, context)),
+                (pipe, context) -> new Root_meta_pure_persistence_metamodel_PersistencePipe_Impl("")
+                        ._documentation(pipe.documentation)
+                        ._ownersAddAll(Lists.immutable.ofAll(pipe.owners))
+                        ._trigger(HelperPersistenceBuilder.buildTrigger(pipe.trigger))
+                        ._reader(HelperPersistenceBuilder.buildReader(pipe.reader, context)),
                 (pipe, context) ->
                 {
                     Root_meta_pure_persistence_metamodel_PersistencePipe purePipe = (Root_meta_pure_persistence_metamodel_PersistencePipe) context.pureModel.getOrCreatePackage(pipe._package)._children().detect(c -> pipe.name.equals(c._name()));
