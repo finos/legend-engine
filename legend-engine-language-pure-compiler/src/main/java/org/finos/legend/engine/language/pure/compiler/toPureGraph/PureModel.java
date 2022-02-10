@@ -115,11 +115,6 @@ public class PureModel implements IPureModel
     // this as part of `CompileContext`
     final CompilerExtensions extensions;
 
-    // NOTE: since we resolve the same types across different pure elements, we have to keep commonPaths local
-    // to `PureModel` rather than having this as part of `CompileContext`
-    private final MutableMap<String, String> commonPaths = Maps.mutable.empty();
-    private static final int MAX_SIZE_COMMON_PATHS = 1000;
-
     final Handlers handlers;
 
     private final MutableSet<String> immutables = Sets.mutable.empty();
@@ -335,9 +330,13 @@ public class PureModel implements IPureModel
                 "getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_",
                 "getterOverrideNonMapped_Any_1__Property_1__Any_MANY_"
         ));
-        registerElementForPathToElement("meta::pure::router::store::platform", Lists.mutable.with(
-                "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_",
-                "supports_FunctionExpression_1__Boolean_1_",
+        registerElementForPathToElement("meta::pure::store::platform", Lists.mutable.with(
+                "supports_FunctionExpression_1__Boolean_1_"
+        ));
+        registerElementForPathToElement("meta::pure::store::platform::execution", Lists.mutable.with(
+                "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_"
+        ));
+        registerElementForPathToElement("meta::pure::store::platform::executionPlan::generation", Lists.mutable.with(
                 "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_"
         ));
         registerElementForPathToElement("meta::protocols::pure::vX_X_X::invocation::execution::execute", Lists.mutable.with(
@@ -938,19 +937,6 @@ public class PureModel implements IPureModel
     public CompileContext getContext(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
         return new CompileContext.Builder(this).withElement(element).build();
-    }
-
-    public MutableMap<String, String> getCommonPaths()
-    {
-        return this.commonPaths;
-    }
-
-    public void addCommonPath(String key, String value)
-    {
-        if (this.commonPaths.size() < MAX_SIZE_COMMON_PATHS)
-        {
-            this.commonPaths.put(key, value);
-        }
     }
 
     public Section getSection(String fullPath)

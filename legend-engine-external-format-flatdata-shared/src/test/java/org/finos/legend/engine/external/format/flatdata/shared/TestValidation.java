@@ -14,17 +14,9 @@
 
 package org.finos.legend.engine.external.format.flatdata.shared;
 
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParser;
-import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidation;
-import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidationResult;
-import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
-public class TestValidation
+public class TestValidation extends AbstractValidationTest
 {
     @Test
     public void valid()
@@ -361,37 +353,45 @@ public class TestValidation
                      "}",
              "Invalid address for 'Heading' (Expected column number) in section 'sectionName'"
         );
-    }
 
-    private void test(String flatDataGrammar, String... expectedErrors)
-    {
-        FlatData flatData = new FlatDataSchemaParser(flatDataGrammar).parse();
-        FlatDataValidationResult result = FlatDataValidation.validate(flatData);
-        if (expectedErrors.length == 0)
-        {
-            if (!result.isValid())
-            {
-                Assert.fail("Result should be valid but has defects:\n" + result.getDefects().stream().map(Object::toString).collect(Collectors.joining("\n")));
-            }
-        }
-        else
-        {
-            Assert.assertFalse("Result should be invalid", result.isValid());
-            result.getDefects().forEach(d ->
-                                        {
-                                            if (!Arrays.asList(expectedErrors).contains(d.toString()))
-                                            {
-                                                Assert.fail("Unexpected defect: " + d);
-                                            }
-                                        });
-            Arrays.asList(expectedErrors).forEach(e ->
-                                                  {
-                                                      if (!result.getDefects().stream().anyMatch(d -> e.equals(d.toString())))
-                                                      {
-                                                          Assert.fail("Missing defect: " + e);
-                                                      }
-                                                  });
-        }
-    }
+        test("section default: FixedWidth\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator : '\\r\\n';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    FIRM          {1:2}   : STRING;\n" +
+                        "    AGE           {3:4}   : INTEGER;\n" +
+                        "    MASTER        {5:5}   : INTEGER(optional);\n" +
+                        "    WEIGHT        {6:8}   : STRING(optional);\n" +
+                        "    NAME          {9:12}  : STRING;\n" +
+                        "    EMPLOYED_DATE {13:22} : DATE(format='yyyy-MM-dd');\n" +
+                        "    TITLE         {23:24} : STRING;\n" +
+                        "  }\n" +
+                        "}"
+        );
 
+        test("section default: FixedWidth\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator : '\\r\\n';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    FIRM          {A:2} : STRING;\n" +
+                        "    AGE           {3,4} : INTEGER;\n" +
+                        "    MASTER        {5:5} : INTEGER(optional);\n" +
+                        "    WEIGHT        {6:8} : STRING(optional);\n" +
+                        "    NAME          {9:12} : STRING;\n" +
+                        "    EMPLOYED_DATE {13:22} : DATE(format='yyyy-MM-dd');\n" +
+                        "    TITLE         {23:24} : STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid address for 'FIRM' (Expected start:end column numbers) in section 'default'",
+                "Invalid address for 'AGE' (Expected start:end column numbers) in section 'default'"
+        );
+
+
+    }
 }

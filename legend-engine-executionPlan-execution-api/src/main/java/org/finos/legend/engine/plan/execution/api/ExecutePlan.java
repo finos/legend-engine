@@ -16,7 +16,6 @@ package org.finos.legend.engine.plan.execution.api;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
@@ -36,21 +35,12 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
-
-@Api(tags = "Pure - Execution")
-@Path("pure/v1/execution")
-@Produces(MediaType.APPLICATION_JSON)
 public class ExecutePlan
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
@@ -61,10 +51,7 @@ public class ExecutePlan
         this.planExecutor = planExecutor;
     }
 
-    @POST
-    @Path("executePlan")
-    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executePlan(@Context HttpServletRequest request, ExecutionPlan execPlan, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response doExecutePlan(@Context HttpServletRequest request, ExecutionPlan execPlan, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 

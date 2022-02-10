@@ -206,6 +206,11 @@ public class HelperServiceStoreBuilder
             pureServiceParameter._enum(context.resolveEnumeration(serviceParameter.enumeration));
         }
 
+        if (serviceParameter.allowReserved != null)
+        {
+            pureServiceParameter._allowReserved(serviceParameter.allowReserved);
+        }
+
         if (serviceParameter.serializationFormat != null)
         {
             Root_meta_external_store_service_metamodel_SerializationFormat serializationFormat = new Root_meta_external_store_service_metamodel_SerializationFormat_Impl("");

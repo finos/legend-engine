@@ -1,6 +1,10 @@
 package org.finos.legend.engine.plan.execution.stores.service.showcase;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.handler.ContextHandler;
 import org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils;
 import org.finos.legend.engine.plan.execution.stores.service.utils.TestServer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
@@ -9,6 +13,11 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
 
 import static org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils.buildPlanForQuery;
 import static org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils.executePlan;
@@ -45,7 +54,32 @@ public class ServiceStoreJsonShowcaseTest
     @BeforeClass
     public static void setup() throws Exception
     {
-        server = new TestServer(PORT, SERVER_RESOURCE_FILE_PATH);
+        server = new TestServer(PORT, SERVER_RESOURCE_FILE_PATH, Lists.mutable.with(getCustomHandler()));
+    }
+
+    private static AbstractHandler getCustomHandler()
+    {
+        String basePath = "/trades/traderDetails";
+
+        ContextHandler contextHandler = new ContextHandler(basePath + "/*");
+        AbstractHandler handler = new AbstractHandler()
+        {
+            @Override
+            public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
+            {
+                String content = "[\n  {\n    \"s_tradeId\": \"1\",\n    \"s_traderDetails\": \"abc:F_Name_1:L_Name_1\",\n    \"s_tradeDetails\": \"30:100\"\n  },\n  {\n    \"s_tradeId\": \"2\",\n    \"s_traderDetails\": \"abc:F_Name_1:L_Name_1\",\n    \"s_tradeDetails\": \"30:400\"\n  }]";
+
+                Assert.assertEquals("/trades/traderDetails/?trader.details=abc:F_Name_1:L_Name_1", request.getOriginalURI());
+                TestServer.validateRequestParams(Maps.mutable.with("trader.details", Lists.mutable.with("abc:F_Name_1:L_Name_1")), request.getParameterMap());
+
+                OutputStream stream = httpServletResponse.getOutputStream();
+                stream.write(content.getBytes());
+                stream.flush();
+            }
+        };
+
+        contextHandler.setHandler(handler);
+        return contextHandler;
     }
 
     @AfterClass
@@ -149,6 +183,99 @@ public class ServiceStoreJsonShowcaseTest
         SingleExecutionPlan plan = buildPlanForQuery(SERVICE_STORE + "\n\n" + SERVICE_STORE_CONNECTION + "\n\n" + SERVICE_STORE_MAPPING + "\n\n" + MODELS + "\n\n" + query);
 
         String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_productId\":\"30\",\"s_productName\":\"Product 30\",\"s_description\":\"Product 30 description\"}}";
+
+        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
+    }
+
+    @Test
+    public void serviceStoreFilterExampleWithSpecialCharactersInPathParamName()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::S_Trade.all()" +
+                "       ->filter(p | $p.s_tradeId == '1')\n" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(SERVICE_STORE + "\n\n" + SERVICE_STORE_CONNECTION + "\n\n" + SERVICE_STORE_MAPPING + "\n\n" + MODELS + "\n\n" + query);
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"}}";
+
+        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
+    }
+
+    @Test
+    public void serviceStoreFilterExampleWithSpecialCharactersInQueryParamName()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::S_Trade.all()" +
+                "       ->filter(p | $p.s_tradeDetails == '30:100')\n" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(SERVICE_STORE + "\n\n" + SERVICE_STORE_CONNECTION + "\n\n" + SERVICE_STORE_MAPPING + "\n\n" + MODELS + "\n\n" + query);
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"}}";
+
+        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
+    }
+
+    @Test
+    public void serviceStoreFilterExampleWithSpecialCharactersInQueryParamValue()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::S_Trade.all()" +
+                "       ->filter(p | $p.s_traderDetails == 'abc:F_Name_1:L_Name_1')\n" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(SERVICE_STORE + "\n\n" + SERVICE_STORE_CONNECTION + "\n\n" + SERVICE_STORE_MAPPING + "\n\n" + MODELS + "\n\n" + query);
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"},{\"s_tradeId\":\"2\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:400\"}]}";
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
     }

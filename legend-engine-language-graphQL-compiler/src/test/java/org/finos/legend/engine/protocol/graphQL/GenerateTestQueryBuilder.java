@@ -3,6 +3,8 @@ package org.finos.legend.engine.protocol.graphQL;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Translator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 

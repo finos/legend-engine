@@ -15,13 +15,10 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.H2TestUtils;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ReflectionUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
@@ -55,10 +52,10 @@ public class TestCredentialCreation
     {
         server = AlloyH2Server.startServer(DynamicPortGenerator.generatePort());
 
-        installTestFlowProvider();
-        assertStaticH2FlowIsAvailable();
+        this.testFlowProvider = new TestDatabaseAuthenticationFlowProvider();
+        assertStaticH2FlowIsAvailable(testFlowProvider);
 
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(testFlowProvider));
     }
 
     @After
@@ -71,30 +68,15 @@ public class TestCredentialCreation
         }
     }
 
-    private void installTestFlowProvider() throws Exception
-    {
-        ReflectionUtils.resetStaticField(DatabaseAuthenticationFlowProviderSelector.class, "INSTANCE");
-        DatabaseAuthenticationFlowProviderSelector.enableFlowProvider(TestDatabaseAuthenticationFlowProvider.class);
-
-        testFlowProvider = (TestDatabaseAuthenticationFlowProvider) DatabaseAuthenticationFlowProviderSelector.getProvider().get();
-    }
-
-    public void assertStaticH2FlowIsAvailable()
+    public void assertStaticH2FlowIsAvailable(TestDatabaseAuthenticationFlowProvider testFlowProvider)
     {
         StaticDatasourceSpecification staticDatasourceSpecification = new StaticDatasourceSpecification();
         TestDatabaseAuthenticationStrategy testDatabaseAuthenticationStrategy = new TestDatabaseAuthenticationStrategy();
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(staticDatasourceSpecification, testDatabaseAuthenticationStrategy, DatabaseType.H2);
         relationalDatabaseConnection.type = DatabaseType.H2;
 
-        DatabaseAuthenticationFlowProvider flowProvider = DatabaseAuthenticationFlowProviderSelector.getProvider().get();
-        Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
+        Optional<DatabaseAuthenticationFlow> flow = testFlowProvider.lookupFlow(relationalDatabaseConnection);
         assertTrue("static h2 flow does not exist ", flow.isPresent());
-    }
-
-    @After
-    public void cleanup()
-    {
-        DatabaseAuthenticationFlowProviderSelector.disableFlowProvider();
     }
 
     @Test

@@ -1,13 +1,27 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.AbstractRawFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.HeadedFlatDataFactory;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.data.NoValuesRawFlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandlerRecordType;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.FlatDataUtils;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.LineReader;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.SimpleLine;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatDataValue;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
@@ -16,14 +30,7 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.*;
 
 public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
 {
@@ -35,8 +42,8 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
     private final FlatDataRecordType recordType;
     private final FlatDataProcessingContext context;
     private final List<IDefect> headingDefects = new ArrayList<>();
+    private HeadedFlatDataFactory<T> dataFactory;
     private long recordNumber = 0;
-    private List<String> headings = null;
     private IChecked<RawFlatData> headingsLine = null;
 
     DelimitedWithHeadingsReadDriver(FlatDataSection section, FlatDataProcessingContext context)
@@ -58,51 +65,32 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
     {
         super.start();
         // First read will establish headings or establish that they are invalid
-        headingsLine = readDelimitedLine().orElseGet(() -> BasicChecked.newChecked(createInvalidFlatDataDataRecord(null), null, BasicDefect.newInvalidInputCriticalDefect("Header row is missing.", context.getDefiningPath())));
+        headingsLine = readDelimitedLine().orElseGet(() -> BasicChecked.newChecked(createInvalidFlatDataDataRecord(new SimpleLine(-1, "")), null, BasicDefect.newInvalidInputCriticalDefect("Header row is missing.", context.getDefiningPath())));
 
         boolean headingsRequired = FlatDataUtils.getBoolean(section.getSectionProperties(), MODELLED_COUMNNS_REQIURED);
         boolean onlyModelled = FlatDataUtils.getBoolean(section.getSectionProperties(), ONLY_MODELLED_COLUMNS);
-        boolean caseInsensitive = FlatDataUtils.getBoolean(section.getSectionProperties(), MATCH_COLUMNS_CASE_INSENSITIVE);
 
-        if (headingsLine.getValue() == null || !headingsLine.getDefects().isEmpty() || headings == null)
+        if (headingsLine.getValue() == null || !headingsLine.getDefects().isEmpty() || dataFactory == null)
         {
             headingDefects.addAll(headingsLine.getDefects());
             headingDefects.add(BasicDefect.newInvalidInputCriticalDefect("Header row is invalid. Skipping all data in this section.", context.getDefiningPath()));
         }
         else
         {
-            if (caseInsensitive)
-            {
-                List<String> newHeadings = new ArrayList<>();
-                for (String heading: headings)
-                {
-                    String newHeading = heading;
-                    for (FlatDataRecordField field : recordType.getFields())
-                    {
-                        if (heading.equalsIgnoreCase(field.getLabel()))
-                        {
-                            newHeading = field.getLabel();
-                        }
-                    }
-                    newHeadings.add(newHeading);
-                }
-                headings = newHeadings;
-            }
-
             for (FlatDataRecordField field : recordType.getFields())
             {
-                if (headingsRequired && !headings.contains(field.getLabel()))
+                if (headingsRequired && !dataFactory.containsHeading(field.getLabel()))
                 {
                     headingDefects.add(BasicDefect.newInvalidInputCriticalDefect("Heading " + field.getLabel() + " missing for required column", context.getDefiningPath()));
                 }
-                else if (!field.isOptional() && !headings.contains(field.getLabel()))
+                else if (!field.isOptional() && !dataFactory.containsHeading(field.getLabel()))
                 {
                     headingDefects.add(BasicDefect.newInvalidInputCriticalDefect("Heading " + field.getLabel() + " missing for mandatory column", context.getDefiningPath()));
                 }
             }
             if (onlyModelled)
             {
-                for (String heading : headings)
+                for (String heading : dataFactory.headings())
                 {
                     if (recordType.getFields().stream().noneMatch(field -> heading.equals(field.getLabel())))
                     {
@@ -116,24 +104,10 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
             }
         }
 
-        this.fieldHandlers = computeFieldHandlers(recordType, this::getRawDataAccessor);
-        this.objectFactory = context.createToObjectFactory(new FieldHandlerRecordType(section.getRecordType(), fieldHandlers));
-    }
-
-    private Function<RawFlatData, String> getRawDataAccessor(FlatDataRecordField field)
-    {
-        int index = headings.indexOf(field.getLabel());
-        if (index == -1)
+        if (dataFactory != null)
         {
-            return (RawFlatData raw) -> null;
-        }
-        else
-        {
-            return (RawFlatData raw) ->
-            {
-                String value = ((DelimitedWithHeadingsRawFlatData) raw).getRawValue(index);
-                return value != null && helper.nullStrings.contains(value) ? null : value;
-            };
+            this.fieldHandlers = this.commonDataHandler.computeFieldHandlers(dataFactory::getRawDataAccessor);
+            this.objectFactory = context.createToObjectFactory(new FieldHandlerRecordType(section.getRecordType(), fieldHandlers));
         }
     }
 
@@ -150,7 +124,7 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
         }
 
         return readDelimitedLine()
-                .flatMap(this::makeParsed)
+                .flatMap(raw -> dataFactory.createParsed(raw, fieldHandlers, objectFactory))
                 .map(Collections::singletonList)
                 .orElseGet(Collections::emptyList);
     }
@@ -158,75 +132,44 @@ public class DelimitedWithHeadingsReadDriver<T> extends DelimitedReadDriver<T>
     @Override
     protected RawFlatData createFlatDataDataRecord(LineReader.Line line, List<String> values)
     {
-        long recNo;
-        if (headings == null)
+        if (dataFactory == null)
         {
-            headings = values;
-            recNo = 0;
+            boolean caseInsensitive = FlatDataUtils.getBoolean(section.getSectionProperties(), MATCH_COLUMNS_CASE_INSENSITIVE);
+
+            List<String> headings = new ArrayList<>();
+            if (caseInsensitive)
+            {
+                for (String value : values)
+                {
+                    String heading = value;
+                    for (FlatDataRecordField field : recordType.getFields())
+                    {
+                        if (value.equalsIgnoreCase(field.getLabel()))
+                        {
+                            heading = field.getLabel();
+                        }
+                    }
+                    headings.add(heading);
+                }
+            }
+            else
+            {
+                headings = values;
+            }
+
+            dataFactory = new HeadedFlatDataFactory<>(headings, helper.context.getDefiningPath(), helper.nullStrings);
+            return dataFactory.createRawFlatData(0, line, values);
         }
         else
         {
-            recNo = ++recordNumber;
+            return dataFactory.createRawFlatData(++recordNumber, line, values);
         }
-        return new DelimitedWithHeadingsRawFlatData(recNo, line.getLineNumber(), line.getText(), values);
     }
 
     @Override
     protected RawFlatData createInvalidFlatDataDataRecord(LineReader.Line line)
     {
-        long recNo = headings == null ? 0 : ++recordNumber;
+        long recNo = dataFactory == null ? 0 : ++recordNumber;
         return new NoValuesRawFlatData(recNo, line.getLineNumber(), line.getText());
     }
-
-    private class DelimitedWithHeadingsRawFlatData extends AbstractRawFlatData
-    {
-        private List<String> values;
-
-        DelimitedWithHeadingsRawFlatData(long number, long lineNumber, String record, List<String> values)
-        {
-            super(number, lineNumber, record);
-            this.values = values;
-        }
-
-        @Override
-        protected List<RawFlatDataValue> createValues()
-        {
-            int limit = Math.min(headings.size(), values.size());
-            return IntStream.range(0, limit).mapToObj(WithHeadingValue::new).collect(Collectors.toList());
-        }
-
-        String getRawValue(int index)
-        {
-            return index >= values.size() ? null : values.get(index);
-        }
-
-        private class WithHeadingValue implements RawFlatDataValue
-        {
-            private final int index;
-
-            WithHeadingValue(int index)
-            {
-                this.index = index;
-            }
-
-            @Override
-            public Object getAddress()
-            {
-                return headings.get(index);
-            }
-
-            @Override
-            public String getRawValue()
-            {
-                return values.get(index);
-            }
-
-            @Override
-            public String toString()
-            {
-                return "WithHeadingValue{label=" + getAddress() + ", value=" + getRawValue() + '}';
-            }
-        }
-    }
-
 }

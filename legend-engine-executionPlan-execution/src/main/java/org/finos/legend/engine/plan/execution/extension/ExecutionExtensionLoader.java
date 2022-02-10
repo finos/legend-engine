@@ -19,10 +19,12 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ExecutionExtensionLoader
 {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final AtomicReference<List<ExecutionExtension>> INSTANCE = new AtomicReference<>();
 
     public static void logExtensionList()
     {
@@ -34,19 +36,29 @@ public class ExecutionExtensionLoader
 
     public static List<ExecutionExtension> extensions()
     {
-        List<ExecutionExtension> extensions = Lists.mutable.empty();
-        for (ExecutionExtension extension : ServiceLoader.load(ExecutionExtension.class))
+        return INSTANCE.updateAndGet(existing ->
         {
-            try
+            if (existing == null)
             {
-                extensions.add(extension);
+                List<ExecutionExtension> extensions = Lists.mutable.empty();
+                for (ExecutionExtension extension : ServiceLoader.load(ExecutionExtension.class))
+                {
+                    try
+                    {
+                        extensions.add(extension);
+                    }
+                    catch (Throwable throwable)
+                    {
+                        LOGGER.error("Failed to load execution extension '" + extension.getClass().getSimpleName() + "'");
+                        // Needs to be silent ... during the build process
+                    }
+                }
+                return extensions;
             }
-            catch (Throwable throwable)
+            else
             {
-                LOGGER.error("Failed to load execution extension '" + extension.getClass().getSimpleName() + "'");
-                // Needs to be silent ... during the build process
+                return existing;
             }
-        }
-        return extensions;
+        });
     }
 }

@@ -55,6 +55,22 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    method : GET;\n" +
                 "    parameters :\n" +
                 "    (\n" +
+                "      \"abc.xyz\" : String ( location = query )\n" +
+                "    );\n" +
+                "    response : ExampleClass <- tests::store::exampleBinding;\n" +
+                "    security : [];\n" +
+                "  )\n"+
+                ")\n");
+
+        test("###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreGrammarWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
                 "      serializationFormat : [String] ( location = query, style = simple, explode = true )\n" +
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
@@ -72,6 +88,38 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    parameters :\n" +
                 "    (\n" +
                 "      serializationFormat : [Integer] ( location = query, style = simple, explode = true, enum = test::Enum )\n" +
+                "    );\n" +
+                "    response : ExampleClass <- tests::store::exampleBinding;\n" +
+                "    security : [];\n" +
+                "  )\n"+
+                ")\n");
+
+        test("###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreGrammarWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : [Integer] ( location = query, style = simple, explode = true, allowReserved = true )\n" +
+                "    );\n" +
+                "    response : ExampleClass <- tests::store::exampleBinding;\n" +
+                "    security : [];\n" +
+                "  )\n"+
+                ")\n");
+
+        test("###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreGrammarWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : Integer ( location = query, allowReserved = false )\n" +
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +

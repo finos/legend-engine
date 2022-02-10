@@ -1,36 +1,28 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
-import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.CharCursor;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.InputStreamConnection;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.BooleanFieldHandler;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.DateFieldHandler;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.DateTimeFieldHandler;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.DecimalFieldHandler;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandler;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.IntegerFieldHandler;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.StringFieldHandler;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.CommonDataHandler;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.FlatDataUtils;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.LineReader;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.IntegerVariable;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.BooleanParser;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DateParser;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DateTimeParser;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.DecimalParser;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.IntegerParser;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.valueParser.ValueParser;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataBoolean;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDataType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDate;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDateTime;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDecimal;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataInteger;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.Cursor;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataReadDriver;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,7 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 
@@ -54,6 +45,10 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
     private static AtomicInteger nextRawThreadReaderId = new AtomicInteger(1);
 
     protected final StreamingDriverHelper helper;
+    protected final CommonDataHandler commonDataHandler;
+
+    protected ParsedFlatDataToObject<? extends T> objectFactory;
+    protected List<FieldHandler> fieldHandlers;
     private final InputStreamConnection connection;
 
     private RawLines rawLines;
@@ -61,6 +56,7 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
     protected StreamingReadDriver(StreamingDriverHelper helper)
     {
         this.helper = helper;
+        this.commonDataHandler = helper.section.getRecordType() == null ? null : new CommonDataHandler(helper.section, helper.context);
         this.connection = (InputStreamConnection) helper.context.getConnection();
     }
 
@@ -87,8 +83,7 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
         return rawLines != null && !rawLines.hasMore();
     }
 
-    @Override
-    public boolean canStartAt(Cursor cursor)
+    public boolean canStartAt(CharCursor cursor)
     {
         if (FlatDataUtils.getBoolean(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.UNTIL_EOF))
         {
@@ -100,11 +95,11 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
         }
         else
         {
-            CharCursor csr = (CharCursor) cursor.copy();
+            CharCursor csr = cursor.copy();
             try
             {
-                long untilLines = FlatDataUtils.getInteger(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.FOR_NUMBER_OF_LINES).get();
-                return canReadExpectedLines(csr, untilLines) && helper.context.isNextSectionReadyToStartAt(csr);
+                long untilLines = FlatDataUtils.getInteger(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.FOR_NUMBER_OF_LINES).orElseThrow(() -> new IllegalStateException("Expected number of lines"));
+                return canReadExpectedLines(csr, untilLines) && ((StreamingSequentialSectionsProcessingContext) helper.context).isNextSectionReadyToStartAt(csr);
             }
             finally
             {
@@ -146,46 +141,6 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
             line = nextLine();
         }
         return line;
-    }
-
-    protected List<FieldHandler> computeFieldHandlers(FlatDataRecordType recordType, Function<FlatDataRecordField, Function<RawFlatData, String>> rawDataAccessorFactory)
-    {
-        List<ValueParser> parsers = helper.computeValueParsers(recordType);
-        List<FieldHandler> fieldHandlers = Lists.mutable.empty();
-        for (int i = 0; i < recordType.getFields().size(); i++)
-        {
-            FlatDataRecordField field = recordType.getFields().get(i);
-            FlatDataDataType type = field.getType();
-            if (type instanceof FlatDataString)
-            {
-                fieldHandlers.add(new StringFieldHandler(field, i, rawDataAccessorFactory.apply(field)));
-            }
-            else if (type instanceof FlatDataBoolean)
-            {
-                fieldHandlers.add(new BooleanFieldHandler(field, i, (BooleanParser) parsers.get(i), rawDataAccessorFactory.apply(field)));
-            }
-            else if (type instanceof FlatDataInteger)
-            {
-                fieldHandlers.add(new IntegerFieldHandler(field, i, (IntegerParser) parsers.get(i), rawDataAccessorFactory.apply(field)));
-            }
-            else if (type instanceof FlatDataDecimal)
-            {
-                fieldHandlers.add(new DecimalFieldHandler(field, i, (DecimalParser) parsers.get(i), rawDataAccessorFactory.apply(field)));
-            }
-            else if (type instanceof FlatDataDate)
-            {
-                fieldHandlers.add(new DateFieldHandler(field, i, (DateParser) parsers.get(i), rawDataAccessorFactory.apply(field)));
-            }
-            else if (type instanceof FlatDataDateTime)
-            {
-                fieldHandlers.add(new DateTimeFieldHandler(field, i, (DateTimeParser) parsers.get(i), rawDataAccessorFactory.apply(field)));
-            }
-            else
-            {
-                throw new IllegalArgumentException("Unknown datatype: " + type.getClass().getSimpleName());
-            }
-        }
-        return fieldHandlers;
     }
 
     private class RawLines
@@ -241,7 +196,7 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
                 BooleanSupplier sectionHasConsumedAllItsRawLines;
                 if (FlatDataUtils.getBoolean(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.UNTIL_EOF))
                 {
-                    sectionHasConsumedAllItsRawLines = () -> StreamingReadDriver.this.connection.isConsumedToEof();
+                    sectionHasConsumedAllItsRawLines = StreamingReadDriver.this.connection::isConsumedToEof;
                 }
                 else if (FlatDataUtils.getString(helper.section.getSectionProperties(), StreamingDriverHelper.SCOPE, StreamingDriverHelper.UNTIL_LINE_EQUALS).isPresent())
                 {
@@ -256,7 +211,7 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
                 else
                 {
                     // Scope default
-                    sectionHasConsumedAllItsRawLines = () -> helper.context.isNextSectionReadyToStartAt(connection.getCursor());
+                    sectionHasConsumedAllItsRawLines = () -> ((StreamingSequentialSectionsProcessingContext) helper.context).isNextSectionReadyToStartAt(connection.getCursor());
                 }
 
                 while (!sectionHasConsumedAllItsRawLines.getAsBoolean())
@@ -349,8 +304,8 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
                 else if (readException.get() != null)
                 {
                     throw readException.get() instanceof RuntimeException
-                          ? (RuntimeException) readException.get()
-                          : new RuntimeException(readException.get());
+                            ? (RuntimeException) readException.get()
+                            : new RuntimeException(readException.get());
                 }
                 else
                 {

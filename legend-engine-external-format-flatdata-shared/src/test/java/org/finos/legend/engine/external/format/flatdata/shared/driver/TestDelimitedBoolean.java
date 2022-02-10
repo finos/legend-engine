@@ -157,9 +157,10 @@ public class TestDelimitedBoolean extends AbstractDriverTest
                                      "}\n");
     }
 
+    @SuppressWarnings("WeakerAccess")  // Required for reflective access
     public static class Person
     {
-        String name;
-        boolean employed;
+        public String name;
+        public boolean employed;
     }
 }

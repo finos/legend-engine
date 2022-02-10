@@ -19,6 +19,7 @@ PARAMETERS:                                      'parameters';
 RESPONSE:                                        'response';
 SECURITY_SCHEME:                                 'security';
 
+ALLOW_RESERVED:                                  'allowReserved';
 LOCATION:                                        'location';
 STYLE:                                           'style';
 EXPLODE:                                         'explode';
@@ -33,4 +34,5 @@ SERVICE_REFERENCE:                               '$service';
 
 // -------------------------------------- BUILDING_BLOCK --------------------------------------
 
-INVERTED_ARROW:                                      '<-';
+INVERTED_ARROW:                                  '<-';
+QUOTED_STRING:                                   ('"' ( EscSeq | ~["\r\n] )*  '"');

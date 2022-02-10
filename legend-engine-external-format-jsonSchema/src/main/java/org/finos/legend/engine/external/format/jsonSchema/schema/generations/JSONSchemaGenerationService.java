@@ -48,7 +48,8 @@ import javax.ws.rs.core.Response;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Generation - Schema")
+@Deprecated
+@Api(tags = "Z - Deprecated - Generation - Schema")
 @Path("pure/v1/schemaGeneration")
 @Produces(MediaType.APPLICATION_JSON)
 @Singleton
@@ -63,6 +64,7 @@ public class JSONSchemaGenerationService
         this.modelManager = modelManager;
     }
 
+    @Deprecated
     @POST
     @Path("jsonSchema")
     @ApiOperation(value = "Generates JSON schema for a given class and transitive dependencies")

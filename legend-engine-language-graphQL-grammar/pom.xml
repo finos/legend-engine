@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.54.1-SNAPSHOT</version>
+        <version>2.56.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-graphQL-grammar</artifactId>
@@ -64,6 +64,10 @@
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-graphQL</artifactId>
         </dependency>
         <!-- ENGINE -->
@@ -91,6 +95,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

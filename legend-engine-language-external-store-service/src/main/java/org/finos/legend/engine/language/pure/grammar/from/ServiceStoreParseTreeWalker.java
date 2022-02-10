@@ -46,6 +46,8 @@ public class ServiceStoreParseTreeWalker
     private final Consumer<PackageableElement> elementConsumer;
     private final DefaultCodeSection section;
 
+    public static final String SERVICE_MAPPING_PATH_PREFIX = "$service.response";
+
     public ServiceStoreParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
     {
         this.walkerSourceInformation = walkerSourceInformation;
@@ -207,7 +209,7 @@ public class ServiceStoreParseTreeWalker
         param.sourceInformation = this.walkerSourceInformation.getSourceInformation(paramCtx);
 
         // name
-        param.name = PureGrammarParserUtility.fromIdentifier(paramCtx.parameterName().identifier());
+        param.name = visitServiceParameterName(paramCtx.parameterName());
 
         // type
         ServiceStoreParserGrammar.TypeReferenceDefinitionContext typeCtx = paramCtx.typeReferenceDefinition();
@@ -231,6 +233,12 @@ public class ServiceStoreParseTreeWalker
         if (enumCtx != null)
         {
             param.enumeration = PureGrammarParserUtility.fromQualifiedName(enumCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : enumCtx.qualifiedName().packagePath().identifier(), enumCtx.qualifiedName().identifier());
+        }
+
+        ServiceStoreParserGrammar.AllowReservedDefinitionContext allowReservedCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ListIterate.collectIf(paramCtx.parameterOptions(), p -> p.allowReservedDefinition() != null, ServiceStoreParserGrammar.ParameterOptionsContext::allowReservedDefinition), "allowReserved", this.walkerSourceInformation.getSourceInformation(paramCtx));
+        if (allowReservedCtx != null)
+        {
+            param.allowReserved = Boolean.parseBoolean(allowReservedCtx.BOOLEAN().getText());
         }
 
         SerializationFormat serializationFormat = new SerializationFormat();
@@ -261,6 +269,18 @@ public class ServiceStoreParseTreeWalker
         param.serializationFormat = serializationFormat;
 
         return param;
+    }
+
+    private String visitServiceParameterName(ServiceStoreParserGrammar.ParameterNameContext paramCtx)
+    {
+        if(paramCtx.unquotedIdentifier() != null)
+        {
+            return PureGrammarParserUtility.fromIdentifier(paramCtx.unquotedIdentifier());
+        }
+        else
+        {
+            return PureGrammarParserUtility.fromGrammarString(paramCtx.QUOTED_STRING().getText(), true);
+        }
     }
 
     private TypeReference visitTypeReference(ServiceStoreParserGrammar.TypeReferenceDefinitionContext ctx)
@@ -379,7 +399,7 @@ public class ServiceStoreParseTreeWalker
         Path p = new Path();
 
         //This is replaced with response class in compilation phase
-        p.startType = "$service.response";
+        p.startType = SERVICE_MAPPING_PATH_PREFIX;
 
         if(ctx.identifier() != null && !ctx.identifier().isEmpty())
         {
@@ -405,7 +425,7 @@ public class ServiceStoreParseTreeWalker
     private ServiceParameterMapping buildParameterIndexedParameterMapping(ServiceStoreParserGrammar.ParameterMappingContext ctx)
     {
         ParameterIndexedParameterMapping parameterMapping = new ParameterIndexedParameterMapping();
-        parameterMapping.serviceParameter = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        parameterMapping.serviceParameter = visitServiceParameterName(ctx.parameterName());
         parameterMapping.transform = visitLambda(ctx.combinedExpression());
         parameterMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
@@ -420,8 +440,8 @@ public class ServiceStoreParseTreeWalker
     private ServiceParameterMapping buildPropertyIndexedParameterMapping(ServiceStoreParserGrammar.ElementMappingContext ctx)
     {
         PropertyIndexedParameterMapping parameterMapping = new PropertyIndexedParameterMapping();
-        parameterMapping.serviceParameter = PureGrammarParserUtility.fromIdentifier(ctx.identifier().get(1));
-        parameterMapping.property = PureGrammarParserUtility.fromIdentifier(ctx.identifier().get(0));
+        parameterMapping.serviceParameter = visitServiceParameterName(ctx.parameterName());
+        parameterMapping.property = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         parameterMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
         return parameterMapping;

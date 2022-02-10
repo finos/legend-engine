@@ -26,8 +26,6 @@ import java.util.Map;
 
 public class ProcessingVariables
 {
-    private final List<FlatDataDriverDescription> descriptions = FlatDataDriverDescription.loadAll();
-
     private final Map<String, VariableType> variableTypes = new HashMap<>();
     private final Map<String, Object> variableValues = new HashMap<>();
 
@@ -35,6 +33,7 @@ public class ProcessingVariables
     {
         for (FlatDataSection section : schema.getSections())
         {
+            List<FlatDataDriverDescription> descriptions = FlatDataDriverDescription.loadAll();
             FlatDataDriverDescription description = descriptions.stream().filter(d -> d.getId().equals(section.getDriverId())).findFirst().orElseThrow(() -> new RuntimeException("No driver for: '" + section.getDriverId() + "'"));
             description.getDeclares().forEach(this::declare);
         }
@@ -75,6 +74,10 @@ public class ProcessingVariables
             variableValues.put(variableName, value);
         }
         else if (type == VariableType.StringList && value instanceof List && ((List<?>) value).stream().allMatch(String.class::isInstance))
+        {
+            variableValues.put(variableName, value);
+        }
+        else if (type == VariableType.Object)
         {
             variableValues.put(variableName, value);
         }

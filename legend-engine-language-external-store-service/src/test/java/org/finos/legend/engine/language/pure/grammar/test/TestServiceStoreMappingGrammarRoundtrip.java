@@ -44,6 +44,19 @@ public class TestServiceStoreMappingGrammarRoundtrip extends TestGrammarRoundtri
                 "  }\n" +
                 ")\n");
 
+        //With PropertyIndexedParameterMapping & special character in param name
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "      prop : $service.parameters.\"param name\"\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
         //With ParameterIndexedParameterMapping & simple service path
         test("###Mapping\n" +
                 "Mapping test::mapping\n" +
@@ -55,6 +68,22 @@ public class TestServiceStoreMappingGrammarRoundtrip extends TestGrammarRoundtri
                 "      ~paramMapping\n" +
                 "      (\n" +
                 "        serializationFormat : 'CSV'\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        //With ParameterIndexedParameterMapping & special character in param name
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        \"param name\" : 'CSV'\n" +
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
@@ -228,6 +257,39 @@ public class TestServiceStoreMappingGrammarRoundtrip extends TestGrammarRoundtri
                 "        param2 : 1\n" +
                 "      )\n" +
                 "      prop1 : $service.parameters.param1\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testServiceStoreMappingPathOffset()
+    {
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                "    (\n" +
+                "      ~path $service.response.pathProperty\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                "    (\n" +
+                "      ~path $service.response.pathProperty\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param : $this.prop,\n" +
+                "        param2 : 1\n" +
+                "      )\n" +
                 "    )\n" +
                 "  }\n" +
                 ")\n");

@@ -84,6 +84,19 @@ ServiceStore meta::external::store::service::showcase::store::TradeProductServic
    )
 )
 
+ServiceStore meta::external::store::service::showcase::store::EmployeeServiceStore
+(
+   description : 'Service Store Union Example';
+
+   Service EmployeeService
+   (
+      path : '/employees';
+      method : GET;
+      security : [];
+      response : [meta::external::store::service::showcase::domain::Person <- meta::external::store::service::showcase::store::employeesServiceStoreSchemaBinding];
+   )
+)
+
 ###ExternalFormat
 Binding meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding
 {
@@ -95,6 +108,12 @@ Binding meta::external::store::service::showcase::store::prodServiceStoreSchemaB
 {
   contentType   : 'application/json';
   modelIncludes : [ meta::external::store::service::showcase::domain::S_Product, meta::external::store::service::showcase::domain::S_Synonym ];
+}
+
+Binding meta::external::store::service::showcase::store::employeesServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Person ];
 }
 
 ###Runtime
@@ -110,9 +129,14 @@ Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
         [
             connection_1 : meta::external::store::service::showcase::connection::serviceStoreConnection
         ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore :
+        [
+            connection_2 : meta::external::store::service::showcase::connection::serviceStoreConnection2
+        ],
         ModelStore :
         [
-            connection_2 : meta::external::store::service::showcase::connection::modelChainConnection
+            connection_3 : meta::external::store::service::showcase::connection::modelChainConnection,
+            connection_4 : meta::external::store::service::showcase::connection::jsonModelConnection
         ]
     ];
 }
@@ -124,4 +148,11 @@ ModelChainConnection meta::external::store::service::showcase::connection::model
     [
         meta::external::store::service::showcase::mapping::ServiceStoreMapping
     ];
+}
+
+
+JsonModelConnection meta::external::store::service::showcase::connection::jsonModelConnection
+{
+    class : meta::external::store::service::showcase::domain::Person;
+    url   : 'data:application/json,{"firstName":"FirstName Model", "lastName" : "LastName Model", "firmId":"Model"}';
 }

@@ -19,6 +19,7 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public class TestLambdaPrettyRendering
         testLambda("|Person.all()->project([])",
             "|Person.all()->project(\n" +
                 "  []\n" +
-                ")", PureGrammarComposerContext.RenderStyle.PRETTY);
+                ")", RenderStyle.PRETTY);
     }
 
     @Test
@@ -49,7 +50,7 @@ public class TestLambdaPrettyRendering
                     "      'ok'\n" +
                     "    )\n" +
                     "  ]\n" +
-                    ")", PureGrammarComposerContext.RenderStyle.PRETTY);
+                    ")", RenderStyle.PRETTY);
     }
 
     @Test
@@ -70,7 +71,7 @@ public class TestLambdaPrettyRendering
                     "      'ok2'\n" +
                     "    )\n" +
                     "  ]\n" +
-                    ")", PureGrammarComposerContext.RenderStyle.PRETTY);
+                    ")", RenderStyle.PRETTY);
     }
 
     @Test
@@ -81,7 +82,7 @@ public class TestLambdaPrettyRendering
                     "  $this.id == 'testing',\n" +
                     "  |'test',\n" +
                     "  |'nonTest'\n" +
-                    ")", PureGrammarComposerContext.RenderStyle.PRETTY);
+                    ")", RenderStyle.PRETTY);
     }
 
     @Test
@@ -121,7 +122,7 @@ public class TestLambdaPrettyRendering
                     "      'Trader/Kerberos Distinct Value'\n" +
                     "    ]\n" +
                     "  );\n" +
-                    "}", PureGrammarComposerContext.RenderStyle.PRETTY);
+                    "}", RenderStyle.PRETTY);
     }
 
     @Test
@@ -165,7 +166,7 @@ public class TestLambdaPrettyRendering
                     "      'Trader/Kerberos Distinct Value'\n" +
                     "    ]\n" +
                     "  );\n" +
-                    "}", PureGrammarComposerContext.RenderStyle.PRETTY);
+                    "}", RenderStyle.PRETTY);
     }
 
     @Test
@@ -209,7 +210,7 @@ public class TestLambdaPrettyRendering
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Trader/Kerberos Distinct Value'</span></BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>]</BR>\n" +
                     "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>);</BR>\n" +
-                    "}", PureGrammarComposerContext.RenderStyle.PRETTY_HTML);
+                    "}", RenderStyle.PRETTY_HTML);
     }
 
     @Test
@@ -235,15 +236,15 @@ public class TestLambdaPrettyRendering
             "  [\n" +
             "    asc('LastName')\n" +
             "  ]\n" +
-            ")->take(30)", PureGrammarComposerContext.RenderStyle.PRETTY);
+            ")->take(30)", RenderStyle.PRETTY);
     }
 
-    private static void testLambda(String text, PureGrammarComposerContext.RenderStyle renderStyle)
+    private static void testLambda(String text, RenderStyle renderStyle)
     {
         testLambda(text, text, renderStyle);
     }
 
-    private static void testLambda(String text, String formattedText, PureGrammarComposerContext.RenderStyle renderStyle)
+    private static void testLambda(String text, String formattedText, RenderStyle renderStyle)
     {
         Assert.assertEquals(formattedText, new DomainParser().parseLambda(text, "", true).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle).build()));
     }

@@ -10,13 +10,16 @@ options
 
 // -------------------------------------- IDENTIFIER --------------------------------------
 
-identifier:                                 VALID_STRING | STRING
+unquotedIdentifier:                         VALID_STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | SERVICE_STORE
                                             | DESCRIPTION | SERVICE_GROUP | SERVICE
                                             | PATH | REQUEST_BODY | METHOD | PARAMETERS | RESPONSE | SECURITY_SCHEME
-                                            | LOCATION | STYLE | EXPLODE | ENUM
+                                            | ALLOW_RESERVED | LOCATION | STYLE | EXPLODE | ENUM
                                             | SERVICE_MAPPING | PARAM_MAPPING | SERVICE_REFERENCE
+;
+
+identifier:                                 unquotedIdentifier | STRING
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -74,9 +77,11 @@ parametersDefinition:                       PARAMETERS COLON
 ;
 parameterDefinition:                        parameterName COLON typeReferenceDefinition ( PAREN_OPEN (parameterOptions (COMMA parameterOptions)*)  PAREN_CLOSE )?
 ;
-parameterName:                              identifier
+parameterName:                              unquotedIdentifier | QUOTED_STRING
 ;
-parameterOptions:                           locationDefinition | styleDefinition | explodeDefinition | enumDefinition
+parameterOptions:                           allowReservedDefinition | locationDefinition | styleDefinition | explodeDefinition | enumDefinition
+;
+allowReservedDefinition:                    ALLOW_RESERVED EQUAL BOOLEAN
 ;
 locationDefinition:                         LOCATION EQUAL identifier
 ;
@@ -122,9 +127,9 @@ pathMappingBlock:                           PATH_MAPPING SERVICE_REFERENCE DOT R
 ;
 parametersMappingBlock:                     PARAM_MAPPING PAREN_OPEN (parameterMapping (COMMA parameterMapping)*) PAREN_CLOSE
 ;
-parameterMapping:                           identifier COLON combinedExpression
+parameterMapping:                           parameterName COLON combinedExpression
 ;
 mappingBlock:                               (elementMapping (COMMA elementMapping)*)
 ;
-elementMapping:                             identifier COLON SERVICE_REFERENCE DOT PARAMETERS DOT identifier
+elementMapping:                             identifier COLON SERVICE_REFERENCE DOT PARAMETERS DOT parameterName
 ;

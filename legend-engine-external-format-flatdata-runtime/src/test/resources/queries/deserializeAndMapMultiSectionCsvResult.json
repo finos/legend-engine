@@ -4,53 +4,6 @@
   },
   "values": [
     {
-      "defects": [
-        {
-          "id": null,
-          "externalId": null,
-          "message": "No Input Available",
-          "enforcementLevel": "Critical",
-          "ruleType": "NoInput",
-          "ruleDefinerPath": "test::LoanPrice",
-          "path": []
-        }
-      ],
-      "source": {
-        "defects": [
-          {
-            "id": null,
-            "externalId": null,
-            "message": "Input not directly returned to stream",
-            "enforcementLevel": "Warn",
-            "ruleType": "UnreturnedInput",
-            "ruleDefinerPath": "test::WholeLoanPriceFileSchema",
-            "path": []
-          }
-        ],
-        "source": {
-          "number": 0,
-          "lineNumber": 1,
-          "record": "C.O.B. ==> 20210608",
-          "recordValues": [
-            {
-              "address": 1,
-              "rawValue": "C.O.B."
-            },
-            {
-              "address": 2,
-              "rawValue": "==>"
-            },
-            {
-              "address": 3,
-              "rawValue": "20210608"
-            }
-          ]
-        },
-        "value": null
-      },
-      "value": null
-    },
-    {
       "defects": [],
       "source": {
         "defects": [],

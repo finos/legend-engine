@@ -15,8 +15,9 @@
 package org.finos.legend.engine.language.graphQL.grammar.test.roundtrip;
 
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
+import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLParserException;
 import org.finos.legend.engine.language.graphQL.grammar.to.GraphQLGrammarComposer;
-import org.finos.legend.engine.protocol.graphQL.Document;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,6 +32,24 @@ public class TestGraphQLRoundtrip
                 "  values: [String]\n" +
                 "  length(unit: LengthUnit = METER): Float\n" +
                 "}");
+    }
+
+    @Test
+    public void testParsingError()
+    {
+        try
+        {
+            GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
+            parser.parseDocument("type Car {\n" +
+                    "}");
+            Assert.fail();
+        }
+        catch (GraphQLParserException e)
+        {
+            Assert.assertEquals(1, e.getSourceInformation().startColumn);
+            Assert.assertEquals(2, e.getSourceInformation().startLine);
+            Assert.assertEquals("Unexpected token", e.getMessage());
+        }
     }
 
     @Test
@@ -137,7 +156,7 @@ public class TestGraphQLRoundtrip
                 "  }\n" +
                 "}\n" +
                 "\n" +
-                "fragment properties {\n" +
+                "fragment properties on Person {\n" +
                 "  firstname(x: null, x: $ok)\n" +
                 "}");
     }
