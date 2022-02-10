@@ -131,7 +131,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.48.0</legend.pure.version>
+        <legend.pure.version>1.49.0</legend.pure.version>
         <legend.shared.version>0.18.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -607,6 +607,13 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-shared-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-shared-core</artifactId>
+                <type>test-jar</type>
+                <scope>test</scope>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

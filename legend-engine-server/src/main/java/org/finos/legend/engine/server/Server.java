@@ -41,14 +41,19 @@ import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImpo
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.TransformGrammarToJson;
+import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.TransformJsonToGrammar;
+import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.RelationalOperationElementGrammarToJson;
+import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.RelationalOperationElementJsonToGrammar;
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.TransformRelationalOperationElementGrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.TransformRelationalOperationElementJsonToGrammar;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.api.ExecutePlan;
+import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
+import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.relational.api.RelationalExecutorInformation;
@@ -59,6 +64,9 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
+import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
+import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
 import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
@@ -157,6 +165,10 @@ public class Server extends Application<ServerConfiguration>
         environment.jersey().register(new RelationalExecutorInformation());
 
         // Grammar
+        environment.jersey().register(new GrammarToJson());
+        environment.jersey().register(new JsonToGrammar());
+        environment.jersey().register(new RelationalOperationElementGrammarToJson());
+        environment.jersey().register(new RelationalOperationElementJsonToGrammar());
         environment.jersey().register(new TransformGrammarToJson());
         environment.jersey().register(new TransformJsonToGrammar());
         environment.jersey().register(new TransformRelationalOperationElementGrammarToJson());
@@ -172,17 +184,22 @@ public class Server extends Application<ServerConfiguration>
         // Generation and Import
         MutableList<GenerationExtension> genExtensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty());
         environment.jersey().register(new CodeGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Code).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
-        environment.jersey().register(new SchemaGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Schema).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
         environment.jersey().register(new CodeImports(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Code).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
+        environment.jersey().register(new SchemaGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Schema).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
         environment.jersey().register(new SchemaImports(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Schema).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
         genExtensions.forEach(p -> environment.jersey().register(p.getService(modelManager)));
 
         // Execution
-        environment.jersey().register(new org.finos.legend.engine.query.graphQL.api.Execute(modelManager, planExecutor));
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraRouterExtensions(pureModel));
         environment.jersey().register(new Execute(modelManager, planExecutor, routerExtensions, LegendPlanTransformers.transformers));
-        environment.jersey().register(new ExecutePlan(planExecutor));
+        environment.jersey().register(new ExecutePlanStrategic(planExecutor));
+        environment.jersey().register(new ExecutePlanLegacy(planExecutor));
+
+        // GraphQL
+        environment.jersey().register(new GraphQLGrammar());
+        environment.jersey().register(new GraphQLExecute(modelManager, planExecutor));
+        environment.jersey().register(new GraphQLDebug(modelManager));
 
         // Service
         environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode));

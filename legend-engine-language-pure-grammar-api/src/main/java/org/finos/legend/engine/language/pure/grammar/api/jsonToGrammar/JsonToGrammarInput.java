@@ -14,15 +14,16 @@
 
 package org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar;
 
-import org.finos.legend.engine.language.pure.grammar.from.ParserError;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.api.grammar.ParserError;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
+@Deprecated
 public class JsonToGrammarInput
 {
     public PureModelContextData modelDataContext;
     public LambdaInput isolatedLambdas;
-    public PureGrammarComposerContext.RenderStyle renderStyle = PureGrammarComposerContext.RenderStyle.STANDARD;
+    public RenderStyle renderStyle = RenderStyle.STANDARD;
     public ParserError codeError;
 
     public JsonToGrammarInput()

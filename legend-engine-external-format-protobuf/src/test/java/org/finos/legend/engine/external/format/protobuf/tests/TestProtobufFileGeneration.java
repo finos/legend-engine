@@ -45,7 +45,33 @@ public class TestProtobufFileGeneration
             ProtobufGenerationConfig protobufConfig = ProtobufGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
             Root_meta_external_format_protobuf_generation_ProtobufConfig metaModelConfig = protobufConfig.transformToPure(pureModel);
             List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_generateProtobufFromPureWithScope_ProtobufConfig_1__ProtobufOutput_MANY_(metaModelConfig, pureModel.getExecutionSupport()).toList();
-            Assert.assertEquals(outputs.size(), 4);
+            Assert.assertEquals(outputs.size(), 2);
+            Assert.assertEquals("_other.proto", outputs.get(0)._fileName());
+            Assert.assertEquals("syntax = \"proto3\";\n" +
+                                        "import \"google/protobuf/timestamp.proto\";\n" +
+                                        "package _other;\n" +
+                                        "message OtherClass {\n" +
+                                        " string stuff = 1;\n" +
+                                        "}", outputs.get(0)._content());
+            Assert.assertEquals("_meta_pure_generation_tests_model.proto", outputs.get(1)._fileName());
+            Assert.assertEquals("syntax = \"proto3\";\n" +
+                                        "import \"google/protobuf/timestamp.proto\";\n" +
+                                        "package _meta.pure.generation.tests.model;\n" +
+                                        "message Address {\n" +
+                                        " string street = 1;\n" +
+                                        "}\n" +
+                                        "message Firm {\n" +
+                                        " string legalname = 1;\n" +
+                                        " repeated Person employees = 2;\n" +
+                                        " repeated Address addresses = 3;\n" +
+                                        " int64 count = 4;\n" +
+                                        "}\n" +
+                                        "message Person {\n" +
+                                        " string firstname = 1;\n" +
+                                        " string lastname = 2;\n" +
+                                        " repeated Address addresses = 3;\n" +
+                                        " Firm firm = 4;\n" +
+                                        "}", outputs.get(1)._content());
         }
         catch (Exception e)
         {

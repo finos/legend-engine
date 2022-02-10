@@ -23,12 +23,14 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Test;
 
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 
+@Deprecated
 public class TestJsonToGrammarApi
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
@@ -40,7 +42,7 @@ public class TestJsonToGrammarApi
         testIsolatedLambdaFromProtocol(
                 "{\"isolatedLambdas\":{\"testLambda\":\"src: myClass[1]|if($src.property == 'abc', |'abc', |'123')\"}}",
                 getJsonString("pureGenerationLambdaTest.json"),
-                PureGrammarComposerContext.RenderStyle.STANDARD
+                RenderStyle.STANDARD
         );
     }
 
@@ -158,7 +160,7 @@ public class TestJsonToGrammarApi
         testIsolatedLambdaFromProtocol(
                 "{\"isolatedLambdas\":{\"testLambda\":\"|meta::datasetMetadata::domain::physicalCatalogPURE.all()->groupBy(\\n  x: meta::datasetMetadata::domain::physicalCatalogPURE[1]|$x.owningBU,\\n  agg(x: meta::datasetMetadata::domain::physicalCatalogPURE[1]|$x.classPackage->toOne() + '::' + $x.className->toOne(), y: String[*]|$y->distinct()->count()),\\n  [\\n    'Owning BU',\\n    'fullClass Distinct Count'\\n  ]\\n)\"}}",
                 getJsonString("testLambdaObj.json"),
-                PureGrammarComposerContext.RenderStyle.PRETTY
+                RenderStyle.PRETTY
         );
     }
 
@@ -168,7 +170,7 @@ public class TestJsonToGrammarApi
         testIsolatedLambdaFromProtocol(
                 "{\"isolatedLambdas\":{\"testLambda\":\"|<span class='pureGrammar-package'>meta::datasetMetadata::domain::</span><span class='pureGrammar-packageableElement'>physicalCatalogPURE</span>.<span class='pureGrammar-function'>all</span>()<span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>groupBy</span>(</BR>\\n<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>x</span>: <span class='pureGrammar-package'>meta::datasetMetadata::domain::</span><span class='pureGrammar-packageableElement'>physicalCatalogPURE</span>[1]|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>owningBU</span>,</BR>\\n<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>agg</span>(<span class='pureGrammar-var'>x</span>: <span class='pureGrammar-package'>meta::datasetMetadata::domain::</span><span class='pureGrammar-packageableElement'>physicalCatalogPURE</span>[1]|<span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>classPackage</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>toOne</span>() + <span class='pureGrammar-string'>'::'</span> + <span class='pureGrammar-var'>$x</span>.<span class=pureGrammar-property>className</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>toOne</span>(), <span class='pureGrammar-var'>y</span>: <span class='pureGrammar-packageableElement'>String</span>[*]|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>distinct</span>()<span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>count</span>()),</BR>\\n<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\\n<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'Owning BU'</span>,</BR>\\n<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'fullClass Distinct Count'</span></BR>\\n<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>]</BR>\\n)\"}}",
                 getJsonString("testLambdaObj.json"),
-                PureGrammarComposerContext.RenderStyle.PRETTY_HTML
+                RenderStyle.PRETTY_HTML
         );
     }
 
@@ -201,7 +203,7 @@ public class TestJsonToGrammarApi
         testIsolatedLambdaFromProtocol(
                 "{\"isolatedLambdas\":{\"testLambdas\":\"|model::complex::L1.all()->graphFetchChecked(\\n  #{\\n    model::complex::L1{\\n      name1,\\n      l14{\\n        name4,\\n        l42{\\n          name2,\\n          l23_1{\\n            name3\\n          },\\n          l23{\\n            name3\\n          }\\n        },\\n        l45{\\n          name3\\n        }\\n      },\\n      l12{\\n        name2,\\n        l23_1{\\n          name3\\n        },\\n        l23{\\n          name3\\n        }\\n      },\\n      l13{\\n        name3\\n      }\\n    }\\n  }#\\n)->serialize(\\n  #{\\n    model::complex::L1{\\n      name1,\\n      l14{\\n        name4,\\n        l42{\\n          name2,\\n          l23_1{\\n            name3\\n          },\\n          l23{\\n            name3\\n          }\\n        },\\n        l45{\\n          name3\\n        }\\n      },\\n      l12{\\n        name2,\\n        l23_1{\\n          name3\\n        },\\n        l23{\\n          name3\\n        }\\n      },\\n      l13{\\n        name3\\n      }\\n    }\\n  }#\\n)\"}}",
                 getJsonString("testGraphFetchTreeLambda.json"),
-                PureGrammarComposerContext.RenderStyle.PRETTY
+                RenderStyle.PRETTY
         );
     }
 
@@ -210,7 +212,7 @@ public class TestJsonToGrammarApi
     {
         testIsolatedLambdaFromProtocol("{\"isolatedLambdas\":{\"testLambda\":\"src: OldClass[1]|$src->cast(@newClass)\"}}",
                 "{\"lambdas\":{\"testLambda\":{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"cast\",\"parameters\":[{\"_type\":\"var\",\"name\":\"src\",\"sourceInformation\":{\"endColumn\":20,\"endLine\":1,\"sourceId\":\"testLambda\",\"startColumn\":17,\"startLine\":1}},{\"_type\":\"hackedClass\",\"fullPath\":\"newClass\",\"sourceInformation\":{\"endColumn\":36,\"endLine\":1,\"sourceId\":\"testLambda\",\"startColumn\":29,\"startLine\":1}}],\"sourceInformation\":{\"endColumn\":26,\"endLine\":1,\"sourceId\":\"testLambda\",\"startColumn\":23,\"startLine\":1}}],\"parameters\":[{\"_type\":\"var\",\"class\":\"OldClass\",\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"src\",\"sourceInformation\":{\"endColumn\":15,\"endLine\":1,\"sourceId\":\"testLambda\",\"startColumn\":4,\"startLine\":1}}],\"sourceInformation\":{\"endColumn\":37,\"endLine\":1,\"sourceId\":\"testLambda\",\"startColumn\":16,\"startLine\":1}}}}",
-                PureGrammarComposerContext.RenderStyle.STANDARD);
+                RenderStyle.STANDARD);
     }
 
     @Test
@@ -514,7 +516,7 @@ public class TestJsonToGrammarApi
         }
     }
 
-    public void testIsolatedLambdaFromProtocol(String expectedOutput, String protocolData, PureGrammarComposerContext.RenderStyle renderStyle)
+    public void testIsolatedLambdaFromProtocol(String expectedOutput, String protocolData, RenderStyle renderStyle)
     {
         try
         {
