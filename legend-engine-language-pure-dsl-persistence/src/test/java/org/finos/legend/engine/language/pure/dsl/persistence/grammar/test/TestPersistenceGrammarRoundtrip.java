@@ -1,12 +1,10 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-    @Ignore("Fix composer.")
     @Test
     public void testPipeline()
     {
@@ -36,7 +34,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            modelClass: test::InnerClass1;\n" +
                 "            partitionProperties: [test::InnerClass1->propertyA, test::InnerClass1->propertyB];\n" +
                 "            deduplicationStrategy: MaxVersion\n" +
                 "            {\n" +
@@ -58,7 +55,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
-                "            modelClass: test::InnerClass2;\n" +
                 "            partitionProperties: [];\n" +
                 "            deduplicationStrategy: OpaqueDeduplication;\n" +
                 "            batchMode: BitemporalDelta\n" +

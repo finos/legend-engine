@@ -55,7 +55,7 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
         "{\n" +
         getTabString() + "doc: " + convertString(persistencePipe.documentation, true) + ";\n" +
         (persistencePipe.owners.isEmpty() ? "" : getTabString() + HelperPersistenceGrammarComposer.renderOwners(persistencePipe.owners)) +
-        getTabString() + "trigger: " + persistencePipe.trigger + ";\n" +
+        getTabString() + "trigger: " + persistencePipe.trigger.getClass().getSimpleName() + ";\n" +
         getTabString() + HelperPersistenceGrammarComposer.renderReader(persistencePipe.reader, context) +
         getTabString() + HelperPersistenceGrammarComposer.renderPersister(persistencePipe.persister, context) +
         "}";
