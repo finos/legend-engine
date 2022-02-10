@@ -1,24 +1,48 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
-import org.eclipse.collections.api.block.function.Function3;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.Auditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.BatchDateTimeAuditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.NoAuditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.OpaqueAuditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.deduplication.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.appendonly.AppendOnly;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.BitemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.NonMilestonedDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.UnitemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.MergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.NoDeletesMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.delta.merge.OpaqueMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.BitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.NonMilestonedSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.FlatTargetSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.GroupedFlatTargetSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.NestedTargetSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.PropertyAndFlatTargetSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.transactionmilestoning.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.DateTimeValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.OpaqueValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.ValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromAndThruDate;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDate;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
 
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 
 public class HelperPersistenceGrammarComposer
 {
-    /*
     public static String renderOwners(List<String> owners)
     {
         StringBuilder builder = new StringBuilder();
@@ -50,20 +74,20 @@ public class HelperPersistenceGrammarComposer
         return builder.toString();
     }
 
-    public static String renderPersistence(Persistence persistence, PureGrammarComposerContext context)
+    public static String renderPersister(Persister persister, PureGrammarComposerContext context)
     {
-        if (persistence instanceof BatchPersistence)
+        if (persister instanceof BatchPersister)
         {
-            return renderBatchPersistence((BatchPersistence) persistence, context);
+            return renderBatchPersistence((BatchPersister) persister, context);
         }
-        else if (persistence instanceof StreamingPersistence)
+        else if (persister instanceof StreamingPersister)
         {
-            return renderStreamingPersistence((StreamingPersistence) persistence, context);
+            return renderStreamingPersistence((StreamingPersister) persister, context);
         }
         throw new UnsupportedOperationException();
     }
 
-    private static String renderStreamingPersistence(StreamingPersistence streaming, PureGrammarComposerContext context)
+    private static String renderStreamingPersistence(StreamingPersister streaming, PureGrammarComposerContext context)
     {
         int baseIndentation = 2;
         StringBuilder builder = new StringBuilder();
@@ -74,29 +98,31 @@ public class HelperPersistenceGrammarComposer
         return builder.toString();
     }
 
-    private static String renderBatchPersistence(BatchPersistence batch, PureGrammarComposerContext context)
+    private static String renderBatchPersistence(BatchPersister persister, PureGrammarComposerContext context)
     {
         int baseIndentation = 2;
         StringBuilder builder = new StringBuilder();
         builder.append(getTabString()).append("persistence: Batch\n");
         builder.append(getTabString()).append("{\n");
 
-        if (batch.targetSpecification instanceof FlatTargetSpecification)
+        if (persister.targetSpecification instanceof FlatTargetSpecification)
         {
-            builder.append(getTabString(baseIndentation)).append(renderFlatTarget((FlatTargetSpecification) persistence.targetSpecification, context));
+            builder.append(getTabString(baseIndentation)).append(renderFlatTarget((FlatTargetSpecification) persister.targetSpecification, context));
         }
-        else if (batch.targetSpecification instanceof GroupedFlatTargetSpecification)
+        else if (persister.targetSpecification instanceof GroupedFlatTargetSpecification)
         {
-            builder.append(getTabString(baseIndentation)).append(renderGroupedFlatTarget((GroupedFlatTargetSpecification) persistence.targetSpecification, context));
+            builder.append(getTabString(baseIndentation)).append(renderGroupedFlatTarget((GroupedFlatTargetSpecification) persister.targetSpecification, context));
         }
-        else if (batch.targetSpecification instanceof NestedTargetSpecification)
+        else if (persister.targetSpecification instanceof NestedTargetSpecification)
         {
-            builder.append(getTabString(baseIndentation)).append(renderNestedTarget((NestedTargetSpecification) persistence.targetSpecification, context));
+            builder.append(getTabString(baseIndentation)).append(renderNestedTarget((NestedTargetSpecification) persister.targetSpecification, context));
         }
-        throw new UnsupportedOperationException();
+        else
+        {
+            return unsupported(persister.targetSpecification.getClass());
+        }
 
-        builder.append(getTabString()+1).append("}\n");
-
+        builder.append(getTabString() + 1).append("}\n");
         return builder.toString();
     }
 
@@ -104,42 +130,45 @@ public class HelperPersistenceGrammarComposer
     {
         int baseIndentation = 3;
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString()+1).append("target: Flat\n");
-        builder.append(getTabString()+1).append("{\n");
-        builder.append(renderFlatComponenet(flatTarget, baseIndentation, context));
-        builder.append(getTabString()+1).append("}\n");
+        builder.append(getTabString() + 1).append("target: Flat\n");
+        builder.append(getTabString() + 1).append("{\n");
+        builder.append(renderFlatComponent(flatTarget, baseIndentation, context));
+        builder.append(getTabString() + 1).append("}\n");
 
         return builder.toString();
     }
 
     private static String renderFlatComponent(FlatTargetSpecification flatTarget, int baseIndentation, PureGrammarComposerContext context)
     {
-        int baseIndentation = 3;
         StringBuilder builder = new StringBuilder();
-
         builder.append(getTabString(baseIndentation)).append("targetName: ").append(flatTarget.targetName).append(";\n");
         builder.append(getTabString(baseIndentation)).append("modelClass: ").append(flatTarget.modelClassPath).append(";\n");
 
         if (!flatTarget.partitionPropertyPaths.isEmpty())
         {
-        builder.append(getTabString(baseIndentation)).append("partitionProperties: ").append("[");
-            builder.append(LazyIterate.collect(partitionPropertyPaths, p -> convertString(p, true)).makeString(", "));
-        builder.append("];\n");
+            builder.append(getTabString(baseIndentation)).append("partitionProperties: ").append("[");
+            builder.append(LazyIterate.collect(flatTarget.partitionPropertyPaths, p -> convertString(p, true)).makeString(", "));
+            builder.append("];\n");
         }
 
-        if (flatTarget.deduplicationStrategy instanceof (NoDeduplicationStrategy || AnyVersionDeduplicationStrategy || OpaqueDeduplicationStrategy))
+        DeduplicationStrategy deduplicationStrategy = flatTarget.deduplicationStrategy;
+        if (deduplicationStrategy instanceof NoDeduplicationStrategy || deduplicationStrategy instanceof AnyVersionDeduplicationStrategy || deduplicationStrategy instanceof OpaqueDeduplicationStrategy)
         {
-            builder.append(getTabString(baseIndentation)).append("deduplicationStrategy: ").append(flatTarget.deduplicationStrategy).append(";\n");
+            builder.append(getTabString(baseIndentation)).append("deduplicationStrategy: ").append(deduplicationStrategy.getClass().getSimpleName()).append(";\n");
         }
-        else if (flatTarget.deduplicationStrategy instanceof MaxVersionDeduplicationStrategy)
+        else if (deduplicationStrategy instanceof MaxVersionDeduplicationStrategy)
         {
-            builder.append(getTabString(baseIndentation)).append("deduplicationStrategy: ").append(flatTarget.deduplicationStrategy).append("\n");
+            MaxVersionDeduplicationStrategy strategy = (MaxVersionDeduplicationStrategy) deduplicationStrategy;
+
+            builder.append(getTabString(baseIndentation)).append("deduplicationStrategy: ").append(deduplicationStrategy).append("\n");
             builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation+1)).append("versionProperty: ").append(flatTarget.deduplicationStrategy.versionProperty).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("versionProperty: ").append(strategy.versionProperty).append(";\n");
             builder.append(getTabString(baseIndentation)).append("}\n");
         }
-        else if (flatTarget.deduplicationStrategy.isEmpty())
-        {}
+        else
+        {
+            return unsupported(deduplicationStrategy.getClass());
+        }
 
         if (flatTarget.milestoningMode instanceof BitemporalDelta)
         {
@@ -169,7 +198,10 @@ public class HelperPersistenceGrammarComposer
         {
             builder.append(getTabString(baseIndentation)).append(renderAppendOnly((AppendOnly) flatTarget.milestoningMode, context));
         }
-        else throw new UnsupportedOperationException();
+        else
+        {
+            return unsupported(flatTarget.milestoningMode.getClass());
+        }
 
         return builder.toString();
     }
@@ -318,15 +350,15 @@ public class HelperPersistenceGrammarComposer
     {
         StringBuilder builder = new StringBuilder();
 
-        if (auditing instanceof (NoAuditing || OpaqueAuditing))
+        if (auditing instanceof NoAuditing || auditing instanceof OpaqueAuditing)
         {
-            builder.append(getTabString(baseIndentation)).append("auditing: ").append(auditing).append(";\n");
+            builder.append(getTabString(baseIndentation)).append("auditing: ").append(auditing.getClass().getSimpleName()).append(";\n");
         }
         else if (auditing instanceof BatchDateTimeAuditing)
         {
             builder.append(getTabString(baseIndentation)).append("auditing: ").append(auditing).append("\n");
             builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation+1)).append("dateTimePropertyName: ").append(auditing.dateTimePropertyName).append(";\n");
+            builder.append(getTabString(baseIndentation + 1)).append("dateTimePropertyName: ").append(((BatchDateTimeAuditing) auditing).dateTimePropertyName).append(";\n");
             builder.append(getTabString(baseIndentation)).append("}\n");
         }
 
@@ -343,31 +375,40 @@ public class HelperPersistenceGrammarComposer
         }
         else if (transactionMilestoning instanceof BatchIdTransactionMilestoning)
         {
+            BatchIdTransactionMilestoning milestoning = (BatchIdTransactionMilestoning) transactionMilestoning;
+
             builder.append(getTabString(baseIndentation)).append("transactionMilestoning: ").append(transactionMilestoning).append("\n");
             builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation+1)).append("batchIdInProperty: ").append(transactionMilestoning.batchIdInName).append(";\n");
-            builder.append(getTabString(baseIndentation+1)).append("batchIdOutProperty: ").append(transactionMilestoning.batchIdOutName).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("batchIdInProperty: ").append(milestoning.batchIdInName).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("batchIdOutProperty: ").append(milestoning.batchIdOutName).append(";\n");
             builder.append(getTabString(baseIndentation)).append("}\n");
         }
         else if (transactionMilestoning instanceof BatchIdAndDateTimeTransactionMilestoning)
         {
+            BatchIdAndDateTimeTransactionMilestoning milestoning = (BatchIdAndDateTimeTransactionMilestoning) transactionMilestoning;
+
             builder.append(getTabString(baseIndentation)).append("transactionMilestoning: ").append(transactionMilestoning).append("\n");
             builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation+1)).append("batchIdInProperty: ").append(transactionMilestoning.batchIdInName).append(";\n");
-            builder.append(getTabString(baseIndentation+1)).append("batchIdOutProperty: ").append(transactionMilestoning.batchIdOutName).append(";\n");
-            builder.append(getTabString(baseIndentation+1)).append("dateTimeInProperty: ").append(transactionMilestoning.dateTimeInName).append(";\n");
-            builder.append(getTabString(baseIndentation+1)).append("dateTimeOutProperty: ").append(transactionMilestoning.dateTimeOutName).append(";\n");
+            builder.append(getTabString(baseIndentation + 1)).append("batchIdInProperty: ").append(milestoning.batchIdInName).append(";\n");
+            builder.append(getTabString(baseIndentation + 1)).append("batchIdOutProperty: ").append(milestoning.batchIdOutName).append(";\n");
+            builder.append(getTabString(baseIndentation + 1)).append("dateTimeInProperty: ").append(milestoning.dateTimeInName).append(";\n");
+            builder.append(getTabString(baseIndentation + 1)).append("dateTimeOutProperty: ").append(milestoning.dateTimeOutName).append(";\n");
             builder.append(getTabString(baseIndentation)).append("}\n");
         }
         else if (transactionMilestoning instanceof DateTimeTransactionMilestoning)
         {
+            DateTimeTransactionMilestoning milestoning = (DateTimeTransactionMilestoning) transactionMilestoning;
+
             builder.append(getTabString(baseIndentation)).append("transactionMilestoning: ").append(transactionMilestoning).append("\n");
             builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation+1)).append("dateTimeInProperty: ").append(transactionMilestoning.dateTimeInName).append(";\n");
-            builder.append(getTabString(baseIndentation+1)).append("dateTimeOutProperty: ").append(transactionMilestoning.dateTimeOutName).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("dateTimeInProperty: ").append(milestoning.dateTimeInName).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("dateTimeOutProperty: ").append(milestoning.dateTimeOutName).append(";\n");
             builder.append(getTabString(baseIndentation)).append("}\n");
         }
-        else throw UnsupportedOperationException();
+        else
+        {
+            return unsupported(transactionMilestoning.getClass());
+        }
 
         return builder.toString();
     }
@@ -382,13 +423,18 @@ public class HelperPersistenceGrammarComposer
         }
         else if (validityMilestoning instanceof DateTimeValidityMilestoning)
         {
+            DateTimeValidityMilestoning milestoning = (DateTimeValidityMilestoning) validityMilestoning;
+
             builder.append(getTabString(baseIndentation)).append("validityMilestoning: ").append(validityMilestoning).append("\n");
             builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation+1)).append("dateTimeFromProperty: ").append(validityMilestoning.dateTimeFromName).append(";\n");
-            builder.append(getTabString(baseIndentation+1)).append("dateTimeThruProperty: ").append(validityMilestoning.dateTimeThruName).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("dateTimeFromProperty: ").append(milestoning.dateTimeFromName).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("dateTimeThruProperty: ").append(milestoning.dateTimeThruName).append(";\n");
             builder.append(getTabString(baseIndentation)).append("}\n");
         }
-        else throw UnsupportedOperationException();
+        else
+        {
+            return unsupported(validityMilestoning.getClass());
+        }
 
         return builder.toString();
     }
@@ -399,20 +445,27 @@ public class HelperPersistenceGrammarComposer
 
         if (validityDerivation instanceof SourceSpecifiesFromDate)
         {
+            SourceSpecifiesFromDate derivation = (SourceSpecifiesFromDate) validityDerivation;
+
             builder.append(getTabString(baseIndentation)).append("validityDerivation: ").append(validityDerivation).append("\n");
             builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation+1)).append("sourceDateTimeFromProperty: ").append(validityMilestoning.sourceDateTimeFromProperty).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("sourceDateTimeFromProperty: ").append(derivation.sourceDateTimeFromProperty).append(";\n");
             builder.append(getTabString(baseIndentation)).append("}\n");
         }
         else if (validityDerivation instanceof SourceSpecifiesFromAndThruDate)
         {
+            SourceSpecifiesFromAndThruDate derivation = (SourceSpecifiesFromAndThruDate) validityDerivation;
+
             builder.append(getTabString(baseIndentation)).append("validityDerivation: ").append(validityDerivation).append("\n");
             builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation+1)).append("sourceDateTimeFromProperty: ").append(validityMilestoning.sourceDateTimeFromProperty).append(";\n");
-            builder.append(getTabString(baseIndentation+1)).append("sourceDateTimeThruProperty: ").append(validityMilestoning.sourceDateTimeThruProperty).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("sourceDateTimeFromProperty: ").append(derivation.sourceDateTimeFromProperty).append(";\n");
+            builder.append(getTabString(baseIndentation+1)).append("sourceDateTimeThruProperty: ").append(derivation.sourceDateTimeThruProperty).append(";\n");
             builder.append(getTabString(baseIndentation)).append("}\n");
         }
-        else throw UnsupportedOperationException();
+        else
+        {
+            return unsupported(validityDerivation.getClass());
+        }
 
         return builder.toString();
     }
@@ -421,26 +474,30 @@ public class HelperPersistenceGrammarComposer
     {
         StringBuilder builder = new StringBuilder();
 
-        if (mergeStrategy instanceof (OpaqueMergeStrategy || NoDeletesMergeStrategy))
+        if (mergeStrategy instanceof OpaqueMergeStrategy || mergeStrategy instanceof NoDeletesMergeStrategy)
         {
-            builder.append(getTabString(baseIndentation)).append("mergeStrategy: ").append(mergeStrategy).append(";\n");
+            builder.append(getTabString(baseIndentation)).append("mergeStrategy: ").append(mergeStrategy.getClass().getSimpleName()).append(";\n");
         }
         else if (mergeStrategy instanceof DeleteIndicatorMergeStrategy)
         {
+            DeleteIndicatorMergeStrategy strategy = (DeleteIndicatorMergeStrategy) mergeStrategy;
+
             builder.append(getTabString(baseIndentation)).append("mergeStrategy: ").append(mergeStrategy).append("\n");
             builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation+1)).append("deleteProperty: ").append(mergeStrategy.deleteProperty).append(";\n");
-            builder.append(getTabString(baseIndentation+1)).append("deleteValues: ");
-            if (!mergeStrategy.deleteValues.isEmpty())
+            builder.append(getTabString(baseIndentation + 1)).append("deleteProperty: ").append(strategy.deleteProperty).append(";\n");
+            builder.append(getTabString(baseIndentation + 1)).append("deleteValues: ");
+            if (!strategy.deleteValues.isEmpty())
             {
-                builder.append("[").append(LazyIterate.collect(mergeStrategy.deleteValues, d -> convertString(d, true)).makeString(", ")).append("];\n");
+                builder.append("[").append(LazyIterate.collect(strategy.deleteValues, d -> convertString(d, true)).makeString(", ")).append("];\n");
             }
             else {builder.append("[];\n");}
             builder.append(getTabString(baseIndentation)).append("}\n");
         }
-        else throw UnsupportedOperationException();
+        else
+        {
+            return unsupported(mergeStrategy.getClass());
+        };
 
         return builder.toString();
     }
-    */
 }
