@@ -26,8 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.OpaqueValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.ValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.ValidityMilestoningVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromAndThruDate;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDate;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
@@ -472,7 +472,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromAndThruDate val)
+        public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromAndThruDateTime val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl("")
                     ._sourceDateTimeFromProperty(validateAndResolveProperty(modelClass, val.sourceDateTimeFromProperty, val.sourceInformation, context))
@@ -480,7 +480,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromDate val)
+        public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromDateTime val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl("")
                     ._sourceDateTimeFromProperty(validateAndResolveProperty(modelClass, val.sourceDateTimeFromProperty, val.sourceInformation, context));

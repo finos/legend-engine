@@ -619,7 +619,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "                dateTimeFromProperty: 'fromZ';\n" +
                 "                dateTimeThruProperty: 'thruZ';\n" +
                 "              }\n" +
-                "              validityDerivation: SourceProvidesFromAndThruDateTime\n" +
+                "              validityDerivation: SourceSpecifiesFromAndThruDateTime\n" +
                 "              {\n" +
                 "                sourceDateTimeFromProperty: test::InnerClass2->businessDateFrom;\n" +
                 "                sourceDateTimeThruProperty: test::InnerClass2->businessDateThru;\n" +

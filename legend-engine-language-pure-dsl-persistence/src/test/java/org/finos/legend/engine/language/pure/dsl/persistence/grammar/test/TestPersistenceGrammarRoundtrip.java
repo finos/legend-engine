@@ -55,7 +55,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
-                "            partitionProperties: [];\n" +
                 "            deduplicationStrategy: OpaqueDeduplication;\n" +
                 "            batchMode: BitemporalDelta\n" +
                 "            {\n" +
@@ -74,7 +73,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "                dateTimeFromProperty: 'fromZ';\n" +
                 "                dateTimeThruProperty: 'thruZ';\n" +
                 "              }\n" +
-                "              validityDerivation: SourceProvidesFromAndThruDateTime\n" +
+                "              validityDerivation: SourceSpecifiesFromAndThruDateTime\n" +
                 "              {\n" +
                 "                sourceDateTimeFromProperty: test::InnerClass2->businessDateFrom;\n" +
                 "                sourceDateTimeThruProperty: test::InnerClass2->businessDateThru;\n" +

@@ -105,8 +105,8 @@ DATE_TIME_FROM_PROPERTY:                    'dateTimeFromProperty';
 DATE_TIME_THRU_PROPERTY:                    'dateTimeThruProperty';
 
 VALIDITY_DERIVATION:                        'validityDerivation';
-VALIDITY_DERIVATION_SOURCE_FROM:            'SourceProvidesFromDateTime';
-VALIDITY_DERIVATION_SOURCE_FROM_THRU:       'SourceProvidesFromAndThruDateTime';
+VALIDITY_DERIVATION_SOURCE_FROM:            'SourceSpecifiesFromDateTime';
+VALIDITY_DERIVATION_SOURCE_FROM_THRU:       'SourceSpecifiesFromAndThruDateTime';
 SOURCE_DATE_TIME_FROM_PROPERTY:             'sourceDateTimeFromProperty';
 SOURCE_DATE_TIME_THRU_PROPERTY:             'sourceDateTimeThruProperty';
 VALIDITY_DERIVATION_OPAQUE:                 'OpaqueValidityDerivation';

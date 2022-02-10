@@ -32,8 +32,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.DateTimeValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.OpaqueValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.ValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromAndThruDate;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDate;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
@@ -647,7 +647,7 @@ public class PersistenceParseTreeWalker
 
     private ValidityDerivation visitSourceSpecifiesFromDate(PersistenceParserGrammar.SourceSpecifiesFromValidityDerivationContext ctx)
     {
-        SourceSpecifiesFromDate validityDerivation = new SourceSpecifiesFromDate();
+        SourceSpecifiesFromDateTime validityDerivation = new SourceSpecifiesFromDateTime();
         validityDerivation.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // source date time from property
@@ -659,7 +659,7 @@ public class PersistenceParseTreeWalker
 
     private ValidityDerivation visitSourceSpecifiesFromThruDate(PersistenceParserGrammar.SourceSpecifiesFromThruValidityDerivationContext ctx)
     {
-        SourceSpecifiesFromAndThruDate validityDerivation = new SourceSpecifiesFromAndThruDate();
+        SourceSpecifiesFromAndThruDateTime validityDerivation = new SourceSpecifiesFromAndThruDateTime();
         validityDerivation.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // source date time from property
@@ -668,7 +668,7 @@ public class PersistenceParseTreeWalker
 
         // source date time thru property
         PersistenceParserGrammar.ValidityDerivationThruPropertyContext validityDerivationThruPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivationThruProperty(), "sourceDateTimeThruProperty", validityDerivation.sourceInformation);
-        validityDerivation.sourceDateTimeFromProperty = visitValidityDerivationThruProperty(validityDerivationThruPropertyContext);
+        validityDerivation.sourceDateTimeThruProperty = visitValidityDerivationThruProperty(validityDerivationThruPropertyContext);
 
         return validityDerivation;
     }
