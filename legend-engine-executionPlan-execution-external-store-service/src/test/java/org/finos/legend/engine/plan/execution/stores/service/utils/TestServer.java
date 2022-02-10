@@ -95,7 +95,7 @@ public class TestServer
         return contextHandler;
     }
 
-    private static void validateRequestParams(Map<String, List<String>> expected, Map<String, String[]> actual)
+    public static void validateRequestParams(Map<String, List<String>> expected, Map<String, String[]> actual)
     {
         Set<String> expectedKeys = expected.keySet();
         Set<String> actualKeys = actual.keySet();

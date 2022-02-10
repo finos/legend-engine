@@ -235,6 +235,12 @@ public class ServiceStoreParseTreeWalker
             param.enumeration = PureGrammarParserUtility.fromQualifiedName(enumCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : enumCtx.qualifiedName().packagePath().identifier(), enumCtx.qualifiedName().identifier());
         }
 
+        ServiceStoreParserGrammar.AllowReservedDefinitionContext allowReservedCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ListIterate.collectIf(paramCtx.parameterOptions(), p -> p.allowReservedDefinition() != null, ServiceStoreParserGrammar.ParameterOptionsContext::allowReservedDefinition), "allowReserved", this.walkerSourceInformation.getSourceInformation(paramCtx));
+        if (allowReservedCtx != null)
+        {
+            param.allowReserved = Boolean.parseBoolean(allowReservedCtx.BOOLEAN().getText());
+        }
+
         SerializationFormat serializationFormat = new SerializationFormat();
         if (param.type.list)
         {
