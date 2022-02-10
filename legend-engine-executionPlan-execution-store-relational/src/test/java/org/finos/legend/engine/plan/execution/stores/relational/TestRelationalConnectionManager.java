@@ -1,13 +1,11 @@
 package org.finos.legend.engine.plan.execution.stores.relational;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.checkerframework.checker.nullness.Opt;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
-import org.finos.legend.engine.authentication.demoflows.H2LocalWithDefaultUserPasswordFlow;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.RelationalConnectionManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -94,6 +92,11 @@ public class TestRelationalConnectionManager
         public Optional<DatabaseAuthenticationFlow> lookupFlow(RelationalDatabaseConnection connection)
         {
             return Optional.empty();
+        }
+
+        @Override
+        public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration) {
+
         }
 
         @Override

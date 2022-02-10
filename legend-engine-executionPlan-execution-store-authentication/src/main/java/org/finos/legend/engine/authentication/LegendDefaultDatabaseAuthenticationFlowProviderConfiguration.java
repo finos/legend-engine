@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores;
+package org.finos.legend.engine.authentication;
 
-public interface StoreExecutorBuilder
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
+
+public final class LegendDefaultDatabaseAuthenticationFlowProviderConfiguration extends DatabaseAuthenticationFlowProviderConfiguration
 {
-    StoreType getStoreType();
+    public LegendDefaultDatabaseAuthenticationFlowProviderConfiguration()
+    {
 
-    StoreExecutor build();
-
-    StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration);
+    }
 }

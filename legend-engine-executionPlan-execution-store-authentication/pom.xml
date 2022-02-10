@@ -38,6 +38,13 @@
         </dependency>
         <!-- ENGINE -->
 
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <!-- JACKSON -->
+
         <!-- DRIVERS -->
         <dependency>
             <groupId>net.snowflake</groupId>
