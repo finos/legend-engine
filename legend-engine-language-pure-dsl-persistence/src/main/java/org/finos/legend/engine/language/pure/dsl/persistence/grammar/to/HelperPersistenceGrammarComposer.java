@@ -3,6 +3,8 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.Auditing;
@@ -21,10 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.NonMilestonedSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.snapshot.UnitemporalSnapshot;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.FlatTargetSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.GroupedFlatTargetSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.NestedTargetSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.PropertyAndFlatTargetSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.transactionmilestoning.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.DateTimeValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.OpaqueValidityMilestoning;
@@ -35,452 +34,434 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
-
 public class HelperPersistenceGrammarComposer
 {
-    public static String renderOwners(List<String> owners)
+    private HelperPersistenceGrammarComposer() {}
+
+    public static String renderPipe(PersistencePipe pipe, PureGrammarComposerContext context, int indentLevel)
     {
-        StringBuilder builder = new StringBuilder();
-        if (!owners.isEmpty())
-        {
-            builder.append("owners: ").append("[").append(LazyIterate.collect(owners, o -> convertString(o, true)).makeString(", ")).append("];\n");
-        }
-        return builder.toString();
+        return "PersistencePipe " + PureGrammarComposerUtility.convertPath(pipe.getPath()) + "\n" +
+                "{\n" +
+                renderDocumentation(pipe.documentation, indentLevel) +
+                renderOwners(pipe.owners, indentLevel) +
+                renderTrigger(pipe.trigger, indentLevel) +
+                renderReader(pipe.reader, context, indentLevel) +
+                renderPersister(pipe.persister, context, indentLevel) +
+                "}";
     }
 
-    public static String renderReader(Reader reader, PureGrammarComposerContext context)
+    public static String renderDocumentation(String documentation, int indentLevel)
+    {
+        return getTabString(indentLevel) + "doc: " + convertString(documentation, true) + ";\n";
+    }
+
+    public static String renderOwners(List<String> owners, int indentLevel)
+    {
+        if (owners.isEmpty())
+        {
+            return "";
+        }
+        return getTabString(indentLevel) + "owners: " + "[" + LazyIterate.collect(owners, o -> convertString(o, true)).makeString(", ") + "];\n";
+    }
+
+    private static String renderTrigger(Trigger trigger, int indentLevel)
+    {
+        if (trigger instanceof OpaqueTrigger)
+        {
+            return getTabString(indentLevel) + "trigger: " + trigger.getClass().getSimpleName() + ";\n";
+        }
+        return unsupported(trigger.getClass());
+    }
+
+    public static String renderReader(Reader reader, PureGrammarComposerContext context, int indentLevel)
     {
         if (reader instanceof ServiceReader)
         {
-            return renderServiceReader((ServiceReader) reader, context);
+            return renderServiceReader((ServiceReader) reader, context, indentLevel);
         }
         return unsupported(reader.getClass());
     }
 
-    private static String renderServiceReader(ServiceReader service, PureGrammarComposerContext context)
+    private static String renderServiceReader(ServiceReader service, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 2;
-
-        return "reader: Service\n" +
-                getTabString() + "{\n" +
-                getTabString(baseIndentation) + "service: " + service.service + ";\n" +
-                getTabString() + "}\n";
+        return getTabString(indentLevel) + "reader: Service\n" +
+                getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel + 1) + "service: " + service.service + ";\n" +
+                getTabString(indentLevel) + "}\n";
     }
 
-    public static String renderPersister(Persister persister, PureGrammarComposerContext context)
+    public static String renderPersister(Persister persister, PureGrammarComposerContext context, int indentLevel)
     {
-        if (persister instanceof BatchPersister)
+        if (persister instanceof StreamingPersister)
         {
-            return renderBatchPersister((BatchPersister) persister, context);
+            return renderStreamingPersister((StreamingPersister) persister, context, indentLevel);
         }
-        else if (persister instanceof StreamingPersister)
+        else if (persister instanceof BatchPersister)
         {
-            return renderStreamingPersister((StreamingPersister) persister, context);
+            return renderBatchPersister((BatchPersister) persister, context, indentLevel);
         }
         return unsupported(Persister.class);
     }
 
-    private static String renderStreamingPersister(StreamingPersister streaming, PureGrammarComposerContext context)
+    private static String renderStreamingPersister(StreamingPersister streaming, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 2;
-
-        return "persister: Streaming\n" +
-                getTabString() + "{\n" +
-                getTabString() + "}";
+        return getTabString(indentLevel) + "persister: Streaming\n" +
+                getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderBatchPersister(BatchPersister persister, PureGrammarComposerContext context)
+    private static String renderBatchPersister(BatchPersister persister, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 2;
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("persister: Batch\n");
-        builder.append(getTabString()).append("{\n");
-
-        if (persister.targetSpecification instanceof FlatTargetSpecification)
-        {
-            builder.append(getTabString(baseIndentation)).append(renderFlatTarget((FlatTargetSpecification) persister.targetSpecification, context));
-        }
-        else if (persister.targetSpecification instanceof GroupedFlatTargetSpecification)
-        {
-            builder.append(getTabString(baseIndentation)).append(renderGroupedFlatTarget((GroupedFlatTargetSpecification) persister.targetSpecification, context));
-        }
-        else if (persister.targetSpecification instanceof NestedTargetSpecification)
-        {
-            builder.append(getTabString(baseIndentation)).append(renderNestedTarget((NestedTargetSpecification) persister.targetSpecification, context));
-        }
-        else
-        {
-            return unsupported(persister.targetSpecification.getClass());
-        }
-
-        builder.append(getTabString()).append("}\n");
-        return builder.toString();
+        return getTabString(indentLevel) + "persister: Batch\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderTargetSpecification(persister.targetSpecification, context, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderFlatTarget(FlatTargetSpecification flatTarget, PureGrammarComposerContext context)
+    private static String renderTargetSpecification(TargetSpecification targetSpecification, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 2;
-
-        return "target: Flat\n" +
-                getTabString(baseIndentation) + "{\n" +
-                renderFlatTargetProperties(flatTarget, baseIndentation + 1, context, true) +
-                getTabString(baseIndentation) + "}\n";
+        if (targetSpecification instanceof FlatTargetSpecification)
+        {
+            return renderFlatTarget((FlatTargetSpecification) targetSpecification, context, indentLevel);
+        }
+        else if (targetSpecification instanceof GroupedFlatTargetSpecification)
+        {
+            return renderGroupedFlatTarget((GroupedFlatTargetSpecification) targetSpecification, context, indentLevel);
+        }
+        else if (targetSpecification instanceof NestedTargetSpecification)
+        {
+            return renderNestedTarget((NestedTargetSpecification) targetSpecification, context, indentLevel);
+        }
+        return unsupported(targetSpecification.getClass());
     }
 
-    private static String renderFlatTargetProperties(FlatTargetSpecification flatTarget, int baseIndentation, PureGrammarComposerContext context, boolean includeModelClass)
+    private static String renderFlatTarget(FlatTargetSpecification flatTarget, PureGrammarComposerContext context, int indentLevel)
+    {
+        return getTabString(indentLevel) + "target: Flat\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderFlatTargetProperties(flatTarget, context, true, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
+    }
+
+    private static String renderFlatTargetProperties(FlatTargetSpecification flatTarget, PureGrammarComposerContext context, boolean includeModelClass, int indentLevel)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append("targetName: ").append(flatTarget.targetName).append(";\n");
+        builder.append(getTabString(indentLevel)).append("targetName: ").append(flatTarget.targetName).append(";\n");
+
         if (includeModelClass)
         {
-            builder.append(getTabString(baseIndentation)).append("modelClass: ").append(flatTarget.modelClassPath).append(";\n");
+            builder.append(getTabString(indentLevel)).append("modelClass: ").append(flatTarget.modelClassPath).append(";\n");
         }
 
         if (!flatTarget.partitionPropertyPaths.isEmpty())
         {
-            builder.append(getTabString(baseIndentation)).append("partitionProperties: ").append("[");
+            builder.append(getTabString(indentLevel)).append("partitionProperties: ").append("[");
             builder.append(LazyIterate.collect(flatTarget.partitionPropertyPaths, p -> convertString(p, true)).makeString(", "));
             builder.append("];\n");
         }
 
+        builder.append(renderDeduplicationStrategy(flatTarget, context, indentLevel));
+        builder.append(renderBatchMode(flatTarget, context, indentLevel));
+
+        return builder.toString();
+    }
+
+    private static String renderDeduplicationStrategy(FlatTargetSpecification flatTarget, PureGrammarComposerContext context, int indentLevel)
+    {
         DeduplicationStrategy deduplicationStrategy = flatTarget.deduplicationStrategy;
+        String deduplicationStrategyName = deduplicationStrategy.getClass().getSimpleName();
         if (deduplicationStrategy instanceof NoDeduplicationStrategy || deduplicationStrategy instanceof AnyVersionDeduplicationStrategy || deduplicationStrategy instanceof OpaqueDeduplicationStrategy)
         {
-            builder.append(getTabString(baseIndentation)).append("deduplicationStrategy: ").append(deduplicationStrategy.getClass().getSimpleName()).append(";\n");
+            return getTabString(indentLevel) + "deduplicationStrategy: " + deduplicationStrategyName + ";\n";
         }
         else if (deduplicationStrategy instanceof MaxVersionDeduplicationStrategy)
         {
             MaxVersionDeduplicationStrategy strategy = (MaxVersionDeduplicationStrategy) deduplicationStrategy;
 
-            builder.append(getTabString(baseIndentation)).append("deduplicationStrategy: ").append(deduplicationStrategy).append("\n");
-            builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation + 1)).append("versionProperty: ").append(strategy.versionProperty).append(";\n");
-            builder.append(getTabString(baseIndentation)).append("}\n");
+            return getTabString(indentLevel) + "deduplicationStrategy: " + deduplicationStrategyName + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "versionProperty: " + strategy.versionProperty + ";\n" +
+                    getTabString(indentLevel) + "}\n";
         }
-        else
-        {
-            return unsupported(deduplicationStrategy.getClass());
-        }
+        return unsupported(deduplicationStrategy.getClass());
+    }
 
-        if (flatTarget.milestoningMode instanceof BitemporalDelta)
+    private static String renderBatchMode(FlatTargetSpecification flatTarget, PureGrammarComposerContext context, int indentLevel)
+    {
+        if (flatTarget.milestoningMode instanceof NonMilestonedSnapshot)
         {
-            builder.append(getTabString(baseIndentation)).append(renderBitemporalDelta((BitemporalDelta) flatTarget.milestoningMode, context));
-        }
-        else if (flatTarget.milestoningMode instanceof UnitemporalDelta)
-        {
-            builder.append(getTabString(baseIndentation)).append(renderUnitemporalDelta((UnitemporalDelta) flatTarget.milestoningMode, context));
-        }
-        else if (flatTarget.milestoningMode instanceof NonMilestonedDelta)
-        {
-            builder.append(getTabString(baseIndentation)).append(renderNonMilestonedDelta((NonMilestonedDelta) flatTarget.milestoningMode, context));
-        }
-        else if (flatTarget.milestoningMode instanceof BitemporalSnapshot)
-        {
-            builder.append(getTabString(baseIndentation)).append(renderBitemporalSnapshot((BitemporalSnapshot) flatTarget.milestoningMode, context));
+            return renderNonMilestonedSnapshot((NonMilestonedSnapshot) flatTarget.milestoningMode, context, indentLevel);
         }
         else if (flatTarget.milestoningMode instanceof UnitemporalSnapshot)
         {
-            builder.append(getTabString(baseIndentation)).append(renderUnitemporalSnapshot((UnitemporalSnapshot) flatTarget.milestoningMode, context));
+            return renderUnitemporalSnapshot((UnitemporalSnapshot) flatTarget.milestoningMode, context, indentLevel);
         }
-        else if (flatTarget.milestoningMode instanceof NonMilestonedSnapshot)
+        else if (flatTarget.milestoningMode instanceof BitemporalSnapshot)
         {
-            builder.append(getTabString(baseIndentation)).append(renderNonMilestonedSnapshot((NonMilestonedSnapshot) flatTarget.milestoningMode, context));
+            return renderBitemporalSnapshot((BitemporalSnapshot) flatTarget.milestoningMode, context, indentLevel);
+        }
+        else if (flatTarget.milestoningMode instanceof NonMilestonedDelta)
+        {
+            return renderNonMilestonedDelta((NonMilestonedDelta) flatTarget.milestoningMode, context, indentLevel);
+        }
+        else if (flatTarget.milestoningMode instanceof UnitemporalDelta)
+        {
+            return renderUnitemporalDelta((UnitemporalDelta) flatTarget.milestoningMode, context, indentLevel);
+        }
+        else if (flatTarget.milestoningMode instanceof BitemporalDelta)
+        {
+            return renderBitemporalDelta((BitemporalDelta) flatTarget.milestoningMode, context, indentLevel);
         }
         else if (flatTarget.milestoningMode instanceof AppendOnly)
         {
-            builder.append(getTabString(baseIndentation)).append(renderAppendOnly((AppendOnly) flatTarget.milestoningMode, context));
+            return renderAppendOnly((AppendOnly) flatTarget.milestoningMode, context, indentLevel);
         }
-        else
-        {
-            return unsupported(flatTarget.milestoningMode.getClass());
-        }
-
-        return builder.toString();
+        return unsupported(flatTarget.milestoningMode.getClass());
     }
 
-    private static String renderGroupedFlatTarget(GroupedFlatTargetSpecification groupedFlatTarget, PureGrammarComposerContext context)
+    private static String renderGroupedFlatTarget(GroupedFlatTargetSpecification groupedFlatTarget, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 2;
+        return getTabString(indentLevel) + "target: GroupedFlat\n" +
+                getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel + 1) + "modelClass: " + groupedFlatTarget.modelClassPath + ";\n" +
+                getTabString(indentLevel + 1) + "transactionScope: " + groupedFlatTarget.transactionScope + ";\n" +
+                getTabString(indentLevel + 1) + "components:\n" +
+                getTabString(indentLevel + 1) + "[\n" +
+                renderComponents(groupedFlatTarget, context, indentLevel + 2) +
+                getTabString(indentLevel + 1) + "];\n" +
+                getTabString(indentLevel) + "}\n";
+    }
 
+    private static String renderComponents(GroupedFlatTargetSpecification groupedFlatTarget, PureGrammarComposerContext context, int indentLevel)
+    {
         StringBuilder builder = new StringBuilder();
-        builder.append("target: GroupedFlat\n");
-        builder.append(getTabString(baseIndentation)).append("{\n");
-        builder.append(getTabString(baseIndentation + 1)).append("modelClass: ").append(groupedFlatTarget.modelClassPath).append(";\n");
-        builder.append(getTabString(baseIndentation + 1)).append("transactionScope: ").append(groupedFlatTarget.transactionScope).append(";\n");
-        builder.append(getTabString(baseIndentation + 1)).append("components:\n");
-        builder.append(getTabString(baseIndentation + 1)).append("[\n");
-        renderComponents(groupedFlatTarget, context, baseIndentation + 1, builder);
-        builder.append(getTabString(baseIndentation + 1)).append("];\n");
-        builder.append(getTabString(baseIndentation)).append("}\n");
-
-        return builder.toString();
-    }
-
-    private static void renderComponents(GroupedFlatTargetSpecification groupedFlatTarget, PureGrammarComposerContext context, int baseIndentation, StringBuilder builder)
-    {
         ListIterate.forEachWithIndex(groupedFlatTarget.components, (component, i) ->
         {
-            builder.append(getTabString(baseIndentation + 1)).append("{\n");
-            builder.append(renderComponentProperties(component, baseIndentation + 2, context));
-            builder.append(getTabString(baseIndentation + 1)).append(i < groupedFlatTarget.components.size() - 1 ? "},\n" : "}\n");
+            builder.append(getTabString(indentLevel)).append("{\n");
+            builder.append(renderComponentProperties(component, context, indentLevel + 1));
+            builder.append(getTabString(indentLevel)).append(i < groupedFlatTarget.components.size() - 1 ? "},\n" : "}\n");
         });
+        return builder.toString();
     }
 
-    private static String renderComponentProperties(PropertyAndFlatTargetSpecification component, int baseIndentation, PureGrammarComposerContext context)
+    private static String renderComponentProperties(PropertyAndFlatTargetSpecification component, PureGrammarComposerContext context, int indentLevel)
     {
-        return getTabString(baseIndentation) + "property: " + component.propertyPath + ";\n" +
-                getTabString(baseIndentation) + "targetSpecification:\n" +
-                getTabString(baseIndentation) + "{\n" +
-                renderFlatTargetProperties(component.targetSpecification, baseIndentation + 1, context, false) +
-                getTabString(baseIndentation) + "}\n";
+        return getTabString(indentLevel) + "property: " + component.propertyPath + ";\n" +
+                getTabString(indentLevel) + "targetSpecification:\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderFlatTargetProperties(component.targetSpecification, context,false, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderNestedTarget(NestedTargetSpecification nestedTarget, PureGrammarComposerContext context)
+    private static String renderNestedTarget(NestedTargetSpecification nestedTarget, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 2;
-
-        return "target: Nested\n" +
-                getTabString(baseIndentation) + "{\n" +
-                getTabString(baseIndentation + 1) + "targetName: " + nestedTarget.targetName + ";\n" +
-                getTabString(baseIndentation + 1) + "modelClass: " + nestedTarget.modelClassPath + ";\n" +
-                getTabString(baseIndentation) + "}\n";
+        return getTabString(indentLevel) + "target: Nested\n" +
+                getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel + 1) + "targetName: " + nestedTarget.targetName + ";\n" +
+                getTabString(indentLevel + 1) + "modelClass: " + nestedTarget.modelClassPath + ";\n" +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderNonMilestonedSnapshot(NonMilestonedSnapshot milestoningMode, PureGrammarComposerContext context)
+    private static String renderNonMilestonedSnapshot(NonMilestonedSnapshot milestoningMode, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 5;
-
-        return getTabString(baseIndentation) + "batchMode: NonMilestonedSnapshot\n" +
-                getTabString(baseIndentation) + "{\n" +
-                renderAuditing(milestoningMode.auditing, baseIndentation + 1, context) +
-                getTabString(baseIndentation) + "}\n";
+        return getTabString(indentLevel) + "batchMode: NonMilestonedSnapshot\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderAuditing(milestoningMode.auditing, context, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderUnitemporalSnapshot(UnitemporalSnapshot milestoningMode, PureGrammarComposerContext context)
+    private static String renderUnitemporalSnapshot(UnitemporalSnapshot milestoningMode, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 5;
-
-        return getTabString(baseIndentation) + "batchMode: UnitemporalSnapshot\n" +
-                getTabString(baseIndentation) + "{\n" +
-                renderTransactionMilestoning(milestoningMode.transactionMilestoning, baseIndentation + 1, context) +
-                getTabString(baseIndentation) + "}\n";
+        return getTabString(indentLevel) + "batchMode: UnitemporalSnapshot\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderTransactionMilestoning(milestoningMode.transactionMilestoning, context,indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderBitemporalSnapshot(BitemporalSnapshot milestoningMode, PureGrammarComposerContext context)
+    private static String renderBitemporalSnapshot(BitemporalSnapshot milestoningMode, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 5;
-
-        return getTabString(baseIndentation) + "batchMode: BitemporalSnapshot\n" +
-                getTabString(baseIndentation) + "{\n" +
-                renderTransactionMilestoning(milestoningMode.transactionMilestoning, baseIndentation + 1, context) +
-                renderValidityMilestoning(milestoningMode.validityMilestoning, baseIndentation + 1, context) +
-                renderValidityDerivation(milestoningMode.validityDerivation, baseIndentation + 1, context) +
-                getTabString(baseIndentation) + "}\n";
+        return getTabString(indentLevel) + "batchMode: BitemporalSnapshot\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderTransactionMilestoning(milestoningMode.transactionMilestoning, context, indentLevel + 1) +
+                renderValidityMilestoning(milestoningMode.validityMilestoning, context, indentLevel + 1) +
+                renderValidityDerivation(milestoningMode.validityDerivation, context, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderNonMilestonedDelta(NonMilestonedDelta milestoningMode, PureGrammarComposerContext context)
+    private static String renderNonMilestonedDelta(NonMilestonedDelta milestoningMode, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 5;
-
-        return getTabString(baseIndentation) + "batchMode: NonMilestonedDelta\n" +
-                getTabString(baseIndentation) + "{\n" +
-                renderAuditing(milestoningMode.auditing, baseIndentation + 1, context) +
-                getTabString(baseIndentation) + "}\n";
+        return getTabString(indentLevel) + "batchMode: NonMilestonedDelta\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderAuditing(milestoningMode.auditing, context, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderUnitemporalDelta(UnitemporalDelta milestoningMode, PureGrammarComposerContext context)
+    private static String renderUnitemporalDelta(UnitemporalDelta milestoningMode, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 5;
-
-        return getTabString(baseIndentation) + "batchMode: UnitemporalDelta\n" +
-                getTabString(baseIndentation) + "{\n" +
-                renderMergeStrategy(milestoningMode.mergeStrategy, baseIndentation + 1, context) +
-                renderTransactionMilestoning(milestoningMode.transactionMilestoning, baseIndentation + 1, context) +
-                getTabString(baseIndentation) + "}\n";
+        return getTabString(indentLevel) + "batchMode: UnitemporalDelta\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderMergeStrategy(milestoningMode.mergeStrategy, context, indentLevel + 1) +
+                renderTransactionMilestoning(milestoningMode.transactionMilestoning, context, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderBitemporalDelta(BitemporalDelta milestoningMode, PureGrammarComposerContext context)
+    private static String renderBitemporalDelta(BitemporalDelta milestoningMode, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 5;
-
-        return getTabString(baseIndentation) + "batchMode: BitemporalDelta\n" +
-                getTabString(baseIndentation) + "{\n" +
-                renderMergeStrategy(milestoningMode.mergeStrategy, baseIndentation + 1, context) +
-                renderTransactionMilestoning(milestoningMode.transactionMilestoning, baseIndentation + 1, context) +
-                renderValidityMilestoning(milestoningMode.validityMilestoning, baseIndentation + 1, context) +
-                renderValidityDerivation(milestoningMode.validityDerivation, baseIndentation + 1, context) +
-                getTabString(baseIndentation) + "}\n";
+        return getTabString(indentLevel) + "batchMode: BitemporalDelta\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderMergeStrategy(milestoningMode.mergeStrategy, context, indentLevel + 1) +
+                renderTransactionMilestoning(milestoningMode.transactionMilestoning, context, indentLevel + 1) +
+                renderValidityMilestoning(milestoningMode.validityMilestoning, context, indentLevel + 1) +
+                renderValidityDerivation(milestoningMode.validityDerivation, context, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderAppendOnly(AppendOnly milestoningMode, PureGrammarComposerContext context)
+    private static String renderAppendOnly(AppendOnly milestoningMode, PureGrammarComposerContext context, int indentLevel)
     {
-        int baseIndentation = 5;
-
-        return getTabString(baseIndentation) + "batchMode: NonMilestonedDelta\n" +
-                getTabString(baseIndentation) + "{\n" +
-                renderAuditing(milestoningMode.auditing, baseIndentation + 1, context) +
-                getTabString(baseIndentation + 1) + "filterDuplicates: " + milestoningMode.filterDuplicates + ";\n" +
-                getTabString(baseIndentation) + "}\n";
+        return getTabString(indentLevel) + "batchMode: NonMilestonedDelta\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderAuditing(milestoningMode.auditing, context, indentLevel + 1) +
+                getTabString(indentLevel + 1) + "filterDuplicates: " + milestoningMode.filterDuplicates + ";\n" +
+                getTabString(indentLevel) + "}\n";
     }
 
-    private static String renderAuditing(Auditing auditing, int baseIndentation, PureGrammarComposerContext context)
+    private static String renderAuditing(Auditing auditing, PureGrammarComposerContext context, int indentLevel)
     {
-        StringBuilder builder = new StringBuilder();
-
+        String auditingName = auditing.getClass().getSimpleName();
         if (auditing instanceof NoAuditing || auditing instanceof OpaqueAuditing)
         {
-            builder.append(getTabString(baseIndentation)).append("auditing: ").append(auditing.getClass().getSimpleName()).append(";\n");
+            return getTabString(indentLevel) + "auditing: " + auditingName + ";\n";
         }
         else if (auditing instanceof BatchDateTimeAuditing)
         {
-            builder.append(getTabString(baseIndentation)).append("auditing: ").append(auditing).append("\n");
-            builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation + 1)).append("dateTimePropertyName: ").append(((BatchDateTimeAuditing) auditing).dateTimePropertyName).append(";\n");
-            builder.append(getTabString(baseIndentation)).append("}\n");
+            return getTabString(indentLevel) + "auditing: " + auditingName + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "dateTimePropertyName: " + ((BatchDateTimeAuditing) auditing).dateTimePropertyName + ";\n" +
+                    getTabString(indentLevel) + "}\n";
         }
-
-        return builder.toString();
+        return unsupported(auditing.getClass());
     }
 
-    private static String renderTransactionMilestoning(TransactionMilestoning transactionMilestoning, int baseIndentation, PureGrammarComposerContext context)
+    private static String renderTransactionMilestoning(TransactionMilestoning transactionMilestoning, PureGrammarComposerContext context, int indentLevel)
     {
-        StringBuilder builder = new StringBuilder();
-
+        String milestoningName = transactionMilestoning.getClass().getSimpleName();
         if (transactionMilestoning instanceof OpaqueTransactionMilestoning)
         {
-            builder.append(getTabString(baseIndentation)).append("transactionMilestoning: ").append(transactionMilestoning).append(";\n");
+            return getTabString(indentLevel) + "transactionMilestoning: " + milestoningName + ";\n";
         }
         else if (transactionMilestoning instanceof BatchIdTransactionMilestoning)
         {
             BatchIdTransactionMilestoning milestoning = (BatchIdTransactionMilestoning) transactionMilestoning;
-
-            builder.append(getTabString(baseIndentation)).append("transactionMilestoning: ").append(transactionMilestoning).append("\n");
-            builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation + 1)).append("batchIdInProperty: ").append(milestoning.batchIdInName).append(";\n");
-            builder.append(getTabString(baseIndentation + 1)).append("batchIdOutProperty: ").append(milestoning.batchIdOutName).append(";\n");
-            builder.append(getTabString(baseIndentation)).append("}\n");
+            return getTabString(indentLevel) + "transactionMilestoning: " + milestoningName + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "batchIdInProperty: " + milestoning.batchIdInName + ";\n" +
+                    getTabString(indentLevel + 1) + "batchIdOutProperty: " + milestoning.batchIdOutName + ";\n" +
+                    getTabString(indentLevel) + "}\n";
         }
         else if (transactionMilestoning instanceof BatchIdAndDateTimeTransactionMilestoning)
         {
             BatchIdAndDateTimeTransactionMilestoning milestoning = (BatchIdAndDateTimeTransactionMilestoning) transactionMilestoning;
-
-            builder.append(getTabString(baseIndentation)).append("transactionMilestoning: ").append(transactionMilestoning).append("\n");
-            builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation + 1)).append("batchIdInProperty: ").append(milestoning.batchIdInName).append(";\n");
-            builder.append(getTabString(baseIndentation + 1)).append("batchIdOutProperty: ").append(milestoning.batchIdOutName).append(";\n");
-            builder.append(getTabString(baseIndentation + 1)).append("dateTimeInProperty: ").append(milestoning.dateTimeInName).append(";\n");
-            builder.append(getTabString(baseIndentation + 1)).append("dateTimeOutProperty: ").append(milestoning.dateTimeOutName).append(";\n");
-            builder.append(getTabString(baseIndentation)).append("}\n");
+            return getTabString(indentLevel) + "transactionMilestoning: " + milestoningName + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "batchIdInProperty: " + milestoning.batchIdInName + ";\n" +
+                    getTabString(indentLevel + 1) + "batchIdOutProperty: " + milestoning.batchIdOutName + ";\n" +
+                    getTabString(indentLevel + 1) + "dateTimeInProperty: " + milestoning.dateTimeInName + ";\n" +
+                    getTabString(indentLevel + 1) + "dateTimeOutProperty: " + milestoning.dateTimeOutName + ";\n" +
+                    getTabString(indentLevel) + "}\n";
         }
         else if (transactionMilestoning instanceof DateTimeTransactionMilestoning)
         {
             DateTimeTransactionMilestoning milestoning = (DateTimeTransactionMilestoning) transactionMilestoning;
-
-            builder.append(getTabString(baseIndentation)).append("transactionMilestoning: ").append(transactionMilestoning).append("\n");
-            builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation + 1)).append("dateTimeInProperty: ").append(milestoning.dateTimeInName).append(";\n");
-            builder.append(getTabString(baseIndentation + 1)).append("dateTimeOutProperty: ").append(milestoning.dateTimeOutName).append(";\n");
-            builder.append(getTabString(baseIndentation)).append("}\n");
+            return getTabString(indentLevel) + "transactionMilestoning: " + milestoningName + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "dateTimeInProperty: " + milestoning.dateTimeInName + ";\n" +
+                    getTabString(indentLevel + 1) + "dateTimeOutProperty: " + milestoning.dateTimeOutName + ";\n" +
+                    getTabString(indentLevel) + "}\n";
         }
-        else
-        {
-            return unsupported(transactionMilestoning.getClass());
-        }
-
-        return builder.toString();
+        return unsupported(transactionMilestoning.getClass());
     }
 
-    private static String renderValidityMilestoning(ValidityMilestoning validityMilestoning, int baseIndentation, PureGrammarComposerContext context)
+    private static String renderValidityMilestoning(ValidityMilestoning validityMilestoning, PureGrammarComposerContext context, int indentLevel)
     {
-        StringBuilder builder = new StringBuilder();
-
         if (validityMilestoning instanceof OpaqueValidityMilestoning)
         {
-            builder.append(getTabString(baseIndentation)).append("validityMilestoning: ").append(validityMilestoning).append(";\n");
+            return getTabString(indentLevel) + "validityMilestoning: " + validityMilestoning + ";\n";
         }
         else if (validityMilestoning instanceof DateTimeValidityMilestoning)
         {
             DateTimeValidityMilestoning milestoning = (DateTimeValidityMilestoning) validityMilestoning;
-
-            builder.append(getTabString(baseIndentation)).append("validityMilestoning: ").append(validityMilestoning).append("\n");
-            builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation + 1)).append("dateTimeFromProperty: ").append(milestoning.dateTimeFromName).append(";\n");
-            builder.append(getTabString(baseIndentation + 1)).append("dateTimeThruProperty: ").append(milestoning.dateTimeThruName).append(";\n");
-            builder.append(getTabString(baseIndentation)).append("}\n");
+            return getTabString(indentLevel) + "validityMilestoning: " + validityMilestoning + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "dateTimeFromProperty: " + milestoning.dateTimeFromName + ";\n" +
+                    getTabString(indentLevel + 1) + "dateTimeThruProperty: " + milestoning.dateTimeThruName + ";\n" +
+                    getTabString(indentLevel) + "}\n";
         }
-        else
-        {
-            return unsupported(validityMilestoning.getClass());
-        }
-
-        return builder.toString();
+        return unsupported(validityMilestoning.getClass());
     }
 
-    private static String renderValidityDerivation(ValidityDerivation validityDerivation, int baseIndentation, PureGrammarComposerContext context)
+    private static String renderValidityDerivation(ValidityDerivation validityDerivation, PureGrammarComposerContext context, int indentLevel)
     {
-        StringBuilder builder = new StringBuilder();
-
+        String derivationName = validityDerivation.getClass().getSimpleName();
         if (validityDerivation instanceof SourceSpecifiesFromDate)
         {
             SourceSpecifiesFromDate derivation = (SourceSpecifiesFromDate) validityDerivation;
 
-            builder.append(getTabString(baseIndentation)).append("validityDerivation: ").append(validityDerivation).append("\n");
-            builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation + 1)).append("sourceDateTimeFromProperty: ").append(derivation.sourceDateTimeFromProperty).append(";\n");
-            builder.append(getTabString(baseIndentation)).append("}\n");
+            return getTabString(indentLevel) + "validityDerivation: " + derivationName + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "sourceDateTimeFromProperty: " + derivation.sourceDateTimeFromProperty + ";\n" +
+                    getTabString(indentLevel) + "}\n";
         }
         else if (validityDerivation instanceof SourceSpecifiesFromAndThruDate)
         {
             SourceSpecifiesFromAndThruDate derivation = (SourceSpecifiesFromAndThruDate) validityDerivation;
 
-            builder.append(getTabString(baseIndentation)).append("validityDerivation: ").append(validityDerivation).append("\n");
-            builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation + 1)).append("sourceDateTimeFromProperty: ").append(derivation.sourceDateTimeFromProperty).append(";\n");
-            builder.append(getTabString(baseIndentation + 1)).append("sourceDateTimeThruProperty: ").append(derivation.sourceDateTimeThruProperty).append(";\n");
-            builder.append(getTabString(baseIndentation)).append("}\n");
+            return getTabString(indentLevel) + "validityDerivation: " + derivationName + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "sourceDateTimeFromProperty: " + derivation.sourceDateTimeFromProperty + ";\n" +
+                    getTabString(indentLevel + 1) + "sourceDateTimeThruProperty: " + derivation.sourceDateTimeThruProperty + ";\n" +
+                    getTabString(indentLevel) + "}\n";
         }
-        else
-        {
-            return unsupported(validityDerivation.getClass());
-        }
-
-        return builder.toString();
+        return unsupported(validityDerivation.getClass());
     }
 
-    private static String renderMergeStrategy(MergeStrategy mergeStrategy, int baseIndentation, PureGrammarComposerContext context)
+    private static String renderMergeStrategy(MergeStrategy mergeStrategy, PureGrammarComposerContext context, int indentLevel)
     {
-        StringBuilder builder = new StringBuilder();
-
+        String mergeStrategyName = mergeStrategy.getClass().getSimpleName();
         if (mergeStrategy instanceof OpaqueMergeStrategy || mergeStrategy instanceof NoDeletesMergeStrategy)
         {
-            builder.append(getTabString(baseIndentation)).append("mergeStrategy: ").append(mergeStrategy.getClass().getSimpleName()).append(";\n");
+            return getTabString(indentLevel) + "mergeStrategy: " + mergeStrategyName + ";\n";
         }
         else if (mergeStrategy instanceof DeleteIndicatorMergeStrategy)
         {
             DeleteIndicatorMergeStrategy strategy = (DeleteIndicatorMergeStrategy) mergeStrategy;
+            return getTabString(indentLevel) + "mergeStrategy: " + mergeStrategyName + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "deleteProperty: " + strategy.deleteProperty + ";\n" +
+                    renderDeleteValues(strategy, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
+        }
+        return unsupported(mergeStrategy.getClass());
+    }
 
-            builder.append(getTabString(baseIndentation)).append("mergeStrategy: ").append(mergeStrategy).append("\n");
-            builder.append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation + 1)).append("deleteProperty: ").append(strategy.deleteProperty).append(";\n");
-            builder.append(getTabString(baseIndentation + 1)).append("deleteValues: ");
-            if (!strategy.deleteValues.isEmpty())
-            {
-                builder.append("[").append(LazyIterate.collect(strategy.deleteValues, d -> convertString(d, true)).makeString(", ")).append("];\n");
-            }
-            else {builder.append("[];\n");}
-            builder.append(getTabString(baseIndentation)).append("}\n");
+    private static String renderDeleteValues(DeleteIndicatorMergeStrategy strategy, int indentLevel)
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append(getTabString(indentLevel)).append("deleteValues: ");
+        if (!strategy.deleteValues.isEmpty())
+        {
+            builder.append("[").append(LazyIterate.collect(strategy.deleteValues, d -> convertString(d, true)).makeString(", ")).append("];\n");
         }
         else
         {
-            return unsupported(mergeStrategy.getClass());
-        };
-
+            builder.append("[];\n");
+        }
         return builder.toString();
     }
 }

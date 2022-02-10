@@ -6,15 +6,11 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
 
 import java.util.List;
-
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class PersistenceGrammarComposerExtension implements PureGrammarComposerExtension
 {
@@ -50,14 +46,7 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
 
     private static String renderPersistencePipe(PersistencePipe persistencePipe, PureGrammarComposerContext context)
     {
-        // add import package line
-        return "PersistencePipe " + PureGrammarComposerUtility.convertPath(persistencePipe.getPath()) + "\n" +
-        "{\n" +
-        getTabString() + "doc: " + convertString(persistencePipe.documentation, true) + ";\n" +
-        (persistencePipe.owners.isEmpty() ? "" : getTabString() + HelperPersistenceGrammarComposer.renderOwners(persistencePipe.owners)) +
-        getTabString() + "trigger: " + persistencePipe.trigger.getClass().getSimpleName() + ";\n" +
-        getTabString() + HelperPersistenceGrammarComposer.renderReader(persistencePipe.reader, context) +
-        getTabString() + HelperPersistenceGrammarComposer.renderPersister(persistencePipe.persister, context) +
-        "}";
+        int indentLevel = 1;
+        return HelperPersistenceGrammarComposer.renderPipe(persistencePipe, context, indentLevel);
     }
 }
