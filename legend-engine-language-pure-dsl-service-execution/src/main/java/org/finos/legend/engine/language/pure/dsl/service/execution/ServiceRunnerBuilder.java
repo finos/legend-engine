@@ -42,7 +42,7 @@ public class ServiceRunnerBuilder
         return this;
     }
 
-    public ServiceRunnerBuilder withStoreExecutorConfigurations(StoreExecutorConfiguration ...storeExecutorConfiguratiTestons)
+    public ServiceRunnerBuilder withStoreExecutorConfigurations(StoreExecutorConfiguration ...storeExecutorConfigurations)
     {
         this.storeExecutorConfigurations = storeExecutorConfigurations;
         return this;
