@@ -37,7 +37,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "            partitionProperties: [test::InnerClass1->propertyA, test::InnerClass1->propertyB];\n" +
                 "            deduplicationStrategy: MaxVersion\n" +
                 "            {\n" +
-                "              versionProperty: 'updateDateTime';\n" +
+                "              versionProperty: updateDateTime;\n" +
                 "            }\n" +
                 "            batchMode: UnitemporalDelta\n" +
                 "            {\n" +
@@ -60,7 +60,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "            {\n" +
                 "              mergeStrategy: DeleteIndicator\n" +
                 "              {\n" +
-                "                deleteProperty: 'deleted';\n" +
+                "                deleteProperty: deleted;\n" +
                 "                deleteValues: ['Y', '1', 'true'];\n" +
                 "              }\n" +
                 "              transactionMilestoning: DateTimeOnly\n" +

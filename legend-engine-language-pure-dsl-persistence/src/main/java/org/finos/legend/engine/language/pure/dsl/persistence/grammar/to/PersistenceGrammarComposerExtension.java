@@ -46,7 +46,6 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
 
     private static String renderPersistencePipe(PersistencePipe persistencePipe, PureGrammarComposerContext context)
     {
-        int indentLevel = 1;
-        return HelperPersistenceGrammarComposer.renderPipe(persistencePipe, indentLevel, context);
+        return HelperPersistenceGrammarComposer.renderPipe(persistencePipe, 1, context);
     }
 }
