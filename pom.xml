@@ -131,8 +131,8 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.49.0</legend.pure.version>
-        <legend.shared.version>0.18.0</legend.shared.version>
+        <legend.pure.version>1.50.0</legend.pure.version>
+        <legend.shared.version>0.19.0</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
