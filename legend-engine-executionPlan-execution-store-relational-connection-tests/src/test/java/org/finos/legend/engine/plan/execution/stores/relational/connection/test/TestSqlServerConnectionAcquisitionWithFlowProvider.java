@@ -14,10 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
+import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ReflectionUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
@@ -31,6 +32,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
@@ -54,8 +56,11 @@ public class TestSqlServerConnectionAcquisitionWithFlowProvider extends org.fino
     public void setup() throws Exception
     {
         startMSSQLServerContainer();
-        installFlowProvider();
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
+
+        LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+        assertStaticSQLServerFlowProviderIsAvailable(flowProvider);
+
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
 
         Properties properties = new Properties();
         properties.put("sqlServerAccount.user", "SA");
@@ -76,12 +81,15 @@ public class TestSqlServerConnectionAcquisitionWithFlowProvider extends org.fino
         }
     }
 
-    private void installFlowProvider() throws Exception
+    public void assertStaticSQLServerFlowProviderIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
-        ReflectionUtils.resetStaticField(DatabaseAuthenticationFlowProviderSelector.class, "INSTANCE");
-        DatabaseAuthenticationFlowProviderSelector.enableLegendDefaultFlowProvider();
-        boolean flowProviderPresent = DatabaseAuthenticationFlowProviderSelector.getProvider().isPresent();
-        assertTrue("Flow provider is not available", flowProviderPresent);
+        StaticDatasourceSpecification staticDatasourceSpecification = new StaticDatasourceSpecification();
+        UserNamePasswordAuthenticationStrategy authenticationStrategy = new UserNamePasswordAuthenticationStrategy();
+        RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(staticDatasourceSpecification, authenticationStrategy, DatabaseType.SqlServer);
+        relationalDatabaseConnection.type = DatabaseType.SqlServer;
+
+        Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
+        assertTrue("static SqlServer flow does not exist ", flow.isPresent());
     }
 
     @After

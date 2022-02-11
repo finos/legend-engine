@@ -14,12 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
-import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+
+import java.util.Optional;
 
 public class RelationalStoreState implements StoreState
 {
@@ -34,6 +37,11 @@ public class RelationalStoreState implements StoreState
     public RelationalStoreState(int port)
     {
         this(new TemporaryTestDbConfiguration(port), new RelationalExecutionConfiguration("/tmp/"));
+    }
+
+    public RelationalStoreState(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
+    {
+        this.relationalExecutor = new RelationalExecutor(temporarytestdb, relationalExecutionConfiguration, flowProviderHolder);
     }
 
     @Override

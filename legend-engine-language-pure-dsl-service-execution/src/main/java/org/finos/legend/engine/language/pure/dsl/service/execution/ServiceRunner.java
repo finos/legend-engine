@@ -49,6 +49,15 @@ public interface ServiceRunner
     PlanExecutorInfo getPlanExecutorInfo();
 
     /**
+     * Get the list of variables the service expects
+     * @return service variables
+     */
+    default List<ServiceVariable> getServiceVariables()
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    /**
      * Run the service and return the serialized result
      *
      * @param serviceRunnerInput service runner input wrapping parameters, connection input, identity, operational context etc.

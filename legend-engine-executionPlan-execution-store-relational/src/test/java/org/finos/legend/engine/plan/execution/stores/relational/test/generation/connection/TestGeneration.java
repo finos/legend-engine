@@ -17,6 +17,9 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.junit.Assert;
 import org.junit.Test;
+import net.javacrumbs.jsonunit.JsonMatchers;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 
 import java.io.StringWriter;
 import java.util.Collections;
@@ -321,11 +324,15 @@ public class TestGeneration
 
     private static void assertGeneratedStringEquals(String expected, String actual)
     {
-        Assert.assertEquals(normalizeLineBreaks(expected), normalizeLineBreaks(actual));
-    }
-
-    private static String normalizeLineBreaks(String string)
-    {
-        return string.replaceAll("\\R", "\n");
+        MatcherAssert.assertThat(actual,
+                CoreMatchers.allOf(
+                        JsonMatchers.jsonEquals(expected).whenIgnoringPaths("templateFunctions"),
+                        JsonMatchers.jsonPartMatches("templateFunctions", CoreMatchers.allOf(
+                                CoreMatchers.hasItem("<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>"),
+                                CoreMatchers.hasItem("<#function collectionSize collection> <#return collection?size?c> </#function>")
+                                )
+                        )
+                )
+        );
     }
 }

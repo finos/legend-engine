@@ -14,18 +14,22 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 
+import java.util.Optional;
+
 public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
 {
     private static final int DEFAULT_PORT = -1;
-    private static final String DEFAULT_TEMP_PATH = "/tmp/";
-
-    private TemporaryTestDbConfiguration testDbConfig;
-    private RelationalExecutionConfiguration relationalExecutionConfig;
+    public static final String DEFAULT_TEMP_PATH = "/tmp/";
 
     @Override
     public StoreType getStoreType()
@@ -36,31 +40,52 @@ public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
     @Override
     public RelationalStoreExecutor build()
     {
-        TemporaryTestDbConfiguration resolvedTestDbConfig = (this.testDbConfig == null) ? new TemporaryTestDbConfiguration(DEFAULT_PORT) : this.testDbConfig;
-        RelationalExecutionConfiguration resolvedRelationalExecutionConfig = (this.relationalExecutionConfig == null) ? new RelationalExecutionConfiguration(DEFAULT_TEMP_PATH) : this.relationalExecutionConfig;
-        RelationalStoreState state = new RelationalStoreState(resolvedTestDbConfig, resolvedRelationalExecutionConfig);
+        TemporaryTestDbConfiguration temporaryTestDbConfiguration = new TemporaryTestDbConfiguration(DEFAULT_PORT);
+        RelationalExecutionConfiguration relationalExecutionConfiguration = new RelationalExecutionConfiguration(DEFAULT_TEMP_PATH);
+        Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = this.configureDatabaseAuthenticationFlowProvider(relationalExecutionConfiguration);
+        RelationalStoreState state = new RelationalStoreState(temporaryTestDbConfiguration, relationalExecutionConfiguration, flowProviderHolder);
         return new RelationalStoreExecutor(state);
     }
 
-    public void setTemporaryTestDbConfiguration(TemporaryTestDbConfiguration testDbConfiguration)
-    {
-        this.testDbConfig = testDbConfiguration;
+    @Override
+    public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration) {
+        if (!(storeExecutorConfiguration instanceof RelationalExecutionConfiguration)) {
+            String message = String.format("Invalid argument. Expected %s but found %s", RelationalExecutionConfiguration.class.getCanonicalName(), storeExecutorConfiguration.getClass().getCanonicalName());
+            throw new RuntimeException(message);
+        }
+        RelationalExecutionConfiguration relationalExecutionConfiguration = (RelationalExecutionConfiguration) storeExecutorConfiguration;
+        if (relationalExecutionConfiguration.tempPath == null)
+        {
+            relationalExecutionConfiguration.tempPath = DEFAULT_TEMP_PATH;
+        }
+        if (relationalExecutionConfiguration.temporarytestdb == null)
+        {
+            relationalExecutionConfiguration.temporarytestdb =  new TemporaryTestDbConfiguration(DEFAULT_PORT);
+        }
+        Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = this.configureDatabaseAuthenticationFlowProvider(relationalExecutionConfiguration);
+        RelationalStoreState state = new RelationalStoreState(relationalExecutionConfiguration.temporarytestdb, relationalExecutionConfiguration, flowProviderHolder);
+        return new RelationalStoreExecutor(state);
     }
 
-    public RelationalStoreExecutorBuilder withTemporaryTestDbConfiguration(TemporaryTestDbConfiguration testDbConfiguration)
+    private Optional<DatabaseAuthenticationFlowProvider> configureDatabaseAuthenticationFlowProvider(RelationalExecutionConfiguration relationalExecutionConfig)
     {
-        setTemporaryTestDbConfiguration(testDbConfiguration);
-        return this;
-    }
-
-    public void setRelationalExecutionConfiguration(RelationalExecutionConfiguration relationalExecutionConfig)
-    {
-        this.relationalExecutionConfig = relationalExecutionConfig;
-    }
-
-    public RelationalStoreExecutorBuilder withRelationalExecutionConfiguration(RelationalExecutionConfiguration relationalExecutionConfig)
-    {
-        setRelationalExecutionConfiguration(relationalExecutionConfig);
-        return this;
+        if (relationalExecutionConfig == null)
+        {
+            return Optional.empty();
+        }
+        Class<? extends DatabaseAuthenticationFlowProvider> flowProviderClass = relationalExecutionConfig.getFlowProviderClass();
+        DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = relationalExecutionConfig.getFlowProviderConfiguration();
+        if (flowProviderClass == null)
+        {
+            // TODO : Implement more strict validation when the flow provider feature is fully rolled out
+            return Optional.empty();
+        }
+        Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = DatabaseAuthenticationFlowProviderSelector.getProvider(flowProviderClass.getCanonicalName());
+        DatabaseAuthenticationFlowProvider flowProvider = flowProviderHolder.orElseThrow(() -> new RuntimeException(String.format("Database authentication provider not found in the classpath. Provider class-%s", flowProviderClass.getCanonicalName())));
+        if (flowProviderConfiguration != null)
+        {
+            flowProvider.configure(flowProviderConfiguration);
+        }
+        return Optional.of(flowProvider);
     }
 }

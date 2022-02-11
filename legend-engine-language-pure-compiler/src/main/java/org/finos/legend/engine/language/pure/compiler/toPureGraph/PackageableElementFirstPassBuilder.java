@@ -95,6 +95,8 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Class _class)
     {
+        System.out.println(_class._package);
+        System.out.println(_class.name);
         String fullPath = this.context.pureModel.buildPackageString(_class._package, _class.name);
         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass = new Root_meta_pure_metamodel_type_Class_Impl<>(_class.name, SourceInformationHelper.toM3SourceInformation(_class.sourceInformation), null);
         this.context.pureModel.typesIndex.put(fullPath, targetClass);

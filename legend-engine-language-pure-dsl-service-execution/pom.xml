@@ -19,19 +19,13 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.55.1-SNAPSHOT</version>
+        <version>2.57.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-pure-dsl-service-execution</artifactId>
     <name>Legend Engine - Language Pure - DSL Service - Execution</name>
 
     <dependencies>
-        <!-- LEGEND SHARED -->
-        <dependency>
-            <groupId>org.finos.legend.shared</groupId>
-            <artifactId>legend-shared-pac4j-kerberos</artifactId>
-        </dependency>
-        <!-- LEGEND SHARED -->
 
         <!-- LEGEND ENGINE -->
         <dependency>
@@ -48,6 +42,13 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-execution</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-execution-store-authentication</artifactId>
+        </dependency>
+
+
         <!-- LEGEND ENGINE -->
 
         <!-- JACKSON -->
@@ -75,6 +76,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -114,12 +120,17 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-store-inMemory</artifactId>
+            <artifactId>legend-engine-executionPlan-execution-store-relational</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-store-relational</artifactId>
+            <artifactId>legend-engine-executionPlan-execution-external-store-service</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-execution-store-inMemory</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

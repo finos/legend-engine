@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.HikariPoolMXBean;
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
@@ -147,12 +146,19 @@ public class ConnectionStateManagerPOJO
             this.totalConnections = totalConnections;
         }
 
-        public void addPoolStats(DataSource dataSource) {
-            HikariPoolMXBean mxBean =((HikariDataSource) dataSource).getHikariPoolMXBean();
-            this.activeConnections +=mxBean.getActiveConnections();
-            this.idleConnections += mxBean.getIdleConnections();
-            this.threadsAwaitingConnection +=mxBean.getThreadsAwaitingConnection();
-            this.totalConnections +=mxBean.getTotalConnections();
+        public void addPoolStats(DataSource dataSource)
+        {
+            if (dataSource != null)
+            {
+                HikariPoolMXBean mxBean = ((HikariDataSource)dataSource).getHikariPoolMXBean();
+                if (mxBean != null)
+                {
+                    this.activeConnections += mxBean.getActiveConnections();
+                    this.idleConnections += mxBean.getIdleConnections();
+                    this.threadsAwaitingConnection += mxBean.getThreadsAwaitingConnection();
+                    this.totalConnections += mxBean.getTotalConnections();
+                }
+            }
         }
     }
 

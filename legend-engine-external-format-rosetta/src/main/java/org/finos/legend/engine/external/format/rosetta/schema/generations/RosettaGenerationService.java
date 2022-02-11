@@ -47,7 +47,7 @@ import javax.ws.rs.core.Response;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Generation - Schema")
+@Api(tags = "Z - Deprecated - Generation - Schema")
 @Path("pure/v1/schemaGeneration")
 @Produces(MediaType.APPLICATION_JSON)
 public class RosettaGenerationService

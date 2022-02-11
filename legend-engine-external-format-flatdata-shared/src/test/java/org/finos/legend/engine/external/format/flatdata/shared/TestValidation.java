@@ -353,5 +353,45 @@ public class TestValidation extends AbstractValidationTest
                      "}",
              "Invalid address for 'Heading' (Expected column number) in section 'sectionName'"
         );
+
+        test("section default: FixedWidth\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator : '\\r\\n';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    FIRM          {1:2}   : STRING;\n" +
+                        "    AGE           {3:4}   : INTEGER;\n" +
+                        "    MASTER        {5:5}   : INTEGER(optional);\n" +
+                        "    WEIGHT        {6:8}   : STRING(optional);\n" +
+                        "    NAME          {9:12}  : STRING;\n" +
+                        "    EMPLOYED_DATE {13:22} : DATE(format='yyyy-MM-dd');\n" +
+                        "    TITLE         {23:24} : STRING;\n" +
+                        "  }\n" +
+                        "}"
+        );
+
+        test("section default: FixedWidth\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator : '\\r\\n';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    FIRM          {A:2} : STRING;\n" +
+                        "    AGE           {3,4} : INTEGER;\n" +
+                        "    MASTER        {5:5} : INTEGER(optional);\n" +
+                        "    WEIGHT        {6:8} : STRING(optional);\n" +
+                        "    NAME          {9:12} : STRING;\n" +
+                        "    EMPLOYED_DATE {13:22} : DATE(format='yyyy-MM-dd');\n" +
+                        "    TITLE         {23:24} : STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid address for 'FIRM' (Expected start:end column numbers) in section 'default'",
+                "Invalid address for 'AGE' (Expected start:end column numbers) in section 'default'"
+        );
+
+
     }
 }

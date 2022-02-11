@@ -15,12 +15,16 @@
 package org.finos.legend.engine.shared.core.identity.factory;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 import javax.security.auth.Subject;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
@@ -82,5 +86,21 @@ public final class DefaultIdentityFactory implements IdentityFactory
     public Identity makeIdentityForTesting(String name)
     {
         return new Identity(name);
+    }
+
+    @Override
+    public List<CommonProfile> adapt(Identity identity)
+    {
+        MutableList<CommonProfile> profiles = Lists.mutable.empty();
+        ImmutableList<Credential> credentials = identity.getCredentials();
+        for (Credential credential : credentials)
+        {
+            if (credential instanceof LegendKerberosCredential)
+            {
+                LegendKerberosCredential kerberosCredential = (LegendKerberosCredential) credential;
+                profiles.add(new KerberosProfile(kerberosCredential.getSubject(), null));
+            }
+        }
+        return profiles;
     }
 }

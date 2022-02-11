@@ -14,21 +14,23 @@
 
 package org.finos.legend.engine.language.graphQL.grammar.from;
 
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.graphQL.grammar.from.antlr4.GraphQLLexer;
 import org.finos.legend.engine.language.graphQL.grammar.from.antlr4.GraphQLParser;
-import org.finos.legend.engine.protocol.graphQL.Definition;
-import org.finos.legend.engine.protocol.graphQL.Document;
-import org.finos.legend.engine.protocol.graphQL.ExecutableDocument;
-import org.finos.legend.engine.protocol.graphQL.executable.*;
-import org.finos.legend.engine.protocol.graphQL.typeSystem.*;
-import org.finos.legend.engine.protocol.graphQL.value.*;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
+import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.*;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.*;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.*;
 
+import java.util.BitSet;
 import java.util.Collections;
 
 public class GraphQLGrammarParser
@@ -49,12 +51,80 @@ public class GraphQLGrammarParser
 
     private Document parse(String code)
     {
-        BaseErrorListener errorListener = new BaseErrorListener();
+        ANTLRErrorListener errorListener = new BaseErrorListener()
+        {
+            @Override
+            public void syntaxError(            Recognizer<?, ?> recognizer,
+                                                Object offendingSymbol,
+                                                int line,
+                                                int charPositionInLine,
+                                                String msg,
+                                                RecognitionException e)
+            {
+                if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
+                {
+                    msg = "Unexpected token";
+                }
+                else if (e == null || e.getOffendingToken() == null)
+                {
+                    if (e == null && offendingSymbol instanceof Token && (msg.startsWith("extraneous input") || msg.startsWith("missing ")))
+                    {
+                        // when ANTLR detects unwanted symbol, it will not result in an error, but throw
+                        // `null` with a message like "extraneous input ... expecting ..."
+                        // NOTE: this is caused by us having INVALID catch-all symbol in the lexer
+                        // so anytime, INVALID token is found, it should cause this error
+                        // but because it is a catch-all rule, it only produces a lexer token, which is a symbol
+                        // we have to construct the source information manually
+                        SourceInformation sourceInformation = new SourceInformation(
+                                "",
+                                line,
+                                charPositionInLine + 1 ,
+                                line,
+                                charPositionInLine + 1 + ((Token) offendingSymbol).getStopIndex() - ((Token) offendingSymbol).getStartIndex());
+                        // NOTE: for some reason sometimes ANTLR report the end index of the token to be smaller than the start index so we must reprocess it here
+                        sourceInformation.startColumn = Math.min(sourceInformation.endColumn, sourceInformation.startColumn);
+                        msg = "Unexpected token";
+                        throw new GraphQLParserException(msg, sourceInformation);
+                    }
+                    SourceInformation sourceInformation = new SourceInformation(
+                            "",
+                            line,
+                            charPositionInLine + 1,
+                            line,
+                            charPositionInLine + 1);
+                    throw new GraphQLParserException(msg, sourceInformation);
+                }
+                Token offendingToken = e.getOffendingToken();
+                SourceInformation sourceInformation = new SourceInformation(
+                        "",
+                        line,
+                        charPositionInLine + 1 ,
+                        offendingToken.getLine(),
+                        charPositionInLine + offendingToken.getText().length());
+                throw new GraphQLParserException(msg, sourceInformation);
+            }
+
+            @Override
+            public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet)
+            {
+            }
+
+            @Override
+            public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitSet, ATNConfigSet atnConfigSet)
+            {
+            }
+
+            @Override
+            public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atnConfigSet)
+            {
+            }
+        };
         GraphQLLexer lexer = new GraphQLLexer(CharStreams.fromString(code));
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
         GraphQLParser parser = new GraphQLParser(new CommonTokenStream(lexer));
         parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
         return visitDocument(parser.document());
     }
 
@@ -182,8 +252,8 @@ public class GraphQLGrammarParser
     private OperationDefinition visitTypeOperationDefinition(GraphQLParser.OperationDefinitionContext operationDefinitionContext)
     {
         OperationDefinition operationDefinition = new OperationDefinition();
-        operationDefinition.name = operationDefinitionContext.name().getText();
-        operationDefinition.type = OperationType.valueOf(operationDefinitionContext.operationType().getText());
+        operationDefinition.name = operationDefinitionContext.name() == null ? null : operationDefinitionContext.name().getText();
+        operationDefinition.type = operationDefinitionContext.operationType() == null ? null : OperationType.valueOf(operationDefinitionContext.operationType().getText());
         operationDefinition.variables = operationDefinitionContext.variableDefinitions() == null ? Lists.mutable.empty() : ListIterate.collect(operationDefinitionContext.variableDefinitions().variableDefinition(), this::visitVariableDefinition);
         operationDefinition.selectionSet = ListIterate.collect(operationDefinitionContext.selectionSet().selection(), this::visitSelectionSet);
         return operationDefinition;
@@ -235,7 +305,7 @@ public class GraphQLGrammarParser
     {
         ObjectTypeDefinition objectTypeDefinition = new ObjectTypeDefinition();
         objectTypeDefinition.name = objectTypeDefinitionContext.name().getText();
-        objectTypeDefinition.fields = ListIterate.collect(objectTypeDefinitionContext.fieldsDefinition().fieldDefinition(), this::visitFieldsDefinitionContext);
+        objectTypeDefinition.fields = objectTypeDefinitionContext.fieldsDefinition() == null ? Collections.emptyList() : ListIterate.collect(objectTypeDefinitionContext.fieldsDefinition().fieldDefinition(), this::visitFieldsDefinitionContext);
         objectTypeDefinition._implements = visitImplementInterface(objectTypeDefinitionContext.implementsInterfaces(), Lists.mutable.empty()).reverseThis();
         return objectTypeDefinition;
     }

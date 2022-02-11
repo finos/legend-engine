@@ -28,7 +28,6 @@ public class TestDatabaseAuthenticationFlowProviderSelector
     @Before
     public void setup() throws NoSuchFieldException, IllegalAccessException
     {
-        DatabaseAuthenticationFlowProviderSelector.disableFlowProvider();
         this.resetFlowProviderSelectorSingletonState();
     }
 
@@ -49,8 +48,7 @@ public class TestDatabaseAuthenticationFlowProviderSelector
     @Test
     public void explicitlyLoadFlowProvider()
     {
-        System.setProperty(DatabaseAuthenticationFlowProviderSelector.DATABASE_AUTH_FLOW_PROVIDER_IMPL_CLASS, LegendDefaultDatabaseAuthenticationFlowProvider.class.getCanonicalName());
-        Optional<DatabaseAuthenticationFlowProvider> providerHolder = DatabaseAuthenticationFlowProviderSelector.getProvider();
+        Optional<DatabaseAuthenticationFlowProvider> providerHolder = DatabaseAuthenticationFlowProviderSelector.getProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class.getCanonicalName());
         assertTrue(providerHolder.get() instanceof LegendDefaultDatabaseAuthenticationFlowProvider);
     }
 
@@ -59,8 +57,7 @@ public class TestDatabaseAuthenticationFlowProviderSelector
     {
         try
         {
-            System.setProperty(DatabaseAuthenticationFlowProviderSelector.DATABASE_AUTH_FLOW_PROVIDER_IMPL_CLASS, "some.ramdom.class." + System.nanoTime());
-            Optional<DatabaseAuthenticationFlowProvider> providerHolder = DatabaseAuthenticationFlowProviderSelector.getProvider();
+            DatabaseAuthenticationFlowProviderSelector.getProvider("some.ramdom.class." + System.nanoTime());
             fail("Failed to throw exception for missing flow provider");
         }
         catch (RuntimeException e)

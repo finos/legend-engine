@@ -105,7 +105,7 @@ public class ServiceStoreTestUtils
         Map<String, Result> vars = org.eclipse.collections.impl.factory.Maps.mutable.ofInitialCapacity(params.size());
         params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
 
-        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)), null);
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)), null);
         return result.flush(new JsonStreamToJsonDefaultSerializer(result));
     }
 }

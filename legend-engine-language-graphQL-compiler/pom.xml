@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.55.1-SNAPSHOT</version>
+        <version>2.57.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -33,27 +33,45 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>Generate translator for metamodel</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>java</goal>
                         </goals>
+                        <configuration>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateTranslator</mainClass>
+                            <arguments>
+                                <argument>meta::external::query::graphQL::metamodel</argument>
+                                <argument>org.finos.legend.engine.protocol.graphQL.metamodel</argument>
+                                <argument>${project.build.directory}/generated-sources/</argument>
+                            </arguments>
+                            <classpathScope>test</classpathScope>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>Generate translator for introspection</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateTranslator</mainClass>
+                            <arguments>
+                                <argument>meta::external::query::graphQL::introspection::model</argument>
+                                <argument>org.finos.legend.engine.protocol.graphQL.introspection.model</argument>
+                                <argument>${project.build.directory}/generated-sources/</argument>
+                            </arguments>
+                            <classpathScope>test</classpathScope>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <includePluginDependencies>true</includePluginDependencies>
-                    <mainClass>org.finos.legend.engine.protocol.generation.GenerateTranslator</mainClass>
-                    <arguments>
-                        <argument>meta::external::query::graphQL::metamodel</argument>
-                        <argument>org.finos.legend.engine.protocol.graphQL</argument>
-                        <argument>${project.build.directory}/generated-sources/</argument>
-                    </arguments>
-                    <classpathScope>test</classpathScope>
-                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-protocol-generation</artifactId>
-                        <version>2.55.1-SNAPSHOT</version>
+                        <version>2.57.1-SNAPSHOT</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -130,6 +148,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

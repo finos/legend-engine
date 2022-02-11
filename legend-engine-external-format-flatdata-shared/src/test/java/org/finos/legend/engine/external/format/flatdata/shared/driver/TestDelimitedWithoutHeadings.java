@@ -55,9 +55,7 @@ public class TestDelimitedWithoutHeadings extends AbstractDriverTest
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, data);
-
         records.forEach(this::assertNoDefects);
-
 
         List<ExpectedRecordValue> expectedRecordValues1 = Arrays.asList(
                 rValue(1L, "'Goldman Sachs'"),

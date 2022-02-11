@@ -19,6 +19,7 @@ import freemarker.template.Template;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import org.checkerframework.checker.nullness.Opt;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
@@ -27,6 +28,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeClassResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
@@ -66,6 +68,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 
@@ -94,9 +97,17 @@ public class RelationalExecutor
 
     }
 
+    private Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder;
+
     public RelationalExecutor(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration)
     {
-        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles);
+        this(temporarytestdb, relationalExecutionConfiguration, Optional.empty());
+    }
+
+    public RelationalExecutor(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
+    {
+        this.flowProviderHolder = flowProviderHolder;
+        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, flowProviderHolder);
         this.relationalExecutionConfiguration = relationalExecutionConfiguration;
         this.resultInterpreterExtensions = Iterate.addAllTo(ServiceLoader.load(ResultInterpreterExtension.class), Lists.mutable.empty()).collect(ResultInterpreterExtension::additionalResultBuilder);
     }
@@ -274,10 +285,10 @@ public class RelationalExecutor
         }
         catch (Exception e)
         {
-            LOGGER.info("Exception while reprocessing SQL Query. Detail: " + e.getMessage() + ".");
+            throw new IllegalStateException("Reprocessing sql failed with vars " + executionState.getResults().keySet(), e);
         }
 
-        LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_REPROCESS_SQL, "Reprocessing sql with vars [" + executionState.getResults().keySet() + "]: " + sqlQuery).toString());
+        LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_REPROCESS_SQL, "Reprocessing sql with vars " + executionState.getResults().keySet() + ": " + sqlQuery).toString());
 
         executionState.activities.add(new RelationalExecutionActivity(sqlQuery));
     }

@@ -34,7 +34,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -172,5 +174,15 @@ public class PureGrammarParser
         section.parserName = parserName;
         section.sourceInformation = sectionSourceInformation;
         return section;
+    }
+
+    public RootGraphFetchTree parseGraphFetch(String input, String s, boolean returnSourceInfo)
+    {
+        return new DomainParser().parseGraphFetch(input, s, returnSourceInfo);
+    }
+
+    public ValueSpecification parseValueSpecification(String input, String s, boolean returnSourceInfo)
+    {
+        return new DomainParser().parseValueSpecification(input, s, returnSourceInfo);
     }
 }

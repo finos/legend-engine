@@ -40,4 +40,9 @@ public class IdentityState
     public int hashCode() {
         return Objects.hash(credentialSupplier, identity);
     }
+
+    public boolean isValid()
+    {
+        return identity.hasValidCredentials();
+    }
 }

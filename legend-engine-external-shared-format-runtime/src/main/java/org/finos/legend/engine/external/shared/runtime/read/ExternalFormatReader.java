@@ -54,7 +54,7 @@ public abstract class ExternalFormatReader<T> implements Iterator<IChecked<T>>
                 throw new IllegalStateException("Data unavailable for more than 5 minutes");
             }
             // busy wait because there's no time out variant of peek
-            sleep(100);
+            sleep();
         }
         return !queue.isEmpty();
     }
@@ -121,11 +121,11 @@ public abstract class ExternalFormatReader<T> implements Iterator<IChecked<T>>
         }
     }
 
-    private void sleep(int ms)
+    private void sleep()
     {
         try
         {
-            Thread.sleep(ms);
+            Thread.sleep(0, 5);
         }
         catch (InterruptedException e)
         {

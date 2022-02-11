@@ -73,15 +73,15 @@ public class DiagramGrammarComposerExtension implements PureGrammarComposerExten
     {
         StringBuilder builder = new StringBuilder();
         builder.append("Diagram").append(" ").append(PureGrammarComposerUtility.convertPath(diagram.getPath())).append("\n{\n");
-        if (!diagram.classViews.isEmpty())
+        if (diagram.classViews != null && !diagram.classViews.isEmpty())
         {
             builder.append(LazyIterate.collect(diagram.classViews, DiagramGrammarComposerExtension::renderClassView).makeString(""));
         }
-        if (!diagram.propertyViews.isEmpty())
+        if (diagram.propertyViews != null && !diagram.propertyViews.isEmpty())
         {
             builder.append(LazyIterate.collect(diagram.propertyViews, DiagramGrammarComposerExtension::renderPropertyView).makeString(""));
         }
-        if (!diagram.generalizationViews.isEmpty())
+        if (diagram.generalizationViews != null && !diagram.generalizationViews.isEmpty())
         {
             builder.append(LazyIterate.collect(diagram.generalizationViews, DiagramGrammarComposerExtension::renderGeneralizationView).makeString(""));
         }
