@@ -201,7 +201,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "target: GroupedFlat\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "modelClass: " + val.modelClassPath + ";\n" +
+                    getTabString(indentLevel + 1) + "modelClass: " + val.modelClass + ";\n" +
                     getTabString(indentLevel + 1) + "transactionScope: " + val.transactionScope + ";\n" +
                     getTabString(indentLevel + 1) + "components:\n" +
                     getTabString(indentLevel + 1) + "[\n" +
@@ -225,7 +225,7 @@ public class HelperPersistenceGrammarComposer
             return getTabString(indentLevel) + "target: Nested\n" +
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "targetName: " + convertString(val.targetName, true) + ";\n" +
-                    getTabString(indentLevel + 1) + "modelClass: " + val.modelClassPath + ";\n" +
+                    getTabString(indentLevel + 1) + "modelClass: " + val.modelClass + ";\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -243,7 +243,7 @@ public class HelperPersistenceGrammarComposer
 
         private static String renderComponentProperties(PropertyAndFlatTargetSpecification component, int indentLevel)
         {
-            return getTabString(indentLevel) + "property: " + component.propertyPath + ";\n" +
+            return getTabString(indentLevel) + "property: " + component.property + ";\n" +
                     getTabString(indentLevel) + "targetSpecification:\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderFlatTargetProperties(component.targetSpecification,false, indentLevel + 1) +
@@ -253,7 +253,7 @@ public class HelperPersistenceGrammarComposer
         private static String renderFlatTargetProperties(FlatTargetSpecification flatTarget, boolean includeModelClass, int indentLevel)
         {
             return getTabString(indentLevel) + "targetName: " + convertString(flatTarget.targetName, true) + ";\n" +
-                    (includeModelClass ? getTabString(indentLevel) + "modelClass: " + flatTarget.modelClassPath + ";\n" : "") +
+                    (includeModelClass ? getTabString(indentLevel) + "modelClass: " + flatTarget.modelClass + ";\n" : "") +
                     renderPartitionProperties(flatTarget, indentLevel) +
                     renderDeduplicationStrategy(flatTarget.deduplicationStrategy, indentLevel) +
                     renderBatchMode(flatTarget.milestoningMode, indentLevel);

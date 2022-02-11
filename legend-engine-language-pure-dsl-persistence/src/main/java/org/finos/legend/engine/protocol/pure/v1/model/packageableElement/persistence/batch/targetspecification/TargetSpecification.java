@@ -13,7 +13,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 public abstract class TargetSpecification
 {
     public String targetName;
-    public String modelClassPath;
+    public String modelClass;
     public SourceInformation sourceInformation;
 
     public abstract <T> T accept(TargetSpecificationVisitor<T> visitor);

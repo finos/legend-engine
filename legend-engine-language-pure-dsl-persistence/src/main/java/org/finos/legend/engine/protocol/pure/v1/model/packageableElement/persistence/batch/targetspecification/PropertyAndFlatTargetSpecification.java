@@ -4,7 +4,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 public class PropertyAndFlatTargetSpecification
 {
-    public String propertyPath;
+    public String property;
     public FlatTargetSpecification targetSpecification;
     public SourceInformation sourceInformation;
 }

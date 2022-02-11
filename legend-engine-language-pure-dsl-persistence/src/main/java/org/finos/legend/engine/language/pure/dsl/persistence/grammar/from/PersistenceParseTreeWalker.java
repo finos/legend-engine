@@ -185,7 +185,7 @@ public class PersistenceParseTreeWalker
 
         // model class
         PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
-        targetSpecification.modelClassPath = visitModelClass(targetModelClassContext);
+        targetSpecification.modelClass = visitModelClass(targetModelClassContext);
 
         // transaction scope
         PersistenceParserGrammar.TargetTransactionScopeContext targetTransactionScopeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetTransactionScope(), "transactionScope", targetSpecification.sourceInformation);
@@ -204,7 +204,7 @@ public class PersistenceParseTreeWalker
 
         // model class
         PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
-        targetSpecification.modelClassPath = visitModelClass(targetModelClassContext);
+        targetSpecification.modelClass = visitModelClass(targetModelClassContext);
 
         return targetSpecification;
     }
@@ -244,7 +244,7 @@ public class PersistenceParseTreeWalker
 
         // model class
         PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
-        targetSpecification.modelClassPath = visitModelClass(targetModelClassContext);
+        targetSpecification.modelClass = visitModelClass(targetModelClassContext);
 
         return targetSpecification;
     }
@@ -280,7 +280,7 @@ public class PersistenceParseTreeWalker
 
         // property
         PersistenceParserGrammar.TargetComponentPropertyContext targetComponentPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponentProperty(), "property", propertyAndFlatTargetSpecification.sourceInformation);
-        propertyAndFlatTargetSpecification.propertyPath = PureGrammarParserUtility.fromIdentifier(targetComponentPropertyContext.identifier());
+        propertyAndFlatTargetSpecification.property = PureGrammarParserUtility.fromIdentifier(targetComponentPropertyContext.identifier());
 
         // target specification (note: not expecting a model class in this context; compiler will populate based on target type of property above)
         PersistenceParserGrammar.TargetComponentTargetSpecificationContext targetComponentTargetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponentTargetSpecification(), "targetSpecification", propertyAndFlatTargetSpecification.sourceInformation);

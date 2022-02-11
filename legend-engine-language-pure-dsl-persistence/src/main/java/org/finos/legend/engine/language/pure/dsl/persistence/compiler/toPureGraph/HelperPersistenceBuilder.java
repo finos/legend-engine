@@ -76,7 +76,7 @@ public class HelperPersistenceBuilder
     public static Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification buildTargetSpecification(TargetSpecification specification, CompileContext context)
     {
         String targetName = specification.targetName;
-        Class<?> modelClass = context.resolveClass(specification.modelClassPath, specification.sourceInformation);
+        Class<?> modelClass = context.resolveClass(specification.modelClass, specification.sourceInformation);
 
         return specification.accept(new TargetSpecificationBuilder(targetName, modelClass, context));
     }
@@ -232,9 +232,9 @@ public class HelperPersistenceBuilder
 
         private Root_meta_pure_persistence_metamodel_batch_targetspecification_PropertyAndFlatTargetSpecification resolveComponent(PropertyAndFlatTargetSpecification specification, Class<?> modelClass, CompileContext context)
         {
-            Property<?, ?> property = validateAndResolveProperty(modelClass, specification.propertyPath, specification.sourceInformation, context);
+            Property<?, ?> property = validateAndResolveProperty(modelClass, specification.property, specification.sourceInformation, context);
             Type targetType = property._genericType()._rawType();
-            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target component property must refer to a Class. The property '%s' refers to a %s", specification.propertyPath, targetType._name()), specification.sourceInformation, EngineErrorType.COMPILATION);
+            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target component property must refer to a Class. The property '%s' refers to a %s", specification.property, targetType._name()), specification.sourceInformation, EngineErrorType.COMPILATION);
 
             return new Root_meta_pure_persistence_metamodel_batch_targetspecification_PropertyAndFlatTargetSpecification_Impl("")
                     ._property(property)
