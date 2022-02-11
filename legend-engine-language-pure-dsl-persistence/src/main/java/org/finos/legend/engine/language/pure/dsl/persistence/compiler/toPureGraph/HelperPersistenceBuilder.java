@@ -48,7 +48,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 public class HelperPersistenceBuilder
 {
     private static final String PERSIST_PACKAGE_PREFIX = "meta::pure::persistence::metamodel";
-    private static final String PROPERTY_LITERAL = "->";
 
     private static final TriggerBuilder TRIGGER_BUILDER = new TriggerBuilder();
     private static final AuditingBuilder AUDITING_BUILDER = new AuditingBuilder();
@@ -119,16 +118,10 @@ public class HelperPersistenceBuilder
 
     // helper methods
 
-    private static Property<?, ?> validateAndResolveProperty(Class<?> modelClass, String propertyPath, SourceInformation sourceInformation, CompileContext context)
+    private static Property<?, ?> validateAndResolveProperty(Class<?> modelClass, String propertyName, SourceInformation sourceInformation, CompileContext context)
     {
-        String classPath = propertyPath.substring(0, propertyPath.lastIndexOf(PROPERTY_LITERAL));
-        Class<?> resolvedClass = context.resolveClass(classPath);
-        Assert.assertTrue(resolvedClass == modelClass, () -> String.format("Target component property '%s' must be a property of class '%s::%s' in the grouped flat specification", propertyPath, modelClass._package(), modelClass._name()), sourceInformation, EngineErrorType.COMPILATION);
-
-        String propertyName = propertyPath.substring(propertyPath.lastIndexOf(PROPERTY_LITERAL) + PROPERTY_LITERAL.length());
         Property<?, ?> property = modelClass._properties().detect(p -> p._name().equals(propertyName));
-        Assert.assertTrue(property != null, () -> String.format("Target component property '%s::%s%s%s' cannot be resolved", modelClass._package(), modelClass._name(), PROPERTY_LITERAL, propertyName), sourceInformation, EngineErrorType.COMPILATION);
-
+        Assert.assertTrue(property != null, () -> String.format("Target component property '%s' must be a property of class '%s::%s' in the grouped flat specification", propertyName, modelClass._package(), modelClass._name()), sourceInformation, EngineErrorType.COMPILATION);
         return property;
     }
 
@@ -392,7 +385,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_batch_audit_Auditing visit(BatchDateTimeAuditing val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_audit_BatchDateTimeAuditing_Impl("")
-                    ._dateTimePropertyName(val.dateTimePropertyName);
+                    ._dateTimePropertyName(val.dateTimeFieldName);
         }
 
         @Override

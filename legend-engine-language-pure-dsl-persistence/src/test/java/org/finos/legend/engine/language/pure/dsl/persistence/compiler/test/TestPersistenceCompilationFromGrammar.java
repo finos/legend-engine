@@ -184,7 +184,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      components:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: test::ServiceResult->property1;\n" +
+                "          property: property1;\n" +
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
@@ -254,7 +254,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      components:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: test::ServiceResult->property1;\n" +
+                "          property: property1;\n" +
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
@@ -268,7 +268,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [50:9-61:9]: Target component property 'test::ServiceResult->property1' cannot be resolved");
+                "}\n", "COMPILATION error at [50:9-61:9]: Target component property 'property1' must be a property of class 'test::ServiceResult' in the grouped flat specification");
     }
 
     @Test
@@ -327,7 +327,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      components:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: test::ServiceResult->property1;\n" +
+                "          property: property1;\n" +
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
@@ -341,7 +341,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [53:9-64:9]: Target component property must refer to a Class. The property 'test::ServiceResult->property1' refers to a String");
+                "}\n", "COMPILATION error at [53:9-64:9]: Target component property must refer to a Class. The property 'property1' refers to a String");
     }
 
     @Test
@@ -400,7 +400,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      components:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: test::ServiceResult->property1;\n" +
+                "          property: property1;\n" +
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +

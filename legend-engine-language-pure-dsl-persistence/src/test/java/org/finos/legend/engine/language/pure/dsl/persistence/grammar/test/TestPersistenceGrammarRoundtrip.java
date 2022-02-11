@@ -9,9 +9,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     public void testPipeline()
     {
         test("###Persistence\n" +
-                "\n" +
                 "import test::*;\n" +
-                "\n" +
                 "PersistencePipe test::TestPipe\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
@@ -30,11 +28,11 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "      components:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: test::WrapperClass->property1;\n" +
+                "          property: property1;\n" +
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            partitionProperties: [test::InnerClass1->propertyA, test::InnerClass1->propertyB];\n" +
+                "            partitionProperties: [propertyA, propertyB];\n" +
                 "            deduplicationStrategy: MaxVersion\n" +
                 "            {\n" +
                 "              versionProperty: updateDateTime;\n" +
@@ -44,14 +42,14 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "              mergeStrategy: NoDeletes;\n" +
                 "              transactionMilestoning: BatchIdOnly\n" +
                 "              {\n" +
-                "                batchIdInProperty: 'batchIdIn';\n" +
-                "                batchIdOutProperty: 'batchIdOut';\n" +
+                "                batchIdInFieldName: 'batchIdIn';\n" +
+                "                batchIdOutFieldName: 'batchIdOut';\n" +
                 "              }\n" +
                 "            }\n" +
                 "          }\n" +
                 "        },\n" +
                 "        {\n" +
-                "          property: test::WrapperClass->property2;\n" +
+                "          property: property2;\n" +
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
@@ -65,18 +63,18 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "              }\n" +
                 "              transactionMilestoning: DateTimeOnly\n" +
                 "              {\n" +
-                "                dateTimeInProperty: 'inZ';\n" +
-                "                dateTimeOutProperty: 'outZ';\n" +
+                "                dateTimeInFieldName: 'inZ';\n" +
+                "                dateTimeOutFieldName: 'outZ';\n" +
                 "              }\n" +
                 "              validityMilestoning: DateTime\n" +
                 "              {\n" +
-                "                dateTimeFromProperty: 'fromZ';\n" +
-                "                dateTimeThruProperty: 'thruZ';\n" +
+                "                dateTimeFromFieldName: 'fromZ';\n" +
+                "                dateTimeThruFieldName: 'thruZ';\n" +
                 "              }\n" +
                 "              validityDerivation: SourceSpecifiesFromAndThruDateTime\n" +
                 "              {\n" +
-                "                sourceDateTimeFromProperty: test::InnerClass2->businessDateFrom;\n" +
-                "                sourceDateTimeThruProperty: test::InnerClass2->businessDateThru;\n" +
+                "                sourceDateTimeFromProperty: businessDateFrom;\n" +
+                "                sourceDateTimeThruProperty: businessDateThru;\n" +
                 "              }\n" +
                 "            }\n" +
                 "          }\n" +

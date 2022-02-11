@@ -575,11 +575,30 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      components:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: test::WrapperClass->property1;\n" +
+                "          property: property1;\n" +
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            partitionProperties: [test::InnerClass1->propertyA, test::InnerClass1->propertyB];\n" +
+                "            partitionProperties: [propertyA, propertyB];\n" +
+                "            deduplicationStrategy: MaxVersion\n" +
+                "            {\n" +
+                "              versionProperty: 'updateDateTime';\n" +
+                "            }\n" +
+                "            batchMode: NonMilestonedSnapshot\n" +
+                "            {\n" +
+                "              auditing: BatchDateTime\n" +
+                "              {\n" +
+                "                batchDateTimeFieldName: 'updateDateTime';\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        },\n" +
+                "        {\n" +
+                "          property: property2;\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            partitionProperties: [propertyA, propertyB];\n" +
                 "            deduplicationStrategy: MaxVersion\n" +
                 "            {\n" +
                 "              versionProperty: 'updateDateTime';\n" +
@@ -589,18 +608,17 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "              mergeStrategy: NoDeletes;\n" +
                 "              transactionMilestoning: BatchIdOnly\n" +
                 "              {\n" +
-                "                batchIdInProperty: 'batchIdIn';\n" +
-                "                batchIdOutProperty: 'batchIdOut';\n" +
+                "                batchIdInFieldName: 'batchIdIn';\n" +
+                "                batchIdOutFieldName: 'batchIdOut';\n" +
                 "              }\n" +
                 "            }\n" +
                 "          }\n" +
                 "        },\n" +
                 "        {\n" +
-                "          property: test::WrapperClass->property2;\n" +
+                "          property: property3;\n" +
                 "          targetSpecification:\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
-                "            partitionProperties: [];\n" +
                 "            deduplicationStrategy: OpaqueDeduplication;\n" +
                 "            batchMode: BitemporalDelta\n" +
                 "            {\n" +
@@ -611,18 +629,18 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "              }\n" +
                 "              transactionMilestoning: DateTimeOnly\n" +
                 "              {\n" +
-                "                dateTimeInProperty: 'inZ';\n" +
-                "                dateTimeOutProperty: 'outZ';\n" +
+                "                dateTimeInFieldName: 'inZ';\n" +
+                "                dateTimeOutFieldName: 'outZ';\n" +
                 "              }\n" +
                 "              validityMilestoning: DateTime\n" +
                 "              {\n" +
-                "                dateTimeFromProperty: 'fromZ';\n" +
-                "                dateTimeThruProperty: 'thruZ';\n" +
+                "                dateTimeFromFieldName: 'fromZ';\n" +
+                "                dateTimeThruFieldName: 'thruZ';\n" +
                 "              }\n" +
                 "              validityDerivation: SourceSpecifiesFromAndThruDateTime\n" +
                 "              {\n" +
-                "                sourceDateTimeFromProperty: test::InnerClass2->businessDateFrom;\n" +
-                "                sourceDateTimeThruProperty: test::InnerClass2->businessDateThru;\n" +
+                "                sourceDateTimeFromProperty: businessDateFrom;\n" +
+                "                sourceDateTimeThruProperty: businessDateThru;\n" +
                 "              }\n" +
                 "            }\n" +
                 "          }\n" +

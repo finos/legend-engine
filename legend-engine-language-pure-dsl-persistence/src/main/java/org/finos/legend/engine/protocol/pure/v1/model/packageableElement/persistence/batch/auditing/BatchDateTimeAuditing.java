@@ -2,7 +2,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class BatchDateTimeAuditing extends Auditing
 {
-    public String dateTimePropertyName;
+    public String dateTimeFieldName;
 
     @Override
     public <T> T accept(AuditingVisitor<T> visitor)

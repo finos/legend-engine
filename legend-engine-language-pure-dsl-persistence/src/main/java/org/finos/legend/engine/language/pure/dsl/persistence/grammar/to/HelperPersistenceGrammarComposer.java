@@ -404,7 +404,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "auditing: BatchDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "dateTimePropertyName: " + val.dateTimePropertyName + ";\n" +
+                    getTabString(indentLevel + 1) + "batchDateTimeFieldName: '" + val.dateTimeFieldName + "';\n" +
                     getTabString(indentLevel) + "}\n";        }
 
         @Override
@@ -428,8 +428,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "transactionMilestoning: BatchIdOnly\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "batchIdInProperty: " + val.batchIdInName + ";\n" +
-                    getTabString(indentLevel + 1) + "batchIdOutProperty: " + val.batchIdOutName + ";\n" +
+                    getTabString(indentLevel + 1) + "batchIdInFieldName: '" + val.batchIdInName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdOutFieldName: '" + val.batchIdOutName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -438,8 +438,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "transactionMilestoning: DateTimeOnly\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "dateTimeInProperty: " + val.dateTimeInName + ";\n" +
-                    getTabString(indentLevel + 1) + "dateTimeOutProperty: " + val.dateTimeOutName + ";\n" +
+                    getTabString(indentLevel + 1) + "dateTimeInFieldName: '" + val.dateTimeInName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -448,10 +448,10 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "transactionMilestoning: BatchIdAndDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "batchIdInProperty: " + val.batchIdInName + ";\n" +
-                    getTabString(indentLevel + 1) + "batchIdOutProperty: " + val.batchIdOutName + ";\n" +
-                    getTabString(indentLevel + 1) + "dateTimeInProperty: " + val.dateTimeInName + ";\n" +
-                    getTabString(indentLevel + 1) + "dateTimeOutProperty: " + val.dateTimeOutName + ";\n" +
+                    getTabString(indentLevel + 1) + "batchIdInFieldName: '" + val.batchIdInName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdOutFieldName: '" + val.batchIdOutName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeInFieldName: '" + val.dateTimeInName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -476,8 +476,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "validityMilestoning: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "dateTimeFromProperty: " + val.dateTimeFromName + ";\n" +
-                    getTabString(indentLevel + 1) + "dateTimeThruProperty: " + val.dateTimeThruName + ";\n" +
+                    getTabString(indentLevel + 1) + "dateTimeFromFieldName: '" + val.dateTimeFromName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeThruFieldName: '" + val.dateTimeThruName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -510,7 +510,7 @@ public class HelperPersistenceGrammarComposer
         public String visit(SourceSpecifiesFromAndThruDateTime val)
         {
 
-            return getTabString(indentLevel) + "validityDerivation: SourceSpecifiesFromAndThruDate\n" +
+            return getTabString(indentLevel) + "validityDerivation: SourceSpecifiesFromAndThruDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "sourceDateTimeFromProperty: " + val.sourceDateTimeFromProperty + ";\n" +
                     getTabString(indentLevel + 1) + "sourceDateTimeThruProperty: " + val.sourceDateTimeThruProperty + ";\n" +

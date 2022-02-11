@@ -85,7 +85,7 @@ FILTER_DUPLICATES:                          'filterDuplicates';
 AUDITING:                                   'auditing';
 AUDITING_NONE:                              'NoAuditing';
 AUDITING_BATCH_DATE_TIME:                   'BatchDateTime';
-AUDITING_BATCH_DATE_TIME_PROPERTY:          'transactionDateTimePropertyName';
+AUDITING_BATCH_DATE_TIME_FIELD_NAME:        'batchDateTimeFieldName';
 AUDITING_OPAQUE:                            'OpaqueAuditing';
 
 TXN_MILESTONING:                            'transactionMilestoning';
@@ -93,16 +93,16 @@ TXN_MILESTONING_BATCH_ID:                   'BatchIdOnly';
 TXN_MILESTONING_DATE_TIME:                  'DateTimeOnly';
 TXN_MILESTONING_BOTH:                       'BatchIdAndDateTime';
 TXN_MILESTONING_OPAQUE:                     'OpaqueTransactionMilestoning';
-BATCH_ID_IN_PROPERTY:                       'batchIdInProperty';
-BATCH_ID_OUT_PROPERTY:                      'batchIdOutProperty';
-DATE_TIME_IN_PROPERTY:                      'dateTimeInProperty';
-DATE_TIME_OUT_PROPERTY:                     'dateTimeOutProperty';
+BATCH_ID_IN_FIELD_NAME:                     'batchIdInFieldName';
+BATCH_ID_OUT_FIELD_NAME:                    'batchIdOutFieldName';
+DATE_TIME_IN_FIELD_NAME:                    'dateTimeInFieldName';
+DATE_TIME_OUT_FIELD_NAME:                   'dateTimeOutFieldName';
 
 VALIDITY_MILESTONING:                       'validityMilestoning';
 VALIDITY_MILESTONING_DATE_TIME:             'DateTime';
 VALIDITY_MILESTONING_OPAQUE:                'OpaqueValidityMilestoning';
-DATE_TIME_FROM_PROPERTY:                    'dateTimeFromProperty';
-DATE_TIME_THRU_PROPERTY:                    'dateTimeThruProperty';
+DATE_TIME_FROM_FIELD_NAME:                  'dateTimeFromFieldName';
+DATE_TIME_THRU_FIELD_NAME:                  'dateTimeThruFieldName';
 
 VALIDITY_DERIVATION:                        'validityDerivation';
 VALIDITY_DERIVATION_SOURCE_FROM:            'SourceSpecifiesFromDateTime';
