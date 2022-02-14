@@ -18,6 +18,8 @@ import com.google.common.cache.CacheBuilder;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -29,6 +31,7 @@ import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKe
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -127,7 +130,15 @@ public class TestServiceRunner
     @Test
     public void testSimpleRelationalServiceExecution()
     {
-        SimpleRelationalServiceRunner simpleRelationalServiceRunner = new SimpleRelationalServiceRunner();
+        RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
+                .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
+                .build();
+
+        SimpleRelationalServiceRunner simpleRelationalServiceRunner = (SimpleRelationalServiceRunner)ServiceRunnerBuilder.newInstance()
+                .withServiceRunnerClass(SimpleRelationalServiceRunner.class.getCanonicalName())
+                .withAllowJavaCompilation(false)
+                .withStoreExecutorConfigurations(relationalExecutionConfiguration)
+                .build();
 
         ServiceRunnerInput serviceRunnerInput1 = ServiceRunnerInput
                 .newInstance()
@@ -358,20 +369,6 @@ public class TestServiceRunner
         }
     }
 
-    private static class SimpleRelationalServiceRunner extends AbstractServicePlanExecutor
-    {
-        SimpleRelationalServiceRunner()
-        {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetch"), true);
-        }
-
-        @Override
-        public List<ServiceVariable> getServiceVariables()
-        {
-            return Collections.singletonList(new ServiceVariable("ip", String.class, PURE_MANY));
-        }
-    }
-
     private static abstract class AbstractXStoreServiceRunner extends AbstractServicePlanExecutor
     {
         private final EngineJavaCompiler compiler;
@@ -448,7 +445,7 @@ public class TestServiceRunner
         }
     }
 
-    private static SingleExecutionPlan buildPlanForFetchFunction(String modelCodeResource, String fetchFunctionName)
+    public static SingleExecutionPlan buildPlanForFetchFunction(String modelCodeResource, String fetchFunctionName)
     {
         InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(TestServiceRunner.class.getResourceAsStream(modelCodeResource)));
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);

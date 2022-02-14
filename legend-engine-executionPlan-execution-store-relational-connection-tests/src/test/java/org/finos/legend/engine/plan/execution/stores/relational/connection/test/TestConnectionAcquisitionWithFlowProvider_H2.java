@@ -14,31 +14,28 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
-import java.sql.Connection;
-import java.util.Collections;
-import java.util.Optional;
-
-import javax.security.auth.Subject;
-
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.pac4j.core.profile.CommonProfile;
+
+import javax.security.auth.Subject;
+import java.sql.Connection;
+import java.util.Collections;
+import java.util.Optional;
+
 import static org.junit.Assert.assertTrue;
 
 public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTests
@@ -51,35 +48,20 @@ public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTest
     @Before
     public void setup()
     {
-        installFlowProvider();
-        assertStaticH2FlowIsAvailable();
-
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
+        LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+        assertStaticH2FlowIsAvailable(flowProvider);
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
     }
 
-    private void installFlowProvider()
-    {
-        DatabaseAuthenticationFlowProviderSelector.enableLegendDefaultFlowProvider();
-        boolean flowProviderPresent = DatabaseAuthenticationFlowProviderSelector.getProvider().isPresent();
-        assertTrue("Flow provider is not available", flowProviderPresent);
-    }
-
-    public void assertStaticH2FlowIsAvailable()
+    public void assertStaticH2FlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
         StaticDatasourceSpecification staticDatasourceSpecification = new StaticDatasourceSpecification();
         TestDatabaseAuthenticationStrategy testDatabaseAuthenticationStrategy = new TestDatabaseAuthenticationStrategy();
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(staticDatasourceSpecification, testDatabaseAuthenticationStrategy, DatabaseType.H2);
         relationalDatabaseConnection.type = DatabaseType.H2;
 
-        DatabaseAuthenticationFlowProvider flowProvider = DatabaseAuthenticationFlowProviderSelector.getProvider().get();
         Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
         assertTrue("static h2 flow does not exist ", flow.isPresent());
-    }
-
-    @After
-    public void cleanup()
-    {
-        DatabaseAuthenticationFlowProviderSelector.disableFlowProvider();
     }
 
     @Test

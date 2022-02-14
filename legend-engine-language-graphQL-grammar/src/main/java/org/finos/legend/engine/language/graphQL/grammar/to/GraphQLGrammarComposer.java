@@ -17,12 +17,12 @@ package org.finos.legend.engine.language.graphQL.grammar.to;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.protocol.graphQL.Definition;
-import org.finos.legend.engine.protocol.graphQL.DefinitionVisitor;
-import org.finos.legend.engine.protocol.graphQL.Document;
-import org.finos.legend.engine.protocol.graphQL.executable.*;
-import org.finos.legend.engine.protocol.graphQL.typeSystem.*;
-import org.finos.legend.engine.protocol.graphQL.value.*;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.*;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.*;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.*;
 
 import java.util.List;
 
@@ -103,7 +103,7 @@ public class GraphQLGrammarComposer
             @Override
             public String visit(OperationDefinition operationDefinition)
             {
-                return operationDefinition.type.name() + " " + operationDefinition.name + (operationDefinition.variables.isEmpty() ? "" : "(" + ListIterate.collect(operationDefinition.variables, v -> render(v)).makeString(", ") + ")") + " {\n" +
+                return (operationDefinition.type == null ? "": operationDefinition.type.name()) + " " + operationDefinition.name + (operationDefinition.variables.isEmpty() ? "" : "(" + ListIterate.collect(operationDefinition.variables, v -> render(v)).makeString(", ") + ")") + " {\n" +
                         renderSelectionSet(operationDefinition.selectionSet, "  ") +
                         "\n}";
             }

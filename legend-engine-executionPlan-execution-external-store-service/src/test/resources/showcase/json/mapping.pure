@@ -34,6 +34,14 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
             "trade.details" : $this.s_tradeDetails
          )
      )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByTraderDetailsService
+     (
+         ~paramMapping
+         (
+            "trader.details" : $this.s_traderDetails
+         )
+     )
   }
    
   *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore

@@ -20,19 +20,18 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 
 public class Relational
 {
-    public static StoreExecutor build(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration)
+    public static StoreExecutor build(RelationalExecutionConfiguration relationalExecutionConfiguration)
     {
-        return new RelationalStoreExecutorBuilder()
-                .withTemporaryTestDbConfiguration(temporarytestdb)
-                .withRelationalExecutionConfiguration(relationalExecutionConfiguration)
-                .build();
+        return new RelationalStoreExecutorBuilder().build(relationalExecutionConfiguration);
     }
 
     public static StoreExecutor build(int port)
     {
-        return new RelationalStoreExecutorBuilder()
+        RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
                 .withTemporaryTestDbConfiguration(new TemporaryTestDbConfiguration(port))
                 .build();
+
+        return new RelationalStoreExecutorBuilder().build(relationalExecutionConfiguration);
     }
 
     public static StoreExecutor build()

@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.grammar.from;
+package org.finos.legend.engine.authentication;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 
-public class ParserError
+public final class LegendDefaultDatabaseAuthenticationFlowProviderConfiguration extends DatabaseAuthenticationFlowProviderConfiguration
 {
-    public String message;
-    public SourceInformation sourceInformation;
-
-    public ParserError(String message, SourceInformation sourceInformation)
+    public LegendDefaultDatabaseAuthenticationFlowProviderConfiguration()
     {
-        this.message = message;
-        this.sourceInformation = sourceInformation;
+
     }
 }

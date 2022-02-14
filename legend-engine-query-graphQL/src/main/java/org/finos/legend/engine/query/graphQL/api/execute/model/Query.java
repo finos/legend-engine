@@ -1,4 +1,4 @@
-package org.finos.legend.engine.query.graphQL.api.model;
+package org.finos.legend.engine.query.graphQL.api.execute.model;
 
 public class Query
 {

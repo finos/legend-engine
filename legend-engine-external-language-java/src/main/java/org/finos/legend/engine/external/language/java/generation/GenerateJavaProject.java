@@ -16,11 +16,7 @@ package org.finos.legend.engine.external.language.java.generation;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
-import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_Class;
-import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_Project;
-import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_ProjectDirectory;
-import org.finos.legend.pure.generated.Root_meta_external_language_java_serialization_Stringifier;
-import org.finos.legend.pure.generated.core_java_metamodel_serialization;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.SVNCodeRepository;
@@ -88,7 +84,6 @@ public abstract class GenerateJavaProject
         try
         {
             Path newDirPath = dirPath.resolve(directory._name());
-            System.out.println(newDirPath.toAbsolutePath());
             Files.createDirectories(newDirPath);
 
             directory._classes().forEach(cls -> writeClass(cls, newDirPath, stringifier));
@@ -106,9 +101,8 @@ public abstract class GenerateJavaProject
         try
         {
             Path javaFilePath = dirPath.resolve(cls._simpleName() + ".java");
-            String code = core_java_metamodel_serialization.Root_meta_external_language_java_serialization_ofClass_Stringifier_1__Class_1__String_1_(stringifier, cls, executionSupport);
+            String code = core_java_metamodel_serialization.Root_meta_external_language_java_serialization_ofClass_Stringifier_1__Class_1__String_1_(stringifier, core_java_metamodel_factories.Root_meta_external_language_java_factory_inferImports_Class_1__Class_1_(cls, executionSupport), executionSupport);
             Files.write(javaFilePath, code.getBytes(StandardCharsets.UTF_8));
-            System.out.println(cls._simpleName());
         }
         catch (IOException e)
         {

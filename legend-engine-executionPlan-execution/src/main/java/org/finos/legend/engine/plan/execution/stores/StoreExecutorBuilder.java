@@ -19,4 +19,6 @@ public interface StoreExecutorBuilder
     StoreType getStoreType();
 
     StoreExecutor build();
+
+    StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration);
 }

@@ -52,6 +52,18 @@ ServiceStore meta::external::store::service::showcase::store::TradeProductServic
          security : [];
          response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
       )
+
+      Service TradeByTraderDetailsService
+      (
+         path : '/traderDetails';
+         method : GET;
+         parameters :
+         (
+            "trader.details" : String (location = query, allowReserved = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
    )
 
    ServiceGroup ProductServices

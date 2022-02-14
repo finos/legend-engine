@@ -67,6 +67,9 @@
     "port": 9092
   },
   "relationalexecution": {
-    "tempPath": "/tmp/"
+    "tempPath": "/tmp/",
+    "temporarytestdb": {
+      "port": 9092
+    }
   }
 }

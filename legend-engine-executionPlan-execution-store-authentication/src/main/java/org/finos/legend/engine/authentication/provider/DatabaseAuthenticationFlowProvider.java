@@ -38,5 +38,7 @@ public interface DatabaseAuthenticationFlowProvider
         throw new RuntimeException(message);
     }
 
+    void configure(DatabaseAuthenticationFlowProviderConfiguration configuration);
+
     int count();
 }

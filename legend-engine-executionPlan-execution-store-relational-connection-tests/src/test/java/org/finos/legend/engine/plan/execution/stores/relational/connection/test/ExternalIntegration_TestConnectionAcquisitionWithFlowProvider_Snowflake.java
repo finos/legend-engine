@@ -16,8 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -26,7 +25,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -59,37 +57,23 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     @Before
     public void setup()
     {
-        installFlowProvider();
-        assertSnowflakeKeyPairFlowIsAvailable();
-
-        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
+        LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+        assertSnowflakeKeyPairFlowIsAvailable(flowProvider);
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
     }
 
-    private void installFlowProvider()
-    {
-        DatabaseAuthenticationFlowProviderSelector.enableLegendDefaultFlowProvider();
-        boolean flowProviderPresent = DatabaseAuthenticationFlowProviderSelector.getProvider().isPresent();
-        assertTrue("Flow provider is not available", flowProviderPresent);
-    }
-
-    public void assertSnowflakeKeyPairFlowIsAvailable()
+    public void assertSnowflakeKeyPairFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
         SnowflakeDatasourceSpecification datasourceSpecification = new SnowflakeDatasourceSpecification();
         SnowflakePublicAuthenticationStrategy authenticationStrategy = new SnowflakePublicAuthenticationStrategy();
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, DatabaseType.Snowflake);
         relationalDatabaseConnection.type = DatabaseType.Snowflake;
 
-        DatabaseAuthenticationFlowProvider flowProvider = DatabaseAuthenticationFlowProviderSelector.getProvider().get();
         Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
         assertTrue("snowflake keypair flow does not exist ", flow.isPresent());
     }
 
-    @After
-    public void cleanup()
-    {
-        DatabaseAuthenticationFlowProviderSelector.disableFlowProvider();
-    }
-
+    // TODO - Enable tests when we have Snowflake network connectivity
     @Test
     public void testSnowflakePublicConnection_subject() throws Exception
     {

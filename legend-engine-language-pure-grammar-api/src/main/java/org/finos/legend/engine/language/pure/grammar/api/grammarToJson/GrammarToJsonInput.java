@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.api.grammarToJson;
 import java.util.Collections;
 import java.util.Map;
 
+@Deprecated
 public class GrammarToJsonInput
 {
     public String code;

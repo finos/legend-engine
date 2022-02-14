@@ -35,7 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Api(tags = "Generation - Schema")
+@Deprecated
+@Api(tags = "Z - Deprecated - Generation - Schema")
 @Path("pure/v1/schemaGeneration")
 @Produces(MediaType.APPLICATION_JSON)
 public class SchemaGenerators
@@ -49,6 +50,7 @@ public class SchemaGenerators
         this.schemaConfigurationDescriptions = schemaConfigurationDescriptions;
     }
 
+    @Deprecated
     @GET
     @Path("availableGenerations")
     @ApiOperation(value = "Get all schema generations available alongside their configuration properties")

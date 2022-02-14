@@ -118,6 +118,12 @@ public class HelperServiceStoreGrammarComposer
         {
             builder.append(", ").append("enum = ").append(param.enumeration);
         }
+
+        if (param.allowReserved != null)
+        {
+            builder.append(", ").append("allowReserved = ").append(param.allowReserved);
+        }
+
         builder.append(" )");
 
         return builder.toString();
