@@ -227,7 +227,7 @@ public class HelperPersistenceBuilder
                     ._modelClass(modelClass)
                     ._partitionProperties(ListIterate.collect(specification.partitionPropertyPaths, p -> validateAndResolveProperty(modelClass, p, specification.sourceInformation, context)))
                     ._deduplicationStrategy(buildDeduplicationStrategy(specification.deduplicationStrategy, modelClass, context))
-                    ._batchMilestoningMode(buildMilestoningMode(specification.milestoningMode, modelClass, context));
+                    ._batchMilestoningMode(buildMilestoningMode(specification.batchMode, modelClass, context));
         }
 
         private Root_meta_pure_persistence_metamodel_batch_targetspecification_PropertyAndFlatTargetSpecification resolveComponent(PropertyAndFlatTargetSpecification specification, Class<?> modelClass, CompileContext context)

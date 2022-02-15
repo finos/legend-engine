@@ -9,7 +9,7 @@ public class FlatTargetSpecification extends TargetSpecification
 {
     public List<String> partitionPropertyPaths;
     public DeduplicationStrategy deduplicationStrategy;
-    public BatchMilestoningMode milestoningMode;
+    public BatchMilestoningMode batchMode;
 
     @Override
     public <T> T accept(TargetSpecificationVisitor<T> visitor)

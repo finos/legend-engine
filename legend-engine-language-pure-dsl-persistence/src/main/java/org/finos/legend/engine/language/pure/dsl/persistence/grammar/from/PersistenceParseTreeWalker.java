@@ -228,7 +228,7 @@ public class PersistenceParseTreeWalker
 
         // batch mode
         PersistenceParserGrammar.BatchModeContext batchModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(batchModeContexts, "batchMode", targetSpecification.sourceInformation);
-        targetSpecification.milestoningMode = visitBatchMilestoningMode(batchModeContext);
+        targetSpecification.batchMode = visitBatchMilestoningMode(batchModeContext);
 
         return targetSpecification;
     }
