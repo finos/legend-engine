@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import org.finos.legend.engine.server.core.configuration.DeploymentConfiguration;
 import org.finos.legend.engine.server.core.configuration.OpenTracingConfiguration;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
+import org.finos.legend.engine.shared.core.deployment.DeploymentVersionInfo;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.Version;
 import org.slf4j.Logger;
 
@@ -29,6 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.InetAddress;
 import java.util.Date;
+import java.util.Map;
 
 @Api(tags = "Server")
 @Path("server/v1")
@@ -39,12 +41,24 @@ public class Info
 
     public Info(DeploymentConfiguration deploymentConfiguration, OpenTracingConfiguration openTracingConfiguration)
     {
+        this(deploymentConfiguration,openTracingConfiguration,null);
+    }
+
+    public Info(DeploymentConfiguration deploymentConfiguration, OpenTracingConfiguration openTracingConfiguration, Map<String, DeploymentVersionInfo> extraDeploymentInformation)
+    {
         try
         {
             String hostAddress = InetAddress.getLocalHost().getCanonicalHostName();
-
+            StringBuilder addedInfo= new StringBuilder();
+            if(extraDeploymentInformation != null && extraDeploymentInformation.size()>0)
+            {
+                for (String key: extraDeploymentInformation.keySet()
+                ) {
+                    addedInfo.append(",\"").append(key).append("\":").append(extraDeploymentInformation.get(key).infoToJson());
+                }
+            }
             message = "{" +
-                    "\"alloy\":" +
+                    "\"info\":" +
                     "   {" +
                     "     \"server\":" +
                     "         {" +
@@ -52,11 +66,12 @@ public class Info
                     "             \"startTime\":\"" + new Date() + "\"," +
                     "             \"timeZone\":\"" + java.util.TimeZone.getDefault().getID() + "\"" +
                     "         }," +
-                    "     \"sdlc\":" + DeploymentStateAndVersions.sdlcJSON + "," +
+                    "     \"legendSDLC\":" + DeploymentStateAndVersions.sdlc.infoToJson() + "," +
                     "     \"deployment\":" +
                     "        {" +
                     "          \"mode\" : \"" + deploymentConfiguration.mode + "\"" +
                     "        }" +
+                    addedInfo +
                     "   }," +
                     "\"zipkin\":" +
                     "   {" +
@@ -74,6 +89,10 @@ public class Info
         {
             message = "{}";
         }
+    }
+
+    public String getMessage() {
+        return message;
     }
 
     @GET
