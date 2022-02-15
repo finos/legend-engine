@@ -13,13 +13,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = NonMilestonedSnapshot.class, name = "NonMilestonedSnapshot"),
-        @JsonSubTypes.Type(value = UnitemporalSnapshot.class, name = "UnitemporalSnapshot"),
-        @JsonSubTypes.Type(value = BitemporalSnapshot.class, name = "BitemporalSnapshot"),
-        @JsonSubTypes.Type(value = NonMilestonedDelta.class, name = "NonMilestonedDelta"),
-        @JsonSubTypes.Type(value = UnitemporalDelta.class, name = "UnitemporalDelta"),
-        @JsonSubTypes.Type(value = BitemporalDelta.class, name = "BitemporalDelta"),
-        @JsonSubTypes.Type(value = AppendOnly.class, name = "AppendOnly")
+        @JsonSubTypes.Type(value = NonMilestonedSnapshot.class, name = "nonMilestonedSnapshot"),
+        @JsonSubTypes.Type(value = UnitemporalSnapshot.class, name = "unitemporalSnapshot"),
+        @JsonSubTypes.Type(value = BitemporalSnapshot.class, name = "bitemporalSnapshot"),
+        @JsonSubTypes.Type(value = NonMilestonedDelta.class, name = "nonMilestonedDelta"),
+        @JsonSubTypes.Type(value = UnitemporalDelta.class, name = "unitemporalDelta"),
+        @JsonSubTypes.Type(value = BitemporalDelta.class, name = "bitemporalDelta"),
+        @JsonSubTypes.Type(value = AppendOnly.class, name = "appendOnly")
 })
 public abstract class BatchMilestoningMode
 {

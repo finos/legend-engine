@@ -3,7 +3,6 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -18,12 +17,11 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
-        return Lists.mutable.with(() -> Lists.mutable.with(
+        return Lists.fixedSize.of(() -> Lists.fixedSize.of(
                 ProtocolSubTypeInfo.Builder
                         .newInstance(PackageableElement.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(PersistencePipe.class, "persistence")
-                        )).build()
+                        .withSubtypes(Lists.fixedSize.of(Tuples.pair(PersistencePipe.class, "persistencePipe")))
+                        .build()
         ));
     }
 

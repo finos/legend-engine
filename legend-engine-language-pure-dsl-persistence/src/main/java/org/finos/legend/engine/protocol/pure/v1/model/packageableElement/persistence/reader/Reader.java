@@ -6,7 +6,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = ServiceReader.class, name = "ServiceReader")
+        @JsonSubTypes.Type(value = ServiceReader.class, name = "serviceReader")
 })
 public abstract class Reader
 {

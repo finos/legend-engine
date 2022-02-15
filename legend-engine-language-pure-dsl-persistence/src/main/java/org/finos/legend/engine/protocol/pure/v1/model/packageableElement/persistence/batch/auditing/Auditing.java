@@ -6,9 +6,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = NoAuditing.class)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = NoAuditing.class, name = "NoAuditing"),
-        @JsonSubTypes.Type(value = BatchDateTimeAuditing.class, name = "BatchDateTimeAuditing"),
-        @JsonSubTypes.Type(value = OpaqueAuditing.class, name = "OpaqueAuditing")
+        @JsonSubTypes.Type(value = NoAuditing.class, name = "noAuditing"),
+        @JsonSubTypes.Type(value = BatchDateTimeAuditing.class, name = "batchDateTimeAuditing"),
+        @JsonSubTypes.Type(value = OpaqueAuditing.class, name = "opaqueAuditing")
 })
 public abstract class Auditing
 {

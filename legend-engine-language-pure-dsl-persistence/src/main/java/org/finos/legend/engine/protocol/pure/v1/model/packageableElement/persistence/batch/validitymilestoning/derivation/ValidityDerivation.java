@@ -6,8 +6,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = SourceSpecifiesFromDateTime.class, name = "SourceSpecifiesFromDateTime"),
-        @JsonSubTypes.Type(value = SourceSpecifiesFromAndThruDateTime.class, name = "SourceSpecifiesFromAndThruDateTime")
+        @JsonSubTypes.Type(value = SourceSpecifiesFromDateTime.class, name = "sourceSpecifiesFromDateTime"),
+        @JsonSubTypes.Type(value = SourceSpecifiesFromAndThruDateTime.class, name = "sourceSpecifiesFromAndThruDateTime")
 })
 public abstract class ValidityDerivation
 {

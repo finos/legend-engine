@@ -6,9 +6,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = FlatTargetSpecification.class, name = "FlatTargetSpecification"),
-        @JsonSubTypes.Type(value = GroupedFlatTargetSpecification.class, name = "GroupedFlatTargetSpecification"),
-        @JsonSubTypes.Type(value = NestedTargetSpecification.class, name = "NestedTargetSpecification")
+        @JsonSubTypes.Type(value = FlatTargetSpecification.class, name = "flatTargetSpecification"),
+        @JsonSubTypes.Type(value = GroupedFlatTargetSpecification.class, name = "groupedFlatTargetSpecification"),
+        @JsonSubTypes.Type(value = NestedTargetSpecification.class, name = "nestedTargetSpecification")
 })
 public abstract class TargetSpecification
 {

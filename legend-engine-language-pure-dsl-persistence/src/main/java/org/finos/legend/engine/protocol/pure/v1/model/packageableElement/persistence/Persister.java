@@ -8,8 +8,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = BatchPersister.class, name = "BatchPersister"),
-        @JsonSubTypes.Type(value = StreamingPersister.class, name = "StreamingPersister")
+        @JsonSubTypes.Type(value = BatchPersister.class, name = "batchPersister"),
+        @JsonSubTypes.Type(value = StreamingPersister.class, name = "streamingPersister")
 })
 public abstract class Persister
 {

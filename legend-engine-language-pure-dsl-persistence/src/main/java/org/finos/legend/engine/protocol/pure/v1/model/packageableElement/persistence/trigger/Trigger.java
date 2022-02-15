@@ -6,7 +6,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = OpaqueTrigger.class, name = "OpaqueTrigger")
+        @JsonSubTypes.Type(value = OpaqueTrigger.class, name = "opaqueTrigger")
 })
 public abstract class Trigger
 {
