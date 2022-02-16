@@ -38,7 +38,7 @@ import java.util.Properties;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-public class TestSqlServerConnectionAcquisitionWithFlowProvider extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
+public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlServer extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
     public MSSQLServerContainer mssqlserver = new MSSQLServerContainer()
             .acceptLicense();
