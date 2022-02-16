@@ -31,6 +31,7 @@ import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParse
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
@@ -79,9 +80,9 @@ public class GraphQLExecute extends GraphQL
     private final PlanExecutor planExecutor;
     private final MutableList<PlanTransformer> transformers;
 
-    public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MutableList<PlanTransformer> transformers)
+    public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, MutableList<PlanTransformer> transformers)
     {
-        super(modelManager);
+        super(modelManager, metadataserver);
         this.planExecutor = planExecutor;
         this.transformers = transformers;
     }

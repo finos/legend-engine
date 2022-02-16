@@ -27,6 +27,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -68,9 +69,9 @@ import static org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_m
 @Path("graphQL/v1/debug")
 public class GraphQLDebug extends GraphQL
 {
-    public GraphQLDebug(ModelManager modelManager)
+    public GraphQLDebug(ModelManager modelManager, MetaDataServerConfiguration metadataserver)
     {
-        super(modelManager);
+        super(modelManager, metadataserver);
     }
 
     @POST
