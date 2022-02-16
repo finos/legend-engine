@@ -78,4 +78,25 @@ public class AuthenticationStrategyParseTreeWalker
         authStrategy.sourceInformation = code.getSourceInformation();
         return authStrategy;
     }
+
+    public GCPWorkloadIdentityFederationAuthenticationStrategy visitGCPWorkloadIdentityFederationAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.GcpWorkloadIdentityFederationAuthContext authCtx)
+    {
+        GCPWorkloadIdentityFederationAuthenticationStrategy authStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
+        authStrategy.sourceInformation = code.getSourceInformation();
+        AuthenticationStrategyParserGrammar.WorkloadProjectNumberRefContext workloadProjectNumberRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.workloadProjectNumberRef(), "workloadProjectNumber", code.getSourceInformation());
+        authStrategy.workloadProjectNumber = PureGrammarParserUtility.fromGrammarString(workloadProjectNumberRefContext.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.ServiceAccountEmailRefContext gcpServiceAccountEmailRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.serviceAccountEmailRef(), "serviceAccountEmail", code.getSourceInformation());
+        authStrategy.serviceAccountEmail = PureGrammarParserUtility.fromGrammarString(gcpServiceAccountEmailRefContext.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.GcpScopeRefContext gcpScopeRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.gcpScopeRef(),"gcpScope", code.getSourceInformation());
+        authStrategy.gcpScope = PureGrammarParserUtility.fromGrammarString(gcpScopeRefContext.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.WorkloadPoolIdRefContext gcpPoolIdRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.workloadPoolIdRef(), "workloadPoolId", code.getSourceInformation());
+        authStrategy.workloadPoolId = PureGrammarParserUtility.fromGrammarString(gcpPoolIdRefContext.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.WorkloadProviderIdRefContext gcpProviderIdRefContext  = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.workloadProviderIdRef(), "workloadProviderId", code.getSourceInformation());
+        authStrategy.workloadProviderId = PureGrammarParserUtility.fromGrammarString(gcpProviderIdRefContext.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.DiscoveryUrlRefContext gcpDiscoveryUrlRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.discoveryUrlRef(), "discoveryUrl", code.getSourceInformation());
+        authStrategy.discoveryUrl = PureGrammarParserUtility.fromGrammarString(gcpDiscoveryUrlRefContext.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.ClientIdRefContext gcpClientIdRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.clientIdRef(), "clientId", code.getSourceInformation());
+        authStrategy.clientId = PureGrammarParserUtility.fromGrammarString(gcpClientIdRefContext.STRING().getText(), true);
+        return authStrategy;
+    }
 }

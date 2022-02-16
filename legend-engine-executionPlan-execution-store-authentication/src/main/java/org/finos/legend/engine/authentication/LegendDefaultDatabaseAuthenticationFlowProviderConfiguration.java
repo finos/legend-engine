@@ -18,8 +18,10 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 
 public final class LegendDefaultDatabaseAuthenticationFlowProviderConfiguration extends DatabaseAuthenticationFlowProviderConfiguration
 {
+    public String defaultAWSAccountID;
+    public String defaultAWSRoleName;
+    public String defaultAWSRegion;
     public LegendDefaultDatabaseAuthenticationFlowProviderConfiguration()
     {
-
     }
 }

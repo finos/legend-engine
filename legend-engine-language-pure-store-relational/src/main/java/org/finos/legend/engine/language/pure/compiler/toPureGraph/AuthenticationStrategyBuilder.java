@@ -58,6 +58,17 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
         {
             return new Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl("");
         }
+        else if (authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
+        {
+            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationAuthenticationStrategy_Impl("")
+                    ._workloadProjectNumber(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).workloadProjectNumber)
+                    ._serviceAccountEmail(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).serviceAccountEmail)
+                    ._gcpScope(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).gcpScope)
+                    ._workloadPoolId(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).workloadPoolId)
+                    ._workloadProviderId(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).workloadProviderId)
+                    ._discoveryUrl(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).discoveryUrl)
+                    ._clientId(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).clientId);
+        }
         return null;
     }
 }

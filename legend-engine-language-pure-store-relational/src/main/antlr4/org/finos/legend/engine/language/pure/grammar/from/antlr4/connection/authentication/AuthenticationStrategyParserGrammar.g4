@@ -61,5 +61,40 @@ snowflakePublicAuthPassPhraseVaultRef:  SNOWFLAKE_AUTH_PASSPHRASE_VAULT_REFERENC
 snowflakePublicAuthUserName:  SNOWFLAKE_AUTH_PUBLIC_USERNAME COLON STRING SEMI_COLON
 ;
 
-gcpApplicationDefaultCredentialsAuth : GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH
+gcpApplicationDefaultCredentialsAuth : GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH SEMI_COLON
+;
+
+gcpWorkloadIdentityFederationAuth: GCP_WORKLOAD_IDENTITY_FEDERATION_AUTH
+                                    BRACE_OPEN
+                                        (
+                                            workloadProjectNumberRef
+                                            | serviceAccountEmailRef
+                                            | gcpScopeRef
+                                            | workloadPoolIdRef
+                                            | workloadProviderIdRef
+                                            | discoveryUrlRef
+                                            | clientIdRef
+                                        )*
+                                    BRACE_CLOSE
+;
+
+workloadProjectNumberRef:                WORKLOAD_PROJECT_NUMBER COLON STRING SEMI_COLON
+;
+
+serviceAccountEmailRef:          SERVICE_ACCOUNT_EMAIL COLON STRING SEMI_COLON
+;
+
+gcpScopeRef:                            GCP_SCOPE COLON STRING SEMI_COLON
+;
+
+workloadPoolIdRef:                       WORKLOAD_POOL_ID COLON STRING SEMI_COLON
+;
+
+workloadProviderIdRef:                   WORKLOAD_PROVIDER_ID COLON STRING SEMI_COLON
+;
+
+discoveryUrlRef:                 DISCOVERY_URL COLON STRING SEMI_COLON
+;
+
+clientIdRef:                     CLIENT_ID COLON STRING SEMI_COLON
 ;

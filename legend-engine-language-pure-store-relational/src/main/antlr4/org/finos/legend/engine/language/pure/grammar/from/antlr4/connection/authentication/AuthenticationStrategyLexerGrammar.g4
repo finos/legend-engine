@@ -27,3 +27,12 @@ SNOWFLAKE_AUTH_PUBLIC_USERNAME:             'publicUserName';
 PROJECT:                                                    'projectId';
 DATASET:                                                    'defaultDataset';
 GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH:                   'GCPApplicationDefaultCredentials';
+
+GCP_WORKLOAD_IDENTITY_FEDERATION_AUTH:                      'GCPWorkloadIdentityFederation';
+WORKLOAD_PROJECT_NUMBER:                                    'workloadProjectNumber';
+SERVICE_ACCOUNT_EMAIL:                                      'serviceAccountEmail';
+GCP_SCOPE:                                                  'gcpScope';
+WORKLOAD_POOL_ID:                                           'workloadPoolId';
+WORKLOAD_PROVIDER_ID:                                       'workloadProviderId';
+DISCOVERY_URL:                                              'discoveryUrl';
+CLIENT_ID:                                                  'clientId';

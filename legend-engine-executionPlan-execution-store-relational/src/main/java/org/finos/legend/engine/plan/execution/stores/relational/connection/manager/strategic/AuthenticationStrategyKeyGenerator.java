@@ -51,10 +51,22 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
                     snowflakeDatasourceSpecification.publicUserName
             );
         }
-        else if(authenticationStrategy instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)
+        else if(authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
         {
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy GCPApplicationDefaultCredentialsAuthenticationStrategy = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)authenticationStrategy;
+            GCPApplicationDefaultCredentialsAuthenticationStrategy GCPApplicationDefaultCredentialsAuthenticationStrategy = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)authenticationStrategy;
             return new GCPApplicationDefaultCredentialsAuthenticationStrategyKey();
+        }
+        else if(authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy){
+            GCPWorkloadIdentityFederationAuthenticationStrategy gcpWorkloadIdentityFederationAuthenticationStrategy = (GCPWorkloadIdentityFederationAuthenticationStrategy)authenticationStrategy;
+            return new GCPWorkloadIdentityFederationAuthenticationStrategyKey(
+                    gcpWorkloadIdentityFederationAuthenticationStrategy.workloadProjectNumber,
+                    gcpWorkloadIdentityFederationAuthenticationStrategy.serviceAccountEmail,
+                    gcpWorkloadIdentityFederationAuthenticationStrategy.gcpScope,
+                    gcpWorkloadIdentityFederationAuthenticationStrategy.workloadPoolId,
+                    gcpWorkloadIdentityFederationAuthenticationStrategy.workloadProviderId,
+                    gcpWorkloadIdentityFederationAuthenticationStrategy.discoveryUrl,
+                    gcpWorkloadIdentityFederationAuthenticationStrategy.clientId
+            );
         }
         return null;
     }

@@ -24,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper;
@@ -695,6 +696,22 @@ public class HelperRelationalGrammarComposer
         {
             GCPApplicationDefaultCredentialsAuthenticationStrategy auth = (GCPApplicationDefaultCredentialsAuthenticationStrategy)_auth;
             return "GCPApplicationDefaultCredentials";
+        }
+        else if (_auth instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
+        {
+            GCPWorkloadIdentityFederationAuthenticationStrategy auth = (GCPWorkloadIdentityFederationAuthenticationStrategy) _auth;
+            int baseIndentation = 1;
+            return "GCPWorkloadIdentityFederation" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "workloadProjectNumber: " + convertString(auth.workloadProjectNumber, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "serviceAccountEmail: " + convertString(auth.serviceAccountEmail, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "gcpScope: " + convertString(auth.gcpScope, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "workloadPoolId: " + convertString(auth.workloadPoolId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "workloadProviderId: " + convertString(auth.workloadProviderId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "discoveryUrl: " + convertString(auth.discoveryUrl, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "clientId: " + convertString(auth.clientId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         return null;
     }

@@ -26,6 +26,31 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>download-files</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <get src="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.2.21.1025.zip"
+                                     dest="${project.build.directory}/bigquery-simba-driver.zip"
+                                     verbose="false"
+                                     usetimestamp="true"
+                                />
+                                <unzip src="${project.build.directory}/bigquery-simba-driver.zip"
+                                       dest="${project.build.directory}/classes/"
+                                />
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -41,6 +66,9 @@
                     <excludes>
                         <exclude>**/ExternalIntegration*.java</exclude>
                     </excludes>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.build.directory}/classes/*</additionalClasspathElement>
+                    </additionalClasspathElements>
                     <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
                 </configuration>
             </plugin>

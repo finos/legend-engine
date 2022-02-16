@@ -19,18 +19,31 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.authentication.flows.*;
 import org.finos.legend.engine.authentication.flows.H2StaticWithTestUserPasswordFlow;
 import org.finos.legend.engine.authentication.provider.AbstractDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 
 public final class LegendDefaultDatabaseAuthenticationFlowProvider extends AbstractDatabaseAuthenticationFlowProvider
 {
+    private DatabaseAuthenticationFlowProviderConfiguration databaseAuthenticationFlowProviderConfiguration;
+
     public LegendDefaultDatabaseAuthenticationFlowProvider()
     {
-        FLOWS.forEach(this::registerFlow);
     }
 
-    private static ImmutableList<DatabaseAuthenticationFlow> FLOWS = Lists.immutable.of(
-            new H2StaticWithTestUserPasswordFlow(),
-            new SnowflakeWithKeyPairFlow(),
-            new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
-            new SqlServerStaticWithUserPasswordFlow()
-    );
+    private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows(){
+        return Lists.immutable.of(
+                new H2StaticWithTestUserPasswordFlow(),
+                new SnowflakeWithKeyPairFlow(),
+                new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
+                new SqlServerStaticWithUserPasswordFlow(),
+                new BigQueryWithGCPWorkloadIdentityFederationFlow((LegendDefaultDatabaseAuthenticationFlowProviderConfiguration) this.databaseAuthenticationFlowProviderConfiguration)
+        );
+    }
+
+    @Override
+    public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration) {
+        this.databaseAuthenticationFlowProviderConfiguration = configuration;
+        flows().forEach(this::registerFlow);
+    }
 }

@@ -19,6 +19,8 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.BigQueryDataSourceSpecification;
@@ -27,6 +29,8 @@ import java.util.Properties;
 
 public class BigQueryManager extends DatabaseManager
 {
+    public final String BIGQUERY_JDBC_URL = "jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;";
+
     @Override
     public MutableList<String> getIds()
     {
@@ -40,6 +44,9 @@ public class BigQueryManager extends DatabaseManager
         {
             case GCPApplicationDefaultCredentialsAuthenticationStrategyKey.TYPE:
                 return buildUrlWithApplicationDefaultCredentials(extraUserDataSourceProperties, (GCPApplicationDefaultCredentialsAuthenticationStrategy) authenticationStrategy);
+            case GCPWorkloadIdentityFederationAuthenticationStrategyKey.TYPE:
+                return buildUrlWithWorkloadIdentityFederation(extraUserDataSourceProperties, (GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy);
+
         }
         throw new UnsupportedOperationException("Unsupported auth strategy :" + authenticationStrategy.getKey().type());
     }
@@ -47,10 +54,19 @@ public class BigQueryManager extends DatabaseManager
     private String buildUrlWithApplicationDefaultCredentials(Properties extraUserDataSourceProperties, GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy)
     {
         GCPApplicationDefaultCredentialsAuthenticationStrategy GCPApplicationDefaultCredentialsAuthenticationStrategy = authenticationStrategy;
-        String url = String.format("jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;" +
+        String url = String.format(BIGQUERY_JDBC_URL +
                         "ProjectId=%s;" +
                         this.buildParamForDefaultDataset(extraUserDataSourceProperties) +
                         "OAuthType=3;",
+                extraUserDataSourceProperties.getProperty(BigQueryDataSourceSpecification.BIGQUERY_PROJECT_ID));
+        return url;
+    }
+
+    private String buildUrlWithWorkloadIdentityFederation(Properties extraUserDataSourceProperties, GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy){
+        String url = String.format(BIGQUERY_JDBC_URL +
+                        "ProjectId=%s;" +
+                        this.buildParamForDefaultDataset(extraUserDataSourceProperties) +
+                        "OAuthType=2;",
                 extraUserDataSourceProperties.getProperty(BigQueryDataSourceSpecification.BIGQUERY_PROJECT_ID));
         return url;
     }
