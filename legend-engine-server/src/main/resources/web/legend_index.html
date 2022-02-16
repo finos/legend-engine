@@ -25,7 +25,7 @@
         <script>
             function setVersion() {
                 exec("api/server/v1/info", (info, infoText) => {
-                    document.getElementById("startedTime").insertAdjacentHTML('afterbegin', info.info.server.startTime + ", Timezone: " + info.alloy.server.timeZone);
+                    document.getElementById("startedTime").insertAdjacentHTML('afterbegin', info.info.server.startTime + ", Timezone: " + info.info.server.timeZone);
                     document.getElementById("purePlatformVersion").insertAdjacentHTML('afterbegin', "<a href='http://conductor2.site.gs.com:44901/#/productVersion/" + info.pure.platform + "/guid/14013/summary'>" + info.pure.platform + "</a>");
                     document.getElementById("zipkin").insertAdjacentHTML('afterbegin', "<a href='http://" + info.zipkin.url + "'>ZipKin</a>");
                 }
