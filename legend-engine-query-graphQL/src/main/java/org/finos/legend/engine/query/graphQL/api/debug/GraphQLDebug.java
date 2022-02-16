@@ -1,3 +1,17 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.finos.legend.engine.query.graphQL.api.debug;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,13 +35,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.query.graphQL.api.GraphQL;
 import org.finos.legend.engine.query.graphQL.api.debug.model.GraphFetchResult;
-import org.finos.legend.engine.query.graphQL.api.debug.model.QueryAndClass;
+import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult;
+import org.finos.legend.pure.generated.core_external_query_graphql_transformation;
+import org.finos.legend.pure.generated.core_pure_protocol_generation_builder_generation;
+import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
@@ -38,14 +55,10 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.lang.reflect.Method;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
@@ -53,7 +66,6 @@ import static org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_m
 
 @Api(tags = "GraphQL - Debug")
 @Path("graphQL/v1/debug")
-@Produces(MediaType.APPLICATION_JSON)
 public class GraphQLDebug extends GraphQL
 {
     public GraphQLDebug(ModelManager modelManager)
@@ -62,16 +74,27 @@ public class GraphQLDebug extends GraphQL
     }
 
     @POST
-    @ApiOperation(value = "Parse a GraphQL query in the context of a model and translate to GraphFetch")
-    @Path("generateGraphFetch")
+    @ApiOperation(value = "Generate Pure graphFetch(s) from a graphQL query using Prod metadata")
+    @Path("generateGraphFetch/prod/{groupId}/{artifact}/{version}/query/{queryClassPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateGraphFetch(@Context HttpServletRequest request, QueryAndClass query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generateGraphFetchProd(@Context HttpServletRequest request, @PathParam("branch") String branch, @PathParam("projectId") String projectId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        throw new RuntimeException("Not implemented yet");
+    }
+
+    @POST
+    @ApiOperation(value = "Generate Pure graphFetch(s) from a graphQL query using Dev metadata")
+    @Path("generateGraphFetch/dev/{projectId}/{branch}/query/{queryClassPath}")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generateGraphFetchDev(@Context HttpServletRequest request, @PathParam("branch") String branch, @PathParam("projectId") String projectId, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Graph Fetch").startActive(true))
         {
-            PureModel pureModel = loadModel(profiles, request);
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(query._class);
+            PureModel pureModel = loadModel(profiles, request, projectId, branch);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
             Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult graphFetch = buildGraphFetch(_class, toPureModel(GraphQLGrammarParser.newInstance().parseDocument(query.query), pureModel), pureModel);
 
             // Serialize the tree to production protocol
@@ -116,6 +139,7 @@ public class GraphQLDebug extends GraphQL
     @ApiOperation(value = "Generate a Pure Instance builder from a GraphQL document serialized as JSON")
     @Path("generatePureInstanceBuilder")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.TEXT_PLAIN)
     public Response generatePureInstanceBuilder(@Context HttpServletRequest request, String json, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);

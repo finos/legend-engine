@@ -120,7 +120,7 @@ public class Server extends Application<ServerConfiguration>
         {
             @Override
             protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(
-                ServerConfiguration configuration)
+                    ServerConfiguration configuration)
             {
                 return configuration.swagger;
             }
@@ -196,13 +196,13 @@ public class Server extends Application<ServerConfiguration>
         // Execution
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraRouterExtensions(pureModel));
-        environment.jersey().register(new Execute(modelManager, planExecutor, routerExtensions, LegendPlanTransformers.transformers));
+        environment.jersey().register(new Execute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(c -> c.getExtraPlanTransformers())));
         environment.jersey().register(new ExecutePlanStrategic(planExecutor));
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());
-        environment.jersey().register(new GraphQLExecute(modelManager, planExecutor));
+        environment.jersey().register(new GraphQLExecute(modelManager, planExecutor, generatorExtensions.flatCollect(c -> c.getExtraPlanTransformers())));
         environment.jersey().register(new GraphQLDebug(modelManager));
 
         // Service
