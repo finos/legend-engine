@@ -220,7 +220,7 @@ public class PersistenceParseTreeWalker
 
         // partition properties (optional)
         PersistenceParserGrammar.PartitionPropertiesContext partitionPropertiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(partitionPropertiesContexts, "partitionProperties", targetSpecification.sourceInformation);
-        targetSpecification.partitionPropertyPaths = partitionPropertiesContext != null ? visitPartitionProperties(partitionPropertiesContext) : Collections.emptyList();
+        targetSpecification.partitionProperties = partitionPropertiesContext != null ? visitPartitionProperties(partitionPropertiesContext) : Collections.emptyList();
 
         // deduplication strategy (optional)
         PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractOptionalField(deduplicationStrategyContexts, "deduplicationStrategy", targetSpecification.sourceInformation);

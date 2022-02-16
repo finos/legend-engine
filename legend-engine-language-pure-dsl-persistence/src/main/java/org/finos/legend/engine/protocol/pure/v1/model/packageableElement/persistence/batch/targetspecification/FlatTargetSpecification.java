@@ -7,7 +7,7 @@ import java.util.List;
 
 public class FlatTargetSpecification extends TargetSpecification
 {
-    public List<String> partitionPropertyPaths;
+    public List<String> partitionProperties;
     public DeduplicationStrategy deduplicationStrategy;
     public BatchMilestoningMode batchMode;
 

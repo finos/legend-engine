@@ -225,7 +225,7 @@ public class HelperPersistenceBuilder
             return new Root_meta_pure_persistence_metamodel_batch_targetspecification_FlatTargetSpecification_Impl("")
                     ._targetName(targetName)
                     ._modelClass(modelClass)
-                    ._partitionProperties(ListIterate.collect(specification.partitionPropertyPaths, p -> validateAndResolveProperty(modelClass, p, specification.sourceInformation, context)))
+                    ._partitionProperties(ListIterate.collect(specification.partitionProperties, p -> validateAndResolveProperty(modelClass, p, specification.sourceInformation, context)))
                     ._deduplicationStrategy(buildDeduplicationStrategy(specification.deduplicationStrategy, modelClass, context))
                     ._batchMilestoningMode(buildMilestoningMode(specification.batchMode, modelClass, context));
         }

@@ -261,8 +261,8 @@ public class HelperPersistenceGrammarComposer
 
         private static String renderPartitionProperties(FlatTargetSpecification flatTarget, int indentLevel)
         {
-            return !flatTarget.partitionPropertyPaths.isEmpty() ? getTabString(indentLevel) + "partitionProperties: " + "[" +
-                    Lists.immutable.ofAll(flatTarget.partitionPropertyPaths).makeString(", ") +
+            return !flatTarget.partitionProperties.isEmpty() ? getTabString(indentLevel) + "partitionProperties: " + "[" +
+                    Lists.immutable.ofAll(flatTarget.partitionProperties).makeString(", ") +
                     "];\n" : "";
         }
     }
