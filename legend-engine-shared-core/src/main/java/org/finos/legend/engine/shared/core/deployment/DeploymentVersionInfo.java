@@ -3,7 +3,6 @@ package org.finos.legend.engine.shared.core.deployment;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -32,14 +31,4 @@ public class DeploymentVersionInfo {
     @JsonProperty(value="git.total.commit.count")
     public String commitCount;
 
-    public String infoToJson()
-    {
-        try{
-            return new ObjectMapper().writeValueAsString(this);
-        }
-        catch (Exception e)
-        {
-            return "{}" ;
-        }
-    }
 }

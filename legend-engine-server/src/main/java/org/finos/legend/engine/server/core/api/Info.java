@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.server.core.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.finos.legend.engine.server.core.configuration.DeploymentConfiguration;
@@ -38,6 +39,7 @@ import java.util.Map;
 public class Info
 {
     private String message;
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
     public Info(DeploymentConfiguration deploymentConfiguration, OpenTracingConfiguration openTracingConfiguration)
     {
@@ -48,14 +50,13 @@ public class Info
     {
         try
         {
+            ObjectMapper m = new ObjectMapper();
             String hostAddress = InetAddress.getLocalHost().getCanonicalHostName();
-            StringBuilder addedInfo= new StringBuilder();
-            if(extraDeploymentInformation != null && extraDeploymentInformation.size()>0)
+            String addedInfo = "";
+            if(extraDeploymentInformation!=null)
             {
-                for (String key: extraDeploymentInformation.keySet()
-                ) {
-                    addedInfo.append(",\"").append(key).append("\":").append(extraDeploymentInformation.get(key).infoToJson());
-                }
+                String extraJson = m.writeValueAsString(extraDeploymentInformation);
+                addedInfo =  ","+ extraJson.substring(1,extraJson.length()-1);
             }
             message = "{" +
                     "\"info\":" +
@@ -66,7 +67,7 @@ public class Info
                     "             \"startTime\":\"" + new Date() + "\"," +
                     "             \"timeZone\":\"" + java.util.TimeZone.getDefault().getID() + "\"" +
                     "         }," +
-                    "     \"legendSDLC\":" + DeploymentStateAndVersions.sdlc.infoToJson() + "," +
+                    "     \"legendSDLC\":" + m.writeValueAsString(DeploymentStateAndVersions.sdlc) + "," +
                     "     \"deployment\":" +
                     "        {" +
                     "          \"mode\" : \"" + deploymentConfiguration.mode + "\"" +
@@ -87,12 +88,9 @@ public class Info
         }
         catch (Exception e)
         {
+            LOGGER.error("Error creating info message", e);
             message = "{}";
         }
-    }
-
-    public String getMessage() {
-        return message;
     }
 
     @GET

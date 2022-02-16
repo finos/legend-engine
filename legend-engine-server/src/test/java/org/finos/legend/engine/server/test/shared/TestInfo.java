@@ -25,7 +25,8 @@ public class TestInfo {
         addedInfo.put("server1", v);
         addedInfo.put("server2", v2);
         Info info = new Info(config, new OpenTracingConfiguration(), addedInfo);
-        Assert.assertTrue("Json not valid", info.getMessage().contains("\"server1\":{\"git.branch\":\"testBranch\",\"git.closest.tag.name\":\"testTag\"},\"server2\":{\"git.branch\":\"mainBranch\",\"git.commit.id\":\"jhsah676jhh\"}")
-                || info.getMessage().contains(",\"server2\":{\"git.branch\":\"mainBranch\",\"git.commit.id\":\"jhsah676jhh\"},\"server1\":{\"git.branch\":\"testBranch\",\"git.closest.tag.name\":\"testTag\"}"));
+        String message = info.executePureGet().getEntity().toString();
+        Assert.assertTrue("Json not valid", message.contains(",\"server1\":{\"git.branch\":\"testBranch\",\"git.closest.tag.name\":\"testTag\"},\"server2\":{\"git.branch\":\"mainBranch\",\"git.commit.id\":\"jhsah676jhh\"}")
+                || message.contains(",\"server2\":{\"git.branch\":\"mainBranch\",\"git.commit.id\":\"jhsah676jhh\"},\"server1\":{\"git.branch\":\"testBranch\",\"git.closest.tag.name\":\"testTag\"}"));
     }
 }
