@@ -50,25 +50,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceLexerGrammar.*;
-
 public class PersistenceParseTreeWalker
 {
-    private static final List<String> TRIGGERS = Lists.fixedSize.of(ruleNames[TRIGGER_OPAQUE]);
-    private static final List<String> READERS = Lists.fixedSize.of(ruleNames[READER_SERVICE]);
-    private static final List<String> PERSISTERS = Lists.fixedSize.of(ruleNames[PERSISTER_STREAMING], ruleNames[PERSISTER_BATCH]);
-    private static final List<String> TARGETS = Lists.fixedSize.of(ruleNames[TARGET_SPEC_GROUPED], ruleNames[TARGET_SPEC_FLAT], ruleNames[TARGET_SPEC_NESTED]);
-    private static final List<String> DEDUPLICATION_STRATEGIES = Lists.fixedSize.of(ruleNames[DEDUPLICATION_NONE], ruleNames[DEDUPLICATION_ANY_VERSION], ruleNames[DEDUPLICATION_MAX_VERSION], ruleNames[DEDUPLICATION_OPAQUE]);
-    private static final List<String> BATCH_MODES = Lists.fixedSize.of(
-            ruleNames[BATCH_MODE_NON_MILESTONED_SNAPSHOT], ruleNames[BATCH_MODE_UNITEMPORAL_SNAPSHOT], ruleNames[BATCH_MODE_BITEMPORAL_SNAPSHOT],
-            ruleNames[BATCH_MODE_NON_MILESTONED_DELTA], ruleNames[BATCH_MODE_UNITEMPORAL_DELTA], ruleNames[BATCH_MODE_BITEMPORAL_DELTA],
-            ruleNames[BATCH_MODE_APPEND_ONLY]);
-    private static final List<String> MERGE_STRATEGIES = Lists.fixedSize.of(ruleNames[MERGE_STRATEGY_NO_DELETES], ruleNames[MERGE_STRATEGY_DELETE_INDICATOR], ruleNames[MERGE_STRATEGY_OPAQUE]);
-    private static final List<String> AUDITING_TYPES = Lists.fixedSize.of(ruleNames[AUDITING_NONE], ruleNames[AUDITING_BATCH_DATE_TIME], ruleNames[AUDITING_OPAQUE]);
-    private static final List<String> TRANSACTION_MILESTONING_TYPES = Lists.fixedSize.of(ruleNames[TXN_MILESTONING_BATCH_ID], ruleNames[TXN_MILESTONING_DATE_TIME], ruleNames[TXN_MILESTONING_BOTH], ruleNames[TXN_MILESTONING_OPAQUE]);
-    private static final List<String> VALIDITY_MILESTONING_TYPES = Lists.fixedSize.of(ruleNames[VALIDITY_MILESTONING_DATE_TIME], ruleNames[VALIDITY_MILESTONING_OPAQUE]);
-    private static final List<String> VALIDITY_DERIVATION_TYPES = Lists.fixedSize.of(ruleNames[VALIDITY_DERIVATION_SOURCE_FROM], ruleNames[VALIDITY_DERIVATION_SOURCE_FROM_THRU], ruleNames[VALIDITY_DERIVATION_OPAQUE]);
-
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
@@ -134,7 +117,7 @@ public class PersistenceParseTreeWalker
 
             return opaqueTrigger;
         }
-        throw new EngineException(String.format("Unrecognized trigger. Valid triggers are %s", enumerate(TRIGGERS)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized trigger", sourceInformation, EngineErrorType.PARSER);
     }
 
     /**********
@@ -148,7 +131,7 @@ public class PersistenceParseTreeWalker
         {
             return visitServiceReader(ctx.serviceReader());
         }
-        throw new EngineException(String.format("Unrecognized reader. Valid readers are %s", enumerate(READERS)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized reader", sourceInformation, EngineErrorType.PARSER);
     }
 
     private Reader visitServiceReader(PersistenceParserGrammar.ServiceReaderContext ctx)
@@ -178,7 +161,7 @@ public class PersistenceParseTreeWalker
         {
             return visitBatchPersister(ctx.batchPersister());
         }
-        throw new EngineException(String.format("Unrecognized persister. Valid persisters are %s", enumerate(PERSISTERS)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized persister", sourceInformation, EngineErrorType.PARSER);
     }
 
     private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
@@ -220,7 +203,7 @@ public class PersistenceParseTreeWalker
         {
             return visitNestedTargetSpecification(ctx.nestedTargetSpecification());
         }
-        throw new EngineException(String.format("Unrecognized target specification. Valid target specifications are %s", enumerate(TARGETS)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized target specification", sourceInformation, EngineErrorType.PARSER);
     }
 
     private GroupedFlatTargetSpecification visitGroupedFlatTargetSpecification(PersistenceParserGrammar.GroupedTargetSpecificationContext ctx)
@@ -316,7 +299,7 @@ public class PersistenceParseTreeWalker
         {
             return TransactionScope.ALL_TARGETS;
         }
-        throw new EngineException(String.format("Unrecognized transaction scope. Valid transaction scopes are %s", enumerate(TransactionScope.values())), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized transaction scope", sourceInformation, EngineErrorType.PARSER);
     }
 
     private PropertyAndFlatTargetSpecification visitPropertyAndFlatTargetSpecification(PersistenceParserGrammar.TargetComponentContext ctx)
@@ -376,7 +359,7 @@ public class PersistenceParseTreeWalker
         {
             return new OpaqueDeduplicationStrategy();
         }
-        throw new EngineException(String.format("Unrecognized deduplication strategy. Valid deduplication strategies are %s", enumerate(DEDUPLICATION_STRATEGIES)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized deduplication strategy", sourceInformation, EngineErrorType.PARSER);
     }
 
     private MaxVersionDeduplicationStrategy visitMaxVersionDeduplicationStrategy(PersistenceParserGrammar.MaxVersionDeduplicationStrategyContext ctx)
@@ -426,7 +409,7 @@ public class PersistenceParseTreeWalker
         {
             return visitAppendOnly(ctx.appendOnly());
         }
-        throw new EngineException(String.format("Unrecognized batch milestoning mode. Valid batch milestoning modes are %s", enumerate(BATCH_MODES)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized batch milestoning mode", sourceInformation, EngineErrorType.PARSER);
     }
 
     /**********
@@ -570,7 +553,7 @@ public class PersistenceParseTreeWalker
         {
             return new OpaqueMergeStrategy();
         }
-        throw new EngineException(String.format("Unrecognized merge strategy. Valid merge strategies are %s", enumerate(MERGE_STRATEGIES)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized merge strategy", sourceInformation, EngineErrorType.PARSER);
     }
 
     private DeleteIndicatorMergeStrategy visitDeleteIndicatorMergeScheme(PersistenceParserGrammar.DeleteIndicatorMergeStrategyContext ctx)
@@ -608,7 +591,7 @@ public class PersistenceParseTreeWalker
         {
             return new OpaqueAuditing();
         }
-        throw new EngineException(String.format("Unrecognized auditing. Valid auditing types are %s", enumerate(AUDITING_TYPES)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized auditing", sourceInformation, EngineErrorType.PARSER);
     }
 
     private BatchDateTimeAuditing visitBatchDateTimeAuditScheme(PersistenceParserGrammar.BatchDateTimeAuditingContext ctx)
@@ -646,7 +629,7 @@ public class PersistenceParseTreeWalker
         {
             return new OpaqueTransactionMilestoning();
         }
-        throw new EngineException(String.format("Unrecognized transaction milestoning. Valid transaction milestoning types are %s", enumerate(TRANSACTION_MILESTONING_TYPES)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized transaction milestoning", sourceInformation, EngineErrorType.PARSER);
     }
 
     private BatchIdTransactionMilestoning visitBatchIdTransactionMilestoning(PersistenceParserGrammar.BatchIdTransactionMilestoningContext ctx)
@@ -720,7 +703,7 @@ public class PersistenceParseTreeWalker
         {
             return new OpaqueValidityMilestoning();
         }
-        throw new EngineException(String.format("Unrecognized validity milestoning. Valid validity milestoning types are %s", enumerate(VALIDITY_MILESTONING_TYPES)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized validity milestoning", sourceInformation, EngineErrorType.PARSER);
     }
 
     private DateTimeValidityMilestoning visitDateTimeValidityMilestoningScheme(PersistenceParserGrammar.DateTimeValidityMilestoningContext ctx)
@@ -754,7 +737,7 @@ public class PersistenceParseTreeWalker
         {
             return visitSourceSpecifiesFromThruDate(ctx.sourceSpecifiesFromThruValidityDerivation());
         }
-        throw new EngineException(String.format("Unrecognized validity derivation. Valid validity derivation types are %s", enumerate(VALIDITY_DERIVATION_TYPES)), sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized validity derivation", sourceInformation, EngineErrorType.PARSER);
     }
 
     private ValidityDerivation visitSourceSpecifiesFromDate(PersistenceParserGrammar.SourceSpecifiesFromValidityDerivationContext ctx)

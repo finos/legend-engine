@@ -44,7 +44,7 @@ public class PersistenceParserExtension implements PureGrammarParserExtension
     private static SourceCodeParserInfo getPersistenceParserInfo(SectionSourceCode sectionSourceCode)
     {
         CharStream input = CharStreams.fromString(sectionSourceCode.code);
-        ParserErrorListener errorListener = new ParserErrorListener(sectionSourceCode.walkerSourceInformation);
+        ParserErrorListener errorListener = new PersistenceParserErrorListener(sectionSourceCode.walkerSourceInformation);
         PersistenceLexerGrammar lexer = new PersistenceLexerGrammar(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
