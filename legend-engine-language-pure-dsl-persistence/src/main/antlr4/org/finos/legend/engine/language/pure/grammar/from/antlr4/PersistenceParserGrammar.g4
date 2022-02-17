@@ -14,7 +14,7 @@ identifier:                                 VALID_STRING | STRING
                                             | TRUE | FALSE | IMPORT
                                             | PERSISTENCE_PIPE | PERSISTENCE_PIPE_DOC | PERSISTENCE_PIPE_OWNERS | PERSISTENCE_PIPE_TRIGGER | PERSISTENCE_PIPE_READER | PERSISTENCE_PIPE_PERSISTER
                                             | TRIGGER_OPAQUE
-                                            | SERVICE_READER | SERVICE_READER_SERVICE
+                                            | READER_SERVICE | READER_SERVICE_SERVICE
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_BATCH_TARGET
                                             | TARGET_SPEC_NAME | TARGET_SPEC_MODEL_CLASS
                                             | TARGET_SPEC_GROUPED | TARGET_SPEC_GROUPED_TXN_SCOPE | TARGET_SPEC_GROUPED_COMPONENTS | TARGET_COMPONENT_PROPERTY | TARGET_COMPONENT_TARGET_SPEC
@@ -68,12 +68,12 @@ trigger:                                    PERSISTENCE_PIPE_TRIGGER COLON
 ;
 reader:                                     PERSISTENCE_PIPE_READER COLON serviceReader
 ;
-serviceReader:                              SERVICE_READER
+serviceReader:                              READER_SERVICE
                                                 BRACE_OPEN
                                                     (service)*
                                                 BRACE_CLOSE
 ;
-service:                                    SERVICE_READER_SERVICE COLON qualifiedName SEMI_COLON
+service:                                    READER_SERVICE_SERVICE COLON qualifiedName SEMI_COLON
 ;
 persister:                                  PERSISTENCE_PIPE_PERSISTER COLON
                                                 (

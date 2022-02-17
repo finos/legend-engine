@@ -24,8 +24,8 @@ PERSISTENCE_PIPE_PERSISTER:                 'persister';
 TRIGGER_OPAQUE:                             'OpaqueTrigger';
 
 // READER
-SERVICE_READER:                             'Service';
-SERVICE_READER_SERVICE:                     'service';
+READER_SERVICE:                             'Service';
+READER_SERVICE_SERVICE:                     'service';
 
 // PERSISTER
 PERSISTER_STREAMING:                        'Streaming';

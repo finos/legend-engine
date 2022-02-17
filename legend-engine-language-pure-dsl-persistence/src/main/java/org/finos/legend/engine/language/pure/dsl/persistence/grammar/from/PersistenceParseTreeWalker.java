@@ -1,11 +1,14 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ArrayIterate;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
@@ -41,13 +44,31 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceLexerGrammar.*;
+
 public class PersistenceParseTreeWalker
 {
+    private static final List<String> TRIGGERS = Lists.fixedSize.of(ruleNames[TRIGGER_OPAQUE]);
+    private static final List<String> READERS = Lists.fixedSize.of(ruleNames[READER_SERVICE]);
+    private static final List<String> PERSISTERS = Lists.fixedSize.of(ruleNames[PERSISTER_STREAMING], ruleNames[PERSISTER_BATCH]);
+    private static final List<String> TARGETS = Lists.fixedSize.of(ruleNames[TARGET_SPEC_GROUPED], ruleNames[TARGET_SPEC_FLAT], ruleNames[TARGET_SPEC_NESTED]);
+    private static final List<String> DEDUPLICATION_STRATEGIES = Lists.fixedSize.of(ruleNames[DEDUPLICATION_NONE], ruleNames[DEDUPLICATION_ANY_VERSION], ruleNames[DEDUPLICATION_MAX_VERSION], ruleNames[DEDUPLICATION_OPAQUE]);
+    private static final List<String> BATCH_MODES = Lists.fixedSize.of(
+            ruleNames[BATCH_MODE_NON_MILESTONED_SNAPSHOT], ruleNames[BATCH_MODE_UNITEMPORAL_SNAPSHOT], ruleNames[BATCH_MODE_BITEMPORAL_SNAPSHOT],
+            ruleNames[BATCH_MODE_NON_MILESTONED_DELTA], ruleNames[BATCH_MODE_UNITEMPORAL_DELTA], ruleNames[BATCH_MODE_BITEMPORAL_DELTA],
+            ruleNames[BATCH_MODE_APPEND_ONLY]);
+    private static final List<String> MERGE_STRATEGIES = Lists.fixedSize.of(ruleNames[MERGE_STRATEGY_NO_DELETES], ruleNames[MERGE_STRATEGY_DELETE_INDICATOR], ruleNames[MERGE_STRATEGY_OPAQUE]);
+    private static final List<String> AUDITING_TYPES = Lists.fixedSize.of(ruleNames[AUDITING_NONE], ruleNames[AUDITING_BATCH_DATE_TIME], ruleNames[AUDITING_OPAQUE]);
+    private static final List<String> TRANSACTION_MILESTONING_TYPES = Lists.fixedSize.of(ruleNames[TXN_MILESTONING_BATCH_ID], ruleNames[TXN_MILESTONING_DATE_TIME], ruleNames[TXN_MILESTONING_BOTH], ruleNames[TXN_MILESTONING_OPAQUE]);
+    private static final List<String> VALIDITY_MILESTONING_TYPES = Lists.fixedSize.of(ruleNames[VALIDITY_MILESTONING_DATE_TIME], ruleNames[VALIDITY_MILESTONING_OPAQUE]);
+    private static final List<String> VALIDITY_DERIVATION_TYPES = Lists.fixedSize.of(ruleNames[VALIDITY_DERIVATION_SOURCE_FROM], ruleNames[VALIDITY_DERIVATION_SOURCE_FROM_THRU], ruleNames[VALIDITY_DERIVATION_OPAQUE]);
+
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
@@ -58,6 +79,10 @@ public class PersistenceParseTreeWalker
         this.elementConsumer = elementConsumer;
         this.section = section;
     }
+
+    /**********
+     * persistence
+     **********/
 
     public void visit(PersistenceParserGrammar.DefinitionContext ctx)
     {
@@ -95,25 +120,35 @@ public class PersistenceParseTreeWalker
         return persistencePipe;
     }
 
+    /**********
+     * trigger
+     **********/
+
     private Trigger visitTrigger(PersistenceParserGrammar.TriggerContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.TRIGGER_OPAQUE() != null)
         {
             OpaqueTrigger opaqueTrigger = new OpaqueTrigger();
-            opaqueTrigger.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            opaqueTrigger.sourceInformation = sourceInformation;
 
             return opaqueTrigger;
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized trigger. Valid triggers are %s", enumerate(TRIGGERS)), sourceInformation, EngineErrorType.PARSER);
     }
+
+    /**********
+     * reader
+     **********/
 
     private Reader visitReader(PersistenceParserGrammar.ReaderContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.serviceReader() != null)
         {
             return visitServiceReader(ctx.serviceReader());
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized reader. Valid readers are %s", enumerate(READERS)), sourceInformation, EngineErrorType.PARSER);
     }
 
     private Reader visitServiceReader(PersistenceParserGrammar.ServiceReaderContext ctx)
@@ -128,8 +163,13 @@ public class PersistenceParseTreeWalker
         return reader;
     }
 
+    /**********
+     * persister
+     **********/
+
     private Persister visitPersister(PersistenceParserGrammar.PersisterContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.streamingPersister() != null)
         {
             return visitStreamingPersister(ctx.streamingPersister());
@@ -138,7 +178,7 @@ public class PersistenceParseTreeWalker
         {
             return visitBatchPersister(ctx.batchPersister());
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized persister. Valid persisters are %s", enumerate(PERSISTERS)), sourceInformation, EngineErrorType.PARSER);
     }
 
     private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
@@ -161,8 +201,13 @@ public class PersistenceParseTreeWalker
         return batch;
     }
 
+    /**********
+     * target specification
+     **********/
+
     private TargetSpecification visitTargetSpecification(PersistenceParserGrammar.TargetSpecificationContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.groupedTargetSpecification() != null)
         {
             return visitGroupedFlatTargetSpecification(ctx.groupedTargetSpecification());
@@ -175,7 +220,7 @@ public class PersistenceParseTreeWalker
         {
             return visitNestedTargetSpecification(ctx.nestedTargetSpecification());
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized target specification. Valid target specifications are %s", enumerate(TARGETS)), sourceInformation, EngineErrorType.PARSER);
     }
 
     private GroupedFlatTargetSpecification visitGroupedFlatTargetSpecification(PersistenceParserGrammar.GroupedTargetSpecificationContext ctx)
@@ -262,6 +307,7 @@ public class PersistenceParseTreeWalker
 
     private TransactionScope visitTransactionScope(PersistenceParserGrammar.TargetTransactionScopeContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.TXN_SCOPE_SINGLE() != null)
         {
             return TransactionScope.SINGLE_TARGET;
@@ -270,7 +316,7 @@ public class PersistenceParseTreeWalker
         {
             return TransactionScope.ALL_TARGETS;
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized transaction scope. Valid transaction scopes are %s", enumerate(TransactionScope.values())), sourceInformation, EngineErrorType.PARSER);
     }
 
     private PropertyAndFlatTargetSpecification visitPropertyAndFlatTargetSpecification(PersistenceParserGrammar.TargetComponentContext ctx)
@@ -300,6 +346,10 @@ public class PersistenceParseTreeWalker
         return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
     }
 
+    /**********
+     * deduplication strategy
+     **********/
+
     private DeduplicationStrategy visitDeduplicationStrategy(PersistenceParserGrammar.DeduplicationStrategyContext ctx)
     {
         // default to none
@@ -307,6 +357,8 @@ public class PersistenceParseTreeWalker
         {
             return new NoDeduplicationStrategy();
         }
+
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         if (ctx.noDeduplicationStrategy() != null)
         {
@@ -324,7 +376,7 @@ public class PersistenceParseTreeWalker
         {
             return new OpaqueDeduplicationStrategy();
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized deduplication strategy. Valid deduplication strategies are %s", enumerate(DEDUPLICATION_STRATEGIES)), sourceInformation, EngineErrorType.PARSER);
     }
 
     private MaxVersionDeduplicationStrategy visitMaxVersionDeduplicationStrategy(PersistenceParserGrammar.MaxVersionDeduplicationStrategyContext ctx)
@@ -339,8 +391,13 @@ public class PersistenceParseTreeWalker
         return deduplicationStrategy;
     }
 
+    /**********
+     * batch mode
+     **********/
+
     private BatchMilestoningMode visitBatchMilestoningMode(PersistenceParserGrammar.BatchModeContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.nonMilestonedSnapshot() != null)
         {
             return visitNonMilestonedSnapshot(ctx.nonMilestonedSnapshot());
@@ -369,8 +426,60 @@ public class PersistenceParseTreeWalker
         {
             return visitAppendOnly(ctx.appendOnly());
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized batch milestoning mode. Valid batch milestoning modes are %s", enumerate(BATCH_MODES)), sourceInformation, EngineErrorType.PARSER);
     }
+
+    /**********
+     * batch mode - snapshot
+     **********/
+
+    private NonMilestonedSnapshot visitNonMilestonedSnapshot(PersistenceParserGrammar.NonMilestonedSnapshotContext ctx)
+    {
+        NonMilestonedSnapshot nonMilestonedSnapshot = new NonMilestonedSnapshot();
+        nonMilestonedSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // auditing
+        PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditing()), "auditing", nonMilestonedSnapshot.sourceInformation);
+        nonMilestonedSnapshot.auditing = visitAuditing(auditingContext);
+
+        return nonMilestonedSnapshot;
+    }
+
+    private UnitemporalSnapshot visitUnitemporalSnapshot(PersistenceParserGrammar.UnitemporalSnapshotContext ctx)
+    {
+        UnitemporalSnapshot unitemporalSnapshot = new UnitemporalSnapshot();
+        unitemporalSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // transaction milestoning
+        PersistenceParserGrammar.TransactionMilestoningContext transactionMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.transactionMilestoning()), "transactionMilestoning", unitemporalSnapshot.sourceInformation);
+        unitemporalSnapshot.transactionMilestoning = visitTransactionMilestoning(transactionMilestoningContext);
+
+        return unitemporalSnapshot;
+    }
+
+    private BitemporalSnapshot visitBitemporalSnapshot(PersistenceParserGrammar.BitemporalSnapshotContext ctx)
+    {
+        BitemporalSnapshot bitemporalSnapshot = new BitemporalSnapshot();
+        bitemporalSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // transaction milestoning
+        PersistenceParserGrammar.TransactionMilestoningContext transactionMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMilestoning(), "transactionMilestoning", bitemporalSnapshot.sourceInformation);
+        bitemporalSnapshot.transactionMilestoning = visitTransactionMilestoning(transactionMilestoningContext);
+
+        // validity milestoning
+        PersistenceParserGrammar.ValidityMilestoningContext validityMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityMilestoning(), "validityMilestoning", bitemporalSnapshot.sourceInformation);
+        bitemporalSnapshot.validityMilestoning = visitValidityMilestoning(validityMilestoningContext);
+
+        // validity derivation
+        PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", bitemporalSnapshot.sourceInformation);
+        bitemporalSnapshot.validityDerivation = visitValidityDerivation(validityDerivationContext);
+
+        return bitemporalSnapshot;
+    }
+
+    /**********
+     * batch mode - delta
+     **********/
 
     private NonMilestonedDelta visitNonMilestonedDelta(PersistenceParserGrammar.NonMilestonedDeltaContext ctx)
     {
@@ -424,6 +533,10 @@ public class PersistenceParseTreeWalker
         return bitemporalDelta;
     }
 
+    /**********
+     * batch mode - append only
+     **********/
+
     private AppendOnly visitAppendOnly(PersistenceParserGrammar.AppendOnlyContext ctx)
     {
         AppendOnly appendOnly = new AppendOnly();
@@ -440,52 +553,49 @@ public class PersistenceParseTreeWalker
         return appendOnly;
     }
 
-    private NonMilestonedSnapshot visitNonMilestonedSnapshot(PersistenceParserGrammar.NonMilestonedSnapshotContext ctx)
+    // merge strategy
+
+    private MergeStrategy visitMergeStrategy(PersistenceParserGrammar.MergeStrategyContext ctx)
     {
-        NonMilestonedSnapshot nonMilestonedSnapshot = new NonMilestonedSnapshot();
-        nonMilestonedSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // auditing
-        PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.auditing()), "auditing", nonMilestonedSnapshot.sourceInformation);
-        nonMilestonedSnapshot.auditing = visitAuditing(auditingContext);
-
-        return nonMilestonedSnapshot;
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.noDeletesMergeStrategy() != null)
+        {
+            return new NoDeletesMergeStrategy();
+        }
+        else if (ctx.deleteIndicatorMergeStrategy() != null)
+        {
+            return visitDeleteIndicatorMergeScheme(ctx.deleteIndicatorMergeStrategy());
+        }
+        else if (ctx.opaqueMergeStrategy() != null)
+        {
+            return new OpaqueMergeStrategy();
+        }
+        throw new EngineException(String.format("Unrecognized merge strategy. Valid merge strategies are %s", enumerate(MERGE_STRATEGIES)), sourceInformation, EngineErrorType.PARSER);
     }
 
-    private UnitemporalSnapshot visitUnitemporalSnapshot(PersistenceParserGrammar.UnitemporalSnapshotContext ctx)
+    private DeleteIndicatorMergeStrategy visitDeleteIndicatorMergeScheme(PersistenceParserGrammar.DeleteIndicatorMergeStrategyContext ctx)
     {
-        UnitemporalSnapshot unitemporalSnapshot = new UnitemporalSnapshot();
-        unitemporalSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        DeleteIndicatorMergeStrategy mergeStrategy = new DeleteIndicatorMergeStrategy();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // transaction milestoning
-        PersistenceParserGrammar.TransactionMilestoningContext transactionMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.transactionMilestoning()), "transactionMilestoning", unitemporalSnapshot.sourceInformation);
-        unitemporalSnapshot.transactionMilestoning = visitTransactionMilestoning(transactionMilestoningContext);
+        // delete property
+        PersistenceParserGrammar.MergeStrategyDeletePropertyContext deletePropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategyDeleteProperty(), "deleteIndicatorProperty", sourceInformation);
+        mergeStrategy.deleteProperty = PureGrammarParserUtility.fromIdentifier(deletePropertyContext.identifier());
 
-        return unitemporalSnapshot;
+        // delete values
+        PersistenceParserGrammar.MergeStrategyDeleteValuesContext deleteValuesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategyDeleteValues(), "deleteValues", sourceInformation);
+        mergeStrategy.deleteValues = deleteValuesContext != null && deleteValuesContext.STRING() != null ? ListIterate.collect(deleteValuesContext.STRING(), deleteValueContext -> PureGrammarParserUtility.fromGrammarString(deleteValueContext.getText(), true)) : Collections.emptyList();
+
+        return mergeStrategy;
     }
 
-    private BitemporalSnapshot visitBitemporalSnapshot(PersistenceParserGrammar.BitemporalSnapshotContext ctx)
-    {
-        BitemporalSnapshot bitemporalSnapshot = new BitemporalSnapshot();
-        bitemporalSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // transaction milestoning
-        PersistenceParserGrammar.TransactionMilestoningContext transactionMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionMilestoning(), "transactionMilestoning", bitemporalSnapshot.sourceInformation);
-        bitemporalSnapshot.transactionMilestoning = visitTransactionMilestoning(transactionMilestoningContext);
-
-        // validity milestoning
-        PersistenceParserGrammar.ValidityMilestoningContext validityMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityMilestoning(), "validityMilestoning", bitemporalSnapshot.sourceInformation);
-        bitemporalSnapshot.validityMilestoning = visitValidityMilestoning(validityMilestoningContext);
-
-        // validity derivation
-        PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", bitemporalSnapshot.sourceInformation);
-        bitemporalSnapshot.validityDerivation = visitValidityDerivation(validityDerivationContext);
-
-        return bitemporalSnapshot;
-    }
+    /**********
+     * auditing
+     **********/
 
     private Auditing visitAuditing(PersistenceParserGrammar.AuditingContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.noAuditing() != null)
         {
             return new NoAuditing();
@@ -498,7 +608,7 @@ public class PersistenceParseTreeWalker
         {
             return new OpaqueAuditing();
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized auditing. Valid auditing types are %s", enumerate(AUDITING_TYPES)), sourceInformation, EngineErrorType.PARSER);
     }
 
     private BatchDateTimeAuditing visitBatchDateTimeAuditScheme(PersistenceParserGrammar.BatchDateTimeAuditingContext ctx)
@@ -513,8 +623,13 @@ public class PersistenceParseTreeWalker
         return auditing;
     }
 
+    /**********
+     * transaction milestoning
+     **********/
+
     private TransactionMilestoning visitTransactionMilestoning(PersistenceParserGrammar.TransactionMilestoningContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.batchIdTransactionMilestoning() != null)
         {
             return visitBatchIdTransactionMilestoning(ctx.batchIdTransactionMilestoning());
@@ -531,7 +646,7 @@ public class PersistenceParseTreeWalker
         {
             return new OpaqueTransactionMilestoning();
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized transaction milestoning. Valid transaction milestoning types are %s", enumerate(TRANSACTION_MILESTONING_TYPES)), sourceInformation, EngineErrorType.PARSER);
     }
 
     private BatchIdTransactionMilestoning visitBatchIdTransactionMilestoning(PersistenceParserGrammar.BatchIdTransactionMilestoningContext ctx)
@@ -590,8 +705,13 @@ public class PersistenceParseTreeWalker
         return milestoning;
     }
 
+    /**********
+     * validity milestoning
+     **********/
+
     private ValidityMilestoning visitValidityMilestoning(PersistenceParserGrammar.ValidityMilestoningContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.dateTimeValidityMilestoning() != null)
         {
             return visitDateTimeValidityMilestoningScheme(ctx.dateTimeValidityMilestoning());
@@ -600,7 +720,7 @@ public class PersistenceParseTreeWalker
         {
             return new OpaqueValidityMilestoning();
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized validity milestoning. Valid validity milestoning types are %s", enumerate(VALIDITY_MILESTONING_TYPES)), sourceInformation, EngineErrorType.PARSER);
     }
 
     private DateTimeValidityMilestoning visitDateTimeValidityMilestoningScheme(PersistenceParserGrammar.DateTimeValidityMilestoningContext ctx)
@@ -619,8 +739,13 @@ public class PersistenceParseTreeWalker
         return milestoning;
     }
 
+    /**********
+     * validity derivation
+     **********/
+
     private ValidityDerivation visitValidityDerivation(PersistenceParserGrammar.ValidityDerivationContext ctx)
     {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.sourceSpecifiesFromValidityDerivation() != null)
         {
             return visitSourceSpecifiesFromDate(ctx.sourceSpecifiesFromValidityDerivation());
@@ -629,7 +754,7 @@ public class PersistenceParseTreeWalker
         {
             return visitSourceSpecifiesFromThruDate(ctx.sourceSpecifiesFromThruValidityDerivation());
         }
-        throw new UnsupportedOperationException();
+        throw new EngineException(String.format("Unrecognized validity derivation. Valid validity derivation types are %s", enumerate(VALIDITY_DERIVATION_TYPES)), sourceInformation, EngineErrorType.PARSER);
     }
 
     private ValidityDerivation visitSourceSpecifiesFromDate(PersistenceParserGrammar.SourceSpecifiesFromValidityDerivationContext ctx)
@@ -660,36 +785,15 @@ public class PersistenceParseTreeWalker
         return validityDerivation;
     }
 
-    private MergeStrategy visitMergeStrategy(PersistenceParserGrammar.MergeStrategyContext ctx)
+    // helper methods
+
+    private static String enumerate(Iterable<String> items)
     {
-        if (ctx.noDeletesMergeStrategy() != null)
-        {
-            return new NoDeletesMergeStrategy();
-        }
-        else if (ctx.deleteIndicatorMergeStrategy() != null)
-        {
-            return visitDeleteIndicatorMergeScheme(ctx.deleteIndicatorMergeStrategy());
-        }
-        else if (ctx.opaqueMergeStrategy() != null)
-        {
-            return new OpaqueMergeStrategy();
-        }
-        throw new UnsupportedOperationException();
+        return Iterate.makeString(items, "['", "', '", "']");
     }
 
-    private DeleteIndicatorMergeStrategy visitDeleteIndicatorMergeScheme(PersistenceParserGrammar.DeleteIndicatorMergeStrategyContext ctx)
+    private static String enumerate(Object[] items)
     {
-        DeleteIndicatorMergeStrategy mergeStrategy = new DeleteIndicatorMergeStrategy();
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // delete property
-        PersistenceParserGrammar.MergeStrategyDeletePropertyContext deletePropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategyDeleteProperty(), "deleteIndicatorProperty", sourceInformation);
-        mergeStrategy.deleteProperty = PureGrammarParserUtility.fromIdentifier(deletePropertyContext.identifier());
-
-        // delete values
-        PersistenceParserGrammar.MergeStrategyDeleteValuesContext deleteValuesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategyDeleteValues(), "deleteValues", sourceInformation);
-        mergeStrategy.deleteValues = deleteValuesContext != null && deleteValuesContext.STRING() != null ? ListIterate.collect(deleteValuesContext.STRING(), deleteValueContext -> PureGrammarParserUtility.fromGrammarString(deleteValueContext.getText(), true)) : Collections.emptyList();
-
-        return mergeStrategy;
+        return ArrayIterate.makeString(items, "['", "', '", "']");
     }
 }
