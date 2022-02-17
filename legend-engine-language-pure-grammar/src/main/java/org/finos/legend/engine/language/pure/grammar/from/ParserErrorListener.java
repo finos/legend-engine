@@ -42,7 +42,15 @@ public class ParserErrorListener extends BaseErrorListener
     {
         if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
         {
-            msg = "Unexpected token";
+            List<String> expectedSymbols  = dereferenceTokens(e.getExpectedTokens().toList());
+            if (expectedSymbols.isEmpty())
+            {
+                msg = "Unexpected token";
+            }
+            else
+            {
+                msg = "Unexpected token. Valid alternatives: " + expectedSymbols;
+            }
         }
         else if (e == null || e.getOffendingToken() == null)
         {
@@ -80,12 +88,6 @@ public class ParserErrorListener extends BaseErrorListener
                 charPositionInLine + 1 + (line == 1 ? this.walkerSourceInformation.getColumnOffset() : 0),
                 offendingToken.getLine() + this.walkerSourceInformation.getLineOffset(),
                 charPositionInLine + offendingToken.getText().length() + (line == 1 ? this.walkerSourceInformation.getColumnOffset() : 0));
-
-        List<String> expectedSymbols  = dereferenceTokens(e.getExpectedTokens().toList());
-        if (!expectedSymbols.isEmpty()) {
-            msg = String.format("%s. Valid symbols: %s", msg, expectedSymbols);
-        }
-
         throw new EngineException(msg, sourceInformation, EngineErrorType.PARSER);
     }
 
