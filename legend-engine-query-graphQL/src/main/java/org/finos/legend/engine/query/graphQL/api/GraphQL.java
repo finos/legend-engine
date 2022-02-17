@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.query.graphQL.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -31,11 +32,14 @@ import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.pac4j.core.profile.CommonProfile;
 
+import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 public abstract class GraphQL
 {
@@ -53,10 +57,20 @@ public abstract class GraphQL
         return new Translator().translate(document, pureModel);
     }
 
-    protected PureModel loadModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String project, String branch) throws IOException
+    protected PureModel loadModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String project, String branch) throws PrivilegedActionException
+    {
+        Subject subject = ProfileManagerHelper.extractSubject(profiles);
+        return subject == null ?
+                getPureModel(profiles, request, project, branch):
+                Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> getPureModel(profiles, request, project, branch));
+    }
+
+    private PureModel getPureModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String project, String branch)
     {
         CookieStore cookieStore = new BasicCookieStore();
         ArrayIterate.forEach(request.getCookies(), c -> cookieStore.addCookie(new MyCookie(c)));
+
+
         try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore))
         {
             if (metadataserver == null || metadataserver.getSdlc() == null)
@@ -66,14 +80,13 @@ public abstract class GraphQL
             HttpGet req = new HttpGet("http://"+metadataserver.getSdlc().host+":"+metadataserver.getSdlc().port+"/api/projects/" + project + "/workspaces/" + branch + "/pureModelContextData");
             try (CloseableHttpResponse res = client.execute(req))
             {
-                PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(EntityUtils.toString(res.getEntity()), PureModelContextData.class);
-                PureModel pureModel = this.modelManager.loadModel(pureModelContextData, PureClientVersions.production, profiles, "");
-                return pureModel;
+                ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+                PureModelContextData pureModelContextData = mapper.readValue(res.getEntity().getContent(), PureModelContextData.class);
+                return this.modelManager.loadModel(pureModelContextData, PureClientVersions.production, profiles, "");
             }
         }
         catch (Exception e)
         {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
