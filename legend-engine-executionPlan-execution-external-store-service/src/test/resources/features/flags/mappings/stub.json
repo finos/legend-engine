@@ -1,0 +1,25 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "/trades/traderDetails?trader.details=abc:F_Name_1:L_Name_1"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "s_tradeId": "1",
+            "s_traderDetails": "abc:F_Name_1:L_Name_1",
+            "s_tradeDetails": "30:100"
+          },
+          {
+            "s_tradeId": "2",
+            "s_traderDetails": "abc:F_Name_1:L_Name_1",
+            "s_tradeDetails": "30:400"
+          }
+        ]
+      }
+    }
+  ]
+}

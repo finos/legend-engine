@@ -181,6 +181,7 @@
         <openjdk.jol.version>0.9</openjdk.jol.version>
         <json-smart.version>2.4.7</json-smart.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
+        <wiremock.version>2.27.2</wiremock.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -1630,6 +1631,22 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>4.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock-jre8</artifactId>
+                <version>${wiremock.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-io</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.conscrypt</groupId>
+                        <artifactId>conscrypt-openjdk-uber</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
 
