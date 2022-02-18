@@ -181,7 +181,9 @@ anyVersionDeduplicationStrategy:            DEDUPLICATION_ANY_VERSION SEMI_COLON
 ;
 maxVersionDeduplicationStrategy:            DEDUPLICATION_MAX_VERSION
                                                 BRACE_OPEN
-                                                    deduplicationVersionProperty
+                                                    (
+                                                        deduplicationVersionProperty
+                                                    )*
                                                 BRACE_CLOSE
 ;
 deduplicationVersionProperty:               DEDUPLICATION_MAX_VERSION_PROPERTY COLON identifier SEMI_COLON
@@ -201,12 +203,16 @@ batchMode:                                  TARGET_SPEC_FLAT_BATCH_MODE COLON
 ;
 nonMilestonedSnapshot:                      BATCH_MODE_NON_MILESTONED_SNAPSHOT
                                                 BRACE_OPEN
-                                                    auditing
+                                                    (
+                                                        auditing
+                                                    )*
                                                 BRACE_CLOSE
 ;
 unitemporalSnapshot:                        BATCH_MODE_UNITEMPORAL_SNAPSHOT
                                                 BRACE_OPEN
-                                                    transactionMilestoning
+                                                    (
+                                                        transactionMilestoning
+                                                    )*
                                                 BRACE_CLOSE
 ;
 bitemporalSnapshot:                         BATCH_MODE_BITEMPORAL_SNAPSHOT
@@ -220,7 +226,9 @@ bitemporalSnapshot:                         BATCH_MODE_BITEMPORAL_SNAPSHOT
 ;
 nonMilestonedDelta:                         BATCH_MODE_NON_MILESTONED_DELTA
                                                 BRACE_OPEN
-                                                    auditing
+                                                    (
+                                                        auditing
+                                                    )*
                                                 BRACE_CLOSE
 ;
 unitemporalDelta:                           BATCH_MODE_UNITEMPORAL_DELTA
@@ -260,7 +268,9 @@ noAuditing:                                 AUDITING_NONE SEMI_COLON
 ;
 batchDateTimeAuditing:                      AUDITING_BATCH_DATE_TIME
                                                 BRACE_OPEN
-                                                    batchDateTimeFieldName
+                                                    (
+                                                        batchDateTimeFieldName
+                                                    )*
                                                 BRACE_CLOSE
 ;
 batchDateTimeFieldName:                     AUDITING_BATCH_DATE_TIME_FIELD_NAME COLON STRING SEMI_COLON
@@ -342,7 +352,9 @@ validityDerivation:                         VALIDITY_DERIVATION COLON
 ;
 sourceSpecifiesFromValidityDerivation:      VALIDITY_DERIVATION_SOURCE_FROM
                                                 BRACE_OPEN
-                                                    validityDerivationFromProperty
+                                                    (
+                                                        validityDerivationFromProperty
+                                                    )*
                                                 BRACE_CLOSE
 ;
 sourceSpecifiesFromThruValidityDerivation:  VALIDITY_DERIVATION_SOURCE_FROM_THRU
