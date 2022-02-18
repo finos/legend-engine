@@ -45,8 +45,12 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "}\n";
     }
 
+    /**********
+     * persistence
+     **********/
+
     @Test
-    public void pipelineDoc()
+    public void persistenceDoc()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -99,8 +103,12 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "}\n", "PARSER error at [3:1-25:1]: Field 'doc' should be specified only once");
     }
 
+    /**********
+     * trigger
+     **********/
+
     @Test
-    public void pipelineTrigger()
+    public void trigger()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -153,8 +161,12 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "}\n", "PARSER error at [3:1-25:1]: Field 'trigger' should be specified only once");
     }
 
+    /**********
+     * reader
+     **********/
+
     @Test
-    public void pipelineReader()
+    public void reader()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -208,7 +220,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
-    public void pipelineReaderService()
+    public void readerService()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -261,8 +273,12 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "}\n", "PARSER error at [7:11-11:3]: Field 'service' should be specified only once");
     }
 
+    /**********
+     * persister
+     **********/
+
     @Test
-    public void pipelinePersister()
+    public void persister()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -316,7 +332,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
-    public void pipelinePersisterStreaming()
+    public void persisterStreaming()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -335,7 +351,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
-    public void pipelinePersisterBatch()
+    public void persisterBatch()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -388,8 +404,235 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "}\n", "PARSER error at [11:14-33:3]: Field 'target' should be specified only once");
     }
 
+    /**********
+     * target specification - grouped flat
+     **********/
+
     @Test
-    public void pipelinePersisterBatchFlatTargetName()
+    public void batchGroupedFlatModelClass()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: 'Foo';\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-31:5]: Field 'modelClass' is required");
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: 'Foo';\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-33:5]: Field 'modelClass' should be specified only once");
+    }
+
+    @Test
+    public void batchGroupedFlatTransactionScope()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: 'Foo';\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-31:5]: Field 'transactionScope' is required");
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: 'Foo';\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-33:5]: Field 'transactionScope' should be specified only once");
+    }
+
+    @Test
+    public void batchGroupedFlatComponents()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-17:5]: Field 'components' is required");
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: 'Foo';\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: 'Foo';\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'TestDataset1';\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-47:5]: Field 'components' should be specified only once");
+    }
+
+    /**********
+     * target specification - flat
+     **********/
+
+    @Test
+    public void batchFlatTargetName()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -443,7 +686,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
-    public void pipelinePersisterBatchFlatModelClass()
+    public void batchFlatModelClass()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -497,7 +740,69 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
-    public void pipelinePersisterBatchFlatBatchMode()
+    public void batchFlatDeduplicationStrategy()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      deduplicationStrategy: NoDeduplication;\n" +
+                "      deduplicationStrategy: NoDeduplication;\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-24:5]: Field 'deduplicationStrategy' should be specified only once");
+    }
+
+    @Test
+    public void batchFlatPartitionProperties()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      partitionProperties: [];\n" +
+                "      partitionProperties: [];\n" +
+                "      batchMode: AppendOnly\n" +
+                "      {\n" +
+                "        auditing: NoAuditing;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-24:5]: Field 'partitionProperties' should be specified only once");
+    }
+
+    @Test
+    public void batchFlatBatchMode()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -548,6 +853,98 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [13:13-27:5]: Field 'batchMode' should be specified only once");
+    }
+
+    /**********
+     * target specification - nested
+     **********/
+
+    @Test
+    public void batchNestedTargetName()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Nested\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-16:5]: Field 'targetName' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Nested\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-18:5]: Field 'targetName' should be specified only once");
+    }
+
+    @Test
+    public void batchNestedModelClass()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Nested\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-16:5]: Field 'modelClass' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistencePipe test::TestPipe \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: Nested\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [13:13-18:5]: Field 'modelClass' should be specified only once");
     }
 
     @Test
