@@ -279,7 +279,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(NoDeduplicationStrategy val)
         {
-            return getTabString(indentLevel) + "deduplicationStrategy: NoDeduplication;";
+            return getTabString(indentLevel) + "deduplicationStrategy: NoDeduplication;\n";
         }
 
         @Override
