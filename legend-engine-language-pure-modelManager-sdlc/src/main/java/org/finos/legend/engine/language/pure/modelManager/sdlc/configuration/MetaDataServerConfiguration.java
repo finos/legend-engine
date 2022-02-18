@@ -44,6 +44,11 @@ public class MetaDataServerConfiguration
         this(pure, null, null);
     }
 
+    public MetaDataServerConfiguration(ServerConnectionConfiguration pure, ServerConnectionConfiguration alloy)
+    {
+        this(pure, alloy, null);
+    }
+
     public MetaDataServerConfiguration(ServerConnectionConfiguration pure, ServerConnectionConfiguration alloy, ServerConnectionConfiguration sdlc)
     {
         this.pure = pure;
