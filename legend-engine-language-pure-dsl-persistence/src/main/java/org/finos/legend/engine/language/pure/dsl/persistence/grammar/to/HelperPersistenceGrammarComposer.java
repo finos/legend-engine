@@ -376,7 +376,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(AppendOnly val)
         {
-            return getTabString(indentLevel) + "batchMode: NonMilestonedDelta\n" +
+            return getTabString(indentLevel) + "batchMode: AppendOnly\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderAuditing(((AppendOnly) val).auditing, indentLevel + 1) +
                     getTabString(indentLevel + 1) + "filterDuplicates: " + ((AppendOnly) val).filterDuplicates + ";\n" +

@@ -1,8 +1,6 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.ArrayIterate;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
@@ -766,17 +764,5 @@ public class PersistenceParseTreeWalker
         validityDerivation.sourceDateTimeThruProperty = PureGrammarParserUtility.fromIdentifier(validityDerivationThruPropertyContext.identifier());
 
         return validityDerivation;
-    }
-
-    // helper methods
-
-    private static String enumerate(Iterable<String> items)
-    {
-        return Iterate.makeString(items, "['", "', '", "']");
-    }
-
-    private static String enumerate(Object[] items)
-    {
-        return ArrayIterate.makeString(items, "['", "', '", "']");
     }
 }
