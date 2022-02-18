@@ -6,6 +6,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceLexerGrammar;
 
 import java.util.List;
+import java.util.Objects;
 
 public class PersistenceParserErrorListener extends ParserErrorListener
 {
@@ -17,6 +18,6 @@ public class PersistenceParserErrorListener extends ParserErrorListener
     @Override
     protected List<String> dereferenceTokens(List<Integer> expectedTokens)
     {
-        return ListIterate.collect(expectedTokens, PersistenceLexerGrammar.VOCABULARY::getLiteralName);
+        return ListIterate.collect(expectedTokens, PersistenceLexerGrammar.VOCABULARY::getLiteralName).select(Objects::nonNull);
     }
 }
