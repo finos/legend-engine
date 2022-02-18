@@ -428,8 +428,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "transactionMilestoning: BatchIdOnly\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "batchIdInFieldName: '" + val.batchIdInName + "';\n" +
-                    getTabString(indentLevel + 1) + "batchIdOutFieldName: '" + val.batchIdOutName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdInFieldName: '" + val.batchIdInFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdOutFieldName: '" + val.batchIdOutFieldName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -438,8 +438,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "transactionMilestoning: DateTimeOnly\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "dateTimeInFieldName: '" + val.dateTimeInName + "';\n" +
-                    getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeInFieldName: '" + val.dateTimeInFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutFieldName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -448,10 +448,10 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "transactionMilestoning: BatchIdAndDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "batchIdInFieldName: '" + val.batchIdInName + "';\n" +
-                    getTabString(indentLevel + 1) + "batchIdOutFieldName: '" + val.batchIdOutName + "';\n" +
-                    getTabString(indentLevel + 1) + "dateTimeInFieldName: '" + val.dateTimeInName + "';\n" +
-                    getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdInFieldName: '" + val.batchIdInFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdOutFieldName: '" + val.batchIdOutFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeInFieldName: '" + val.dateTimeInFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutFieldName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -476,8 +476,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "validityMilestoning: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "dateTimeFromFieldName: '" + val.dateTimeFromName + "';\n" +
-                    getTabString(indentLevel + 1) + "dateTimeThruFieldName: '" + val.dateTimeThruName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeFromFieldName: '" + val.dateTimeFromFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeThruFieldName: '" + val.dateTimeThruFieldName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 

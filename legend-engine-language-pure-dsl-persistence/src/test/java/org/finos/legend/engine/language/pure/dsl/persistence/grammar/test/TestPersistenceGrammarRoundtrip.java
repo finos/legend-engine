@@ -6,7 +6,7 @@ import org.junit.Test;
 public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
-    public void testPipeline()
+    public void persistence()
     {
         test("###Persistence\n" +
                 "import test::*;\n" +

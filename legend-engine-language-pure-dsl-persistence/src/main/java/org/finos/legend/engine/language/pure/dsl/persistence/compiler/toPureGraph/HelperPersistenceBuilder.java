@@ -407,26 +407,26 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_batch_transactionmilestoning_TransactionMilestoning visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_transactionmilestoning_BatchIdAndDateTimeTransactionMilestoning_Impl("")
-                    ._batchIdInName(val.batchIdInName)
-                    ._batchIdOutName(val.batchIdOutName)
-                    ._dateTimeInName(val.dateTimeInName)
-                    ._dateTimeOutName(val.dateTimeOutName);
+                    ._batchIdInName(val.batchIdInFieldName)
+                    ._batchIdOutName(val.batchIdOutFieldName)
+                    ._dateTimeInName(val.dateTimeInFieldName)
+                    ._dateTimeOutName(val.dateTimeOutFieldName);
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_batch_transactionmilestoning_TransactionMilestoning visit(BatchIdTransactionMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_transactionmilestoning_BatchIdTransactionMilestoning_Impl("")
-                    ._batchIdInName(val.batchIdInName)
-                    ._batchIdOutName(val.batchIdOutName);
+                    ._batchIdInName(val.batchIdInFieldName)
+                    ._batchIdOutName(val.batchIdOutFieldName);
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_batch_transactionmilestoning_TransactionMilestoning visit(DateTimeTransactionMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_transactionmilestoning_DateTimeTransactionMilestoning_Impl("")
-                    ._dateTimeInName(val.dateTimeInName)
-                    ._dateTimeOutName(val.dateTimeOutName);
+                    ._dateTimeInName(val.dateTimeInFieldName)
+                    ._dateTimeOutName(val.dateTimeOutFieldName);
         }
 
         @Override
@@ -442,8 +442,8 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_batch_validitymilestoning_ValidityMilestoning visit(DateTimeValidityMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_validitymilestoning_DateTimeValidityMilestoning_Impl("")
-                    ._dateTimeFromName(val.dateTimeFromName)
-                    ._dateTimeThruName(val.dateTimeThruName);
+                    ._dateTimeFromName(val.dateTimeFromFieldName)
+                    ._dateTimeThruName(val.dateTimeThruFieldName);
         }
 
         @Override
