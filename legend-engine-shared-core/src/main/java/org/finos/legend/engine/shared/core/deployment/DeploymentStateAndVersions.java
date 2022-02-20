@@ -30,7 +30,7 @@ public class DeploymentStateAndVersions
     {
         try
         {
-            URL infoURL = DeploymentStateAndVersions.class.getClassLoader().getResource("alloyExecutionVersion.json");
+            URL infoURL = DeploymentStateAndVersions.class.getClassLoader().getResource("legendExecutionVersion.json");
             if (infoURL != null)
             {
                 java.util.Scanner scanner = new java.util.Scanner(infoURL.openStream()).useDelimiter("\\A");
