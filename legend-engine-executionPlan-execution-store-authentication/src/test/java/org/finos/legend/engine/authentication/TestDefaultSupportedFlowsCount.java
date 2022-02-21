@@ -19,6 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -26,6 +27,11 @@ import static org.junit.Assert.fail;
 
 public class TestDefaultSupportedFlowsCount {
     LegendDefaultDatabaseAuthenticationFlowProvider defaultProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+
+    @Before
+    public void configureDefaultProvider(){
+        defaultProvider.configure(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
+    }
 
     @Test
     public void testCount() {

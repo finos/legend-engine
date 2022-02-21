@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -33,6 +34,11 @@ public class TestDefaultSupportedFlows
 {
     private static LegendDefaultDatabaseAuthenticationFlowProvider DEFAULT_PROVIDER = new LegendDefaultDatabaseAuthenticationFlowProvider();
     private final RelationalDatabaseConnection relationalDatabaseConnection;
+
+    @Before
+    public void configureDefaultProvider(){
+        DEFAULT_PROVIDER.configure(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
+    }
 
     @Parameterized.Parameters
     public static Collection<Object[]> data()
