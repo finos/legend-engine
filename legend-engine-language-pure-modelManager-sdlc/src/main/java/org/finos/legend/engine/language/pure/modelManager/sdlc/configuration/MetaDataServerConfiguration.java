@@ -31,6 +31,8 @@ public class MetaDataServerConfiguration
     public ServerConnectionConfiguration alloy;
     @JsonProperty
     public ServerConnectionConfiguration pure;
+    @JsonProperty
+    public ServerConnectionConfiguration sdlc;
 
     public MetaDataServerConfiguration()
     {
@@ -39,13 +41,26 @@ public class MetaDataServerConfiguration
 
     public MetaDataServerConfiguration(ServerConnectionConfiguration pure)
     {
-        this(pure, null);
+        this(pure, null, null);
     }
 
     public MetaDataServerConfiguration(ServerConnectionConfiguration pure, ServerConnectionConfiguration alloy)
     {
+        this(pure, alloy, null);
+    }
+
+    public MetaDataServerConfiguration(ServerConnectionConfiguration pure, ServerConnectionConfiguration alloy, ServerConnectionConfiguration sdlc)
+    {
         this.pure = pure;
         this.alloy = alloy;
+        this.sdlc = sdlc;
+    }
+
+    @JsonIgnore
+    @BsonIgnore
+    public ServerConnectionConfiguration getSdlc()
+    {
+        return sdlc;
     }
 
     @JsonIgnore
