@@ -22,6 +22,8 @@ import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.DataLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.DataParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.aggregationAware.AggregationAwareLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.aggregationAware.AggregationAwareParserGrammar;
@@ -35,13 +37,16 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreA
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ModelConnectionParseTreeWalker;
-import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.data.*;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.BinaryEmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.PureCollectionEmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ReferenceEmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.TextEmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.*;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.*;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -51,6 +56,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
@@ -60,6 +67,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
+import java.util.function.Consumer;
 
 public class CorePureGrammarParser implements PureGrammarParserExtension
 {
@@ -100,6 +108,22 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
                 ConnectionValueParser.newParser(JSON_MODEL_CONNECTION_TYPE, CorePureGrammarParser::parseJsonModelConnection),
                 ConnectionValueParser.newParser(XML_MODEL_CONNECTION_TYPE, CorePureGrammarParser::parseXmlModelConnection),
                 ConnectionValueParser.newParser(MODEL_CHAIN_CONNECTION_TYPE, CorePureGrammarParser::parseModelChainConnection));
+    }
+
+    @Override
+    public Iterable<? extends SectionParser> getExtraSectionParsers()
+    {
+        return Lists.immutable.with(SectionParser.newParser("Data", CorePureGrammarParser::parseDataSection));
+    }
+
+    @Override
+    public Iterable<? extends EmbeddedDataParser> getExtraEmbeddedDataParsers()
+    {
+        return Lists.immutable.with(
+                new BinaryEmbeddedDataParser(),
+                new PureCollectionEmbeddedDataParser(),
+                new ReferenceEmbeddedDataParser(),
+                new TextEmbeddedDataParser());
     }
 
     private static Connection parseJsonModelConnection(ConnectionValueSourceCode connectionValueSourceCode)
@@ -327,5 +351,29 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         parser.addErrorListener(errorListener);
         SourceInformation source = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext);
         return new SourceCodeParserInfo(mappingElementSourceCode.code, input, source, mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.aggregateSpecification());
+    }
+
+    private static Section parseDataSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext pureGrammarParserContext)
+    {
+        SourceCodeParserInfo parserInfo = getDataParserInfo(sectionSourceCode);
+        DefaultCodeSection section = new DefaultCodeSection();
+        section.parserName = sectionSourceCode.sectionType;
+        section.sourceInformation = parserInfo.sourceInformation;
+        DataParseTreeWalker walker = new DataParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, pureGrammarParserContext.getPureGrammarParserExtensions());
+        walker.visit((DataParserGrammar.DefinitionContext) parserInfo.rootContext);
+        return section;
+    }
+
+    private static SourceCodeParserInfo getDataParserInfo(SectionSourceCode sectionSourceCode)
+    {
+        CharStream input = CharStreams.fromString(sectionSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(sectionSourceCode.walkerSourceInformation);
+        DataLexerGrammar lexer = new DataLexerGrammar(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        DataParserGrammar parser = new DataParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 }

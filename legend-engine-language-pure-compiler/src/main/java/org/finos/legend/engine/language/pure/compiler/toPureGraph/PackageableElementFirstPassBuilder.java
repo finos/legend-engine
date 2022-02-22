@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.infer
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
@@ -95,8 +96,6 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Class _class)
     {
-        System.out.println(_class._package);
-        System.out.println(_class.name);
         String fullPath = this.context.pureModel.buildPackageString(_class._package, _class.name);
         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass = new Root_meta_pure_metamodel_type_Class_Impl<>(_class.name, SourceInformationHelper.toM3SourceInformation(_class.sourceInformation), null);
         this.context.pureModel.typesIndex.put(fullPath, targetClass);
@@ -287,5 +286,20 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         // NOTE: we don't really need to add section index to the PURE graph
         ListIterate.forEach(sectionIndex.sections, section -> ListIterate.forEach(section.elements, elementPath -> this.context.pureModel.sectionsIndex.putIfAbsent(elementPath, section)));
         return stub;
+    }
+
+    @Override
+    public PackageableElement visit(DataElement dataElement)
+    {
+        final Root_meta_data_DataElement compiled = new Root_meta_data_DataElement_Impl(dataElement.name);
+        GenericType mappingGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::data::DataElement"));
+        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(dataElement._package);
+        compiled._name(dataElement.name)
+                ._package(pack)
+                ._classifierGenericType(mappingGenericType)
+                ._stereotypes(ListIterate.collect(dataElement.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
+                ._taggedValues(ListIterate.collect(dataElement.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)));
+        pack._childrenAdd(compiled);
+        return compiled;
     }
 }
