@@ -1,5 +1,6 @@
 package org.finos.legend.engine.external.format.json;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.engine.external.format.json.compile.JsonSchemaCompiler;
 import org.finos.legend.engine.external.format.json.fromModel.ModelToJsonSchemaConfiguration;
@@ -51,16 +52,63 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     }
 
     @Override
+    public String getFileExtension() {
+        return TYPE.toLowerCase();
+    }
+
+    @Override
+    public String getFormatLabel()
+    {
+        return "JSON Schema";
+    }
+
+    @Override
+    public boolean supportsModelGeneration()
+    {
+        return true;
+    }
+
+    @Override
+    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
+    {
+        return core_external_format_json_binding_jsonSchemaToPure.Root_meta_external_format_json_binding_toPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());
+    }
+
+    @Override
     public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, JsonSchemaToModelConfiguration config, PureModel pureModel)
     {
-        Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration configuration = new Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration_Impl("")
-                ._sourceSchemaId(config.sourceSchemaId)
-                ._targetBinding(config.targetBinding)
-                ._targetPackage(config.targetPackage);
+
+        Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration configuration =
+                core_external_format_json_binding_jsonSchemaToPure.Root_meta_external_format_json_binding_toPure_defaultConfig__JsonSchemaToModelConfiguration_1_(pureModel.getExecutionSupport());
+        if(config.sourceSchemaId != null)
+        {
+            configuration._sourceSchemaId((config.sourceSchemaId));
+        }
+        if(config.targetBinding != null)
+        {
+            configuration._targetBinding(config.targetBinding);
+        }
+        if(config.targetPackage != null)
+        {
+            configuration._targetPackage(config.targetPackage);
+        }
         return IN_DEBUG
                 ? core_external_format_json_binding_jsonSchemaToPure.Root_meta_external_format_json_binding_toPure_jsonSchemaToPureWithDebug_SchemaSet_1__JsonSchemaToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport())
                 : core_external_format_json_binding_jsonSchemaToPure.Root_meta_external_format_json_binding_toPure_jsonSchemaToPure_SchemaSet_1__JsonSchemaToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());
     }
+
+    @Override
+    public boolean supportsSchemaGeneration()
+    {
+        return true;
+    }
+
+    @Override
+    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getSchemaGenerationProperties(PureModel pureModel)
+    {
+        return core_external_format_flatdata_binding_pureToFlatData.Root_meta_external_format_flatdata_binding_fromPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());
+    }
+
 
     @Override
     public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToJsonSchemaConfiguration config, PureModel pureModel)

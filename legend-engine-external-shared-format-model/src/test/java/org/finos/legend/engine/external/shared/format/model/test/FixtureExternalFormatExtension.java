@@ -72,6 +72,12 @@ public class FixtureExternalFormatExtension implements ExternalFormatExtension<R
     }
 
     @Override
+    public String getFileExtension()
+    {
+        return "txt";
+    }
+
+    @Override
     public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToSchemaConfiguration configuration, PureModel pureModel)
     {
         return null;

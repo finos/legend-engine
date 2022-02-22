@@ -88,6 +88,14 @@ public interface ExternalFormatExtension<
         return false;
     }
 
+
+    default String getFormatLabel()
+    {
+        return this.getFormat();
+    }
+
+    String getFileExtension();
+
     /**
      * Provides the properties used to configure model generation.
      */

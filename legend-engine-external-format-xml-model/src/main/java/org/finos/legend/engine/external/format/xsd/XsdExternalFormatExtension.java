@@ -62,6 +62,11 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     }
 
     @Override
+    public String getFileExtension() {
+        return "xml";
+    }
+
+    @Override
     public boolean supportsModelGeneration()
     {
         return true;
@@ -76,12 +81,25 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     @Override
     public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, XsdToModelConfiguration config, PureModel pureModel)
     {
-        Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration configuration = new Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration_Impl("")
-                ._sourceSchemaId(config.sourceSchemaId)
-                ._targetPackage(config.targetPackage)
-                ._targetBinding(config.targetBinding)
-                ._inlineCollectionClasses(config.inlineCollectionClasses)
-                ._includeUnreachableClasses(config.includeUnreachableClasses);
+
+
+        Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration configuration =
+                core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_defaultConfig__XsdToModelConfiguration_1_(pureModel.getExecutionSupport());
+        if(config.sourceSchemaId != null)
+        {
+            configuration._sourceSchemaId((config.sourceSchemaId));
+        }
+        if(config.targetBinding != null)
+        {
+            configuration._targetBinding(config.targetBinding);
+        }
+        if(config.targetPackage != null)
+        {
+            configuration._targetPackage(config.targetPackage);
+        }
+        configuration
+              ._inlineCollectionClasses(config.inlineCollectionClasses)
+            ._includeUnreachableClasses(config.includeUnreachableClasses);
         return DEBUG_MODEL_GEN
             ? core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_xsdToPureWithDebug_SchemaSet_1__XsdToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport())
             : core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_xsdToPure_SchemaSet_1__XsdToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());

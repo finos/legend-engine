@@ -75,6 +75,11 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
     }
 
     @Override
+    public String getFileExtension() {
+        return "txt";
+    }
+
+    @Override
     public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
     {
         return core_external_format_flatdata_binding_flatDataToPure.Root_meta_external_format_flatdata_binding_toPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());

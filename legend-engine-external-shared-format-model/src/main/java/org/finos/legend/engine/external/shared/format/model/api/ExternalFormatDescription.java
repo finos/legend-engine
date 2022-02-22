@@ -37,6 +37,10 @@ public class ExternalFormatDescription
     public boolean supportsModelGeneration;
     public List<GenerationProperty> modelGenerationProperties;
 
+    public String label;
+    public String fileExtension;
+
+
     public static ExternalFormatDescription newDescription(ExternalFormatExtension extension, PureModel pureModel)
     {
         ExternalFormatDescription result = new ExternalFormatDescription();
@@ -46,6 +50,8 @@ public class ExternalFormatDescription
         result.modelGenerationProperties = toGenerationProperties(extension.getModelGenerationProperties(pureModel));
         result.supportsSchemaGeneration = extension.supportsSchemaGeneration();
         result.schemaGenerationProperties = toGenerationProperties(extension.getSchemaGenerationProperties(pureModel));
+        result.label = extension.getFormatLabel();
+        result.fileExtension = extension.getFileExtension();
         return result;
     }
 

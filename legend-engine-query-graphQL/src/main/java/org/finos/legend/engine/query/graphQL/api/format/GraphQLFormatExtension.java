@@ -84,12 +84,18 @@ public class GraphQLFormatExtension implements ExternalFormatExtension<Root_meta
     }
 
     @Override
+    public String getFileExtension()
+    {
+        return "json";
+    }
+
+    @Override
     public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, GraphQLSchemaToModelConfiguration config, PureModel pureModel)
     {
         Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration configuration = new Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration_Impl("")
                 ._sourceSchemaId(config.sourceSchemaId)
-                ._targetPackage(config.targetPackage)
-                ._targetBinding(config.targetBinding);
+                ._targetPackage(config.targetPackage == null ? "target::package": config.targetPackage)
+                ._targetBinding(config.targetBinding == null ? "target::package::GeneratedBinding" : config.targetBinding);
         return core_external_query_graphql_introspection_transformation.Root_meta_external_query_graphQL_binding_toPure_introspection_IntrospectionToPure_SchemaSet_1__SchemaToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());
     }
 
