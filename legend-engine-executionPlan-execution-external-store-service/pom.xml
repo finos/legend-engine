@@ -126,13 +126,6 @@
         </dependency>
         <!-- OPEN TRACING -->
 
-        <!-- JACKSON -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <!-- JACKSON -->
-
         <!-- Authentication -->
         <dependency>
             <groupId>org.pac4j</groupId>
@@ -242,6 +235,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-format-json-runtime</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock-jre8</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
