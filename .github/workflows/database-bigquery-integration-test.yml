@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: External Integration Test
+name: Database BigQuery Integration Tests
 
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY: ${{ secrets.SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY }}
-  SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD: ${{ secrets.SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 on:
   schedule:
@@ -53,4 +53,5 @@ jobs:
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build + Run Integration Tests
         run: |
-          mvn -DfailIfNoTests=false -Dtest="ExternalIntegration_*" install
+          mvn -pl legend-engine-executionPlan-execution-store-authentication -Dtest="ExternalIntegration*BigQuery*" test
+          mvn -pl legend-engine-executionPlan-execution-store-relational-connection-tests -Dtest="ExternalIntegration*BigQuery*" test
