@@ -91,6 +91,7 @@
         <module>legend-engine-protocol-relational</module>
         <module>legend-engine-protocol-external-store-service</module>
         <module>legend-engine-protocol-graphQL</module>
+        <module>legend-engine-protocol-persistence</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
         <module>legend-engine-query-graphQL</module>
@@ -585,6 +586,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-protocol-graphQL</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-persistence</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
