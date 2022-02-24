@@ -33,11 +33,11 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
 
     private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows(){
         return Lists.immutable.of(
+                new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
+                new BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow(),
                 new H2StaticWithTestUserPasswordFlow(),
                 new SnowflakeWithKeyPairFlow(),
-                new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
-                new SqlServerStaticWithUserPasswordFlow(),
-                new BigQueryWithGCPWorkloadIdentityFederationFlow((LegendDefaultDatabaseAuthenticationFlowProviderConfiguration) this.databaseAuthenticationFlowProviderConfiguration)
+                new SqlServerStaticWithUserPasswordFlow()
         );
     }
 

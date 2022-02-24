@@ -19,8 +19,8 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPWorkloadIdentityFederationAuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.BigQueryDataSourceSpecification;
@@ -44,8 +44,8 @@ public class BigQueryManager extends DatabaseManager
         {
             case GCPApplicationDefaultCredentialsAuthenticationStrategyKey.TYPE:
                 return buildUrlWithApplicationDefaultCredentials(extraUserDataSourceProperties, (GCPApplicationDefaultCredentialsAuthenticationStrategy) authenticationStrategy);
-            case GCPWorkloadIdentityFederationAuthenticationStrategyKey.TYPE:
-                return buildUrlWithWorkloadIdentityFederation(extraUserDataSourceProperties, (GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy);
+            case GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyKey.TYPE:
+                return buildUrlWithWorkloadIdentityFederation(extraUserDataSourceProperties, (GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy);
 
         }
         throw new UnsupportedOperationException("Unsupported auth strategy :" + authenticationStrategy.getKey().type());
@@ -62,7 +62,7 @@ public class BigQueryManager extends DatabaseManager
         return url;
     }
 
-    private String buildUrlWithWorkloadIdentityFederation(Properties extraUserDataSourceProperties, GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy){
+    private String buildUrlWithWorkloadIdentityFederation(Properties extraUserDataSourceProperties, GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy authenticationStrategy){
         String url = String.format(BIGQUERY_JDBC_URL +
                         "ProjectId=%s;" +
                         this.buildParamForDefaultDataset(extraUserDataSourceProperties) +

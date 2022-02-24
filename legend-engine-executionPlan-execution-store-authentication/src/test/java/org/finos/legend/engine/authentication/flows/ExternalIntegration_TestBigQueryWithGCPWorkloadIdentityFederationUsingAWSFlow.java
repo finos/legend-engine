@@ -14,35 +14,45 @@
 
 package org.finos.legend.engine.authentication.flows;
 
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.authentication.vaults.InMemoryVaultForTesting;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.vault.Vault;
+import org.junit.Before;
 import org.junit.Test;
 
 
 import static org.junit.Assert.*;
 
-public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationFlow {
-    private Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow {
+    private final Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+    private final InMemoryVaultForTesting inMemoryVault = new InMemoryVaultForTesting();
+
+    @Before
+    public void setup()
+    {
+        Vault.INSTANCE.registerImplementation(inMemoryVault);
+    }
 
     @Test
     public void makeCredential() throws Exception {
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration databaseAuthenticationFlowProviderConfiguration = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration();
-        databaseAuthenticationFlowProviderConfiguration.defaultAWSAccountID = "564704738649";
-        databaseAuthenticationFlowProviderConfiguration.defaultAWSRegion = "us-east-1";
-        databaseAuthenticationFlowProviderConfiguration.defaultAWSRoleName = "gcp-wif";
-        BigQueryWithGCPWorkloadIdentityFederationFlow flow = new BigQueryWithGCPWorkloadIdentityFederationFlow(databaseAuthenticationFlowProviderConfiguration);
-        GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
+        inMemoryVault.setValue("key1", System.getenv("AWS_ACCESS_KEY_ID"));
+        inMemoryVault.setValue("secret1", System.getenv("AWS_SECRET_ACCESS_KEY"));
+        BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow flow = new BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow();
+        GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy authenticationStrategy = new GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy();
         authenticationStrategy.workloadProjectNumber = "412074507462";
         authenticationStrategy.workloadPoolId = "aws-wif-pool2";
         authenticationStrategy.workloadProviderId = "aws-wif-provider2";
         authenticationStrategy.serviceAccountEmail = "legend-integration-wif1@legend-integration-testing.iam.gserviceaccount.com";
-        authenticationStrategy.gcpScope = "bigquery";
+        authenticationStrategy.awsAccountId = "564704738649";
+        authenticationStrategy.awsRegion = "us-east-1";
+        authenticationStrategy.awsRole = "gcp-wif";
+        authenticationStrategy.awsAccessKeyIdVaultReference = "key1";
+        authenticationStrategy.awsSecretAccessKeyVaultReference = "secret1";
         Credential credential = flow.makeCredential(identity1, new BigQueryDatasourceSpecification(), authenticationStrategy);
         assertTrue("Credential is not an instance of AccessTokenCredential", credential instanceof OAuthCredential);
         assertNotNull("Credential is null", ((OAuthCredential) credential).getAccessToken());

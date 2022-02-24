@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
 import org.finos.legend.pure.generated.*;
 
@@ -58,16 +59,23 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
         {
             return new Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl("");
         }
-        else if (authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
+        else if (authenticationStrategy instanceof GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationAuthenticationStrategy_Impl("")
-                    ._workloadProjectNumber(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).workloadProjectNumber)
-                    ._serviceAccountEmail(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).serviceAccountEmail)
-                    ._gcpScope(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).gcpScope)
-                    ._workloadPoolId(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).workloadPoolId)
-                    ._workloadProviderId(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).workloadProviderId)
-                    ._discoveryUrl(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).discoveryUrl)
-                    ._clientId(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).clientId);
+            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy_Impl("")
+                    ._workloadProjectNumber(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).workloadProjectNumber)
+                    ._serviceAccountEmail(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).serviceAccountEmail)
+                    ._additionalGcpScopes(
+                            ((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).additionalGcpScopes == null ?
+                                    FastList.newList() :
+                                    FastList.newList(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).additionalGcpScopes)
+                    )
+                    ._workloadPoolId(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).workloadPoolId)
+                    ._workloadProviderId(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).workloadProviderId)
+                    ._awsAccountId(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsAccountId)
+                    ._awsRegion(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsRegion)
+                    ._awsRole(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsRole)
+                    ._awsAccessKeyIdVaultReference(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsAccessKeyIdVaultReference)
+                    ._awsSecretAccessKeyVaultReference(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsSecretAccessKeyVaultReference);
         }
         return null;
     }

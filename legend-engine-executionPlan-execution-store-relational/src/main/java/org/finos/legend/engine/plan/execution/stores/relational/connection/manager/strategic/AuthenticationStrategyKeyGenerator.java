@@ -56,16 +56,19 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
             GCPApplicationDefaultCredentialsAuthenticationStrategy GCPApplicationDefaultCredentialsAuthenticationStrategy = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)authenticationStrategy;
             return new GCPApplicationDefaultCredentialsAuthenticationStrategyKey();
         }
-        else if(authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy){
-            GCPWorkloadIdentityFederationAuthenticationStrategy gcpWorkloadIdentityFederationAuthenticationStrategy = (GCPWorkloadIdentityFederationAuthenticationStrategy)authenticationStrategy;
-            return new GCPWorkloadIdentityFederationAuthenticationStrategyKey(
-                    gcpWorkloadIdentityFederationAuthenticationStrategy.workloadProjectNumber,
-                    gcpWorkloadIdentityFederationAuthenticationStrategy.serviceAccountEmail,
-                    gcpWorkloadIdentityFederationAuthenticationStrategy.gcpScope,
-                    gcpWorkloadIdentityFederationAuthenticationStrategy.workloadPoolId,
-                    gcpWorkloadIdentityFederationAuthenticationStrategy.workloadProviderId,
-                    gcpWorkloadIdentityFederationAuthenticationStrategy.discoveryUrl,
-                    gcpWorkloadIdentityFederationAuthenticationStrategy.clientId
+        else if(authenticationStrategy instanceof GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy){
+            GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy = (GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy)authenticationStrategy;
+            return new GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyKey(
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.workloadProjectNumber,
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.serviceAccountEmail,
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.additionalGcpScopes,
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.workloadPoolId,
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.workloadProviderId,
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.awsAccountId,
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.awsRegion,
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.awsRole,
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.awsAccessKeyIdVaultReference,
+                    gcpWorkloadIdentityFederationWithAWSAuthenticationStrategy.awsSecretAccessKeyVaultReference
             );
         }
         return null;

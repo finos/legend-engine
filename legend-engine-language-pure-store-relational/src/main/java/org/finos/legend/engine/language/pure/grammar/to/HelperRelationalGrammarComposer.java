@@ -24,7 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper;
@@ -697,20 +697,23 @@ public class HelperRelationalGrammarComposer
             GCPApplicationDefaultCredentialsAuthenticationStrategy auth = (GCPApplicationDefaultCredentialsAuthenticationStrategy)_auth;
             return "GCPApplicationDefaultCredentials";
         }
-        else if (_auth instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
+        else if (_auth instanceof GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy)
         {
-            GCPWorkloadIdentityFederationAuthenticationStrategy auth = (GCPWorkloadIdentityFederationAuthenticationStrategy) _auth;
+            GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy auth = (GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) _auth;
             int baseIndentation = 1;
-            return "GCPWorkloadIdentityFederation" +
+            return "GCPWorkloadIdentityFederationWithAWS" +
                     "\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "workloadProjectNumber: " + convertString(auth.workloadProjectNumber, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "serviceAccountEmail: " + convertString(auth.serviceAccountEmail, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "gcpScope: " + convertString(auth.gcpScope, true) + ";\n" +
+                    (!auth.additionalGcpScopes.isEmpty() ? context.getIndentationString() + getTabString(baseIndentation + 1) + "additionalGcpScopes: [\n" + ListIterate.collect(auth.additionalGcpScopes, s -> context.getIndentationString() + getTabString(baseIndentation + 2) + convertString(s, true)).makeString(",\n") + "\n" + context.getIndentationString() + getTabString(baseIndentation + 2) + "];\n" : "") +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "workloadPoolId: " + convertString(auth.workloadPoolId, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "workloadProviderId: " + convertString(auth.workloadProviderId, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "discoveryUrl: " + convertString(auth.discoveryUrl, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "clientId: " + convertString(auth.clientId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "awsAccountId: " + convertString(auth.awsAccountId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "awsRegion: " + convertString(auth.awsRegion, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "awsRole: " + convertString(auth.awsRole, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "awsAccessKeyIdVaultReference: " + convertString(auth.awsAccessKeyIdVaultReference, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "awsSecretAccessKeyVaultReference: " + convertString(auth.awsSecretAccessKeyVaultReference, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         return null;

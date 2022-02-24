@@ -64,16 +64,19 @@ snowflakePublicAuthUserName:  SNOWFLAKE_AUTH_PUBLIC_USERNAME COLON STRING SEMI_C
 gcpApplicationDefaultCredentialsAuth : GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH SEMI_COLON
 ;
 
-gcpWorkloadIdentityFederationAuth: GCP_WORKLOAD_IDENTITY_FEDERATION_AUTH
+gcpWorkloadIdentityFederationWithAWSAuth: GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS_AUTH
                                     BRACE_OPEN
                                         (
                                             workloadProjectNumberRef
                                             | serviceAccountEmailRef
-                                            | gcpScopeRef
+                                            | additionalGcpScopesRef
                                             | workloadPoolIdRef
                                             | workloadProviderIdRef
-                                            | discoveryUrlRef
-                                            | clientIdRef
+                                            | awsAccountIdRef
+                                            | awsRegionRef
+                                            | awsRoleRef
+                                            | awsAccessKeyIdVaultRef
+                                            | awsSecretAccessKeyVaultRef
                                         )*
                                     BRACE_CLOSE
 ;
@@ -84,7 +87,10 @@ workloadProjectNumberRef:                WORKLOAD_PROJECT_NUMBER COLON STRING SE
 serviceAccountEmailRef:          SERVICE_ACCOUNT_EMAIL COLON STRING SEMI_COLON
 ;
 
-gcpScopeRef:                            GCP_SCOPE COLON STRING SEMI_COLON
+additionalGcpScopesRef:                            ADDITIONAL_GCP_SCOPES COLON gcpScopesArray SEMI_COLON
+;
+
+gcpScopesArray:                                  BRACKET_OPEN ( STRING (COMMA STRING)* )? BRACKET_CLOSE
 ;
 
 workloadPoolIdRef:                       WORKLOAD_POOL_ID COLON STRING SEMI_COLON
@@ -93,8 +99,17 @@ workloadPoolIdRef:                       WORKLOAD_POOL_ID COLON STRING SEMI_COLO
 workloadProviderIdRef:                   WORKLOAD_PROVIDER_ID COLON STRING SEMI_COLON
 ;
 
-discoveryUrlRef:                 DISCOVERY_URL COLON STRING SEMI_COLON
+awsAccountIdRef:                 AWS_ACCOUNT_ID COLON STRING SEMI_COLON
 ;
 
-clientIdRef:                     CLIENT_ID COLON STRING SEMI_COLON
+awsRegionRef:                     AWS_REGION COLON STRING SEMI_COLON
+;
+
+awsRoleRef:                     AWS_ROLE COLON STRING SEMI_COLON
+;
+
+awsAccessKeyIdVaultRef:         AWS_ACCESS_KEY_ID_VAULT_REFERENCE COLON STRING SEMI_COLON
+;
+
+awsSecretAccessKeyVaultRef:             AWS_SECRET_ACCESS_KEY_VAULT_REFERENCE COLON STRING SEMI_COLON
 ;
