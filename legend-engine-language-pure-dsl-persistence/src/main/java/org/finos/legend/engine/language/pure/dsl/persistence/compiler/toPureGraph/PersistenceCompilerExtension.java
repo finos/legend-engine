@@ -3,6 +3,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -18,7 +19,7 @@ public class PersistenceCompilerExtension implements CompilerExtension
     {
         return Collections.singletonList(Processor.newProcessor(
                 PersistencePipe.class,
-                Lists.fixedSize.with(Service.class, Mapping.class),
+                Lists.fixedSize.with(Service.class, Mapping.class, PackageableConnection.class),
                 (pipe, context) -> new Root_meta_pure_persistence_metamodel_PersistencePipe_Impl("")
                         ._documentation(pipe.documentation)
                         ._ownersAddAll(Lists.immutable.ofAll(pipe.owners))
