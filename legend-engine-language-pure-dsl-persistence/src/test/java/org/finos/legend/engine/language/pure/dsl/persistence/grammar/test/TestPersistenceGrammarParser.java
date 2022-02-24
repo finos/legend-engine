@@ -21,7 +21,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         return "###Persistence\n" +
                 "\n" +
-                "PersistencePipe " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
+                "Persistence " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -54,7 +54,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  trigger: OpaqueTrigger;\n" +
                 "  reader: Service\n" +
@@ -78,7 +78,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  doc: 'This is test documentation.';\n" +
@@ -112,7 +112,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  reader: Service\n" +
@@ -136,7 +136,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -170,7 +170,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -191,7 +191,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -224,7 +224,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -248,7 +248,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -282,7 +282,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -294,7 +294,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -336,7 +336,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -355,7 +355,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -370,7 +370,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -413,7 +413,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -446,7 +446,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "}\n", "PARSER error at [13:13-31:5]: Field 'modelClass' is required");
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -486,7 +486,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -519,7 +519,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "}\n", "PARSER error at [13:13-31:5]: Field 'transactionScope' is required");
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -559,7 +559,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -578,7 +578,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "}\n", "PARSER error at [13:13-17:5]: Field 'components' is required");
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -636,7 +636,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -660,7 +660,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -690,7 +690,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -714,7 +714,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -744,7 +744,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -775,7 +775,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -806,7 +806,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -826,7 +826,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -864,7 +864,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -883,7 +883,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -908,7 +908,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -927,7 +927,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -956,7 +956,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -979,7 +979,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1008,7 +1008,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1031,7 +1031,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1060,7 +1060,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1085,7 +1085,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1116,7 +1116,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1141,7 +1141,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1172,7 +1172,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1197,7 +1197,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1234,7 +1234,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1257,7 +1257,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1286,7 +1286,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1310,7 +1310,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1340,7 +1340,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1364,7 +1364,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1394,7 +1394,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1420,7 +1420,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1452,7 +1452,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1478,7 +1478,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1510,7 +1510,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1536,7 +1536,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1568,7 +1568,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1594,7 +1594,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1630,7 +1630,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1654,7 +1654,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1684,7 +1684,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1708,7 +1708,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
 
         test("###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -1740,7 +1740,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "\n" +
                 "import test::*;\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe\n" +
+                "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
                 "  owners: ['owner1', 'owner2'];\n" +

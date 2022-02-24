@@ -4,9 +4,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 
-public abstract class PersistencePipeBackend extends PackageableElement
+public abstract class PersistenceContext extends PackageableElement
 {
-    public PackageableElementPointer persistencePipe;
+    public PackageableElementPointer persistence;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor) {

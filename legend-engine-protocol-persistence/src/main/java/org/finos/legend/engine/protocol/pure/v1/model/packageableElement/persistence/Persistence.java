@@ -5,7 +5,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 
-public class PersistencePipe extends PackageableElement
+public class Persistence extends PackageableElement
 {
     public String documentation;
     public java.util.List<String> owners = java.util.Collections.<String>emptyList();

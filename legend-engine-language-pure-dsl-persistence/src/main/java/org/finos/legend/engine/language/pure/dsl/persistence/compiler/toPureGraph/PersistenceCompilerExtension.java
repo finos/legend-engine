@@ -5,7 +5,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistencePipe;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistencePipe_Impl;
@@ -18,17 +18,17 @@ public class PersistenceCompilerExtension implements CompilerExtension
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.singletonList(Processor.newProcessor(
-                PersistencePipe.class,
+                Persistence.class,
                 Lists.fixedSize.with(Service.class, Mapping.class, PackageableConnection.class),
-                (pipe, context) -> new Root_meta_pure_persistence_metamodel_PersistencePipe_Impl("")
-                        ._documentation(pipe.documentation)
-                        ._ownersAddAll(Lists.immutable.ofAll(pipe.owners))
-                        ._trigger(HelperPersistenceBuilder.buildTrigger(pipe.trigger)),
-                (pipe, context) ->
+                (persistence, context) -> new Root_meta_pure_persistence_metamodel_PersistencePipe_Impl("")
+                        ._documentation(persistence.documentation)
+                        ._ownersAddAll(Lists.immutable.ofAll(persistence.owners))
+                        ._trigger(HelperPersistenceBuilder.buildTrigger(persistence.trigger)),
+                (persistence, context) ->
                 {
-                    Root_meta_pure_persistence_metamodel_PersistencePipe purePipe = (Root_meta_pure_persistence_metamodel_PersistencePipe) context.pureModel.getOrCreatePackage(pipe._package)._children().detect(c -> pipe.name.equals(c._name()));
-                    purePipe._persister(HelperPersistenceBuilder.buildPersister(pipe.persister, context));
-                    purePipe._reader(HelperPersistenceBuilder.buildReader(pipe.reader, context));
+                    Root_meta_pure_persistence_metamodel_PersistencePipe purePersistence = (Root_meta_pure_persistence_metamodel_PersistencePipe) context.pureModel.getOrCreatePackage(persistence._package)._children().detect(c -> persistence.name.equals(c._name()));
+                    purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
+                    purePersistence._reader(HelperPersistenceBuilder.buildReader(persistence.reader, context));
                 }
         ));
     }

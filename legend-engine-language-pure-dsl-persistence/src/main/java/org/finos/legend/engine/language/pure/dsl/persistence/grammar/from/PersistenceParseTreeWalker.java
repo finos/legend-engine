@@ -8,7 +8,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistencePars
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.Auditing;
@@ -68,37 +68,37 @@ public class PersistenceParseTreeWalker
     public void visit(PersistenceParserGrammar.DefinitionContext ctx)
     {
         this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
-        ctx.persistencePipe().stream().map(this::visitPersistencePipe).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        ctx.persistence().stream().map(this::visitPersistence).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
 
-    private PersistencePipe visitPersistencePipe(PersistenceParserGrammar.PersistencePipeContext ctx)
+    private Persistence visitPersistence(PersistenceParserGrammar.PersistenceContext ctx)
     {
-        PersistencePipe persistencePipe = new PersistencePipe();
-        persistencePipe.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
-        persistencePipe._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
-        persistencePipe.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        Persistence persistence = new Persistence();
+        persistence.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        persistence._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        persistence.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // documentation
-        PersistenceParserGrammar.DocumentationContext documentationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.documentation(), "doc", persistencePipe.sourceInformation);
-        persistencePipe.documentation = PureGrammarParserUtility.fromGrammarString(documentationContext.STRING().getText(), true);
+        PersistenceParserGrammar.DocumentationContext documentationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.documentation(), "doc", persistence.sourceInformation);
+        persistence.documentation = PureGrammarParserUtility.fromGrammarString(documentationContext.STRING().getText(), true);
 
         // owners (optional)
-        PersistenceParserGrammar.OwnersContext ownersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owners(), "owners", persistencePipe.sourceInformation);
-        persistencePipe.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : Collections.emptyList();
+        PersistenceParserGrammar.OwnersContext ownersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owners(), "owners", persistence.sourceInformation);
+        persistence.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : Collections.emptyList();
 
         // trigger
-        PersistenceParserGrammar.TriggerContext triggerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.trigger(), "trigger", persistencePipe.sourceInformation);
-        persistencePipe.trigger = visitTrigger(triggerContext);
+        PersistenceParserGrammar.TriggerContext triggerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.trigger(), "trigger", persistence.sourceInformation);
+        persistence.trigger = visitTrigger(triggerContext);
 
         // reader
-        PersistenceParserGrammar.ReaderContext readerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.reader(), "reader", persistencePipe.sourceInformation);
-        persistencePipe.reader = visitReader(readerContext);
+        PersistenceParserGrammar.ReaderContext readerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.reader(), "reader", persistence.sourceInformation);
+        persistence.reader = visitReader(readerContext);
 
         // persister
-        PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persister(), "persister", persistencePipe.sourceInformation);
-        persistencePipe.persister = visitPersister(persisterContext);
+        PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persister(), "persister", persistence.sourceInformation);
+        persistence.persister = visitPersister(persisterContext);
 
-        return persistencePipe;
+        return persistence;
     }
 
     /**********

@@ -4,7 +4,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
@@ -46,15 +46,15 @@ public class HelperPersistenceGrammarComposer
 {
     private HelperPersistenceGrammarComposer() {}
 
-    public static String renderPipe(PersistencePipe pipe, int indentLevel, PureGrammarComposerContext context)
+    public static String renderPersistence(Persistence persistence, int indentLevel, PureGrammarComposerContext context)
     {
-        return "PersistencePipe " + convertPath(pipe.getPath()) + "\n" +
+        return "Persistence " + convertPath(persistence.getPath()) + "\n" +
                 "{\n" +
-                renderDocumentation(pipe.documentation, indentLevel) +
-                renderOwners(pipe.owners, indentLevel) +
-                renderTrigger(pipe.trigger, indentLevel) +
-                renderReader(pipe.reader, indentLevel) +
-                renderPersister(pipe.persister, indentLevel) +
+                renderDocumentation(persistence.documentation, indentLevel) +
+                renderOwners(persistence.owners, indentLevel) +
+                renderTrigger(persistence.trigger, indentLevel) +
+                renderReader(persistence.reader, indentLevel) +
+                renderPersister(persistence.persister, indentLevel) +
                 "}";
     }
 

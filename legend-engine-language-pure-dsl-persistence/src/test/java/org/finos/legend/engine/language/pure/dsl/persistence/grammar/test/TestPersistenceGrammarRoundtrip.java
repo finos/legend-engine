@@ -10,7 +10,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     {
         test("###Persistence\n" +
                 "import test::*;\n" +
-                "PersistencePipe test::TestPipe\n" +
+                "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
                 "  owners: ['owner1', 'owner2'];\n" +

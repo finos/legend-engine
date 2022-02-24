@@ -157,7 +157,7 @@ public class HelperPersistenceBuilder
                 return new Root_meta_pure_persistence_metamodel_reader_ServiceReader_Impl("")
                         ._service((Root_meta_legend_service_metamodel_Service) packageableElement);
             }
-            throw new EngineException(String.format("PersistencePipe refers to a service '%s' that is not defined", val.service), val.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException(String.format("Persistence refers to a service '%s' that is not defined", val.service), val.sourceInformation, EngineErrorType.COMPILATION);
         }
     }
 

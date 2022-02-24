@@ -8,13 +8,13 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     @Override
     protected String getDuplicatedElementTestCode()
     {
-        return "Class test::TestPipe {}\n" +
+        return "Class test::TestPersistence {}\n" +
                 "\n" +
                 "Class test::ModelClass {}\n" +
                 "\n" +
                 "###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -41,7 +41,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [7:1-28:1]: Duplicated element 'test::TestPipe'";
+        return "COMPILATION error at [7:1-28:1]: Duplicated element 'test::TestPersistence'";
     }
 
     @Test
@@ -51,7 +51,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "\n" +
                 "###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -72,7 +72,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [9:11-12:3]: PersistencePipe refers to a service 'test::Service' that is not defined");
+                "}\n", "COMPILATION error at [9:11-12:3]: Persistence refers to a service 'test::Service' that is not defined");
     }
 
     @Test
@@ -109,7 +109,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "}\n" +
                 "###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -167,7 +167,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "}\n" +
                 "###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe\n" +
+                "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -237,7 +237,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "}\n" +
                 "###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe\n" +
+                "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -310,7 +310,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "}\n" +
                 "###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe\n" +
+                "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -383,7 +383,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "}\n" +
                 "###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe\n" +
+                "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
                 "  trigger: OpaqueTrigger;\n" +
@@ -453,7 +453,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "}\n" +
                 "###Persistence\n" +
                 "\n" +
-                "PersistencePipe test::TestPipe \n" +
+                "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: OpaqueTrigger;\n" +

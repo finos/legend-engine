@@ -10,15 +10,15 @@ FALSE:                                      'false';
 IMPORT:                                     'import';
 
 //**********
-// PERSISTENCE PIPE
+// PERSISTENCE
 //**********
 
-PERSISTENCE_PIPE:                           'PersistencePipe';
-PERSISTENCE_PIPE_DOC:                       'doc';
-PERSISTENCE_PIPE_OWNERS:                    'owners';
-PERSISTENCE_PIPE_TRIGGER:                   'trigger';
-PERSISTENCE_PIPE_READER:                    'reader';
-PERSISTENCE_PIPE_PERSISTER:                 'persister';
+PERSISTENCE:                                'Persistence';
+PERSISTENCE_DOC:                            'doc';
+PERSISTENCE_OWNERS:                         'owners';
+PERSISTENCE_TRIGGER:                        'trigger';
+PERSISTENCE_READER:                         'reader';
+PERSISTENCE_PERSISTER:                      'persister';
 
 // TRIGGER
 TRIGGER_OPAQUE:                             'OpaqueTrigger';

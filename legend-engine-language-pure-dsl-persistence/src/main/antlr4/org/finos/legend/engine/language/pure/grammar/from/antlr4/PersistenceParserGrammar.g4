@@ -12,7 +12,7 @@ options
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT
-                                            | PERSISTENCE_PIPE | PERSISTENCE_PIPE_DOC | PERSISTENCE_PIPE_OWNERS | PERSISTENCE_PIPE_TRIGGER | PERSISTENCE_PIPE_READER | PERSISTENCE_PIPE_PERSISTER
+                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_OWNERS | PERSISTENCE_TRIGGER | PERSISTENCE_READER | PERSISTENCE_PERSISTER
                                             | TRIGGER_OPAQUE
                                             | READER_SERVICE | READER_SERVICE_SERVICE
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_BATCH_TARGET
@@ -34,14 +34,14 @@ identifier:                                 VALID_STRING | STRING
 // -------------------------------------- DEFINITION --------------------------------------
 
 definition:                                 imports
-                                                (persistencePipe)*
+                                                (persistence)*
                                             EOF
 ;
 imports:                                    (importStatement)*
 ;
 importStatement:                            IMPORT packagePath PATH_SEPARATOR STAR SEMI_COLON
 ;
-persistencePipe:                            PERSISTENCE_PIPE qualifiedName
+persistence:                                PERSISTENCE qualifiedName
                                                 BRACE_OPEN
                                                     (
                                                         documentation
@@ -52,21 +52,21 @@ persistencePipe:                            PERSISTENCE_PIPE qualifiedName
                                                     )*
                                                 BRACE_CLOSE
 ;
-documentation:                              PERSISTENCE_PIPE_DOC COLON STRING SEMI_COLON
+documentation:                              PERSISTENCE_DOC COLON STRING SEMI_COLON
 ;
-owners:                                     PERSISTENCE_PIPE_OWNERS COLON
+owners:                                     PERSISTENCE_OWNERS COLON
                                                 BRACKET_OPEN
                                                     (STRING (COMMA STRING)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
-trigger:                                    PERSISTENCE_PIPE_TRIGGER COLON
+trigger:                                    PERSISTENCE_TRIGGER COLON
                                                 (
                                                     TRIGGER_OPAQUE
                                                 )
                                             SEMI_COLON
 ;
-reader:                                     PERSISTENCE_PIPE_READER COLON serviceReader
+reader:                                     PERSISTENCE_READER COLON serviceReader
 ;
 serviceReader:                              READER_SERVICE
                                                 BRACE_OPEN
@@ -75,7 +75,7 @@ serviceReader:                              READER_SERVICE
 ;
 service:                                    READER_SERVICE_SERVICE COLON qualifiedName SEMI_COLON
 ;
-persister:                                  PERSISTENCE_PIPE_PERSISTER COLON
+persister:                                  PERSISTENCE_PERSISTER COLON
                                                 (
                                                     streamingPersister
                                                     | batchPersister

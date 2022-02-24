@@ -8,7 +8,7 @@ import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.Persis
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePipe;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 
 import java.util.List;
 
@@ -25,9 +25,9 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
             }
             return ListIterate.collect(elements, element ->
             {
-                if (element instanceof PersistencePipe)
+                if (element instanceof Persistence)
                 {
-                    return renderPersistencePipe((PersistencePipe) element, context);
+                    return renderPersistence((Persistence) element, context);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
@@ -39,13 +39,13 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
     {
         return Lists.mutable.with((elements, context, composedSections) ->
         {
-            List<PersistencePipe> composableElements = ListIterate.selectInstancesOf(elements, PersistencePipe.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> PersistenceGrammarComposerExtension.renderPersistencePipe(el, context)).makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            List<Persistence> composableElements = ListIterate.selectInstancesOf(elements, Persistence.class);
+            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> PersistenceGrammarComposerExtension.renderPersistence(el, context)).makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
-    private static String renderPersistencePipe(PersistencePipe persistencePipe, PureGrammarComposerContext context)
+    private static String renderPersistence(Persistence persistence, PureGrammarComposerContext context)
     {
-        return HelperPersistenceGrammarComposer.renderPipe(persistencePipe, 1, context);
+        return HelperPersistenceGrammarComposer.renderPersistence(persistence, 1, context);
     }
 }
