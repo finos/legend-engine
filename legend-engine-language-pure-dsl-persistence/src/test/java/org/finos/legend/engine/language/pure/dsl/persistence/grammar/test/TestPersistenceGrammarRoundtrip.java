@@ -70,11 +70,11 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "              {\n" +
                 "                dateTimeFromFieldName: 'fromZ';\n" +
                 "                dateTimeThruFieldName: 'thruZ';\n" +
-                "              }\n" +
-                "              validityDerivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "              {\n" +
-                "                sourceDateTimeFromProperty: businessDateFrom;\n" +
-                "                sourceDateTimeThruProperty: businessDateThru;\n" +
+                "                derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "                {\n" +
+                "                  sourceDateTimeFromProperty: businessDateFrom;\n" +
+                "                  sourceDateTimeThruProperty: businessDateThru;\n" +
+                "                }\n" +
                 "              }\n" +
                 "            }\n" +
                 "          }\n" +

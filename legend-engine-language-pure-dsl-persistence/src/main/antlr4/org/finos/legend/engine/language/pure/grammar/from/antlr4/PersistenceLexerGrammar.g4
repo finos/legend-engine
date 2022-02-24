@@ -104,7 +104,7 @@ VALIDITY_MILESTONING_OPAQUE:                'OpaqueValidityMilestoning';
 DATE_TIME_FROM_FIELD_NAME:                  'dateTimeFromFieldName';
 DATE_TIME_THRU_FIELD_NAME:                  'dateTimeThruFieldName';
 
-VALIDITY_DERIVATION:                        'validityDerivation';
+VALIDITY_DERIVATION:                        'derivation';
 VALIDITY_DERIVATION_SOURCE_FROM:            'SourceSpecifiesFromDateTime';
 VALIDITY_DERIVATION_SOURCE_FROM_THRU:       'SourceSpecifiesFromAndThruDateTime';
 SOURCE_DATE_TIME_FROM_PROPERTY:             'sourceDateTimeFromProperty';

@@ -338,7 +338,6 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel) + "{\n" +
                     renderTransactionMilestoning(val.transactionMilestoning, indentLevel + 1) +
                     renderValidityMilestoning(val.validityMilestoning, indentLevel + 1) +
-                    renderValidityDerivation(val.validityDerivation, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -369,7 +368,6 @@ public class HelperPersistenceGrammarComposer
                     renderMergeStrategy(val.mergeStrategy, indentLevel + 1) +
                     renderTransactionMilestoning(val.transactionMilestoning, indentLevel + 1) +
                     renderValidityMilestoning(val.validityMilestoning, indentLevel + 1) +
-                    renderValidityDerivation(val.validityDerivation, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -478,6 +476,7 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "dateTimeFromFieldName: '" + val.dateTimeFromFieldName + "';\n" +
                     getTabString(indentLevel + 1) + "dateTimeThruFieldName: '" + val.dateTimeThruFieldName + "';\n" +
+                    renderValidityDerivation(val.validityDerivation, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -500,7 +499,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(SourceSpecifiesFromDateTime val)
         {
-            return getTabString(indentLevel) + "validityDerivation: SourceSpecifiesFromDateTime\n" +
+            return getTabString(indentLevel) + "derivation: SourceSpecifiesFromDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "sourceDateTimeFromProperty: " + val.sourceDateTimeFromProperty + ";\n" +
                     getTabString(indentLevel) + "}\n";
@@ -510,7 +509,7 @@ public class HelperPersistenceGrammarComposer
         public String visit(SourceSpecifiesFromAndThruDateTime val)
         {
 
-            return getTabString(indentLevel) + "validityDerivation: SourceSpecifiesFromAndThruDateTime\n" +
+            return getTabString(indentLevel) + "derivation: SourceSpecifiesFromAndThruDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "sourceDateTimeFromProperty: " + val.sourceDateTimeFromProperty + ";\n" +
                     getTabString(indentLevel + 1) + "sourceDateTimeThruProperty: " + val.sourceDateTimeThruProperty + ";\n" +

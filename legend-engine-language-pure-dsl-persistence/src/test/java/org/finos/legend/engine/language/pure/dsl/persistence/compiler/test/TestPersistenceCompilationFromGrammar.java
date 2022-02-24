@@ -476,4 +476,122 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "}\n");
     }
+
+    @Test
+    public void success()
+    {
+        test("###Pure\n" +
+                "import org::dxl::*;\n" +
+                "\n" +
+                "Class org::dxl::Zoo\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  zookeeper: Person[1];\n" +
+                "  owner: Person[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class org::dxl::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  effectiveFrom: DateTime[1];\n" +
+                "  effectiveThru: DateTime[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class org::dxl::Animal\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association org::dxl::ZooAnimal\n" +
+                "{\n" +
+                "  zoo: Zoo[1];\n" +
+                "  animals: Animal[*];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping org::dxl::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service org::dxl::ZooService\n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: org::dxl::Zoo[1]|$src.name;\n" +
+                "    mapping: org::dxl::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "###Persistence\n" +
+                "Persistence org::dxl::ZooPersistence\n" +
+                "{\n" +
+                "  doc: 'A persistence specification for Zoos.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: org::dxl::ZooService;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: GroupedFlat\n" +
+                "    {\n" +
+                "      modelClass: org::dxl::Zoo;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      components:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          property: 'zookeeper';\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'PersonDataset1';\n" +
+                "            batchMode: AppendOnly\n" +
+                "            {\n" +
+                "              auditing: NoAuditing;\n" +
+                "              filterDuplicates: false;\n" +
+                "            }\n" +
+                "          }\n" +
+                "        },\n" +
+                "        {\n" +
+                "          property: 'owner';\n" +
+                "          targetSpecification:\n" +
+                "          {\n" +
+                "            targetName: 'PersonDataset2';\n" +
+                "            batchMode: BitemporalSnapshot\n" +
+                "            {\n" +
+                "              transactionMilestoning: BatchIdAndDateTime\n" +
+                "              {\n" +
+                "                batchIdInFieldName: 'batchIdIn';\n" +
+                "                batchIdOutFieldName: 'batchIdOut';\n" +
+                "                dateTimeInFieldName: 'IN_Z';\n" +
+                "                dateTimeOutFieldName: 'OUT_Z';\n" +
+                "              }\n" +
+                "              validityMilestoning: DateTime\n" +
+                "              {\n" +
+                "                dateTimeFromFieldName: 'FROM_Z';\n" +
+                "                dateTimeThruFieldName: 'THRU_Z';\n" +
+                "                derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "                {\n" +
+                "                  sourceDateTimeFromProperty: 'effectiveFrom';\n" +
+                "                  sourceDateTimeThruProperty: 'effectiveThru';\n" +
+                "                }\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}");
+    }
 }

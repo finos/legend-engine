@@ -305,7 +305,7 @@ public class HelperPersistenceBuilder
                     ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClass, context))
                     ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning))
                     ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning))
-                    ._validityDerivation(buildValidityDerivation(val.validityDerivation, modelClass, context));
+                    ._validityDerivation(buildValidityDerivation(val.validityMilestoning.validityDerivation, modelClass, context));
         }
 
         @Override
@@ -314,7 +314,7 @@ public class HelperPersistenceBuilder
             return new Root_meta_pure_persistence_metamodel_batch_mode_snapshot_BitemporalSnapshot_Impl("")
                     ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning))
                     ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning))
-                    ._validityDerivation(buildValidityDerivation(val.validityDerivation, modelClass, context));
+                    ._validityDerivation(buildValidityDerivation(val.validityMilestoning.validityDerivation, modelClass, context));
         }
 
         @Override

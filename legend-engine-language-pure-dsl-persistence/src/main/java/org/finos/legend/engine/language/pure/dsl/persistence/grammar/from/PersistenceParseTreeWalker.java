@@ -451,10 +451,6 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.ValidityMilestoningContext validityMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityMilestoning(), "validityMilestoning", bitemporalSnapshot.sourceInformation);
         bitemporalSnapshot.validityMilestoning = visitValidityMilestoning(validityMilestoningContext);
 
-        // validity derivation
-        PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", bitemporalSnapshot.sourceInformation);
-        bitemporalSnapshot.validityDerivation = visitValidityDerivation(validityDerivationContext);
-
         return bitemporalSnapshot;
     }
 
@@ -506,10 +502,6 @@ public class PersistenceParseTreeWalker
         // validity milestoning
         PersistenceParserGrammar.ValidityMilestoningContext validityMilestoningContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityMilestoning(), "validityMilestoning", bitemporalDelta.sourceInformation);
         bitemporalDelta.validityMilestoning = visitValidityMilestoning(validityMilestoningContext);
-
-        // validity derivation
-        PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "validityDerivation", bitemporalDelta.sourceInformation);
-        bitemporalDelta.validityDerivation = visitValidityDerivation(validityDerivationContext);
 
         return bitemporalDelta;
     }
@@ -716,6 +708,10 @@ public class PersistenceParseTreeWalker
         // datetime thru field name
         PersistenceParserGrammar.DateTimeThruFieldNameContext validityDateTimeThruPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeThruFieldName(), "dateTimeThruName", milestoning.sourceInformation);
         milestoning.dateTimeThruFieldName = PureGrammarParserUtility.fromGrammarString(validityDateTimeThruPropertyContext.STRING().getText(), true);
+
+        // validity derivation
+        PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "derivation", milestoning.sourceInformation);
+        milestoning.validityDerivation = visitValidityDerivation(validityDerivationContext);
 
         return milestoning;
     }

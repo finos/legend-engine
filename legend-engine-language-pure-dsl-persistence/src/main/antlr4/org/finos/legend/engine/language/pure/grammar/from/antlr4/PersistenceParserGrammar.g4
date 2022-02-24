@@ -220,7 +220,6 @@ bitemporalSnapshot:                         BATCH_MODE_BITEMPORAL_SNAPSHOT
                                                     (
                                                         transactionMilestoning
                                                         | validityMilestoning
-                                                        | validityDerivation
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -245,7 +244,6 @@ bitemporalDelta:                            BATCH_MODE_BITEMPORAL_DELTA
                                                         mergeStrategy
                                                         | transactionMilestoning
                                                         | validityMilestoning
-                                                        | validityDerivation
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -334,6 +332,7 @@ dateTimeValidityMilestoning:                VALIDITY_MILESTONING_DATE_TIME
                                                     (
                                                         dateTimeFromFieldName
                                                         | dateTimeThruFieldName
+                                                        | validityDerivation
                                                     )*
                                                 BRACE_CLOSE
 ;

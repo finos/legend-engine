@@ -1077,11 +1077,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      batchMode: BitemporalSnapshot\n" +
                 "      {\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-21:7]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [17:18-20:7]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1104,11 +1103,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-23:7]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:18-22:7]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1133,11 +1131,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      batchMode: BitemporalSnapshot\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-21:7]: Field 'validityMilestoning' is required");
+                "}\n", "PARSER error at [17:18-20:7]: Field 'validityMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1160,11 +1157,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-23:7]: Field 'validityMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:18-22:7]: Field 'validityMilestoning' should be specified only once");
     }
 
     @Test
@@ -1189,11 +1185,15 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      batchMode: BitemporalSnapshot\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
-                "        validityMilestoning: OpaqueValidityMilestoning;\n" +
+                "        validityMilestoning: DateTime\n" +
+                "        {\n" +
+                "          dateTimeFromFieldName: 'FROM_Z';\n" +
+                "          dateTimeThruFieldName: 'THRU_Z';\n" +
+                "        }\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-21:7]: Field 'validityDerivation' is required");
+                "}\n", "PARSER error at [20:30-24:9]: Field 'derivation' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1214,13 +1214,17 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      batchMode: BitemporalSnapshot\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
-                "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
+                "        validityMilestoning: DateTime\n" +
+                "        {\n" +
+                "          dateTimeFromFieldName: 'FROM_Z';\n" +
+                "          dateTimeThruFieldName: 'THRU_Z';\n" +
+                "          derivation: OpaqueValidityDerivation;\n" +
+                "          derivation: OpaqueValidityDerivation;\n" +
+                "        }\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-23:7]: Field 'validityDerivation' should be specified only once");
+                "}\n", "PARSER error at [20:30-26:9]: Field 'derivation' should be specified only once");
     }
 
     /**********
@@ -1412,11 +1416,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [17:18-21:7]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1440,11 +1443,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-24:7]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:18-23:7]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1470,11 +1472,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'mergeStrategy' is required");
+                "}\n", "PARSER error at [17:18-21:7]: Field 'mergeStrategy' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1498,11 +1499,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-24:7]: Field 'mergeStrategy' should be specified only once");
+                "}\n", "PARSER error at [17:18-23:7]: Field 'mergeStrategy' should be specified only once");
     }
 
     @Test
@@ -1528,11 +1528,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'validityMilestoning' is required");
+                "}\n", "PARSER error at [17:18-21:7]: Field 'validityMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1556,11 +1555,10 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-24:7]: Field 'validityMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:18-23:7]: Field 'validityMilestoning' should be specified only once");
     }
 
     @Test
@@ -1586,11 +1584,15 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
-                "        validityMilestoning: OpaqueValidityMilestoning;\n" +
+                "        validityMilestoning: DateTime\n" +
+                "        {\n" +
+                "          dateTimeFromFieldName: 'FROM_Z';\n" +
+                "          dateTimeThruFieldName: 'THRU_Z';\n" +
+                "        }\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'validityDerivation' is required");
+                "}\n", "PARSER error at [21:30-25:9]: Field 'derivation' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1612,13 +1614,17 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
-                "        validityMilestoning: OpaqueValidityMilestoning;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
-                "        validityDerivation: OpaqueValidityDerivation;\n" +
+                "        validityMilestoning: DateTime\n" +
+                "        {\n" +
+                "          dateTimeFromFieldName: 'FROM_Z';\n" +
+                "          dateTimeThruFieldName: 'THRU_Z';\n" +
+                "          derivation: OpaqueValidityDerivation;\n" +
+                "          derivation: OpaqueValidityDerivation;\n" +
+                "        }\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-24:7]: Field 'validityDerivation' should be specified only once");
+                "}\n", "PARSER error at [21:30-27:9]: Field 'derivation' should be specified only once");
     }
 
     /**********
@@ -1817,13 +1823,13 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "              }\n" +
                 "              validityMilestoning: DateTime\n" +
                 "              {\n" +
-                "                dateTimeFromFieldName: 'fromZ';\n" +
-                "                dateTimeThruFieldName: 'thruZ';\n" +
-                "              }\n" +
-                "              validityDerivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "              {\n" +
-                "                sourceDateTimeFromProperty: businessDateFrom;\n" +
-                "                sourceDateTimeThruProperty: businessDateThru;\n" +
+                "                dateTimeFromFieldName: 'FROM_Z';\n" +
+                "                dateTimeThruFieldName: 'THRU_Z';\n" +
+                "                derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "                {\n" +
+                "                  sourceDateTimeFromProperty: fromZ;\n" +
+                "                  sourceDateTimeThruProperty: thruZ;\n" +
+                "                }\n" +
                 "              }\n" +
                 "            }\n" +
                 "          }\n" +
