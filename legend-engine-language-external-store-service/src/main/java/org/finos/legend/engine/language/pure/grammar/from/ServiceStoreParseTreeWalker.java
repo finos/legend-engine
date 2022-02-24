@@ -241,6 +241,17 @@ public class ServiceStoreParseTreeWalker
             param.allowReserved = Boolean.parseBoolean(allowReservedCtx.BOOLEAN().getText());
         }
 
+        ServiceStoreParserGrammar.RequiredDefinitionContext requiredCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ListIterate.collectIf(paramCtx.parameterOptions(), p -> p.requiredDefinition() != null, ServiceStoreParserGrammar.ParameterOptionsContext::requiredDefinition), "required", this.walkerSourceInformation.getSourceInformation(paramCtx));
+        if (requiredCtx != null)
+        {
+            boolean required = Boolean.parseBoolean(requiredCtx.BOOLEAN().getText());
+            if ((param.location == Location.PATH) && (!required))
+            {
+                throw new EngineException("Path parameters cannot be optional", this.walkerSourceInformation.getSourceInformation(requiredCtx), EngineErrorType.PARSER);
+            }
+            param.required = required;
+        }
+
         SerializationFormat serializationFormat = new SerializationFormat();
         if (param.type.list)
         {
