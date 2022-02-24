@@ -1,0 +1,125 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class joinChain::model::Firm
+{
+  legalName: String[1];
+}
+
+Class joinChain::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  manager: joinChain::model::Person[0..1];
+  managerFirm: joinChain::model::Firm[0..1];
+  managerManagerFirm: joinChain::model::Firm[0..1];
+  managerManagerFirmDup1: joinChain::model::Firm[0..1];
+  managerManagerFirmDup2: joinChain::model::Firm[0..1];
+}
+
+###Relational
+Database joinChain::store::SnowflakeDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS SEMISTRUCTURED,
+      MANAGERID INTEGER
+    )
+  )
+
+  Join manager1(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
+  Join manager2(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
+)
+
+
+###ExternalFormat
+Binding joinChain::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    joinChain::model::Firm
+  ];
+}
+
+###Mapping
+Mapping joinChain::mapping::SnowflakeMapping
+(
+  joinChain::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [joinChain::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [joinChain::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [joinChain::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [joinChain::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    managerFirm: Binding joinChain::store::FirmBinding : [joinChain::store::SnowflakeDB]@manager1 | [joinChain::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    managerManagerFirm: Binding joinChain::store::FirmBinding : [joinChain::store::SnowflakeDB]@manager1 > [joinChain::store::SnowflakeDB]@manager1 | [joinChain::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    managerManagerFirmDup1: Binding joinChain::store::FirmBinding : [joinChain::store::SnowflakeDB]@manager1 > [joinChain::store::SnowflakeDB]@manager2 | [joinChain::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    managerManagerFirmDup2: Binding joinChain::store::FirmBinding : [joinChain::store::SnowflakeDB]@manager2 > [joinChain::store::SnowflakeDB]@manager2 | [joinChain::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    manager[joinChain_model_Person]: [joinChain::store::SnowflakeDB]@manager1
+  }
+)
+
+###Runtime
+Runtime joinChain::runtime::SnowflakeRuntime
+{
+    mappings :
+    [
+        joinChain::mapping::SnowflakeMapping
+    ];
+    connections :
+    [
+        joinChain::store::SnowflakeDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: joinChain::store::SnowflakeDB;
+                    type: Snowflake;
+                    specification: LocalH2{};
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+###Pure
+function joinChain::singleJoinInChain(): TabularDataSet[1]
+{
+    joinChain::model::Person.all()
+        ->project([
+            col(x | $x.firstName, 'First Name'),
+            col(x | $x.managerFirm.legalName, 'Manager Firm Legal Name')
+        ])
+}
+
+function joinChain::multipleJoinsInChain(): TabularDataSet[1]
+{
+    joinChain::model::Person.all()
+        ->project([
+            col(x | $x.firstName, 'First Name'),
+            col(x | $x.managerFirm.legalName, 'Manager Firm Legal Name'),
+            col(x | $x.managerManagerFirm.legalName, 'Manager Manager Firm Legal Name'),
+            col(x | $x.managerManagerFirmDup1.legalName, 'Manager Manager Firm Legal Name Dup1'),
+            col(x | $x.managerManagerFirmDup2.legalName, 'Manager Manager Firm Legal Name Dup2')
+        ])
+}
+

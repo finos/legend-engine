@@ -291,8 +291,86 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                     ")\n";
 
         PureModelContextData data = PureGrammarParser.newInstance().parseModel(val);
-        String expected = "{\"_type\":\"data\",\"serializer\":null,\"origin\":null,\"elements\":[{\"_type\":\"mapping\",\"name\":\"myMapping\",\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":2,\"startColumn\":1,\"endLine\":9,\"endColumn\":1},\"classMappings\":[{\"_type\":\"relational\",\"id\":null,\"mappingClass\":null,\"extendsClassMappingId\":null,\"root\":false,\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":4,\"startColumn\":5,\"endLine\":8,\"endColumn\":5},\"classSourceInformation\":{\"sourceId\":\"\",\"startLine\":4,\"startColumn\":5,\"endLine\":4,\"endColumn\":10},\"primaryKey\":[],\"propertyMappings\":[{\"_type\":\"relationalPropertyMapping\",\"property\":{\"property\":\"firstName\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":9,\"endLine\":6,\"endColumn\":17},\"class\":\"Person\"},\"source\":null,\"target\":null,\"localMappingProperty\":null,\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":19,\"endLine\":6,\"endColumn\":45},\"enumMappingId\":null,\"relationalOperation\":{\"_type\":\"column\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":21,\"endLine\":6,\"endColumn\":45},\"table\":{\"_type\":\"Table\",\"table\":\"personTable\",\"schema\":\"default\",\"database\":\"db\",\"mainTableDb\":\"db\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":25,\"endLine\":6,\"endColumn\":35}},\"tableAlias\":\"personTable\",\"column\":\"firstName\"}},{\"_type\":\"relationalPropertyMapping\",\"property\":{\"property\":\"localProp\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":10,\"endLine\":7,\"endColumn\":18},\"class\":null},\"source\":null,\"target\":null,\"localMappingProperty\":{\"type\":\"String\",\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":20,\"endLine\":7,\"endColumn\":30}},\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":32,\"endLine\":7,\"endColumn\":58},\"enumMappingId\":null,\"relationalOperation\":{\"_type\":\"column\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":34,\"endLine\":7,\"endColumn\":58},\"table\":{\"_type\":\"Table\",\"table\":\"personTable\",\"schema\":\"default\",\"database\":\"db\",\"mainTableDb\":\"db\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":38,\"endLine\":7,\"endColumn\":48}},\"tableAlias\":\"personTable\",\"column\":\"firstName\"}}],\"mainTable\":null,\"distinct\":false,\"groupBy\":[],\"filter\":null,\"class\":\"Person\"}],\"includedMappings\":[],\"associationMappings\":[],\"enumerationMappings\":[],\"tests\":[],\"package\":\"mappingPackage\"},{\"_type\":\"sectionIndex\",\"name\":\"SectionIndex\",\"sourceInformation\":null,\"sections\":[{\"_type\":\"importAware\",\"parserName\":\"Pure\",\"elements\":[],\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":1,\"endColumn\":8},\"imports\":[]},{\"_type\":\"importAware\",\"parserName\":\"Mapping\",\"elements\":[\"mappingPackage::myMapping\"],\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":2,\"startColumn\":8,\"endLine\":11,\"endColumn\":2},\"imports\":[]}],\"package\":\"__internal__\"}]}";
+        String expected = "{\"_type\":\"data\",\"serializer\":null,\"origin\":null,\"elements\":[{\"_type\":\"mapping\",\"name\":\"myMapping\",\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":2,\"startColumn\":1,\"endLine\":9,\"endColumn\":1},\"classMappings\":[{\"_type\":\"relational\",\"id\":null,\"mappingClass\":null,\"extendsClassMappingId\":null,\"root\":false,\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":4,\"startColumn\":5,\"endLine\":8,\"endColumn\":5},\"classSourceInformation\":{\"sourceId\":\"\",\"startLine\":4,\"startColumn\":5,\"endLine\":4,\"endColumn\":10},\"primaryKey\":[],\"propertyMappings\":[{\"_type\":\"relationalPropertyMapping\",\"property\":{\"property\":\"firstName\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":9,\"endLine\":6,\"endColumn\":17},\"class\":\"Person\"},\"source\":null,\"target\":null,\"localMappingProperty\":null,\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":19,\"endLine\":6,\"endColumn\":45},\"enumMappingId\":null,\"relationalOperation\":{\"_type\":\"column\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":21,\"endLine\":6,\"endColumn\":45},\"table\":{\"_type\":\"Table\",\"table\":\"personTable\",\"schema\":\"default\",\"database\":\"db\",\"mainTableDb\":\"db\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":6,\"startColumn\":25,\"endLine\":6,\"endColumn\":35}},\"tableAlias\":\"personTable\",\"column\":\"firstName\"},\"bindingTransformer\":null},{\"_type\":\"relationalPropertyMapping\",\"property\":{\"property\":\"localProp\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":10,\"endLine\":7,\"endColumn\":18},\"class\":null},\"source\":null,\"target\":null,\"localMappingProperty\":{\"type\":\"String\",\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":20,\"endLine\":7,\"endColumn\":30}},\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":32,\"endLine\":7,\"endColumn\":58},\"enumMappingId\":null,\"relationalOperation\":{\"_type\":\"column\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":34,\"endLine\":7,\"endColumn\":58},\"table\":{\"_type\":\"Table\",\"table\":\"personTable\",\"schema\":\"default\",\"database\":\"db\",\"mainTableDb\":\"db\",\"sourceInformation\":{\"sourceId\":\"mappingPackage::myMapping\",\"startLine\":7,\"startColumn\":38,\"endLine\":7,\"endColumn\":48}},\"tableAlias\":\"personTable\",\"column\":\"firstName\"},\"bindingTransformer\":null}],\"mainTable\":null,\"distinct\":false,\"groupBy\":[],\"filter\":null,\"class\":\"Person\"}],\"includedMappings\":[],\"associationMappings\":[],\"enumerationMappings\":[],\"tests\":[],\"package\":\"mappingPackage\"},{\"_type\":\"sectionIndex\",\"name\":\"SectionIndex\",\"sourceInformation\":null,\"sections\":[{\"_type\":\"importAware\",\"parserName\":\"Pure\",\"elements\":[],\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":1,\"endColumn\":8},\"imports\":[]},{\"_type\":\"importAware\",\"parserName\":\"Mapping\",\"elements\":[\"mappingPackage::myMapping\"],\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":2,\"startColumn\":8,\"endLine\":11,\"endColumn\":2},\"imports\":[]}],\"package\":\"__internal__\"}]}";
 
         Assert.assertEquals(expected, PureProtocolObjectMapperFactory.getNewObjectMapper().writeValueAsString(data));
+    }
+
+    @Test
+    public void testSemiStructuredColumn()
+    {
+        test("###Relational\n" +
+                "Database simple::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    FIRSTNAME VARCHAR(10),\n" +
+                "    FIRM SEMISTRUCTURED(10)\n" +
+                "  )\n" +
+                ")\n", "PARSER error at [7:10-27]: Column data type SEMISTRUCTURED does not expect any parameters in declaration");
+
+        test("###Relational\n" +
+                "Database simple::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    FIRSTNAME VARCHAR(10),\n" +
+                "    FIRM SEMISTRUCTURED\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationalPropertyMappingWithBindingTransformer()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "    Person: Relational\n" +
+                "    {\n" +
+                "        firstName : [db]personTable.firstName,\n" +
+                "        firm : Binding : [db]personTable.jsonColumn\n" +
+                "    }\n" +
+                ")\n", "PARSER error at [7:24]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "    Person: Relational\n" +
+                "    {\n" +
+                "        firstName : [db]personTable.firstName,\n" +
+                "        firm : test::binding : [db]personTable.jsonColumn\n" +
+                "    }\n" +
+                ")\n", "PARSER error at [7:20-21]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "    Person: Relational\n" +
+                "    {\n" +
+                "        firstName : [db]personTable.firstName,\n" +
+                "        firm : Binding test::binding : [db]personTable.jsonColumn\n" +
+                "    }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "    Person: Relational\n" +
+                "    {\n" +
+                "        firstName : [db]personTable.firstName,\n" +
+                "        firm : Binding test::binding: [db]personTable.jsonColumn\n" +
+                "    }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "    Person: Relational\n" +
+                "    {\n" +
+                "        firstName : [db]personTable.firstName,\n" +
+                "        firm : Binding binding: [db]personTable.jsonColumn\n" +
+                "    }\n" +
+                ")\n");
     }
 }

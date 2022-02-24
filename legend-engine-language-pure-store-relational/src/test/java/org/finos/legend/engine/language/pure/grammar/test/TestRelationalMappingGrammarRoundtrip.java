@@ -97,4 +97,32 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testSemiStructuredColumn()
+    {
+        test("###Relational\n" +
+                "Database simple::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    FIRSTNAME VARCHAR(10),\n" +
+                "    FIRM SEMISTRUCTURED\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationalPropertyMappingWithBindingTransformer()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  Person: Relational\n" +
+                "  {\n" +
+                "    firstName: [db]personTable.firstName,\n" +
+                "    firm: Binding test::binding : [db]personTable.jsonColumn\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

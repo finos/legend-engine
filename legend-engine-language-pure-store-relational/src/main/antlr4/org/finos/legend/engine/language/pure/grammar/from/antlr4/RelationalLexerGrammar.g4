@@ -48,6 +48,7 @@ ASSOCIATION_MAPPING:                        'AssociationMapping';
 ENUMERATION_MAPPING:                        'EnumerationMapping';
 OTHERWISE:                                  'Otherwise';
 INLINE:                                     'Inline';
+BINDING:                                    'Binding';
 
 SCOPE:                                      'scope';
 

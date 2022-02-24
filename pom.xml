@@ -1104,6 +1104,12 @@
                 <version>${legend.pure.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
+                <version>${legend.pure.version}</version>
+                <scope>test</scope>
+            </dependency>
             <!-- PURE -->
 
             <!-- LEGEND SHARED -->
