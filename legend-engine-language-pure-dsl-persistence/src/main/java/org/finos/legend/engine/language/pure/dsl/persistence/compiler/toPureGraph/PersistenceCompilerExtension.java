@@ -22,12 +22,12 @@ public class PersistenceCompilerExtension implements CompilerExtension
                 (pipe, context) -> new Root_meta_pure_persistence_metamodel_PersistencePipe_Impl("")
                         ._documentation(pipe.documentation)
                         ._ownersAddAll(Lists.immutable.ofAll(pipe.owners))
-                        ._trigger(HelperPersistenceBuilder.buildTrigger(pipe.trigger))
-                        ._reader(HelperPersistenceBuilder.buildReader(pipe.reader, context)),
+                        ._trigger(HelperPersistenceBuilder.buildTrigger(pipe.trigger)),
                 (pipe, context) ->
                 {
                     Root_meta_pure_persistence_metamodel_PersistencePipe purePipe = (Root_meta_pure_persistence_metamodel_PersistencePipe) context.pureModel.getOrCreatePackage(pipe._package)._children().detect(c -> pipe.name.equals(c._name()));
                     purePipe._persister(HelperPersistenceBuilder.buildPersister(pipe.persister, context));
+                    purePipe._reader(HelperPersistenceBuilder.buildReader(pipe.reader, context));
                 }
         ));
     }
