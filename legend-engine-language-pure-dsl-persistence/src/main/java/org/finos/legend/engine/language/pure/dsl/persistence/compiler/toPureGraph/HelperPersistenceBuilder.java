@@ -47,7 +47,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
 public class HelperPersistenceBuilder
 {
-    private static final String PERSIST_PACKAGE_PREFIX = "meta::pure::persistence::metamodel";
+    private static final String PERSISTENCE_PACKAGE_PREFIX = "meta::pure::persistence::metamodel";
 
     private static final TriggerBuilder TRIGGER_BUILDER = new TriggerBuilder();
     private static final AuditingBuilder AUDITING_BUILDER = new AuditingBuilder();
@@ -75,10 +75,8 @@ public class HelperPersistenceBuilder
 
     public static Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification buildTargetSpecification(TargetSpecification specification, CompileContext context)
     {
-        String targetName = specification.targetName;
         Class<?> modelClass = context.resolveClass(specification.modelClass, specification.sourceInformation);
-
-        return specification.accept(new TargetSpecificationBuilder(targetName, modelClass, context));
+        return specification.accept(new TargetSpecificationBuilder(modelClass, context));
     }
 
     public static Root_meta_pure_persistence_metamodel_batch_deduplication_DeduplicationStrategy buildDeduplicationStrategy(DeduplicationStrategy deduplicationStrategy, Class<?> inputClass, CompileContext context)
@@ -186,13 +184,11 @@ public class HelperPersistenceBuilder
 
     private static class TargetSpecificationBuilder implements TargetSpecificationVisitor<Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification>
     {
-        private final String targetName;
         private final Class<?> modelClass;
         private final CompileContext context;
 
-        private TargetSpecificationBuilder(String targetName, Class<?> modelClass, CompileContext context)
+        private TargetSpecificationBuilder(Class<?> modelClass, CompileContext context)
         {
-            this.targetName = targetName;
             this.modelClass = modelClass;
             this.context = context;
         }
@@ -208,7 +204,7 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_batch_targetspecification_GroupedFlatTargetSpecification_Impl("")
                     ._modelClass(modelClass)
-                    ._transactionScope(context.resolveEnumValue(PERSIST_PACKAGE_PREFIX + "::batch::targetspecification::TransactionScope", val.transactionScope.name()))
+                    ._transactionScope(context.resolveEnumValue(PERSISTENCE_PACKAGE_PREFIX + "::batch::targetspecification::TransactionScope", val.transactionScope.name()))
                     ._components(ListIterate.collect(val.components, c -> resolveComponent(c, modelClass, context)));
         }
 
@@ -216,14 +212,14 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification visit(NestedTargetSpecification val)
         {
             return new Root_meta_pure_persistence_metamodel_batch_targetspecification_NestedTargetSpecification_Impl("")
-                    ._targetName(targetName)
+                    ._targetName(val.targetName)
                     ._modelClass(modelClass);
         }
 
         private Root_meta_pure_persistence_metamodel_batch_targetspecification_FlatTargetSpecification buildFlatTargetSpecification(FlatTargetSpecification specification, Class<?> modelClass, CompileContext context)
         {
             return new Root_meta_pure_persistence_metamodel_batch_targetspecification_FlatTargetSpecification_Impl("")
-                    ._targetName(targetName)
+                    ._targetName(specification.targetName)
                     ._modelClass(modelClass)
                     ._partitionProperties(ListIterate.collect(specification.partitionProperties, p -> validateAndResolveProperty(modelClass, p, specification.sourceInformation, context)))
                     ._deduplicationStrategy(buildDeduplicationStrategy(specification.deduplicationStrategy, modelClass, context))
