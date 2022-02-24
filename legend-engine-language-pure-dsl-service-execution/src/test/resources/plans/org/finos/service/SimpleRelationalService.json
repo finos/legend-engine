@@ -13,6 +13,7 @@
         "datasourceSpecification" : {
           "_type" : "h2Local",
           "testDataSetupSqls": [
+            "drop schema if exists MAIN_SCHEMA cascade;",
             "create schema MAIN_SCHEMA;",
             "create table MAIN_SCHEMA.PERSON_TABLE(AGE INT, FIRST_NAME VARCHAR(100), LAST_NAME VARCHAR(100));",
             "insert into MAIN_SCHEMA.PERSON_TABLE(AGE, FIRST_NAME, LAST_NAME) values(1, 'f1', 'l1');"
