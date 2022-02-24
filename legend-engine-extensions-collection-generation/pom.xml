@@ -70,7 +70,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-dsl-persistence</artifactId>
+            <artifactId>legend-engine-protocol-persistence</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
