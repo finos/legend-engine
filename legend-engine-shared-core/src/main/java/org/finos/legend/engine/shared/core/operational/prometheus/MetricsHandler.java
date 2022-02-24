@@ -40,20 +40,18 @@ public class MetricsHandler
     // ----------------------------------------- NEW IMPLEMENTATION -----------------------------------------
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MetricsHandler.class);
-    private static final String SERVER_LABEL = "legend-engine";
-    private static final String BUILD_LABEL = "build-pipeline";
 
     private static final CollectorRegistry METRICS_REGISTRY = new CollectorRegistry(true);
 
     private static final Histogram SUCCESSFUL_REQUEST_LATENCY = Histogram.build().name("legend_engine_successful_request_latency")
             .help("Measure legend engine's http request latency")
-            .exponentialBuckets(.5, 3, 9)
+            .buckets(.1, .2, .5, 1, 2, 5, 10, 30, 100, 300)
             .labelNames("uri")
             .register(getMetricsRegistry());
 
     private static final Histogram OPERATION_LATENCY = Histogram.build().name("legend_operation_latency")
             .help("Measure particular operation latency within legend ecosystem")
-            .exponentialBuckets(.5, 2, 10)
+            .buckets(.1, .2, .5, 1, 2, 5, 10, 20, 60, 120)
             .labelNames("source", "operation", "context")
             .register(getMetricsRegistry());
 
@@ -82,15 +80,10 @@ public class MetricsHandler
 
     public static void observeServerOperation(String operation, String context, long start, long end)
     {
-        observeOperation(SERVER_LABEL, operation, context, start, end);
+        observeOperation(operation, context, start, end);
     }
 
-    public static void observeBuildOperation(String operation, String context, long start, long end)
-    {
-        observeOperation(BUILD_LABEL, operation, context, start, end);
-    }
-
-    private static void observeOperation(String source, String operation, String context, long start, long end)
+    private static void observeOperation(String operation, String context, long start, long end)
     {
         if (operation == null)
         {
@@ -98,7 +91,7 @@ public class MetricsHandler
         }
         else
         {
-            OPERATION_LATENCY.labels(returnLabelOrUnknown(source), operation, returnLabelOrUnknown(context)).observe((end - start) / 1000F);
+            OPERATION_LATENCY.labels(operation, returnLabelOrUnknown(context)).observe((end - start) / 1000F);
         }
     }
 
