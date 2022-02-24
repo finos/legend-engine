@@ -115,7 +115,7 @@ public class HelperPersistenceGrammarComposer
 
     private static String renderValidityDerivation(ValidityDerivation validityDerivation, int indentLevel)
     {
-        return validityDerivation.accept(new ValidiityDerivationComposer(indentLevel));
+        return validityDerivation.accept(new ValidityDerivationComposer(indentLevel));
     }
 
     private static String renderMergeStrategy(MergeStrategy mergeStrategy, int indentLevel)
@@ -487,11 +487,11 @@ public class HelperPersistenceGrammarComposer
         }
     }
 
-    private static class ValidiityDerivationComposer implements ValidityDerivationVisitor<String>
+    private static class ValidityDerivationComposer implements ValidityDerivationVisitor<String>
     {
         private final int indentLevel;
 
-        private ValidiityDerivationComposer(int indentLevel)
+        private ValidityDerivationComposer(int indentLevel)
         {
             this.indentLevel = indentLevel;
         }
