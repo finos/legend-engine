@@ -19,13 +19,18 @@ public class EnvironmentVaultImplementation implements VaultImplementation
     @Override
     public String getValue(String key)
     {
-        return System.getenv(key);
+        String value = System.getenv(key);
+        if (value != null && value.trim().isEmpty())
+        {
+            return null;
+        }
+        return value;
     }
 
     @Override
     public boolean hasValue(String key)
     {
         String value = System.getenv(key);
-        return value != null;
+        return value != null && !value.trim().isEmpty();
     }
 }

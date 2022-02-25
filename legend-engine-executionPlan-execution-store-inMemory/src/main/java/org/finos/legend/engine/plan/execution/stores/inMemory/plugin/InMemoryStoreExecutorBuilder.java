@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.inMemory.plugin;
 
+import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 
 public class InMemoryStoreExecutorBuilder implements StoreExecutorBuilder
@@ -28,6 +30,11 @@ public class InMemoryStoreExecutorBuilder implements StoreExecutorBuilder
     @Override
     public InMemoryStoreExecutor build()
     {
+        return InMemoryStoreExecutor.INSTANCE;
+    }
+
+    @Override
+    public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration) {
         return InMemoryStoreExecutor.INSTANCE;
     }
 }

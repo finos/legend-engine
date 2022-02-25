@@ -70,6 +70,11 @@ public class ServiceStoreTestUtils
 
     public static SingleExecutionPlan buildPlanForQuery(String grammar)
     {
+        return buildPlanForQuery(grammar, "meta::external::store::service::showcase::mapping::ServiceStoreMapping", "meta::external::store::service::showcase::runtime::ServiceStoreRuntime");
+    }
+
+    public static SingleExecutionPlan buildPlanForQuery(String grammar, String mapping, String runtime)
+    {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(grammar);
         PureModel pureModel = Compiler.compile(contextData, null, null);
 
@@ -81,8 +86,8 @@ public class ServiceStoreTestUtils
 
         return PlanGenerator.generateExecutionPlan(
                 HelperValueSpecificationBuilder.buildLambda(((Lambda) queryFunctionExpressions.body.get(0)).body, ((Lambda) queryFunctionExpressions.body.get(0)).parameters, pureModel.getContext()),
-                pureModel.getMapping("meta::external::store::service::showcase::mapping::ServiceStoreMapping"),
-                pureModel.getRuntime("meta::external::store::service::showcase::runtime::ServiceStoreRuntime"),
+                pureModel.getMapping(mapping),
+                pureModel.getRuntime(runtime),
                 null,
                 pureModel,
                 "vX_X_X",
@@ -105,7 +110,7 @@ public class ServiceStoreTestUtils
         Map<String, Result> vars = org.eclipse.collections.impl.factory.Maps.mutable.ofInitialCapacity(params.size());
         params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
 
-        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)), null);
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)), null);
         return result.flush(new JsonStreamToJsonDefaultSerializer(result));
     }
 }

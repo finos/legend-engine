@@ -15,6 +15,7 @@ public class SnowflakeManager extends DatabaseManager
 {
 
     public static final String PRIVATELINK_SNOWFLAKECOMPUTING_COM = ".privatelink.snowflakecomputing.com";
+    public static final String SNOWFLAKECOMPUTING_COM = ".snowflakecomputing.com";
 
     @Override
     public MutableList<String> getIds()
@@ -47,18 +48,21 @@ public class SnowflakeManager extends DatabaseManager
                         .append(".").append(organisation)
                         .append(".").append(region)
                         .append(".").append(cloudType);
+                URL.append(PRIVATELINK_SNOWFLAKECOMPUTING_COM);
             }
             else if (SnowflakeAccountType.MultiTenant.equals(accountType))
             {
                 this.buildMultiTenantHostname(accountName, region, URL);
+                URL.append(PRIVATELINK_SNOWFLAKECOMPUTING_COM);
             }
         }
         else
         {
-            buildMultiTenantHostname(accountName, region, URL);
+            URL.append(accountName)
+                    .append(".").append(region)
+                    .append(".").append(cloudType);
+            URL.append(SNOWFLAKECOMPUTING_COM);
         }
-
-        URL.append(PRIVATELINK_SNOWFLAKECOMPUTING_COM);
         return URL.toString();
     }
 

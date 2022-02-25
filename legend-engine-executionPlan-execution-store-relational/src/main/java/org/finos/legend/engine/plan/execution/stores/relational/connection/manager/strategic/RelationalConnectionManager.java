@@ -14,15 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
-import java.sql.Connection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.function.Function;
-
-import javax.security.auth.Subject;
-
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -31,7 +22,6 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
@@ -52,6 +42,14 @@ import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvi
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
+import java.sql.Connection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.function.Function;
+
 public class RelationalConnectionManager implements ConnectionManager
 {
     private static final String LOCAL_HOST = "127.0.0.1";
@@ -62,9 +60,16 @@ public class RelationalConnectionManager implements ConnectionManager
     private MutableList<AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy>> authenticationStrategyTrans;
     private MutableList<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>> dataSourceKeys;
     private MutableList<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>>> dataSourceTrans;
+    private Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder;
 
     public RelationalConnectionManager(int testDbPort, List<OAuthProfile> oauthProfiles)
     {
+        this(testDbPort, oauthProfiles, Optional.empty());
+    }
+
+    public RelationalConnectionManager(int testDbPort, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
+    {
+        this.flowProviderHolder = flowProviderHolder;
         MutableList<StrategicConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(StrategicConnectionExtension.class), Lists.mutable.empty());
 
         this.testDbPort = testDbPort;
@@ -127,7 +132,7 @@ public class RelationalConnectionManager implements ConnectionManager
         // TODO : pass identity into this method
         RelationalDatabaseConnection testConnection = buildTestDatabaseDatasourceSpecification();
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
-        Optional<CredentialSupplier> credentialHolder = RelationalConnectionManager.getCredential(testConnection, identity);
+        Optional<CredentialSupplier> credentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, testConnection, identity );
         return this.getDataSourceSpecification(testConnection).getConnectionUsingIdentity(identity, credentialHolder);
     }
 
@@ -145,9 +150,8 @@ public class RelationalConnectionManager implements ConnectionManager
         return testConnection;
     }
 
-    public static Optional<CredentialSupplier> getCredential(RelationalDatabaseConnection connection, Identity identity)
+    public static Optional<CredentialSupplier> getCredential(Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, RelationalDatabaseConnection connection, Identity identity)
     {
-        Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = DatabaseAuthenticationFlowProviderSelector.getProvider();
         if (!flowProviderHolder.isPresent())
         {
             // The use of flows has not been enabled

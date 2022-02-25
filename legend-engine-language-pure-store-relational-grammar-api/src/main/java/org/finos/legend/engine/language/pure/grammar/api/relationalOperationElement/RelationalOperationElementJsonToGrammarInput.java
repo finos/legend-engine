@@ -14,15 +14,16 @@
 
 package org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement;
 
-import org.finos.legend.engine.language.pure.grammar.from.ParserError;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
+import org.finos.legend.engine.shared.core.api.grammar.ParserError;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.util.Map;
 
+@Deprecated
 public class RelationalOperationElementJsonToGrammarInput
 {
-    public PureGrammarComposerContext.RenderStyle renderStyle = PureGrammarComposerContext.RenderStyle.STANDARD;
+    public RenderStyle renderStyle = RenderStyle.STANDARD;
     public Map<String, RelationalOperationElement> operations;
     public Map<String, ParserError> operationErrors;
 

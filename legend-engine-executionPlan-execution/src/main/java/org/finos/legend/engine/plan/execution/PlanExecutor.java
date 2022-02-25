@@ -18,9 +18,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.multimap.list.ImmutableListMultimap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
@@ -48,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 public class PlanExecutor
 {
@@ -150,6 +154,11 @@ public class PlanExecutor
     // TODO: Build a user friendly API
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, PlanExecutionContext planExecutionContext)
     {
+        return execute(executionPlan, params, inputStreamProvider, null, planExecutionContext);
+    }
+
+    public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
+    {
         SingleExecutionPlan singleExecutionPlan = executionPlan.getSingleExecutionPlan(params);
         try
         {
@@ -159,7 +168,7 @@ public class PlanExecutor
             }
             Map<String, Result> vars = Maps.mutable.ofInitialCapacity(params.size());
             params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
-            return execute(singleExecutionPlan, vars, null, null, planExecutionContext);
+            return execute(singleExecutionPlan, vars, (String) null, profiles, planExecutionContext);
         }
         finally
         {
@@ -326,5 +335,42 @@ public class PlanExecutor
     public static List<StoreExecutorBuilder> loadStoreExecutorBuilders()
     {
         return Iterate.addAllTo(ServiceLoader.load(StoreExecutorBuilder.class), Lists.mutable.empty());
+    }
+
+    public static PlanExecutor newPlanExecutorWithConfigurations(StoreExecutorConfiguration...storeExecutorConfigurations)
+    {
+        MutableList<StoreExecutorBuilder> storeExecutorBuilders = Iterate.addAllTo(ServiceLoader.load(StoreExecutorBuilder.class), org.eclipse.collections.impl.factory.Lists.mutable.empty());
+        ImmutableListMultimap<StoreType, StoreExecutorConfiguration> configurationsByType = Lists.immutable.with(storeExecutorConfigurations).groupBy(storeExecutorConfiguration -> storeExecutorConfiguration.getStoreType());
+
+        MutableList<StoreExecutor> storeExecutors = Lists.mutable.empty();
+        configurationsByType.forEachKey(storeType -> {
+            ImmutableList<StoreExecutorConfiguration> matchingConfigurations = configurationsByType.get(storeType);
+            StoreExecutor storeExecutor = buildStoreExecutor(storeType, matchingConfigurations, storeExecutorBuilders);
+            storeExecutors.add(storeExecutor);
+        });
+        return PlanExecutor.newPlanExecutor(storeExecutors);
+    }
+
+    private static StoreExecutor buildStoreExecutor(StoreType storeType, ImmutableList<StoreExecutorConfiguration> matchingConfigurations, MutableList<StoreExecutorBuilder> storeExecutorBuilders)
+    {
+        if (matchingConfigurations.size() > 1)
+        {
+            List<String> configurationClasses = matchingConfigurations.stream().map(config -> config.getClass().getCanonicalName()).collect(Collectors.toList());
+            String message = String.format("Found more than one configuration for store type %s. Configuration object types=%s", storeType, configurationClasses.size());
+            throw new RuntimeException(message);
+        }
+
+        MutableList<StoreExecutorBuilder> matchingBuilders = storeExecutorBuilders.select(builder -> builder.getStoreType() == storeType);
+        if (matchingBuilders.size() != 1)
+        {
+            List<String> builderClasses = matchingBuilders.stream().map(builder -> builder.getClass().getCanonicalName()).collect(Collectors.toList());
+            String message = String.format("Found more than one builder for store type %s. Builders=%s", storeType, builderClasses);
+            throw new RuntimeException(message);
+        }
+
+        StoreExecutorBuilder builder = matchingBuilders.get(0);
+        StoreExecutorConfiguration configuration = matchingConfigurations.size() == 1 ? matchingConfigurations.get(0) : null;
+        StoreExecutor storeExecutor = configuration == null ? builder.build() : builder.build(configuration);
+        return storeExecutor;
     }
 }

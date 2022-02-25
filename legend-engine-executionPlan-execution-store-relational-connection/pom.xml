@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.55.1-SNAPSHOT</version>
+        <version>2.57.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-executionPlan-execution-store-relational-connection</artifactId>
@@ -39,10 +39,9 @@
                 </dependencies>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
-                    <includes>
-                        <include>**/*_local.java</include>
-                        <include>**/*DataSourceSpecificationTest.java</include>
-                    </includes>
+                    <excludes>
+                        <exclude>**/ExternalIntegration*.java</exclude>
+                    </excludes>
                     <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
                 </configuration>
             </plugin>
@@ -245,6 +244,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Test -->

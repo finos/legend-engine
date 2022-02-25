@@ -22,27 +22,22 @@ import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
-import org.finos.legend.engine.plan.execution.result.ConstantResult;
-import org.finos.legend.engine.plan.execution.result.ErrorResult;
-import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.result.StreamingResult;
+import org.finos.legend.engine.plan.execution.result.*;
+import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
-import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -70,6 +65,13 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         this.servicePath = servicePath;
         this.plan = readPlanFromResource(getClass().getClassLoader(), executionPlanResource);
         this.executor = executor;
+    }
+
+    protected AbstractServicePlanExecutor(String servicePath, String executionPlanResource, StoreExecutorConfiguration ...storeExecutorConfigurations)
+    {
+        this.servicePath = servicePath;
+        this.plan = readPlanFromResource(getClass().getClassLoader(), executionPlanResource);
+        this.executor = PlanExecutor.newPlanExecutorWithConfigurations(storeExecutorConfigurations);
     }
 
     protected AbstractServicePlanExecutor(String servicePath, ExecutionPlan plan, boolean allowJavaCompilation)
@@ -122,19 +124,58 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         this(servicePath, executionPlanResource, DEFAULT_ALLOW_JAVA_COMPILATION, storeExecutors);
     }
 
+    @Override
     public String getServicePath()
     {
         return this.servicePath;
     }
 
+    @Override
     public PlanExecutorInfo getPlanExecutorInfo()
     {
         return this.executor.getPlanExecutorInfo();
     }
 
+    private ExecutionBuilder newExecutionBuilder(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
+    {
+        List<ServiceVariable> variables = this.getServiceVariables();
+
+        List<Object> args = serviceRunnerInput.getArgs();
+
+        if (args.size() != variables.size())
+        {
+            throw new IllegalArgumentException("Unexpected number of parameters. Expected parameter size: " + variables.size() +  ", Passed parameter size: " + args.size());
+        }
+
+        ExecutionBuilder executionBuilder = newExecutionBuilder(variables.size()).withServiceRunnerInput(serviceRunnerInput).withStreamProvider(streamProvider);
+
+        for (int i = 0; i < variables.size(); i++)
+        {
+            ServiceVariable executionParameter = variables.get(i);
+            Object arg = args.get(i);
+            if (arg != null)
+            {
+                executionBuilder = executionBuilder.withParameter(executionParameter.getName(), arg);
+            }
+        }
+
+        return executionBuilder;
+    }
+
+    @Override
     public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
     {
-        throw new UnsupportedOperationException("Not supported!");
+        this.run(serviceRunnerInput, null, outputStream);
+    }
+
+    public void run(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider, OutputStream outputStream)
+    {
+        this.newExecutionBuilder(serviceRunnerInput, streamProvider).executeToStream(outputStream);
+    }
+
+    public Result execute(ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
+    {
+        return this.newExecutionBuilder(serviceRunnerInput, streamProvider).execute();
     }
 
     @Override
@@ -174,6 +215,12 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         }
     }
 
+    protected ServiceVariable newServiceVariable(String name, Class<?> type, int multiplicityLoweBound, Integer multiplicityUpperBound)
+    {
+        Assert.assertFalse(type.isPrimitive(), () -> "type should not be the primitive class");
+        return new ServiceVariable(name, type, new Multiplicity(multiplicityLoweBound, multiplicityUpperBound));
+    }
+
     protected ExecutionBuilder newNoParameterExecutionBuilder()
     {
         return new NoParameterExecutionBuilder();
@@ -194,40 +241,38 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         return new MultiParameterExecutionBuilder();
     }
 
-    protected Result execute(Map<String, ?> parameters, StreamProvider streamProvider)
-    {
-        return this.executor.execute(this.plan, parameters, streamProvider);
-    }
-
-    protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+    protected Result execute(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
     {
         MutableList<CommonProfile> profiles = Lists.mutable.empty();
-        Identity identity = serviceRunnerInput.getIdentity();
-        if (identity != null)
+        PlanExecutionContext planExecutionContext = null;
+
+        if(serviceRunnerInput != null)
         {
-            Optional<LegendKerberosCredential> credentialHolder = identity.getCredential(LegendKerberosCredential.class);
-            if (credentialHolder.isPresent())
+            Identity identity = serviceRunnerInput.getIdentity();
+            if (identity != null)
             {
-                LegendKerberosCredential legendKerberosCredential = credentialHolder.get();
-                KerberosProfile kerberosProfile = new KerberosProfile(legendKerberosCredential.getSubject(), null);
-                profiles.add(kerberosProfile);
+                profiles.addAll(IdentityFactoryProvider.getInstance().adapt(identity));
+            }
+
+            if (serviceRunnerInput.getOperationalContext() != null && serviceRunnerInput.getOperationalContext().getGraphFetchCrossAssociationKeysCacheConfig() != null)
+            {
+                List<GraphFetchCache> graphFetchCaches = serviceRunnerInput
+                        .getOperationalContext()
+                        .getGraphFetchCrossAssociationKeysCacheConfig()
+                        .entrySet()
+                        .stream()
+                        .map(e -> ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(e.getValue(), e.getKey()))
+                        .collect(Collectors.toList());
+
+                planExecutionContext = new PlanExecutionContext(graphFetchCaches);
             }
         }
-        PlanExecutionContext planExecutionContext = null;
-        if (serviceRunnerInput.getOperationalContext() != null && serviceRunnerInput.getOperationalContext().getGraphFetchCrossAssociationKeysCacheConfig() != null)
-        {
-            List<GraphFetchCache> graphFetchCaches = serviceRunnerInput
-                    .getOperationalContext()
-                    .getGraphFetchCrossAssociationKeysCacheConfig()
-                    .entrySet()
-                    .stream()
-                    .map(e -> ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(e.getValue(), e.getKey()))
-                    .collect(Collectors.toList());
+        return this.executor.execute(this.plan, parameters, streamProvider, profiles, planExecutionContext);
+    }
 
-            planExecutionContext = new PlanExecutionContext(graphFetchCaches);
-        }
-
-        Result result = this.executor.execute(this.plan, parameters, null, profiles, planExecutionContext);
+    protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider, OutputStream outputStream)
+    {
+        Result result = execute(parameters, serviceRunnerInput, streamProvider);
         serializeResultToStream(result, serviceRunnerInput.getSerializationFormat(), outputStream);
     }
 
@@ -235,33 +280,61 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     {
         try
         {
-            if (result instanceof ErrorResult)
+            result.accept(new ResultVisitor<Void>()
             {
-                throw new RuntimeException("Error: " + ((ErrorResult) result).getMessage());
-            }
-            else if (result instanceof ConstantResult || result instanceof StreamingResult)
-            {
-                try
+                @Override
+                public Void visit(StreamingResult streamingResult)
                 {
-                    if (result instanceof ConstantResult)
+                    try
+                    {
+                        streamingResult.stream(outputStream, serializationFormat);
+                        return null;
+                    }
+                    catch (IOException e)
+                    {
+                        throw new UncheckedIOException("Error serializing result", e);
+                    }
+                }
+
+                @Override
+                public Void visit(StreamingObjectResult tStreamingObjectResult)
+                {
+                    return visit((StreamingResult) tStreamingObjectResult);
+                }
+
+                @Override
+                public Void visit(JsonStreamingResult jsonStreamingResult)
+                {
+                    return visit((StreamingResult) jsonStreamingResult);
+                }
+
+                @Override
+                public Void visit(ConstantResult constantResult)
+                {
+                    try
                     {
                         String serializedResult = ObjectMapperFactory.getNewStandardObjectMapper().writeValueAsString(((ConstantResult) result).getValue());
                         outputStream.write(serializedResult.getBytes());
+                        return null;
                     }
-                    else
+                    catch (IOException e)
                     {
-                        ((StreamingResult) result).stream(outputStream, serializationFormat);
+                        throw new UncheckedIOException("Error serializing result", e);
                     }
                 }
-                catch (IOException e)
+
+                @Override
+                public Void visit(ErrorResult errorResult)
                 {
-                    throw new RuntimeException("Error serializing result", e);
+                    throw new RuntimeException("Error: " + ((ErrorResult) result).getMessage());
                 }
-            }
-            else
-            {
-                throw new RuntimeException("Unknown result type: " + result.getClass().getCanonicalName());
-            }
+
+                @Override
+                public Void visit(MultiResult multiResult)
+                {
+                    throw new RuntimeException("Unknown result type: " + result.getClass().getCanonicalName());
+                }
+            });
         }
         finally
         {
@@ -294,12 +367,12 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
         public Result execute()
         {
-            return AbstractServicePlanExecutor.this.execute(getParameters(), this.streamProvider);
+            return AbstractServicePlanExecutor.this.execute(getParameters(), this.serviceRunnerInput, this.streamProvider);
         }
 
         public void executeToStream(OutputStream outputStream)
         {
-            AbstractServicePlanExecutor.this.executeToStream(getParameters(), this.serviceRunnerInput, outputStream);
+            AbstractServicePlanExecutor.this.executeToStream(getParameters(), this.serviceRunnerInput, this.streamProvider, outputStream);
         }
 
         protected abstract void addParameter(String name, Object value);
@@ -324,16 +397,15 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
     private class SingleParameterExecutionBuilder extends ExecutionBuilder
     {
-        private Map<String, Object> parameters;
+        private Map<String, Object> parameters = Collections.emptyMap();
 
         @Override
         protected void addParameter(String name, Object value)
         {
-            if (this.parameters != null)
+            if(value != null)
             {
-                throw new IllegalStateException("Single parameter already exists");
+                this.parameters = Collections.singletonMap(name, value);
             }
-            this.parameters = Collections.singletonMap(name, value);
         }
 
         @Override
@@ -360,7 +432,10 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         @Override
         protected void addParameter(String name, Object value)
         {
-            this.parameters.put(name, value);
+            if (value != null)
+            {
+                this.parameters.put(name, value);
+            }
         }
 
         @Override

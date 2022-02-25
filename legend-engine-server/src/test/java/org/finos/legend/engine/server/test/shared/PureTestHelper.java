@@ -137,6 +137,7 @@ public class PureTestHelper
         System.setProperty("dw.server.connector.port", String.valueOf(engineServerPort));
         System.setProperty("dw.metadataserver.pure.port", String.valueOf(metadataServerPort));
         System.setProperty("dw.temporarytestdb.port", String.valueOf(relationalDBPort));
+        System.setProperty("dw.relationalexecution.temporarytestdb.port", String.valueOf(relationalDBPort));
         System.out.println("Found Config file: " + Objects.requireNonNull(PureTestHelper.class.getClassLoader().getResource("org/finos/legend/engine/server/test/userTestConfig.json")).getFile());
 
         Server server = new Server();

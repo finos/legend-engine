@@ -54,7 +54,7 @@ operationDefinition:
 operationType: QUERY | MUTATION | SUBSCRIPTION;
 
 //https://spec.graphql.org/June2018/#sec-Selection-Sets
-selectionSet: '{' selection+ '}';
+selectionSet: OPEN_CURLY selection+ CLOSE_CURLY;
 
 selection: field
     | fragmentSpread
@@ -122,7 +122,7 @@ listValue: '[' ']'
     ;
 
 //https://spec.graphql.org/June2018/#sec-Input-Object-Values
-objectValue: '{' objectField* '}';
+objectValue: OPEN_CURLY objectField* CLOSE_CURLY;
 
 objectField: name ':' value;
 
@@ -158,13 +158,13 @@ typeSystemExtension: schemaExtension
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Schema
 schemaDefinition:
-	 SCHEMA directives? '{' rootOperationTypeDefinition+ '}';
+	 SCHEMA directives? OPEN_CURLY rootOperationTypeDefinition+ CLOSE_CURLY;
 
 rootOperationTypeDefinition: operationType ':' namedType;
 
 //https://spec.graphql.org/June2018/#sec-Schema-Extension
 schemaExtension:
-    EXTEND SCHEMA directives? '{' operationTypeDefinition+ '}'
+    EXTEND SCHEMA directives? OPEN_CURLY operationTypeDefinition+ CLOSE_CURLY
     | EXTEND SCHEMA directives
     ;
 
@@ -208,7 +208,7 @@ implementsInterfaces: 'implements' '&'? namedType
     ;
 
 
-fieldsDefinition: '{'  fieldDefinition+ '}';
+fieldsDefinition: OPEN_CURLY  fieldDefinition+ CLOSE_CURLY;
 fieldDefinition: description? name  argumentsDefinition? ':' type_  directives? ;
 
 //https://spec.graphql.org/June2018/#sec-Field-Arguments
@@ -241,7 +241,7 @@ unionTypeExtension : EXTEND UNION name directives? unionMemberTypes
 
 //https://spec.graphql.org/June2018/#sec-Enums
 enumTypeDefinition:  description? ENUM name directives? enumValuesDefinition?;
-enumValuesDefinition: '{' enumValueDefinition+  '}';
+enumValuesDefinition: OPEN_CURLY enumValueDefinition+  CLOSE_CURLY;
 enumValueDefinition: description? enumValue  directives?;
 
 //https://spec.graphql.org/June2018/#sec-Enum-Extensions
@@ -251,7 +251,7 @@ enumTypeExtension: EXTEND ENUM name directives? enumValuesDefinition
 
 //https://spec.graphql.org/June2018/#sec-Input-Objects
 inputObjectTypeDefinition: description? INPUT name directives? inputFieldsDefinition?;
-inputFieldsDefinition: '{' inputValueDefinition+ '}';
+inputFieldsDefinition: OPEN_CURLY inputValueDefinition+ CLOSE_CURLY;
 
 //https://spec.graphql.org/June2018/#sec-Input-Object-Extensions
 inputObjectTypeExtension:  EXTEND INPUT name directives? inputFieldsDefinition
@@ -355,6 +355,10 @@ BLOCK_STRING
 
 ID: STRING;
 
+OPEN_CURLY : '{';
+
+CLOSE_CURLY : '}';
+
 fragment ESC: '\\' ( ["\\/bfnrt] | UNICODE);
 
 fragment UNICODE: 'u' HEX HEX HEX HEX;
@@ -386,7 +390,6 @@ PUNCTUATOR: '!'
     | '='
     | '@'
     | '[' | ']'
-    | '{' | '}'
     | '|'
     ;
 

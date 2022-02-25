@@ -34,7 +34,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Api(tags = "Generation - Code")
+@Api(tags = "External - Generation - Code")
 @Path("pure/v1/codeGeneration")
 @Produces(MediaType.APPLICATION_JSON)
 public class CodeGenerators

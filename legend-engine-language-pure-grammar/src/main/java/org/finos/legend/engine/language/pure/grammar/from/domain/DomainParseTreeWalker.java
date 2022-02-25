@@ -1155,7 +1155,7 @@ public class DomainParseTreeWalker
     }
 
     // TODO: add another island mode in M3 for this when we support path (which starts with #/)
-    private ListIterable<ValueSpecification> visitGraphFetchTree(DomainParserGrammar.DslGraphFetchContext ctx)
+    public ListIterable<ValueSpecification> visitGraphFetchTree(DomainParserGrammar.DslGraphFetchContext ctx)
     {
         // NOTE: we want to preserve the spacing so we can correctly produce source information in the dispatched parser
         StringBuilder graphFetchStringBuilder = new StringBuilder();

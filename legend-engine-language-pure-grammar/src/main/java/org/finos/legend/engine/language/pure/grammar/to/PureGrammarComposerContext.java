@@ -25,19 +25,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.util.List;
 import java.util.Set;
 
 public class PureGrammarComposerContext
 {
-    public enum RenderStyle
-    {
-        STANDARD,
-        PRETTY,
-        PRETTY_HTML
-    }
-
     private final String indentationString;
     private final RenderStyle renderStyle;
     /**

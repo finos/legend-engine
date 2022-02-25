@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 public abstract class AbstractDatabaseAuthenticationFlowProvider implements DatabaseAuthenticationFlowProvider
 {
     protected Map<DatabaseAuthenticationFlowKey, DatabaseAuthenticationFlow> flows = new HashMap<>();
+    private DatabaseAuthenticationFlowProviderConfiguration configuration;
 
     public void registerFlow(DatabaseAuthenticationFlow flow)
     {
@@ -86,5 +87,11 @@ public abstract class AbstractDatabaseAuthenticationFlowProvider implements Data
     public int count()
     {
         return this.flows.size();
+    }
+
+    @Override
+    public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
+    {
+        this.configuration = configuration;
     }
 }

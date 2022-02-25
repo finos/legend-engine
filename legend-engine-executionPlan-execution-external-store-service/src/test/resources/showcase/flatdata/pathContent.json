@@ -1,7 +1,0 @@
-{
-  "/trades/allTradesService" : "s_tradeId,s_traderDetails,s_tradeDetails\n1,abc:F_Name_1:L_Name_1,30:100\n2,abc:F_Name_1:L_Name_1,31:200\n3,abc:F_Name_2:L_Name_2,30:300\n4,abc:F_Name_2:L_Name_2,31:400",
-  "/products/getProductById/30" : "s_productId,s_productName,s_description\n30,Product 30,Product 30 description",
-  "/products/getProductById/31" : "s_productId,s_productName,s_description\n31,Product 31,Product 31 description",
-  "/products/getProductByName?name=product 30" : "s_productId,s_productName,s_description\n30,Product 30,Product 30 description",
-  "/products/getProductByNameAndDescription?name=product 30&description=product 30 description" : "s_productId,s_productName,s_description\n30,Product 30,Product 30 description"
-}

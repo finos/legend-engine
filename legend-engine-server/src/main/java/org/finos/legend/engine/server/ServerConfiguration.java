@@ -38,5 +38,10 @@ public class ServerConfiguration extends Configuration
     public List<VaultConfiguration> vaults;
 
     public RelationalExecutionConfiguration relationalexecution;
+
+    /*
+        This configuration has been deprecated in favor of the 'temporarytestdb' in RelationalExecutionConfiguration
+     */
+    @Deprecated
     public TemporaryTestDbConfiguration temporarytestdb;
 }

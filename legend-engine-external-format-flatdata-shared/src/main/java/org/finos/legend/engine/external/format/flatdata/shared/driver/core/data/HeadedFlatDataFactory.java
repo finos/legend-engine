@@ -14,27 +14,21 @@
 
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core.data;
 
-import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandler;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.LineReader;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatDataValue;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class HeadedFlatDataFactory<T>
+public class HeadedFlatDataFactory<T> extends AbstractDataFactory<T>
 {
     private final String[] headings;
-    private String definingPath;
-    private final List<String> nullStrings;
 
     public HeadedFlatDataFactory(List<String> headings, String definingPath, List<String> nullStrings)
     {
@@ -43,9 +37,8 @@ public class HeadedFlatDataFactory<T>
 
     public HeadedFlatDataFactory(String[] headings, String definingPath, List<String> nullStrings)
     {
+        super(definingPath, nullStrings);
         this.headings = headings;
-        this.definingPath = definingPath;
-        this.nullStrings = nullStrings;
     }
 
     public List<String> headings()
@@ -65,7 +58,7 @@ public class HeadedFlatDataFactory<T>
 
     public Function<RawFlatData, String> getRawDataAccessor(FlatDataRecordField field)
     {
-        for (int i=0; i<headings.length; i++)
+        for (int i = 0; i < headings.length; i++)
         {
             if (headings[i].equals(field.getLabel()))
             {
@@ -84,69 +77,6 @@ public class HeadedFlatDataFactory<T>
     public RawFlatData createRawFlatData(long recordNumber, LineReader.Line line, String[] values)
     {
         return new HeadedRawFlatData(nullStrings, headings, recordNumber, line.getLineNumber(), line.getText(), values);
-    }
-
-    public Optional<IChecked<T>> createParsed(IChecked<RawFlatData> unparsed, List<FieldHandler> fieldHandlers, ParsedFlatDataToObject<? extends T> objectFactory)
-    {
-        if (unparsed.getDefects().stream().anyMatch(d -> d.getEnforcementLevel() == EnforcementLevel.Critical))
-        {
-            return Optional.of(BasicChecked.newChecked(null, unparsed.getValue(), unparsed.getDefects()));
-        }
-        else if (unparsed.getValue() == null)
-        {
-            return Optional.empty();
-        }
-        else
-        {
-            RawFlatData rawData = unparsed.getValue();
-            LazyParsedFlatData parseData = new LazyParsedFlatData(rawData, unparsed.getDefects(), fieldHandlers, definingPath);
-
-            for (FieldHandler handler : fieldHandlers)
-            {
-                if (handler.hasRawValue(rawData))
-                {
-                    String errorMessage = handler.validate(rawData);
-                    if (errorMessage == null)
-                    {
-                        parseData.setVerified(handler);
-                    }
-                    else
-                    {
-                        parseData.addInvalidInputDefect(handler, errorMessage);
-                    }
-                }
-                else if (!handler.getField().isOptional())
-                {
-                    parseData.addMissingValueDefect(handler);
-                }
-                else
-                {
-                    parseData.setMissing(handler);
-                }
-            }
-
-            List<IDefect> defects = parseData.getDefects();
-            IChecked<? extends T> checkedValue = objectFactory.makeChecked(parseData);
-            defects.addAll(checkedValue.getDefects());
-            T value = checkedValue.getValue();
-            if (objectFactory.isReturnable())
-            {
-                if (defects.stream().anyMatch(d -> d.getEnforcementLevel() == EnforcementLevel.Critical))
-                {
-                    value = null;
-                }
-                return Optional.of(BasicChecked.newChecked(value, unparsed.getValue(), defects));
-            }
-            else if(defects.isEmpty())
-            {
-                return Optional.empty();
-            }
-            else
-            {
-                defects.add(BasicDefect.newNonReturnableDefect(definingPath));
-                return Optional.of(BasicChecked.newChecked(null, new NonRecordRawFlatData(unparsed.getValue()), defects));
-            }
-        }
     }
 
     private static class HeadedRawFlatData extends AbstractRawFlatData
@@ -172,7 +102,7 @@ public class HeadedFlatDataFactory<T>
 
         String getRawValue(int index)
         {
-            String value =  index >= values.length ? null : values[index];
+            String value = index >= values.length ? null : values[index];
             return value != null && nullStrings.contains(value) ? null : value;
         }
 
@@ -211,7 +141,7 @@ public class HeadedFlatDataFactory<T>
         return (RawFlatData raw) ->
         {
             HeadedRawFlatData headedRaw = (HeadedRawFlatData) raw;
-            for (int i=0; i<headedRaw.headings.length; i++)
+            for (int i = 0; i < headedRaw.headings.length; i++)
             {
                 if (headedRaw.headings[i].equals(label))
                 {

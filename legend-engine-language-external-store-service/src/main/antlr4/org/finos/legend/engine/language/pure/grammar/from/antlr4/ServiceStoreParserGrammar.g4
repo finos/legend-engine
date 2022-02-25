@@ -15,7 +15,7 @@ unquotedIdentifier:                         VALID_STRING
                                             | SERVICE_STORE
                                             | DESCRIPTION | SERVICE_GROUP | SERVICE
                                             | PATH | REQUEST_BODY | METHOD | PARAMETERS | RESPONSE | SECURITY_SCHEME
-                                            | LOCATION | STYLE | EXPLODE | ENUM
+                                            | ALLOW_RESERVED | LOCATION | STYLE | EXPLODE | ENUM
                                             | SERVICE_MAPPING | PARAM_MAPPING | SERVICE_REFERENCE
 ;
 
@@ -79,7 +79,9 @@ parameterDefinition:                        parameterName COLON typeReferenceDef
 ;
 parameterName:                              unquotedIdentifier | QUOTED_STRING
 ;
-parameterOptions:                           locationDefinition | styleDefinition | explodeDefinition | enumDefinition
+parameterOptions:                           allowReservedDefinition | locationDefinition | styleDefinition | explodeDefinition | enumDefinition
+;
+allowReservedDefinition:                    ALLOW_RESERVED EQUAL BOOLEAN
 ;
 locationDefinition:                         LOCATION EQUAL identifier
 ;

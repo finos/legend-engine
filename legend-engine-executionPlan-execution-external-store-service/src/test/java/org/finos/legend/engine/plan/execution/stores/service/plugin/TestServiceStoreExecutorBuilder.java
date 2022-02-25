@@ -48,7 +48,7 @@ public class TestServiceStoreExecutorBuilder
         Assert.assertEquals(2, builders.size());
         StoreExecutorBuilder builder = builders.get(0);
         Assert.assertTrue(builder instanceof ServiceStoreExecutorBuilder);
-        ServiceStoreExecutor executor = ((ServiceStoreExecutorBuilder)builder).build();
+        ServiceStoreExecutor executor = ((ServiceStoreExecutorBuilder) builder).build();
         Assert.assertNotNull(executor);
     }
 
@@ -59,7 +59,7 @@ public class TestServiceStoreExecutorBuilder
         Assert.assertEquals(2, builders.size());
         StoreExecutorBuilder builder = builders.get(0);
         Assert.assertTrue(builder instanceof ServiceStoreExecutorBuilder);
-        ServiceStoreExecutor executor = ((ServiceStoreExecutorBuilder)builder).build();
+        ServiceStoreExecutor executor = ((ServiceStoreExecutorBuilder) builder).build();
         Assert.assertNotNull(executor);
     }
 }

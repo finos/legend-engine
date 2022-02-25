@@ -1,0 +1,159 @@
+{
+  "subscriptionType": null,
+  "directives": [],
+  "mutationType": null,
+  "queryType": {
+    "name": "Domain"
+  },
+  "types": [
+    {
+      "name": "Domain",
+      "fields": [
+        {
+          "description": null,
+          "deprecationReason": null,
+          "name": "val",
+          "type": {
+            "name": "String",
+            "ofType": null,
+            "kind": "SCALAR"
+          },
+          "args": [],
+          "isDeprecated": false
+        },
+        {
+          "description": null,
+          "deprecationReason": null,
+          "name": "firmByLegalName",
+          "type": {
+            "name": "Firm",
+            "ofType": null,
+            "kind": "OBJECT"
+          },
+          "args": [
+            {
+              "type": {
+                "name": "String",
+                "ofType": null,
+                "kind": "SCALAR"
+              },
+              "description": null,
+              "name": "legalName",
+              "defaultValue": null
+            }
+          ],
+          "isDeprecated": false
+        },
+        {
+          "description": null,
+          "deprecationReason": null,
+          "name": "employeeByLastName",
+          "type": {
+            "name": "Person",
+            "ofType": null,
+            "kind": "OBJECT"
+          },
+          "args": [
+            {
+              "type": {
+                "name": "String",
+                "ofType": null,
+                "kind": "SCALAR"
+              },
+              "description": null,
+              "name": "lastName",
+              "defaultValue": null
+            }
+          ],
+          "isDeprecated": false
+        }
+      ],
+      "description": null,
+      "inputFields": [],
+      "possibleTypes": [],
+      "interfaces": [],
+      "kind": "OBJECT",
+      "enumValues": []
+    },
+    {
+      "name": "Firm",
+      "fields": [
+        {
+          "description": null,
+          "deprecationReason": null,
+          "name": "legalName",
+          "type": {
+            "name": "String",
+            "ofType": null,
+            "kind": "SCALAR"
+          },
+          "args": [],
+          "isDeprecated": false
+        },
+        {
+          "description": null,
+          "deprecationReason": null,
+          "name": "employees",
+          "type": {
+            "name": "Person",
+            "ofType": null,
+            "kind": "OBJECT"
+          },
+          "args": [],
+          "isDeprecated": false
+        }
+      ],
+      "description": null,
+      "inputFields": [],
+      "possibleTypes": [],
+      "interfaces": [],
+      "kind": "OBJECT",
+      "enumValues": []
+    },
+    {
+      "name": "Person",
+      "fields": [
+        {
+          "description": null,
+          "deprecationReason": null,
+          "name": "firstName",
+          "type": {
+            "name": "String",
+            "ofType": null,
+            "kind": "SCALAR"
+          },
+          "args": [],
+          "isDeprecated": false
+        },
+        {
+          "description": null,
+          "deprecationReason": null,
+          "name": "lastName",
+          "type": {
+            "name": "String",
+            "ofType": null,
+            "kind": "SCALAR"
+          },
+          "args": [],
+          "isDeprecated": false
+        }
+      ],
+      "description": null,
+      "inputFields": [],
+      "possibleTypes": [],
+      "interfaces": [],
+      "kind": "OBJECT",
+      "enumValues": []
+    },
+    {
+      "name": "String",
+      "fields": [],
+      "description": null,
+      "inputFields": [],
+      "possibleTypes": [],
+      "interfaces": [],
+      "kind": "SCALAR",
+      "enumValues": []
+    }
+  ]
+}

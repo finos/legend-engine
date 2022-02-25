@@ -79,7 +79,7 @@ public class TestConnectionState
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
+        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1_org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential", server.getPort());
         IdentityState identityState = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
         assertEquals("testuser1", identityState.getIdentity().getName());
         assertNotNull(identityState.getCredentialSupplier());
@@ -95,7 +95,7 @@ public class TestConnectionState
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
+        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1_org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential", server.getPort());
         DataSourceWithStatistics identityState1 = ConnectionStateManager.getInstance().getDataSourceByPoolName(poolName);
         assertEquals("testuser1", identityState1.getIdentity().getName());
         assertNotNull(identityState1.getCredentialSupplier());
@@ -122,10 +122,11 @@ public class TestConnectionState
         Connection connection = this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1", server.getPort());
+        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1_org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential", server.getPort());
         IdentityState identityState1 = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
         assertEquals("testuser1", identityState1.getIdentity().getName());
         assertNotNull(identityState1.getCredentialSupplier());
+
         connection.close();
         // Reset connection state - This simulates a case where the state manager evicts state objects
         ConnectionStateManager.getInstance().evictUnusedPoolsOlderThan(Duration.ofMillis(1));

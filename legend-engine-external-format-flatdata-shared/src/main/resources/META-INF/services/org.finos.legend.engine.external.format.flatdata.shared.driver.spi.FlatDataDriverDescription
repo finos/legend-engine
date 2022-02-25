@@ -1,5 +1,6 @@
 org.finos.legend.engine.external.format.flatdata.shared.driver.core.DelimitedWithHeadingsDriverDescription
 org.finos.legend.engine.external.format.flatdata.shared.driver.core.DelimitedWithoutHeadingsDriverDescription
+org.finos.legend.engine.external.format.flatdata.shared.driver.core.FixedWidthDriverDescription
 org.finos.legend.engine.external.format.flatdata.shared.driver.core.ImmaterialLinesDriverDescription
 org.finos.legend.engine.external.format.flatdata.shared.driver.bloomberg.BloombergDataDriverDescription
 org.finos.legend.engine.external.format.flatdata.shared.driver.bloomberg.BloombergActionsDriverDescription

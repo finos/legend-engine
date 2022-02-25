@@ -148,6 +148,24 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    security : [];\n" +
                 "  )\n" +
                 ")\n");
+
+        test(TEST_BINDING + "###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreCompilationWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService/{param2}';\n" +
+                "    requestBody : test::Person <- test::TestBinding;\n" +
+                "    method : POST;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      param1 : String ( location = query, allowReserved = true ),\n" +
+                "      param2 : String ( location = path, allowReserved = false )\n" +
+                "    );\n" +
+                "    response : test::Person <- test::TestBinding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n");
     }
 
     @Test

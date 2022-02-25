@@ -16,12 +16,15 @@ package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.CharCursor;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.InputStreamConnection;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandler;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.CommonDataHandler;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.FlatDataUtils;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.LineReader;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.IntegerVariable;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataReadDriver;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -43,6 +46,9 @@ public abstract class StreamingReadDriver<T> implements FlatDataReadDriver<T>
 
     protected final StreamingDriverHelper helper;
     protected final CommonDataHandler commonDataHandler;
+
+    protected ParsedFlatDataToObject<? extends T> objectFactory;
+    protected List<FieldHandler> fieldHandlers;
     private final InputStreamConnection connection;
 
     private RawLines rawLines;

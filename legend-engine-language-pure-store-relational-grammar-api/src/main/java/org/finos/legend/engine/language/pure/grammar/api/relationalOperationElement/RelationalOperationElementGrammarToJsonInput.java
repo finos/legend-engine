@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.api.relationalOperationEle
 import java.util.Collections;
 import java.util.Map;
 
+@Deprecated
 public class RelationalOperationElementGrammarToJsonInput
 {
     public Map<String, String> operations = Collections.emptyMap();
