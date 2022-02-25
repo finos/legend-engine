@@ -119,7 +119,7 @@ public class HelperPersistenceBuilder
     private static Property<?, ?> validateAndResolveProperty(Class<?> modelClass, String propertyName, SourceInformation sourceInformation, CompileContext context)
     {
         Property<?, ?> property = modelClass._properties().detect(p -> p._name().equals(propertyName));
-        Assert.assertTrue(property != null, () -> String.format("Target component property '%s' must be a property of class '%s::%s' in the grouped flat specification", propertyName, modelClass._package(), modelClass._name()), sourceInformation, EngineErrorType.COMPILATION);
+        Assert.assertTrue(property != null, () -> String.format("Property '%s' must exist in class '%s::%s'", propertyName, modelClass._package(), modelClass._name()), sourceInformation, EngineErrorType.COMPILATION);
         return property;
     }
 

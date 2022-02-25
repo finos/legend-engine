@@ -552,7 +552,7 @@ public class PersistenceParseTreeWalker
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // delete property
-        PersistenceParserGrammar.MergeStrategyDeletePropertyContext deletePropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategyDeleteProperty(), "deleteIndicatorProperty", sourceInformation);
+        PersistenceParserGrammar.MergeStrategyDeletePropertyContext deletePropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategyDeleteProperty(), "deleteProperty", sourceInformation);
         mergeStrategy.deleteProperty = PureGrammarParserUtility.fromIdentifier(deletePropertyContext.identifier());
 
         // delete values
