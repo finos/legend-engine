@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys;
 
+import org.eclipse.collections.impl.list.mutable.FastList;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -78,7 +80,7 @@ public class GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyKey imple
         return "type:" + type() +
                 "_wpNo:" + workloadProjectNumber +
                 "_saE:" + serviceAccountEmail +
-                "_gcpAS:" + String.join(",",additionalGcpScopes) +
+                "_gcpAS:" + (additionalGcpScopes != null ? String.join(",",additionalGcpScopes) : "null") +
                 "_wPoId:" + workloadPoolId +
                 "_wPrId:"+ workloadProviderId +
                 "_awsAc:" + awsAccountId +
