@@ -28,6 +28,7 @@ import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultImplementation;
 import org.junit.*;
 import org.testcontainers.containers.MSSQLServerContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
@@ -40,7 +41,8 @@ import static org.junit.Assume.assumeTrue;
 
 public class TestSqlServerConnectionAcquisitionWithFlowProvider extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
-    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer()
+    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer(
+            DockerImageName.parse("mcr.microsoft.com/mssql/server").withTag("2019-latest"))
             .acceptLicense();
 
     private ConnectionManagerSelector connectionManagerSelector;
