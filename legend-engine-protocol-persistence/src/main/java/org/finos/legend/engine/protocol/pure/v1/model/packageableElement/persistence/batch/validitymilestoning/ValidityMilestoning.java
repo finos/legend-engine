@@ -13,7 +13,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 public abstract class ValidityMilestoning
 {
     public SourceInformation sourceInformation;
-    public ValidityDerivation validityDerivation;
+    public ValidityDerivation derivation;
 
     public abstract <T> T accept(ValidityMilestoningVisitor<T> visitor);
 }

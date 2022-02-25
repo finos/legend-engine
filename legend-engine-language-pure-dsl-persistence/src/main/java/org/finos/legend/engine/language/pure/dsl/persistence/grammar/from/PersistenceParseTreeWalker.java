@@ -711,7 +711,7 @@ public class PersistenceParseTreeWalker
 
         // validity derivation
         PersistenceParserGrammar.ValidityDerivationContext validityDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.validityDerivation(), "derivation", milestoning.sourceInformation);
-        milestoning.validityDerivation = visitValidityDerivation(validityDerivationContext);
+        milestoning.derivation = visitValidityDerivation(validityDerivationContext);
 
         return milestoning;
     }

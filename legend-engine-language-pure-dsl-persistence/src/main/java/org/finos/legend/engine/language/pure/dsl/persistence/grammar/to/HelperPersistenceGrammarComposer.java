@@ -476,7 +476,7 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "dateTimeFromFieldName: '" + val.dateTimeFromFieldName + "';\n" +
                     getTabString(indentLevel + 1) + "dateTimeThruFieldName: '" + val.dateTimeThruFieldName + "';\n" +
-                    renderValidityDerivation(val.validityDerivation, indentLevel + 1) +
+                    renderValidityDerivation(val.derivation, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
