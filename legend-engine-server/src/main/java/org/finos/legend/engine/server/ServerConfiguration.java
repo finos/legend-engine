@@ -19,11 +19,15 @@ import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.server.core.configuration.DeploymentConfiguration;
 import org.finos.legend.engine.server.core.configuration.OpenTracingConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jConfiguration;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,4 +48,8 @@ public class ServerConfiguration extends Configuration
      */
     @Deprecated
     public TemporaryTestDbConfiguration temporarytestdb;
+
+    // applicable only for Test Server
+    public List<DatabaseType> testConnectionsToEnable = new ArrayList<>();
+    public Map<DatabaseType, RelationalDatabaseConnection> staticTestConnections = new HashMap<>();
 }

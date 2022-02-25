@@ -105,6 +105,8 @@ public class Server extends Application<ServerConfiguration>
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
     private Environment environment;
+    protected PlanExecutor planExecutor;
+    protected RelationalStoreExecutor relationalStoreExecutor;
 
     public static void main(String[] args) throws Exception
     {
@@ -149,8 +151,8 @@ public class Server extends Application<ServerConfiguration>
 
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
-        RelationalStoreExecutor relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());
+        this.relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
+        this.planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();

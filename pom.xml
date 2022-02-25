@@ -34,6 +34,7 @@
         <module>legend-engine-executionPlan-dependencies</module>
         <module>legend-engine-executionPlan-execution</module>
         <module>legend-engine-executionPlan-execution-api</module>
+        <module>legend-engine-executionPlan-execution-store-relational-connection-tests-api</module>
         <module>legend-engine-executionPlan-execution-store-authentication</module>
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
         <module>legend-engine-executionPlan-execution-store-relational</module>
@@ -841,6 +842,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-services-model-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-tests-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->
