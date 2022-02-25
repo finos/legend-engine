@@ -49,7 +49,6 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mssqlserver</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

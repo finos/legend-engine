@@ -47,13 +47,13 @@ public class SqlServerConnectionTestManager implements ConnectionTestManager
     {
         return new DynamicTestConnection()
         {
-            public MSSQLServerContainer mssqlserver;
+            public MSSQLServerContainer mssqlserver = new MSSQLServerContainer("mcr.microsoft.com/mssql/server:2019-latest")
+                .acceptLicense();
             private VaultImplementation vaultImplementation;
 
             @Override
             public void setup()
             {
-                this.mssqlserver = new MSSQLServerContainer().acceptLicense();
                 this.startMSSQLServerContainer();
                 this.registerVault();
             }
