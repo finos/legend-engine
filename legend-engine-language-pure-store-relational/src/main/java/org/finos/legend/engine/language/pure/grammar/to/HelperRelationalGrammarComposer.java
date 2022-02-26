@@ -53,6 +53,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Numeric;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Real;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SemiStructured;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SmallInt;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.TinyInt;
@@ -372,6 +373,10 @@ public class HelperRelationalGrammarComposer
         {
             builder.append("OTHER");
         }
+        else if (column.type instanceof SemiStructured)
+        {
+            builder.append("SEMISTRUCTURED");
+        }
         else
         {
             builder.append(unsupported(column.type.getClass(), "database table column type"));
@@ -525,7 +530,8 @@ public class HelperRelationalGrammarComposer
                 : PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.property.property) + (checkNullOrEmpty(relationalPropertyMapping.target) ? "" : "[" + (renderSourceId ? (checkNullOrEmpty(relationalPropertyMapping.source) ? "" : (relationalPropertyMapping.source + ",")) : "") + relationalPropertyMapping.target + "]")
         ) + ": ";
         String enumMappingValue = relationalPropertyMapping.enumMappingId != null ? "EnumerationMapping " + PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.enumMappingId) + ": " : "";
-        return propertyString + enumMappingValue + renderRelationalOperationElement(relationalPropertyMapping.relationalOperation, context);
+        String bindingTransformer = relationalPropertyMapping.enumMappingId == null && relationalPropertyMapping.bindingTransformer != null ? "Binding " + PureGrammarComposerUtility.convertPath(relationalPropertyMapping.bindingTransformer.binding) + " : " : "";
+        return propertyString + enumMappingValue + bindingTransformer + renderRelationalOperationElement(relationalPropertyMapping.relationalOperation, context);
     }
 
     private static String renderEmbeddedRelationalPropertyMapping(EmbeddedRelationalPropertyMapping embeddedRelationalPropertyMapping, RelationalGrammarComposerContext context)

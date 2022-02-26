@@ -17,11 +17,13 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.BindingTransformer;
 
 public class RelationalPropertyMapping extends PropertyMapping
 {
     public String enumMappingId;
     public RelationalOperationElement relationalOperation;
+    public BindingTransformer bindingTransformer;
 
     @Override
     public <T> T accept(PropertyMappingVisitor<T> visitor)

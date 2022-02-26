@@ -36,7 +36,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = Varbinary.class, name = "Varbinary"),
         @JsonSubTypes.Type(value = Binary.class, name = "Binary"),
         @JsonSubTypes.Type(value = Other.class, name = "Other"),
-        @JsonSubTypes.Type(value = Other.class, name = "Array")
+        @JsonSubTypes.Type(value = Other.class, name = "Array"),
+        @JsonSubTypes.Type(value = SemiStructured.class, name = "SemiStructured"),
 })
 public abstract class DataType
 {
