@@ -416,13 +416,22 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return unsupported(propertyMapping.getClass());
     }
 
-    @Override
     public String visit(OperationClassMapping operationClassMapping)
     {
-        return ": " + "Operation\n" +
-            getTabString() + "{\n" +
-            getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
-            getTabString() + "}";
+        if (operationClassMapping instanceof MergeOperationClassMapping)
+        {
+            return ": " + "Operation\n" +
+                    getTabString() + "{\n" +
+                    getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + "([" + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + "]," +
+                    ((MergeOperationClassMapping) operationClassMapping).validationFunction.body.get(0).accept(this) + ")\n" +
+                    getTabString() + "}";
+        } else
+        {
+            return ": " + "Operation\n" +
+                    getTabString() + "{\n" +
+                    getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
+                    getTabString() + "}";
+        }
     }
 
     @Override

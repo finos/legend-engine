@@ -1,3 +1,3 @@
 lexer grammar OperationClassMappingLexerGrammar;
 
-import CoreLexerGrammar;
+import M3LexerGrammar;

@@ -208,6 +208,41 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 ")\n");
     }
 
+
+        @Test
+    public void testMergeModelMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::alloy::merge::SimpleMergeModelMapping\n" +
+                "(\n" +
+                "  *meta::pure::mapping::modelToModel::test::alloy::merge::Person: Operation\n" +
+                "  {\n" +
+                "    meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([p1,p2,p3],{s1: meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName[1],s2: meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName[1],s3: meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge[1]|($s1.id == $s2.id) && ($s1.id == $s3.id)})\n" +
+                "  }\n" +
+                "  meta::pure::mapping::modelToModel::test::alloy::merge::Person[p1]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName\n" +
+                "    firstName: $src.sourceFirstName,\n" +
+                "    address: $src.sourceAddress\n" +
+                "  }\n" +
+                "  meta::pure::mapping::modelToModel::test::alloy::merge::Person[p2]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName\n" +
+                "    lastName: $src.sourceLastName\n" +
+                "  }\n" +
+                "  meta::pure::mapping::modelToModel::test::alloy::merge::Person[p3]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge\n" +
+                "    age: $src.sourceAge\n" +
+                "  }\n" +
+                "  meta::pure::mapping::modelToModel::test::alloy::merge::Address: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddress\n" +
+                "    street: $src.sourceStreet\n" +
+                "  }\n" +
+                ")\n");
+    }
+
     @Test
     public void testMappingWithImport()
     {

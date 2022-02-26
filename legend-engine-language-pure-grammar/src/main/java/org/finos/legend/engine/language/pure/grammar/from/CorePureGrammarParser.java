@@ -43,10 +43,7 @@ import org.finos.legend.engine.language.pure.grammar.from.mapping.*;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
@@ -149,15 +146,31 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     {
         MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
         SourceCodeParserInfo parserInfo = getOperationClassMappingParserInfo(mappingElementSourceCode);
-        OperationClassMappingParseTreeWalker walker = new OperationClassMappingParseTreeWalker();
-        OperationClassMapping classMapping = new OperationClassMapping();
-        classMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-        classMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
-        classMapping.root = ctx.STAR() != null;
-        classMapping.sourceInformation = parserInfo.sourceInformation;
-        classMapping.classSourceInformation = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-        walker.visitOperationClassMapping((OperationClassMappingParserGrammar.OperationClassMappingContext) parserInfo.rootContext, classMapping);
-        return classMapping;
+        OperationClassMappingParseTreeWalker walker = new OperationClassMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserContext);
+
+        OperationClassMappingParserGrammar.OperationClassMappingContext operationCtx = (OperationClassMappingParserGrammar.OperationClassMappingContext) parserInfo.rootContext;
+        if (operationCtx.mergeParameters() != null)
+        {
+            MergeOperationClassMapping classMapping = new MergeOperationClassMapping();
+            classMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+            classMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+            classMapping.root = ctx.STAR() != null;
+            classMapping.sourceInformation = parserInfo.sourceInformation;
+            classMapping.classSourceInformation = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+            walker.visitMergeOperationClassMapping((OperationClassMappingParserGrammar.OperationClassMappingContext) parserInfo.rootContext, classMapping);
+            return classMapping;
+
+        } else
+        {
+            OperationClassMapping classMapping = new OperationClassMapping();
+            classMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+            classMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+            classMapping.root = ctx.STAR() != null;
+            classMapping.sourceInformation = parserInfo.sourceInformation;
+            classMapping.classSourceInformation = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+            walker.visitOperationClassMapping((OperationClassMappingParserGrammar.OperationClassMappingContext) parserInfo.rootContext, classMapping);
+            return classMapping;
+        }
     }
 
     private static ClassMapping parsePureClassMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
@@ -226,8 +239,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
                 throw new EngineException("Mapping test object 'input type' is missing. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), testInputDataSourceInformation, EngineErrorType.PARSER);
             }
             objectInputData.inputType = ObjectInputType.valueOf(inputDataContext.testInputFormat().getText());
-        }
-        catch (IllegalArgumentException e)
+        } catch (IllegalArgumentException e)
         {
             throw new EngineException("Mapping test object input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
         }
