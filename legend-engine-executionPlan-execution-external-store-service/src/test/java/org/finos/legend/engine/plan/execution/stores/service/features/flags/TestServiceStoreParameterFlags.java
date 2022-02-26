@@ -73,4 +73,40 @@ public class TestServiceStoreParameterFlags extends ServiceStoreTestSuite
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
     }
+
+    @Test
+    public void serviceStoreExampleWithOptionalParameters()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::S_Trade.all()" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
+                "               s_tradeId,\n" +
+                "               s_traderDetails,\n" +
+                "               s_tradeDetails\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
+
+        String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"},{\"s_tradeId\":\"2\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"31:200\"}]}";
+
+        Assert.assertEquals(expectedRes, executePlan(plan));
+
+        SingleExecutionPlan planWithoutOptionalParam = buildPlanForQuery(pureGrammar + "\n\n" + query, "meta::external::store::service::showcase::mapping::ServiceStoreMappingWithoutOptionalParam", "meta::external::store::service::showcase::runtime::ServiceStoreRuntime");
+
+        String expectedResWithoutOptionalParam = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"},{\"s_tradeId\":\"2\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"31:200\"},{\"s_tradeId\":\"3\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"30:300\"},{\"s_tradeId\":\"4\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"31:400\"}]}";
+
+        Assert.assertEquals(expectedResWithoutOptionalParam, executePlan(planWithoutOptionalParam));
+    }
 }

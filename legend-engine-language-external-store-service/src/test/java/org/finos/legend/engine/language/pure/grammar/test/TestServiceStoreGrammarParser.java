@@ -271,5 +271,22 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    security : [];\n" +
                 "  )\n"+
                 ")\n", "PARSER error at [10:7-61]: Unsupported Parameter Location - requestBody. Supported Locations are - path,query");
+
+        // Path parameters can't be optional
+        test("###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreGrammarWithSingleService\n" +
+                "(\n" +
+                "  Service TestServices\n" +
+                "  (\n" +
+                "    path : '/testService/{serializationFormat}';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = path, required = false )\n" +
+                "    );\n" +
+                "    response : ExampleClass <- tests::store::exampleBinding;\n" +
+                "    security : [];\n" +
+                "  )\n"+
+                ")\n", "PARSER error at [10:55-70]: Path parameters cannot be optional");
     }
 }

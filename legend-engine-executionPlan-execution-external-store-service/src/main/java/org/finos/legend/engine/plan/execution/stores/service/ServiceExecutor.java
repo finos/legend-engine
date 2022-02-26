@@ -173,7 +173,7 @@ public class ServiceExecutor
         {
             return url;
         }
-        return url + "?" + String.join("&", ListIterate.collect(queryParams, param -> serializeQueryParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
+        return url + "?" + String.join("&", ListIterate.collectIf(queryParams, param -> (state.getResult(param.name) != null), param -> serializeQueryParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
 
     private static void processSecurityScheme(HttpClientBuilder httpClientBuilder, MutableList<CommonProfile> profiles, SecurityScheme securityScheme)
