@@ -15,11 +15,8 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
@@ -50,4 +47,6 @@ public interface PackageableElementVisitor<T>
     T visit(PackageableRuntime packageableRuntime);
 
     T visit(PackageableConnection packageableConnection);
+
+    T visit(DataElement dataElement);
 }

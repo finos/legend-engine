@@ -37,4 +37,9 @@ public interface PureGrammarParserExtension
     {
         return Collections.emptyList();
     }
+
+    default Iterable<? extends EmbeddedDataParser> getExtraEmbeddedDataParsers()
+    {
+        return Collections.emptyList();
+    }
 }

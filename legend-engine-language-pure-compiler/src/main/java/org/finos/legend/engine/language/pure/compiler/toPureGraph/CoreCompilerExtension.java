@@ -14,10 +14,14 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function3;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_data_Data;
 
 import java.util.Collections;
+import java.util.List;
 
 public class CoreCompilerExtension implements CompilerExtension
 {
@@ -25,5 +29,11 @@ public class CoreCompilerExtension implements CompilerExtension
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_data_Data>> getExtraEmbeddedDataProcessors()
+    {
+        return Collections.singletonList(EmbeddedDataCompilerHelper::compileCoreEmbeddedDataTypes);
     }
 }
