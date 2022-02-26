@@ -26,6 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
         @JsonSubTypes.Type(value = OperationClassMapping.class, name = "operation"),
         @JsonSubTypes.Type(value = PureInstanceClassMapping.class, name = "pureInstance"),
         @JsonSubTypes.Type(value = AggregationAwareClassMapping.class, name = "aggregationAware"),
+        @JsonSubTypes.Type(value = MergeOperationClassMapping.class, name = "mergeOperation"),
+
 })
 public abstract class ClassMapping
 {

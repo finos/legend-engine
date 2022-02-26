@@ -60,6 +60,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Numeric;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Real;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SemiStructured;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SmallInt;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.TinyInt;
@@ -73,6 +74,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LiteralList;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.BindingTransformer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -385,6 +387,15 @@ public class RelationalParseTreeWalker
                 if (!ctx.INTEGER().isEmpty())
                 {
                     throw new EngineException("Column data type OTHER does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                }
+                break;
+            }
+            case "SEMISTRUCTURED":
+            {
+                column.type = new SemiStructured();
+                if (!ctx.INTEGER().isEmpty())
+                {
+                    throw new EngineException("Column data type SEMISTRUCTURED does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
@@ -1111,9 +1122,18 @@ public class RelationalParseTreeWalker
         relationalPropertyMapping.property = propertyPointer;
         relationalPropertyMapping.source = classMappingId;
         relationalPropertyMapping.target = targetId;
-        relationalPropertyMapping.enumMappingId = ctx.transformer() != null ? PureGrammarParserUtility.fromIdentifier(ctx.transformer().identifier()) : null;
+        relationalPropertyMapping.enumMappingId = ctx.transformer() != null && ctx.transformer().enumTransformer() != null ? PureGrammarParserUtility.fromIdentifier(ctx.transformer().enumTransformer().identifier()) : null;
+        relationalPropertyMapping.bindingTransformer = ctx.transformer() != null && ctx.transformer().bindingTransformer() != null ? buildBindingTransformer(ctx.transformer().bindingTransformer()) : null;
         relationalPropertyMapping.relationalOperation = this.visitOperation(ctx.operation(), scopeInfo);
         return relationalPropertyMapping;
+    }
+
+    private BindingTransformer buildBindingTransformer(RelationalParserGrammar.BindingTransformerContext ctx)
+    {
+        String binding = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        BindingTransformer bindingTransformer = new BindingTransformer();
+        bindingTransformer.binding = binding;
+        return bindingTransformer;
     }
 
     // -------------------------------------- EMBEDDED PROPERTY MAPPING --------------------------------------

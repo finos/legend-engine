@@ -32,6 +32,31 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
             "trader.details" : $this.s_traderDetails
          )
      )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradesByRegionService
+     (
+         ~paramMapping
+         (
+            region : 'RegionA',
+            requiredParam : 'present'
+         )
+     )
+  }
+
+
+)
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMappingWithoutOptionalParam
+(
+  *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradesByRegionService
+     (
+       ~paramMapping
+       (
+         requiredParam : 'present'
+       )
+     )
   }
 )
 
@@ -51,6 +76,19 @@ ServiceStore meta::external::store::service::showcase::store::TradeProductServic
          parameters :
          (
             "trader.details" : String (location = query, allowReserved = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+
+      Service TradesByRegionService
+      (
+         path : '/allTradesByRegion';
+         method : GET;
+         parameters :
+         (
+            region : String (location = query),
+            requiredParam : String (location = query, required = true)
          );
          security : [];
          response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];

@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.external.language.morphir.extension;
 
-import org.finos.legend.engine.external.language.morphir.schema.generations.MorphirGenerationConfig;
+import org.finos.legend.engine.external.language.morphir.model.MorphirGenerationConfig;
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;

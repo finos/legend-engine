@@ -15,8 +15,8 @@
 package org.finos.legend.engine.external.language.morphir.extension;
 
 import org.eclipse.collections.api.RichIterable;
-import org.finos.legend.engine.external.language.morphir.schema.generations.MorphirGenerationConfig;
-import org.finos.legend.engine.external.language.morphir.schema.generations.MorphirGenerationService;
+import org.finos.legend.engine.external.language.morphir.model.MorphirGenerationConfig;
+import org.finos.legend.engine.external.language.morphir.MorphirGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
@@ -50,7 +50,7 @@ public class MorphirGenerationExtension implements GenerationExtension
     @Override
     public GenerationMode getMode()
     {
-        return GenerationMode.Schema;
+        return GenerationMode.Code;
     }
 
     @Override

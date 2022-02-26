@@ -140,7 +140,14 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-relational</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-shared-format-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-external-shared-format</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- ANTLR -->
@@ -192,6 +199,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-format-json-model</artifactId>
             <scope>test</scope>
         </dependency>
 <!--        <dependency>-->

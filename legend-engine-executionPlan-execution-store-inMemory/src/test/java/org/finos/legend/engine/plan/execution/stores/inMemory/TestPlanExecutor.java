@@ -15,11 +15,18 @@
 package org.finos.legend.engine.plan.execution.stores.inMemory;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.multimap.list.ImmutableListMultimap;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
+import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.FakeRelationalStoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.FakeServiceStoreExecutorBuilder;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -27,8 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 
 public class TestPlanExecutor
 {
@@ -84,5 +90,43 @@ public class TestPlanExecutor
         OutputStream outputStream = new ByteArrayOutputStream();
         jsonStreamToJsonDefaultSerializer.stream(outputStream);
         assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"fullName\":\"Jane Doe\"}}", outputStream.toString());
+    }
+
+    @Test
+    public void testPlanExecutorConstructionWithNoConfig()
+    {
+        // assert that we construct a plan executor with all known store executors even when no configuration is supplied
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutorWithConfigurations();
+        ImmutableList<StoreExecutor> extraExecutors = planExecutor.getExtraExecutors();
+
+        StoreExecutor relationalExecutor = extraExecutors.detect(storeExecutor -> storeExecutor instanceof FakeRelationalStoreExecutorBuilder.Executor);
+        assertNotNull("failed to locate relational executor", relationalExecutor);
+
+        StoreExecutor serviceStoreExecutor = extraExecutors.detect(storeExecutor -> storeExecutor instanceof FakeServiceStoreExecutorBuilder.Executor);
+        assertNotNull("failed to locate service store executor", serviceStoreExecutor);
+
+        StoreExecutor inmemoryExecutor = extraExecutors.detect(storeExecutor -> storeExecutor instanceof InMemoryStoreExecutor);
+        assertNotNull("failed to locate inmemory executor", inmemoryExecutor);
+    }
+
+    @Test
+    public void testPlanExecutorConstructionWithConfig()
+    {
+        // assert that we construct a plan executor with the proper configs
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutorWithConfigurations(new FakeRelationalStoreExecutorBuilder.Configuration(), new FakeServiceStoreExecutorBuilder.Configuration());
+        ImmutableList<StoreExecutor> extraExecutors = planExecutor.getExtraExecutors();
+
+        StoreExecutor relationalExecutor = extraExecutors.detect(storeExecutor -> storeExecutor instanceof FakeRelationalStoreExecutorBuilder.Executor);
+        assertNotNull("failed to locate relational executor", relationalExecutor);
+        StoreExecutorConfiguration relationalConfiguration = ((FakeRelationalStoreExecutorBuilder.Executor) relationalExecutor).getConfiguration();
+        assertNotNull("builder not invoked with config", relationalConfiguration);
+
+        StoreExecutor serviceStoreExecutor = extraExecutors.detect(storeExecutor -> storeExecutor instanceof FakeServiceStoreExecutorBuilder.Executor);
+        assertNotNull("failed to locate service store executor", serviceStoreExecutor);
+        StoreExecutorConfiguration serviceStoreConfiguration = ((FakeServiceStoreExecutorBuilder.Executor) serviceStoreExecutor).getConfiguration();
+        assertNotNull("builder not invoked with config", serviceStoreConfiguration);
+
+        StoreExecutor inmemoryExecutor = extraExecutors.detect(storeExecutor -> storeExecutor instanceof InMemoryStoreExecutor);
+        assertNotNull("failed to locate inmemory executor", inmemoryExecutor);
     }
 }

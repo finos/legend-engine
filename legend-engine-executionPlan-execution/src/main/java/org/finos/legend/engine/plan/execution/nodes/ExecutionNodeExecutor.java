@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
@@ -226,6 +227,14 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
             return new StreamingObjectResult<>(Stream.concat(streamResult1.getObjectStream(), streamResult2.getObjectStream()), streamResult1.getResultBuilder(), childResult);
         }
+
+         if (Arrays.asList(clazz.getInterfaces()).contains(IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics.class))
+        {
+            StreamingObjectResult<?> streamResult = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+
+            return streamResult;
+        }
+
         else
         {
             return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(pureExpressionPlatformExecutionNode, DefaultExecutionNodeContext.factory(), this.profiles, this.executionState);

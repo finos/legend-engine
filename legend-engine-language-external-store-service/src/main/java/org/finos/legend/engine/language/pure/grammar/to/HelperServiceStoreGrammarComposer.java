@@ -124,6 +124,11 @@ public class HelperServiceStoreGrammarComposer
             builder.append(", ").append("allowReserved = ").append(param.allowReserved);
         }
 
+        if (param.required != null)
+        {
+            builder.append(", ").append("required = ").append(param.required);
+        }
+
         builder.append(" )");
 
         return builder.toString();

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.external.format.rosetta.schema.generations;
+package org.finos.legend.engine.external.format.rosetta.model;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
