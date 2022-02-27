@@ -116,9 +116,11 @@ public class Protobuf3GrammarParser
         protoFile.syntax = Syntax.proto3;
 
         if (protoContext.importStatement().size() > 0) {
-            List<String> imports = Lists.mutable.ofInitialCapacity(protoContext.importStatement().size());
+            List<ProtoImport> imports = Lists.mutable.ofInitialCapacity(protoContext.importStatement().size());
             for (Protobuf3Parser.ImportStatementContext _import : protoContext.importStatement()) {
-                imports.add(_import.strLit().getText());
+                ProtoImport protoImport = new ProtoImport();
+                protoImport.name = _import.strLit().getText();
+                imports.add(protoImport);
             }
             protoFile.imports = imports;
         }
@@ -129,7 +131,7 @@ public class Protobuf3GrammarParser
             protoFile._package = protoContext.packageStatement(0).fullIdent().getText();
         }
         if (protoContext.topLevelDef() != null) {
-            List<ProtoBufType> topLevelDefs = Lists.mutable.ofInitialCapacity(protoContext.topLevelDef().size());
+            List<ProtoItemDefinition> topLevelDefs = Lists.mutable.ofInitialCapacity(protoContext.topLevelDef().size());
             for (Protobuf3Parser.TopLevelDefContext topLevelDef : protoContext.topLevelDef()) {
                 topLevelDefs.add(visitTopLevelDef(topLevelDef));
             }
@@ -168,7 +170,7 @@ public class Protobuf3GrammarParser
                     }
                     break;
                 default:
-                    CustomOption customOption = new CustomOption();
+                    Option customOption = new Option();
                     customOption.name = name;
                     customOption.value = value;
                     options.customOptions.add(customOption);
@@ -178,7 +180,7 @@ public class Protobuf3GrammarParser
         return options;
     }
 
-    private ProtoBufType visitTopLevelDef(Protobuf3Parser.TopLevelDefContext topLevelDefContext) {
+    private ProtoItemDefinition visitTopLevelDef(Protobuf3Parser.TopLevelDefContext topLevelDefContext) {
         if( topLevelDefContext.enumDef() != null )
         {
             return visitEnumDef(topLevelDefContext.enumDef());
@@ -212,28 +214,28 @@ public class Protobuf3GrammarParser
         Message message = new Message();
         message.name = messageDefContext.messageName().ident().getText();
 
-        MutableList<Field> fields = Lists.mutable.of();
+        MutableList<ProtoItemDefinition> content = Lists.mutable.of();
         for( Protobuf3Parser.MessageElementContext elementContext : messageDefContext.messageBody().messageElement())
         {
             if(elementContext.field() != null) {
                 Field field = new Field();
                 field.type = visitProtoType(elementContext.field().type_());
                 field.name = elementContext.field().fieldName().ident().getText();
-                field.binaryFieldNumber = Long.parseLong(elementContext.field().fieldNumber().intLit().getText());
+                field.number = Long.parseLong(elementContext.field().fieldNumber().intLit().getText());
                 field.repeated = elementContext.field().REPEATED() != null;
-                fields.add(field);
+                content.add(field);
             } else if (elementContext.messageDef() != null) {
                 Message messageNested = visitMessageDef(elementContext.messageDef());
-                //todo - support nested messages
+                content.add(messageNested);
             } else if (elementContext.enumDef() != null) {
                 Enumeration enumeration = visitEnumDef(elementContext.enumDef());
-                //todo - support nested messages
+                content.add(enumeration);
             } else {
                 throw new RuntimeException("Unknown message element");
             }
 
         }
-        message.fields = fields;
+        message.content = content;
         return message;
     }
 
@@ -245,7 +247,7 @@ public class Protobuf3GrammarParser
         }
         else if(type_context.BYTES() != null)
         {
-            throw new RuntimeException("Bytes not supported yet");
+            return new Bytes();
         }
         else if(type_context.DOUBLE() != null)
         {
@@ -253,11 +255,11 @@ public class Protobuf3GrammarParser
         }
         else if(type_context.FIXED32() != null)
         {
-            throw new RuntimeException("Fixed32 not supported yet");
+            return new Fixed32();
         }
         else if(type_context.FIXED64() != null)
         {
-            throw new RuntimeException("Fixed64 not supported yet");
+            return new Fixed64();
         }
         else if(type_context.FLOAT() != null)
         {
@@ -273,19 +275,19 @@ public class Protobuf3GrammarParser
         }
         else if(type_context.SFIXED32() != null)
         {
-            throw new RuntimeException("sfixed32 not supported yet");
+            return new SFixed32();
         }
         else if(type_context.SFIXED64() != null)
         {
-            throw new RuntimeException("sfixed64 not supported yet");
+            return new SFixed64();
         }
         else if(type_context.SINT32() != null)
         {
-            throw new RuntimeException("sint32 not supported yet");
+            return new SInt32();
         }
         else if(type_context.SINT64() != null)
         {
-            throw new RuntimeException("sint64 not supported yet");
+            return new SInt64();
         }
         else if(type_context.STRING() != null)
         {
@@ -293,11 +295,11 @@ public class Protobuf3GrammarParser
         }
         else if(type_context.UINT32() != null)
         {
-            throw new RuntimeException("uint32 not supported yet");
+            return new UInt32();
         }
         else if(type_context.UINT64() != null)
         {
-            throw new RuntimeException("uint64 not supported yet");
+            return new UInt64();
         }
         else if(type_context.enumType() != null)
         {

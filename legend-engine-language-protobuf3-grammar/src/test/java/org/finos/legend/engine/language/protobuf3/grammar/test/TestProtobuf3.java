@@ -82,10 +82,10 @@ public class TestProtobuf3 {
         Assert.assertEquals(2, proto.topLevelDefs.size());
         Message message1 = (Message) proto.topLevelDefs.get(0);
         Assert.assertEquals("Person", message1.name);
-        Assert.assertEquals(5, message1.fields.size());
+        Assert.assertEquals(5, message1.content.size());
         Message message2 = (Message) proto.topLevelDefs.get(1);
         Assert.assertEquals("AddressBook", message2.name);
-        Assert.assertEquals(1, message2.fields.size());
+        Assert.assertEquals(1, message2.content.size());
     }
     protected void check(String value)
     {
