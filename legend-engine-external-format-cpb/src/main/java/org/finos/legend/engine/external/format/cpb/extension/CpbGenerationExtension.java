@@ -1,4 +1,4 @@
-package org.finos.legend.engine.external.language.cpb.extension;
+package org.finos.legend.engine.external.format.cpb.extension;
 
 import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.engine.external.format.cpb.schema.generations.CpbGenerationConfig;
@@ -59,7 +59,7 @@ public class CpbGenerationExtension implements GenerationExtension
             @Override
             public List<GenerationProperty> getProperties(PureModel pureModel)
             {
-                return FileGenerationDescription.extractGenerationProperties(core_external_language_cpb_integration.Root_meta_external_format_cpb_generation_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
+                return FileGenerationDescription.extractGenerationProperties(core_external_format_cpb_integration.Root_meta_external_format_cpb_generation_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
             }
         };
     }
@@ -89,7 +89,7 @@ public class CpbGenerationExtension implements GenerationExtension
         {
             FileGenerationSpecification specification = (FileGenerationSpecification) element;
             CpbGenerationConfig cpbConfig = CpbGenerationConfigFromFileGenerationSpecificationBuilder.build(specification);
-            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_cpb_transformation_cpbSchemaGenerator.Root_meta_external_format_cpb_generation_generateCpbFromPureWithScope_CpbConfig_1__CpbOutput_MANY_(cpbConfig.process(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
+            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_cpb_transformation_cpbGenerator.Root_meta_external_format_cpb_generation_generateCpbFromPureWithScope_CpbConfig_1__CpbOutput_MANY_(cpbConfig.process(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
             return new ArrayList<>(output.toList());
         }
         return null;
