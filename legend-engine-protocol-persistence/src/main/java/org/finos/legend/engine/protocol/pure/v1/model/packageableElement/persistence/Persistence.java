@@ -8,7 +8,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 public class Persistence extends PackageableElement
 {
     public String documentation;
-    public java.util.List<String> owners = java.util.Collections.<String>emptyList();
+    public java.util.List<String> owners = java.util.Collections.emptyList();
     public Trigger trigger;
     public Reader reader;
     public Persister persister;

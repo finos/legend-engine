@@ -5,7 +5,7 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.*;
@@ -160,7 +160,7 @@ public class HelperPersistenceGrammarComposer
         }
     }
 
-    private static class PersisterComposer implements PersistenceVisitor<String>
+    private static class PersisterComposer implements PersisterVisitor<String>
     {
         private final int indentLevel;
 

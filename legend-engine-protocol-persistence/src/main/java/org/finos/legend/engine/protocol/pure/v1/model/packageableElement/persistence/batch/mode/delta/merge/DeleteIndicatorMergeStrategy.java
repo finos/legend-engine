@@ -3,7 +3,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public class DeleteIndicatorMergeStrategy extends MergeStrategy
 {
     public String deleteProperty;
-    public java.util.List<String> deleteValues = java.util.Collections.<String>emptyList();
+    public java.util.List<String> deleteValues = java.util.Collections.emptyList();
 
     public <T> T accept(MergeStrategyVisitor<T> visitor)
     {

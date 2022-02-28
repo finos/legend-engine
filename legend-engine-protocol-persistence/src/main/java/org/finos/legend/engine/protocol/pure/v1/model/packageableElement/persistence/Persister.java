@@ -15,5 +15,5 @@ public abstract class Persister
 {
     public SourceInformation sourceInformation;
 
-    public abstract <T> T accept(PersistenceVisitor<T> visitor);
+    public abstract <T> T accept(PersisterVisitor<T> visitor);
 }

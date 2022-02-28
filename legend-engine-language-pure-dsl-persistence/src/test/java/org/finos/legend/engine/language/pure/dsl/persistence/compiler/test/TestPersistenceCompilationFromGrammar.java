@@ -268,7 +268,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [50:9-61:9]: Target component property 'property1' must be a property of class 'test::ServiceResult' in the grouped flat specification");
+                "}\n", "COMPILATION error at [50:9-61:9]: Property 'property1' must exist in class 'test::ServiceResult'");
     }
 
     @Test

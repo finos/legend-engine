@@ -5,7 +5,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.*;
@@ -159,7 +159,7 @@ public class HelperPersistenceBuilder
         }
     }
 
-    private static class PersisterBuilder implements PersistenceVisitor<Root_meta_pure_persistence_metamodel_Persister>
+    private static class PersisterBuilder implements PersisterVisitor<Root_meta_pure_persistence_metamodel_Persister>
     {
         private final CompileContext context;
 
