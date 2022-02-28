@@ -22,7 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.server.Server;
 import org.finos.legend.engine.server.ServerConfiguration;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
-import org.slf4j.Logger;
+
 import java.util.*;
 
 public class TestServer extends Server
@@ -39,17 +39,14 @@ public class TestServer extends Server
     public void run(ServerConfiguration serverConfiguration, Environment environment)
     {
         super.run(serverConfiguration, environment);
-
-        environment.jersey().register(new ExecutePlanInTestDatabase(planExecutor,
-                relationalStoreExecutor.getStoreState().getRelationalExecutor().getConnectionManager(),
-                getTestConnections(serverConfiguration)));
+        environment.jersey().register(new TestConnectionProviderApi(getTestConnections(serverConfiguration)));
     }
 
     public Map<DatabaseType, RelationalDatabaseConnection> getTestConnections (ServerConfiguration serverConfiguration)
     {
         Map<DatabaseType, RelationalDatabaseConnection> testConnections = new HashMap<>();
 
-        // register static connections
+        // register static test connections
         for (DatabaseType dbType : serverConfiguration.staticTestConnections.keySet())
         {
             if (serverConfiguration.testConnectionsToEnable.contains(dbType))

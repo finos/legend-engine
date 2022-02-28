@@ -90,7 +90,8 @@ public class SqlServerConnectionTestManager implements ConnectionTestManager
                 authSpec.userNameVaultReference = "user";
                 authSpec.passwordVaultReference = "password";
                 RelationalDatabaseConnection conn = new RelationalDatabaseConnection(sqlServerDatasourceSpecification, authSpec, DatabaseType.SqlServer);
-                conn.type = DatabaseType.SqlServer;
+                conn.type = DatabaseType.SqlServer;         // for compatibility with legacy DatabaseConnection
+                conn.element = "";                          // placeholder , will be set by pure tests
                 return conn;
             }
 

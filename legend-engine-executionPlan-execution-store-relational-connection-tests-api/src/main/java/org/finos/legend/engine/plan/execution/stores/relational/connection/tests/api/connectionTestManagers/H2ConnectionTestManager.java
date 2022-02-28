@@ -64,16 +64,17 @@ public class H2ConnectionTestManager implements ConnectionTestManager
             @Override
             public RelationalDatabaseConnection getConnection()
             {
-                RelationalDatabaseConnection remoteH2Connection = new RelationalDatabaseConnection();
+                RelationalDatabaseConnection h2Connection = new RelationalDatabaseConnection();
                 StaticDatasourceSpecification ds = new StaticDatasourceSpecification();
                 ds.databaseName = "temp";
                 ds.host = "127.0.0.1";
                 ds.port =  h2Server.getPort();
-                remoteH2Connection.datasourceSpecification = ds;
-                remoteH2Connection.databaseType = DatabaseType.H2;
-                remoteH2Connection.authenticationStrategy = new DefaultH2AuthenticationStrategy();
-                remoteH2Connection.type = remoteH2Connection.databaseType;
-                return remoteH2Connection;
+                h2Connection.datasourceSpecification = ds;
+                h2Connection.databaseType = DatabaseType.H2;
+                h2Connection.authenticationStrategy = new DefaultH2AuthenticationStrategy();
+                h2Connection.type = h2Connection.databaseType;        // for compatibility with legacy DatabaseConnection
+                h2Connection.element = "";                            // placeholder , will be set by pure tests
+                return h2Connection;
             }
 
             @Override
