@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.external.format.rosetta.extension;
 
-import org.finos.legend.engine.external.format.rosetta.schema.generations.RosettaGenerationConfig;
+import org.finos.legend.engine.external.format.rosetta.model.RosettaGenerationConfig;
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;

@@ -34,6 +34,7 @@ public class PureGrammarParserExtensions
     private final MapIterable<String, ConnectionValueParser> connectionParsers;
     private final MapIterable<String, MappingElementParser> mappingElementParsers;
     private final MapIterable<String, MappingTestInputDataParser> mappingTestInputDataParsers;
+    private final MapIterable<String, EmbeddedDataParser> embeddedDataParsers;
 
     private PureGrammarParserExtensions(Iterable<? extends PureGrammarParserExtension> extensions)
     {
@@ -42,6 +43,7 @@ public class PureGrammarParserExtensions
         this.connectionParsers = indexExtraConnectionValueParsers(this.extensions);
         this.mappingElementParsers = indexExtraMappingElementParsers(this.extensions);
         this.mappingTestInputDataParsers = indexExtraMappingTestInputDataParsers(this.extensions);
+        this.embeddedDataParsers = indexEmbeddedDataParsers(this.extensions);
     }
 
     public List<PureGrammarParserExtension> getExtensions()
@@ -67,6 +69,11 @@ public class PureGrammarParserExtensions
     public MappingTestInputDataParser getExtraMappingTestInputDataParser(String type)
     {
         return this.mappingTestInputDataParsers.get(type);
+    }
+
+    public EmbeddedDataParser getExtraEmbeddedDataParser(String type)
+    {
+        return this.embeddedDataParsers.get(type);
     }
 
     public static PureGrammarParserExtensions fromExtensions(Iterable<? extends PureGrammarParserExtension> extensions)
@@ -118,6 +125,13 @@ public class PureGrammarParserExtensions
         return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraMappingTestInputDataParsers),
                 MappingTestInputDataParser::getInputDataTypeName,
                 "Conflicting parsers for mapping test input data type");
+    }
+
+    private static MapIterable<String, EmbeddedDataParser> indexEmbeddedDataParsers(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraEmbeddedDataParsers),
+                EmbeddedDataParser::getType,
+                "Conflicting parsers for embedded data type");
     }
 
     private static <T> MapIterable<String, T> indexByKey(Iterable<? extends T> elements, Function<? super T, String> keyFn, String conflictMessagePrefix)

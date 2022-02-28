@@ -23,12 +23,10 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryPropertyGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.*;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -37,18 +35,7 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatc
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.result.graphFetch.StoreStreamReadingResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.utils.InMemoryGraphFetchUtils;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ErrorExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FreeMarkerConditionalExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.MultiResultSequenceExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PureExpressionPlatformExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.*;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
@@ -60,14 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.Class
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -117,55 +97,89 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
         String _class = classResultType._class;
 
         Result childResult = null;
-
+        JavaPlatformImplementation javaPlatformImpl = (JavaPlatformImplementation) node.implementation;
+        String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
+        Class<?> clazz = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, executionClassName, this.executionState, this.pm);
         Span graphFetchSpan = GlobalTracer.get().buildSpan("graph fetch").withTag("rootStoreType", "inMemory").withTag("batchSizeConfig", batchSize).start();
         GlobalTracer.get().activateSpan(graphFetchSpan);
+
         try
         {
-            IInMemoryRootGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
 
-            childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.pm, this.executionState));
-            Iterator<?> sourceObjectsIterator;
-            if (childResult instanceof StoreStreamReadingResult)
-            {
-                StoreStreamReadingResult<?> storeStreamReadingResult = (StoreStreamReadingResult) childResult;
-                sourceObjectsIterator = storeStreamReadingResult.getObjectsIterator();
-            }
-            else if (childResult instanceof StreamingObjectResult)
-            {
-                StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult) childResult;
-                sourceObjectsIterator = streamingObjectResult.getObjectStream().iterator();
-            }
-            else
-            {
-                throw new IllegalStateException("Unsupported result type: " + childResult.getClass().getSimpleName());
-            }
 
-            AtomicLong batchIndex = new AtomicLong(0L);
-
-            Spliterator<GraphObjectsBatch> graphObjectsBatchSpliterator = new Spliterators.AbstractSpliterator<GraphObjectsBatch>(Long.MAX_VALUE, Spliterator.ORDERED)
+            if ((Arrays.asList(clazz.getInterfaces()).contains(IInMemoryRootGraphFetchMergeExecutionNodeSpecifics.class)))
             {
-                @Override
-                public boolean tryAdvance(Consumer<? super GraphObjectsBatch> action)
+                return mergeInMemoryNode(node);
+            } else
+            {
+                IInMemoryRootGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
+
+                childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.pm, this.executionState));
+                Iterator<?> sourceObjectsIterator;
+                if (childResult instanceof StoreStreamReadingResult)
                 {
-                    long currentBatch = batchIndex.incrementAndGet();
-                    GraphObjectsBatch inMemoryGraphObjectsBatch = new GraphObjectsBatch(currentBatch, executionState.getGraphFetchBatchMemoryLimit());
-                    List<Object> resultObjects = new ArrayList<>();
-                    int objectCount = 0;
+                    StoreStreamReadingResult<?> storeStreamReadingResult = (StoreStreamReadingResult) childResult;
+                    sourceObjectsIterator = storeStreamReadingResult.getObjectsIterator();
+                } else if (childResult instanceof StreamingObjectResult)
+                {
+                    StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult) childResult;
+                    sourceObjectsIterator = streamingObjectResult.getObjectStream().iterator();
+                } else
+                {
+                    throw new IllegalStateException("Unsupported result type: " + childResult.getClass().getSimpleName());
+                }
 
-                    if (checked)
+                AtomicLong batchIndex = new AtomicLong(0L);
+
+                Spliterator<GraphObjectsBatch> graphObjectsBatchSpliterator = new Spliterators.AbstractSpliterator<GraphObjectsBatch>(Long.MAX_VALUE, Spliterator.ORDERED)
+                {
+                    @Override
+                    public boolean tryAdvance(Consumer<? super GraphObjectsBatch> action)
                     {
-                        while (sourceObjectsIterator.hasNext())
+                        long currentBatch = batchIndex.incrementAndGet();
+                        GraphObjectsBatch inMemoryGraphObjectsBatch = new GraphObjectsBatch(currentBatch, executionState.getGraphFetchBatchMemoryLimit());
+                        List<Object> resultObjects = new ArrayList<>();
+                        int objectCount = 0;
+
+                        if (checked)
                         {
-                            IChecked<?> checkedSource = (IChecked<?>) sourceObjectsIterator.next();
-                            Object value = checkedSource.getValue();
-                            if (value == null)
+                            while (sourceObjectsIterator.hasNext())
                             {
-                                resultObjects.add(newDynamicChecked(Collections.singletonList(BasicDefect.newNoInputDefect(_class)), checkedSource, null));
+                                IChecked<?> checkedSource = (IChecked<?>) sourceObjectsIterator.next();
+                                Object value = checkedSource.getValue();
+                                if (value == null)
+                                {
+                                    resultObjects.add(newDynamicChecked(Collections.singletonList(BasicDefect.newNoInputDefect(_class)), checkedSource, null));
+                                } else
+                                {
+                                    Object targetObject = nodeSpecifics.transform(value);
+                                    if (targetObject != null)
+                                    {
+                                        if (targetObject instanceof List)
+                                        {
+                                            ((List<?>) targetObject).forEach(x -> {
+                                                IGraphInstance<?> target = (IGraphInstance<?>) x;
+                                                inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
+                                                resultObjects.add(newDynamicChecked(Collections.emptyList(), checkedSource, target.getValue()));
+                                            });
+                                        } else
+                                        {
+                                            IGraphInstance<?> target = (IGraphInstance<?>) targetObject;
+                                            inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
+                                            resultObjects.add(newDynamicChecked(Collections.emptyList(), checkedSource, target.getValue()));
+                                        }
+                                    }
+                                }
+
+                                objectCount += 1;
+                                if (objectCount >= batchSize) break;
                             }
-                            else
+                        } else
+                        {
+                            while (sourceObjectsIterator.hasNext())
                             {
-                                Object targetObject = nodeSpecifics.transform(value);
+                                Object targetObject = nodeSpecifics.transform(sourceObjectsIterator.next());
+
                                 if (targetObject != null)
                                 {
                                     if (targetObject instanceof List)
@@ -173,71 +187,41 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                                         ((List<?>) targetObject).forEach(x -> {
                                             IGraphInstance<?> target = (IGraphInstance<?>) x;
                                             inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
-                                            resultObjects.add(newDynamicChecked(Collections.emptyList(), checkedSource, target.getValue()));
+                                            resultObjects.add(target.getValue());
                                         });
-                                    }
-                                    else
+                                    } else
                                     {
                                         IGraphInstance<?> target = (IGraphInstance<?>) targetObject;
                                         inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
-                                        resultObjects.add(newDynamicChecked(Collections.emptyList(), checkedSource, target.getValue()));
+                                        resultObjects.add(target.getValue());
                                     }
                                 }
-                            }
 
-                            objectCount += 1;
-                            if (objectCount >= batchSize) break;
+                                objectCount += 1;
+                                if (objectCount >= batchSize) break;
+                            }
                         }
-                    }
-                    else
-                    {
-                        while (sourceObjectsIterator.hasNext())
+
+                        inMemoryGraphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, resultObjects);
+
+                        if (!resultObjects.isEmpty() && (!isLeaf))
                         {
-                            Object targetObject = nodeSpecifics.transform(sourceObjectsIterator.next());
-
-                            if (targetObject != null)
-                            {
-                                if (targetObject instanceof List)
-                                {
-                                    ((List<?>) targetObject).forEach(x -> {
-                                        IGraphInstance<?> target = (IGraphInstance<?>) x;
-                                        inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
-                                        resultObjects.add(target.getValue());
-                                    });
-                                }
-                                else
-                                {
-                                    IGraphInstance<?> target = (IGraphInstance<?>) targetObject;
-                                    inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
-                                    resultObjects.add(target.getValue());
-                                }
-                            }
-
-                            objectCount += 1;
-                            if (objectCount >= batchSize) break;
+                            ExecutionState newState = new ExecutionState(executionState);
+                            newState.graphObjectsBatch = inMemoryGraphObjectsBatch;
+                            node.children.forEach(x -> x.accept(new ExecutionNodeExecutor(InMemoryExecutionNodeExecutor.this.pm, newState)));
                         }
+
+                        action.accept(inMemoryGraphObjectsBatch);
+
+                        return objectCount != 0;
                     }
+                };
 
-                    inMemoryGraphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, resultObjects);
-
-                    if (!resultObjects.isEmpty() && (!isLeaf))
-                    {
-                        ExecutionState newState = new ExecutionState(executionState);
-                        newState.graphObjectsBatch = inMemoryGraphObjectsBatch;
-                        node.children.forEach(x -> x.accept(new ExecutionNodeExecutor(InMemoryExecutionNodeExecutor.this.pm, newState)));
-                    }
-
-                    action.accept(inMemoryGraphObjectsBatch);
-
-                    return objectCount != 0;
-                }
-            };
-
-            Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
+                Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
 
             return new GraphFetchResult(graphObjectsBatchStream, childResult).withGraphFetchSpan(graphFetchSpan);
-        }
-        catch (Exception e)
+            }
+        } catch (Exception e)
         {
             if (childResult != null)
             {
@@ -314,8 +298,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                             }
                         });
                     });
-                }
-                else
+                } else
                 {
                     for (Map.Entry<Object, List<Object>> entry : parentMap.entrySet())
                     {
@@ -356,16 +339,13 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
             }
 
             return new ConstantResult(childObjects);
-        }
-        catch (RuntimeException e)
+        } catch (RuntimeException e)
         {
             throw e;
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             throw new RuntimeException(e);
-        }
-        finally
+        } finally
         {
             if (childResult != null)
             {
@@ -495,5 +475,47 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
     public Result visit(FreeMarkerConditionalExecutionNode localGraphFetchExecutionNode)
     {
         throw new RuntimeException("Not implemented!");
+    }
+
+    private Result mergeInMemoryNode(InMemoryRootGraphFetchExecutionNode node)
+    {
+        IInMemoryRootGraphFetchMergeExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
+
+        List<GraphFetchResult> results = node.executionNodes.stream().map(n -> (GraphFetchResult) n.accept(new ExecutionNodeExecutor(this.pm, this.executionState))).collect(Collectors.toList());
+
+        List<Object> subObjects = results.stream().map(g -> g.getGraphObjectsBatchStream().findFirst().get().getObjectsForNodeIndex(0).get(0)).collect(Collectors.toList());
+
+
+        Object targetObject = nodeSpecifics.transform(subObjects); //merged object
+
+        Spliterator<GraphObjectsBatch> graphObjectsBatchSpliterator = new Spliterators.AbstractSpliterator<GraphObjectsBatch>(Long.MAX_VALUE, Spliterator.ORDERED)
+        {
+            AtomicLong batchIndex = new AtomicLong(0L);
+
+            @Override
+            public boolean tryAdvance(Consumer<? super GraphObjectsBatch> action)
+            {
+                long currentBatch = batchIndex.incrementAndGet();
+
+                if (currentBatch > 1)  //run only once
+                {
+                    return false;
+                }
+
+                List<Object> resultObjects = new ArrayList<>();
+                GraphObjectsBatch inMemoryGraphObjectsBatch = new GraphObjectsBatch(currentBatch, executionState.getGraphFetchBatchMemoryLimit());
+                IGraphInstance<?> target = (IGraphInstance<?>) targetObject;
+                inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
+                resultObjects.add(target.getValue());
+                inMemoryGraphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, resultObjects);
+                action.accept(inMemoryGraphObjectsBatch);
+
+
+                return false;
+            }
+        };
+
+        Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
+        return new GraphFetchResult(graphObjectsBatchStream, new ConstantResult(targetObject));
     }
 }

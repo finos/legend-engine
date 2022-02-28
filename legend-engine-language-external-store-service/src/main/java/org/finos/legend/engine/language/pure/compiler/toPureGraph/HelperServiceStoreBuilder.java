@@ -211,6 +211,15 @@ public class HelperServiceStoreBuilder
             pureServiceParameter._allowReserved(serviceParameter.allowReserved);
         }
 
+        if (serviceParameter.required != null)
+        {
+            pureServiceParameter._required(serviceParameter.required);
+        }
+        else
+        {
+            pureServiceParameter._required(serviceParameter.location == Location.PATH);
+        }
+
         if (serviceParameter.serializationFormat != null)
         {
             Root_meta_external_store_service_metamodel_SerializationFormat serializationFormat = new Root_meta_external_store_service_metamodel_SerializationFormat_Impl("");

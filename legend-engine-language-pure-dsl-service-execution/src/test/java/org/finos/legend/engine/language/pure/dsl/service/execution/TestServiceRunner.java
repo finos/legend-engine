@@ -156,6 +156,27 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testSimpleRelationalServiceExecutionWithTDSResult()
+    {
+        RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
+                .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
+                .build();
+
+        SimpleRelationalServiceRunnerTDS simpleRelationalServiceRunner = (SimpleRelationalServiceRunnerTDS)ServiceRunnerBuilder.newInstance()
+                .withServiceRunnerClass(SimpleRelationalServiceRunnerTDS.class.getCanonicalName())
+                .withAllowJavaCompilation(false)
+                .withStoreExecutorConfigurations(relationalExecutionConfiguration)
+                .build();
+
+        ServiceRunnerInput serviceRunnerInput1 = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(Collections.singletonList("John")))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result1 = simpleRelationalServiceRunner.run(serviceRunnerInput1);
+        Assert.assertEquals("{\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\"},{\"name\":\"First Name\",\"type\":\"String\"},{\"name\":\"Last Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[1,\"f1\",\"l1\"]}]}", result1);
+    }
+
+    @Test
     public void testXStoreServiceExecutionWithNoCrossPropertyAccess() throws JavaCompileException
     {
         XStoreServiceRunnerWithNoCrossPropertyAccess xStoreServiceRunner = new XStoreServiceRunnerWithNoCrossPropertyAccess();

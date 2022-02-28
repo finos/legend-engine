@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.external.language.morphir.schema.generations;
+package org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch;
 
-import org.finos.legend.engine.external.shared.format.generations.GenerationInput;
+import java.util.List;
 
-public class MorphirGenerationInput extends GenerationInput
+public interface IInMemoryRootGraphFetchMergeExecutionNodeSpecifics
 {
-    public MorphirGenerationConfig config;
+    Object transform(List<Object> source);
 }
