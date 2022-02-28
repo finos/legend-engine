@@ -127,6 +127,20 @@ public class TestServiceRunner
         Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"}]", result);
     }
 
+
+    @Test
+    public void testMultiParameterM2MServiceExecutionMerge()
+    {
+        MultiParameterM2MServiceRunnerWithMerge multiParameterM2MServiceRunner = new MultiParameterM2MServiceRunnerWithMerge();
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Arrays.asList("{\"firstName\": \"Peter\"}", "{\"lastName\": \"Smith\"}"))
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        String result = multiParameterM2MServiceRunner.run(serviceRunnerInput);
+        Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
+    }
+
     @Test
     public void testSimpleRelationalServiceExecution()
     {
@@ -364,6 +378,23 @@ public class TestServiceRunner
         MultiParameterM2MServiceRunner()
         {
             super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/multiParamM2MService.pure", "test::function"), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Lists.mutable.of(
+                    new ServiceVariable("input1", String.class, PURE_ONE),
+                    new ServiceVariable("input2", String.class, PURE_ONE)
+            );
+        }
+    }
+
+    private static class MultiParameterM2MServiceRunnerWithMerge extends AbstractServicePlanExecutor
+    {
+        MultiParameterM2MServiceRunnerWithMerge()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/multiParamM2MServiceMerge.pure", "test::function"), true);
         }
 
         @Override
