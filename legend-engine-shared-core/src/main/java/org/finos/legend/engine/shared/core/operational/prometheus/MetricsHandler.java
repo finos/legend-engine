@@ -52,7 +52,7 @@ public class MetricsHandler
     private static final Histogram OPERATION_LATENCY = Histogram.build().name("legend_operation_latency")
             .help("Measure particular operation latency within legend ecosystem")
             .buckets(.1, .2, .5, 1, 2, 5, 10, 20, 60, 120)
-            .labelNames("source", "operation", "context")
+            .labelNames("operation", "context")
             .register(getMetricsRegistry());
 
     private static final Counter ALL_EXECUTIONS = Counter.build("legend_engine_executions", "Execution counter metric ").register();
