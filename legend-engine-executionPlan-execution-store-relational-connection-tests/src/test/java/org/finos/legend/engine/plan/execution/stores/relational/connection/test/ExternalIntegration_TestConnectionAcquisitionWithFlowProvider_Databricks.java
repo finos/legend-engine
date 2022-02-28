@@ -39,8 +39,7 @@ import java.util.ResourceBundle;
 
 import static org.junit.Assert.assertTrue;
 
-@Category(ExternalIntegrationTest.class)
-public class TestDatabricksConnectionAcquisitionWithFlowProvider extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
+public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Databricks extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
     private ConnectionManagerSelector connectionManagerSelector;
     private static final ResourceBundle env = ResourceBundle.getBundle("environment");
