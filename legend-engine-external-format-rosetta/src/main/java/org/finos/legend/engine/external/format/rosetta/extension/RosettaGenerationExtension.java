@@ -15,8 +15,8 @@
 package org.finos.legend.engine.external.format.rosetta.extension;
 
 import org.eclipse.collections.api.RichIterable;
-import org.finos.legend.engine.external.format.rosetta.schema.generations.RosettaGenerationConfig;
-import org.finos.legend.engine.external.format.rosetta.schema.generations.RosettaGenerationService;
+import org.finos.legend.engine.external.format.rosetta.model.RosettaGenerationConfig;
+import org.finos.legend.engine.external.format.rosetta.RosettaGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
@@ -53,7 +53,7 @@ public class RosettaGenerationExtension implements GenerationExtension
     @Override
     public GenerationMode getMode()
     {
-        return GenerationMode.Schema;
+        return GenerationMode.Code;
     }
 
     @Override

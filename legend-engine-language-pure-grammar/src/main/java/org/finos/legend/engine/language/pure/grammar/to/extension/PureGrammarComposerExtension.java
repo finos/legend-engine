@@ -18,6 +18,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
@@ -73,6 +74,11 @@ public interface PureGrammarComposerExtension
     }
 
     default List<Function2<InputData, PureGrammarComposerContext, String>> getExtraMappingTestInputDataComposers()
+    {
+        return new ArrayList<>();
+    }
+
+    default List<Function2<EmbeddedData, PureGrammarComposerContext, String>> getExtraEmbeddedDataComposers()
     {
         return new ArrayList<>();
     }

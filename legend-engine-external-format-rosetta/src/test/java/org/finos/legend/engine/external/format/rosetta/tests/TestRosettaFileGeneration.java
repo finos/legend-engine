@@ -16,7 +16,7 @@ package org.finos.legend.engine.external.format.rosetta.tests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationConfigFromFileGenerationSpecificationBuilder;
-import org.finos.legend.engine.external.format.rosetta.schema.generations.RosettaGenerationConfig;
+import org.finos.legend.engine.external.format.rosetta.model.RosettaGenerationConfig;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;

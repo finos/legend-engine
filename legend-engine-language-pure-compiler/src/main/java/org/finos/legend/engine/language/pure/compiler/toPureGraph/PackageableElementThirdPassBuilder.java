@@ -21,12 +21,9 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
@@ -135,6 +132,12 @@ public class PackageableElementThirdPassBuilder implements PackageableElementVis
 
     @Override
     public PackageableElement visit(SectionIndex sectionIndex)
+    {
+        return null;
+    }
+
+    @Override
+    public PackageableElement visit(DataElement dataElement)
     {
         return null;
     }

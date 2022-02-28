@@ -16,7 +16,7 @@ package org.finos.legend.engine.external.language.morphir.tests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationConfigFromFileGenerationSpecificationBuilder;
-import org.finos.legend.engine.external.language.morphir.schema.generations.MorphirGenerationConfig;
+import org.finos.legend.engine.external.language.morphir.model.MorphirGenerationConfig;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
