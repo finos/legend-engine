@@ -131,7 +131,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.50.0</legend.pure.version>
+        <legend.pure.version>1.51.0</legend.pure.version>
         <legend.shared.version>0.19.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -181,6 +181,7 @@
         <openjdk.jol.version>0.9</openjdk.jol.version>
         <json-smart.version>2.4.7</json-smart.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
+        <wiremock.version>2.27.2</wiremock.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -210,6 +211,33 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>io.github.git-commit-id</groupId>
+                    <artifactId>git-commit-id-maven-plugin</artifactId>
+                    <version>5.0.0</version>
+                    <executions>
+                        <execution>
+                            <id>get-the-git-infos</id>
+                            <goals>
+                                <goal>revision</goal>
+                            </goals>
+                            <phase>initialize</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                        <generateGitPropertiesFilename>src/main/resources/legendExecutionVersion.json</generateGitPropertiesFilename>
+                        <format>json</format>
+                        <includeOnlyProperties>
+                            <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
+                            <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+                            <includeOnlyProperty>^git.commit.id$</includeOnlyProperty>
+                            <includeOnlyProperty>^git.(total.commit.count|branch|tags)$</includeOnlyProperty>
+                            <includeOnlyProperty>^git.(commit.time|closest.tag.name|branch|tags)$</includeOnlyProperty>
+                            <includeOnlyProperty>^git.(commit.time|branch|tags)$</includeOnlyProperty>
+                        </includeOnlyProperties>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
@@ -1076,6 +1104,12 @@
                 <version>${legend.pure.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
+                <version>${legend.pure.version}</version>
+                <scope>test</scope>
+            </dependency>
             <!-- PURE -->
 
             <!-- LEGEND SHARED -->
@@ -1630,6 +1664,22 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>4.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock-jre8</artifactId>
+                <version>${wiremock.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-io</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.conscrypt</groupId>
+                        <artifactId>conscrypt-openjdk-uber</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
 

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingClass;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -30,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
         @JsonSubTypes.Type(value = MappingClass.class, name = "mappingClass"),
         @JsonSubTypes.Type(value = PackageableConnection.class, name = "connection"),
         @JsonSubTypes.Type(value = PackageableRuntime.class, name = "runtime"),
+        @JsonSubTypes.Type(value = DataElement.class, name = "dataElement")
 })
 public abstract class PackageableElement
 {

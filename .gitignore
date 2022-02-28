@@ -14,3 +14,4 @@
 /legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/query.properties
 /legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userLocalConfig.json
 /legend-engine-authentication/src/test/resources/test-secrets/**
+/legend-engine-shared-core/src/main/resources/legendExecutionVersion.json

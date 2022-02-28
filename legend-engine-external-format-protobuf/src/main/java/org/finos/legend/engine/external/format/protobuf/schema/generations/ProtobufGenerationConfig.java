@@ -18,13 +18,11 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.external.format.protobuf.CustomOption;
 import org.finos.legend.engine.external.shared.format.generations.GenerationConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
-import java.util.Collections;
 import java.util.List;
 
 public class ProtobufGenerationConfig extends GenerationConfiguration
@@ -41,7 +39,7 @@ public class ProtobufGenerationConfig extends GenerationConfiguration
                     ._javaPackage(options.javaPackage)
                     ._javaOuterClassname(options.javaOuterClassname)
                     ._javaMultipleFiles(options.javaMultipleFiles)
-                    ._customOptions(Lists.mutable.withAll(Iterate.collect(options.customOptions, o-> new Root_meta_external_format_protobuf_metamodel_CustomOption_Impl(""))))
+                    ._customOptions(Lists.mutable.withAll(Iterate.collect(options.customOptions, o-> new Root_meta_external_format_protobuf_metamodel_Option_Impl(""))))
                     ._optimizeFor(options.optimizeFor == null ? null : pureModel.getEnumValue("meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::OptimizeMode", options.optimizeFor.name()))
             );
         }

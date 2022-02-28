@@ -41,6 +41,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -50,8 +52,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_data_Data;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
-import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -62,12 +64,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class CompilerExtensions
@@ -111,6 +108,7 @@ public class CompilerExtensions
     private final ImmutableList<Procedure3<SetImplementation, Set<String>, CompileContext>> extraSetImplementationSourceScanners;
     private final ImmutableList<Procedure2<PureModel, PureModelContextData>> extraPostValidators;
     private final ImmutableList<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> extraExecutionOptionProcessors;
+    private final ImmutableList<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_data_Data>> extraEmbeddedDataProcessors;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -135,6 +133,7 @@ public class CompilerExtensions
         this.extraSetImplementationSourceScanners = this.extensions.flatCollect(CompilerExtension::getExtraSetImplementationSourceScanners);
         this.extraPostValidators = this.extensions.flatCollect(CompilerExtension::getExtraPostValidators);
         this.extraExecutionOptionProcessors = this.extensions.flatCollect(CompilerExtension::getExtraExecutionOptionProcessors);
+        this.extraEmbeddedDataProcessors = this.extensions.flatCollect(CompilerExtension::getExtraEmbeddedDataProcessors);
     }
 
     public List<CompilerExtension> getExtensions()
@@ -272,6 +271,11 @@ public class CompilerExtensions
     public List<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> getExtraExecutionOptionProcessors()
     {
         return this.extraExecutionOptionProcessors.castToList();
+    }
+
+    public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_data_Data>> getExtraEmbeddedDataProcessors()
+    {
+        return this.extraEmbeddedDataProcessors.castToList();
     }
 
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()

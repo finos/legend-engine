@@ -22,9 +22,10 @@ import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
-import org.finos.legend.engine.plan.execution.result.*;
-import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
-import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.ErrorResult;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
@@ -37,12 +38,22 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public abstract class AbstractServicePlanExecutor implements ServiceRunner
@@ -280,61 +291,33 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     {
         try
         {
-            result.accept(new ResultVisitor<Void>()
+            if (result instanceof ErrorResult)
             {
-                @Override
-                public Void visit(StreamingResult streamingResult)
+                throw new RuntimeException("Error: " + ((ErrorResult) result).getMessage());
+            }
+            else if (result instanceof ConstantResult || result instanceof StreamingResult)
+            {
+                try
                 {
-                    try
-                    {
-                        streamingResult.stream(outputStream, serializationFormat);
-                        return null;
-                    }
-                    catch (IOException e)
-                    {
-                        throw new UncheckedIOException("Error serializing result", e);
-                    }
-                }
-
-                @Override
-                public Void visit(StreamingObjectResult tStreamingObjectResult)
-                {
-                    return visit((StreamingResult) tStreamingObjectResult);
-                }
-
-                @Override
-                public Void visit(JsonStreamingResult jsonStreamingResult)
-                {
-                    return visit((StreamingResult) jsonStreamingResult);
-                }
-
-                @Override
-                public Void visit(ConstantResult constantResult)
-                {
-                    try
+                    if (result instanceof ConstantResult)
                     {
                         String serializedResult = ObjectMapperFactory.getNewStandardObjectMapper().writeValueAsString(((ConstantResult) result).getValue());
                         outputStream.write(serializedResult.getBytes());
-                        return null;
                     }
-                    catch (IOException e)
+                    else
                     {
-                        throw new UncheckedIOException("Error serializing result", e);
+                        ((StreamingResult) result).stream(outputStream, serializationFormat);
                     }
                 }
-
-                @Override
-                public Void visit(ErrorResult errorResult)
+                catch (IOException e)
                 {
-                    throw new RuntimeException("Error: " + ((ErrorResult) result).getMessage());
+                    throw new RuntimeException("Error serializing result", e);
                 }
-
-                @Override
-                public Void visit(MultiResult multiResult)
-                {
-                    throw new RuntimeException("Unknown result type: " + result.getClass().getCanonicalName());
-                }
-            });
+            }
+            else
+            {
+                throw new RuntimeException("Unknown result type: " + result.getClass().getCanonicalName());
+            }
         }
         finally
         {

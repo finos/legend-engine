@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
@@ -969,5 +970,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(PrimitiveType primitiveType)
     {
         return primitiveType.name;
+    }
+
+    @Override
+    public String visit(DataElement dataElement)
+    {
+        return CorePureGrammarComposer.renderDataElement(dataElement, PureGrammarComposerContext.Builder.newInstance().build());
     }
 }

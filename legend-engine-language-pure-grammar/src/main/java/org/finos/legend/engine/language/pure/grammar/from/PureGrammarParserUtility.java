@@ -21,12 +21,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class PureGrammarParserUtility
 {
     private static final String PACKAGE_SEPARATOR = "::";
+    private static final Pattern VALID_STRING_PATTERN = Pattern.compile("[A-Za-z0-9_][A-Za-z0-9_$]*");
 
     /**
      * Convert string in grammar to string to be used in the graph
@@ -97,5 +100,30 @@ public class PureGrammarParserUtility
     {
         String text = identifier.getText();
         return text.startsWith("'") ? PureGrammarParserUtility.fromGrammarString(text, true) : text;
+    }
+
+    public static String validatePath(String path, SourceInformation sourceInformation)
+    {
+        List<String> parts = new ArrayList<>();
+        for (String identifier: path.split(PACKAGE_SEPARATOR))
+        {
+            if (identifier.startsWith("'"))
+            {
+                if (!identifier.endsWith("'"))
+                {
+                    throw new EngineException("Invalid identifier: " + identifier, sourceInformation, EngineErrorType.PARSER);
+                }
+                parts.add(fromGrammarString(identifier, true));
+            }
+            else
+            {
+                if (!VALID_STRING_PATTERN.matcher(identifier).matches())
+                {
+                    throw new EngineException("Invalid identifier: " + identifier, sourceInformation, EngineErrorType.PARSER);
+                }
+                parts.add(identifier);
+            }
+        }
+        return String.join(PACKAGE_SEPARATOR, parts);
     }
 }

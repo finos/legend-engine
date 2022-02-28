@@ -14,11 +14,15 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.SemiStructured;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.junit.Assert;
 import org.junit.Test;
@@ -1092,5 +1096,120 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  }\n" +
                 "\n" +
                 ")", "COMPILATION error at [52:14-90]: Do not support specifying join type for the first join in the classMapping.");
+    }
+
+    @Test
+    public void testSemiStructuredColumn()
+    {
+        Pair<PureModelContextData, PureModel> res = test("###Relational\n" +
+                "Database simple::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    FIRSTNAME VARCHAR(10),\n" +
+                "    FIRM SEMISTRUCTURED\n" +
+                "  )\n" +
+                ")\n");
+
+        Database database = (Database) res.getTwo().getStore("simple::DB");
+        Column column = (Column) database._schemas().detect(schema -> schema._name().equals("default"))._tables().detect(table -> table._name().equals("personTable"))._columns().detect(col -> col.getName().equals("FIRM"));
+        Assert.assertTrue(column._type() instanceof SemiStructured);
+    }
+
+
+    @Test
+    public void testRelationalPropertyMappingWithBindingTransformer()
+    {
+        String model = "Class simple::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "  firm: simple::Firm[1];\n" +
+                "  manager: simple::Person[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database simple::dbInc\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    FIRSTNAME VARCHAR(200),\n" +
+                "    LASTNAME VARCHAR(200),\n" +
+                "    AGE INTEGER,\n" +
+                "    FIRM SEMISTRUCTURED\n" +
+                "  )\n" +
+                "\n" +
+                "  Join personSelfJoin(personTable.ID = {target}.ID)\n" +
+                ")\n" +
+                "###ExternalFormat\n" +
+                "Binding simple::TestBinding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    simple::Firm\n" +
+                "  ];\n" +
+                "}\n";
+
+        test( model +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    firstName: [simple::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
+                "    age: Binding simple::TestBinding: [simple::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [45:8-68]: Binding transformer can be used with complex properties only. Property 'age' return type is 'Integer'");
+
+        test( model +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    firstName: [simple::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
+                "    age: [simple::dbInc]personTable.AGE,\n" +
+                "    manager: Binding simple::TestBinding: [simple::dbInc]personTable.FIRM\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [46:12-73]: Class: simple::Person should be included in modelUnit for binding: simple::TestBinding");
+
+        test( model +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    firstName: [simple::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
+                "    age: [simple::dbInc]personTable.AGE,\n" +
+                "    firm: Binding simple::TestBinding: [simple::dbInc]personTable.FIRM\n" +
+                "  }\n" +
+                ")\n");
+
+        test( model +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    firstName: [simple::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
+                "    age: [simple::dbInc]personTable.AGE,\n" +
+                "    firm: Binding simple::TestBinding: [simple::dbInc]@personSelfJoin | [simple::dbInc]personTable.FIRM\n" +
+                "  }\n" +
+                ")\n");
     }
 }

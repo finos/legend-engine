@@ -17,11 +17,10 @@ package org.finos.legend.engine.shared.core.deployment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URL;
-import java.util.Map;
 
 public class DeploymentStateAndVersions
 {
-    public static Map sdlc;
+    public static DeploymentVersionInfo sdlc;
     public static String sdlcJSON = "{}";
     public static DeploymentMode DEPLOYMENT_MODE;
     public static String SERVER_PROTOCOL_VERSION = "v1";
@@ -30,12 +29,12 @@ public class DeploymentStateAndVersions
     {
         try
         {
-            URL infoURL = DeploymentStateAndVersions.class.getClassLoader().getResource("alloyExecutionVersion.json");
+            URL infoURL = DeploymentStateAndVersions.class.getClassLoader().getResource("legendExecutionVersion.json");
             if (infoURL != null)
             {
                 java.util.Scanner scanner = new java.util.Scanner(infoURL.openStream()).useDelimiter("\\A");
                 sdlcJSON = scanner.hasNext() ? scanner.next() : "{}";
-                sdlc = new ObjectMapper().readValue(sdlcJSON, Map.class);
+                sdlc = new ObjectMapper().readValue(sdlcJSON, DeploymentVersionInfo.class);
             }
         }
         catch (Exception e)
