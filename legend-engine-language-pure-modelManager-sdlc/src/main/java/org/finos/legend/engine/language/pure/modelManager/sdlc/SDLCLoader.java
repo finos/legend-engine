@@ -37,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.kerberos.SubjectCache;
@@ -46,7 +47,6 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.opentracing.HttpRequestHeaderMap;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -93,15 +93,36 @@ public class SDLCLoader implements ModelLoader
     @Override
     public boolean shouldCache(PureModelContext context)
     {
-        return this.supports(context) && ((PureModelContextPointer)context).sdlcInfo instanceof PureSDLC ;
+        return this.supports(context) && (isCacheablePureSDLC(((PureModelContextPointer)context).sdlcInfo) || isCacheableAlloySDLC(((PureModelContextPointer)context).sdlcInfo));
+    }
+
+    private boolean isCacheablePureSDLC(SDLC sdlc)
+    {
+        return sdlc instanceof PureSDLC;
+    }
+
+    private boolean isCacheableAlloySDLC(SDLC sdlc)
+    {
+        if (sdlc instanceof AlloySDLC)
+        {
+            return !this.alloyLoader.isLatestRevision((AlloySDLC) sdlc); // If AlloySLDC refers to latest revision, metadata can change. Hence, it should not be cached
+        }
+        return false;
     }
 
     @Override
     public PureModelContext cacheKey(PureModelContext context, MutableList<CommonProfile> pm)
     {
-        final Subject executionSubject = getSubject();
-        Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, pm, executionSubject);
-        return executionSubject == null ? pureModelContextFunction.value() : exec(executionSubject, pureModelContextFunction::value);
+        if (isCacheablePureSDLC(((PureModelContextPointer)context).sdlcInfo))
+        {
+            final Subject executionSubject = getSubject();
+            Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, pm, executionSubject);
+            return executionSubject == null ? pureModelContextFunction.value() : exec(executionSubject, pureModelContextFunction::value);
+        }
+        else
+        {
+            return this.alloyLoader.getCacheKey(context);
+        }
     }
 
     @Override
