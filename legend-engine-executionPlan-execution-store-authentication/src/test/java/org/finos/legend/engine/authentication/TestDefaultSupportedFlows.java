@@ -39,7 +39,7 @@ public class TestDefaultSupportedFlows
                 { DatabaseType.Snowflake, SnowflakeDatasourceSpecification.class, SnowflakePublicAuthenticationStrategy.class },
                 { DatabaseType.BigQuery, BigQueryDatasourceSpecification.class, GCPApplicationDefaultCredentialsAuthenticationStrategy.class },
                 { DatabaseType.SqlServer, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class },
-                { DatabaseType.Databricks, StaticDatasourceSpecification.class, ApiTokenAuthenticationStrategy.class },
+                { DatabaseType.Databricks, DatabricksDatasourceSpecification.class, ApiTokenAuthenticationStrategy.class },
         });
     }
 
