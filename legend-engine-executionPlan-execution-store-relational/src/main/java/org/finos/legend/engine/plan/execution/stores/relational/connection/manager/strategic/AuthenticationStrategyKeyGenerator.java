@@ -42,6 +42,13 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
         {
             return new DefaultH2AuthenticationStrategyKey();
         }
+        else if (authenticationStrategy instanceof ApiTokenAuthenticationStrategy)
+        {
+            ApiTokenAuthenticationStrategy apiSpecification = (ApiTokenAuthenticationStrategy) authenticationStrategy;
+            return new ApiTokenAuthenticationStrategyKey(
+                    apiSpecification.apiToken
+            );
+        }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {
             SnowflakePublicAuthenticationStrategy snowflakeDatasourceSpecification = (SnowflakePublicAuthenticationStrategy) authenticationStrategy;

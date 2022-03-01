@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 
 import java.util.Optional;
 
@@ -56,6 +57,25 @@ public class DataSourceSpecificationParseTreeWalker
         // autoServerMode
         DataSourceSpecificationParserGrammar.EmbeddedH2DSPAutoServerModeContext autoServerModeCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.embeddedH2DSPAutoServerMode(), "autoServerMode", dsSpec.sourceInformation);
         dsSpec.autoServerMode = Boolean.parseBoolean(autoServerModeCtx.BOOLEAN().getText());
+        return dsSpec;
+    }
+
+    public DatabricksDatasourceSpecification visitDatabricksDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.DatabricksDatasourceSpecificationContext dbSpecCtx) {
+        DatabricksDatasourceSpecification dsSpec = new DatabricksDatasourceSpecification();
+        dsSpec.sourceInformation = code.getSourceInformation();
+
+        DataSourceSpecificationParserGrammar.HostnameContext hostnameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.hostname(), "hostname", dsSpec.sourceInformation);
+        dsSpec.hostname = PureGrammarParserUtility.fromGrammarString(hostnameCtx.STRING().getText(), true);
+
+        DataSourceSpecificationParserGrammar.PortContext portCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.port(), "port", dsSpec.sourceInformation);
+        dsSpec.port = PureGrammarParserUtility.fromGrammarString(portCtx.STRING().getText(), true);
+
+        DataSourceSpecificationParserGrammar.ProtocolContext protocolCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.protocol(), "protocol", dsSpec.sourceInformation);
+        dsSpec.protocol = PureGrammarParserUtility.fromGrammarString(protocolCtx.STRING().getText(), true);
+
+        DataSourceSpecificationParserGrammar.HttpPathContext httpCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.httpPath(), "httpPath", dsSpec.sourceInformation);
+        dsSpec.httpPath = PureGrammarParserUtility.fromGrammarString(httpCtx.STRING().getText(), true);
+
         return dsSpec;
     }
 

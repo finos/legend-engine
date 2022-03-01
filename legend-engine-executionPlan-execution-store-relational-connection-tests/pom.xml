@@ -38,10 +38,10 @@
                 </dependencies>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
+                    <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
                     <excludes>
                         <exclude>**/ExternalIntegration*.java</exclude>
                     </excludes>
-                    <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
                 </configuration>
             </plugin>
             <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
@@ -100,22 +100,46 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>download-files</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <get src="https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.22/SimbaSparkJDBC42-2.6.22.1040.zip"
+                                             dest="${project.build.directory}/spark-simba-driver.zip"
+                                             verbose="false"
+                                             usetimestamp="true"
+                                        />
+                                        <unzip src="${project.build.directory}/spark-simba-driver.zip"
+                                               dest="${project.build.directory}/spark-simba-driver-jars"
+                                        />
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <dependencies>
-                            <!-- This stops Surefire from running the test suite's suite() method twice. -->
                             <dependency>
                                 <groupId>org.apache.maven.surefire</groupId>
                                 <artifactId>surefire-junit47</artifactId>
                                 <version>2.22.0</version>
                             </dependency>
                         </dependencies>
-                        <configuration>
+                        <!-- Without override, surefire configuration would have skipped our integration tests -->
+                        <configuration combine.self="override">
                             <useSystemClassLoader>false</useSystemClassLoader>
-                            <includes>
-                                <include>**/Test*.java</include>
-                            </includes>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1
-                            </argLine>
+                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${project.build.directory}/spark-simba-driver-jars/SparkJDBC42.jar</additionalClasspathElement>
+                            </additionalClasspathElements>
                         </configuration>
                     </plugin>
                 </plugins>

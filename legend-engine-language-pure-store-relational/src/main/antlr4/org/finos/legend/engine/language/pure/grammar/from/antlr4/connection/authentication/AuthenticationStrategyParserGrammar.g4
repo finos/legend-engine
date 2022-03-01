@@ -12,6 +12,17 @@ identifier:                      VALID_STRING
 
 // ----------------------------- RELATIONAL DATABASE CONNECTION AUTH STRATEGY -----------------------------
 
+apiTokenAuth:                          API_TOKEN_AUTH
+                                            BRACE_OPEN
+                                                (
+                                                    apiToken
+                                                )*
+                                            BRACE_CLOSE
+;
+
+apiToken:                               API_TOKEN_AUTH_TOKEN COLON STRING SEMI_COLON
+;
+
 defaultH2Auth:                          H2_DEFAULT_AUTH
 ;
 testDBAuth:                             TEST_DB_AUTH
