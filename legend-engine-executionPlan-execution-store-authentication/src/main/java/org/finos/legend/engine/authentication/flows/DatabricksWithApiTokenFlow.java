@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.authentication.flows;
 
-import org.apache.commons.lang3.StringUtils;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
@@ -48,7 +47,7 @@ public class DatabricksWithApiTokenFlow implements DatabaseAuthenticationFlow<Da
     public Credential makeCredential(Identity identity, DatabricksDatasourceSpecification datasourceSpecification, ApiTokenAuthenticationStrategy authStrategy) throws Exception
     {
         String apiToken = Vault.INSTANCE.getValue(authStrategy.apiToken);
-        if (StringUtils.isEmpty(apiToken))
+        if (apiToken == null || apiToken.length() == 0)
         {
             throw new Exception("Could not retrieve API token from default vault");
         }

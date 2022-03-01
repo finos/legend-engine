@@ -29,7 +29,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
@@ -64,7 +63,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Datab
     {
         installFlowProvider();
         assertDatabricksApiTokenFlowIsAvailable();
-
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
 
