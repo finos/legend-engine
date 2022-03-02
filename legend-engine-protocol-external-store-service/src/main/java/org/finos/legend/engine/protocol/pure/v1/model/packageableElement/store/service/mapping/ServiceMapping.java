@@ -23,7 +23,11 @@ import java.util.List;
 public class ServiceMapping
 {
     public ServicePtr service;
+
     public Path pathOffset;
+    public ServiceRequestBuildInfo requestBuildInfo;
+
+    @Deprecated
     public List<ServiceParameterMapping> parameterMappings;
 
     public SourceInformation sourceInformation;

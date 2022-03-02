@@ -22,6 +22,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -36,7 +38,10 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.service.activity.ServiceStoreExecutionActivity;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RequestBodyDescription;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpMethod;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Location;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
@@ -48,13 +53,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class ServiceExecutor
 {
-    public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles)
+    public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         Span span = GlobalTracer.get().activeSpan();
 
@@ -81,11 +87,29 @@ public class ServiceExecutor
             throw new RuntimeException(errMsg, e);
         }
 
-        InputStream response = executeRequest(httpMethod, uri, mimeType, securitySchemes, profiles);
+        StringEntity requestBodyEntity = null;
+        if (requestBodyDescription != null)
+        {
+            String requestBody;
+            try
+            {
+                StreamingResult streamingResult = (StreamingResult) state.getResult(requestBodyDescription.resultKey);
+                requestBody = streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW));
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Error serializing requestBody value.\n" + e);
+            }
+            ContentType contentType = ContentType.create(requestBodyDescription.mimeType, StandardCharsets.UTF_8);
+            requestBodyEntity = new StringEntity(requestBody, contentType);
+        }
+
+
+        InputStream response = executeRequest(httpMethod, uri, requestBodyEntity, mimeType, securitySchemes, profiles);
         return new InputStreamResult(response, org.eclipse.collections.api.factory.Lists.mutable.with(new ServiceStoreExecutionActivity(urlProcessedWithQueryParams)));
     }
 
-    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles)
+    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles)
     {
         Span span = GlobalTracer.get().activeSpan();
 
@@ -96,7 +120,9 @@ public class ServiceExecutor
                 request = new HttpGet(uri);
                 break;
             case POST:
-                request = new HttpPost(uri);
+                HttpPost postRequest = new HttpPost(uri);
+                postRequest.setEntity(requestBodyDescription);
+                request = postRequest;
                 break;
             default:
                 throw new UnsupportedOperationException("The HTTP method " + httpMethod + " is not supported");
@@ -259,7 +285,7 @@ public class ServiceExecutor
 
     private static String encodeParameterValue(String name, String value, Boolean allowReserved)
     {
-        if(allowReserved != null && allowReserved)
+        if (allowReserved != null && allowReserved)
         {
             return value;
         }
@@ -267,7 +293,7 @@ public class ServiceExecutor
         {
             try
             {
-                return URLEncoder.encode(value, "UTF-8");
+                return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
             }
             catch (UnsupportedEncodingException e)
             {

@@ -28,11 +28,13 @@ ENUM:                                            'enum';
 
 // Mapping
 SERVICE_MAPPING:                                 '~service';
-PATH_MAPPING:                                    '~path';
-PARAM_MAPPING:                                   '~paramMapping';
+PATH_OFFSET:                                     '~path';
+REQUEST:                                         '~request';
+BODY:                                            'body';
 SERVICE_REFERENCE:                               '$service';
 
-
+// TODO: TO BE REMOVED
+PARAM_MAPPING:                                   '~paramMapping';
 // -------------------------------------- BUILDING_BLOCK --------------------------------------
 
 INVERTED_ARROW:                                  '<-';

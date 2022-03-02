@@ -44,6 +44,8 @@ public class ExternalFormatSerializeResult extends StreamingResult
         {
             case DEFAULT:
                 return new ExternalFormatDefaultSerializer(externalFormatWriter);
+            case RAW:
+                return new ExternalFormatDefaultSerializer(externalFormatWriter);
             default:
                 this.close();
                 throw new RuntimeException(format.toString() + " format not currently supported with ExternalFormatSerializeResult");

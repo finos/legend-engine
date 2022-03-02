@@ -78,6 +78,8 @@ public class JsonStreamingResult extends StreamingResult
         {
             case PURE:
                 return new JsonStreamToPureFormatSerializer(this);
+            case RAW:
+                return new JsonStreamToPureFormatSerializer(this);
             case DEFAULT:
                 return new JsonStreamToJsonDefaultSerializer(this);
             default:
