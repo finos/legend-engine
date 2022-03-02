@@ -52,5 +52,5 @@ jobs:
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build + Run Integration Tests
         run: |
-          mvn -pl legend-engine-executionPlan-execution-store-relational-connection  -Dtest="ExternalIntegration*Databricks*" test
-          mvn -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*Databricks*" test
+          mvn clean install -DskipTests=true
+          mvn -P run-databricks-integration -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*Databricks*" test

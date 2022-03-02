@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
@@ -61,25 +62,16 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Datab
     @Before
     public void setup()
     {
-        installFlowProvider();
-        assertDatabricksApiTokenFlowIsAvailable();
+        LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+        assertDatabricksApiTokenFlowIsAvailable(flowProvider);
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
-
-    private void installFlowProvider()
-    {
-        DatabaseAuthenticationFlowProviderSelector.enableLegendDefaultFlowProvider();
-        boolean flowProviderPresent = DatabaseAuthenticationFlowProviderSelector.getProvider().isPresent();
-        assertTrue("Flow provider is not available", flowProviderPresent);
-    }
-
-    public void assertDatabricksApiTokenFlowIsAvailable()
+    
+    public void assertDatabricksApiTokenFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
         DatabricksDatasourceSpecification datasourceSpecification = new DatabricksDatasourceSpecification();
         ApiTokenAuthenticationStrategy authenticationStrategy = new ApiTokenAuthenticationStrategy();
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, DatabaseType.Databricks);
-
-        DatabaseAuthenticationFlowProvider flowProvider = DatabaseAuthenticationFlowProviderSelector.getProvider().get();
         Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
         assertTrue("databricks token flow does not exist ", flow.isPresent());
     }
