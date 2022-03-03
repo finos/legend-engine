@@ -68,5 +68,5 @@ jobs:
           mvn clean install -DskipTests=true
           mvn -P run-databricks-integration -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*Databricks*" test
       - name: Stop databricks endpoint
-          run: databricks clusters delete --cluster-id ${DATABRICKS_CLUSTERID}
-          shell: bash
+        run: databricks clusters delete --cluster-id ${DATABRICKS_CLUSTERID}
+        shell: bash
