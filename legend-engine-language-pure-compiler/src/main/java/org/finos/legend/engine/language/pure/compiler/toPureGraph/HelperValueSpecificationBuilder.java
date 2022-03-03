@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variabl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.AnalyticsExecutionContext;
@@ -47,10 +48,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class HelperValueSpecificationBuilder
 {
@@ -104,22 +104,22 @@ public class HelperValueSpecificationBuilder
                 .reduce(lambda, (originalLambda, processor) -> processor.value(originalLambda, context, ctx), (p1, p2) -> p1);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification processProperty(CompileContext context, MutableList<String> openVariables, ProcessingContext processingContext, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, String property, SourceInformation sourceInformation)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification processProperty(CompileContext context, MutableList<String> openVariables, ProcessingContext processingContext, List<ValueSpecification> parameters, String property, SourceInformation sourceInformation)
     {
         // for X.property. X is the first parameter
         processingContext.push("Processing property " + property);
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification firstArgument = parameters.get(0);
+        ValueSpecification firstArgument = parameters.get(0);
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processedParameters = ListIterate.collect(parameters, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType;
+        GenericType genericType;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicity;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification inferredVariable;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification result;
 
-        if (firstArgument instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum // Only for backward compatibility!
+        if (firstArgument instanceof Enum // Only for backward compatibility!
             || (processedParameters.get(0)._genericType()._rawType().equals(context.pureModel.getType("meta::pure::metamodel::type::Enumeration"))))
         {
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
+            Multiplicity m = new Multiplicity();
             m.lowerBound = 1;
             m.setUpperBound(1);
             CString enumValue = new CString();
@@ -133,6 +133,7 @@ public class HelperValueSpecificationBuilder
         }
         else
         {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification topLevelProcessedParameter = processedParameters.get(0);
             if (firstArgument instanceof Variable)
             {
                 inferredVariable = processingContext.getInferredVariable(((Variable) firstArgument).name);
@@ -144,12 +145,12 @@ public class HelperValueSpecificationBuilder
 
             Type inferredType = inferredVariable._genericType()._rawType();
 
-            if (!(inferredType instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)) //is an enum
+            if (!(inferredType instanceof Class)) //is an enum
             {
                 inferredType = context.pureModel.getType("meta::pure::metamodel::type::Enum");
             }
 
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty<?> foundProperty = findProperty(context, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) inferredType, parameters, property, sourceInformation);
+            AbstractProperty<?> foundProperty = findProperty(context, (Class<?>) inferredType, parameters, property, sourceInformation);
 
             if (foundProperty instanceof Property)
             {
@@ -171,10 +172,10 @@ public class HelperValueSpecificationBuilder
             {
                 processingContext.push("Building Automap for  " + property);
 
-                org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
+                Multiplicity m = new Multiplicity();
                 m.lowerBound = 1;
                 m.setUpperBound(1);
-                List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> localParameters = Lists.mutable.ofAll(parameters);
+                List<ValueSpecification> localParameters = Lists.mutable.ofAll(parameters);
                 final String automapName = "v_automap";
 
                 Lambda automapLambda = new Lambda();
@@ -197,18 +198,45 @@ public class HelperValueSpecificationBuilder
                 List<Variable> lambdaParams = new FastList<>();
                 lambdaParams.add(automaLambdaparam);
                 automapLambda.parameters = lambdaParams;
-                List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
+                if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, appliedProperty.parameters.size()))
+                {
+                    processingContext.milestoningDatePropagationContext.setTopLevelParameter(processedParameters.get(0));
+                }
+                List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
                 result = context.buildFunctionExpression("map", null, newParams, openVariables, null, processingContext).getOne();
                 processingContext.pop();
             }
             else
             {
+                if (processedParameters.size() !=0 && ((processedParameters.get(0) instanceof VariableExpression && ((VariableExpression) processedParameters.get(0))._name() == "v_automap") || (processedParameters.get(0) instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) processedParameters.get(0))._functionName() == "subType")))
+                {
+                    if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()) && processingContext.milestoningDatePropagationContext.getTopLevelParameter() != null)
+                    {
+                        topLevelProcessedParameter = processingContext.milestoningDatePropagationContext.getTopLevelParameter();
+                    }
+                }
+                if (processedParameters.size() !=0 && processedParameters.get(0) instanceof VariableExpression &&processingContext.milestoningDatePropagationContext.getLastLevelParameter() != null)
+                {
+                    if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
+                    {
+                        topLevelProcessedParameter = processingContext.milestoningDatePropagationContext.getLastLevelParameter();
+                        processingContext.milestoningDatePropagationContext.setLastLevelParameter(null);
+                    }
+                }
                 result = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
                         ._func(foundProperty)
                         ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")._values(Lists.fixedSize.of(foundProperty.getName())))
                         ._genericType(genericType)
                         ._multiplicity(multiplicity)
                         ._parametersValues(processedParameters);
+                if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
+                {
+                    Milestoning.getMilestoningQualifiedPropertyWithAllDatesSupplied((FunctionExpression)result, foundProperty, topLevelProcessedParameter, sourceInformation, processingContext);
+                }
+                if (Milestoning.isGeneratedQualifiedProperty(foundProperty, context))
+                {
+                    processingContext.milestoningDatePropagationContext.setTopLevelParameter(result);
+                }
             }
         }
         processingContext.pop();

@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -86,6 +87,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_tds_SortInformation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapAggregation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapRank_Impl;
 import org.finos.legend.pure.generated.platform_pure_graph;
+import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
@@ -486,6 +488,15 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(AppliedFunction appliedFunction)
     {
         processingContext.push("Applying " + appliedFunction.function);
+        if ((appliedFunction.function.equals("map") || appliedFunction.function.equals("exists")) && appliedFunction.parameters.size() != 0)
+        {
+            ValueSpecification parameterValue = appliedFunction.parameters.get(0).accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext));
+            List<MilestoningStereotype> milestoningStereotype = Milestoning.temporalStereotypes(parameterValue._genericType()._rawType()._stereotypes());
+                if (!milestoningStereotype.isEmpty())
+                {
+                    processingContext.milestoningDatePropagationContext.setLastLevelParameter(parameterValue);
+            }
+        }
         if (appliedFunction.function.equals("letFunction"))
         {
             MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> vs = ListIterate.collect(appliedFunction.parameters, expression -> expression.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)));
@@ -501,6 +512,34 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         Assert.assertTrue(func.getOne() != null, () -> "Can't find a match for function '" + appliedFunction.function + "(" + (func.getTwo() == null ? "?" : LazyIterate.collect(func.getTwo(), v -> (v._genericType() == null ? "?" : v._genericType()._rawType()._name()) + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(v._multiplicity())).makeString(",")) + ")'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
         ValueSpecification result = func.getOne();
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
+        
+        if (result instanceof SimpleFunctionExpression && "getAll".equals(((SimpleFunctionExpression) result)._functionName()) && ("getAll_Class_1__Date_1__T_MANY_".equals(((SimpleFunctionExpression) result)._func().getName()) || "getAll_Class_1__Date_1__Date_1__T_MANY_".equals(((SimpleFunctionExpression) result)._func().getName()))) {
+            ValueSpecification parameterValue = ((SimpleFunctionExpression)result)._parametersValues().getFirst();
+            MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(parameterValue._genericType()._typeArguments().toList().getFirst()._rawType()._stereotypes()).get(0);
+            ListIterable<? extends ValueSpecification> temporalParameterValues = ((SimpleFunctionExpression) result)._parametersValues().toList();
+            if (Milestoning.isBusinessTemporal(milestoningStereotype))
+            {
+                processingContext.milestoningDatePropagationContext.setBusinessDate(temporalParameterValues.get(1));
+            }
+            else if (Milestoning.isProcessingTemporal(milestoningStereotype))
+            {
+                processingContext.milestoningDatePropagationContext.setProcessingDate(temporalParameterValues.get(1));
+            }
+            else if (Milestoning.isBiTemporal(milestoningStereotype))
+            {
+                processingContext.milestoningDatePropagationContext.setProcessingDate(temporalParameterValues.get(1));
+                processingContext.milestoningDatePropagationContext.setBusinessDate(temporalParameterValues.get(2));
+            }
+        }
+        if (result instanceof SimpleFunctionExpression && ("map".equals(((SimpleFunctionExpression) result)._functionName()) || "exists".equals(((SimpleFunctionExpression) result)._functionName())))
+        {
+            ValueSpecification parameterValue = ((SimpleFunctionExpression)result)._parametersValues().getFirst();
+            List<MilestoningStereotype> milestoningStereotype = Milestoning.temporalStereotypes(parameterValue._genericType()._rawType()._stereotypes());
+            if (!milestoningStereotype.isEmpty())
+            {
+                processingContext.milestoningDatePropagationContext.setLastLevelParameter(null);
+            }
+        }
         return result;
     }
 
