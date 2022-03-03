@@ -20,6 +20,8 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   DATABRICKS_API_TOKEN: ${{ secrets.DATABRICKS_API_TOKEN }}
+  DATABRICKS_WORKSPACE: https://dbc-f0687849-717f.cloud.databricks.com
+  DATABRICKS_CLUSTERID: 0228-234110-ve0xbrtk
 
 on:
   schedule:
@@ -31,6 +33,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Configure databricks CLI
+        run: |
+          python -m pip install databricks-cli
+          databricks configure --token <<EOF
+          ${DATABRICKS_WORKSPACE}
+          ${DATABRICKS_API_TOKEN}
+          EOF
+        shell: bash
+      - name: Start databricks endpoint
+        run: databricks clusters start --cluster-id ${DATABRICKS_CLUSTERID}
+        shell: bash
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Set up JDK
@@ -54,3 +67,6 @@ jobs:
         run: |
           mvn clean install -DskipTests=true
           mvn -P run-databricks-integration -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*Databricks*" test
+      - name: Stop databricks endpoint
+          run: databricks clusters delete --cluster-id ${DATABRICKS_CLUSTERID}
+          shell: bash
