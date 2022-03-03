@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSToObjectSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToArrowSerializer;
 
 import io.opentracing.Span;
 import org.eclipse.collections.api.block.function.Function;
@@ -556,6 +557,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 return new RelationalResultToPureTDSToObjectSerializer(this);
             case CSV:
                 return new RelationalResultToCSVSerializer(this, true);
+            case ARROW:
+                return new RelationalResultToArrowSerializer(this);
             case DEFAULT:
                 return new RelationalResultToJsonDefaultSerializer(this);
             default:
