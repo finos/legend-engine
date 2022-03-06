@@ -35,7 +35,8 @@ public abstract class DbSpecificTests
 
     protected abstract Subject getSubject();
 
-    protected void testConnection(Connection connection, String sqlExpression) throws Exception
+    protected void
+    testConnection(Connection connection, String sqlExpression) throws Exception
     {
         ExecutorService executor = Executors.newFixedThreadPool(5);
         MutableList<Future<Boolean>> result = FastList.newList();

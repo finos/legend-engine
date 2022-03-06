@@ -21,22 +21,18 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_MergeOperationSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_OperationSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationAwareSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.OperationSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwareSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -69,16 +65,26 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
     }
 
     @Override
-    public Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>> visit(OperationClassMapping classMapping)
-    {
+    public Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>> visit(OperationClassMapping classMapping) {
         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> pureClass = this.context.resolveClass(classMapping._class, classMapping.classSourceInformation);
         String id = HelperMappingBuilder.getClassMappingId(classMapping, this.context);
-        final OperationSetImplementation res = new Root_meta_pure_mapping_OperationSetImplementation_Impl(id)._id(id);
-        res._class(pureClass)
-           ._root(classMapping.root)
-           ._parent(parentMapping)
-           ._operation(this.context.pureModel.getFunction(OperationClassMapping.opsToFunc.get(classMapping.operation), false));
-        return Tuples.pair(res, Lists.immutable.empty());
+
+        if (classMapping instanceof MergeOperationClassMapping) {
+            MergeOperationSetImplementation res = new Root_meta_pure_mapping_MergeOperationSetImplementation_Impl(id)._id(id);
+            res._class(pureClass)
+                    ._root(classMapping.root)
+                    ._parent(parentMapping)
+                    ._operation(this.context.pureModel.getFunction(OperationClassMapping.opsToFunc.get(classMapping.operation), false))
+                    ._validationFunction(HelperValueSpecificationBuilder.buildLambda(((MergeOperationClassMapping) classMapping).validationFunction, this.context));
+            return Tuples.pair(res, Lists.immutable.empty());
+        } else {
+            OperationSetImplementation res = new Root_meta_pure_mapping_OperationSetImplementation_Impl(id)._id(id);
+            res._class(pureClass)
+                    ._root(classMapping.root)
+                    ._parent(parentMapping)
+                    ._operation(this.context.pureModel.getFunction(OperationClassMapping.opsToFunc.get(classMapping.operation), false));
+            return Tuples.pair(res, Lists.immutable.empty());
+        }
     }
 
     @Override

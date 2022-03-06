@@ -18,6 +18,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -40,14 +41,14 @@ public class AlloySDLCLoader
         String url;
         if (alloySDLC.project != null)
         {
-            url = (alloySDLC.version == null || alloySDLC.version.equals("none") || alloySDLC.version.equals("master-SNAPSHOT")) ?
+            url = (isLatestRevision(alloySDLC)) ?
                 metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/revisions/latest/pureModelContextData/" + clientVersion :
                 metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/versions/" + alloySDLC.version + "/pureModelContextData/" + clientVersion;
         }
         else
         {
             Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs if project ID is not specified");
-            url = (alloySDLC.version == null || alloySDLC.version.equals("none") || alloySDLC.version.equals("master-SNAPSHOT")) ?
+            url = (isLatestRevision(alloySDLC)) ?
                 metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/revisions/latest/pureModelContextData?clientVersion=" + clientVersion :
                 metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + alloySDLC.version + "/pureModelContextData?clientVersion=" + clientVersion;
         }
@@ -61,5 +62,15 @@ public class AlloySDLCLoader
 
         pathsFromPointer.removeAll(entities);
         return pathsFromPointer;
+    }
+
+    public boolean isLatestRevision(AlloySDLC alloySDLC)
+    {
+        return alloySDLC.version == null || alloySDLC.version.equals("none") || alloySDLC.version.equals("master-SNAPSHOT");
+    }
+
+    public PureModelContext getCacheKey(PureModelContext context)
+    {
+        return context;
     }
 }

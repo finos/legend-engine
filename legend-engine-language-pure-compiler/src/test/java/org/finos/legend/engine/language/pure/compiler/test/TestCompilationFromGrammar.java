@@ -136,4 +136,59 @@ public class TestCompilationFromGrammar
                 "  let s = {| 'sample string'}; $s->eval();\n" +
                 "} ", null);
     }
+
+    @Test
+    public void testCompilationFromGrammarWithMergeOperation()
+    {
+        TestCompilationFromGrammarTestSuite.test( "Class  example::SourcePersonWithFirstName\n" +
+                "{\n" +
+                "   id:Integer[1];\n" +
+                "   firstName:String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "Class example::SourcePersonWithLastName\n" +
+                "{\n" +
+                "   id:Integer[1];\n" +
+                "   lastName:String[1];\n" +
+                "}\n" +
+                "Class example::Person\n" +
+                "{\n" +
+                "   firstName:String[1];\n" +
+                "   lastName:String[1];\n" +
+                "}\n" +
+
+                "\n" +
+
+                "###Mapping\n" +
+                "Mapping  example::MergeModelMappingSourceWithMatch\n" +
+                "(\n" +
+                "   *example::Person : Operation\n" +
+                "           {\n" +
+                "             meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([p1,p2,p3],{p1:example::SourcePersonWithFirstName[1], p2:example::SourcePersonWithLastName[1],p4:example::SourcePersonWithLastName[1] | $p1.id ==  $p2.id })\n" +
+
+                "           }\n" +
+                "\n" +
+                "   example::Person[p1] : Pure\n" +
+                "            {\n" +
+                "               ~src example::SourcePersonWithFirstName\n" +
+                "               firstName : $src.firstName\n" +
+                "            }\n" +
+                "\n" +
+                "   example::Person[p2] : Pure\n" +
+                "            {\n" +
+                "               ~src example::SourcePersonWithLastName\n" +
+                "        lastName :  $src.lastName\n" +
+                "            }\n" +
+                "   example::Person[p3] : Pure\n" +
+                "            {\n" +
+                "               ~src example::SourcePersonWithLastName\n" +
+                "        lastName :  $src.lastName\n" +
+                "            }\n" +
+
+                "\n" +
+                ")");
+    }
+
+
 }

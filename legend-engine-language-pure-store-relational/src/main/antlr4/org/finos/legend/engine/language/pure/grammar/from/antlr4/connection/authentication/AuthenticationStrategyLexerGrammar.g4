@@ -27,3 +27,6 @@ SNOWFLAKE_AUTH_PUBLIC_USERNAME:             'publicUserName';
 PROJECT:                                                    'projectId';
 DATASET:                                                    'defaultDataset';
 GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH:                   'GCPApplicationDefaultCredentials';
+
+API_TOKEN_AUTH:                             'ApiToken';
+API_TOKEN_AUTH_TOKEN:                       'apiToken';
