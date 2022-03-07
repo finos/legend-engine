@@ -17,8 +17,7 @@ public class Protobuf3GrammarComposer {
 
     public String renderProto(Root_meta_external_format_protobuf_metamodel_ProtoFile file, ExecutionSupport executionSupport)
     {
-        String output = core_external_format_protobuf_serialization_protocolBufferToString.
+        return core_external_format_protobuf_serialization_protocolBufferToString.
                 Root_meta_external_format_protobuf_serialization_toString_ProtoFile_1__String_1_(file, executionSupport);
-        return output;
     }
 }
