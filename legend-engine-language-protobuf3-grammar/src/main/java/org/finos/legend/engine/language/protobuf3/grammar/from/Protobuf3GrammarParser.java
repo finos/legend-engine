@@ -148,17 +148,17 @@ public class Protobuf3GrammarParser
         for( Protobuf3Parser.OptionStatementContext optionStatementContext: optionStatementContexts)
         {
             String name = optionStatementContext.optionName().fullIdent(0).getText();
-            String value = optionStatementContext.constant().getText();
+            Object value = visitConstant(optionStatementContext.constant());
 
             switch (name) {
                 case "java_package":
-                    options.javaPackage = value;
+                    options.javaPackage = (String)value;
                     break;
                 case "java_outer_classname":
-                    options.javaOuterClassname = value;
+                    options.javaOuterClassname = (String)value;
                     break;
                 case "java_multiple_files":
-                    options.javaMultipleFiles = Boolean.parseBoolean(value);
+                    options.javaMultipleFiles = Boolean.valueOf(value.toString());
                     break;
                 case "optimize_for":
                     if (value.equals("SPEED")) {
@@ -180,6 +180,23 @@ public class Protobuf3GrammarParser
             }
         }
         return options;
+    }
+
+    private Object visitConstant(Protobuf3Parser.ConstantContext constantContext)
+    {
+        if (constantContext.strLit() != null) {
+            return visitStringLiteral(constantContext.strLit());
+        } else if (constantContext.boolLit() != null) {
+            return Boolean.valueOf(constantContext.boolLit().BOOL_LIT().getText());
+        } else if (constantContext.intLit() != null) {
+            return Integer.valueOf(constantContext.intLit().INT_LIT().getText());
+        } else if (constantContext.floatLit() != null) {
+            return java.lang.Double.valueOf(constantContext.floatLit().FLOAT_LIT().getText());
+        } else if (constantContext.fullIdent() != null) {
+            return constantContext.fullIdent().getText();
+        } else {
+            throw new RuntimeException("Unknown constant type:" + constantContext.getText());
+        }
     }
 
     private ProtoItemDefinition visitTopLevelDef(Protobuf3Parser.TopLevelDefContext topLevelDefContext) {
