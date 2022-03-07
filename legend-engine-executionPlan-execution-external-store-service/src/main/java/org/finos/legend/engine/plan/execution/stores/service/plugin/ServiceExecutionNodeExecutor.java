@@ -71,9 +71,9 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             try
             {
                 List<String> requiredSources = Lists.mutable.empty();
-                if (node.requiredVariableSources != null)
+                if (node.requiredVariableInputs != null)
                 {
-                    requiredSources.addAll(ListIterate.collect(node.requiredVariableSources, s -> s.name));
+                    requiredSources.addAll(ListIterate.collect(node.requiredVariableInputs, s -> s.name));
                 }
                 if (node.propertyInputMap != null)
                 {
