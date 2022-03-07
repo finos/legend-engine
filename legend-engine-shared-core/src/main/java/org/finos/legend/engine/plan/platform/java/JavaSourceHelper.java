@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class JavaSourceHelper
@@ -276,5 +277,21 @@ public class JavaSourceHelper
     private static boolean fileHasContent(Path path, byte[] content) throws IOException
     {
         return (Files.size(path) == content.length) && Arrays.equals(content, Files.readAllBytes(path));
+    }
+
+    public static String serviceElementPathToJavaPath(String packagePrefix, String servicePath)
+    {
+        Stream<String> packagePrefixStream = Stream.empty();
+        if (packagePrefix != null)
+        {
+            packagePrefixStream = Stream.of(packagePrefix);
+            if (!SourceVersion.isName(packagePrefix))
+            {
+                throw new RuntimeException("Invalid package prefix: \"" + packagePrefix + "\"");
+            }
+        }
+
+        Stream<String> servicePathAsJavaIdentifiers = Arrays.stream(servicePath.split("::")).map(JavaSourceHelper::toValidJavaIdentifier);
+        return Stream.concat(packagePrefixStream, servicePathAsJavaIdentifiers).collect(Collectors.joining("."));
     }
 }

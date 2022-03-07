@@ -149,7 +149,7 @@ public class TestServiceRunner
                 .build();
 
         SimpleRelationalServiceRunner simpleRelationalServiceRunner = (SimpleRelationalServiceRunner)ServiceRunnerBuilder.newInstance()
-                .withServiceRunnerClass(SimpleRelationalServiceRunner.class.getCanonicalName())
+                .withServicePath("org.finos.legend.engine", "language.pure.dsl", "service::execution::SimpleRelationalServiceRunner")
                 .withAllowJavaCompilation(false)
                 .withStoreExecutorConfigurations(relationalExecutionConfiguration)
                 .build();
