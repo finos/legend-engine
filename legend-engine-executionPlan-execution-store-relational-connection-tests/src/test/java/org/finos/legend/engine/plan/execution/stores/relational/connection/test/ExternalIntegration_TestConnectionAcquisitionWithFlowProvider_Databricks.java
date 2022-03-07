@@ -76,12 +76,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Datab
         assertTrue("databricks token flow does not exist ", flow.isPresent());
     }
 
-    @After
-    public void cleanup()
-    {
-        DatabaseAuthenticationFlowProviderSelector.disableFlowProvider();
-    }
-
     @Test
     public void testDatabricksConnection_subject() throws Exception
     {
