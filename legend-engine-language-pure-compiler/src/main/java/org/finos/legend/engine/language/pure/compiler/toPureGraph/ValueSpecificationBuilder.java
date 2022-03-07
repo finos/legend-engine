@@ -495,7 +495,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                 if (!milestoningStereotype.isEmpty())
                 {
                     processingContext.milestoningDatePropagationContext.setLastLevelParameter(parameterValue);
-            }
+                }
         }
         if (appliedFunction.function.equals("letFunction"))
         {

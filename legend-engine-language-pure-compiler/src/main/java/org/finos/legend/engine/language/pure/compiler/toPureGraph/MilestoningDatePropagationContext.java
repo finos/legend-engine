@@ -13,49 +13,50 @@
 // limitations under the License.
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 public class MilestoningDatePropagationContext {
-    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification businessDate;
-    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification processingDate;
-    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification topLevelProcessedParameter;
-    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification lastLevelProcessedParameter;
+    private ValueSpecification businessDate;
+    private ValueSpecification processingDate;
+    private ValueSpecification topLevelProcessedParameter;
+    private ValueSpecification lastLevelProcessedParameter;
 
-    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification getBusinessDate()
+    ValueSpecification getBusinessDate()
     {
         return this.businessDate;
     }
 
-    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification getProcessingDate()
+    ValueSpecification getProcessingDate()
     {
         return this.processingDate;
     }
 
-    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification getTopLevelParameter()
+    ValueSpecification getTopLevelParameter()
     {
         return this.topLevelProcessedParameter;
     }
 
-    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification getLastLevelParameter()
+    ValueSpecification getLastLevelParameter()
     {
         return this.lastLevelProcessedParameter;
     }
 
-    void setBusinessDate(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification businessDate)
+    void setBusinessDate(ValueSpecification businessDate)
     {
         this.businessDate = businessDate;
     }
 
-    void setProcessingDate(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification processingDate)
+    void setProcessingDate(ValueSpecification processingDate)
     {
         this.processingDate = processingDate;
     }
 
-    void setTopLevelParameter(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification topLevelParameter)
+    void setTopLevelParameter(ValueSpecification topLevelParameter)
     {
         this.topLevelProcessedParameter = topLevelParameter;
     }
 
-    void setLastLevelParameter(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification lastLevelParameter)
+    void setLastLevelParameter(ValueSpecification lastLevelParameter)
     {
         this.lastLevelProcessedParameter = lastLevelParameter;
     }
