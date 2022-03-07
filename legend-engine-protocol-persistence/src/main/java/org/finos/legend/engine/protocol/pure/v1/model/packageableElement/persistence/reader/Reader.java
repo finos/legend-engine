@@ -3,6 +3,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
@@ -10,6 +11,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 })
 public abstract class Reader
 {
+    public Runtime runtime;
     public SourceInformation sourceInformation;
 
     public abstract <T> T accept(ReaderVisitor<T> visitor);

@@ -1,10 +1,11 @@
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.TargetShape;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
@@ -13,6 +14,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 })
 public abstract class Persister
 {
+    public Runtime runtime;
+    public TargetShape targetShape;
     public SourceInformation sourceInformation;
 
     public abstract <T> T accept(PersisterVisitor<T> visitor);

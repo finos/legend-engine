@@ -1,7 +1,6 @@
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 
 public class StreamingPersister extends Persister
 {

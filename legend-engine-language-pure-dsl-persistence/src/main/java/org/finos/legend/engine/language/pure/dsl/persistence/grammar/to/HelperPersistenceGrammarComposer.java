@@ -6,8 +6,6 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.deduplication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningMode;
@@ -30,10 +28,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ReaderVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
@@ -132,6 +133,12 @@ public class HelperPersistenceGrammarComposer
         private TriggerComposer(int indentLevel)
         {
             this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visit(ManualTrigger val)
+        {
+            return getTabString(indentLevel) + "trigger: Manual;\n";
         }
 
         @Override

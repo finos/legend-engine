@@ -6,8 +6,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persister;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.auditing.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.deduplication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.mode.BatchMilestoningMode;
@@ -30,10 +28,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ReaderVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
@@ -127,6 +128,12 @@ public class HelperPersistenceBuilder
 
     private static class TriggerBuilder implements TriggerVisitor<Root_meta_pure_persistence_metamodel_trigger_Trigger>
     {
+        @Override
+        public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(ManualTrigger val)
+        {
+            return new Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl("");
+        }
+
         @Override
         public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(OpaqueTrigger val)
         {

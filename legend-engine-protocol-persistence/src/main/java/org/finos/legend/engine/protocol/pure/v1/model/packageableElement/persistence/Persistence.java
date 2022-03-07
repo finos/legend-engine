@@ -2,6 +2,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 

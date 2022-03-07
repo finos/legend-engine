@@ -1,7 +1,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.BatchPersister;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.streaming.StreamingPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
 
 public interface PersisterVisitor<T>
 {
