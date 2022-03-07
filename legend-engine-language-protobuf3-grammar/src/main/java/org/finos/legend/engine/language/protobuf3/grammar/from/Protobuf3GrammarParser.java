@@ -16,6 +16,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import java.lang.String;
 import java.util.BitSet;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Protobuf3GrammarParser
 {
@@ -304,14 +306,25 @@ public class Protobuf3GrammarParser
         else if(type_context.enumType() != null)
         {
             EnumPtr enumPtr = new EnumPtr();
-            //todo - sort out package
+            enumPtr._package = type_context.enumType().ident().isEmpty() ? null : type_context.enumType().ident().stream().map(new Function<Protobuf3Parser.IdentContext, String>() {
+                @Override
+                public String apply(Protobuf3Parser.IdentContext identContext) {
+                    return identContext.IDENTIFIER().getText();
+                }
+            }).collect(Collectors.joining("."));
             enumPtr.name = type_context.enumType().enumName().ident().getText();
             return enumPtr;
         }
         else if(type_context.messageType() != null)
         {
             MessagePtr messagePtr = new MessagePtr();
-            //todo - sort out package
+            messagePtr._package = type_context.messageType().ident().isEmpty() ? null : type_context.messageType().ident().stream().map(new Function<Protobuf3Parser.IdentContext, String>() {
+                @Override
+                public String apply(Protobuf3Parser.IdentContext identContext) {
+                    return identContext.IDENTIFIER().getText();
+                }
+            }).collect(Collectors.joining("."));
+
             messagePtr.name = type_context.messageType().messageName().ident().getText();
             return messagePtr;
         }
