@@ -119,7 +119,7 @@ public class Protobuf3GrammarParser
             List<ProtoImport> imports = Lists.mutable.ofInitialCapacity(protoContext.importStatement().size());
             for (Protobuf3Parser.ImportStatementContext _import : protoContext.importStatement()) {
                 ProtoImport protoImport = new ProtoImport();
-                protoImport.name = _import.strLit().getText();
+                protoImport.name = visitStringLiteral(_import.strLit());
                 imports.add(protoImport);
             }
             protoFile.imports = imports;
@@ -318,5 +318,10 @@ public class Protobuf3GrammarParser
         else {
             throw new RuntimeException("Unknown type");
         }
+    }
+
+    private String visitStringLiteral(Protobuf3Parser.StrLitContext strLitContext)
+    {
+        return strLitContext.STR_LIT().getText().replace("\"", "").replace("'", "");
     }
 }
