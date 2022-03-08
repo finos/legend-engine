@@ -418,10 +418,7 @@ public class Handlers
 
         register("meta::pure::functions::constraints::warn_Boolean_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
 
-        register(h("meta::pure::functions::lang::subType_Any_1__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "zeroOne"), ps -> isOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::lang::subType_Any_$0_1$__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "zeroOne"), ps -> isZeroOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::lang::subType_Any_MANY__T_1__T_MANY_", false, ps -> res(ps.get(1)._genericType(), "zeroMany"), ps -> true));
-
+        register("meta::pure::functions::lang::subType_Any_m__T_1__T_m_", false, ps -> res(ps.get(1)._genericType(), ps.get(0)._multiplicity()));
         register("meta::pure::functions::lang::orElse_T_$0_1$__T_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"));
 
         register(h("meta::pure::functions::string::contains_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
@@ -1742,6 +1739,7 @@ public class Handlers
         map.put("meta::pure::functions::lang::letFunction_String_1__T_m__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchOneMany(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1))));
         map.put("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Class", "MappingClass", "ClassProjection").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "KeyExpression".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::lang::subType_Any_m__T_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()));
         map.put("meta::pure::functions::math::abs_Float_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Float".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::abs_Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Integer".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::abs_Number_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
