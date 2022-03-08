@@ -3,8 +3,12 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.test;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.junit.Test;
 
-public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
+public abstract class TestPersistenceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
+    protected abstract String targetSingle();
+    protected abstract String targetMulti();
+    protected abstract String targetNested();
+
     @Override
     protected String getDuplicatedElementTestCode()
     {
@@ -24,7 +28,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -61,7 +65,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -119,7 +123,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
@@ -177,7 +181,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
@@ -247,7 +251,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
@@ -320,7 +324,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
@@ -393,7 +397,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
@@ -463,7 +467,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
@@ -544,7 +548,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: org::dxl::Zoo;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +

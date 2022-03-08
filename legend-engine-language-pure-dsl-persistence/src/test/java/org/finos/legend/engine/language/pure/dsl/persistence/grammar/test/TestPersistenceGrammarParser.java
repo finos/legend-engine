@@ -8,8 +8,12 @@ import org.junit.Test;
 
 import java.util.List;
 
-public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
+public abstract class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
 {
+    protected abstract String targetSingle();
+    protected abstract String targetMulti();
+    protected abstract String targetNested();
+
     @Override
     public Vocabulary getParserGrammarVocabulary()
     {
@@ -31,7 +35,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -63,7 +67,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -75,7 +79,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [3:1-23:1]: Field 'doc' is required");
-
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -89,7 +92,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -121,7 +124,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -133,7 +136,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [3:1-23:1]: Field 'trigger' is required");
-
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -147,7 +149,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -176,7 +178,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  trigger: OpaqueTrigger;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -188,7 +190,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [3:1-20:1]: Field 'reader' is required");
-
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -205,7 +206,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -233,7 +234,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -245,7 +246,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [7:11-9:3]: Field 'service' is required");
-
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -259,7 +259,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -304,7 +304,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -317,7 +317,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -380,7 +380,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -390,7 +390,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -401,7 +401,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:14-33:3]: Field 'target' should be specified only once");
+                "}\n", "PARSER error at [23:5-10]: Unexpected token");
+        //TODO: ledav -- remove post migration to update model
+//                "}\n", "PARSER error at [11:14-33:3]: Field 'target' should be specified only once");
     }
 
     /**********
@@ -423,7 +425,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
                 "      components:\n" +
@@ -456,7 +458,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -496,7 +498,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      components:\n" +
@@ -529,7 +531,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
@@ -569,7 +571,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
@@ -588,7 +590,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
@@ -646,7 +648,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      batchMode: AppendOnly\n" +
@@ -670,7 +672,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -700,7 +702,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      batchMode: AppendOnly\n" +
@@ -724,7 +726,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -754,7 +756,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -785,7 +787,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -816,7 +818,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -836,7 +838,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -874,7 +876,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Nested\n" +
+                "    target: " + targetNested() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "    }\n" +
@@ -893,7 +895,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Nested\n" +
+                "    target: " + targetNested() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -918,7 +920,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Nested\n" +
+                "    target: " + targetNested() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "    }\n" +
@@ -937,7 +939,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Nested\n" +
+                "    target: " + targetNested() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -966,7 +968,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -989,7 +991,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1018,7 +1020,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1041,7 +1043,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1070,7 +1072,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1094,7 +1096,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1124,7 +1126,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1148,7 +1150,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1178,7 +1180,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1207,7 +1209,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1248,7 +1250,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1271,7 +1273,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1300,7 +1302,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1324,7 +1326,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1354,7 +1356,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1378,7 +1380,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1408,7 +1410,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1433,7 +1435,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1464,7 +1466,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1489,7 +1491,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1520,7 +1522,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1545,7 +1547,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1576,7 +1578,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1606,7 +1608,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1646,7 +1648,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1670,7 +1672,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1700,7 +1702,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1724,7 +1726,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetSingle() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1757,7 +1759,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +

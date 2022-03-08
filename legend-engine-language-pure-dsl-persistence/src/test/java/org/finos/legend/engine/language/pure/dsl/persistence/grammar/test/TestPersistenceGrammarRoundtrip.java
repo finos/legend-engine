@@ -3,8 +3,12 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
-public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
+    protected abstract String targetSingle();
+    protected abstract String targetMulti();
+    protected abstract String targetNested();
+
     @Test
     public void persistence()
     {
@@ -21,7 +25,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
