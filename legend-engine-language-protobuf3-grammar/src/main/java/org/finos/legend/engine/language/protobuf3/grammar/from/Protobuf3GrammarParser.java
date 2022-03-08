@@ -127,7 +127,11 @@ public class Protobuf3GrammarParser
             protoFile.imports = imports;
         }
         if( protoContext.optionStatement().size() > 0 ) {
-            protoFile.options = visitOptionStatementContext(protoContext.optionStatement());
+            protoFile.options = Lists.mutable.ofInitialCapacity(protoContext.optionStatement().size());
+            for( Protobuf3Parser.OptionStatementContext optionStatementContext: protoContext.optionStatement()) {
+                protoFile.options.add(visitOptionStatementContext(optionStatementContext));
+            }
+
         }
         if (protoContext.packageStatement().size() == 1) {
             protoFile._package = protoContext.packageStatement(0).fullIdent().getText();
@@ -142,44 +146,12 @@ public class Protobuf3GrammarParser
         return protoFile;
     }
 
-    private Options visitOptionStatementContext(List<Protobuf3Parser.OptionStatementContext> optionStatementContexts){
-        Options options = new Options();
-        options.customOptions = Lists.mutable.of();
-        for( Protobuf3Parser.OptionStatementContext optionStatementContext: optionStatementContexts)
-        {
-            String name = optionStatementContext.optionName().fullIdent(0).getText();
-            Object value = visitConstant(optionStatementContext.constant());
-
-            switch (name) {
-                case "java_package":
-                    options.javaPackage = (String)value;
-                    break;
-                case "java_outer_classname":
-                    options.javaOuterClassname = (String)value;
-                    break;
-                case "java_multiple_files":
-                    options.javaMultipleFiles = Boolean.valueOf(value.toString());
-                    break;
-                case "optimize_for":
-                    if (value.equals("SPEED")) {
-                        options.optimizeFor = OptimizeMode.SPEED;
-                    } else if (value.equals("CODE_SIZE")) {
-                        options.optimizeFor = OptimizeMode.CODE_SIZE;
-                    } else if (value.equals("LITE_RUNTIME")) {
-                        options.optimizeFor = OptimizeMode.LITE_RUNTIME;
-                    } else {
-                        throw new RuntimeException("Unknown optimize_for value:" + value);
-                    }
-                    break;
-                default:
-                    Option customOption = new Option();
-                    customOption.name = name;
-                    customOption.value = value;
-                    options.customOptions.add(customOption);
-                    break;
-            }
-        }
-        return options;
+    private Option visitOptionStatementContext(Protobuf3Parser.OptionStatementContext optionStatementContext)
+    {
+        Option option = new Option();
+        option.name = optionStatementContext.optionName().fullIdent(0).getText();
+        option.value = visitConstant(optionStatementContext.constant());
+        return option;
     }
 
     private Object visitConstant(Protobuf3Parser.ConstantContext constantContext)
