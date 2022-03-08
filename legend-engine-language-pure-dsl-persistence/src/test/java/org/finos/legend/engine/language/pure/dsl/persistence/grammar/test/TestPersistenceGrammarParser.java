@@ -366,7 +366,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  persister: Batch\n" +
                 "  {\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:14-13:3]: Field 'target' is required");
+                "}\n", "PARSER error at [13:3]: Unexpected token. Valid alternatives: ['target']");
 
         test("###Persistence\n" +
                 "\n" +

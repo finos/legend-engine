@@ -13,14 +13,18 @@ identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_OWNERS | PERSISTENCE_TRIGGER | PERSISTENCE_READER | PERSISTENCE_PERSISTER
-                                            | TRIGGER_OPAQUE
+                                            | TRIGGER_MANUAL | TRIGGER_OPAQUE
                                             | READER_SERVICE | READER_SERVICE_SERVICE
-                                            | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_BATCH_TARGET
-                                            | TARGET_SPEC_NAME | TARGET_SPEC_MODEL_CLASS
-                                            | TARGET_SPEC_GROUPED | TARGET_SPEC_GROUPED_TXN_SCOPE | TARGET_SPEC_GROUPED_COMPONENTS | TARGET_COMPONENT_PROPERTY | TARGET_COMPONENT_TARGET_SPEC
-                                            | TARGET_SPEC_FLAT | TARGET_SPEC_FLAT_PARTITION_PROPERTIES | TARGET_SPEC_FLAT_DEDUPLICATION | TARGET_SPEC_FLAT_BATCH_MODE
-                                            | TARGET_SPEC_NESTED
-                                            | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
+                                            | PERSISTER_TARGET | PERSISTER_STREAMING | PERSISTER_BATCH
+                                            | TARGET_SHAPE_NAME | TARGET_SHAPE_MODEL_CLASS
+                                            | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_CHILDREN | TARGET_CHILD_PROPERTY | TARGET_CHILD_CHILD | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
+                                            | TARGET_SHAPE_SINGLE | TARGET_SHAPE_SINGLE_PARTITION_PROPERTIES | TARGET_SHAPE_SINGLE_DEDUPLICATION | TARGET_SHAPE_SINGLE_MILESTONING
+                                            | TARGET_SHAPE_OPAQUE
+
+                                            //TODO: ledav -- remove post migration to update model [START]
+                                            | TARGET_SPEC_GROUPED | TARGET_SPEC_GROUPED_COMPONENTS | TARGET_COMPONENT_TARGET_SPEC | TARGET_SPEC_FLAT | TARGET_SPEC_FLAT_BATCH_MODE | TARGET_SPEC_NESTED
+                                            //TODO: ledav -- remove post migration to update model [END]
+
                                             | DEDUPLICATION_NONE | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_PROPERTY | DEDUPLICATION_OPAQUE
                                             | BATCH_MODE_NON_MILESTONED_SNAPSHOT | BATCH_MODE_UNITEMPORAL_SNAPSHOT | BATCH_MODE_BITEMPORAL_SNAPSHOT | BATCH_MODE_NON_MILESTONED_DELTA | BATCH_MODE_UNITEMPORAL_DELTA | BATCH_MODE_BITEMPORAL_DELTA | BATCH_MODE_APPEND_ONLY
                                             | FILTER_DUPLICATES
@@ -62,7 +66,8 @@ owners:                                     PERSISTENCE_OWNERS COLON
 ;
 trigger:                                    PERSISTENCE_TRIGGER COLON
                                                 (
-                                                    TRIGGER_OPAQUE
+                                                    TRIGGER_MANUAL
+                                                    | TRIGGER_OPAQUE
                                                 )
                                             SEMI_COLON
 ;
@@ -83,14 +88,86 @@ persister:                                  PERSISTENCE_PERSISTER COLON
 ;
 streamingPersister:                         PERSISTER_STREAMING
                                                 BRACE_OPEN
+                                                    (targetShape)*
                                                 BRACE_CLOSE
 ;
 batchPersister:                             PERSISTER_BATCH
                                                 BRACE_OPEN
-                                                    (targetSpecification)*
+                                                    (
+                                                        targetShape
+                                                        | targetSpecification
+                                                    )
                                                 BRACE_CLOSE
 ;
-targetSpecification:                        PERSISTER_BATCH_TARGET COLON
+targetShape:                                PERSISTER_TARGET COLON
+                                                (
+                                                    multiTargetShape
+                                                    | singleTargetShape
+                                                    | opaqueTargetShape
+                                                )
+;
+multiTargetShape:                           TARGET_SHAPE_MULTI
+                                                BRACE_OPEN
+                                                    (
+                                                        targetModelClass
+                                                        | targetTransactionScope
+                                                        | targetComponents
+                                                    )*
+                                                BRACE_CLOSE
+;
+singleTargetShape:                          TARGET_SHAPE_SINGLE
+                                                BRACE_OPEN
+                                                    (
+                                                        targetName
+                                                        | targetModelClass
+                                                        | partitionProperties
+                                                        | deduplicationStrategy
+                                                        | batchMode
+                                                    )*
+                                                BRACE_CLOSE
+;
+opaqueTargetShape:                          TARGET_SHAPE_OPAQUE
+                                                BRACE_OPEN
+                                                    (targetName)*
+                                                BRACE_CLOSE
+;
+targetModelClass:                           TARGET_SHAPE_MODEL_CLASS COLON qualifiedName SEMI_COLON
+;
+targetTransactionScope:                     TARGET_SHAPE_MULTI_TXN_SCOPE COLON
+                                                (
+                                                    TXN_SCOPE_SINGLE
+                                                    | TXN_SCOPE_ALL
+                                                )
+                                            SEMI_COLON
+;
+targetChildren:                             TARGET_SHAPE_MULTI_CHILDREN COLON
+                                                BRACKET_OPEN
+                                                    targetChild (COMMA targetChild)*
+                                                BRACKET_CLOSE
+                                            SEMI_COLON
+;
+targetChild:                                BRACE_OPEN
+                                                (
+                                                    targetChildProperty
+                                                    | targetChildTargetShape
+                                                )*
+                                            BRACE_CLOSE
+;
+targetChildProperty:                        TARGET_CHILD_PROPERTY COLON identifier SEMI_COLON
+;
+targetChildTargetShape:                     TARGET_CHILD_CHILD COLON
+                                                BRACE_OPEN
+                                                    (
+                                                        targetName
+                                                        | partitionProperties
+                                                        | deduplicationStrategy
+                                                        | milestoningMode
+                                                    )*
+                                                BRACE_CLOSE
+;
+
+//TODO: ledav -- remove post migration to update model [START]
+targetSpecification:                        PERSISTER_TARGET COLON
                                                 (
                                                     groupedTargetSpecification
                                                     | flatTargetSpecification
@@ -125,17 +202,6 @@ nestedTargetSpecification:                  TARGET_SPEC_NESTED
                                                     )*
                                                 BRACE_CLOSE
 ;
-targetName:                                 TARGET_SPEC_NAME COLON STRING SEMI_COLON
-;
-targetModelClass:                           TARGET_SPEC_MODEL_CLASS COLON qualifiedName SEMI_COLON
-;
-targetTransactionScope:                     TARGET_SPEC_GROUPED_TXN_SCOPE COLON
-                                                (
-                                                    TXN_SCOPE_SINGLE
-                                                    | TXN_SCOPE_ALL
-                                                )
-                                            SEMI_COLON
-;
 targetComponents:                           TARGET_SPEC_GROUPED_COMPONENTS COLON
                                                 BRACKET_OPEN
                                                     targetComponent (COMMA targetComponent)*
@@ -149,7 +215,7 @@ targetComponent:                            BRACE_OPEN
                                                 )*
                                             BRACE_CLOSE
 ;
-targetComponentProperty:                    TARGET_COMPONENT_PROPERTY COLON identifier SEMI_COLON
+targetComponentProperty:                    TARGET_CHILD_PROPERTY COLON identifier SEMI_COLON
 ;
 targetComponentTargetSpecification:         TARGET_COMPONENT_TARGET_SPEC COLON
                                                 BRACE_OPEN
@@ -161,13 +227,28 @@ targetComponentTargetSpecification:         TARGET_COMPONENT_TARGET_SPEC COLON
                                                     )*
                                                 BRACE_CLOSE
 ;
-partitionProperties:                        TARGET_SPEC_FLAT_PARTITION_PROPERTIES COLON
+batchMode:                                  TARGET_SPEC_FLAT_BATCH_MODE COLON
+                                                (
+                                                    nonMilestonedSnapshot
+                                                    | unitemporalSnapshot
+                                                    | bitemporalSnapshot
+                                                    | nonMilestonedDelta
+                                                    | unitemporalDelta
+                                                    | bitemporalDelta
+                                                    | appendOnly
+                                                )
+;
+//TODO: ledav -- remove post migration to update model [END]
+
+targetName:                                 TARGET_SHAPE_NAME COLON STRING SEMI_COLON
+;
+partitionProperties:                        TARGET_SHAPE_SINGLE_PARTITION_PROPERTIES COLON
                                                 BRACKET_OPEN
                                                     (identifier (COMMA identifier)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
-deduplicationStrategy:                      TARGET_SPEC_FLAT_DEDUPLICATION COLON
+deduplicationStrategy:                      TARGET_SHAPE_SINGLE_DEDUPLICATION COLON
                                                 (
                                                     noDeduplicationStrategy
                                                     | anyVersionDeduplicationStrategy
@@ -190,7 +271,7 @@ deduplicationVersionProperty:               DEDUPLICATION_MAX_VERSION_PROPERTY C
 ;
 opaqueDeduplicationStrategy:                DEDUPLICATION_OPAQUE SEMI_COLON
 ;
-batchMode:                                  TARGET_SPEC_FLAT_BATCH_MODE COLON
+milestoningMode:                            TARGET_SHAPE_SINGLE_MILESTONING COLON
                                                 (
                                                     nonMilestonedSnapshot
                                                     | unitemporalSnapshot

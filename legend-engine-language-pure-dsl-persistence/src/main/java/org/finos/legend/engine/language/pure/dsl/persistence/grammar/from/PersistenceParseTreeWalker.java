@@ -39,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.TargetShape;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -177,12 +178,46 @@ public class PersistenceParseTreeWalker
         BatchPersister batch = new BatchPersister();
         batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // target specification
-        PersistenceParserGrammar.TargetSpecificationContext targetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetSpecification(), "target", batch.sourceInformation);
-        batch.targetSpecification = visitTargetSpecification(targetSpecificationContext);
-
-        return batch;
+        if (ctx.targetShape() != null)
+        {
+            // target shape
+            PersistenceParserGrammar.TargetShapeContext targetShapeContext = ctx.targetShape();
+            batch.targetSpecification = visitTargetShape(targetShapeContext);
+            return batch;
+        }
+        else if (ctx.targetSpecification() != null)
+        {
+            // target specification
+            PersistenceParserGrammar.TargetSpecificationContext targetSpecificationContext = ctx.targetSpecification();
+            batch.targetSpecification = visitTargetSpecification(targetSpecificationContext);
+            return batch;
+        }
+        throw new EngineException("Field 'target' is required", batch.sourceInformation, EngineErrorType.PARSER);
     }
+
+    /**********
+     * target shape
+     **********/
+
+    private TargetSpecification visitTargetShape(PersistenceParserGrammar.TargetShapeContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.singleTargetShape() != null)
+        {
+            throw new EngineException("Unimplemented target shape", sourceInformation, EngineErrorType.PARSER);
+        }
+        else if (ctx.multiTargetShape() != null)
+        {
+            throw new EngineException("Unimplemented target shape", sourceInformation, EngineErrorType.PARSER);
+        }
+        else if (ctx.opaqueTargetShape() != null)
+        {
+            throw new EngineException("Unimplemented target shape", sourceInformation, EngineErrorType.PARSER);
+        }
+        throw new EngineException("Unrecognized target", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    //TODO: ledav -- remove post migration to update model [START]
 
     /**********
      * target specification
@@ -277,31 +312,6 @@ public class PersistenceParseTreeWalker
         return targetSpecification;
     }
 
-    private String visitTargetName(PersistenceParserGrammar.TargetNameContext ctx)
-    {
-        return ctx != null ? PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true) : null;
-    }
-
-    private String visitModelClass(PersistenceParserGrammar.TargetModelClassContext ctx)
-    {
-        PersistenceParserGrammar.QualifiedNameContext qualifiedNameContext = ctx.qualifiedName();
-        return PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
-    }
-
-    private TransactionScope visitTransactionScope(PersistenceParserGrammar.TargetTransactionScopeContext ctx)
-    {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.TXN_SCOPE_SINGLE() != null)
-        {
-            return TransactionScope.SINGLE_TARGET;
-        }
-        else if (ctx.TXN_SCOPE_ALL() != null)
-        {
-            return TransactionScope.ALL_TARGETS;
-        }
-        throw new EngineException("Unrecognized transaction scope", sourceInformation, EngineErrorType.PARSER);
-    }
-
     private PropertyAndFlatTargetSpecification visitPropertyAndFlatTargetSpecification(PersistenceParserGrammar.TargetComponentContext ctx)
     {
         PropertyAndFlatTargetSpecification propertyAndFlatTargetSpecification = new PropertyAndFlatTargetSpecification();
@@ -323,10 +333,37 @@ public class PersistenceParseTreeWalker
         return createBaseFlatTargetSpecification(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.batchMode());
     }
 
+    //TODO: ledav -- remove post migration to update model [END]
+
+    private String visitTargetName(PersistenceParserGrammar.TargetNameContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true) : null;
+    }
+
+    private String visitModelClass(PersistenceParserGrammar.TargetModelClassContext ctx)
+    {
+        PersistenceParserGrammar.QualifiedNameContext qualifiedNameContext = ctx.qualifiedName();
+        return PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
+    }
+
     private List<String> visitPartitionProperties(PersistenceParserGrammar.PartitionPropertiesContext ctx)
     {
         List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
         return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
+    }
+
+    private TransactionScope visitTransactionScope(PersistenceParserGrammar.TargetTransactionScopeContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.TXN_SCOPE_SINGLE() != null)
+        {
+            return TransactionScope.SINGLE_TARGET;
+        }
+        else if (ctx.TXN_SCOPE_ALL() != null)
+        {
+            return TransactionScope.ALL_TARGETS;
+        }
+        throw new EngineException("Unrecognized transaction scope", sourceInformation, EngineErrorType.PARSER);
     }
 
     /**********

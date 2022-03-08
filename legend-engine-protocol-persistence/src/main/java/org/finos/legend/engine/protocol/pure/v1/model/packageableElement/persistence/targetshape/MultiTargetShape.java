@@ -5,8 +5,8 @@ import java.util.List;
 public class MultiTargetShape extends TargetShape
 {
     public String modelClass;
-    public List<PropertyAndSingleTargetShape> children;
     public TransactionScope transactionScope;
+    public List<PropertyAndSingleTargetShape> children;
 
     @Override
     public <T> T accept(TargetShapeVisitor<T> visitor)
