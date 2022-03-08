@@ -494,7 +494,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
             List<MilestoningStereotype> milestoningStereotype = Milestoning.temporalStereotypes(parameterValue._genericType()._rawType()._stereotypes());
                 if (!milestoningStereotype.isEmpty())
                 {
-                    processingContext.milestoningDatePropagationContext.setLastLevelParameter(parameterValue);
+//                    processingContext.milestoningDatePropagationContext.setLastLevelParameter(parameterValue);
+                    MilestoningDatePropagationHelper.updateMilestoningPropagationContext((SimpleFunctionExpression) parameterValue, processingContext);
                 }
         }
         if (appliedFunction.function.equals("letFunction"))
@@ -513,32 +514,12 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         ValueSpecification result = func.getOne();
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
         
-        if (result instanceof SimpleFunctionExpression && "getAll".equals(((SimpleFunctionExpression) result)._functionName()) && ("getAll_Class_1__Date_1__T_MANY_".equals(((SimpleFunctionExpression) result)._func().getName()) || "getAll_Class_1__Date_1__Date_1__T_MANY_".equals(((SimpleFunctionExpression) result)._func().getName()))) {
-            ValueSpecification parameterValue = ((SimpleFunctionExpression)result)._parametersValues().getFirst();
-            MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(parameterValue._genericType()._typeArguments().toList().getFirst()._rawType()._stereotypes()).get(0);
-            ListIterable<? extends ValueSpecification> temporalParameterValues = ((SimpleFunctionExpression) result)._parametersValues().toList();
-            if (Milestoning.isBusinessTemporal(milestoningStereotype))
-            {
-                processingContext.milestoningDatePropagationContext.setBusinessDate(temporalParameterValues.get(1));
-            }
-            else if (Milestoning.isProcessingTemporal(milestoningStereotype))
-            {
-                processingContext.milestoningDatePropagationContext.setProcessingDate(temporalParameterValues.get(1));
-            }
-            else if (Milestoning.isBiTemporal(milestoningStereotype))
-            {
-                processingContext.milestoningDatePropagationContext.setProcessingDate(temporalParameterValues.get(1));
-                processingContext.milestoningDatePropagationContext.setBusinessDate(temporalParameterValues.get(2));
-            }
+        if (result instanceof SimpleFunctionExpression && MilestoningDatePropagationHelper.checkGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) result)) {
+            MilestoningDatePropagationHelper.setMilestoningPropagationContext((SimpleFunctionExpression) result, processingContext);
         }
-        if (result instanceof SimpleFunctionExpression && ("map".equals(((SimpleFunctionExpression) result)._functionName()) || "exists".equals(((SimpleFunctionExpression) result)._functionName())))
+        if (result instanceof SimpleFunctionExpression && MilestoningDatePropagationHelper.checkForMapOrExists((SimpleFunctionExpression) result))
         {
-            ValueSpecification parameterValue = ((SimpleFunctionExpression)result)._parametersValues().getFirst();
-            List<MilestoningStereotype> milestoningStereotype = Milestoning.temporalStereotypes(parameterValue._genericType()._rawType()._stereotypes());
-            if (!milestoningStereotype.isEmpty())
-            {
-                processingContext.milestoningDatePropagationContext.setLastLevelParameter(null);
-            }
+//            MilestoningDatePropagationHelper.updateMilestoningPropagationContextForMapOrExists((SimpleFunctionExpression) result, processingContext);
         }
         return result;
     }

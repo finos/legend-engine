@@ -18,8 +18,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 public class MilestoningDatePropagationContext {
     private ValueSpecification businessDate;
     private ValueSpecification processingDate;
-    private ValueSpecification topLevelProcessedParameter;
-    private ValueSpecification lastLevelProcessedParameter;
 
     ValueSpecification getBusinessDate()
     {
@@ -31,16 +29,6 @@ public class MilestoningDatePropagationContext {
         return this.processingDate;
     }
 
-    ValueSpecification getTopLevelParameter()
-    {
-        return this.topLevelProcessedParameter;
-    }
-
-    ValueSpecification getLastLevelParameter()
-    {
-        return this.lastLevelProcessedParameter;
-    }
-
     void setBusinessDate(ValueSpecification businessDate)
     {
         this.businessDate = businessDate;
@@ -49,15 +37,5 @@ public class MilestoningDatePropagationContext {
     void setProcessingDate(ValueSpecification processingDate)
     {
         this.processingDate = processingDate;
-    }
-
-    void setTopLevelParameter(ValueSpecification topLevelParameter)
-    {
-        this.topLevelProcessedParameter = topLevelParameter;
-    }
-
-    void setLastLevelParameter(ValueSpecification lastLevelParameter)
-    {
-        this.lastLevelProcessedParameter = lastLevelParameter;
     }
 }

@@ -529,22 +529,6 @@ public class Milestoning
         return false;
     }
 
-    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification getPropagatedDate (ValueSpecification topLevelProcessedParameter, int index, ValueSpecification date)
-    {
-        if (topLevelProcessedParameter instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) topLevelProcessedParameter)._parametersValues().size() != index)
-        {
-            if (!topLevelProcessedParameter.getName().endsWith(RANGE_PROPERTY_NAME_SUFFIX) && !topLevelProcessedParameter.getName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX))
-            {
-                return ((SimpleFunctionExpression) topLevelProcessedParameter)._parametersValues().toList().get(index);
-            }
-            else
-            {
-                return null;
-            }
-        }
-        return date;
-    }
-
     public static boolean isProcessingTemporal(MilestoningStereotype milestoningStereotype)
     {
         return milestoningStereotype != null && milestoningStereotype.getPurePlatformStereotypeName() == "processingtemporal";
@@ -603,7 +587,7 @@ public class Milestoning
         return parameterValues.size() == 1;
     }
 
-    public static void applyPropertyFunctionExpressionMilestonedDates(FunctionExpression fe, AbstractProperty<?> func, ValueSpecification topLevelProcessedParameter, SourceInformation sourceInformation, ProcessingContext processingContext)
+    public static void applyPropertyFunctionExpressionMilestonedDates(FunctionExpression fe, AbstractProperty<?> func, SourceInformation sourceInformation, ProcessingContext processingContext)
     {
         Pair<MilestoningStereotype, MilestoningStereotype> sourceTargetMilestoningStereotypes = getSourceTargetMilestoningStereotypes(func);
         MilestoningStereotype sourceTypeMilestoning = sourceTargetMilestoningStereotypes.getOne();
@@ -617,7 +601,7 @@ public class Milestoning
         {
             if (isBiTemporal(sourceTypeMilestoning) && oneDateParamSupplied(parametersValues))
             {
-                milestoningDateParameters[0] =  getPropagatedDate(topLevelProcessedParameter, 1, processingContext.milestoningDatePropagationContext.getProcessingDate());
+                milestoningDateParameters[0] =  processingContext.milestoningDatePropagationContext.getProcessingDate();
                 milestoningDateParameters[1] = parametersValues.get(1);
             }
             else if (isSingleDateTemporal(sourceTypeMilestoning) && oneDateParamSupplied(parametersValues))
@@ -626,11 +610,11 @@ public class Milestoning
                 ValueSpecification propagatedDate;
                 if (isProcessingTemporal(sourceTypeMilestoning))
                 {
-                    propagatedDate =  getPropagatedDate(topLevelProcessedParameter, 1, processingContext.milestoningDatePropagationContext.getProcessingDate());
+                    propagatedDate =  processingContext.milestoningDatePropagationContext.getProcessingDate();
                 }
                 else
                 {
-                    propagatedDate =  getPropagatedDate(topLevelProcessedParameter, 1, processingContext.milestoningDatePropagationContext.getBusinessDate());
+                    propagatedDate =  processingContext.milestoningDatePropagationContext.getBusinessDate();
                 }
                 int otherPropagatedDateIndex = isProcessingTemporal(sourceTypeMilestoning) ? 1 : 0;
                 setMilestoningDateParameters(milestoningDateParameters, propagatedDateIndex, propagatedDate);
@@ -638,8 +622,8 @@ public class Milestoning
             }
             if (isBiTemporal(sourceTypeMilestoning) && noDateParamSupplied(parametersValues))
             {
-                milestoningDateParameters[0] = getPropagatedDate(topLevelProcessedParameter, 1, processingContext.milestoningDatePropagationContext.getProcessingDate());
-                milestoningDateParameters[1] = getPropagatedDate( topLevelProcessedParameter, 2, processingContext.milestoningDatePropagationContext.getBusinessDate());
+                milestoningDateParameters[0] = processingContext.milestoningDatePropagationContext.getProcessingDate();
+                milestoningDateParameters[1] = processingContext.milestoningDatePropagationContext.getBusinessDate();
             }
             if(milestoningDateParameters[0] == null || milestoningDateParameters[1] == null)
             {
@@ -651,11 +635,11 @@ public class Milestoning
             ValueSpecification propagatedDate;
             if (isProcessingTemporal(targetTypeMilestoning))
             {
-                propagatedDate = getPropagatedDate(topLevelProcessedParameter, 1, processingContext.milestoningDatePropagationContext.getProcessingDate());
+                propagatedDate = processingContext.milestoningDatePropagationContext.getProcessingDate();
             }
             else
             {
-                propagatedDate = getPropagatedDate(topLevelProcessedParameter, 1, processingContext.milestoningDatePropagationContext.getBusinessDate());
+                propagatedDate = processingContext.milestoningDatePropagationContext.getBusinessDate();
             }
             if (isBiTemporal(sourceTypeMilestoning))
             {
@@ -684,9 +668,9 @@ public class Milestoning
         }
     }
 
-    private static void updateFunctionExpressionWithMilestoningDateParams(FunctionExpression functionExpression, AbstractProperty<?> propertyFunc, ValueSpecification topLevelProcessedParameter, SourceInformation sourceInformation, ProcessingContext processingContext)
+    private static void updateFunctionExpressionWithMilestoningDateParams(FunctionExpression functionExpression, AbstractProperty<?> propertyFunc, SourceInformation sourceInformation, ProcessingContext processingContext)
     {
-        applyPropertyFunctionExpressionMilestonedDates(functionExpression, propertyFunc, topLevelProcessedParameter, sourceInformation, processingContext);
+        applyPropertyFunctionExpressionMilestonedDates(functionExpression, propertyFunc, sourceInformation, processingContext);
         String propertyName = propertyFunc._name();
         Class owner = (Class) getMilestonedPropertyOwningType(propertyFunc);
         Object prop = ListIterate.select(owner._qualifiedProperties().toList(), p -> p instanceof QualifiedProperty && ((QualifiedProperty) p)._name() == propertyName).getFirst();
@@ -697,8 +681,8 @@ public class Milestoning
         }
     }
 
-    public static void getMilestoningQualifiedPropertyWithAllDatesSupplied(FunctionExpression functionExpression, AbstractProperty<?> propertyFunc, ValueSpecification topLevelProcessedParameter, SourceInformation sourceInformation, ProcessingContext processingContext)
+    public static void getMilestoningQualifiedPropertyWithAllDatesSupplied(FunctionExpression functionExpression, AbstractProperty<?> propertyFunc, SourceInformation sourceInformation, ProcessingContext processingContext)
     {
-        updateFunctionExpressionWithMilestoningDateParams(functionExpression, propertyFunc, topLevelProcessedParameter, sourceInformation, processingContext);
+        updateFunctionExpressionWithMilestoningDateParams(functionExpression, propertyFunc, sourceInformation, processingContext);
     }
 }

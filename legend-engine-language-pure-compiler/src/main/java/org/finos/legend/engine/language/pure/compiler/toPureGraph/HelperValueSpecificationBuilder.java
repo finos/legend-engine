@@ -202,7 +202,8 @@ public class HelperValueSpecificationBuilder
                 automapLambda.parameters = lambdaParams;
                 if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, appliedProperty.parameters.size()))
                 {
-                    processingContext.milestoningDatePropagationContext.setTopLevelParameter(processedParameters.get(0));
+//                    processingContext.milestoningDatePropagationContext.setTopLevelParameter(processedParameters.get(0));
+                    MilestoningDatePropagationHelper.updateMilestoningPropagationContext((SimpleFunctionExpression) processedParameters.get(0), processingContext);
                 }
                 List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
                 result = context.buildFunctionExpression("map", null, newParams, openVariables, null, processingContext).getOne();
@@ -210,21 +211,6 @@ public class HelperValueSpecificationBuilder
             }
             else
             {
-                if (processedParameters.size() !=0 && ((processedParameters.get(0) instanceof VariableExpression && ((VariableExpression) processedParameters.get(0))._name() == "v_automap") || (processedParameters.get(0) instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) processedParameters.get(0))._functionName() == "subType")))
-                {
-                    if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()) && processingContext.milestoningDatePropagationContext.getTopLevelParameter() != null)
-                    {
-                        topLevelProcessedParameter = processingContext.milestoningDatePropagationContext.getTopLevelParameter();
-                    }
-                }
-                if (processedParameters.size() !=0 && processedParameters.get(0) instanceof VariableExpression &&processingContext.milestoningDatePropagationContext.getLastLevelParameter() != null)
-                {
-                    if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
-                    {
-                        topLevelProcessedParameter = processingContext.milestoningDatePropagationContext.getLastLevelParameter();
-                        processingContext.milestoningDatePropagationContext.setLastLevelParameter(null);
-                    }
-                }
                 result = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
                         ._func(foundProperty)
                         ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")._values(Lists.fixedSize.of(foundProperty.getName())))
@@ -233,11 +219,12 @@ public class HelperValueSpecificationBuilder
                         ._parametersValues(processedParameters);
                 if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
                 {
-                    Milestoning.getMilestoningQualifiedPropertyWithAllDatesSupplied((FunctionExpression)result, foundProperty, topLevelProcessedParameter, sourceInformation, processingContext);
+                    Milestoning.getMilestoningQualifiedPropertyWithAllDatesSupplied((FunctionExpression)result, foundProperty, sourceInformation, processingContext);
                 }
                 if (Milestoning.isGeneratedQualifiedProperty(foundProperty, context))
                 {
-                    processingContext.milestoningDatePropagationContext.setTopLevelParameter(result);
+                    MilestoningDatePropagationHelper.setMilestoningPropagationContext((SimpleFunctionExpression) result, processingContext);
+//                    processingContext.milestoningDatePropagationContext.setTopLevelParameter(result);
                 }
             }
         }
