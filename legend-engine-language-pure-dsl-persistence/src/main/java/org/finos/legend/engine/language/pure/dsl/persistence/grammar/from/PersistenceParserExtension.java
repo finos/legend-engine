@@ -25,7 +25,7 @@ public class PersistenceParserExtension implements PureGrammarParserExtension
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
-        return Lists.immutable.with(SectionParser.newParser(NAME, PersistenceParserExtension::parseSection));
+        return Lists.fixedSize.of(SectionParser.newParser(NAME, PersistenceParserExtension::parseSection));
     }
 
     private static Section parseSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)

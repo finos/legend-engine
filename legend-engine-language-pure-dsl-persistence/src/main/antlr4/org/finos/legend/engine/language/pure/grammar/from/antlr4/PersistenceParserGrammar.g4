@@ -17,12 +17,12 @@ identifier:                                 VALID_STRING | STRING
                                             | READER_SERVICE | READER_SERVICE_SERVICE
                                             | PERSISTER_TARGET | PERSISTER_STREAMING | PERSISTER_BATCH
                                             | TARGET_SHAPE_NAME | TARGET_SHAPE_MODEL_CLASS
-                                            | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_CHILDREN | TARGET_CHILD_PROPERTY | TARGET_CHILD_CHILD | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
+                                            | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_PARTS | TARGET_PART_PROPERTY | TARGET_PART_SINGLE_FLAT_TARGET | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
                                             | TARGET_SHAPE_SINGLE | TARGET_SHAPE_SINGLE_PARTITION_PROPERTIES | TARGET_SHAPE_SINGLE_DEDUPLICATION | TARGET_SHAPE_SINGLE_MILESTONING
                                             | TARGET_SHAPE_OPAQUE
 
                                             //TODO: ledav -- remove post migration to update model [START]
-                                            | TARGET_SPEC_GROUPED | TARGET_SPEC_GROUPED_COMPONENTS | TARGET_COMPONENT_TARGET_SPEC | TARGET_SPEC_FLAT | TARGET_SPEC_FLAT_BATCH_MODE | TARGET_SPEC_NESTED
+                                            | TARGET_SPEC_GROUPED | TARGET_SPEC_GROUPED_COMPONENTS | TARGET_COMPONENT_TARGET_SPEC | TARGET_SPEC_FLAT | TARGET_SPEC_NESTED
                                             //TODO: ledav -- remove post migration to update model [END]
 
                                             | DEDUPLICATION_NONE | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_PROPERTY | DEDUPLICATION_OPAQUE
@@ -111,7 +111,7 @@ multiTargetShape:                           TARGET_SHAPE_MULTI
                                                     (
                                                         targetModelClass
                                                         | targetTransactionScope
-                                                        | targetComponents
+                                                        | targetChildren
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -122,7 +122,7 @@ singleTargetShape:                          TARGET_SHAPE_SINGLE
                                                         | targetModelClass
                                                         | partitionProperties
                                                         | deduplicationStrategy
-                                                        | batchMode
+                                                        | milestoningMode
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -140,7 +140,7 @@ targetTransactionScope:                     TARGET_SHAPE_MULTI_TXN_SCOPE COLON
                                                 )
                                             SEMI_COLON
 ;
-targetChildren:                             TARGET_SHAPE_MULTI_CHILDREN COLON
+targetChildren:                             TARGET_SHAPE_MULTI_PARTS COLON
                                                 BRACKET_OPEN
                                                     targetChild (COMMA targetChild)*
                                                 BRACKET_CLOSE
@@ -153,9 +153,9 @@ targetChild:                                BRACE_OPEN
                                                 )*
                                             BRACE_CLOSE
 ;
-targetChildProperty:                        TARGET_CHILD_PROPERTY COLON identifier SEMI_COLON
+targetChildProperty:                        TARGET_PART_PROPERTY COLON identifier SEMI_COLON
 ;
-targetChildTargetShape:                     TARGET_CHILD_CHILD COLON
+targetChildTargetShape:                     TARGET_PART_SINGLE_FLAT_TARGET COLON
                                                 BRACE_OPEN
                                                     (
                                                         targetName
@@ -215,7 +215,7 @@ targetComponent:                            BRACE_OPEN
                                                 )*
                                             BRACE_CLOSE
 ;
-targetComponentProperty:                    TARGET_CHILD_PROPERTY COLON identifier SEMI_COLON
+targetComponentProperty:                    TARGET_PART_PROPERTY COLON identifier SEMI_COLON
 ;
 targetComponentTargetSpecification:         TARGET_COMPONENT_TARGET_SPEC COLON
                                                 BRACE_OPEN
@@ -227,7 +227,7 @@ targetComponentTargetSpecification:         TARGET_COMPONENT_TARGET_SPEC COLON
                                                     )*
                                                 BRACE_CLOSE
 ;
-batchMode:                                  TARGET_SPEC_FLAT_BATCH_MODE COLON
+batchMode:                                  TARGET_SHAPE_SINGLE_MILESTONING COLON
                                                 (
                                                     nonMilestonedSnapshot
                                                     | unitemporalSnapshot

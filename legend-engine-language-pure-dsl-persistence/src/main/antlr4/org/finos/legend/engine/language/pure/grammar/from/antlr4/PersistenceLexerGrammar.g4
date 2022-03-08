@@ -48,21 +48,21 @@ TARGET_SHAPE_NAME:                          'targetName';
 TARGET_SHAPE_MODEL_CLASS:                   'modelClass';
 
 // MULTI
-TARGET_SHAPE_MULTI:                         'Multi';
+TARGET_SHAPE_MULTI:                         'MultiFlat';
 TARGET_SHAPE_MULTI_TXN_SCOPE:               'transactionScope';
-TARGET_SHAPE_MULTI_CHILDREN:                'children';
+TARGET_SHAPE_MULTI_PARTS:                   'parts';
 
-TARGET_CHILD_PROPERTY:                      'property';
-TARGET_CHILD_CHILD:                         'child';
+TARGET_PART_PROPERTY:                       'property';
+TARGET_PART_SINGLE_FLAT_TARGET:             'singleFlatTarget';
 
 TXN_SCOPE_SINGLE:                           'SINGLE_TARGET';
 TXN_SCOPE_ALL:                              'ALL_TARGETS';
 
 // SINGLE
-TARGET_SHAPE_SINGLE:                        'Single';
+TARGET_SHAPE_SINGLE:                        'SingleFlat';
 TARGET_SHAPE_SINGLE_PARTITION_PROPERTIES:   'partitionProperties';
 TARGET_SHAPE_SINGLE_DEDUPLICATION:          'deduplicationStrategy';
-TARGET_SHAPE_SINGLE_MILESTONING:            'milestoningMode';
+TARGET_SHAPE_SINGLE_MILESTONING:            'batchMode';
 
 // OPAQUE
 TARGET_SHAPE_OPAQUE:                        'OpaqueTarget';
@@ -81,7 +81,6 @@ TARGET_COMPONENT_TARGET_SPEC:               'targetSpecification';
 
 // FLAT
 TARGET_SPEC_FLAT:                           'Flat';
-TARGET_SPEC_FLAT_BATCH_MODE:                'batchMode';
 
 // NESTED
 TARGET_SPEC_NESTED:                         'Nested';
