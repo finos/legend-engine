@@ -1,7 +1,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.batch.targetspecification.TargetSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.TargetSpecification;
 
 public class BatchPersister extends Persister
 {

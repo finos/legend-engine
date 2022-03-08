@@ -6,9 +6,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = SingleTargetShape.class, name = "singleTargetShape"),
-        @JsonSubTypes.Type(value = MultiTargetShape.class, name = "multiTargetShape"),
-        @JsonSubTypes.Type(value = OpaqueTargetShape.class, name = "opaqueTargetShape")
+        @JsonSubTypes.Type(value = SingleFlatTarget.class, name = "singleTargetShape"),
+        @JsonSubTypes.Type(value = MultiFlatTarget.class, name = "multiTargetShape"),
+        @JsonSubTypes.Type(value = OpaqueTarget.class, name = "opaqueTargetShape")
 })
 public abstract class TargetShape
 {
