@@ -7,7 +7,10 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
 {
     protected abstract String targetSingle();
     protected abstract String targetMulti();
-    protected abstract String targetNested();
+    protected abstract String targetOpaque();
+    protected abstract String batchMode();
+    protected abstract String singleFlatTarget();
+    protected abstract String parts();
 
     @Test
     public void persistence()
@@ -29,11 +32,11 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + singleFlatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            partitionProperties: [propertyA, propertyB];\n" +
@@ -41,7 +44,7 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "            {\n" +
                 "              versionProperty: updateDateTime;\n" +
                 "            }\n" +
-                "            batchMode: UnitemporalDelta\n" +
+                "            " + batchMode() + ": UnitemporalDelta\n" +
                 "            {\n" +
                 "              mergeStrategy: NoDeletes;\n" +
                 "              transactionMilestoning: BatchIdOnly\n" +
@@ -54,11 +57,11 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "        },\n" +
                 "        {\n" +
                 "          property: property2;\n" +
-                "          targetSpecification:\n" +
+                "          " + singleFlatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
                 "            deduplicationStrategy: OpaqueDeduplication;\n" +
-                "            batchMode: BitemporalDelta\n" +
+                "            " + batchMode() + ": BitemporalDelta\n" +
                 "            {\n" +
                 "              mergeStrategy: DeleteIndicator\n" +
                 "              {\n" +
