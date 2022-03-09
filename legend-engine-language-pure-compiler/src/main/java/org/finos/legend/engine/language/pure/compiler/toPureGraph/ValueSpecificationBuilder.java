@@ -494,7 +494,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
             List<MilestoningStereotype> milestoningStereotype = Milestoning.temporalStereotypes(parameterValue._genericType()._rawType()._stereotypes());
                 if (!milestoningStereotype.isEmpty())
                 {
-//                    processingContext.milestoningDatePropagationContext.setLastLevelParameter(parameterValue);
                     MilestoningDatePropagationHelper.updateMilestoningPropagationContext((SimpleFunctionExpression) parameterValue, processingContext);
                 }
         }
@@ -517,9 +516,9 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         if (result instanceof SimpleFunctionExpression && MilestoningDatePropagationHelper.checkGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) result)) {
             MilestoningDatePropagationHelper.setMilestoningPropagationContext((SimpleFunctionExpression) result, processingContext);
         }
-        if (result instanceof SimpleFunctionExpression && MilestoningDatePropagationHelper.checkForMapOrExists((SimpleFunctionExpression) result))
+        if (result instanceof SimpleFunctionExpression && MilestoningDatePropagationHelper.checkForFilter((SimpleFunctionExpression) result))
         {
-//            MilestoningDatePropagationHelper.updateMilestoningPropagationContextForMapOrExists((SimpleFunctionExpression) result, processingContext);
+            MilestoningDatePropagationHelper.updateMilestoningPropagationContextForFilter((SimpleFunctionExpression) result, processingContext);
         }
         return result;
     }

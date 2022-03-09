@@ -26,7 +26,7 @@ import java.util.List;
 public class MilestoningDatePropagationHelper {
 
     private static final String RANGE_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
-    private static final String ALL_VERSIONS_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
+    private static final String ALL_VERSIONS_PROPERTY_NAME_SUFFIX = "AllVersions";
 
     public static boolean checkGetAllFunctionWithMilestoningContext(SimpleFunctionExpression func)
     {
@@ -58,14 +58,14 @@ public class MilestoningDatePropagationHelper {
         }
     }
 
-    public static boolean checkForMapOrExists(SimpleFunctionExpression func)
+    public static boolean checkForFilter(SimpleFunctionExpression func)
     {
-        return ("map".equals(func._functionName()) || "exists".equals(func._functionName()));
+        return "filter".equals(func._functionName());
     }
 
     public static void updateMilestoningPropagationContext(SimpleFunctionExpression func, ProcessingContext processingContext)
     {
-        if(!func.getName().endsWith(RANGE_PROPERTY_NAME_SUFFIX) && !func.getName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX))
+        if(!func._func()._functionName().endsWith(RANGE_PROPERTY_NAME_SUFFIX) && !func._func()._functionName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX))
         {
             Class target = (Class) func._genericType()._rawType();
             MilestoningStereotype targetTypeMilestoningStereotype = Milestoning.temporalStereotypes(target._stereotypes()).get(0);
@@ -78,8 +78,12 @@ public class MilestoningDatePropagationHelper {
         }
     }
 
-    public static boolean checkForAutoMapOrSubType(ValueSpecification parameter)
+    public static void updateMilestoningPropagationContextForFilter(SimpleFunctionExpression func, ProcessingContext processingContext)
     {
-        return (parameter instanceof VariableExpression && ((VariableExpression) parameter)._name() == "v_automap") || (parameter instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) parameter)._functionName() == "subType");
+        ValueSpecification parameterValue = func._parametersValues().getFirst();
+        if(parameterValue instanceof SimpleFunctionExpression && checkGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) parameterValue))
+        {
+            setMilestoningPropagationContext((SimpleFunctionExpression) parameterValue, processingContext);
+        }
     }
 }

@@ -57,8 +57,8 @@ import java.util.function.BiConsumer;
 public class Milestoning
 {
     private static final String GENERATED_MILESTONING_PATH_SUFFIX = "meta::pure::profiles::" + "milestoning" + "@" + "generatedmilestoningdateproperty";
-    private static final String RANGE_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
-    private static final String ALL_VERSIONS_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
+    public static final String RANGE_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
+    public static final String ALL_VERSIONS_PROPERTY_NAME_SUFFIX = "AllVersions";
 
     private enum GeneratedMilestoningStereotype
     {
@@ -562,8 +562,8 @@ public class Milestoning
     {
         Class source = (Class) getMilestonedPropertyOwningType(func);
         Class target = (Class) func._genericType()._rawType();
-        MilestoningStereotype sourceTypeMilestoningStereotype = Milestoning.temporalStereotypes(source._stereotypes()).get(0);
-        MilestoningStereotype targetTypeMilestoningStereotype = Milestoning.temporalStereotypes(target._stereotypes()).get(0);
+        MilestoningStereotype sourceTypeMilestoningStereotype = !Milestoning.temporalStereotypes(source._stereotypes()).isEmpty() ? Milestoning.temporalStereotypes(source._stereotypes()).get(0) : null;
+        MilestoningStereotype targetTypeMilestoningStereotype = !Milestoning.temporalStereotypes(target._stereotypes()).isEmpty() ? Milestoning.temporalStereotypes(target._stereotypes()).get(0) : null;
         return Tuples.pair(sourceTypeMilestoningStereotype, targetTypeMilestoningStereotype);
     }
 

@@ -200,9 +200,8 @@ public class HelperValueSpecificationBuilder
                 List<Variable> lambdaParams = new FastList<>();
                 lambdaParams.add(automaLambdaparam);
                 automapLambda.parameters = lambdaParams;
-                if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, appliedProperty.parameters.size()))
+                if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, appliedProperty.parameters.size()) && processedParameters.get(0) instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) processedParameters.get(0))._func() instanceof AbstractProperty && Milestoning.isGeneratedMilestoningProperty((AbstractProperty<?>) ((SimpleFunctionExpression) processedParameters.get(0))._func(), context))
                 {
-//                    processingContext.milestoningDatePropagationContext.setTopLevelParameter(processedParameters.get(0));
                     MilestoningDatePropagationHelper.updateMilestoningPropagationContext((SimpleFunctionExpression) processedParameters.get(0), processingContext);
                 }
                 List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
@@ -223,8 +222,12 @@ public class HelperValueSpecificationBuilder
                 }
                 if (Milestoning.isGeneratedQualifiedProperty(foundProperty, context))
                 {
-                    MilestoningDatePropagationHelper.setMilestoningPropagationContext((SimpleFunctionExpression) result, processingContext);
-//                    processingContext.milestoningDatePropagationContext.setTopLevelParameter(result);
+                    MilestoningDatePropagationHelper.updateMilestoningPropagationContext((SimpleFunctionExpression) result, processingContext);
+                }
+                else if(foundProperty instanceof QualifiedProperty || foundProperty.getName().endsWith(Milestoning.ALL_VERSIONS_PROPERTY_NAME_SUFFIX) || foundProperty.getName().endsWith(Milestoning.RANGE_PROPERTY_NAME_SUFFIX))
+                {
+                    processingContext.milestoningDatePropagationContext.setProcessingDate(null);
+                    processingContext.milestoningDatePropagationContext.setBusinessDate(null);
                 }
             }
         }
