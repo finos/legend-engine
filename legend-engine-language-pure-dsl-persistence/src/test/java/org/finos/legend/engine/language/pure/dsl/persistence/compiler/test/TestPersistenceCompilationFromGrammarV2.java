@@ -1,6 +1,6 @@
-package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
+package org.finos.legend.engine.language.pure.dsl.persistence.compiler.test;
 
-public class TestPersistenceGrammarRoundtripWithTargetShape extends TestPersistenceGrammarRoundtrip
+public class TestPersistenceCompilationFromGrammarV2 extends TestPersistenceCompilationFromGrammar
 {
     @Override
     protected String targetSingle()

@@ -2,7 +2,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 
 import org.junit.Test;
 
-public class TestPersistenceGrammarParserWithTargetSpecification extends TestPersistenceGrammarParser
+public class TestPersistenceGrammarParserV1 extends TestPersistenceGrammarParser
 {
     @Override
     protected String targetSingle()

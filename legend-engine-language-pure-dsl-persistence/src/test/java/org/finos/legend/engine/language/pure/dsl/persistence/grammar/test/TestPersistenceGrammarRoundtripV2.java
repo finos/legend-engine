@@ -1,23 +1,23 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 
-public class TestPersistenceGrammarRoundtripWithTargetSpecification extends TestPersistenceGrammarRoundtrip
+public class TestPersistenceGrammarRoundtripV2 extends TestPersistenceGrammarRoundtrip
 {
     @Override
     protected String targetSingle()
     {
-        return "Flat";
+        return "SingleFlat";
     }
 
     @Override
     protected String targetMulti()
     {
-        return "GroupedFlat";
+        return "MultiFlat";
     }
 
     @Override
     protected String targetOpaque()
     {
-        return "Nested";
+        return "OpaqueTarget";
     }
 
     @Override
@@ -29,12 +29,12 @@ public class TestPersistenceGrammarRoundtripWithTargetSpecification extends Test
     @Override
     protected String singleFlatTarget()
     {
-        return "targetSpecification";
+        return "singleFlatTarget";
     }
 
     @Override
     protected String parts()
     {
-        return "components";
+        return "parts";
     }
 }

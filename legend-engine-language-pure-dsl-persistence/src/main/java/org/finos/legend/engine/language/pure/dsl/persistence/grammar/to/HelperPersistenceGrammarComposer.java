@@ -200,6 +200,86 @@ public class HelperPersistenceGrammarComposer
         }
     }
 
+    private static class TargetShapeComposer implements TargetShapeVisitor<String>
+    {
+        private final int indentLevel;
+
+        private TargetShapeComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visit(MultiFlatTarget val)
+        {
+            return getTabString(indentLevel) + "target: MultiFlat\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "modelClass: " + val.modelClass + ";\n" +
+                    getTabString(indentLevel + 1) + "transactionScope: " + val.transactionScope + ";\n" +
+                    getTabString(indentLevel + 1) + "parts:\n" +
+                    getTabString(indentLevel + 1) + "[\n" +
+                    renderParts(val, indentLevel + 2) +
+                    getTabString(indentLevel + 1) + "];\n" +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        @Override
+        public String visit(SingleFlatTarget val)
+        {
+            return getTabString(indentLevel) + "target: Flat\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderSingleFlatTargetProperties(val, true, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        @Override
+        public String visit(OpaqueTarget val)
+        {
+            return getTabString(indentLevel) + "target: Nested\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "targetName: " + convertString(val.targetName, true) + ";\n" +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        private static String renderParts(MultiFlatTarget multiFlatTarget, int indentLevel)
+        {
+            StringBuilder builder = new StringBuilder();
+            ListIterate.forEachWithIndex(multiFlatTarget.parts, (part, i) ->
+            {
+                builder.append(getTabString(indentLevel)).append("{\n");
+                builder.append(renderPartProperties(part, indentLevel + 1));
+                builder.append(getTabString(indentLevel)).append(i < multiFlatTarget.parts.size() - 1 ? "},\n" : "}\n");
+            });
+            return builder.toString();
+        }
+
+        private static String renderPartProperties(PropertyAndSingleFlatTarget part, int indentLevel)
+        {
+            return getTabString(indentLevel) + "property: " + part.property + ";\n" +
+                    getTabString(indentLevel) + "singleFlatTarget:\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderSingleFlatTargetProperties(part.singleFlatTarget,false, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        private static String renderSingleFlatTargetProperties(SingleFlatTarget singleFlatTarget, boolean includeModelClass, int indentLevel)
+        {
+            return getTabString(indentLevel) + "targetName: " + convertString(singleFlatTarget.targetName, true) + ";\n" +
+                    (includeModelClass ? getTabString(indentLevel) + "modelClass: " + singleFlatTarget.modelClass + ";\n" : "") +
+                    renderPartitionProperties(singleFlatTarget, indentLevel) +
+                    renderDeduplicationStrategy(singleFlatTarget.deduplicationStrategy, indentLevel) +
+                    renderBatchMode(singleFlatTarget.milestoningMode, indentLevel);
+        }
+
+        private static String renderPartitionProperties(SingleFlatTarget singleFlatTarget, int indentLevel)
+        {
+            return !singleFlatTarget.partitionProperties.isEmpty() ? getTabString(indentLevel) + "partitionProperties: " + "[" +
+                    Lists.immutable.ofAll(singleFlatTarget.partitionProperties).makeString(", ") +
+                    "];\n" : "";
+        }
+    }
+    //TODO: ledav -- remove post migration to update model [START]
+
     private static class TargetSpecificationComposer implements TargetSpecificationVisitor<String>
     {
         private final int indentLevel;
@@ -280,84 +360,7 @@ public class HelperPersistenceGrammarComposer
         }
     }
 
-    private static class TargetShapeComposer implements TargetShapeVisitor<String>
-    {
-        private final int indentLevel;
-
-        private TargetShapeComposer(int indentLevel)
-        {
-            this.indentLevel = indentLevel;
-        }
-
-        @Override
-        public String visit(MultiFlatTarget val)
-        {
-            return getTabString(indentLevel) + "target: MultiFlat\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "modelClass: " + val.modelClass + ";\n" +
-                    getTabString(indentLevel + 1) + "transactionScope: " + val.transactionScope + ";\n" +
-                    getTabString(indentLevel + 1) + "parts:\n" +
-                    getTabString(indentLevel + 1) + "[\n" +
-                    renderParts(val, indentLevel + 2) +
-                    getTabString(indentLevel + 1) + "];\n" +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        @Override
-        public String visit(SingleFlatTarget val)
-        {
-            return getTabString(indentLevel) + "target: Flat\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    renderSingleFlatTargetProperties(val, true, indentLevel + 1) +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        @Override
-        public String visit(OpaqueTarget val)
-        {
-            return getTabString(indentLevel) + "target: Nested\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "targetName: " + convertString(val.targetName, true) + ";\n" +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        private static String renderParts(MultiFlatTarget multiFlatTarget, int indentLevel)
-        {
-            StringBuilder builder = new StringBuilder();
-            ListIterate.forEachWithIndex(multiFlatTarget.parts, (part, i) ->
-            {
-                builder.append(getTabString(indentLevel)).append("{\n");
-                builder.append(renderPartProperties(part, indentLevel + 1));
-                builder.append(getTabString(indentLevel)).append(i < multiFlatTarget.parts.size() - 1 ? "},\n" : "}\n");
-            });
-            return builder.toString();
-        }
-
-        private static String renderPartProperties(PropertyAndSingleFlatTarget part, int indentLevel)
-        {
-            return getTabString(indentLevel) + "property: " + part.property + ";\n" +
-                    getTabString(indentLevel) + "singleFlatTarget:\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    renderSingleFlatTargetProperties(part.singleFlatTarget,false, indentLevel + 1) +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        private static String renderSingleFlatTargetProperties(SingleFlatTarget singleFlatTarget, boolean includeModelClass, int indentLevel)
-        {
-            return getTabString(indentLevel) + "targetName: " + convertString(singleFlatTarget.targetName, true) + ";\n" +
-                    (includeModelClass ? getTabString(indentLevel) + "modelClass: " + singleFlatTarget.modelClass + ";\n" : "") +
-                    renderPartitionProperties(singleFlatTarget, indentLevel) +
-                    renderDeduplicationStrategy(singleFlatTarget.deduplicationStrategy, indentLevel) +
-                    renderBatchMode(singleFlatTarget.milestoningMode, indentLevel);
-        }
-
-        private static String renderPartitionProperties(SingleFlatTarget singleFlatTarget, int indentLevel)
-        {
-            return !singleFlatTarget.partitionProperties.isEmpty() ? getTabString(indentLevel) + "partitionProperties: " + "[" +
-                    Lists.immutable.ofAll(singleFlatTarget.partitionProperties).makeString(", ") +
-                    "];\n" : "";
-        }
-    }
+    //TODO: ledav -- remove post migration to update model [END]
 
     private static class DeduplicationStrategyComposer implements DeduplicationStrategyVisitor<String>
     {

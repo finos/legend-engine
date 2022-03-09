@@ -7,7 +7,10 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
 {
     protected abstract String targetSingle();
     protected abstract String targetMulti();
-    protected abstract String targetNested();
+    protected abstract String targetOpaque();
+    protected abstract String batchMode();
+    protected abstract String singleFlatTarget();
+    protected abstract String parts();
 
     @Override
     protected String getDuplicatedElementTestCode()
@@ -185,11 +188,11 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + singleFlatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -255,11 +258,11 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + singleFlatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -328,11 +331,11 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + singleFlatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -345,7 +348,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [53:9-64:9]: Target component property must refer to a Class. The property 'property1' refers to a String");
+                "}\n", "COMPILATION error at [53:9-64:9]: Target " + parts().substring(0, parts().length() - 1) + " property must refer to a Class. The property 'property1' refers to a String");
     }
 
     @Test
@@ -401,11 +404,11 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + singleFlatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -552,11 +555,11 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "    {\n" +
                 "      modelClass: org::dxl::Zoo;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: 'zookeeper';\n" +
-                "          targetSpecification:\n" +
+                "          " + singleFlatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'PersonDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -568,7 +571,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "        },\n" +
                 "        {\n" +
                 "          property: 'owner';\n" +
-                "          targetSpecification:\n" +
+                "          " + singleFlatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'PersonDataset2';\n" +
                 "            batchMode: BitemporalSnapshot\n" +
