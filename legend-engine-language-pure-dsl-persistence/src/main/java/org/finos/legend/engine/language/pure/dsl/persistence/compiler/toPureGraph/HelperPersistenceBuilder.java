@@ -244,7 +244,7 @@ public class HelperPersistenceBuilder
                     ._modelClass(modelClass)
                     ._partitionProperties(ListIterate.collect(singleFlatTarget.partitionProperties, p -> validateAndResolveProperty(modelClass, p, singleFlatTarget.sourceInformation, context)))
                     ._deduplicationStrategy(buildDeduplicationStrategy(singleFlatTarget.deduplicationStrategy, modelClass, context))
-                    ._milestoningMode(buildMilestoningMode(singleFlatTarget.milestoningMode, modelClass, context));
+                    ._milestoningMode(buildMilestoningMode(singleFlatTarget.batchMode, modelClass, context));
         }
 
         private Root_meta_pure_persistence_metamodel_target_PropertyAndSingleFlatTarget resolvePart(PropertyAndSingleFlatTarget propertyAndSingleFlatTarget, Class<?> modelClass, CompileContext context)

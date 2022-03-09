@@ -268,7 +268,7 @@ public class HelperPersistenceGrammarComposer
                     (includeModelClass ? getTabString(indentLevel) + "modelClass: " + singleFlatTarget.modelClass + ";\n" : "") +
                     renderPartitionProperties(singleFlatTarget, indentLevel) +
                     renderDeduplicationStrategy(singleFlatTarget.deduplicationStrategy, indentLevel) +
-                    renderBatchMode(singleFlatTarget.milestoningMode, indentLevel);
+                    renderBatchMode(singleFlatTarget.batchMode, indentLevel);
         }
 
         private static String renderPartitionProperties(SingleFlatTarget singleFlatTarget, int indentLevel)

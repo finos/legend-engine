@@ -10,7 +10,7 @@ public class SingleFlatTarget extends TargetShape
     public String modelClass;
     public List<String> partitionProperties;
     public DeduplicationStrategy deduplicationStrategy;
-    public BatchMilestoningMode milestoningMode;
+    public BatchMilestoningMode batchMode;
 
     @Override
     public <T> T accept(TargetShapeVisitor<T> visitor)
