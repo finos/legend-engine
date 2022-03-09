@@ -32,3 +32,8 @@ ROLE:                                       'role';
 BIGQUERY_DSP:                               'BigQuery';
 PROJECT:                                    'projectId';
 DATASET:                                    'defaultDataset';
+
+DATABRICKS:                                 'Databricks';
+PROTOCOL:                                   'protocol';
+HTTP_PATH:                                  'httpPath';
+HOSTNAME:                                   'hostname';

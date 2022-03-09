@@ -30,6 +30,7 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
     private static ImmutableList<DatabaseAuthenticationFlow> FLOWS = Lists.immutable.of(
             new H2StaticWithTestUserPasswordFlow(),
             new SnowflakeWithKeyPairFlow(),
+            new DatabricksWithApiTokenFlow(),
             new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
             new SqlServerStaticWithUserPasswordFlow()
     );

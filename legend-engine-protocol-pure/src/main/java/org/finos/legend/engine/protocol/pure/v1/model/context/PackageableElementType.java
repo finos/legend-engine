@@ -25,6 +25,8 @@ public enum PackageableElementType
     RUNTIME,
     MAPPING,
     SERVICE,
+    PERSISTENCE,
+    PERSISTENCE_CONTEXT,
     FLATTEN,
     DATASTORESPEC,
     DIAGRAM,

@@ -53,5 +53,6 @@ jobs:
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build + Run Integration Tests
         run: |
+          mvn clean install -DskipTests=true
           mvn -pl legend-engine-executionPlan-execution-store-relational-connection  -Dtest="ExternalIntegration*Snowflake*" test
           mvn -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*Snowflake*" test
