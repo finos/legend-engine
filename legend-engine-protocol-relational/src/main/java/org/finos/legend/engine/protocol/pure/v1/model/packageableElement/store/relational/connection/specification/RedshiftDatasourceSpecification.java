@@ -7,7 +7,7 @@ public class RedshiftDatasourceSpecification extends DatasourceSpecification {
     public String databaseName;
     public String clusterID;
     public String region;
-    public String endPointURL;
+    public String endpointURL;
 
 
     @Override

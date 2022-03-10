@@ -464,7 +464,7 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "    name: 'database1';\n" +
                 "    region: 'east';\n" +
                 "    clusterID: 'cluster';\n" +
-                "    endPointURL: 'http://www.example.com';\n" +
+                "    endpointURL: 'http://www.example.com';\n" +
                 "  };\n" +
                 "  auth: UserNamePassword\n" +
                 "  {\n" +

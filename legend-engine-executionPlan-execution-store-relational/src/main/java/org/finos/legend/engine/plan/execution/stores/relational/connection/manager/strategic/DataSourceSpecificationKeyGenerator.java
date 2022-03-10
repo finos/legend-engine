@@ -104,7 +104,7 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     redshiftDataSourceSpecification.databaseName,
                     redshiftDataSourceSpecification.clusterID,
                     redshiftDataSourceSpecification.region,
-                    redshiftDataSourceSpecification.endPointURL
+                    redshiftDataSourceSpecification.endpointURL
                     );
         }
         return null;

@@ -159,7 +159,7 @@ public class DataSourceSpecificationParseTreeWalker
         DataSourceSpecificationParserGrammar.DbHostContext host = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbHost(), "dbHost", redshiftSpec.sourceInformation);
         DataSourceSpecificationParserGrammar.DbPortContext port = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbPort(), "port", redshiftSpec.sourceInformation);
         DataSourceSpecificationParserGrammar.RegionContext region = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.region(), "region", redshiftSpec.sourceInformation);
-        DataSourceSpecificationParserGrammar.DbNameContext database = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbName(), "clusterID", redshiftSpec.sourceInformation);
+        DataSourceSpecificationParserGrammar.DbNameContext database = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbName(), "name", redshiftSpec.sourceInformation);
         DataSourceSpecificationParserGrammar.EndpointURLContext endpoint = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.endpointURL(), "endpointURL", redshiftSpec.sourceInformation);
 
         redshiftSpec.clusterID = PureGrammarParserUtility.fromGrammarString(clusterID.STRING().getText(), true);
@@ -167,7 +167,7 @@ public class DataSourceSpecificationParseTreeWalker
         redshiftSpec.port = Integer.parseInt(port.INTEGER().getText());
         redshiftSpec.region = PureGrammarParserUtility.fromGrammarString(region.STRING().getText(), true);
         redshiftSpec.databaseName = PureGrammarParserUtility.fromGrammarString(database.STRING().getText(), true);
-        redshiftSpec.endPointURL = PureGrammarParserUtility.fromGrammarString(endpoint.STRING().getText(), true);
+        redshiftSpec.endpointURL = PureGrammarParserUtility.fromGrammarString(endpoint.STRING().getText(), true);
 
         return redshiftSpec;
     }

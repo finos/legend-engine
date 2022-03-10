@@ -9,7 +9,7 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
     private String clusterID;
 
     private String region;
-    private String endPointURL;
+    private String endpointURL;
 
     public String getHost()
     {
@@ -38,16 +38,16 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
 
     public String getEndPointURL()
     {
-        return endPointURL;
+        return endpointURL;
     }
 
-    public RedshiftDataSourceSpecificationKey(String host, int port, String databaseName, String clusterID, String region, String endPointURL) {
+    public RedshiftDataSourceSpecificationKey(String host, int port, String databaseName, String clusterID, String region, String endpointURL) {
         this.host = host;
         this.port = port;
         this.databaseName = databaseName;
         this.clusterID = clusterID;
         this.region = region;
-        this.endPointURL = endPointURL;
+        this.endpointURL = endpointURL;
     }
 
 
@@ -61,7 +61,7 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
                 ", port='" + port + '\'' +
                 ", databaseName='" + databaseName + '\'' +
                 ", clusterID='" + clusterID + '\'' +
-                ", endPointURL='" + endPointURL + '\'' +
+                ", endpointURL='" + endpointURL + '\'' +
                 '}';
     }
 
@@ -74,6 +74,6 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
                 "port:" + port + "_" +
                 "databaseName:" + databaseName + "_" +
                 "clusterID:" + clusterID +"_"+
-                "endPointURL:" + endPointURL ;
+                "endpointURL:" + endpointURL ;
     }
 }

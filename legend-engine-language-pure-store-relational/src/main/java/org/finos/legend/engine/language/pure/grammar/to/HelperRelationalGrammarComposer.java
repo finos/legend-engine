@@ -659,7 +659,7 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "name: " + convertString(spec.databaseName, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "region: " + convertString(spec.region, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "clusterID: " + convertString(spec.clusterID, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "endPointURL: " + convertString(spec.endPointURL, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "endpointURL: " + convertString(spec.endpointURL, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
 
