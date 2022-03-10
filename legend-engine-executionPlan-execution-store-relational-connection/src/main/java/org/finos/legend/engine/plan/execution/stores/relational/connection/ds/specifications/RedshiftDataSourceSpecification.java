@@ -16,19 +16,41 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.RedshiftDataSourceSpecificationKey;
 
-import java.util.Optional;
 import java.util.Properties;
 
 public class RedshiftDataSourceSpecification extends DataSourceSpecification
 {
 
-    public RedshiftDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
+    public RedshiftDataSourceSpecification(RedshiftDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
+    {
+        this(key, databaseManager, authenticationStrategy,addPropertiesFromDataSource(key));
+    }
+
+    private RedshiftDataSourceSpecification(RedshiftDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
         super(key, databaseManager, authenticationStrategy, extraUserProperties);
+    }
+
+    private static Properties addPropertiesFromDataSource(RedshiftDataSourceSpecificationKey key)
+    {
+        java.util.Properties props =  new Properties();
+        props.put(RedshiftManager.CLUSTER_ID,key.getClusterID());
+        props.put(RedshiftManager.REGION,key.getRegion());
+        return props;
+    }
 
 
+    @Override
+    protected String getJdbcUrl(String host, int port, String databaseName, Properties properties)
+    {
+        return super.getJdbcUrl(
+                ((RedshiftDataSourceSpecificationKey)this.datasourceKey).getHost(),
+                ((RedshiftDataSourceSpecificationKey)this.datasourceKey).getPort(),
+                ((RedshiftDataSourceSpecificationKey)this.datasourceKey).getDatabaseName(),
+                properties);
     }
 }

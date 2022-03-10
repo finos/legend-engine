@@ -37,3 +37,7 @@ DATABRICKS:                                 'Databricks';
 PROTOCOL:                                   'protocol';
 HTTP_PATH:                                  'httpPath';
 HOSTNAME:                                   'hostname';
+
+REDSHIFT:                                   'Redshift';
+CLUSTER_ID:                                 'clusterID';
+ENDPOINT_URL:                               'endPointURL';

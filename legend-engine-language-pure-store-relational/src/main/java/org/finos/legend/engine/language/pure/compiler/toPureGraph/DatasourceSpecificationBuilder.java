@@ -96,6 +96,17 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _bigquery._defaultDataset(bigQueryDatasourceSpecification.defaultDataset);
             return _bigquery;
         }
+         else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
+        {
+            RedshiftDatasourceSpecification redshiftDatasourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
+            Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification redshiftSpec = new Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification_Impl("");
+            redshiftSpec._clusterID(redshiftDatasourceSpecification.clusterID);
+            redshiftSpec._database(redshiftDatasourceSpecification.databaseName);
+            redshiftSpec._endpointURL(redshiftDatasourceSpecification.endPointURL);
+            redshiftSpec._host(redshiftDatasourceSpecification.host);
+            redshiftSpec._port(redshiftDatasourceSpecification.port);
+            redshiftSpec._region(redshiftDatasourceSpecification.region);
+        }
         return null;
     }
 }

@@ -17,12 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.datasource;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
 
 import java.util.Optional;
 
@@ -154,5 +149,26 @@ public class DataSourceSpecificationParseTreeWalker
         DataSourceSpecificationParserGrammar.DefaultDatasetContext defaultDatasetCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.defaultDataset(), "defaultDataset", dsSpec.sourceInformation);
         dsSpec.defaultDataset = PureGrammarParserUtility.fromGrammarString(defaultDatasetCtx.STRING().getText(), true);
         return dsSpec;
+    }
+
+
+    public RedshiftDatasourceSpecification visitRedshiftDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.RedshiftDatasourceSpecificationContext ctx)
+    {
+        RedshiftDatasourceSpecification redshiftSpec = new RedshiftDatasourceSpecification();
+        DataSourceSpecificationParserGrammar.ClusterIDContext clusterID = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.clusterID(), "clusterID", redshiftSpec.sourceInformation);
+        DataSourceSpecificationParserGrammar.DbHostContext host = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbHost(), "dbHost", redshiftSpec.sourceInformation);
+        DataSourceSpecificationParserGrammar.DbPortContext port = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbPort(), "port", redshiftSpec.sourceInformation);
+        DataSourceSpecificationParserGrammar.RegionContext region = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.region(), "region", redshiftSpec.sourceInformation);
+        DataSourceSpecificationParserGrammar.DbNameContext database = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbName(), "clusterID", redshiftSpec.sourceInformation);
+        DataSourceSpecificationParserGrammar.EndpointURLContext endpoint = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.endpointURL(), "endpointURL", redshiftSpec.sourceInformation);
+
+        redshiftSpec.clusterID = PureGrammarParserUtility.fromGrammarString(clusterID.STRING().getText(), true);
+        redshiftSpec.host = PureGrammarParserUtility.fromGrammarString(host.STRING().getText(), true);
+        redshiftSpec.port = Integer.parseInt(port.INTEGER().getText());
+        redshiftSpec.region = PureGrammarParserUtility.fromGrammarString(region.STRING().getText(), true);
+        redshiftSpec.databaseName = PureGrammarParserUtility.fromGrammarString(database.STRING().getText(), true);
+        redshiftSpec.endPointURL = PureGrammarParserUtility.fromGrammarString(endpoint.STRING().getText(), true);
+
+        return redshiftSpec;
     }
 }

@@ -198,6 +198,11 @@
             <artifactId>mssql-jdbc</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.amazon.redshift</groupId>
+            <artifactId>redshift-jdbc42</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- DRIVERS -->
 

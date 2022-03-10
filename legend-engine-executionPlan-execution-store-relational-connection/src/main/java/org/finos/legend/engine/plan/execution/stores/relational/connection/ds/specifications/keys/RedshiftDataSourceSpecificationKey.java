@@ -6,10 +6,40 @@ public class RedshiftDataSourceSpecificationKey implements DataSourceSpecificati
     private String host;
     private int port;
     private String databaseName;
-    public String clusterID;
+    private String clusterID;
 
     private String region;
     private String endPointURL;
+
+    public String getHost()
+    {
+        return host;
+    }
+
+    public int getPort()
+    {
+        return port;
+    }
+
+    public String getDatabaseName()
+    {
+        return databaseName;
+    }
+
+    public String getClusterID()
+    {
+        return clusterID;
+    }
+
+    public String getRegion()
+    {
+        return region;
+    }
+
+    public String getEndPointURL()
+    {
+        return endPointURL;
+    }
 
     public RedshiftDataSourceSpecificationKey(String host, int port, String databaseName, String clusterID, String region, String endPointURL) {
         this.host = host;
