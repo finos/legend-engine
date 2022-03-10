@@ -8,6 +8,7 @@ import java.util.List;
 public class FlatTarget extends TargetShape
 {
     public String modelClass;
+    public String targetName;
     public List<String> partitionProperties;
     public DeduplicationStrategy deduplicationStrategy;
     public BatchMilestoningMode batchMode;

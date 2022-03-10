@@ -5,11 +5,11 @@ import org.junit.Test;
 
 public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-    protected abstract String targetSingle();
+    protected abstract String targetFlat();
     protected abstract String targetMulti();
     protected abstract String targetOpaque();
     protected abstract String batchMode();
-    protected abstract String singleFlatTarget();
+    protected abstract String flatTarget();
     protected abstract String parts();
 
     @Test
@@ -36,7 +36,7 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            partitionProperties: [propertyA, propertyB];\n" +
@@ -57,7 +57,7 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "        },\n" +
                 "        {\n" +
                 "          property: property2;\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
                 "            deduplicationStrategy: OpaqueDeduplication;\n" +

@@ -169,6 +169,10 @@ public class PersistenceParseTreeWalker
         StreamingPersister streaming = new StreamingPersister();
         streaming.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
+        // target shape
+        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "target", streaming.sourceInformation);
+        streaming.targetShape = visitTargetShape(targetShapeContext);
+
         return streaming;
     }
 
@@ -178,7 +182,7 @@ public class PersistenceParseTreeWalker
         batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // target shape
-        PersistenceParserGrammar.TargetShapeContext targetShapeContext = ctx.targetShape();
+        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "target", batch.sourceInformation);
         batch.targetShape = visitTargetShape(targetShapeContext);
         return batch;
     }

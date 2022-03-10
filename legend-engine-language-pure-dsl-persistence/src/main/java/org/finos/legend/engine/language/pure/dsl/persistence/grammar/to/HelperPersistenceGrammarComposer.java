@@ -250,7 +250,7 @@ public class HelperPersistenceGrammarComposer
         private static String renderPartProperties(PropertyAndFlatTarget part, int indentLevel)
         {
             return getTabString(indentLevel) + "property: " + part.property + ";\n" +
-                    getTabString(indentLevel) + "singleFlatTarget:\n" +
+                    getTabString(indentLevel) + "flatTarget:\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderSingleFlatTargetProperties(part.flatTarget,false, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";

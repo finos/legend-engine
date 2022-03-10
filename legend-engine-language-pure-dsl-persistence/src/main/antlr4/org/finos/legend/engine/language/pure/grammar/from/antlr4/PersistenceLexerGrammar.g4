@@ -53,39 +53,19 @@ TARGET_SHAPE_MULTI_TXN_SCOPE:               'transactionScope';
 TARGET_SHAPE_MULTI_PARTS:                   'parts';
 
 TARGET_PART_PROPERTY:                       'property';
-TARGET_PART_SINGLE_FLAT_TARGET:             'singleFlatTarget';
+TARGET_PART_FLAT_TARGET:                    'flatTarget';
 
 TXN_SCOPE_SINGLE:                           'SINGLE_TARGET';
 TXN_SCOPE_ALL:                              'ALL_TARGETS';
 
 // SINGLE
-TARGET_SHAPE_SINGLE:                        'SingleFlat';
+TARGET_SHAPE_SINGLE:                        'Flat';
 TARGET_SHAPE_SINGLE_PARTITION_PROPERTIES:   'partitionProperties';
 TARGET_SHAPE_SINGLE_DEDUPLICATION:          'deduplicationStrategy';
 TARGET_SHAPE_SINGLE_MILESTONING:            'batchMode';
 
 // OPAQUE
 TARGET_SHAPE_OPAQUE:                        'OpaqueTarget';
-
-//TODO: ledav -- remove post migration to update model [START]
-
-//**********
-// TARGET SPECIFICATION
-//**********
-
-// GROUPED
-TARGET_SPEC_GROUPED:                        'GroupedFlat';
-TARGET_SPEC_GROUPED_COMPONENTS:             'components';
-
-TARGET_COMPONENT_TARGET_SPEC:               'targetSpecification';
-
-// FLAT
-TARGET_SPEC_FLAT:                           'Flat';
-
-// NESTED
-TARGET_SPEC_NESTED:                         'Nested';
-
-//TODO: ledav -- remove post migration to update model [END]
 
 // DEDUPLICATION VALUES
 DEDUPLICATION_NONE:                         'NoDeduplication';

@@ -3,9 +3,9 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.test;
 public class TestPersistenceCompilationFromGrammarV2 extends TestPersistenceCompilationFromGrammar
 {
     @Override
-    protected String targetSingle()
+    protected String targetFlat()
     {
-        return "SingleFlat";
+        return "Flat";
     }
 
     @Override
@@ -27,9 +27,9 @@ public class TestPersistenceCompilationFromGrammarV2 extends TestPersistenceComp
     }
 
     @Override
-    protected String singleFlatTarget()
+    protected String flatTarget()
     {
-        return "singleFlatTarget";
+        return "flatTarget";
     }
 
     @Override

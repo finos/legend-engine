@@ -10,11 +10,11 @@ import java.util.List;
 
 public abstract class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
 {
-    protected abstract String targetSingle();
+    protected abstract String targetFlat();
     protected abstract String targetMulti();
     protected abstract String targetOpaque();
     protected abstract String batchMode();
-    protected abstract String singleFlatTarget();
+    protected abstract String flatTarget();
     protected abstract String parts();
 
     @Override
@@ -38,7 +38,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -70,7 +70,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -95,7 +95,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -127,7 +127,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -152,7 +152,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -181,7 +181,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  trigger: OpaqueTrigger;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -209,7 +209,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -237,7 +237,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -262,7 +262,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -307,7 +307,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -320,7 +320,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -350,7 +350,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  persister: Streaming\n" +
                 "  {\n" +
                 "  }\n" +
-                "}\n");
+                "}\n", "PARSER error at [11:14-13:3]: Field 'target' is required");
     }
 
     @Test
@@ -369,7 +369,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  persister: Batch\n" +
                 "  {\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [13:3]: Unexpected token. Valid alternatives: ['target']");
+                "}\n", "PARSER error at [11:14-13:3]: Field 'target' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -383,7 +383,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -393,7 +393,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -404,9 +404,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [23:5-10]: Unexpected token");
-        //TODO: ledav -- remove post migration to update model
-//                "}\n", "PARSER error at [11:14-33:3]: Field 'target' should be specified only once");
+                "}\n", "PARSER error at [11:14-33:3]: Field 'target' should be specified only once");
     }
 
     /**********
@@ -435,7 +433,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      [\n" +
                 "        {\n" +
                 "          property: 'Foo';\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            " + batchMode() + ": AppendOnly\n" +
@@ -470,7 +468,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      [\n" +
                 "        {\n" +
                 "          property: 'Foo';\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            " + batchMode() + ": AppendOnly\n" +
@@ -508,7 +506,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      [\n" +
                 "        {\n" +
                 "          property: 'Foo';\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            " + batchMode() + ": AppendOnly\n" +
@@ -543,7 +541,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      [\n" +
                 "        {\n" +
                 "          property: 'Foo';\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            " + batchMode() + ": AppendOnly\n" +
@@ -601,7 +599,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      [\n" +
                 "        {\n" +
                 "          property: 'Foo';\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            " + batchMode() + ": AppendOnly\n" +
@@ -616,7 +614,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      [\n" +
                 "        {\n" +
                 "          property: 'Foo';\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            " + batchMode() + ": AppendOnly\n" +
@@ -651,7 +649,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      " + batchMode() + ": AppendOnly\n" +
@@ -675,7 +673,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -705,7 +703,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      " + batchMode() + ": AppendOnly\n" +
@@ -729,7 +727,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -759,7 +757,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -790,7 +788,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -821,7 +819,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -841,7 +839,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -879,7 +877,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -902,7 +900,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -931,7 +929,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -954,7 +952,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -983,7 +981,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1007,7 +1005,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1037,7 +1035,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1061,7 +1059,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1091,7 +1089,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1120,7 +1118,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1161,7 +1159,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1184,7 +1182,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1213,7 +1211,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1237,7 +1235,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1267,7 +1265,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1291,7 +1289,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1321,7 +1319,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1346,7 +1344,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1377,7 +1375,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1402,7 +1400,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1433,7 +1431,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1458,7 +1456,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1489,7 +1487,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1519,7 +1517,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1559,7 +1557,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1583,7 +1581,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1613,7 +1611,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1637,7 +1635,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -1678,7 +1676,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            partitionProperties: [propertyA, propertyB];\n" +
@@ -1697,7 +1695,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "        },\n" +
                 "        {\n" +
                 "          property: property2;\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            partitionProperties: [propertyA, propertyB];\n" +
@@ -1718,7 +1716,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "        },\n" +
                 "        {\n" +
                 "          property: property3;\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
                 "            deduplicationStrategy: OpaqueDeduplication;\n" +

@@ -3,9 +3,9 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 public class TestPersistenceGrammarRoundtripV2 extends TestPersistenceGrammarRoundtrip
 {
     @Override
-    protected String targetSingle()
+    protected String targetFlat()
     {
-        return "SingleFlat";
+        return "Flat";
     }
 
     @Override
@@ -27,9 +27,9 @@ public class TestPersistenceGrammarRoundtripV2 extends TestPersistenceGrammarRou
     }
 
     @Override
-    protected String singleFlatTarget()
+    protected String flatTarget()
     {
-        return "singleFlatTarget";
+        return "flatTarget";
     }
 
     @Override

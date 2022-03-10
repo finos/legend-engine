@@ -5,9 +5,9 @@ import org.junit.Test;
 public class TestPersistenceGrammarParserV2 extends TestPersistenceGrammarParser
 {
     @Override
-    protected String targetSingle()
+    protected String targetFlat()
     {
-        return "SingleFlat";
+        return "Flat";
     }
 
     @Override
@@ -29,9 +29,9 @@ public class TestPersistenceGrammarParserV2 extends TestPersistenceGrammarParser
     }
 
     @Override
-    protected String singleFlatTarget()
+    protected String flatTarget()
     {
-        return "singleFlatTarget";
+        return "flatTarget";
     }
 
     @Override

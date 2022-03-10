@@ -5,11 +5,11 @@ import org.junit.Test;
 
 public abstract class TestPersistenceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
-    protected abstract String targetSingle();
+    protected abstract String targetFlat();
     protected abstract String targetMulti();
     protected abstract String targetOpaque();
     protected abstract String batchMode();
-    protected abstract String singleFlatTarget();
+    protected abstract String flatTarget();
     protected abstract String parts();
 
     @Override
@@ -31,7 +31,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -68,7 +68,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -126,7 +126,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
@@ -192,7 +192,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -262,7 +262,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -335,7 +335,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -408,7 +408,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -470,7 +470,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetSingle() + "\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
@@ -559,7 +559,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      [\n" +
                 "        {\n" +
                 "          property: 'zookeeper';\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'PersonDataset1';\n" +
                 "            batchMode: AppendOnly\n" +
@@ -571,7 +571,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "        },\n" +
                 "        {\n" +
                 "          property: 'owner';\n" +
-                "          " + singleFlatTarget() + ":\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'PersonDataset2';\n" +
                 "            batchMode: BitemporalSnapshot\n" +
