@@ -18,6 +18,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
@@ -25,8 +26,11 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.BigQueryDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.DatabricksDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -78,6 +82,14 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
             return new StaticDataSourceSpecification(
                     (StaticDataSourceSpecificationKey) key,
                     DatabaseManager.fromString(connection.type.name()),
+                    authenticationStrategy
+            );
+        }
+        else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
+        {
+            return new DatabricksDataSourceSpecification(
+                    (DatabricksDataSourceSpecificationKey) key,
+                    new DatabricksManager(),
                     authenticationStrategy
             );
         }

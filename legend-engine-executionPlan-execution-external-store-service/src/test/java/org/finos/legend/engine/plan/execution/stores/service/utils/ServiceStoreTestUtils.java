@@ -70,6 +70,11 @@ public class ServiceStoreTestUtils
 
     public static SingleExecutionPlan buildPlanForQuery(String grammar)
     {
+        return buildPlanForQuery(grammar, "meta::external::store::service::showcase::mapping::ServiceStoreMapping", "meta::external::store::service::showcase::runtime::ServiceStoreRuntime");
+    }
+
+    public static SingleExecutionPlan buildPlanForQuery(String grammar, String mapping, String runtime)
+    {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(grammar);
         PureModel pureModel = Compiler.compile(contextData, null, null);
 
@@ -81,8 +86,8 @@ public class ServiceStoreTestUtils
 
         return PlanGenerator.generateExecutionPlan(
                 HelperValueSpecificationBuilder.buildLambda(((Lambda) queryFunctionExpressions.body.get(0)).body, ((Lambda) queryFunctionExpressions.body.get(0)).parameters, pureModel.getContext()),
-                pureModel.getMapping("meta::external::store::service::showcase::mapping::ServiceStoreMapping"),
-                pureModel.getRuntime("meta::external::store::service::showcase::runtime::ServiceStoreRuntime"),
+                pureModel.getMapping(mapping),
+                pureModel.getRuntime(runtime),
                 null,
                 pureModel,
                 "vX_X_X",

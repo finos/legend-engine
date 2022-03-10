@@ -16,7 +16,7 @@ public class Test_ExternalFormat_UsingPureClient
                     CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
                     // NOTE: temporarily ignore these tests until we bring extensions back into Legend
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format", executionSupport.getProcessorSupport(), ci -> !ci.getName().equals("transform_testClassWithMapToProtoBuf__Boolean_1_") && PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::language", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::shared", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::store", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));

@@ -22,7 +22,6 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.*;
@@ -212,7 +211,7 @@ public class HelperServiceStoreClassMappingBuilder
     {
         Root_meta_external_shared_format_binding_Binding binding = rootClassMapping._servicesMapping().getAny()._service()._response()._binding();
 
-        ExternalFormatExtension schemaExtension = getExtension(binding);
+        ExternalFormatExtension schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding);
         Root_meta_external_shared_format_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(binding, context);
 
         if (bindingDetail instanceof Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail)
@@ -307,7 +306,7 @@ public class HelperServiceStoreClassMappingBuilder
             throw new EngineException("Response type of source service should match mapping class. Found response type : " + getElementFullPath(sourceDataType, context.pureModel.getExecutionSupport())+ " does not match mapping class : " + getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        RichIterable<String> serviceParameters = serviceMapping._service()._parameters().collect(param -> param._name());
+        RichIterable<String> requiredServiceParameters = serviceMapping._service()._parameters().collectIf(Root_meta_external_store_service_metamodel_ServiceParameter::_required, Root_meta_external_store_service_metamodel_ServiceParameter::_name);
         RichIterable<String> mappedParameters = serviceMapping._parameterMappings() == null ? FastList.newList() : serviceMapping._parameterMappings().collect(pm -> pm._serviceParameter()._name());
 
         List<String> parametersMappedMoreThanOnce = mappedParameters.select(e -> Collections.frequency(mappedParameters.toList(), e) > 1).toSet().toList();
@@ -316,9 +315,9 @@ public class HelperServiceStoreClassMappingBuilder
         {
             throw new EngineException("Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [" + String.join(",", parametersMappedMoreThanOnce) + "].", sourceInformation, EngineErrorType.COMPILATION);
         }
-        if (!mappedParameters.containsAll(serviceParameters.toList()))
+        if (!mappedParameters.containsAll(requiredServiceParameters.toList()))
         {
-            throw new EngineException("All Service Parameters should be mapped. Service Parameters : [" + String.join(",", serviceParameters) + "]. Mapped Parameters : [" + String.join(",", mappedParameters) + "].", sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("All required service parameters should be mapped. Required Service Parameters : [" + String.join(",", requiredServiceParameters) + "]. Mapped Parameters : [" + String.join(",", mappedParameters) + "].", sourceInformation, EngineErrorType.COMPILATION);
         }
     }
 
@@ -381,13 +380,5 @@ public class HelperServiceStoreClassMappingBuilder
         {
             throw new EngineException("Unable to infer type for service parameter : " + serviceParameterMapping._serviceParameter()._name(), sourceInformation, EngineErrorType.COMPILATION);
         }
-    }
-
-    private static ExternalFormatExtension getExtension(Root_meta_external_shared_format_binding_Binding binding)
-    {
-        return ExternalFormatExtensionLoader.extensions().values().stream()
-                .filter(ext -> ext.getContentTypes().contains(binding._contentType()))
-                .findFirst()
-                .orElseThrow(() -> new EngineException("Unknown contentType '" + binding._contentType() + "'", SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION));  // Should never reach here as binding should be compiled before
     }
 }

@@ -38,9 +38,12 @@ import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamRead
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryPropertyGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchMergeExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics;
+
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.ISerializationWriter;
 import org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions;
@@ -146,11 +149,13 @@ public class GeneratePureConfig
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics", IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IPlatformPureExpressionExecutionNodeSerializeSpecifics", IPlatformPureExpressionExecutionNodeSerializeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics", IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics.class);
+        MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics", IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "ISerializationWriter", ISerializationWriter.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IGraphSerializer", IGraphSerializer.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IStoreStreamReadingExecutionNodeSpecifics", IStoreStreamReadingExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IStoreStreamReadingExecutionNodeContext", IStoreStreamReadingExecutionNodeContext.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IInMemoryRootGraphFetchExecutionNodeSpecifics", IInMemoryRootGraphFetchExecutionNodeSpecifics.class);
+        MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IInMemoryRootGraphFetchMergeExecutionNodeSpecifics", IInMemoryRootGraphFetchMergeExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IInMemoryPropertyGraphFetchExecutionNodeSpecifics", IInMemoryPropertyGraphFetchExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics", IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics", IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics.class);

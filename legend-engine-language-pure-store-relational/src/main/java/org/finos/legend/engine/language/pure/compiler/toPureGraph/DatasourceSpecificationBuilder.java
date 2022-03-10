@@ -15,24 +15,8 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
+import org.finos.legend.pure.generated.*;
 
 public class DatasourceSpecificationBuilder implements DatasourceSpecificationVisitor<Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification>
 {
@@ -70,6 +54,16 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _static._host(staticDatasourceSpecification.host);
             _static._port(staticDatasourceSpecification.port);
             _static._databaseName(staticDatasourceSpecification.databaseName);
+            return _static;
+        }
+        else if(datasourceSpecification instanceof DatabricksDatasourceSpecification)
+        {
+            DatabricksDatasourceSpecification staticDatasourceSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
+            Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl("");
+            _static._hostname(staticDatasourceSpecification.hostname);
+            _static._port(staticDatasourceSpecification.port);
+            _static._protocol(staticDatasourceSpecification.protocol);
+            _static._httpPath(staticDatasourceSpecification.httpPath);
             return _static;
         }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)

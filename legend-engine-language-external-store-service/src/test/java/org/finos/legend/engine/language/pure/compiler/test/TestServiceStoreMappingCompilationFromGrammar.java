@@ -633,6 +633,154 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    )\n" +
                 "  }\n" +
                 ")\n", "COMPILATION error at [68:5-75:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
+
+        // Missing mapping for required parameter
+        test("###Pure\n" +
+                "Class test::model::A\n" +
+                "{\n" +
+                "  alpha   : String[1];\n" +
+                "  beta    : Boolean[0..1];\n" +
+                "  gamma   : Integer[1];\n" +
+                "  delta   : Float[1];\n" +
+                "  epsilon : Decimal[1];\n" +
+                "  zeta    : Float[1];\n" +
+                "  eta     : Decimal[1];\n" +
+                "  theta   : StrictDate[1];\n" +
+                "  iota    : DateTime[1];\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "SchemaSet test::SchemaSet\n" +
+                "{\n" +
+                "  format: FlatData;\n" +
+                "  schemas: [ { content: 'section A: DelimitedWithHeadings\\n{\\n  scope.untilEof;\\n  delimiter: \\',\\';\\n\\n  Record\\n  {\\n    alpha   : STRING;\\n    beta    : BOOLEAN(optional);\\n    gamma   : INTEGER;\\n    delta   : INTEGER;\\n    epsilon : INTEGER;\\n    zeta    : DECIMAL;\\n    eta     : DECIMAL;\\n    theta   : DATE;\\n    iota    : DATETIME;\\n  }\\n}'; } ];\n" +
+                "}\n" +
+                "\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  schemaSet: test::SchemaSet;\n" +
+                "  contentType: 'application/x.flatdata';\n" +
+                "  modelIncludes: [ test::model::A ];\n" +
+                "}\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::B\n" +
+                "{\n" +
+                "  alpha   : String[1];\n" +
+                "  beta    : Boolean[0..1];\n" +
+                "  gamma   : Integer[1];\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "SchemaSet test::SchemaSet2\n" +
+                "{\n" +
+                "  format: FlatData;\n" +
+                "  schemas: [ { content: 'section A: DelimitedWithHeadings\\n{\\n  scope.untilEof;\\n  delimiter: \\',\\';\\n\\n  Record\\n  {\\n    alpha   : STRING;\\n    beta    : BOOLEAN(optional);\\n    gamma   : INTEGER;\\n  }\\n}'; } ];\n" +
+                "}\n" +
+                "\n" +
+                "Binding test::Binding2\n" +
+                "{\n" +
+                "  schemaSet: test::SchemaSet2;\n" +
+                "  contentType: 'application/x.flatdata';\n" +
+                "  modelIncludes: [ test::model::B ];\n" +
+                "}\n" +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = query, required = true )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [68:5-70:5]: All required service parameters should be mapped. Required Service Parameters : [serializationFormat]. Mapped Parameters : [].");
+
+        // Missing mapping for path parameter
+        test("###Pure\n" +
+                "Class test::model::A\n" +
+                "{\n" +
+                "  alpha   : String[1];\n" +
+                "  beta    : Boolean[0..1];\n" +
+                "  gamma   : Integer[1];\n" +
+                "  delta   : Float[1];\n" +
+                "  epsilon : Decimal[1];\n" +
+                "  zeta    : Float[1];\n" +
+                "  eta     : Decimal[1];\n" +
+                "  theta   : StrictDate[1];\n" +
+                "  iota    : DateTime[1];\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "SchemaSet test::SchemaSet\n" +
+                "{\n" +
+                "  format: FlatData;\n" +
+                "  schemas: [ { content: 'section A: DelimitedWithHeadings\\n{\\n  scope.untilEof;\\n  delimiter: \\',\\';\\n\\n  Record\\n  {\\n    alpha   : STRING;\\n    beta    : BOOLEAN(optional);\\n    gamma   : INTEGER;\\n    delta   : INTEGER;\\n    epsilon : INTEGER;\\n    zeta    : DECIMAL;\\n    eta     : DECIMAL;\\n    theta   : DATE;\\n    iota    : DATETIME;\\n  }\\n}'; } ];\n" +
+                "}\n" +
+                "\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  schemaSet: test::SchemaSet;\n" +
+                "  contentType: 'application/x.flatdata';\n" +
+                "  modelIncludes: [ test::model::A ];\n" +
+                "}\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::B\n" +
+                "{\n" +
+                "  alpha   : String[1];\n" +
+                "  beta    : Boolean[0..1];\n" +
+                "  gamma   : Integer[1];\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "SchemaSet test::SchemaSet2\n" +
+                "{\n" +
+                "  format: FlatData;\n" +
+                "  schemas: [ { content: 'section A: DelimitedWithHeadings\\n{\\n  scope.untilEof;\\n  delimiter: \\',\\';\\n\\n  Record\\n  {\\n    alpha   : STRING;\\n    beta    : BOOLEAN(optional);\\n    gamma   : INTEGER;\\n  }\\n}'; } ];\n" +
+                "}\n" +
+                "\n" +
+                "Binding test::Binding2\n" +
+                "{\n" +
+                "  schemaSet: test::SchemaSet2;\n" +
+                "  contentType: 'application/x.flatdata';\n" +
+                "  modelIncludes: [ test::model::B ];\n" +
+                "}\n" +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService/{serializationFormat}';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = path )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [68:5-70:5]: All required service parameters should be mapped. Required Service Parameters : [serializationFormat]. Mapped Parameters : [].");
     }
 
     @Test
@@ -743,5 +891,82 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "        )\n" +
                 "    }\n" +
                 ")\n\n", "COMPILATION error at [85:9-88:9]: Response type of source service should match mapping class. Found response type : meta::external::store::service::showcase::domain::Firm does not match mapping class : meta::external::store::service::showcase::domain::Person");
+    }
+
+    @Test
+    public void testServiceStoreMappingWithOptionalParameters()
+    {
+        test("###Pure\n" +
+                "Class test::model::A\n" +
+                "{\n" +
+                "  alpha   : String[1];\n" +
+                "  beta    : Boolean[0..1];\n" +
+                "  gamma   : Integer[1];\n" +
+                "  delta   : Float[1];\n" +
+                "  epsilon : Decimal[1];\n" +
+                "  zeta    : Float[1];\n" +
+                "  eta     : Decimal[1];\n" +
+                "  theta   : StrictDate[1];\n" +
+                "  iota    : DateTime[1];\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "SchemaSet test::SchemaSet\n" +
+                "{\n" +
+                "  format: FlatData;\n" +
+                "  schemas: [ { content: 'section A: DelimitedWithHeadings\\n{\\n  scope.untilEof;\\n  delimiter: \\',\\';\\n\\n  Record\\n  {\\n    alpha   : STRING;\\n    beta    : BOOLEAN(optional);\\n    gamma   : INTEGER;\\n    delta   : INTEGER;\\n    epsilon : INTEGER;\\n    zeta    : DECIMAL;\\n    eta     : DECIMAL;\\n    theta   : DATE;\\n    iota    : DATETIME;\\n  }\\n}'; } ];\n" +
+                "}\n" +
+                "\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  schemaSet: test::SchemaSet;\n" +
+                "  contentType: 'application/x.flatdata';\n" +
+                "  modelIncludes: [ test::model::A ];\n" +
+                "}\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::B\n" +
+                "{\n" +
+                "  alpha   : String[1];\n" +
+                "  beta    : Boolean[0..1];\n" +
+                "  gamma   : Integer[1];\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "SchemaSet test::SchemaSet2\n" +
+                "{\n" +
+                "  format: FlatData;\n" +
+                "  schemas: [ { content: 'section A: DelimitedWithHeadings\\n{\\n  scope.untilEof;\\n  delimiter: \\',\\';\\n\\n  Record\\n  {\\n    alpha   : STRING;\\n    beta    : BOOLEAN(optional);\\n    gamma   : INTEGER;\\n  }\\n}'; } ];\n" +
+                "}\n" +
+                "\n" +
+                "Binding test::Binding2\n" +
+                "{\n" +
+                "  schemaSet: test::SchemaSet2;\n" +
+                "  contentType: 'application/x.flatdata';\n" +
+                "  modelIncludes: [ test::model::B ];\n" +
+                "}\n" +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = query )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
     }
 }

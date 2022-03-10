@@ -56,6 +56,13 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
         {
             return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DefaultH2AuthenticationStrategy();
         }
+        else if (authenticationStrategy instanceof ApiTokenAuthenticationStrategy)
+        {
+            ApiTokenAuthenticationStrategy apiTokenStrategy = (ApiTokenAuthenticationStrategy)authenticationStrategy;
+            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.ApiTokenAuthenticationStrategy(
+                    apiTokenStrategy.apiToken
+            );
+        }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {
             SnowflakePublicAuthenticationStrategy snowflakePublicAuthenticationStrategy = (SnowflakePublicAuthenticationStrategy)authenticationStrategy;

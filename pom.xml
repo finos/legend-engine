@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>2.57.1-SNAPSHOT</version>
+    <version>2.58.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -69,6 +69,7 @@
         <module>legend-engine-language-pure-dsl-text</module>
         <module>legend-engine-language-pure-dsl-data-space</module>
         <module>legend-engine-language-pure-dsl-generation</module>
+        <module>legend-engine-language-pure-dsl-persistence</module>
         <module>legend-engine-language-pure-dsl-service</module>
         <module>legend-engine-language-pure-dsl-service-generation</module>
         <module>legend-engine-language-pure-dsl-service-execution</module>
@@ -90,6 +91,7 @@
         <module>legend-engine-protocol-relational</module>
         <module>legend-engine-protocol-external-store-service</module>
         <module>legend-engine-protocol-graphQL</module>
+        <module>legend-engine-protocol-persistence</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
         <module>legend-engine-query-graphQL</module>
@@ -131,7 +133,7 @@
         <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Legend -->
-        <legend.pure.version>1.50.0</legend.pure.version>
+        <legend.pure.version>1.51.0</legend.pure.version>
         <legend.shared.version>0.19.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -181,6 +183,7 @@
         <openjdk.jol.version>0.9</openjdk.jol.version>
         <json-smart.version>2.4.7</json-smart.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
+        <wiremock.version>2.27.2</wiremock.version>
         <io.netty.version>4.1.72.Final</io.netty.version>
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
 
@@ -589,6 +592,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-persistence</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-graphQL-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -673,6 +681,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-dsl-persistence</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1102,6 +1115,12 @@
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-code-compiled-core-relational</artifactId>
+                <version>${legend.pure.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
                 <version>${legend.pure.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -1659,6 +1678,22 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>4.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock-jre8</artifactId>
+                <version>${wiremock.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-io</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.conscrypt</groupId>
+                        <artifactId>conscrypt-openjdk-uber</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Amazon AWS SDK Versioning -->

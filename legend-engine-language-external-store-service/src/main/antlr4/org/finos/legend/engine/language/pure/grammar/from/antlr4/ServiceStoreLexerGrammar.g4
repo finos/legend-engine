@@ -20,6 +20,7 @@ RESPONSE:                                        'response';
 SECURITY_SCHEME:                                 'security';
 
 ALLOW_RESERVED:                                  'allowReserved';
+REQUIRED:                                        'required';
 LOCATION:                                        'location';
 STYLE:                                           'style';
 EXPLODE:                                         'explode';

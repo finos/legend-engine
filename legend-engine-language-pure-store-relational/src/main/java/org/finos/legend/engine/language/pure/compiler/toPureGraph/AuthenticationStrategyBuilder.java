@@ -40,6 +40,11 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
             return new Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl("")
                     ._serverPrincipal(((DelegatedKerberosAuthenticationStrategy) authenticationStrategy).serverPrincipal);
         }
+        else if (authenticationStrategy instanceof ApiTokenAuthenticationStrategy)
+        {
+            return new Root_meta_pure_alloy_connections_alloy_authentication_ApiTokenAuthenticationStrategy_Impl("")
+                    ._apiToken(((ApiTokenAuthenticationStrategy) authenticationStrategy).apiToken);
+        }
         else if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
         {
             UserNamePasswordAuthenticationStrategy userNamePasswordAuthenticationStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;

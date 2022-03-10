@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
@@ -416,13 +417,22 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return unsupported(propertyMapping.getClass());
     }
 
-    @Override
     public String visit(OperationClassMapping operationClassMapping)
     {
-        return ": " + "Operation\n" +
-            getTabString() + "{\n" +
-            getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
-            getTabString() + "}";
+        if (operationClassMapping instanceof MergeOperationClassMapping)
+        {
+            return ": " + "Operation\n" +
+                    getTabString() + "{\n" +
+                    getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + "([" + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + "]," +
+                    ((MergeOperationClassMapping) operationClassMapping).validationFunction.body.get(0).accept(this) + ")\n" +
+                    getTabString() + "}";
+        } else
+        {
+            return ": " + "Operation\n" +
+                    getTabString() + "{\n" +
+                    getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + '(' + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + ")\n" +
+                    getTabString() + "}";
+        }
     }
 
     @Override
@@ -960,5 +970,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(PrimitiveType primitiveType)
     {
         return primitiveType.name;
+    }
+
+    @Override
+    public String visit(DataElement dataElement)
+    {
+        return CorePureGrammarComposer.renderDataElement(dataElement, PureGrammarComposerContext.Builder.newInstance().build());
     }
 }

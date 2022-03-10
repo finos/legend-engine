@@ -122,13 +122,16 @@ public class Compile
 
     private Response handleException(UriInfo uriInfo, MutableList<CommonProfile> profiles, long start, Exception ex)
     {
-        Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, profiles);
         if (ex instanceof EngineException)
         {
             MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, Response.Status.BAD_REQUEST.getStatusCode());
             return Response.status(Response.Status.BAD_REQUEST).entity(ex).build();
         }
-        MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, errorResponse.getStatus());
-        return errorResponse;
+        else
+        {
+            Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, profiles);
+            MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, errorResponse.getStatus());
+            return errorResponse;
+        }
     }
 }

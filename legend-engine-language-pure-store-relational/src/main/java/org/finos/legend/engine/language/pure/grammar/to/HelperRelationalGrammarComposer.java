@@ -25,16 +25,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.TableNameMapper;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.InlineEmbeddedPropertyMapping;
@@ -54,6 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Numeric;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Real;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SemiStructured;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SmallInt;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.TinyInt;
@@ -373,6 +370,10 @@ public class HelperRelationalGrammarComposer
         {
             builder.append("OTHER");
         }
+        else if (column.type instanceof SemiStructured)
+        {
+            builder.append("SEMISTRUCTURED");
+        }
         else
         {
             builder.append(unsupported(column.type.getClass(), "database table column type"));
@@ -526,7 +527,8 @@ public class HelperRelationalGrammarComposer
                 : PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.property.property) + (checkNullOrEmpty(relationalPropertyMapping.target) ? "" : "[" + (renderSourceId ? (checkNullOrEmpty(relationalPropertyMapping.source) ? "" : (relationalPropertyMapping.source + ",")) : "") + relationalPropertyMapping.target + "]")
         ) + ": ";
         String enumMappingValue = relationalPropertyMapping.enumMappingId != null ? "EnumerationMapping " + PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.enumMappingId) + ": " : "";
-        return propertyString + enumMappingValue + renderRelationalOperationElement(relationalPropertyMapping.relationalOperation, context);
+        String bindingTransformer = relationalPropertyMapping.enumMappingId == null && relationalPropertyMapping.bindingTransformer != null ? "Binding " + PureGrammarComposerUtility.convertPath(relationalPropertyMapping.bindingTransformer.binding) + " : " : "";
+        return propertyString + enumMappingValue + bindingTransformer + renderRelationalOperationElement(relationalPropertyMapping.relationalOperation, context);
     }
 
     private static String renderEmbeddedRelationalPropertyMapping(EmbeddedRelationalPropertyMapping embeddedRelationalPropertyMapping, RelationalGrammarComposerContext context)
@@ -608,6 +610,18 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
+        else if (_spec instanceof DatabricksDatasourceSpecification)
+        {
+            DatabricksDatasourceSpecification spec = (DatabricksDatasourceSpecification) _spec;
+            int baseIndentation = 1;
+            return "Databricks\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "hostname: " + convertString(spec.hostname, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + convertString(spec.port, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "protocol: " + convertString(spec.protocol, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "httpPath: " + convertString(spec.httpPath, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
         else if (_spec instanceof SnowflakeDatasourceSpecification)
         {
             SnowflakeDatasourceSpecification spec = (SnowflakeDatasourceSpecification)_spec;
@@ -666,6 +680,16 @@ public class HelperRelationalGrammarComposer
                             context.getIndentationString() + getTabString(baseIndentation) + "}")
                             : ""
                     );
+        }
+        else if (_auth instanceof ApiTokenAuthenticationStrategy)
+        {
+            ApiTokenAuthenticationStrategy auth = (ApiTokenAuthenticationStrategy) _auth;
+            int baseIndentation = 1;
+            return "ApiToken" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "apiToken: " + convertString(auth.apiToken, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         else if (_auth instanceof UserNamePasswordAuthenticationStrategy)
         {

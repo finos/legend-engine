@@ -28,6 +28,9 @@ PROJECT:                                                    'projectId';
 DATASET:                                                    'defaultDataset';
 GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH:                   'GCPApplicationDefaultCredentials';
 
+API_TOKEN_AUTH:                             'ApiToken';
+API_TOKEN_AUTH_TOKEN:                       'apiToken';
+
 GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS_AUTH:                      'GCPWorkloadIdentityFederationWithAWS';
 WORKLOAD_PROJECT_NUMBER:                                    'workloadProjectNumber';
 SERVICE_ACCOUNT_EMAIL:                                      'serviceAccountEmail';
