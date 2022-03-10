@@ -65,13 +65,15 @@ public class GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyKey imple
                 Objects.equals(workloadProviderId, that.workloadProviderId) &&
                 Objects.equals(awsAccountId, that.awsAccountId) &&
                 Objects.equals(awsRegion, that.awsRegion) &&
-                Objects.equals(awsRole, that.awsRole);
+                Objects.equals(awsRole, that.awsRole) &&
+                Objects.equals(awsAccessKeyIdVaultReference, that.awsAccessKeyIdVaultReference) &&
+                Objects.equals(awsSecretAccessKeyVaultReference, that.awsSecretAccessKeyVaultReference);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(workloadProjectNumber, serviceAccountEmail, additionalGcpScopes, workloadPoolId, workloadProviderId, awsAccountId, awsRegion, awsRole);
+        return Objects.hash(workloadProjectNumber, serviceAccountEmail, additionalGcpScopes, workloadPoolId, workloadProviderId, awsAccountId, awsRegion, awsRole, awsAccessKeyIdVaultReference, awsSecretAccessKeyVaultReference);
     }
 
     @Override

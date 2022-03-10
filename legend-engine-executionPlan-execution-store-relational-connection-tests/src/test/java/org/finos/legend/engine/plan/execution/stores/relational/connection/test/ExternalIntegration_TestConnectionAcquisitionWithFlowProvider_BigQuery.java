@@ -39,11 +39,14 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQuery extends DbSpecificTests
 {
     public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
-    private static InMemoryVaultForTesting inMemoryVault;
+    public static final String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
+    public static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
+    private static final InMemoryVaultForTesting inMemoryVault = new InMemoryVaultForTesting();
 
     private ConnectionManagerSelector connectionManagerSelector;
 
@@ -54,6 +57,16 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
         if (googleApplicationCredentials == null || googleApplicationCredentials.trim().isEmpty())
         {
            // fail(String.format("Tests cannot be run. GCP env variable %s has not been set", GOOGLE_APPLICATION_CREDENTIALS));
+        }
+        String awsAccessKeyId = System.getenv(AWS_ACCESS_KEY_ID);
+        if (awsAccessKeyId == null || awsAccessKeyId.trim().isEmpty())
+        {
+            // fail(String.format("Tests cannot be run. AWS env variable %s has not been set", AWS_ACCESS_KEY_ID));
+        }
+        String awsSecretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY);
+        if (awsSecretAccessKey == null || awsSecretAccessKey.trim().isEmpty())
+        {
+            // fail(String.format("Tests cannot be run. AWS env variable %s has not been set", AWS_SECRET_ACCESS_KEY));
         }
     }
 
@@ -144,8 +157,8 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     }
 
     private RelationalDatabaseConnection bigQueryWithWIFSpec() {
-        inMemoryVault.setValue("key1", System.getenv("AWS_ACCESS_KEY_ID"));
-        inMemoryVault.setValue("secret1", System.getenv("AWS_SECRET_ACCESS_KEY"));
+        inMemoryVault.setValue("key1", System.getenv(AWS_ACCESS_KEY_ID));
+        inMemoryVault.setValue("secret1", System.getenv(AWS_SECRET_ACCESS_KEY));
         BigQueryDatasourceSpecification bigQueryDatasourceSpecification = new BigQueryDatasourceSpecification();
         bigQueryDatasourceSpecification.projectId = "legend-integration-testing";
         bigQueryDatasourceSpecification.defaultDataset = "legend_testing_dataset";

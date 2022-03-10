@@ -69,10 +69,7 @@
     "tempPath": "/tmp/",
     "flowProviderClass": "org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider",
     "flowProviderConfiguration": {
-        "_type": "legendDefault",
-        "defaultAWSAccountID": "DEFAULT_AWS_ACCOUNT_ID",
-        "defaultAWSRoleName": "DEFAULT_AWS_ROLE_NAME",
-        "defaultAWSRegion": "DEFAULT_AWS_REGION"
+        "_type": "legendDefault"
     }
   }
 }

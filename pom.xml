@@ -184,7 +184,7 @@
         <json-smart.version>2.4.7</json-smart.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
         <wiremock.version>2.27.2</wiremock.version>
-        <io.netty.version>4.1.72.Final</io.netty.version>
+        <io.netty.version>4.1.52.Final</io.netty.version>
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
 
         <!-- Plugin versions -->
@@ -1714,49 +1714,7 @@
             <!-- IO Netty -->
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty-handler</artifactId>
-                <version>${io.netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-http2</artifactId>
-                <version>${io.netty.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-codec-http</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-http</artifactId>
-                <version>${io.netty.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-handler</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec</artifactId>
-                <version>${io.netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-buffer</artifactId>
-                <version>${io.netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport</artifactId>
-                <version>${io.netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-common</artifactId>
+                <artifactId>netty-all</artifactId>
                 <version>${io.netty.version}</version>
             </dependency>
         </dependencies>
