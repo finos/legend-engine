@@ -5,9 +5,9 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.deduplication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.BatchMilestoningMode;
@@ -34,7 +34,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ReaderVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -70,15 +69,6 @@ public class HelperPersistenceBuilder
         return reader.accept(new ReaderBuilder(context));
     }
 
-    //TODO: ledav -- remove post migration to update model [START]
-
-    public static Root_meta_pure_persistence_metamodel_Persister buildPersisterV1(Persister persister, CompileContext context)
-    {
-        return persister.accept(new PersisterV1Builder(context));
-    }
-
-    //TODO: ledav -- remove post migration to update model [END]
-
     public static Root_meta_pure_persistence_metamodel_persister_Persister buildPersister(Persister persister, CompileContext context)
     {
         return persister.accept(new PersisterBuilder(context));
@@ -87,12 +77,6 @@ public class HelperPersistenceBuilder
     public static Root_meta_pure_persistence_metamodel_target_TargetShape buildTargetShape(TargetShape targetShape, CompileContext context)
     {
         return targetShape.accept(new TargetShapeBuilder(context));
-    }
-
-    public static Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification buildTargetSpecification(TargetSpecification specification, CompileContext context)
-    {
-        Class<?> modelClass = context.resolveClass(specification.modelClass, specification.sourceInformation);
-        return specification.accept(new TargetSpecificationBuilder(modelClass, context));
     }
 
     public static Root_meta_pure_persistence_metamodel_batch_deduplication_DeduplicationStrategy buildDeduplicationStrategy(DeduplicationStrategy deduplicationStrategy, Class<?> inputClass, CompileContext context)
@@ -214,10 +198,10 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_target_TargetShape visit(SingleFlatTarget val)
+        public Root_meta_pure_persistence_metamodel_target_TargetShape visit(FlatTarget val)
         {
             Class<?> modelClass = context.resolveClass(val.modelClass, val.sourceInformation);
-            return buildSingleFlatTarget(val, modelClass, context);
+            return buildFlatTarget(val, modelClass, context);
         }
 
         @Override
@@ -237,110 +221,27 @@ public class HelperPersistenceBuilder
                     ._targetName(val.targetName);
         }
 
-        private Root_meta_pure_persistence_metamodel_target_SingleFlatTarget buildSingleFlatTarget(SingleFlatTarget singleFlatTarget, Class<?> modelClass, CompileContext context)
+        private Root_meta_pure_persistence_metamodel_target_SingleFlatTarget buildFlatTarget(FlatTarget flatTarget, Class<?> modelClass, CompileContext context)
         {
             return new Root_meta_pure_persistence_metamodel_target_SingleFlatTarget_Impl("")
-                    ._targetName(singleFlatTarget.targetName)
+                    ._targetName(flatTarget.targetName)
                     ._modelClass(modelClass)
-                    ._partitionProperties(ListIterate.collect(singleFlatTarget.partitionProperties, p -> validateAndResolveProperty(modelClass, p, singleFlatTarget.sourceInformation, context)))
-                    ._deduplicationStrategy(buildDeduplicationStrategy(singleFlatTarget.deduplicationStrategy, modelClass, context))
-                    ._milestoningMode(buildMilestoningMode(singleFlatTarget.batchMode, modelClass, context));
+                    ._partitionProperties(ListIterate.collect(flatTarget.partitionProperties, p -> validateAndResolveProperty(modelClass, p, flatTarget.sourceInformation, context)))
+                    ._deduplicationStrategy(buildDeduplicationStrategy(flatTarget.deduplicationStrategy, modelClass, context))
+                    ._milestoningMode(buildMilestoningMode(flatTarget.batchMode, modelClass, context));
         }
 
-        private Root_meta_pure_persistence_metamodel_target_PropertyAndSingleFlatTarget resolvePart(PropertyAndSingleFlatTarget propertyAndSingleFlatTarget, Class<?> modelClass, CompileContext context)
+        private Root_meta_pure_persistence_metamodel_target_PropertyAndSingleFlatTarget resolvePart(PropertyAndFlatTarget propertyAndFlatTarget, Class<?> modelClass, CompileContext context)
         {
-            Property<?, ?> property = validateAndResolveProperty(modelClass, propertyAndSingleFlatTarget.property, propertyAndSingleFlatTarget.sourceInformation, context);
+            Property<?, ?> property = validateAndResolveProperty(modelClass, propertyAndFlatTarget.property, propertyAndFlatTarget.sourceInformation, context);
             Type targetType = property._genericType()._rawType();
-            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target part property must refer to a Class. The property '%s' refers to a %s", propertyAndSingleFlatTarget.property, targetType._name()), propertyAndSingleFlatTarget.sourceInformation, EngineErrorType.COMPILATION);
+            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target part property must refer to a Class. The property '%s' refers to a %s", propertyAndFlatTarget.property, targetType._name()), propertyAndFlatTarget.sourceInformation, EngineErrorType.COMPILATION);
 
             return new Root_meta_pure_persistence_metamodel_target_PropertyAndSingleFlatTarget_Impl("")
                     ._property(property)
-                    ._singleFlatTarget(buildSingleFlatTarget(propertyAndSingleFlatTarget.singleFlatTarget, (Class<?>) targetType, context));
+                    ._singleFlatTarget(buildFlatTarget(propertyAndFlatTarget.flatTarget, (Class<?>) targetType, context));
         }
     }
-
-    //TODO: ledav -- remove post migration to update model [START]
-
-    private static class PersisterV1Builder implements PersisterVisitor<Root_meta_pure_persistence_metamodel_Persister>
-    {
-        private final CompileContext context;
-
-        private PersisterV1Builder(CompileContext context)
-        {
-            this.context = context;
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_Persister visit(BatchPersister val)
-        {
-            return new Root_meta_pure_persistence_metamodel_batch_BatchPersister_Impl("")
-                    ._targetSpecification(buildTargetSpecification(val.targetSpecification, context));
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_Persister visit(StreamingPersister val)
-        {
-            return new Root_meta_pure_persistence_metamodel_streaming_StreamingPersister_Impl("");
-        }
-    }
-
-    private static class TargetSpecificationBuilder implements TargetSpecificationVisitor<Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification>
-    {
-        private final Class<?> modelClass;
-        private final CompileContext context;
-
-        private TargetSpecificationBuilder(Class<?> modelClass, CompileContext context)
-        {
-            this.modelClass = modelClass;
-            this.context = context;
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification visit(FlatTargetSpecification val)
-        {
-            return buildFlatTargetSpecification(val, modelClass, context);
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification visit(GroupedFlatTargetSpecification val)
-        {
-            return new Root_meta_pure_persistence_metamodel_batch_targetspecification_GroupedFlatTargetSpecification_Impl("")
-                    ._modelClass(modelClass)
-                    ._transactionScope(context.resolveEnumValue(PERSISTENCE_PACKAGE_PREFIX + "::batch::targetspecification::TransactionScope", val.transactionScope.name()))
-                    ._components(ListIterate.collect(val.components, c -> resolveComponent(c, modelClass, context)));
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_batch_targetspecification_TargetSpecification visit(NestedTargetSpecification val)
-        {
-            return new Root_meta_pure_persistence_metamodel_batch_targetspecification_NestedTargetSpecification_Impl("")
-                    ._targetName(val.targetName)
-                    ._modelClass(modelClass);
-        }
-
-        private Root_meta_pure_persistence_metamodel_batch_targetspecification_FlatTargetSpecification buildFlatTargetSpecification(FlatTargetSpecification specification, Class<?> modelClass, CompileContext context)
-        {
-            return new Root_meta_pure_persistence_metamodel_batch_targetspecification_FlatTargetSpecification_Impl("")
-                    ._targetName(specification.targetName)
-                    ._modelClass(modelClass)
-                    ._partitionProperties(ListIterate.collect(specification.partitionProperties, p -> validateAndResolveProperty(modelClass, p, specification.sourceInformation, context)))
-                    ._deduplicationStrategy(buildDeduplicationStrategy(specification.deduplicationStrategy, modelClass, context))
-                    ._batchMilestoningMode(buildMilestoningMode(specification.batchMode, modelClass, context));
-        }
-
-        private Root_meta_pure_persistence_metamodel_batch_targetspecification_PropertyAndFlatTargetSpecification resolveComponent(PropertyAndFlatTargetSpecification specification, Class<?> modelClass, CompileContext context)
-        {
-            Property<?, ?> property = validateAndResolveProperty(modelClass, specification.property, specification.sourceInformation, context);
-            Type targetType = property._genericType()._rawType();
-            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target component property must refer to a Class. The property '%s' refers to a %s", specification.property, targetType._name()), specification.sourceInformation, EngineErrorType.COMPILATION);
-
-            return new Root_meta_pure_persistence_metamodel_batch_targetspecification_PropertyAndFlatTargetSpecification_Impl("")
-                    ._property(property)
-                    ._targetSpecification(buildFlatTargetSpecification(specification.targetSpecification, (Class<?>) targetType, context));
-        }
-    }
-
-    //TODO: ledav -- remove post migration to update model [END]
 
     private static class DeduplicationStrategyBuilder implements DeduplicationStrategyVisitor<Root_meta_pure_persistence_metamodel_batch_deduplication_DeduplicationStrategy>
     {

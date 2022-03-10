@@ -3,7 +3,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.TargetShape;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 

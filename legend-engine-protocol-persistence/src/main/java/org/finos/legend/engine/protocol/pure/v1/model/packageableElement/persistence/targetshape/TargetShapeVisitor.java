@@ -2,7 +2,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public interface TargetShapeVisitor<T>
 {
-    T visit(SingleFlatTarget val);
+    T visit(FlatTarget val);
     T visit(MultiFlatTarget val);
     T visit(OpaqueTarget val);
 }

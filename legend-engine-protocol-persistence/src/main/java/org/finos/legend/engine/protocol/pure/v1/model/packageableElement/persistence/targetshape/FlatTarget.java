@@ -5,7 +5,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 
 import java.util.List;
 
-public class SingleFlatTarget extends TargetShape
+public class FlatTarget extends TargetShape
 {
     public String modelClass;
     public List<String> partitionProperties;

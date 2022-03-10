@@ -6,7 +6,7 @@ public class MultiFlatTarget extends TargetShape
 {
     public String modelClass;
     public TransactionScope transactionScope;
-    public List<PropertyAndSingleFlatTarget> parts;
+    public List<PropertyAndFlatTarget> parts;
 
     @Override
     public <T> T accept(TargetShapeVisitor<T> visitor)

@@ -39,11 +39,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.FlatTargetSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.GroupedFlatTargetSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.NestedTargetSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.PropertyAndFlatTargetSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.TargetSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -182,21 +177,10 @@ public class PersistenceParseTreeWalker
         BatchPersister batch = new BatchPersister();
         batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        if (ctx.targetShape() != null)
-        {
-            // target shape
-            PersistenceParserGrammar.TargetShapeContext targetShapeContext = ctx.targetShape();
-            batch.targetShape = visitTargetShape(targetShapeContext);
-            return batch;
-        }
-        else if (ctx.targetSpecification() != null)
-        {
-            // target specification
-            PersistenceParserGrammar.TargetSpecificationContext targetSpecificationContext = ctx.targetSpecification();
-            batch.targetSpecification = visitTargetSpecification(targetSpecificationContext);
-            return batch;
-        }
-        throw new EngineException("Field 'target' is required", batch.sourceInformation, EngineErrorType.PARSER);
+        // target shape
+        PersistenceParserGrammar.TargetShapeContext targetShapeContext = ctx.targetShape();
+        batch.targetShape = visitTargetShape(targetShapeContext);
+        return batch;
     }
 
     /**********
@@ -241,9 +225,9 @@ public class PersistenceParseTreeWalker
         return targetShape;
     }
 
-    private SingleFlatTarget visitSingleFlatTarget(PersistenceParserGrammar.SingleTargetShapeContext ctx)
+    private FlatTarget visitSingleFlatTarget(PersistenceParserGrammar.SingleTargetShapeContext ctx)
     {
-        SingleFlatTarget targetShape = createBaseSingleFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.milestoningMode());
+        FlatTarget targetShape = createBaseSingleFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.milestoningMode());
 
         // model class
         PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetShape.sourceInformation);
@@ -252,9 +236,9 @@ public class PersistenceParseTreeWalker
         return targetShape;
     }
 
-    private SingleFlatTarget createBaseSingleFlatTarget(SourceInformation sourceInformation, List<PersistenceParserGrammar.TargetNameContext> targetNameContexts, List<PersistenceParserGrammar.PartitionPropertiesContext> partitionPropertiesContexts, List<PersistenceParserGrammar.DeduplicationStrategyContext> deduplicationStrategyContexts, List<PersistenceParserGrammar.MilestoningModeContext> milestoningModeContexts)
+    private FlatTarget createBaseSingleFlatTarget(SourceInformation sourceInformation, List<PersistenceParserGrammar.TargetNameContext> targetNameContexts, List<PersistenceParserGrammar.PartitionPropertiesContext> partitionPropertiesContexts, List<PersistenceParserGrammar.DeduplicationStrategyContext> deduplicationStrategyContexts, List<PersistenceParserGrammar.MilestoningModeContext> milestoningModeContexts)
     {
-        SingleFlatTarget targetShape = new SingleFlatTarget();
+        FlatTarget targetShape = new FlatTarget();
         targetShape.sourceInformation = sourceInformation;
 
         // target name
@@ -288,9 +272,9 @@ public class PersistenceParseTreeWalker
         return targetShape;
     }
 
-    private PropertyAndSingleFlatTarget visitPropertyAndSingleFlatTarget(PersistenceParserGrammar.TargetChildContext ctx)
+    private PropertyAndFlatTarget visitPropertyAndSingleFlatTarget(PersistenceParserGrammar.TargetChildContext ctx)
     {
-        PropertyAndSingleFlatTarget propertyAndFlatTargetSpecification = new PropertyAndSingleFlatTarget();
+        PropertyAndFlatTarget propertyAndFlatTargetSpecification = new PropertyAndFlatTarget();
         propertyAndFlatTargetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // property
@@ -299,181 +283,15 @@ public class PersistenceParseTreeWalker
 
         // target shape (note: not expecting a model class in this context; compiler will populate based on target type of property above)
         PersistenceParserGrammar.TargetChildTargetShapeContext targetChildTargetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetChildTargetShape(), "targetSpecification", propertyAndFlatTargetSpecification.sourceInformation);
-        propertyAndFlatTargetSpecification.singleFlatTarget = visitChildSingleFlatTarget(targetChildTargetShapeContext);
+        propertyAndFlatTargetSpecification.flatTarget = visitChildFlatTarget(targetChildTargetShapeContext);
 
         return propertyAndFlatTargetSpecification;
     }
 
-    private SingleFlatTarget visitChildSingleFlatTarget(PersistenceParserGrammar.TargetChildTargetShapeContext ctx)
+    private FlatTarget visitChildFlatTarget(PersistenceParserGrammar.TargetChildTargetShapeContext ctx)
     {
         return createBaseSingleFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.milestoningMode());
     }
-
-    //TODO: ledav -- remove post migration to update model [START]
-
-    /**********
-     * target specification
-     **********/
-
-    private TargetSpecification visitTargetSpecification(PersistenceParserGrammar.TargetSpecificationContext ctx)
-    {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.groupedTargetSpecification() != null)
-        {
-            return visitGroupedFlatTargetSpecification(ctx.groupedTargetSpecification());
-        }
-        else if (ctx.flatTargetSpecification() != null)
-        {
-            return visitFlatTargetSpecification(ctx.flatTargetSpecification());
-        }
-        else if (ctx.nestedTargetSpecification() != null)
-        {
-            return visitNestedTargetSpecification(ctx.nestedTargetSpecification());
-        }
-        throw new EngineException("Unrecognized target specification", sourceInformation, EngineErrorType.PARSER);
-    }
-
-    private GroupedFlatTargetSpecification visitGroupedFlatTargetSpecification(PersistenceParserGrammar.GroupedTargetSpecificationContext ctx)
-    {
-        GroupedFlatTargetSpecification targetSpecification = new GroupedFlatTargetSpecification();
-        targetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // model class
-        PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
-        targetSpecification.modelClass = visitModelClass(targetModelClassContext);
-
-        // transaction scope
-        PersistenceParserGrammar.TargetTransactionScopeContext targetTransactionScopeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetTransactionScope(), "transactionScope", targetSpecification.sourceInformation);
-        targetSpecification.transactionScope = visitTransactionScopeOld(targetTransactionScopeContext);
-
-        // components
-        PersistenceParserGrammar.TargetComponentsContext targetComponentsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponents(), "components", targetSpecification.sourceInformation);
-        targetSpecification.components = ListIterate.collect(targetComponentsContext.targetComponent(), this::visitPropertyAndFlatTargetSpecification);
-
-        return targetSpecification;
-    }
-
-    private FlatTargetSpecification visitFlatTargetSpecification(PersistenceParserGrammar.FlatTargetSpecificationContext ctx)
-    {
-        FlatTargetSpecification targetSpecification = createBaseFlatTargetSpecification(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.batchMode());
-
-        // model class
-        PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
-        targetSpecification.modelClass = visitModelClass(targetModelClassContext);
-
-        return targetSpecification;
-    }
-
-    private FlatTargetSpecification createBaseFlatTargetSpecification(SourceInformation sourceInformation, List<PersistenceParserGrammar.TargetNameContext> targetNameContexts, List<PersistenceParserGrammar.PartitionPropertiesContext> partitionPropertiesContexts, List<PersistenceParserGrammar.DeduplicationStrategyContext> deduplicationStrategyContexts, List<PersistenceParserGrammar.BatchModeContext> batchModeContexts)
-    {
-        FlatTargetSpecification targetSpecification = new FlatTargetSpecification();
-        targetSpecification.sourceInformation = sourceInformation;
-
-        // target name
-        PersistenceParserGrammar.TargetNameContext targetNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(targetNameContexts, "targetName", targetSpecification.sourceInformation);
-        targetSpecification.targetName = visitTargetName(targetNameContext);
-
-        // partition properties (optional)
-        PersistenceParserGrammar.PartitionPropertiesContext partitionPropertiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(partitionPropertiesContexts, "partitionProperties", targetSpecification.sourceInformation);
-        targetSpecification.partitionProperties = partitionPropertiesContext != null ? visitPartitionProperties(partitionPropertiesContext) : Collections.emptyList();
-
-        // deduplication strategy (optional)
-        PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractOptionalField(deduplicationStrategyContexts, "deduplicationStrategy", targetSpecification.sourceInformation);
-        targetSpecification.deduplicationStrategy = visitDeduplicationStrategy(deduplicationStrategyContext);
-
-        // batch mode
-        PersistenceParserGrammar.BatchModeContext batchModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(batchModeContexts, "batchMode", targetSpecification.sourceInformation);
-        targetSpecification.batchMode = visitBatchMilestoningMode(batchModeContext);
-
-        return targetSpecification;
-    }
-
-    private TargetSpecification visitNestedTargetSpecification(PersistenceParserGrammar.NestedTargetSpecificationContext ctx)
-    {
-        NestedTargetSpecification targetSpecification = new NestedTargetSpecification();
-        targetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // target name
-        PersistenceParserGrammar.TargetNameContext targetNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetName(), "targetName", targetSpecification.sourceInformation);
-        targetSpecification.targetName = visitTargetName(targetNameContext);
-
-        // model class
-        PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetSpecification.sourceInformation);
-        targetSpecification.modelClass = visitModelClass(targetModelClassContext);
-
-        return targetSpecification;
-    }
-
-    private PropertyAndFlatTargetSpecification visitPropertyAndFlatTargetSpecification(PersistenceParserGrammar.TargetComponentContext ctx)
-    {
-        PropertyAndFlatTargetSpecification propertyAndFlatTargetSpecification = new PropertyAndFlatTargetSpecification();
-        propertyAndFlatTargetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // property
-        PersistenceParserGrammar.TargetComponentPropertyContext targetComponentPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponentProperty(), "property", propertyAndFlatTargetSpecification.sourceInformation);
-        propertyAndFlatTargetSpecification.property = PureGrammarParserUtility.fromIdentifier(targetComponentPropertyContext.identifier());
-
-        // target specification (note: not expecting a model class in this context; compiler will populate based on target type of property above)
-        PersistenceParserGrammar.TargetComponentTargetSpecificationContext targetComponentTargetSpecificationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetComponentTargetSpecification(), "targetSpecification", propertyAndFlatTargetSpecification.sourceInformation);
-        propertyAndFlatTargetSpecification.targetSpecification = visitComponentFlatTargetSpecification(targetComponentTargetSpecificationContext);
-
-        return propertyAndFlatTargetSpecification;
-    }
-
-    private FlatTargetSpecification visitComponentFlatTargetSpecification(PersistenceParserGrammar.TargetComponentTargetSpecificationContext ctx)
-    {
-        return createBaseFlatTargetSpecification(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.batchMode());
-    }
-
-    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.TransactionScope visitTransactionScopeOld(PersistenceParserGrammar.TargetTransactionScopeContext ctx)
-    {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.TXN_SCOPE_SINGLE() != null)
-        {
-            return org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.TransactionScope.SINGLE_TARGET;
-        }
-        else if (ctx.TXN_SCOPE_ALL() != null)
-        {
-            return org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.TransactionScope.ALL_TARGETS;
-        }
-        throw new EngineException("Unrecognized transaction scope", sourceInformation, EngineErrorType.PARSER);
-    }
-
-    private BatchMilestoningMode visitBatchMilestoningMode(PersistenceParserGrammar.BatchModeContext ctx)
-    {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.nonMilestonedSnapshot() != null)
-        {
-            return visitNonMilestonedSnapshot(ctx.nonMilestonedSnapshot());
-        }
-        else if (ctx.unitemporalSnapshot() != null)
-        {
-            return visitUnitemporalSnapshot(ctx.unitemporalSnapshot());
-        }
-        else if (ctx.bitemporalSnapshot() != null)
-        {
-            return visitBitemporalSnapshot(ctx.bitemporalSnapshot());
-        }
-        else if (ctx.nonMilestonedDelta() != null)
-        {
-            return visitNonMilestonedDelta(ctx.nonMilestonedDelta());
-        }
-        else if (ctx.unitemporalDelta() != null)
-        {
-            return visitUnitemporalDelta(ctx.unitemporalDelta());
-        }
-        else if (ctx.bitemporalDelta() != null)
-        {
-            return visitBitemporalDelta(ctx.bitemporalDelta());
-        }
-        else if (ctx.appendOnly() != null)
-        {
-            return visitAppendOnly(ctx.appendOnly());
-        }
-        throw new EngineException("Unrecognized batch milestoning mode", sourceInformation, EngineErrorType.PARSER);
-    }
-
-    //TODO: ledav -- remove post migration to update model [END]
 
     private String visitTargetName(PersistenceParserGrammar.TargetNameContext ctx)
     {

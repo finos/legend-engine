@@ -5,9 +5,9 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.deduplication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.BatchMilestoningMode;
@@ -34,7 +34,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ReaderVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetspecification.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -88,11 +87,6 @@ public class HelperPersistenceGrammarComposer
     private static String renderTargetShape(TargetShape targetShape, int indentLevel)
     {
         return targetShape.accept(new TargetShapeComposer(indentLevel));
-    }
-
-    private static String renderTargetSpecification(TargetSpecification targetSpecification, int indentLevel)
-    {
-        return targetSpecification.accept(new TargetSpecificationComposer(indentLevel));
     }
 
     private static String renderDeduplicationStrategy(DeduplicationStrategy deduplicationStrategy, int indentLevel)
@@ -195,7 +189,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Batch\n" +
                     getTabString(indentLevel) + "{\n" +
-                    (val.targetShape != null ? renderTargetShape(val.targetShape, indentLevel + 1) : renderTargetSpecification(val.targetSpecification, indentLevel + 1)) +
+                    renderTargetShape(val.targetShape, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
     }
@@ -224,7 +218,7 @@ public class HelperPersistenceGrammarComposer
         }
 
         @Override
-        public String visit(SingleFlatTarget val)
+        public String visit(FlatTarget val)
         {
             return getTabString(indentLevel) + "target: Flat\n" +
                     getTabString(indentLevel) + "{\n" +
@@ -253,97 +247,16 @@ public class HelperPersistenceGrammarComposer
             return builder.toString();
         }
 
-        private static String renderPartProperties(PropertyAndSingleFlatTarget part, int indentLevel)
+        private static String renderPartProperties(PropertyAndFlatTarget part, int indentLevel)
         {
             return getTabString(indentLevel) + "property: " + part.property + ";\n" +
                     getTabString(indentLevel) + "singleFlatTarget:\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderSingleFlatTargetProperties(part.singleFlatTarget,false, indentLevel + 1) +
+                    renderSingleFlatTargetProperties(part.flatTarget,false, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
-        private static String renderSingleFlatTargetProperties(SingleFlatTarget singleFlatTarget, boolean includeModelClass, int indentLevel)
-        {
-            return getTabString(indentLevel) + "targetName: " + convertString(singleFlatTarget.targetName, true) + ";\n" +
-                    (includeModelClass ? getTabString(indentLevel) + "modelClass: " + singleFlatTarget.modelClass + ";\n" : "") +
-                    renderPartitionProperties(singleFlatTarget, indentLevel) +
-                    renderDeduplicationStrategy(singleFlatTarget.deduplicationStrategy, indentLevel) +
-                    renderBatchMode(singleFlatTarget.batchMode, indentLevel);
-        }
-
-        private static String renderPartitionProperties(SingleFlatTarget singleFlatTarget, int indentLevel)
-        {
-            return !singleFlatTarget.partitionProperties.isEmpty() ? getTabString(indentLevel) + "partitionProperties: " + "[" +
-                    Lists.immutable.ofAll(singleFlatTarget.partitionProperties).makeString(", ") +
-                    "];\n" : "";
-        }
-    }
-    //TODO: ledav -- remove post migration to update model [START]
-
-    private static class TargetSpecificationComposer implements TargetSpecificationVisitor<String>
-    {
-        private final int indentLevel;
-
-        private TargetSpecificationComposer(int indentLevel)
-        {
-            this.indentLevel = indentLevel;
-        }
-
-        @Override
-        public String visit(GroupedFlatTargetSpecification val)
-        {
-            return getTabString(indentLevel) + "target: GroupedFlat\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "modelClass: " + val.modelClass + ";\n" +
-                    getTabString(indentLevel + 1) + "transactionScope: " + val.transactionScope + ";\n" +
-                    getTabString(indentLevel + 1) + "components:\n" +
-                    getTabString(indentLevel + 1) + "[\n" +
-                    renderComponents(val, indentLevel + 2) +
-                    getTabString(indentLevel + 1) + "];\n" +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        @Override
-        public String visit(FlatTargetSpecification val)
-        {
-            return getTabString(indentLevel) + "target: Flat\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    renderFlatTargetProperties(val, true, indentLevel + 1) +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        @Override
-        public String visit(NestedTargetSpecification val)
-        {
-            return getTabString(indentLevel) + "target: Nested\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "targetName: " + convertString(val.targetName, true) + ";\n" +
-                    getTabString(indentLevel + 1) + "modelClass: " + val.modelClass + ";\n" +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        private static String renderComponents(GroupedFlatTargetSpecification groupedFlatTarget, int indentLevel)
-        {
-            StringBuilder builder = new StringBuilder();
-            ListIterate.forEachWithIndex(groupedFlatTarget.components, (component, i) ->
-            {
-                builder.append(getTabString(indentLevel)).append("{\n");
-                builder.append(renderComponentProperties(component, indentLevel + 1));
-                builder.append(getTabString(indentLevel)).append(i < groupedFlatTarget.components.size() - 1 ? "},\n" : "}\n");
-            });
-            return builder.toString();
-        }
-
-        private static String renderComponentProperties(PropertyAndFlatTargetSpecification component, int indentLevel)
-        {
-            return getTabString(indentLevel) + "property: " + component.property + ";\n" +
-                    getTabString(indentLevel) + "targetSpecification:\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    renderFlatTargetProperties(component.targetSpecification,false, indentLevel + 1) +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        private static String renderFlatTargetProperties(FlatTargetSpecification flatTarget, boolean includeModelClass, int indentLevel)
+        private static String renderSingleFlatTargetProperties(FlatTarget flatTarget, boolean includeModelClass, int indentLevel)
         {
             return getTabString(indentLevel) + "targetName: " + convertString(flatTarget.targetName, true) + ";\n" +
                     (includeModelClass ? getTabString(indentLevel) + "modelClass: " + flatTarget.modelClass + ";\n" : "") +
@@ -352,15 +265,13 @@ public class HelperPersistenceGrammarComposer
                     renderBatchMode(flatTarget.batchMode, indentLevel);
         }
 
-        private static String renderPartitionProperties(FlatTargetSpecification flatTarget, int indentLevel)
+        private static String renderPartitionProperties(FlatTarget flatTarget, int indentLevel)
         {
             return !flatTarget.partitionProperties.isEmpty() ? getTabString(indentLevel) + "partitionProperties: " + "[" +
                     Lists.immutable.ofAll(flatTarget.partitionProperties).makeString(", ") +
                     "];\n" : "";
         }
     }
-
-    //TODO: ledav -- remove post migration to update model [END]
 
     private static class DeduplicationStrategyComposer implements DeduplicationStrategyVisitor<String>
     {

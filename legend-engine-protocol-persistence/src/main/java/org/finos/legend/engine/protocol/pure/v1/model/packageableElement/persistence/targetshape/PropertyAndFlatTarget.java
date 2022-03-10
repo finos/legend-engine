@@ -2,9 +2,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class PropertyAndSingleFlatTarget
+public class PropertyAndFlatTarget
 {
     public String property;
-    public SingleFlatTarget singleFlatTarget;
+    public FlatTarget flatTarget;
     public SourceInformation sourceInformation;
 }
