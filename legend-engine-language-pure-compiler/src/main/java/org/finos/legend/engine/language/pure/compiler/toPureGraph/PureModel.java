@@ -1099,7 +1099,7 @@ public class PureModel implements IPureModel
     {
         if (pureModelProcessParameter.packagePrefix != null
                 && !isImmutable(packageName)
-                && !packageName.startsWith("meta::pure::")
+                && !packageName.startsWith("meta::")
                 && !packageName.startsWith(pureModelProcessParameter.packagePrefix)
         )
         {
