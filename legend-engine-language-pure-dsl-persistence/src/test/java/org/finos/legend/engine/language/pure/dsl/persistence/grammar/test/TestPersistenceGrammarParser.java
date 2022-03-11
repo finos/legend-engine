@@ -408,11 +408,11 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     /**********
-     * target specification - grouped flat
+     * target shape - multi flat
      **********/
 
     @Test
-    public void batchGroupedFlatModelClass()
+    public void multiFlatModelClass()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -485,7 +485,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchGroupedFlatTransactionScope()
+    public void multiFlatTransactionScope()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -558,7 +558,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchGroupedFlatComponents()
+    public void multiFlatComponents()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -631,11 +631,11 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     /**********
-     * target specification - flat
+     * target shape - flat
      **********/
 
     @Test
-    public void batchFlatTargetName()
+    public void flatTargetName()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -689,7 +689,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchFlatModelClass()
+    public void flatModelClass()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -743,7 +743,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchFlatDeduplicationStrategy()
+    public void flatDeduplicationStrategy()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -774,7 +774,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchFlatPartitionProperties()
+    public void flatPartitionProperties()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -805,7 +805,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchFlatBatchMode()
+    public void flatIngestMode()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -859,11 +859,11 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     /**********
-     * batch mode - snapshot
+     * ingest mode - snapshot
      **********/
 
     @Test
-    public void batchModeNontemporalSnapshotAuditing()
+    public void ingestModeNontemporalSnapshotAuditing()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -915,7 +915,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeUnitemporalSnapshotTransactionMilestoning()
+    public void ingestModeUnitemporalSnapshotTransactionMilestoning()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -967,7 +967,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeBitemporalSnapshotTransactionMilestoning()
+    public void ingestModeBitemporalSnapshotTransactionMilestoning()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1021,7 +1021,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeBitemporalSnapshotValidityMilestoning()
+    public void ingestModeBitemporalSnapshotValidityMilestoning()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1075,7 +1075,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeBitemporalSnapshotValidityDerivation()
+    public void ingestModeBitemporalSnapshotValidityDerivation()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1143,7 +1143,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
      **********/
 
     @Test
-    public void batchModeNontemporalDeltaMergeStrategy()
+    public void ingestModeNontemporalDeltaMergeStrategy()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1197,7 +1197,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeNontemporalDeltaAuditing()
+    public void ingestModeNontemporalDeltaAuditing()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1251,7 +1251,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeUnitemporalDeltaMergeStrategy()
+    public void ingestModeUnitemporalDeltaMergeStrategy()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1305,7 +1305,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeUnitemporalDeltaTransactionMilestoning()
+    public void ingestModeUnitemporalDeltaTransactionMilestoning()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1359,7 +1359,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeBitemporalDeltaTransactionMilestoning()
+    public void ingestModeBitemporalDeltaTransactionMilestoning()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1415,7 +1415,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeBitemporalDeltaMergeStrategy()
+    public void ingestModeBitemporalDeltaMergeStrategy()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1471,7 +1471,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeBitemporalDeltaValidityMilestoning()
+    public void ingestModeBitemporalDeltaValidityMilestoning()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1527,7 +1527,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeBitemporalDeltaValidityDerivation()
+    public void ingestModeBitemporalDeltaValidityDerivation()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1593,11 +1593,11 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     /**********
-     * batch mode - append only
+     * ingest mode - append only
      **********/
 
     @Test
-    public void batchModeAppendOnlyAuditing()
+    public void ingestModeAppendOnlyAuditing()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1651,7 +1651,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void batchModeAppendOnlyFilterDuplicates()
+    public void ingestModeAppendOnlyFilterDuplicates()
     {
         test("###Persistence\n" +
                 "\n" +

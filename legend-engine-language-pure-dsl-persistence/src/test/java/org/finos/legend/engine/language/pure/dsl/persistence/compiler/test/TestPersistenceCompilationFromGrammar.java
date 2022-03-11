@@ -141,7 +141,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
     }
 
     @Test
-    public void groupedFlatModelClassUndefined()
+    public void multiFlatModelClassUndefined()
     {
         test("Class test::Person\n" +
                 "{\n" +
@@ -209,7 +209,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
     }
 
     @Test
-    public void groupedFlatModelPropertyUndefined()
+    public void multiFlatModelPropertyUndefined()
     {
         test("Class test::Person\n" +
                 "{\n" +
@@ -279,7 +279,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
     }
 
     @Test
-    public void groupedFlatModelPropertyInvalidType()
+    public void multiFlatModelPropertyInvalidType()
     {
         test("Class test::Person\n" +
                 "{\n" +
@@ -352,7 +352,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
     }
 
     @Test
-    public void groupedFlatModelPropertyUndefinedType()
+    public void multiFlatModelPropertyUndefinedType()
     {
         test("Class test::Person\n" +
                 "{\n" +
@@ -425,7 +425,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
     }
 
     @Test
-    public void flatSpecification()
+    public void flatShape()
     {
         test("Class test::Person\n" +
                 "{\n" +
