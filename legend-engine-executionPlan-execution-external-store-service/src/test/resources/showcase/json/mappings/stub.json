@@ -176,6 +176,54 @@
           ]
         }
       }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/firms/getFirmByName",
+        "headers": {
+          "name": {
+            "equalTo": "FirmA"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "FirmA",
+            "employeesCount": 500
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/firms/getFirmsByNames",
+        "headers": {
+          "name": {
+            "equalTo": "FirmA,FirmB,FirmC"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "FirmA",
+            "employeesCount": 500
+          },
+          {
+            "name": "FirmB",
+            "employeesCount": 50
+          },
+          {
+            "name": "FirmC",
+            "employeesCount": 5000
+          }
+        ]
+      }
     }
   ]
 }

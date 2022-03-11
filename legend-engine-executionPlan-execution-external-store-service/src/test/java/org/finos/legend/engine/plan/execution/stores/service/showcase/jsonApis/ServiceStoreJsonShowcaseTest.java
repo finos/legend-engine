@@ -626,4 +626,61 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
     }
+
+    @Test
+    public void serviceStoreHeaderParam()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::Firm.all()" +
+                "       ->filter(f | $f.name == 'FirmA')\n" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::Firm {\n" +
+                "               name,\n" +
+                "               employeesCount\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::Firm {\n" +
+                "               name,\n" +
+                "               employeesCount\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"name\":\"FirmA\",\"employeesCount\":500}}";
+
+        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
+    }
+
+    @Test
+    public void serviceStoreHeaderParamWithList()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::Firm.all()" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::Firm {\n" +
+                "               name,\n" +
+                "               employeesCount\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::Firm {\n" +
+                "               name,\n" +
+                "               employeesCount\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"name\":\"FirmA\",\"employeesCount\":500},{\"name\":\"FirmB\",\"employeesCount\":50},{\"name\":\"FirmC\",\"employeesCount\":5000}]}";
+
+        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
+    }
 }

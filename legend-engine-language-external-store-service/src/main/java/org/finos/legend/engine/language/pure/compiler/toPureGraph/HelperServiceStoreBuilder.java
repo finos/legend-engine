@@ -195,6 +195,8 @@ public class HelperServiceStoreBuilder
 
     private static Root_meta_external_store_service_metamodel_ServiceParameter compileServiceParameter(ServiceParameter serviceParameter, CompileContext context)
     {
+        validateServiceParameter(serviceParameter);
+
         Root_meta_external_store_service_metamodel_ServiceParameter pureServiceParameter = new Root_meta_external_store_service_metamodel_ServiceParameter_Impl(serviceParameter.name);
 
         pureServiceParameter._name(serviceParameter.name);
@@ -235,6 +237,15 @@ public class HelperServiceStoreBuilder
         }
 
         return pureServiceParameter;
+    }
+
+    private static void validateServiceParameter(ServiceParameter serviceParameter)
+    {
+        List<String> bannedHeaderParamNames = FastList.newListWith("Accept", "Content-Type", "Authorization");
+        if(serviceParameter.location == Location.HEADER && bannedHeaderParamNames.contains(serviceParameter.name))
+        {
+            throw new EngineException("Header parameters cannot have following names : [" + String.join(",", bannedHeaderParamNames) + "]", serviceParameter.sourceInformation, EngineErrorType.COMPILATION);
+        }
     }
 
     private static Root_meta_external_store_service_metamodel_TypeReference compileTypeReference(TypeReference typeReference, CompileContext context)

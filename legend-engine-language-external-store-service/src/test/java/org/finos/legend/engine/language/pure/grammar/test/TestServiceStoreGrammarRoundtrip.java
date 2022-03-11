@@ -163,6 +163,54 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "(\n" +
                 "  Service TestService\n" +
                 "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = header )\n" +
+                "    );\n" +
+                "    response : ExampleClass <- tests::store::exampleBinding;\n" +
+                "    security : [];\n" +
+                "  )\n"+
+                ")\n");
+
+        test("###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreGrammarWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = header, required = true )\n" +
+                "    );\n" +
+                "    response : ExampleClass <- tests::store::exampleBinding;\n" +
+                "    security : [];\n" +
+                "  )\n"+
+                ")\n");
+
+        test("###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreGrammarWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : [String] ( location = header, style = simple, explode = true, required = true )\n" +
+                "    );\n" +
+                "    response : ExampleClass <- tests::store::exampleBinding;\n" +
+                "    security : [];\n" +
+                "  )\n"+
+                ")\n");
+
+        test("###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreGrammarWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
                 "    path : '/testService/{serializationFormat}';\n" +
                 "    method : GET;\n" +
                 "    parameters :\n" +

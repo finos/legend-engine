@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.service;
 
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -25,6 +26,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Maps;
@@ -48,6 +50,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,9 +63,11 @@ public class ServiceExecutor
 
         List<ServiceParameter> pathParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.PATH);
         List<ServiceParameter> queryParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.QUERY);
+        List<ServiceParameter> headerParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.HEADER);
 
         String urlProcessedWithPathParams = processUrlWithPathParams(url, pathParams, state);
         String urlProcessedWithQueryParams = processUrlWithQueryParams(urlProcessedWithPathParams, queryParams, state);
+        List<Header> headers = processHeaderParams(headerParams, state);
 
         if (span != null)
         {
@@ -81,11 +86,11 @@ public class ServiceExecutor
             throw new RuntimeException(errMsg, e);
         }
 
-        InputStream response = executeRequest(httpMethod, uri, mimeType, securitySchemes, profiles);
+        InputStream response = executeRequest(httpMethod, uri, headers, mimeType, securitySchemes, profiles);
         return new InputStreamResult(response, org.eclipse.collections.api.factory.Lists.mutable.with(new ServiceStoreExecutionActivity(urlProcessedWithQueryParams)));
     }
 
-    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles)
+    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, List<Header> headers, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles)
     {
         Span span = GlobalTracer.get().activeSpan();
 
@@ -101,6 +106,7 @@ public class ServiceExecutor
             default:
                 throw new UnsupportedOperationException("The HTTP method " + httpMethod + " is not supported");
         }
+        ListIterate.forEach(headers, header -> request.addHeader(header));
 
         try
         {
@@ -174,6 +180,15 @@ public class ServiceExecutor
             return url;
         }
         return url + "?" + String.join("&", ListIterate.collectIf(queryParams, param -> (state.getResult(param.name) != null), param -> serializeQueryParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
+    }
+
+    private static List<Header> processHeaderParams(List<ServiceParameter> headerParams, ExecutionState state)
+    {
+        if (headerParams == null || headerParams.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+        return ListIterate.collectIf(headerParams, param -> (state.getResult(param.name) != null), param -> new BasicHeader(param.name, serializeHeaderParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
 
     private static void processSecurityScheme(HttpClientBuilder httpClientBuilder, MutableList<CommonProfile> profiles, SecurityScheme securityScheme)
@@ -257,9 +272,33 @@ public class ServiceExecutor
         return result;
     }
 
+    private static String serializeHeaderParameter(Object value, ServiceParameter parameter)
+    {
+        String result;
+        if (!(value instanceof List))
+        {
+            result = encodeParameterValue(parameter.name, value.toString(), parameter.allowReserved);
+        }
+        else
+        {
+            String serializationFormat = parameter.serializationFormat.style + "_" + parameter.serializationFormat.explode;
+
+            switch (serializationFormat)
+            {
+                case "simple_false":
+                case "simple_true":
+                    result = String.join(",", ListIterate.collect((List) value, val -> encodeParameterValue(parameter.name, val.toString(), parameter.allowReserved)));
+                    break;
+                default:
+                    throw new RuntimeException("Serialization Format [style : " + parameter.serializationFormat.style + ", explode : " + parameter.serializationFormat.explode + "] not supported for query parameter");
+            }
+        }
+        return result;
+    }
+
     private static String encodeParameterValue(String name, String value, Boolean allowReserved)
     {
-        if(allowReserved != null && allowReserved)
+        if (allowReserved != null && allowReserved)
         {
             return value;
         }

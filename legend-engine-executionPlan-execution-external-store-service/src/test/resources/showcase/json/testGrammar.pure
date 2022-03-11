@@ -93,6 +93,12 @@ Association meta::external::store::service::showcase::domain::S_Trade_S_Product
   s_trades  : meta::external::store::service::showcase::domain::S_Trade[*];
 }
 
+Class meta::external::store::service::showcase::domain::Firm
+{
+  name           : String[1];
+  employeesCount : Integer[1];
+}
+
 ###Mapping
 Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 (
@@ -163,6 +169,25 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
             name : 'product 30'
          )
          s_description : $service.parameters.description
+     )
+  }
+
+  *meta::external::store::service::showcase::domain::Firm[firm_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] FirmServices.FirmByName
+     (
+         ~paramMapping
+         (
+            name : $this.name
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] FirmServices.FirmsByNames
+     (
+         ~paramMapping
+         (
+            name : ['FirmA', 'FirmB', 'FirmC']
+         )
      )
   }
 
@@ -315,6 +340,35 @@ ServiceStore meta::external::store::service::showcase::store::TradeProductServic
          response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
       )
    )
+
+   ServiceGroup FirmServices
+   (
+      path : '/firms';
+
+      Service FirmByName
+      (
+         path : '/getFirmByName';
+         method : GET;
+         parameters :
+         (
+            name : String (location = header)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding];
+      )
+
+      Service FirmsByNames
+      (
+         path : '/getFirmsByNames';
+         method : GET;
+         parameters :
+         (
+            name : [String] (location = header, style = simple, explode = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding];
+      )
+   )
 )
 
 ###ExternalFormat
@@ -328,6 +382,12 @@ Binding meta::external::store::service::showcase::store::prodServiceStoreSchemaB
 {
   contentType   : 'application/json';
   modelIncludes : [ meta::external::store::service::showcase::domain::S_Product, meta::external::store::service::showcase::domain::S_Synonym ];
+}
+
+Binding meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Firm ];
 }
 
 ###Runtime
