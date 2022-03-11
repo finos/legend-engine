@@ -222,14 +222,14 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "target: Flat\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderSingleFlatTargetProperties(val, true, indentLevel + 1) +
+                    renderFlatTargetProperties(val, true, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
         @Override
         public String visit(OpaqueTarget val)
         {
-            return getTabString(indentLevel) + "target: Nested\n" +
+            return getTabString(indentLevel) + "target: OpaqueTarget\n" +
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "targetName: " + convertString(val.targetName, true) + ";\n" +
                     getTabString(indentLevel) + "}\n";
@@ -252,11 +252,11 @@ public class HelperPersistenceGrammarComposer
             return getTabString(indentLevel) + "property: " + part.property + ";\n" +
                     getTabString(indentLevel) + "flatTarget:\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderSingleFlatTargetProperties(part.flatTarget,false, indentLevel + 1) +
+                    renderFlatTargetProperties(part.flatTarget,false, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
-        private static String renderSingleFlatTargetProperties(FlatTarget flatTarget, boolean includeModelClass, int indentLevel)
+        private static String renderFlatTargetProperties(FlatTarget flatTarget, boolean includeModelClass, int indentLevel)
         {
             return getTabString(indentLevel) + "targetName: " + convertString(flatTarget.targetName, true) + ";\n" +
                     (includeModelClass ? getTabString(indentLevel) + "modelClass: " + flatTarget.modelClass + ";\n" : "") +

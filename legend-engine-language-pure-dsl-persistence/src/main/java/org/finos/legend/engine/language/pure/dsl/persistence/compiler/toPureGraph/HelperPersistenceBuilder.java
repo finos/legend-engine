@@ -210,7 +210,7 @@ public class HelperPersistenceBuilder
             Class<?> modelClass = context.resolveClass(val.modelClass, val.sourceInformation);
             return new Root_meta_pure_persistence_metamodel_target_MultiFlatTarget_Impl("")
                     ._modelClass(modelClass)
-                    ._transactionScope(context.resolveEnumValue(PERSISTENCE_PACKAGE_PREFIX + "::batch::targetspecification::TransactionScope", val.transactionScope.name()))
+                    ._transactionScope(context.resolveEnumValue(PERSISTENCE_PACKAGE_PREFIX + "::target::TransactionScope", val.transactionScope.name()))
                     ._parts(ListIterate.collect(val.parts, p -> resolvePart(p, modelClass, context)));
         }
 

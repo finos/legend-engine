@@ -196,7 +196,7 @@ public class PersistenceParseTreeWalker
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.singleTargetShape() != null)
         {
-            return visitSingleFlatTarget(ctx.singleTargetShape());
+            return visitFlatTarget(ctx.singleTargetShape());
         }
         else if (ctx.multiTargetShape() != null)
         {
@@ -224,14 +224,14 @@ public class PersistenceParseTreeWalker
 
         // parts
         PersistenceParserGrammar.TargetChildrenContext targetChildrenContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetChildren(), "parts", targetShape.sourceInformation);
-        targetShape.parts = ListIterate.collect(targetChildrenContext.targetChild(), this::visitPropertyAndSingleFlatTarget);
+        targetShape.parts = ListIterate.collect(targetChildrenContext.targetChild(), this::visitPropertyAndFlatTarget);
 
         return targetShape;
     }
 
-    private FlatTarget visitSingleFlatTarget(PersistenceParserGrammar.SingleTargetShapeContext ctx)
+    private FlatTarget visitFlatTarget(PersistenceParserGrammar.SingleTargetShapeContext ctx)
     {
-        FlatTarget targetShape = createBaseSingleFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.milestoningMode());
+        FlatTarget targetShape = createBaseFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.milestoningMode());
 
         // model class
         PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetShape.sourceInformation);
@@ -240,7 +240,7 @@ public class PersistenceParseTreeWalker
         return targetShape;
     }
 
-    private FlatTarget createBaseSingleFlatTarget(SourceInformation sourceInformation, List<PersistenceParserGrammar.TargetNameContext> targetNameContexts, List<PersistenceParserGrammar.PartitionPropertiesContext> partitionPropertiesContexts, List<PersistenceParserGrammar.DeduplicationStrategyContext> deduplicationStrategyContexts, List<PersistenceParserGrammar.MilestoningModeContext> milestoningModeContexts)
+    private FlatTarget createBaseFlatTarget(SourceInformation sourceInformation, List<PersistenceParserGrammar.TargetNameContext> targetNameContexts, List<PersistenceParserGrammar.PartitionPropertiesContext> partitionPropertiesContexts, List<PersistenceParserGrammar.DeduplicationStrategyContext> deduplicationStrategyContexts, List<PersistenceParserGrammar.MilestoningModeContext> milestoningModeContexts)
     {
         FlatTarget targetShape = new FlatTarget();
         targetShape.sourceInformation = sourceInformation;
@@ -276,25 +276,25 @@ public class PersistenceParseTreeWalker
         return targetShape;
     }
 
-    private PropertyAndFlatTarget visitPropertyAndSingleFlatTarget(PersistenceParserGrammar.TargetChildContext ctx)
+    private PropertyAndFlatTarget visitPropertyAndFlatTarget(PersistenceParserGrammar.TargetChildContext ctx)
     {
-        PropertyAndFlatTarget propertyAndFlatTargetSpecification = new PropertyAndFlatTarget();
-        propertyAndFlatTargetSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        PropertyAndFlatTarget propertyAndFlatTarget = new PropertyAndFlatTarget();
+        propertyAndFlatTarget.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // property
-        PersistenceParserGrammar.TargetChildPropertyContext targetChildPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetChildProperty(), "property", propertyAndFlatTargetSpecification.sourceInformation);
-        propertyAndFlatTargetSpecification.property = PureGrammarParserUtility.fromIdentifier(targetChildPropertyContext.identifier());
+        PersistenceParserGrammar.TargetChildPropertyContext targetChildPropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetChildProperty(), "property", propertyAndFlatTarget.sourceInformation);
+        propertyAndFlatTarget.property = PureGrammarParserUtility.fromIdentifier(targetChildPropertyContext.identifier());
 
-        // target shape (note: not expecting a model class in this context; compiler will populate based on target type of property above)
-        PersistenceParserGrammar.TargetChildTargetShapeContext targetChildTargetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetChildTargetShape(), "targetSpecification", propertyAndFlatTargetSpecification.sourceInformation);
-        propertyAndFlatTargetSpecification.flatTarget = visitChildFlatTarget(targetChildTargetShapeContext);
+        // flat target (note: not expecting a model class in this context; compiler will populate based on target type of property above)
+        PersistenceParserGrammar.TargetChildTargetShapeContext targetChildTargetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetChildTargetShape(), "flatTarget", propertyAndFlatTarget.sourceInformation);
+        propertyAndFlatTarget.flatTarget = visitPartFlatTarget(targetChildTargetShapeContext);
 
-        return propertyAndFlatTargetSpecification;
+        return propertyAndFlatTarget;
     }
 
-    private FlatTarget visitChildFlatTarget(PersistenceParserGrammar.TargetChildTargetShapeContext ctx)
+    private FlatTarget visitPartFlatTarget(PersistenceParserGrammar.TargetChildTargetShapeContext ctx)
     {
-        return createBaseSingleFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.milestoningMode());
+        return createBaseFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.milestoningMode());
     }
 
     private String visitTargetName(PersistenceParserGrammar.TargetNameContext ctx)
