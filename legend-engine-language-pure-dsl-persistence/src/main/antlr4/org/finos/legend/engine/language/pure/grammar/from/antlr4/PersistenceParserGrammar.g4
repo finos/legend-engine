@@ -27,7 +27,7 @@ identifier:                                 VALID_STRING | STRING
                                             | TXN_MILESTONING | TXN_MILESTONING_BATCH_ID | TXN_MILESTONING_BOTH | TXN_MILESTONING_OPAQUE | BATCH_ID_IN_FIELD_NAME | BATCH_ID_OUT_FIELD_NAME | DATE_TIME_IN_FIELD_NAME | DATE_TIME_OUT_FIELD_NAME
                                             | VALIDITY_MILESTONING | VALIDITY_MILESTONING_OPAQUE | DATE_TIME_FROM_FIELD_NAME | DATE_TIME_THRU_FIELD_NAME
                                             | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU | VALIDITY_DERIVATION_OPAQUE | SOURCE_DATE_TIME_FROM_PROPERTY | SOURCE_DATE_TIME_THRU_PROPERTY
-                                            | MERGE_STRATEGY | MERGE_STRATEGY_DELETE_INDICATOR | MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY | MERGE_STRATEGY_DELETE_INDICATOR_VALUES | MERGE_STRATEGY_OPAQUE
+                                            | MERGE_STRATEGY | MERGE_STRATEGY_NO_DELETES | MERGE_STRATEGY_DELETE_INDICATOR | MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY | MERGE_STRATEGY_DELETE_INDICATOR_VALUES | MERGE_STRATEGY_OPAQUE
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -368,7 +368,7 @@ mergeStrategy:                              MERGE_STRATEGY COLON
                                                     | opaqueMergeStrategy
                                                 )
 ;
-noDeletesMergeStrategy:                     NONE SEMI_COLON
+noDeletesMergeStrategy:                     MERGE_STRATEGY_NO_DELETES SEMI_COLON
 ;
 deleteIndicatorMergeStrategy:               MERGE_STRATEGY_DELETE_INDICATOR
                                                 BRACE_OPEN

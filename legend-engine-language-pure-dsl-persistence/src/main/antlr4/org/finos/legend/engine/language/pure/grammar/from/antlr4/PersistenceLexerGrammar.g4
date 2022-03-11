@@ -129,6 +129,7 @@ VALIDITY_DERIVATION_OPAQUE:                 'OpaqueValidityDerivation';
 //TODO: ledav -- remove post migration to update model [END]
 
 MERGE_STRATEGY:                             'mergeStrategy';
+MERGE_STRATEGY_NO_DELETES:                  'NoDeletes';
 MERGE_STRATEGY_DELETE_INDICATOR:            'DeleteIndicator';
 MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY:   'deleteProperty';
 MERGE_STRATEGY_DELETE_INDICATOR_VALUES:     'deleteValues';

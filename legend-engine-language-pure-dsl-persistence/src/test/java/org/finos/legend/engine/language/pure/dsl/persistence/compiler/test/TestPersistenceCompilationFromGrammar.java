@@ -8,7 +8,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
     protected abstract String targetFlat();
     protected abstract String targetMulti();
     protected abstract String targetOpaque();
-    protected abstract String batchMode();
+    protected abstract String ingestMode();
     protected abstract String flatTarget();
     protected abstract String parts();
 
@@ -35,9 +35,9 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      batchMode: AppendOnly\n" +
+                "      ingestMode: AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -72,9 +72,9 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      batchMode: AppendOnly\n" +
+                "      ingestMode: AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -130,9 +130,9 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
-                "      batchMode: AppendOnly\n" +
+                "      ingestMode: AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -195,9 +195,9 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -265,9 +265,9 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -338,9 +338,9 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -411,9 +411,9 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -474,9 +474,9 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
-                "      batchMode: AppendOnly\n" +
+                "      ingestMode: AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -562,9 +562,9 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'PersonDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -574,7 +574,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'PersonDataset2';\n" +
-                "            batchMode: BitemporalSnapshot\n" +
+                "            ingestMode: BitemporalSnapshot\n" +
                 "            {\n" +
                 "              transactionMilestoning: BatchIdAndDateTime\n" +
                 "              {\n" +

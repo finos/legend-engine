@@ -13,7 +13,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     protected abstract String targetFlat();
     protected abstract String targetMulti();
     protected abstract String targetOpaque();
-    protected abstract String batchMode();
+    protected abstract String ingestMode();
     protected abstract String flatTarget();
     protected abstract String parts();
 
@@ -42,9 +42,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -74,9 +74,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -99,9 +99,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -131,9 +131,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -156,9 +156,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -185,9 +185,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -213,9 +213,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -241,9 +241,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -266,9 +266,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -311,9 +311,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -324,9 +324,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -387,9 +387,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -397,9 +397,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -436,9 +436,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            " + batchMode() + ": AppendOnly\n" +
+                "            " + ingestMode() + ": AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -471,9 +471,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            " + batchMode() + ": AppendOnly\n" +
+                "            " + ingestMode() + ": AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -509,9 +509,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            " + batchMode() + ": AppendOnly\n" +
+                "            " + ingestMode() + ": AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -544,9 +544,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            " + batchMode() + ": AppendOnly\n" +
+                "            " + ingestMode() + ": AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -602,9 +602,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            " + batchMode() + ": AppendOnly\n" +
+                "            " + ingestMode() + ": AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -617,9 +617,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            " + batchMode() + ": AppendOnly\n" +
+                "            " + ingestMode() + ": AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -652,9 +652,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -678,9 +678,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      targetName: 'TestDataset1';\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -706,9 +706,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -732,9 +732,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -761,11 +761,11 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      deduplicationStrategy: NoDeduplication;\n" +
-                "      deduplicationStrategy: NoDeduplication;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      deduplicationStrategy: None;\n" +
+                "      deduplicationStrategy: None;\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -794,9 +794,9 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      modelClass: test::ModelClass;\n" +
                 "      partitionProperties: [];\n" +
                 "      partitionProperties: [];\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -825,7 +825,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      modelClass: test::ModelClass;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [13:13-17:5]: Field '" + batchMode() + "' is required");
+                "}\n", "PARSER error at [13:13-17:5]: Field '" + ingestMode() + "' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -843,19 +843,19 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [13:13-27:5]: Field '" + batchMode() + "' should be specified only once");
+                "}\n", "PARSER error at [13:13-27:5]: Field '" + ingestMode() + "' should be specified only once");
     }
 
     /**********
@@ -881,12 +881,12 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": NonMilestonedSnapshot\n" +
+                "      " + ingestMode() + ": NonMilestonedSnapshot\n" +
                 "      {\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-19:7]: Field 'auditing' is required");
+                "}\n", "PARSER error at [17:19-19:7]: Field 'auditing' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -904,14 +904,14 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": NonMilestonedSnapshot\n" +
+                "      " + ingestMode() + ": NonMilestonedSnapshot\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
+                "        auditing: None;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-21:7]: Field 'auditing' should be specified only once");
+                "}\n", "PARSER error at [17:19-21:7]: Field 'auditing' should be specified only once");
     }
 
     @Test
@@ -933,12 +933,12 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": UnitemporalSnapshot\n" +
+                "      " + ingestMode() + ": UnitemporalSnapshot\n" +
                 "      {\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-19:7]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [17:19-19:7]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -956,14 +956,14 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": UnitemporalSnapshot\n" +
+                "      " + ingestMode() + ": UnitemporalSnapshot\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-21:7]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:19-21:7]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -985,13 +985,13 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalSnapshot\n" +
+                "      " + ingestMode() + ": BitemporalSnapshot\n" +
                 "      {\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-20:7]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [17:19-20:7]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1009,7 +1009,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalSnapshot\n" +
+                "      " + ingestMode() + ": BitemporalSnapshot\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
@@ -1017,7 +1017,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:19-22:7]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1039,13 +1039,13 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalSnapshot\n" +
+                "      " + ingestMode() + ": BitemporalSnapshot\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-20:7]: Field 'validityMilestoning' is required");
+                "}\n", "PARSER error at [17:19-20:7]: Field 'validityMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1063,7 +1063,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalSnapshot\n" +
+                "      " + ingestMode() + ": BitemporalSnapshot\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
@@ -1071,7 +1071,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'validityMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:19-22:7]: Field 'validityMilestoning' should be specified only once");
     }
 
     @Test
@@ -1093,7 +1093,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalSnapshot\n" +
+                "      " + ingestMode() + ": BitemporalSnapshot\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: DateTime\n" +
@@ -1122,7 +1122,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalSnapshot\n" +
+                "      " + ingestMode() + ": BitemporalSnapshot\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: DateTime\n" +
@@ -1163,12 +1163,12 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": NonMilestonedDelta\n" +
+                "      " + ingestMode() + ": NonMilestonedDelta\n" +
                 "      {\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-19:7]: Field 'auditing' is required");
+                "}\n", "PARSER error at [17:19-19:7]: Field 'auditing' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1186,14 +1186,14 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": NonMilestonedDelta\n" +
+                "      " + ingestMode() + ": NonMilestonedDelta\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
+                "        auditing: None;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-21:7]: Field 'auditing' should be specified only once");
+                "}\n", "PARSER error at [17:19-21:7]: Field 'auditing' should be specified only once");
     }
 
     @Test
@@ -1215,13 +1215,13 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": UnitemporalDelta\n" +
+                "      " + ingestMode() + ": UnitemporalDelta\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-20:7]: Field 'mergeStrategy' is required");
+                "}\n", "PARSER error at [17:19-20:7]: Field 'mergeStrategy' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1239,7 +1239,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": UnitemporalDelta\n" +
+                "      " + ingestMode() + ": UnitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
@@ -1247,7 +1247,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'mergeStrategy' should be specified only once");
+                "}\n", "PARSER error at [17:19-22:7]: Field 'mergeStrategy' should be specified only once");
     }
 
     @Test
@@ -1269,13 +1269,13 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": UnitemporalDelta\n" +
+                "      " + ingestMode() + ": UnitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-20:7]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [17:19-20:7]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1293,7 +1293,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": UnitemporalDelta\n" +
+                "      " + ingestMode() + ": UnitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
@@ -1301,7 +1301,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:19-22:7]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1323,14 +1323,14 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalDelta\n" +
+                "      " + ingestMode() + ": BitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-21:7]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [17:19-21:7]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1348,7 +1348,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalDelta\n" +
+                "      " + ingestMode() + ": BitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
@@ -1357,7 +1357,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-23:7]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:19-23:7]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1379,14 +1379,14 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalDelta\n" +
+                "      " + ingestMode() + ": BitemporalDelta\n" +
                 "      {\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "        validityMilestoning: OpaqueValidityMilestoning;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-21:7]: Field 'mergeStrategy' is required");
+                "}\n", "PARSER error at [17:19-21:7]: Field 'mergeStrategy' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1404,7 +1404,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalDelta\n" +
+                "      " + ingestMode() + ": BitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
@@ -1413,7 +1413,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-23:7]: Field 'mergeStrategy' should be specified only once");
+                "}\n", "PARSER error at [17:19-23:7]: Field 'mergeStrategy' should be specified only once");
     }
 
     @Test
@@ -1435,14 +1435,14 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalDelta\n" +
+                "      " + ingestMode() + ": BitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-21:7]: Field 'validityMilestoning' is required");
+                "}\n", "PARSER error at [17:19-21:7]: Field 'validityMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1460,7 +1460,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalDelta\n" +
+                "      " + ingestMode() + ": BitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
@@ -1469,7 +1469,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-23:7]: Field 'validityMilestoning' should be specified only once");
+                "}\n", "PARSER error at [17:19-23:7]: Field 'validityMilestoning' should be specified only once");
     }
 
     @Test
@@ -1491,7 +1491,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalDelta\n" +
+                "      " + ingestMode() + ": BitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
@@ -1521,7 +1521,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": BitemporalDelta\n" +
+                "      " + ingestMode() + ": BitemporalDelta\n" +
                 "      {\n" +
                 "        mergeStrategy: OpaqueMerge;\n" +
                 "        transactionMilestoning: OpaqueTransactionMilestoning;\n" +
@@ -1561,13 +1561,13 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-20:7]: Field 'auditing' is required");
+                "}\n", "PARSER error at [17:19-20:7]: Field 'auditing' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1585,15 +1585,15 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'auditing' should be specified only once");
+                "}\n", "PARSER error at [17:19-22:7]: Field 'auditing' should be specified only once");
     }
 
     @Test
@@ -1615,13 +1615,13 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-20:7]: Field 'filterDuplicates' is required");
+                "}\n", "PARSER error at [17:19-20:7]: Field 'filterDuplicates' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1639,15 +1639,15 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + batchMode() + ": AppendOnly\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:18-22:7]: Field 'filterDuplicates' should be specified only once");
+                "}\n", "PARSER error at [17:19-22:7]: Field 'filterDuplicates' should be specified only once");
     }
 
     @Test
@@ -1660,7 +1660,6 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  owners: ['owner1', 'owner2'];\n" +
                 "  trigger: OpaqueTrigger;\n" +
                 "  reader: Service\n" +
                 "  {\n" +
@@ -1684,11 +1683,11 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "            {\n" +
                 "              versionProperty: 'updateDateTime';\n" +
                 "            }\n" +
-                "            " + batchMode() + ": NonMilestonedSnapshot\n" +
+                "            " + ingestMode() + ": NonMilestonedSnapshot\n" +
                 "            {\n" +
-                "              auditing: BatchDateTime\n" +
+                "              auditing: DateTime\n" +
                 "              {\n" +
-                "                batchDateTimeFieldName: 'updateDateTime';\n" +
+                "                dateTimeFieldName: 'updateDateTime';\n" +
                 "              }\n" +
                 "            }\n" +
                 "          }\n" +
@@ -1703,10 +1702,10 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "            {\n" +
                 "              versionProperty: 'updateDateTime';\n" +
                 "            }\n" +
-                "            " + batchMode() + ": UnitemporalDelta\n" +
+                "            " + ingestMode() + ": UnitemporalDelta\n" +
                 "            {\n" +
                 "              mergeStrategy: NoDeletes;\n" +
-                "              transactionMilestoning: BatchIdOnly\n" +
+                "              transactionMilestoning: BatchId\n" +
                 "              {\n" +
                 "                batchIdInFieldName: 'batchIdIn';\n" +
                 "                batchIdOutFieldName: 'batchIdOut';\n" +
@@ -1720,14 +1719,14 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
                 "            deduplicationStrategy: OpaqueDeduplication;\n" +
-                "            " + batchMode() + ": BitemporalDelta\n" +
+                "            " + ingestMode() + ": BitemporalDelta\n" +
                 "            {\n" +
                 "              mergeStrategy: DeleteIndicator\n" +
                 "              {\n" +
                 "                deleteProperty: 'deleted';\n" +
                 "                deleteValues: ['Y', '1', 'true'];\n" +
                 "              }\n" +
-                "              transactionMilestoning: DateTimeOnly\n" +
+                "              transactionMilestoning: DateTime\n" +
                 "              {\n" +
                 "                dateTimeInFieldName: 'inZ';\n" +
                 "                dateTimeOutFieldName: 'outZ';\n" +

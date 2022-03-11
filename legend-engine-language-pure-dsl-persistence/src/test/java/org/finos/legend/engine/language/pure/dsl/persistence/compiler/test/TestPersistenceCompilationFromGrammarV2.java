@@ -21,9 +21,9 @@ public class TestPersistenceCompilationFromGrammarV2 extends TestPersistenceComp
     }
 
     @Override
-    protected String batchMode()
+    protected String ingestMode()
     {
-        return "batchMode";
+        return "ingestMode";
     }
 
     @Override

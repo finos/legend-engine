@@ -23,9 +23,9 @@ public class TestPersistenceGrammarParserV2 extends TestPersistenceGrammarParser
     }
 
     @Override
-    protected String batchMode()
+    protected String ingestMode()
     {
-        return "batchMode";
+        return "ingestMode";
     }
 
     @Override

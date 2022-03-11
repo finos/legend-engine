@@ -86,9 +86,9 @@ public class HelperPersistenceGrammarComposer
         return deduplicationStrategy.accept(new DeduplicationStrategyComposer(indentLevel));
     }
 
-    private static String renderBatchMode(IngestMode batchMode, int indentLevel)
+    private static String renderIngestMode(IngestMode ingestMode, int indentLevel)
     {
-        return batchMode.accept(new BatchModeComposer(indentLevel));
+        return ingestMode.accept(new IngestModeComposer(indentLevel));
     }
 
     private static String renderAuditing(Auditing auditing, int indentLevel)
@@ -254,7 +254,7 @@ public class HelperPersistenceGrammarComposer
                     (includeModelClass ? getTabString(indentLevel) + "modelClass: " + flatTarget.modelClass + ";\n" : "") +
                     renderPartitionProperties(flatTarget, indentLevel) +
                     renderDeduplicationStrategy(flatTarget.deduplicationStrategy, indentLevel) +
-                    renderBatchMode(flatTarget.ingestMode, indentLevel);
+                    renderIngestMode(flatTarget.ingestMode, indentLevel);
         }
 
         private static String renderPartitionProperties(FlatTarget flatTarget, int indentLevel)
@@ -277,7 +277,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(NoDeduplicationStrategy val)
         {
-            return getTabString(indentLevel) + "deduplicationStrategy: NoDeduplication;\n";
+            return getTabString(indentLevel) + "deduplicationStrategy: None;\n";
         }
 
         @Override
@@ -302,11 +302,11 @@ public class HelperPersistenceGrammarComposer
         }
     }
 
-    private static class BatchModeComposer implements IngestModeVisitor<String>
+    private static class IngestModeComposer implements IngestModeVisitor<String>
     {
         private final int indentLevel;
 
-        private BatchModeComposer(int indentLevel)
+        private IngestModeComposer(int indentLevel)
         {
             this.indentLevel = indentLevel;
         }
@@ -314,7 +314,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(NontemporalSnapshot val)
         {
-            return getTabString(indentLevel) + "batchMode: NontemporalSnapshot\n" +
+            return getTabString(indentLevel) + "ingestMode: NontemporalSnapshot\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderAuditing(val.auditing, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
@@ -323,7 +323,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(UnitemporalSnapshot val)
         {
-            return getTabString(indentLevel) + "batchMode: UnitemporalSnapshot\n" +
+            return getTabString(indentLevel) + "ingestMode: UnitemporalSnapshot\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderTransactionMilestoning(val.transactionMilestoning, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
@@ -332,7 +332,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(BitemporalSnapshot val)
         {
-            return getTabString(indentLevel) + "batchMode: BitemporalSnapshot\n" +
+            return getTabString(indentLevel) + "ingestMode: BitemporalSnapshot\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderTransactionMilestoning(val.transactionMilestoning, indentLevel + 1) +
                     renderValidityMilestoning(val.validityMilestoning, indentLevel + 1) +
@@ -342,7 +342,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(NontemporalDelta val)
         {
-            return getTabString(indentLevel) + "batchMode: NontemporalDelta\n" +
+            return getTabString(indentLevel) + "ingestMode: NontemporalDelta\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderAuditing(val.auditing, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
@@ -351,7 +351,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(UnitemporalDelta val)
         {
-            return getTabString(indentLevel) + "batchMode: UnitemporalDelta\n" +
+            return getTabString(indentLevel) + "ingestMode: UnitemporalDelta\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderMergeStrategy(val.mergeStrategy, indentLevel + 1) +
                     renderTransactionMilestoning(val.transactionMilestoning, indentLevel + 1) +
@@ -361,7 +361,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(BitemporalDelta val)
         {
-            return getTabString(indentLevel) + "batchMode: BitemporalDelta\n" +
+            return getTabString(indentLevel) + "ingestMode: BitemporalDelta\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderMergeStrategy(val.mergeStrategy, indentLevel + 1) +
                     renderTransactionMilestoning(val.transactionMilestoning, indentLevel + 1) +
@@ -372,7 +372,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(AppendOnly val)
         {
-            return getTabString(indentLevel) + "batchMode: AppendOnly\n" +
+            return getTabString(indentLevel) + "ingestMode: AppendOnly\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderAuditing(val.auditing, indentLevel + 1) +
                     getTabString(indentLevel + 1) + "filterDuplicates: " + val.filterDuplicates + ";\n" +
@@ -392,7 +392,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(NoAuditing val)
         {
-            return getTabString(indentLevel) + "auditing: NoAuditing;\n";
+            return getTabString(indentLevel) + "auditing: None;\n";
         }
 
         @Override
@@ -422,7 +422,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(BatchIdTransactionMilestoning val)
         {
-            return getTabString(indentLevel) + "transactionMilestoning: BatchIdOnly\n" +
+            return getTabString(indentLevel) + "transactionMilestoning: BatchId\n" +
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "batchIdInFieldName: '" + val.batchIdInFieldName + "';\n" +
                     getTabString(indentLevel + 1) + "batchIdOutFieldName: '" + val.batchIdOutFieldName + "';\n" +
@@ -432,7 +432,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(DateTimeTransactionMilestoning val)
         {
-            return getTabString(indentLevel) + "transactionMilestoning: DateTimeOnly\n" +
+            return getTabString(indentLevel) + "transactionMilestoning: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "dateTimeInFieldName: '" + val.dateTimeInFieldName + "';\n" +
                     getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutFieldName + "';\n" +
@@ -481,7 +481,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(OpaqueValidityMilestoning val)
         {
-            return getTabString(indentLevel) + "validityMilestoning: " + val.getClass().getSimpleName() + ";\n";
+            return getTabString(indentLevel) + "validityMilestoning: OpaqueValidityMilestoning" + val.getClass().getSimpleName() + ";\n";
         }
     }
 

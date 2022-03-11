@@ -8,7 +8,7 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
     protected abstract String targetFlat();
     protected abstract String targetMulti();
     protected abstract String targetOpaque();
-    protected abstract String batchMode();
+    protected abstract String ingestMode();
     protected abstract String flatTarget();
     protected abstract String parts();
 
@@ -20,7 +20,6 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  owners: ['owner1', 'owner2'];\n" +
                 "  trigger: OpaqueTrigger;\n" +
                 "  reader: Service\n" +
                 "  {\n" +
@@ -44,10 +43,10 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "            {\n" +
                 "              versionProperty: updateDateTime;\n" +
                 "            }\n" +
-                "            " + batchMode() + ": UnitemporalDelta\n" +
+                "            " + ingestMode() + ": UnitemporalDelta\n" +
                 "            {\n" +
                 "              mergeStrategy: NoDeletes;\n" +
-                "              transactionMilestoning: BatchIdOnly\n" +
+                "              transactionMilestoning: BatchId\n" +
                 "              {\n" +
                 "                batchIdInFieldName: 'batchIdIn';\n" +
                 "                batchIdOutFieldName: 'batchIdOut';\n" +
@@ -61,14 +60,14 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
                 "            deduplicationStrategy: OpaqueDeduplication;\n" +
-                "            " + batchMode() + ": BitemporalDelta\n" +
+                "            " + ingestMode() + ": BitemporalDelta\n" +
                 "            {\n" +
                 "              mergeStrategy: DeleteIndicator\n" +
                 "              {\n" +
                 "                deleteProperty: deleted;\n" +
                 "                deleteValues: ['Y', '1', 'true'];\n" +
                 "              }\n" +
-                "              transactionMilestoning: DateTimeOnly\n" +
+                "              transactionMilestoning: DateTime\n" +
                 "              {\n" +
                 "                dateTimeInFieldName: 'inZ';\n" +
                 "                dateTimeOutFieldName: 'outZ';\n" +

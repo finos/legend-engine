@@ -208,9 +208,10 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape visit(MultiFlatTarget val)
         {
             Class<?> modelClass = context.resolveClass(val.modelClass, val.sourceInformation);
+            String TRANSACTION_SCOPE_FULL_PATH = PERSISTENCE_PACKAGE_PREFIX + "::persister::targetshape::TransactionScope";
             return new Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTarget_Impl("")
                     ._modelClass(modelClass)
-                    ._transactionScope(context.resolveEnumValue(PERSISTENCE_PACKAGE_PREFIX + "::target::TransactionScope", val.transactionScope.name()))
+                    ._transactionScope(context.resolveEnumValue(TRANSACTION_SCOPE_FULL_PATH, val.transactionScope.name()))
                     ._parts(ListIterate.collect(val.parts, p -> resolvePart(p, modelClass, context)));
         }
 

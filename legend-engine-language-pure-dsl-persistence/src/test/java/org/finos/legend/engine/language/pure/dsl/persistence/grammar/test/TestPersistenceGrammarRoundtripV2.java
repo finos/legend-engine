@@ -21,9 +21,9 @@ public class TestPersistenceGrammarRoundtripV2 extends TestPersistenceGrammarRou
     }
 
     @Override
-    protected String batchMode()
+    protected String ingestMode()
     {
-        return "batchMode";
+        return "ingestMode";
     }
 
     @Override
