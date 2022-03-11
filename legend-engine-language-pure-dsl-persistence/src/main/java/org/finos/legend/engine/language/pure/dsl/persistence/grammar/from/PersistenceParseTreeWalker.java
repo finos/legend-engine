@@ -12,30 +12,30 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.Auditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.DateTimeAuditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.NoAuditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.OpaqueAuditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.deduplication.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.BatchMilestoningMode;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.appendonly.AppendOnly;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.auditing.Auditing;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.auditing.BatchDateTimeAuditing;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.auditing.NoAuditing;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.auditing.OpaqueAuditing;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.BitemporalDelta;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.NonMilestonedDelta;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.UnitemporalDelta;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.merge.DeleteIndicatorMergeStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.merge.MergeStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.merge.NoDeletesMergeStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.merge.OpaqueMergeStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.snapshot.BitemporalSnapshot;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.snapshot.NonMilestonedSnapshot;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.snapshot.UnitemporalSnapshot;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.transactionmilestoning.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.DateTimeValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.OpaqueValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.ValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.derivation.ValidityDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestMode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.appendonly.AppendOnly;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.BitemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.NontemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.UnitemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.MergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.NoDeletesMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.OpaqueMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.OpaqueValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.*;
@@ -81,12 +81,6 @@ public class PersistenceParseTreeWalker
         // documentation
         PersistenceParserGrammar.DocumentationContext documentationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.documentation(), "doc", persistence.sourceInformation);
         persistence.documentation = PureGrammarParserUtility.fromGrammarString(documentationContext.STRING().getText(), true);
-
-        //TODO: ledav -- remove post migration to updated model
-
-        // owners (optional)
-        PersistenceParserGrammar.OwnersContext ownersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owners(), "owners", persistence.sourceInformation);
-        persistence.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : Collections.emptyList();
 
         // trigger
         PersistenceParserGrammar.TriggerContext triggerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.trigger(), "trigger", persistence.sourceInformation);
@@ -184,6 +178,7 @@ public class PersistenceParseTreeWalker
         // target shape
         PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "target", batch.sourceInformation);
         batch.targetShape = visitTargetShape(targetShapeContext);
+
         return batch;
     }
 
@@ -194,9 +189,9 @@ public class PersistenceParseTreeWalker
     private TargetShape visitTargetShape(PersistenceParserGrammar.TargetShapeContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.singleTargetShape() != null)
+        if (ctx.flatTargetShape() != null)
         {
-            return visitFlatTarget(ctx.singleTargetShape());
+            return visitFlatTarget(ctx.flatTargetShape());
         }
         else if (ctx.multiTargetShape() != null)
         {
@@ -229,9 +224,9 @@ public class PersistenceParseTreeWalker
         return targetShape;
     }
 
-    private FlatTarget visitFlatTarget(PersistenceParserGrammar.SingleTargetShapeContext ctx)
+    private FlatTarget visitFlatTarget(PersistenceParserGrammar.FlatTargetShapeContext ctx)
     {
-        FlatTarget targetShape = createBaseFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.milestoningMode());
+        FlatTarget targetShape = createBaseFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.ingestMode());
 
         // model class
         PersistenceParserGrammar.TargetModelClassContext targetModelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetModelClass(), "modelClass", targetShape.sourceInformation);
@@ -240,7 +235,7 @@ public class PersistenceParseTreeWalker
         return targetShape;
     }
 
-    private FlatTarget createBaseFlatTarget(SourceInformation sourceInformation, List<PersistenceParserGrammar.TargetNameContext> targetNameContexts, List<PersistenceParserGrammar.PartitionPropertiesContext> partitionPropertiesContexts, List<PersistenceParserGrammar.DeduplicationStrategyContext> deduplicationStrategyContexts, List<PersistenceParserGrammar.MilestoningModeContext> milestoningModeContexts)
+    private FlatTarget createBaseFlatTarget(SourceInformation sourceInformation, List<PersistenceParserGrammar.TargetNameContext> targetNameContexts, List<PersistenceParserGrammar.PartitionPropertiesContext> partitionPropertiesContexts, List<PersistenceParserGrammar.DeduplicationStrategyContext> deduplicationStrategyContexts, List<PersistenceParserGrammar.IngestModeContext> ingestModeContexts)
     {
         FlatTarget targetShape = new FlatTarget();
         targetShape.sourceInformation = sourceInformation;
@@ -257,9 +252,9 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.DeduplicationStrategyContext deduplicationStrategyContext = PureGrammarParserUtility.validateAndExtractOptionalField(deduplicationStrategyContexts, "deduplicationStrategy", targetShape.sourceInformation);
         targetShape.deduplicationStrategy = visitDeduplicationStrategy(deduplicationStrategyContext);
 
-        // batch mode
-        PersistenceParserGrammar.MilestoningModeContext milestoningModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(milestoningModeContexts, "batchMode", targetShape.sourceInformation);
-        targetShape.batchMode = visitMilestoningMode(milestoningModeContext);
+        // ingest mode
+        PersistenceParserGrammar.IngestModeContext ingestModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ingestModeContexts, "ingestMode", targetShape.sourceInformation);
+        targetShape.ingestMode = visitIngestMode(ingestModeContext);
 
         return targetShape;
     }
@@ -294,7 +289,7 @@ public class PersistenceParseTreeWalker
 
     private FlatTarget visitPartFlatTarget(PersistenceParserGrammar.TargetChildTargetShapeContext ctx)
     {
-        return createBaseFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.milestoningMode());
+        return createBaseFlatTarget(walkerSourceInformation.getSourceInformation(ctx), ctx.targetName(), ctx.partitionProperties(), ctx.deduplicationStrategy(), ctx.ingestMode());
     }
 
     private String visitTargetName(PersistenceParserGrammar.TargetNameContext ctx)
@@ -374,15 +369,15 @@ public class PersistenceParseTreeWalker
     }
 
     /**********
-     * batch mode
+     * ingest mode
      **********/
 
-    private BatchMilestoningMode visitMilestoningMode(PersistenceParserGrammar.MilestoningModeContext ctx)
+    private IngestMode visitIngestMode(PersistenceParserGrammar.IngestModeContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.nonMilestonedSnapshot() != null)
+        if (ctx.nontemporalSnapshot() != null)
         {
-            return visitNonMilestonedSnapshot(ctx.nonMilestonedSnapshot());
+            return visitNontemporalSnapshot(ctx.nontemporalSnapshot());
         }
         else if (ctx.unitemporalSnapshot() != null)
         {
@@ -392,9 +387,9 @@ public class PersistenceParseTreeWalker
         {
             return visitBitemporalSnapshot(ctx.bitemporalSnapshot());
         }
-        else if (ctx.nonMilestonedDelta() != null)
+        else if (ctx.nontemporalDelta() != null)
         {
-            return visitNonMilestonedDelta(ctx.nonMilestonedDelta());
+            return visitNontemporalDelta(ctx.nontemporalDelta());
         }
         else if (ctx.unitemporalDelta() != null)
         {
@@ -408,23 +403,23 @@ public class PersistenceParseTreeWalker
         {
             return visitAppendOnly(ctx.appendOnly());
         }
-        throw new EngineException("Unrecognized batch milestoning mode", sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Unrecognized ingest mode", sourceInformation, EngineErrorType.PARSER);
     }
 
     /**********
-     * batch mode - snapshot
+     * ingest mode - snapshot
      **********/
 
-    private NonMilestonedSnapshot visitNonMilestonedSnapshot(PersistenceParserGrammar.NonMilestonedSnapshotContext ctx)
+    private NontemporalSnapshot visitNontemporalSnapshot(PersistenceParserGrammar.NontemporalSnapshotContext ctx)
     {
-        NonMilestonedSnapshot nonMilestonedSnapshot = new NonMilestonedSnapshot();
-        nonMilestonedSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        NontemporalSnapshot nontemporalSnapshot = new NontemporalSnapshot();
+        nontemporalSnapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // auditing
-        PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditing(), "auditing", nonMilestonedSnapshot.sourceInformation);
-        nonMilestonedSnapshot.auditing = visitAuditing(auditingContext);
+        PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditing(), "auditing", nontemporalSnapshot.sourceInformation);
+        nontemporalSnapshot.auditing = visitAuditing(auditingContext);
 
-        return nonMilestonedSnapshot;
+        return nontemporalSnapshot;
     }
 
     private UnitemporalSnapshot visitUnitemporalSnapshot(PersistenceParserGrammar.UnitemporalSnapshotContext ctx)
@@ -456,19 +451,19 @@ public class PersistenceParseTreeWalker
     }
 
     /**********
-     * batch mode - delta
+     * ingest mode - delta
      **********/
 
-    private NonMilestonedDelta visitNonMilestonedDelta(PersistenceParserGrammar.NonMilestonedDeltaContext ctx)
+    private NontemporalDelta visitNontemporalDelta(PersistenceParserGrammar.NontemporalDeltaContext ctx)
     {
-        NonMilestonedDelta nonMilestonedDelta = new NonMilestonedDelta();
-        nonMilestonedDelta.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        NontemporalDelta nontemporalDelta = new NontemporalDelta();
+        nontemporalDelta.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // auditing
-        PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditing(), "auditing", nonMilestonedDelta.sourceInformation);
-        nonMilestonedDelta.auditing = visitAuditing(auditingContext);
+        PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditing(), "auditing", nontemporalDelta.sourceInformation);
+        nontemporalDelta.auditing = visitAuditing(auditingContext);
 
-        return nonMilestonedDelta;
+        return nontemporalDelta;
     }
 
     private UnitemporalDelta visitUnitemporalDelta(PersistenceParserGrammar.UnitemporalDeltaContext ctx)
@@ -508,7 +503,7 @@ public class PersistenceParseTreeWalker
     }
 
     /**********
-     * batch mode - append only
+     * ingest mode - append only
      **********/
 
     private AppendOnly visitAppendOnly(PersistenceParserGrammar.AppendOnlyContext ctx)
@@ -574,9 +569,9 @@ public class PersistenceParseTreeWalker
         {
             return new NoAuditing();
         }
-        if (ctx.batchDateTimeAuditing() != null)
+        if (ctx.dateTimeAuditing() != null)
         {
-            return visitBatchDateTimeAuditScheme(ctx.batchDateTimeAuditing());
+            return visitBatchDateTimeAuditScheme(ctx.dateTimeAuditing());
         }
         if (ctx.opaqueAuditing() != null)
         {
@@ -585,13 +580,13 @@ public class PersistenceParseTreeWalker
         throw new EngineException("Unrecognized auditing", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private BatchDateTimeAuditing visitBatchDateTimeAuditScheme(PersistenceParserGrammar.BatchDateTimeAuditingContext ctx)
+    private DateTimeAuditing visitBatchDateTimeAuditScheme(PersistenceParserGrammar.DateTimeAuditingContext ctx)
     {
-        BatchDateTimeAuditing auditing = new BatchDateTimeAuditing();
+        DateTimeAuditing auditing = new DateTimeAuditing();
         auditing.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // batch date time field name
-        PersistenceParserGrammar.BatchDateTimeFieldNameContext transactionDateTimePropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.batchDateTimeFieldName(), "batchDateTimeFieldName", auditing.sourceInformation);
+        // date time field name
+        PersistenceParserGrammar.DateTimeFieldNameContext transactionDateTimePropertyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeFieldName(), "dateTimeFieldName", auditing.sourceInformation);
         auditing.dateTimeFieldName = PureGrammarParserUtility.fromGrammarString(transactionDateTimePropertyContext.STRING().getText(), true);
 
         return auditing;

@@ -9,27 +9,27 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.deduplication.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.BatchMilestoningMode;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.BatchMilestoningModeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.appendonly.AppendOnly;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.auditing.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.BitemporalDelta;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.NonMilestonedDelta;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.UnitemporalDelta;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.delta.merge.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.snapshot.BitemporalSnapshot;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.snapshot.NonMilestonedSnapshot;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.snapshot.UnitemporalSnapshot;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.transactionmilestoning.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.DateTimeValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.OpaqueValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.ValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.ValidityMilestoningVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.derivation.ValidityDerivation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.mode.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestMode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestModeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.appendonly.AppendOnly;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.BitemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.NontemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.UnitemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.OpaqueValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoningVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ReaderVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
@@ -38,8 +38,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
-
-import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
@@ -52,7 +50,6 @@ public class HelperPersistenceGrammarComposer
         return "Persistence " + convertPath(persistence.getPath()) + "\n" +
                 "{\n" +
                 renderDocumentation(persistence.documentation, indentLevel) +
-                renderOwners(persistence.owners, indentLevel) +
                 renderTrigger(persistence.trigger, indentLevel) +
                 renderReader(persistence.reader, indentLevel) +
                 renderPersister(persistence.persister, indentLevel) +
@@ -62,11 +59,6 @@ public class HelperPersistenceGrammarComposer
     public static String renderDocumentation(String documentation, int indentLevel)
     {
         return getTabString(indentLevel) + "doc: " + convertString(documentation, true) + ";\n";
-    }
-
-    public static String renderOwners(List<String> owners, int indentLevel)
-    {
-        return owners.isEmpty() ? "" : getTabString(indentLevel) + "owners: " + "[" + LazyIterate.collect(owners, o -> convertString(o, true)).makeString(", ") + "];\n";
     }
 
     private static String renderTrigger(Trigger trigger, int indentLevel)
@@ -94,7 +86,7 @@ public class HelperPersistenceGrammarComposer
         return deduplicationStrategy.accept(new DeduplicationStrategyComposer(indentLevel));
     }
 
-    private static String renderBatchMode(BatchMilestoningMode batchMode, int indentLevel)
+    private static String renderBatchMode(IngestMode batchMode, int indentLevel)
     {
         return batchMode.accept(new BatchModeComposer(indentLevel));
     }
@@ -262,7 +254,7 @@ public class HelperPersistenceGrammarComposer
                     (includeModelClass ? getTabString(indentLevel) + "modelClass: " + flatTarget.modelClass + ";\n" : "") +
                     renderPartitionProperties(flatTarget, indentLevel) +
                     renderDeduplicationStrategy(flatTarget.deduplicationStrategy, indentLevel) +
-                    renderBatchMode(flatTarget.batchMode, indentLevel);
+                    renderBatchMode(flatTarget.ingestMode, indentLevel);
         }
 
         private static String renderPartitionProperties(FlatTarget flatTarget, int indentLevel)
@@ -310,7 +302,7 @@ public class HelperPersistenceGrammarComposer
         }
     }
 
-    private static class BatchModeComposer implements BatchMilestoningModeVisitor<String>
+    private static class BatchModeComposer implements IngestModeVisitor<String>
     {
         private final int indentLevel;
 
@@ -320,9 +312,9 @@ public class HelperPersistenceGrammarComposer
         }
 
         @Override
-        public String visit(NonMilestonedSnapshot val)
+        public String visit(NontemporalSnapshot val)
         {
-            return getTabString(indentLevel) + "batchMode: NonMilestonedSnapshot\n" +
+            return getTabString(indentLevel) + "batchMode: NontemporalSnapshot\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderAuditing(val.auditing, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
@@ -348,9 +340,9 @@ public class HelperPersistenceGrammarComposer
         }
 
         @Override
-        public String visit(NonMilestonedDelta val)
+        public String visit(NontemporalDelta val)
         {
-            return getTabString(indentLevel) + "batchMode: NonMilestonedDelta\n" +
+            return getTabString(indentLevel) + "batchMode: NontemporalDelta\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderAuditing(val.auditing, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
@@ -382,8 +374,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "batchMode: AppendOnly\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderAuditing(((AppendOnly) val).auditing, indentLevel + 1) +
-                    getTabString(indentLevel + 1) + "filterDuplicates: " + ((AppendOnly) val).filterDuplicates + ";\n" +
+                    renderAuditing(val.auditing, indentLevel + 1) +
+                    getTabString(indentLevel + 1) + "filterDuplicates: " + val.filterDuplicates + ";\n" +
                     getTabString(indentLevel) + "}\n";
         }
     }
@@ -404,11 +396,11 @@ public class HelperPersistenceGrammarComposer
         }
 
         @Override
-        public String visit(BatchDateTimeAuditing val)
+        public String visit(DateTimeAuditing val)
         {
-            return getTabString(indentLevel) + "auditing: BatchDateTime\n" +
+            return getTabString(indentLevel) + "auditing: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "batchDateTimeFieldName: '" + val.dateTimeFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeFieldName: '" + val.dateTimeFieldName + "';\n" +
                     getTabString(indentLevel) + "}\n";        }
 
         @Override

@@ -11,23 +11,23 @@ options
 
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
-                                            | TRUE | FALSE | IMPORT
-                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_OWNERS | PERSISTENCE_TRIGGER | PERSISTENCE_READER | PERSISTENCE_PERSISTER
+                                            | TRUE | FALSE | IMPORT | NONE | DATE_TIME
+                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_READER | PERSISTENCE_PERSISTER
                                             | TRIGGER_MANUAL | TRIGGER_OPAQUE
                                             | READER_SERVICE | READER_SERVICE_SERVICE
                                             | PERSISTER_TARGET | PERSISTER_STREAMING | PERSISTER_BATCH
                                             | TARGET_SHAPE_NAME | TARGET_SHAPE_MODEL_CLASS
                                             | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_PARTS | TARGET_PART_PROPERTY | TARGET_PART_FLAT_TARGET | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
-                                            | TARGET_SHAPE_SINGLE | TARGET_SHAPE_SINGLE_PARTITION_PROPERTIES | TARGET_SHAPE_SINGLE_DEDUPLICATION | TARGET_SHAPE_SINGLE_MILESTONING
+                                            | TARGET_SHAPE_FLAT | TARGET_SHAPE_FLAT_PARTITION_PROPERTIES | TARGET_SHAPE_FLAT_DEDUPLICATION | TARGET_SHAPE_FLAT_INGEST_MODE
                                             | TARGET_SHAPE_OPAQUE
-                                            | DEDUPLICATION_NONE | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_PROPERTY | DEDUPLICATION_OPAQUE
-                                            | BATCH_MODE_NON_MILESTONED_SNAPSHOT | BATCH_MODE_UNITEMPORAL_SNAPSHOT | BATCH_MODE_BITEMPORAL_SNAPSHOT | BATCH_MODE_NON_MILESTONED_DELTA | BATCH_MODE_UNITEMPORAL_DELTA | BATCH_MODE_BITEMPORAL_DELTA | BATCH_MODE_APPEND_ONLY
+                                            | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_PROPERTY | DEDUPLICATION_OPAQUE
+                                            | INGEST_MODE_NON_MILESTONED_SNAPSHOT | INGEST_MODE_UNITEMPORAL_SNAPSHOT | INGEST_MODE_BITEMPORAL_SNAPSHOT | INGEST_MODE_NON_MILESTONED_DELTA | INGEST_MODE_UNITEMPORAL_DELTA | INGEST_MODE_BITEMPORAL_DELTA | INGEST_MODE_APPEND_ONLY
                                             | FILTER_DUPLICATES
-                                            | AUDITING | AUDITING_NONE | AUDITING_BATCH_DATE_TIME | AUDITING_BATCH_DATE_TIME_FIELD_NAME | AUDITING_OPAQUE
-                                            | TXN_MILESTONING | TXN_MILESTONING_BATCH_ID | TXN_MILESTONING_DATE_TIME | TXN_MILESTONING_BOTH | TXN_MILESTONING_OPAQUE | BATCH_ID_IN_FIELD_NAME | BATCH_ID_OUT_FIELD_NAME | DATE_TIME_IN_FIELD_NAME | DATE_TIME_OUT_FIELD_NAME
-                                            | VALIDITY_MILESTONING | VALIDITY_MILESTONING_DATE_TIME | VALIDITY_MILESTONING_OPAQUE | DATE_TIME_FROM_FIELD_NAME | DATE_TIME_THRU_FIELD_NAME
+                                            | AUDITING | AUDITING_DATE_TIME_FIELD_NAME | AUDITING_OPAQUE
+                                            | TXN_MILESTONING | TXN_MILESTONING_BATCH_ID | TXN_MILESTONING_BOTH | TXN_MILESTONING_OPAQUE | BATCH_ID_IN_FIELD_NAME | BATCH_ID_OUT_FIELD_NAME | DATE_TIME_IN_FIELD_NAME | DATE_TIME_OUT_FIELD_NAME
+                                            | VALIDITY_MILESTONING | VALIDITY_MILESTONING_OPAQUE | DATE_TIME_FROM_FIELD_NAME | DATE_TIME_THRU_FIELD_NAME
                                             | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU | VALIDITY_DERIVATION_OPAQUE | SOURCE_DATE_TIME_FROM_PROPERTY | SOURCE_DATE_TIME_THRU_PROPERTY
-                                            | MERGE_STRATEGY | MERGE_STRATEGY_NO_DELETES | MERGE_STRATEGY_DELETE_INDICATOR | MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY | MERGE_STRATEGY_DELETE_INDICATOR_VALUES | MERGE_STRATEGY_OPAQUE
+                                            | MERGE_STRATEGY | MERGE_STRATEGY_DELETE_INDICATOR | MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY | MERGE_STRATEGY_DELETE_INDICATOR_VALUES | MERGE_STRATEGY_OPAQUE
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -44,7 +44,6 @@ persistence:                                PERSISTENCE qualifiedName
                                                 BRACE_OPEN
                                                     (
                                                         documentation
-                                                        | owners
                                                         | trigger
                                                         | reader
                                                         | persister
@@ -52,12 +51,6 @@ persistence:                                PERSISTENCE qualifiedName
                                                 BRACE_CLOSE
 ;
 documentation:                              PERSISTENCE_DOC COLON STRING SEMI_COLON
-;
-owners:                                     PERSISTENCE_OWNERS COLON
-                                                BRACKET_OPEN
-                                                    (STRING (COMMA STRING)*)?
-                                                BRACKET_CLOSE
-                                            SEMI_COLON
 ;
 trigger:                                    PERSISTENCE_TRIGGER COLON
                                                 (
@@ -94,7 +87,7 @@ batchPersister:                             PERSISTER_BATCH
 targetShape:                                PERSISTER_TARGET COLON
                                                 (
                                                     multiTargetShape
-                                                    | singleTargetShape
+                                                    | flatTargetShape
                                                     | opaqueTargetShape
                                                 )
 ;
@@ -107,14 +100,14 @@ multiTargetShape:                           TARGET_SHAPE_MULTI
                                                     )*
                                                 BRACE_CLOSE
 ;
-singleTargetShape:                          TARGET_SHAPE_SINGLE
+flatTargetShape:                          TARGET_SHAPE_FLAT
                                                 BRACE_OPEN
                                                     (
                                                         targetName
                                                         | targetModelClass
                                                         | partitionProperties
                                                         | deduplicationStrategy
-                                                        | milestoningMode
+                                                        | ingestMode
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -153,19 +146,19 @@ targetChildTargetShape:                     TARGET_PART_FLAT_TARGET COLON
                                                         targetName
                                                         | partitionProperties
                                                         | deduplicationStrategy
-                                                        | milestoningMode
+                                                        | ingestMode
                                                     )*
                                                 BRACE_CLOSE
 ;
 targetName:                                 TARGET_SHAPE_NAME COLON STRING SEMI_COLON
 ;
-partitionProperties:                        TARGET_SHAPE_SINGLE_PARTITION_PROPERTIES COLON
+partitionProperties:                        TARGET_SHAPE_FLAT_PARTITION_PROPERTIES COLON
                                                 BRACKET_OPEN
                                                     (identifier (COMMA identifier)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
-deduplicationStrategy:                      TARGET_SHAPE_SINGLE_DEDUPLICATION COLON
+deduplicationStrategy:                      TARGET_SHAPE_FLAT_DEDUPLICATION COLON
                                                 (
                                                     noDeduplicationStrategy
                                                     | anyVersionDeduplicationStrategy
@@ -173,7 +166,7 @@ deduplicationStrategy:                      TARGET_SHAPE_SINGLE_DEDUPLICATION CO
                                                     | opaqueDeduplicationStrategy
                                                 )
 ;
-noDeduplicationStrategy:                    DEDUPLICATION_NONE SEMI_COLON
+noDeduplicationStrategy:                    NONE SEMI_COLON
 ;
 anyVersionDeduplicationStrategy:            DEDUPLICATION_ANY_VERSION SEMI_COLON
 ;
@@ -188,32 +181,32 @@ deduplicationVersionProperty:               DEDUPLICATION_MAX_VERSION_PROPERTY C
 ;
 opaqueDeduplicationStrategy:                DEDUPLICATION_OPAQUE SEMI_COLON
 ;
-milestoningMode:                            TARGET_SHAPE_SINGLE_MILESTONING COLON
+ingestMode:                                 TARGET_SHAPE_FLAT_INGEST_MODE COLON
                                                 (
-                                                    nonMilestonedSnapshot
+                                                    nontemporalSnapshot
                                                     | unitemporalSnapshot
                                                     | bitemporalSnapshot
-                                                    | nonMilestonedDelta
+                                                    | nontemporalDelta
                                                     | unitemporalDelta
                                                     | bitemporalDelta
                                                     | appendOnly
                                                 )
 ;
-nonMilestonedSnapshot:                      BATCH_MODE_NON_MILESTONED_SNAPSHOT
+nontemporalSnapshot:                        INGEST_MODE_NON_MILESTONED_SNAPSHOT
                                                 BRACE_OPEN
                                                     (
                                                         auditing
                                                     )*
                                                 BRACE_CLOSE
 ;
-unitemporalSnapshot:                        BATCH_MODE_UNITEMPORAL_SNAPSHOT
+unitemporalSnapshot:                        INGEST_MODE_UNITEMPORAL_SNAPSHOT
                                                 BRACE_OPEN
                                                     (
                                                         transactionMilestoning
                                                     )*
                                                 BRACE_CLOSE
 ;
-bitemporalSnapshot:                         BATCH_MODE_BITEMPORAL_SNAPSHOT
+bitemporalSnapshot:                         INGEST_MODE_BITEMPORAL_SNAPSHOT
                                                 BRACE_OPEN
                                                     (
                                                         transactionMilestoning
@@ -221,14 +214,14 @@ bitemporalSnapshot:                         BATCH_MODE_BITEMPORAL_SNAPSHOT
                                                     )*
                                                 BRACE_CLOSE
 ;
-nonMilestonedDelta:                         BATCH_MODE_NON_MILESTONED_DELTA
+nontemporalDelta:                           INGEST_MODE_NON_MILESTONED_DELTA
                                                 BRACE_OPEN
                                                     (
                                                         auditing
                                                     )*
                                                 BRACE_CLOSE
 ;
-unitemporalDelta:                           BATCH_MODE_UNITEMPORAL_DELTA
+unitemporalDelta:                           INGEST_MODE_UNITEMPORAL_DELTA
                                                 BRACE_OPEN
                                                     (
                                                         mergeStrategy
@@ -236,7 +229,7 @@ unitemporalDelta:                           BATCH_MODE_UNITEMPORAL_DELTA
                                                     )*
                                                 BRACE_CLOSE
 ;
-bitemporalDelta:                            BATCH_MODE_BITEMPORAL_DELTA
+bitemporalDelta:                            INGEST_MODE_BITEMPORAL_DELTA
                                                 BRACE_OPEN
                                                     (
                                                         mergeStrategy
@@ -245,7 +238,7 @@ bitemporalDelta:                            BATCH_MODE_BITEMPORAL_DELTA
                                                     )*
                                                 BRACE_CLOSE
 ;
-appendOnly:                                 BATCH_MODE_APPEND_ONLY
+appendOnly:                                 INGEST_MODE_APPEND_ONLY
                                                 BRACE_OPEN
                                                     (
                                                         auditing
@@ -256,20 +249,20 @@ appendOnly:                                 BATCH_MODE_APPEND_ONLY
 auditing:                                   AUDITING COLON
                                                 (
                                                     noAuditing
-                                                    | batchDateTimeAuditing
+                                                    | dateTimeAuditing
                                                     | opaqueAuditing
                                                 )
 ;
-noAuditing:                                 AUDITING_NONE SEMI_COLON
+noAuditing:                                 NONE SEMI_COLON
 ;
-batchDateTimeAuditing:                      AUDITING_BATCH_DATE_TIME
+dateTimeAuditing:                           DATE_TIME
                                                 BRACE_OPEN
                                                     (
-                                                        batchDateTimeFieldName
+                                                        dateTimeFieldName
                                                     )*
                                                 BRACE_CLOSE
 ;
-batchDateTimeFieldName:                     AUDITING_BATCH_DATE_TIME_FIELD_NAME COLON STRING SEMI_COLON
+dateTimeFieldName:                          AUDITING_DATE_TIME_FIELD_NAME COLON STRING SEMI_COLON
 ;
 opaqueAuditing:                             AUDITING_OPAQUE SEMI_COLON
 ;
@@ -295,7 +288,7 @@ batchIdInFieldName:                         BATCH_ID_IN_FIELD_NAME COLON STRING 
 ;
 batchIdOutFieldName:                        BATCH_ID_OUT_FIELD_NAME COLON STRING SEMI_COLON
 ;
-dateTimeTransactionMilestoning:             TXN_MILESTONING_DATE_TIME
+dateTimeTransactionMilestoning:             DATE_TIME
                                                 BRACE_OPEN
                                                     (
                                                         dateTimeInFieldName
@@ -325,7 +318,7 @@ validityMilestoning:                        VALIDITY_MILESTONING COLON
                                                     | opaqueValidityMilestoning
                                                 )
 ;
-dateTimeValidityMilestoning:                VALIDITY_MILESTONING_DATE_TIME
+dateTimeValidityMilestoning:                DATE_TIME
                                                 BRACE_OPEN
                                                     (
                                                         dateTimeFromFieldName
@@ -375,7 +368,7 @@ mergeStrategy:                              MERGE_STRATEGY COLON
                                                     | opaqueMergeStrategy
                                                 )
 ;
-noDeletesMergeStrategy:                     MERGE_STRATEGY_NO_DELETES SEMI_COLON
+noDeletesMergeStrategy:                     NONE SEMI_COLON
 ;
 deleteIndicatorMergeStrategy:               MERGE_STRATEGY_DELETE_INDICATOR
                                                 BRACE_OPEN
