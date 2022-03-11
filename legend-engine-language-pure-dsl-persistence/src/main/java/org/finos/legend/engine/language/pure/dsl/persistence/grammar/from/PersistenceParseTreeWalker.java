@@ -459,6 +459,10 @@ public class PersistenceParseTreeWalker
         NontemporalDelta nontemporalDelta = new NontemporalDelta();
         nontemporalDelta.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
+        // merge strategy
+        PersistenceParserGrammar.MergeStrategyContext mergeStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mergeStrategy(), "mergeStrategy", nontemporalDelta.sourceInformation);
+        nontemporalDelta.mergeStrategy = visitMergeStrategy(mergeStrategyContext);
+
         // auditing
         PersistenceParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditing(), "auditing", nontemporalDelta.sourceInformation);
         nontemporalDelta.auditing = visitAuditing(auditingContext);

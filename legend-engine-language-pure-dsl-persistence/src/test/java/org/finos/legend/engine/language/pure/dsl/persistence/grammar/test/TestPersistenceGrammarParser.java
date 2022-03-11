@@ -863,7 +863,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
      **********/
 
     @Test
-    public void batchModeNonMilestonedSnapshotAuditing()
+    public void batchModeNontemporalSnapshotAuditing()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -881,7 +881,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + ingestMode() + ": NonMilestonedSnapshot\n" +
+                "      " + ingestMode() + ": NontemporalSnapshot\n" +
                 "      {\n" +
                 "      }\n" +
                 "    }\n" +
@@ -904,7 +904,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + ingestMode() + ": NonMilestonedSnapshot\n" +
+                "      " + ingestMode() + ": NontemporalSnapshot\n" +
                 "      {\n" +
                 "        auditing: None;\n" +
                 "        auditing: None;\n" +
@@ -1139,13 +1139,11 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     /**********
-     * batch mode - delta
+     * ingest mode - delta
      **********/
 
-    //TODO: ledav -- support merge strategy?
-
     @Test
-    public void batchModeNonMilestonedDeltaAuditing()
+    public void batchModeNontemporalDeltaMergeStrategy()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1163,12 +1161,13 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + ingestMode() + ": NonMilestonedDelta\n" +
+                "      " + ingestMode() + ": NontemporalDelta\n" +
                 "      {\n" +
+                "        auditing: None;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [17:19-19:7]: Field 'auditing' is required");
+                "}\n", "PARSER error at [17:19-20:7]: Field 'mergeStrategy' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1186,8 +1185,63 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      " + ingestMode() + ": NonMilestonedDelta\n" +
+                "      " + ingestMode() + ": NontemporalDelta\n" +
                 "      {\n" +
+                "        mergeStrategy: OpaqueMerge;" +
+                "        mergeStrategy: OpaqueMerge;" +
+                "        auditing: None;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [17:19-20:7]: Field 'mergeStrategy' should be specified only once");
+    }
+
+    @Test
+    public void batchModeNontemporalDeltaAuditing()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": NontemporalDelta\n" +
+                "      {\n" +
+                "        mergeStrategy: OpaqueMerge;" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [17:19-19:42]: Field 'auditing' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": NontemporalDelta\n" +
+                "      {\n" +
+                "        mergeStrategy: OpaqueMerge;" +
                 "        auditing: None;\n" +
                 "        auditing: None;\n" +
                 "      }\n" +
@@ -1683,7 +1737,7 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "            {\n" +
                 "              versionProperty: 'updateDateTime';\n" +
                 "            }\n" +
-                "            " + ingestMode() + ": NonMilestonedSnapshot\n" +
+                "            " + ingestMode() + ": NontemporalSnapshot\n" +
                 "            {\n" +
                 "              auditing: DateTime\n" +
                 "              {\n" +

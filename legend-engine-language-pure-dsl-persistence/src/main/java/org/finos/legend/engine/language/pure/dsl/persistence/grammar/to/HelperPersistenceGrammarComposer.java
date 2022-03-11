@@ -344,6 +344,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "ingestMode: NontemporalDelta\n" +
                     getTabString(indentLevel) + "{\n" +
+                    renderMergeStrategy(val.mergeStrategy, indentLevel + 1) +
                     renderAuditing(val.auditing, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }

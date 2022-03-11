@@ -75,10 +75,10 @@ DEDUPLICATION_OPAQUE:                       'OpaqueDeduplication';
 //TODO: ledav -- remove post migration to update model [END]
 
 // INGEST MODE VALUES
-INGEST_MODE_NON_MILESTONED_SNAPSHOT:        'NonMilestonedSnapshot';
+INGEST_MODE_NONTEMPORAL_SNAPSHOT:           'NontemporalSnapshot';
 INGEST_MODE_UNITEMPORAL_SNAPSHOT:           'UnitemporalSnapshot';
 INGEST_MODE_BITEMPORAL_SNAPSHOT:            'BitemporalSnapshot';
-INGEST_MODE_NON_MILESTONED_DELTA:           'NonMilestonedDelta';
+INGEST_MODE_NONTEMPORAL_DELTA:              'NontemporalDelta';
 INGEST_MODE_UNITEMPORAL_DELTA:              'UnitemporalDelta';
 INGEST_MODE_BITEMPORAL_DELTA:               'BitemporalDelta';
 INGEST_MODE_APPEND_ONLY:                    'AppendOnly';

@@ -21,7 +21,7 @@ identifier:                                 VALID_STRING | STRING
                                             | TARGET_SHAPE_FLAT | TARGET_SHAPE_FLAT_PARTITION_PROPERTIES | TARGET_SHAPE_FLAT_DEDUPLICATION | TARGET_SHAPE_FLAT_INGEST_MODE
                                             | TARGET_SHAPE_OPAQUE
                                             | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_PROPERTY | DEDUPLICATION_OPAQUE
-                                            | INGEST_MODE_NON_MILESTONED_SNAPSHOT | INGEST_MODE_UNITEMPORAL_SNAPSHOT | INGEST_MODE_BITEMPORAL_SNAPSHOT | INGEST_MODE_NON_MILESTONED_DELTA | INGEST_MODE_UNITEMPORAL_DELTA | INGEST_MODE_BITEMPORAL_DELTA | INGEST_MODE_APPEND_ONLY
+                                            | INGEST_MODE_NONTEMPORAL_SNAPSHOT | INGEST_MODE_UNITEMPORAL_SNAPSHOT | INGEST_MODE_BITEMPORAL_SNAPSHOT | INGEST_MODE_NONTEMPORAL_DELTA | INGEST_MODE_UNITEMPORAL_DELTA | INGEST_MODE_BITEMPORAL_DELTA | INGEST_MODE_APPEND_ONLY
                                             | FILTER_DUPLICATES
                                             | AUDITING | AUDITING_DATE_TIME_FIELD_NAME | AUDITING_OPAQUE
                                             | TXN_MILESTONING | TXN_MILESTONING_BATCH_ID | TXN_MILESTONING_BOTH | TXN_MILESTONING_OPAQUE | BATCH_ID_IN_FIELD_NAME | BATCH_ID_OUT_FIELD_NAME | DATE_TIME_IN_FIELD_NAME | DATE_TIME_OUT_FIELD_NAME
@@ -192,7 +192,7 @@ ingestMode:                                 TARGET_SHAPE_FLAT_INGEST_MODE COLON
                                                     | appendOnly
                                                 )
 ;
-nontemporalSnapshot:                        INGEST_MODE_NON_MILESTONED_SNAPSHOT
+nontemporalSnapshot:                        INGEST_MODE_NONTEMPORAL_SNAPSHOT
                                                 BRACE_OPEN
                                                     (
                                                         auditing
@@ -214,10 +214,11 @@ bitemporalSnapshot:                         INGEST_MODE_BITEMPORAL_SNAPSHOT
                                                     )*
                                                 BRACE_CLOSE
 ;
-nontemporalDelta:                           INGEST_MODE_NON_MILESTONED_DELTA
+nontemporalDelta:                           INGEST_MODE_NONTEMPORAL_DELTA
                                                 BRACE_OPEN
                                                     (
-                                                        auditing
+                                                        mergeStrategy
+                                                        | auditing
                                                     )*
                                                 BRACE_CLOSE
 ;

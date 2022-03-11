@@ -293,20 +293,17 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(AppendOnly val)
+        public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(NontemporalSnapshot val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_appendonly_AppendOnly_Impl("")
-                    ._auditing(buildAuditing(val.auditing))
-                    ._filterDuplicates(val.filterDuplicates);
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_NontemporalSnapshot_Impl("")
+                    ._auditing(buildAuditing(val.auditing));
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(BitemporalDelta val)
+        public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(UnitemporalSnapshot val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta_Impl("")
-                    ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClass, context))
-                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning))
-                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning));
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_UnitemporalSnapshot_Impl("")
+                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning));
         }
 
         @Override
@@ -321,13 +318,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(NontemporalDelta val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_NontemporalDelta_Impl("")
-                    ._auditing(buildAuditing(val.auditing));
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(NontemporalSnapshot val)
-        {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_NontemporalSnapshot_Impl("")
+                    ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClass, context))
                     ._auditing(buildAuditing(val.auditing));
         }
 
@@ -340,10 +331,20 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(UnitemporalSnapshot val)
+        public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(BitemporalDelta val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_UnitemporalSnapshot_Impl("")
-                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning));
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta_Impl("")
+                    ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClass, context))
+                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning))
+                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning));
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(AppendOnly val)
+        {
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_appendonly_AppendOnly_Impl("")
+                    ._auditing(buildAuditing(val.auditing))
+                    ._filterDuplicates(val.filterDuplicates);
         }
     }
 
