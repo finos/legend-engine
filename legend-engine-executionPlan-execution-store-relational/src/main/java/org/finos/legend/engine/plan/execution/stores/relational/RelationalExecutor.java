@@ -112,6 +112,11 @@ public class RelationalExecutor
         this.resultInterpreterExtensions = Iterate.addAllTo(ServiceLoader.load(ResultInterpreterExtension.class), Lists.mutable.empty()).collect(ResultInterpreterExtension::additionalResultBuilder);
     }
 
+    public Optional<DatabaseAuthenticationFlowProvider> getFlowProviderHolder()
+    {
+        return flowProviderHolder;
+    }
+
     public RelationalExecutionConfiguration getRelationalExecutionConfiguration()
     {
         return this.relationalExecutionConfiguration;

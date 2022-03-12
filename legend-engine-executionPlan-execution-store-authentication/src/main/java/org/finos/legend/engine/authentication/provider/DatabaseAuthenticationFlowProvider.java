@@ -16,7 +16,10 @@ package org.finos.legend.engine.authentication.provider;
 
 import java.util.Optional;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
+import org.finos.legend.engine.authentication.DatabaseAuthenticationFlowMetadata;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 
 public interface DatabaseAuthenticationFlowProvider
@@ -41,4 +44,9 @@ public interface DatabaseAuthenticationFlowProvider
     void configure(DatabaseAuthenticationFlowProviderConfiguration configuration);
 
     int count();
+
+    default ImmutableList<DatabaseAuthenticationFlowMetadata> getSupportedFlowsMetadata()
+    {
+        return Lists.immutable.empty();
+    }
 }

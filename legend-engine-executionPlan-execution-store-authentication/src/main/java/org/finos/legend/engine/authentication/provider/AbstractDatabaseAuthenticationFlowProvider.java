@@ -14,12 +14,20 @@
 
 package org.finos.legend.engine.authentication.provider;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Stream;
 
+import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlowKey;
+import org.finos.legend.engine.authentication.DatabaseAuthenticationFlowMetadata;
+import org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -93,5 +101,43 @@ public abstract class AbstractDatabaseAuthenticationFlowProvider implements Data
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
     {
         this.configuration = configuration;
+    }
+
+    @Override
+    public ImmutableList<DatabaseAuthenticationFlowMetadata> getSupportedFlowsMetadata() {
+
+        Map<Class<?>, String> datasourceSpecs = this.findProtocolsOfType(DatasourceSpecification.class);
+        Map<Class<?>, String> authenticationStrategySpecs = this.findProtocolsOfType(AuthenticationStrategy.class);
+
+        Collection<DatabaseAuthenticationFlow> values = this.flows.values();
+        ImmutableList<DatabaseAuthenticationFlowMetadata> supportedFlows = Lists.immutable.withAll(values).collect(flow -> {
+            String datasourceSpecType = datasourceSpecs.get(flow.getDatasourceClass());
+            String authSpecType = authenticationStrategySpecs.get(flow.getAuthenticationStrategyClass());
+            return new DatabaseAuthenticationFlowMetadata(flow.getDatabaseType(), datasourceSpecType, authSpecType);
+        });
+        return supportedFlows;
+    }
+
+    private Map<Class<?>, String> findProtocolsOfType(Class clazz)
+    {
+        Map<Class<?>, String> allSubTypes = new HashMap<>();
+
+        Stream<PureProtocolExtension> relationalExtensions = PureProtocolExtensionLoader.extensions().stream().filter(extension -> extension instanceof RelationalProtocolExtension);
+        relationalExtensions.forEach(relationalExtension -> {
+            List<Function0<List<ProtocolSubTypeInfo<?>>>> extraProtocolSubTypeInfoCollectors = relationalExtension.getExtraProtocolSubTypeInfoCollectors();
+            extraProtocolSubTypeInfoCollectors.forEach(collectors -> {
+                List<ProtocolSubTypeInfo<?>> protocolSubTypeInfos = collectors.get();
+                protocolSubTypeInfos.forEach(info -> {
+                    if (info.getSuperType().equals(clazz))
+                    {
+                        List<Pair<Class<?>, String>> subTypes = (List<Pair<Class<?>, String>>) info.getSubTypes();
+                        for (Pair<Class<?>, String> subType : subTypes) {
+                            allSubTypes.put(subType.getOne(), subType.getTwo());
+                        }
+                    }
+                });
+            });
+        });
+        return allSubTypes;
     }
 }
