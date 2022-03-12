@@ -5,6 +5,10 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.NotifyeeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
@@ -67,6 +71,12 @@ public class HelperPersistenceBuilder
     public static Root_meta_pure_persistence_metamodel_reader_Reader buildReader(Reader reader, CompileContext context)
     {
         return reader.accept(new ReaderBuilder(context));
+    }
+
+    public static Root_meta_pure_persistence_metamodel_notifier_Notifier buildNotifier(Notifier notifier, CompileContext context)
+    {
+        return new Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl("")
+                ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_Persister buildPersister(Persister persister, CompileContext context)
@@ -162,6 +172,30 @@ public class HelperPersistenceBuilder
                         ._service((Root_meta_legend_service_metamodel_Service) packageableElement);
             }
             throw new EngineException(String.format("Persistence refers to a service '%s' that is not defined", val.service), val.sourceInformation, EngineErrorType.COMPILATION);
+        }
+    }
+
+    private static class NotifyeeBuilder implements NotifyeeVisitor<Root_meta_pure_persistence_metamodel_notifier_Notifyee>
+    {
+        private final CompileContext context;
+
+        private NotifyeeBuilder(CompileContext context)
+        {
+            this.context = context;
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_notifier_Notifyee visit(EmailNotifyee val)
+        {
+            return new Root_meta_pure_persistence_metamodel_notifier_EmailNotifyee_Impl("")
+                    ._emailAddress(val.address);
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_notifier_Notifyee visit(PagerDutyNotifyee val)
+        {
+            return new Root_meta_pure_persistence_metamodel_notifier_PagerDutyNotifyee_Impl("")
+                    ._url(val.url);
         }
     }
 

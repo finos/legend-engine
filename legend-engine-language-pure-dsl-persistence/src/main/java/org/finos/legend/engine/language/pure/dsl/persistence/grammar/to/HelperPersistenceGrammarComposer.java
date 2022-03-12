@@ -179,33 +179,6 @@ public class HelperPersistenceGrammarComposer
         }
     }
 
-    private static class PersisterComposer implements PersisterVisitor<String>
-    {
-        private final int indentLevel;
-
-        private PersisterComposer(int indentLevel)
-        {
-            this.indentLevel = indentLevel;
-        }
-
-        @Override
-        public String visit(StreamingPersister val)
-        {
-            return getTabString(indentLevel) + "persister: Streaming\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        @Override
-        public String visit(BatchPersister val)
-        {
-            return getTabString(indentLevel) + "persister: Batch\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    renderTargetShape(val.targetShape, indentLevel + 1) +
-                    getTabString(indentLevel) + "}\n";
-        }
-    }
-
     private static class NotifyeeComposer implements NotifyeeVisitor<String>
     {
         private final int indentLevel;
@@ -231,6 +204,33 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "url: '" + val.url + "';\n" +
                     getTabString(indentLevel) + "}";
+        }
+    }
+
+    private static class PersisterComposer implements PersisterVisitor<String>
+    {
+        private final int indentLevel;
+
+        private PersisterComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visit(StreamingPersister val)
+        {
+            return getTabString(indentLevel) + "persister: Streaming\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        @Override
+        public String visit(BatchPersister val)
+        {
+            return getTabString(indentLevel) + "persister: Batch\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderTargetShape(val.targetShape, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
         }
     }
 

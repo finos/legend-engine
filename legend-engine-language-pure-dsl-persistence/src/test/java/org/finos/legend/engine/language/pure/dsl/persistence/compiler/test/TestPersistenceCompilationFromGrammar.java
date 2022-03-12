@@ -599,6 +599,20 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      Email\n" +
+                "      {\n" +
+                "        address: 'x.y@z.com';\n" +
+                "      },\n" +
+                "      PagerDuty\n" +
+                "      {\n" +
+                "        url: 'https://x.com';\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
                 "}");
     }
 }
