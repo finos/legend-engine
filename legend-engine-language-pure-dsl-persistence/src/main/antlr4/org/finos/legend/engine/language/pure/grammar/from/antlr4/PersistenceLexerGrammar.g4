@@ -20,6 +20,7 @@ PERSISTENCE_DOC:                            'doc';
 
 PERSISTENCE_TRIGGER:                        'trigger';
 PERSISTENCE_READER:                         'reader';
+PERSISTENCE_NOTIFIER:                       'notifier';
 PERSISTENCE_PERSISTER:                      'persister';
 
 // TRIGGER
@@ -37,6 +38,14 @@ READER_SERVICE_SERVICE:                     'service';
 PERSISTER_TARGET:                           'target';
 PERSISTER_STREAMING:                        'Streaming';
 PERSISTER_BATCH:                            'Batch';
+
+// NOTIFIER
+NOTIFIER:                                   'Notifier';
+NOTIFIER_NOTIFYEES:                         'notifyees';
+NOTIFYEE_EMAIL:                             'Email';
+NOTIFYEE_EMAIL_ADDRESS:                     'address';
+NOTIFYEE_PAGER_DUTY:                        'PagerDuty';
+NOTIFYEE_PAGER_DUTY_URL:                    'url';
 
 //**********
 // TARGET SHAPE

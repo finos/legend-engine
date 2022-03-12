@@ -334,6 +334,158 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "}\n", "PARSER error at [3:1-37:1]: Field 'persister' should be specified only once");
     }
 
+    /**********
+     * notifier
+     **********/
+
+    @Test
+    public void notifierEmailAddress()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
+                "      {\n" +
+                "        auditing: None;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      Email\n" +
+                "      {\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [28:7-30:7]: Field 'address' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
+                "      {\n" +
+                "        auditing: None;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      Email\n" +
+                "      {\n" +
+                "        address: 'x.y@z.com';\n" +
+                "        address: 'x.y@z.com';\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [28:7-32:7]: Field 'address' should be specified only once");
+    }
+
+    @Test
+    public void notifierPagerDutyUrl()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
+                "      {\n" +
+                "        auditing: None;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      PagerDuty\n" +
+                "      {\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [28:7-30:7]: Field 'url' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
+                "      {\n" +
+                "        auditing: None;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      PagerDuty\n" +
+                "      {\n" +
+                "        url: 'https://x.com';\n" +
+                "        url: 'https://x.com';\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [28:7-32:7]: Field 'url' should be specified only once");
+    }
+
     @Test
     public void persisterStreaming()
     {

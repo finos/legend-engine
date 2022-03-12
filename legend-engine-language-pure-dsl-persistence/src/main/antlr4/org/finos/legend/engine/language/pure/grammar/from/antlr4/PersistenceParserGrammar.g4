@@ -12,10 +12,11 @@ options
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT | NONE | DATE_TIME
-                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_READER | PERSISTENCE_PERSISTER
+                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_READER | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
                                             | TRIGGER_MANUAL | TRIGGER_OPAQUE
                                             | READER_SERVICE | READER_SERVICE_SERVICE
                                             | PERSISTER_TARGET | PERSISTER_STREAMING | PERSISTER_BATCH
+                                            | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
                                             | TARGET_SHAPE_NAME | TARGET_SHAPE_MODEL_CLASS
                                             | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_PARTS | TARGET_PART_PROPERTY | TARGET_PART_FLAT_TARGET | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
                                             | TARGET_SHAPE_FLAT | TARGET_SHAPE_FLAT_PARTITION_PROPERTIES | TARGET_SHAPE_FLAT_DEDUPLICATION | TARGET_SHAPE_FLAT_INGEST_MODE
@@ -46,6 +47,7 @@ persistence:                                PERSISTENCE qualifiedName
                                                         documentation
                                                         | trigger
                                                         | reader
+                                                        | notifier
                                                         | persister
                                                     )*
                                                 BRACE_CLOSE
@@ -67,6 +69,32 @@ serviceReader:                              READER_SERVICE
                                                 BRACE_CLOSE
 ;
 service:                                    READER_SERVICE_SERVICE COLON qualifiedName SEMI_COLON
+;
+notifier:                                   PERSISTENCE_NOTIFIER COLON
+                                                BRACE_OPEN
+                                                    (notifyees)*
+                                                BRACE_CLOSE
+;
+notifyees:                                  NOTIFIER_NOTIFYEES COLON
+                                                BRACKET_OPEN
+                                                    notifyee (COMMA notifyee)*
+                                                BRACKET_CLOSE
+;
+notifyee:                                   (emailNotifyee | pagerDutyNotifyee)
+;
+emailNotifyee:                              NOTIFYEE_EMAIL
+                                                BRACE_OPEN
+                                                    (emailAddress)*
+                                                BRACE_CLOSE
+;
+emailAddress:                               NOTIFYEE_EMAIL_ADDRESS COLON STRING SEMI_COLON
+;
+pagerDutyNotifyee:                          NOTIFYEE_PAGER_DUTY
+                                                BRACE_OPEN
+                                                    (pagerDutyUrl)*
+                                                BRACE_CLOSE
+;
+pagerDutyUrl:                               NOTIFYEE_PAGER_DUTY_URL COLON STRING SEMI_COLON
 ;
 persister:                                  PERSISTENCE_PERSISTER COLON
                                                 (
@@ -100,7 +128,7 @@ multiTargetShape:                           TARGET_SHAPE_MULTI
                                                     )*
                                                 BRACE_CLOSE
 ;
-flatTargetShape:                          TARGET_SHAPE_FLAT
+flatTargetShape:                            TARGET_SHAPE_FLAT
                                                 BRACE_OPEN
                                                     (
                                                         targetName

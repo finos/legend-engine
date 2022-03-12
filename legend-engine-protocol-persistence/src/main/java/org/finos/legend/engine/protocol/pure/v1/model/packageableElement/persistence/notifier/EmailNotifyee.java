@@ -2,7 +2,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class EmailNotifyee extends Notifyee
 {
-    public String emailAddress;
+    public String address;
 
     @Override
     public <T> T acceptVisitor(NotifyeeVisitor<T> visitor)

@@ -2,6 +2,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -9,10 +10,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 public class Persistence extends PackageableElement
 {
     public String documentation;
-    public java.util.List<String> owners = java.util.Collections.emptyList();
     public Trigger trigger;
     public Reader reader;
     public Persister persister;
+    public Notifier notifier;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor) {

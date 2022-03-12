@@ -1,10 +1,15 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.NotifyeeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
@@ -52,6 +57,7 @@ public class HelperPersistenceGrammarComposer
                 renderDocumentation(persistence.documentation, indentLevel) +
                 renderTrigger(persistence.trigger, indentLevel) +
                 renderReader(persistence.reader, indentLevel) +
+                renderNotifier(persistence.notifier, indentLevel) +
                 renderPersister(persistence.persister, indentLevel) +
                 "}";
     }
@@ -69,6 +75,20 @@ public class HelperPersistenceGrammarComposer
     public static String renderReader(Reader reader, int indentLevel)
     {
         return reader.accept(new ReaderComposer(indentLevel));
+    }
+
+    public static String renderNotifier(Notifier notifier, int indentLevel)
+    {
+        if (notifier.notifyees.isEmpty()) {
+            return "";
+        }
+        return getTabString(indentLevel) + "notifier:\n" +
+                getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel + 1) + "notifyees:\n" +
+                getTabString(indentLevel + 1) + "[\n" +
+                Iterate.makeString(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeComposer(indentLevel + 2))), ",\n") + "\n" +
+                getTabString(indentLevel + 1) + "]\n" +
+                getTabString(indentLevel) + "}\n";
     }
 
     public static String renderPersister(Persister persister, int indentLevel)
@@ -183,6 +203,34 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel) + "{\n" +
                     renderTargetShape(val.targetShape, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
+        }
+    }
+
+    private static class NotifyeeComposer implements NotifyeeVisitor<String>
+    {
+        private final int indentLevel;
+
+        private NotifyeeComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visit(EmailNotifyee val)
+        {
+            return getTabString(indentLevel) + "Email\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "address: '" + val.address + "';\n" +
+                    getTabString(indentLevel) + "}";
+        }
+
+        @Override
+        public String visit(PagerDutyNotifyee val)
+        {
+            return getTabString(indentLevel) + "PagerDuty\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "url: '" + val.url + "';\n" +
+                    getTabString(indentLevel) + "}";
         }
     }
 

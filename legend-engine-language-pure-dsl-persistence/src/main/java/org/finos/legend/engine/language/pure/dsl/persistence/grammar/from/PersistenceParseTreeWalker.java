@@ -9,6 +9,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
@@ -90,6 +94,10 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.ReaderContext readerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.reader(), "reader", persistence.sourceInformation);
         persistence.reader = visitReader(readerContext);
 
+        // notifier
+        PersistenceParserGrammar.NotifierContext notifierContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.notifier(), "notifier", persistence.sourceInformation);
+        persistence.notifier = notifierContext == null ? new Notifier() : visitNotifier(notifierContext);
+
         // persister
         PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persister(), "persister", persistence.sourceInformation);
         persistence.persister = visitPersister(persisterContext);
@@ -138,6 +146,70 @@ public class PersistenceParseTreeWalker
         reader.service = PureGrammarParserUtility.fromQualifiedName(serviceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : serviceContext.qualifiedName().packagePath().identifier(), serviceContext.qualifiedName().identifier());
 
         return reader;
+    }
+
+    /**********
+     * notifier
+     **********/
+
+    private Notifier visitNotifier(PersistenceParserGrammar.NotifierContext ctx)
+    {
+        Notifier notifier = new Notifier();
+        notifier.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // notifyees
+        PersistenceParserGrammar.NotifyeesContext notifyeesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.notifyees(), "notifyees", notifier.sourceInformation);
+        notifier.notifyees = ListIterate.collect(notifyeesContext.notifyee(), this::visitNotifyee);
+
+        return notifier;
+    }
+
+    private Notifyee visitNotifyee(PersistenceParserGrammar.NotifyeeContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.emailNotifyee() != null)
+        {
+            return visitEmailNotifyee(ctx.emailNotifyee());
+        }
+        else if (ctx.pagerDutyNotifyee() != null)
+        {
+            return visitPagerDutyNotifyee(ctx.pagerDutyNotifyee());
+        }
+        throw new EngineException("Unrecognized notifyee", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private EmailNotifyee visitEmailNotifyee(PersistenceParserGrammar.EmailNotifyeeContext ctx)
+    {
+        EmailNotifyee notifyee = new EmailNotifyee();
+        notifyee.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // address
+        PersistenceParserGrammar.EmailAddressContext emailAddressContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.emailAddress(), "address", notifyee.sourceInformation);
+        notifyee.address = visitEmailAddress(emailAddressContext);
+
+        return notifyee;
+    }
+
+    private PagerDutyNotifyee visitPagerDutyNotifyee(PersistenceParserGrammar.PagerDutyNotifyeeContext ctx)
+    {
+        PagerDutyNotifyee notifyee = new PagerDutyNotifyee();
+        notifyee.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // url
+        PersistenceParserGrammar.PagerDutyUrlContext pagerDutyUrlContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.pagerDutyUrl(), "url", notifyee.sourceInformation);
+        notifyee.url = visitPagerDutyUrl(pagerDutyUrlContext);
+
+        return notifyee;
+    }
+
+    private String visitEmailAddress(PersistenceParserGrammar.EmailAddressContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true) : null;
+    }
+
+    private String visitPagerDutyUrl(PersistenceParserGrammar.PagerDutyUrlContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true) : null;
     }
 
     /**********
