@@ -15,7 +15,7 @@ identifier:                                 VALID_STRING | STRING
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_READER | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
                                             | TRIGGER_MANUAL | TRIGGER_OPAQUE
                                             | READER_SERVICE | READER_SERVICE_SERVICE
-                                            | PERSISTER_TARGET | PERSISTER_STREAMING | PERSISTER_BATCH
+                                            | PERSISTER_RUNTIME | PERSISTER_TARGET | PERSISTER_STREAMING | PERSISTER_BATCH
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
                                             | TARGET_SHAPE_NAME | TARGET_SHAPE_MODEL_CLASS
                                             | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_PARTS | TARGET_PART_PROPERTY | TARGET_PART_FLAT_TARGET | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
@@ -47,8 +47,8 @@ persistence:                                PERSISTENCE qualifiedName
                                                         documentation
                                                         | trigger
                                                         | reader
-                                                        | notifier
                                                         | persister
+                                                        | notifier
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -69,6 +69,28 @@ serviceReader:                              READER_SERVICE
                                                 BRACE_CLOSE
 ;
 service:                                    READER_SERVICE_SERVICE COLON qualifiedName SEMI_COLON
+;
+persister:                                  PERSISTENCE_PERSISTER COLON
+                                                (
+                                                    streamingPersister
+                                                    | batchPersister
+                                                )
+;
+streamingPersister:                         PERSISTER_STREAMING
+                                                BRACE_OPEN
+                                                    (
+                                                        persisterRuntime
+                                                        | targetShape
+                                                    )*
+                                                BRACE_CLOSE
+;
+batchPersister:                             PERSISTER_BATCH
+                                                BRACE_OPEN
+                                                    (
+                                                        persisterRuntime
+                                                        | targetShape
+                                                    )*
+                                                BRACE_CLOSE
 ;
 notifier:                                   PERSISTENCE_NOTIFIER COLON
                                                 BRACE_OPEN
@@ -96,21 +118,13 @@ pagerDutyNotifyee:                          NOTIFYEE_PAGER_DUTY
 ;
 pagerDutyUrl:                               NOTIFYEE_PAGER_DUTY_URL COLON STRING SEMI_COLON
 ;
-persister:                                  PERSISTENCE_PERSISTER COLON
-                                                (
-                                                    streamingPersister
-                                                    | batchPersister
-                                                )
+persisterRuntime:                           PERSISTER_RUNTIME COLON (runtimePointer | embeddedRuntime)
 ;
-streamingPersister:                         PERSISTER_STREAMING
-                                                BRACE_OPEN
-                                                    (targetShape)*
-                                                BRACE_CLOSE
+runtimePointer:                             qualifiedName SEMI_COLON
 ;
-batchPersister:                             PERSISTER_BATCH
-                                                BRACE_OPEN
-                                                    (targetShape)*
-                                                BRACE_CLOSE
+embeddedRuntime:                            ISLAND_OPEN (embeddedRuntimeContent)* SEMI_COLON
+;
+embeddedRuntimeContent:                     ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
 targetShape:                                PERSISTER_TARGET COLON
                                                 (

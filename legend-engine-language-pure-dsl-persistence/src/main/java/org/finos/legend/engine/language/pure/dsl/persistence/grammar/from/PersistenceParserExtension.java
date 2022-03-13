@@ -35,7 +35,7 @@ public class PersistenceParserExtension implements PureGrammarParserExtension
         section.parserName = sectionSourceCode.sectionType;
         section.sourceInformation = parserInfo.sourceInformation;
 
-        PersistenceParseTreeWalker walker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        PersistenceParseTreeWalker walker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, context);
         walker.visit((PersistenceParserGrammar.DefinitionContext) parserInfo.rootContext);
 
         return section;

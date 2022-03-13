@@ -3,6 +3,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
@@ -73,15 +74,15 @@ public class HelperPersistenceBuilder
         return reader.accept(new ReaderBuilder(context));
     }
 
+    public static Root_meta_pure_persistence_metamodel_persister_Persister buildPersister(Persister persister, CompileContext context)
+    {
+        return persister.accept(new PersisterBuilder(context));
+    }
+
     public static Root_meta_pure_persistence_metamodel_notifier_Notifier buildNotifier(Notifier notifier, CompileContext context)
     {
         return new Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl("")
                 ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
-    }
-
-    public static Root_meta_pure_persistence_metamodel_persister_Persister buildPersister(Persister persister, CompileContext context)
-    {
-        return persister.accept(new PersisterBuilder(context));
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape buildTargetShape(TargetShape targetShape, CompileContext context)
@@ -175,6 +176,32 @@ public class HelperPersistenceBuilder
         }
     }
 
+    private static class PersisterBuilder implements PersisterVisitor<Root_meta_pure_persistence_metamodel_persister_Persister>
+    {
+        private final CompileContext context;
+
+        private PersisterBuilder(CompileContext context)
+        {
+            this.context = context;
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_persister_Persister visit(BatchPersister val)
+        {
+            return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
+                    ._runtime(HelperRuntimeBuilder.buildPureRuntime(val.runtime, context))
+                    ._targetShape(buildTargetShape(val.targetShape, context));
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_persister_Persister visit(StreamingPersister val)
+        {
+            return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("")
+                    ._runtime(HelperRuntimeBuilder.buildPureRuntime(val.runtime, context))
+                    ._targetShape(buildTargetShape(val.targetShape, context));
+        }
+    }
+
     private static class NotifyeeBuilder implements NotifyeeVisitor<Root_meta_pure_persistence_metamodel_notifier_Notifyee>
     {
         private final CompileContext context;
@@ -196,29 +223,6 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_notifier_PagerDutyNotifyee_Impl("")
                     ._url(val.url);
-        }
-    }
-
-    private static class PersisterBuilder implements PersisterVisitor<Root_meta_pure_persistence_metamodel_persister_Persister>
-    {
-        private final CompileContext context;
-
-        private PersisterBuilder(CompileContext context)
-        {
-            this.context = context;
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_persister_Persister visit(BatchPersister val)
-        {
-            return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
-                    ._targetShape(buildTargetShape(val.targetShape, context));
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_persister_Persister visit(StreamingPersister val)
-        {
-            return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("");
         }
     }
 

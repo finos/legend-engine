@@ -3,8 +3,10 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -45,6 +47,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -57,12 +62,14 @@ public class PersistenceParseTreeWalker
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
+    private final PureGrammarParserContext context;
 
-    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section)
+    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, PureGrammarParserContext context)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
+        this.context = context;
     }
 
     /**********
@@ -94,13 +101,13 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.ReaderContext readerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.reader(), "reader", persistence.sourceInformation);
         persistence.reader = visitReader(readerContext);
 
-        // notifier
-        PersistenceParserGrammar.NotifierContext notifierContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.notifier(), "notifier", persistence.sourceInformation);
-        persistence.notifier = notifierContext == null ? new Notifier() : visitNotifier(notifierContext);
-
         // persister
         PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persister(), "persister", persistence.sourceInformation);
         persistence.persister = visitPersister(persisterContext);
+
+        // notifier
+        PersistenceParserGrammar.NotifierContext notifierContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.notifier(), "notifier", persistence.sourceInformation);
+        persistence.notifier = notifierContext == null ? new Notifier() : visitNotifier(notifierContext);
 
         return persistence;
     }
@@ -146,6 +153,102 @@ public class PersistenceParseTreeWalker
         reader.service = PureGrammarParserUtility.fromQualifiedName(serviceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : serviceContext.qualifiedName().packagePath().identifier(), serviceContext.qualifiedName().identifier());
 
         return reader;
+    }
+
+    /**********
+     * persister
+     **********/
+
+    private Persister visitPersister(PersistenceParserGrammar.PersisterContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.streamingPersister() != null)
+        {
+            return visitStreamingPersister(ctx.streamingPersister());
+        }
+        else if (ctx.batchPersister() != null)
+        {
+            return visitBatchPersister(ctx.batchPersister());
+        }
+        throw new EngineException("Unrecognized persister", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
+    {
+        StreamingPersister streaming = new StreamingPersister();
+        streaming.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // runtime
+        PersistenceParserGrammar.PersisterRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterRuntime(), "runtime", streaming.sourceInformation);
+        streaming.runtime = runtimeContext == null ? null : this.visitRuntime(runtimeContext);
+
+        // target shape
+        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "target", streaming.sourceInformation);
+        streaming.targetShape = visitTargetShape(targetShapeContext);
+
+        return streaming;
+    }
+
+    private BatchPersister visitBatchPersister(PersistenceParserGrammar.BatchPersisterContext ctx)
+    {
+        BatchPersister batch = new BatchPersister();
+        batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // runtime
+        PersistenceParserGrammar.PersisterRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterRuntime(), "runtime", batch.sourceInformation);
+        batch.runtime = runtimeContext == null ? null : this.visitRuntime(runtimeContext);
+
+        // target shape
+        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "target", batch.sourceInformation);
+        batch.targetShape = visitTargetShape(targetShapeContext);
+
+        return batch;
+    }
+
+    private Runtime visitRuntime(PersistenceParserGrammar.PersisterRuntimeContext ctx)
+    {
+        if (ctx.runtimePointer() != null)
+        {
+            return visitRuntimePointer(ctx);
+        }
+        else if (ctx.embeddedRuntime() != null)
+        {
+            return visitEmbeddedRuntime(ctx);
+        }
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        throw new EngineException("Unrecognized runtime", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private RuntimePointer visitRuntimePointer(PersistenceParserGrammar.PersisterRuntimeContext ctx)
+    {
+        RuntimePointer runtimePointer = new RuntimePointer();
+        if (ctx.runtimePointer().qualifiedName() != null)
+        {
+            runtimePointer.runtime = PureGrammarParserUtility.fromQualifiedName(ctx.runtimePointer().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.runtimePointer().qualifiedName().packagePath().identifier(), ctx.runtimePointer().qualifiedName().identifier());
+            runtimePointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.runtimePointer().qualifiedName());
+        }
+        return runtimePointer;
+    }
+
+    private EngineRuntime visitEmbeddedRuntime(PersistenceParserGrammar.PersisterRuntimeContext ctx)
+    {
+        StringBuilder embeddedRuntimeText = new StringBuilder();
+        for (PersistenceParserGrammar.EmbeddedRuntimeContentContext fragment : ctx.embeddedRuntime().embeddedRuntimeContent())
+        {
+            embeddedRuntimeText.append(fragment.getText());
+        }
+        String embeddedRuntimeParsingText = embeddedRuntimeText.length() > 0 ? embeddedRuntimeText.substring(0, embeddedRuntimeText.length() - 2) : embeddedRuntimeText.toString();
+        RuntimeParser runtimeParser = RuntimeParser.newInstance(context.getPureGrammarParserExtensions());
+
+        // prepare island grammar walker source information
+        int startLine = ctx.embeddedRuntime().ISLAND_OPEN().getSymbol().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+
+        // only add current walker source information column offset if this is the first line
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.embeddedRuntime().ISLAND_OPEN().getSymbol().getCharPositionInLine() + ctx.embeddedRuntime().ISLAND_OPEN().getText().length();
+        ParseTreeWalkerSourceInformation embeddedRuntimeWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        SourceInformation embeddedRuntimeSourceInformation = walkerSourceInformation.getSourceInformation(ctx.embeddedRuntime());
+        return runtimeParser.parseEmbeddedRuntime(embeddedRuntimeParsingText, embeddedRuntimeWalkerSourceInformation, embeddedRuntimeSourceInformation);
     }
 
     /**********
@@ -210,48 +313,6 @@ public class PersistenceParseTreeWalker
     private String visitPagerDutyUrl(PersistenceParserGrammar.PagerDutyUrlContext ctx)
     {
         return ctx != null ? PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true) : null;
-    }
-
-    /**********
-     * persister
-     **********/
-
-    private Persister visitPersister(PersistenceParserGrammar.PersisterContext ctx)
-    {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.streamingPersister() != null)
-        {
-            return visitStreamingPersister(ctx.streamingPersister());
-        }
-        else if (ctx.batchPersister() != null)
-        {
-            return visitBatchPersister(ctx.batchPersister());
-        }
-        throw new EngineException("Unrecognized persister", sourceInformation, EngineErrorType.PARSER);
-    }
-
-    private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
-    {
-        StreamingPersister streaming = new StreamingPersister();
-        streaming.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // target shape
-        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "target", streaming.sourceInformation);
-        streaming.targetShape = visitTargetShape(targetShapeContext);
-
-        return streaming;
-    }
-
-    private BatchPersister visitBatchPersister(PersistenceParserGrammar.BatchPersisterContext ctx)
-    {
-        BatchPersister batch = new BatchPersister();
-        batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // target shape
-        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "target", batch.sourceInformation);
-        batch.targetShape = visitTargetShape(targetShapeContext);
-
-        return batch;
     }
 
     /**********

@@ -4,12 +4,11 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.HelperRuntimeGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.NotifyeeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
@@ -43,6 +42,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
+
+import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
@@ -57,8 +62,8 @@ public class HelperPersistenceGrammarComposer
                 renderDocumentation(persistence.documentation, indentLevel) +
                 renderTrigger(persistence.trigger, indentLevel) +
                 renderReader(persistence.reader, indentLevel) +
+                renderPersister(persistence.persister, indentLevel, context) +
                 renderNotifier(persistence.notifier, indentLevel) +
-                renderPersister(persistence.persister, indentLevel) +
                 "}";
     }
 
@@ -67,7 +72,7 @@ public class HelperPersistenceGrammarComposer
         return getTabString(indentLevel) + "doc: " + convertString(documentation, true) + ";\n";
     }
 
-    private static String renderTrigger(Trigger trigger, int indentLevel)
+    public static String renderTrigger(Trigger trigger, int indentLevel)
     {
         return trigger.accept(new TriggerComposer(indentLevel));
     }
@@ -77,6 +82,11 @@ public class HelperPersistenceGrammarComposer
         return reader.accept(new ReaderComposer(indentLevel));
     }
 
+    public static String renderPersister(Persister persister, int indentLevel, PureGrammarComposerContext context)
+    {
+        return persister.accept(new PersisterComposer(indentLevel, context));
+    }
+
     public static String renderNotifier(Notifier notifier, int indentLevel)
     {
         if (notifier.notifyees.isEmpty()) {
@@ -84,16 +94,37 @@ public class HelperPersistenceGrammarComposer
         }
         return getTabString(indentLevel) + "notifier:\n" +
                 getTabString(indentLevel) + "{\n" +
-                getTabString(indentLevel + 1) + "notifyees:\n" +
-                getTabString(indentLevel + 1) + "[\n" +
-                Iterate.makeString(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeComposer(indentLevel + 2))), ",\n") + "\n" +
-                getTabString(indentLevel + 1) + "]\n" +
+                renderNotifyees(notifier.notifyees, indentLevel + 1) +
                 getTabString(indentLevel) + "}\n";
     }
 
-    public static String renderPersister(Persister persister, int indentLevel)
+    private static String renderNotifyees(List<Notifyee> notifyees, int indentLevel)
     {
-        return persister.accept(new PersisterComposer(indentLevel));
+        NotifyeeComposer visitor = new NotifyeeComposer(indentLevel + 1);
+        return getTabString(indentLevel) + "notifyees:\n" +
+                getTabString(indentLevel) + "[\n" +
+                Iterate.makeString(ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)), ",\n") + "\n" +
+                getTabString(indentLevel) + "]\n";
+    }
+
+    private static String renderRuntime(Runtime runtime, int indentLevel, PureGrammarComposerContext context)
+    {
+        if (runtime instanceof LegacyRuntime)
+        {
+            return renderRuntime(((LegacyRuntime) runtime).toEngineRuntime(), indentLevel, context);
+        }
+        else if (runtime instanceof EngineRuntime)
+        {
+            return getTabString(indentLevel) + "runtime:\n" +
+                    getTabString(indentLevel) + "#{" +
+                    HelperRuntimeGrammarComposer.renderRuntimeValue((EngineRuntime) runtime, indentLevel + 1, true, DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + "\n" +
+                    getTabString(indentLevel) + "}#;";
+        }
+        else if (runtime instanceof RuntimePointer)
+        {
+            return getTabString(indentLevel) + "runtime: " + ((RuntimePointer) runtime).runtime + ";";
+        }
+        return unsupported(runtime.getClass(), "runtime type");
     }
 
     private static String renderTargetShape(TargetShape targetShape, int indentLevel)
@@ -210,10 +241,12 @@ public class HelperPersistenceGrammarComposer
     private static class PersisterComposer implements PersisterVisitor<String>
     {
         private final int indentLevel;
+        private final PureGrammarComposerContext context;
 
-        private PersisterComposer(int indentLevel)
+        private PersisterComposer(int indentLevel, PureGrammarComposerContext context)
         {
             this.indentLevel = indentLevel;
+            this.context = context;
         }
 
         @Override
@@ -221,6 +254,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Streaming\n" +
                     getTabString(indentLevel) + "{\n" +
+                    (val.runtime == null ? "" : renderRuntime(val.runtime, indentLevel + 1, context)) +
+                    renderTargetShape(val.targetShape, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -229,6 +264,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Batch\n" +
                     getTabString(indentLevel) + "{\n" +
+                    (val.runtime == null ? "" : renderRuntime(val.runtime, indentLevel + 1, context)) +
                     renderTargetShape(val.targetShape, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }

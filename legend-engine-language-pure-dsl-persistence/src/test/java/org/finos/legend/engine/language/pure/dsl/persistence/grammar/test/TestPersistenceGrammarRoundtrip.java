@@ -25,20 +25,6 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "  {\n" +
                 "    service: test::service::Service;\n" +
                 "  }\n" +
-                "  notifier:\n" +
-                "  {\n" +
-                "    notifyees:\n" +
-                "    [\n" +
-                "      Email\n" +
-                "      {\n" +
-                "        address: 'x.y@z.com';\n" +
-                "      },\n" +
-                "      PagerDuty\n" +
-                "      {\n" +
-                "        url: 'https://x.com';\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    target: " + targetMulti() + "\n" +
@@ -101,6 +87,20 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      Email\n" +
+                "      {\n" +
+                "        address: 'x.y@z.com';\n" +
+                "      },\n" +
+                "      PagerDuty\n" +
+                "      {\n" +
+                "        url: 'https://x.com';\n" +
+                "      }\n" +
+                "    ]\n" +
                 "  }\n" +
                 "}\n");
     }

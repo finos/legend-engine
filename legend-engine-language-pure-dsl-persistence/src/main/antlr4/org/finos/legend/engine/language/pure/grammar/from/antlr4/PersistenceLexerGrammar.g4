@@ -36,6 +36,7 @@ READER_SERVICE_SERVICE:                     'service';
 
 // PERSISTER
 PERSISTER_TARGET:                           'target';
+PERSISTER_RUNTIME:                          'runtime';
 PERSISTER_STREAMING:                        'Streaming';
 PERSISTER_BATCH:                            'Batch';
 
