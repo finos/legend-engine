@@ -540,6 +540,12 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  }\n" +
                 "}\n" +
                 "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::TestConnection\n" +
+                "{\n" +
+                "  class : org::dxl::Person;" +
+                "  url : 'my_url1';\n" +
+                "}\n" +
                 "###Persistence\n" +
                 "Persistence org::dxl::ZooPersistence\n" +
                 "{\n" +
@@ -551,6 +557,25 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "          id1: test::TestConnection,\n" +
+                "          id2:\n" +
+                "          #{\n" +
+                "            JsonModelConnection\n" +
+                "            {\n" +
+                "              class: org::dxl::Animal;\n" +
+                "              url: 'my_url2';\n" +
+                "            }\n" +
+                "          }#\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "      mappings: [org::dxl::Mapping];\n" +
+                "    }#;" +
                 "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: org::dxl::Zoo;\n" +

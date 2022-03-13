@@ -27,6 +27,24 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "          id1: test::TestConnection,\n" +
+                "          id2:\n" +
+                "          #{\n" +
+                "            JsonModelConnection\n" +
+                "            {\n" +
+                "              class: test::TestClass;\n" +
+                "              url: 'my_url';\n" +
+                "            }\n" +
+                "          }#\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;" +
                 "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +

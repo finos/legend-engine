@@ -13,6 +13,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 })
 public abstract class Persister
 {
+    //TODO: ledav -- runtime requires a mapping; consider a different construct
     public Runtime runtime;
     public TargetShape targetShape;
     public SourceInformation sourceInformation;

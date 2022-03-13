@@ -487,7 +487,38 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void persisterStreaming()
+    public void persisterStreamingRuntime()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "    runtime: test::TestRuntime;\n" +
+                "    runtime: test::TestRuntime;\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
+                "      {\n" +
+                "        auditing: None;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [11:14-25:3]: Field 'runtime' should be specified only once");
+    }
+
+    @Test
+    public void persisterStreamingTarget()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -503,10 +534,75 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  {\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [11:14-13:3]: Field 'target' is required");
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
+                "      {\n" +
+                "        auditing: None;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
+                "      {\n" +
+                "        auditing: None;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [11:14-33:3]: Field 'target' should be specified only once");
     }
 
     @Test
-    public void persisterBatch()
+    public void persisterBatchRuntime()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: OpaqueTrigger;\n" +
+                "  reader: Service\n" +
+                "  {\n" +
+                "    service: test::Service;\n" +
+                "  }\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    runtime: test::TestRuntime;\n" +
+                "    runtime: test::TestRuntime;\n" +
+                "    target: " + targetFlat() + "\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      " + ingestMode() + ": AppendOnly\n" +
+                "      {\n" +
+                "        auditing: None;\n" +
+                "        filterDuplicates: false;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [11:14-25:3]: Field 'runtime' should be specified only once");
+    }
+
+    @Test
+    public void persisterBatchTarget()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -1873,6 +1969,15 @@ public abstract class TestPersistenceGrammarParser extends TestGrammarParser.Tes
                 "  }\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
                 "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +
