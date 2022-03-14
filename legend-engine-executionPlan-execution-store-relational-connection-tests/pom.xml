@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.58.1-SNAPSHOT</version>
+        <version>2.58.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-executionPlan-execution-store-relational-connection-tests</artifactId>
@@ -159,14 +159,8 @@
                                 </goals>
                                 <configuration>
                                     <tasks>
-                                        <get src="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.2.21.1025.zip"
-                                             dest="${project.build.directory}/bigquery-simba-driver.zip"
-                                             verbose="false"
-                                             usetimestamp="true"
-                                        />
-                                        <unzip src="${project.build.directory}/bigquery-simba-driver.zip"
-                                               dest="${project.build.directory}/bigquery-simba-driver-jars"
-                                        />
+                                        <get src="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.2.21.1025.zip" dest="${project.build.directory}/bigquery-simba-driver.zip" verbose="false" usetimestamp="true" />
+                                        <unzip src="${project.build.directory}/bigquery-simba-driver.zip" dest="${project.build.directory}/bigquery-simba-driver-jars" />
                                     </tasks>
                                 </configuration>
                             </execution>
