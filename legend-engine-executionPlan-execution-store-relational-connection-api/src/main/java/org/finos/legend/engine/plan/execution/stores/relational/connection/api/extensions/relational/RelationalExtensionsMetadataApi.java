@@ -29,11 +29,18 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 // TODO : epsstan - Refactor path
-@Api(tags = "Connectors - Metadata")
-@Path("pure/v1/protocols/relational")
+@Api(tags = "Relational Extensions - Metadata")
+@Path("pure/v1/protocols/vX_X_X/extension/relational")
 @Produces(MediaType.APPLICATION_JSON)
 
 public class RelationalExtensionsMetadataApi {
@@ -68,10 +75,19 @@ public class RelationalExtensionsMetadataApi {
     @GET
     public Response getDatasources() {
         try {
-            return Response.ok().build();
+            String rawJson = this.buildDatasourcesMetadata();
+            return Response.ok()
+                    .entity(rawJson)
+                    .build();
         } catch (Exception e) {
             return ExceptionTool.exceptionManager(e, LoggingEventType.CATCH_ALL, null);
         }
+    }
+
+    protected String buildDatasourcesMetadata() throws URISyntaxException, IOException {
+        URL resource = RelationalExtensionsMetadataApi.class.getResource("/legend-datasources.json");
+        URL url = resource.toURI().toURL();
+        return Files.readAllLines(Paths.get(url.toURI()), Charset.defaultCharset()).stream().collect(Collectors.joining());
     }
 
     @Path("authenticationStrategy/metadata")
@@ -79,9 +95,18 @@ public class RelationalExtensionsMetadataApi {
     @GET
     public Response getAuthenticationStrategies() {
         try {
-            return Response.ok().build();
+            String rawJson = this.buildAuthenticationStrategiesMetadata();
+            return Response.ok()
+                    .entity(rawJson)
+                    .build();
         } catch (Exception e) {
             return ExceptionTool.exceptionManager(e, LoggingEventType.CATCH_ALL, null);
         }
+    }
+
+    protected String buildAuthenticationStrategiesMetadata() throws URISyntaxException, IOException {
+        URL resource = RelationalExtensionsMetadataApi.class.getResource("/legend-authenticationtrategies.json");
+        URL url = resource.toURI().toURL();
+        return Files.readAllLines(Paths.get(url.toURI()), Charset.defaultCharset()).stream().collect(Collectors.joining());
     }
 }

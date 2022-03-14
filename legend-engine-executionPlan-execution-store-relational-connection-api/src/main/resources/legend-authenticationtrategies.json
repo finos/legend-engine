@@ -1,0 +1,86 @@
+[
+  {
+    "name": "DelegatedKerberosAuthenticationStrategy",
+    "_type" : "delegatedKerberos",
+    "properties": [
+      {
+        "name": "serverPrincipal",
+        "description": "",
+        "type": "String",
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "UserNamePasswordAuthenticationStrategy",
+    "_type":"userNamePassword",
+    "properties": [
+      {
+        "name": "baseVaultReference",
+        "description": "",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "userNameVaultReference",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "passwordVaultReference",
+        "description": "",
+        "type": "String",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "DefaultH2AuthenticationStrategy",
+    "_type": "h2Default",
+    "properties": [
+    ]
+  },
+  {
+    "name": "ApiTokenAuthenticationStrategy",
+    "_type": "apiToken",
+    "properties": [
+      {
+        "name": "apiToken",
+        "description": "",
+        "type": "String",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "SnowflakePublicAuthenticationStrategy",
+    "_type": "snowflakePublic",
+    "properties": [
+      {
+        "name": "privateKeyVaultReference",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "passPhraseVaultReference",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "publicUserName",
+        "description": "",
+        "type": "String",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "GCPApplicationDefaultCredentialsAuthenticationStrategy",
+    "_type": "gcpApplicationDefaultCredentials",
+    "properties": [
+    ]
+  }
+]

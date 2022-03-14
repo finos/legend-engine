@@ -1,0 +1,170 @@
+[
+  {
+    "name": "LocalH2DatasourceSpecification",
+    "_type" : "localH2",
+    "properties": [
+      {
+        "name": "testDataSetupCsv",
+        "description": "",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "testDataSetupSqls",
+        "description": "",
+        "type": "Array",
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "StaticDatasourceSpecification",
+    "_type" : "static",
+    "properties": [
+      {
+        "name": "host",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "port",
+        "description": "",
+        "type": "Integer",
+        "required": true
+      },
+      {
+        "name": "databaseName",
+        "description": "",
+        "type": "String",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "DatabricksDatasourceSpecification",
+    "_type" : "databricks",
+    "properties": [
+      {
+        "name": "hostname",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "port",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "protocol",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "httpPath",
+        "description": "",
+        "type": "String",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "SnowflakeDatasourceSpecification",
+    "_type" : "snowflake",
+    "properties": [
+      {
+        "name": "accountName",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "region",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "warehouseName",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "databaseName",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "cloudType",
+        "description": "",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "accountType",
+        "description": "",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "organization",
+        "description": "",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "quotedIdentifiersIgnoreCase",
+        "description": "",
+        "type": "Boolean",
+        "required": false
+      },
+      {
+        "name": "proxyHost",
+        "description": "",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "proxyPort",
+        "description": "",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "nonProxyHosts",
+        "description": "",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "role",
+        "description": "",
+        "type": "String",
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "BigQueryDatasourceSpecification",
+    "_type" : "bigQuery",
+    "properties": [
+      {
+        "name": "projectId",
+        "description": "",
+        "type": "String",
+        "required": true
+      },
+      {
+        "name": "defaultDataset",
+        "description": "",
+        "type": "String",
+        "required": true
+      }
+    ]
+  }
+]
