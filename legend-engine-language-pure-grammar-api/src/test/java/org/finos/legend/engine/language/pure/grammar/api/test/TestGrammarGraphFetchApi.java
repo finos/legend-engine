@@ -4,6 +4,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
@@ -42,7 +43,7 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
                         "      }\n" +
                         "    }\n" +
                         "  }\n" +
-                        "}#", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":9,\"endLine\":3,\"sourceId\":\"\",\"startColumn\":5,\"startLine\":3}}");
+                        "}#", "Unexpected token", new SourceInformation("", 3, 5, 3, 9));
     }
 
     @Test

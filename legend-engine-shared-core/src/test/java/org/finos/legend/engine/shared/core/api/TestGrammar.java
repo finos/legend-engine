@@ -6,15 +6,18 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.MapIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 
 import javax.ws.rs.core.Response;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public abstract class TestGrammar<Z>
 {
@@ -43,13 +46,20 @@ public abstract class TestGrammar<Z>
         }
     }
 
-    protected void testError(String str, String expected)
+    protected void testError(String str, String expectedErrorMessage, SourceInformation expectedErrorSourceInformation)
     {
         try
         {
             Response result = grammarToJson().apply(str, true);
-            String actual = result.getEntity().toString();
-            assertEquals(expected, actual);
+            Object errorObject = result.getEntity();
+            assertTrue(errorObject instanceof ExceptionError);
+            ExceptionError error = (ExceptionError) errorObject;
+            assertEquals(expectedErrorMessage, error.getMessage());
+            assertEquals(expectedErrorSourceInformation.sourceId, error.getSourceInformation().sourceId);
+            assertEquals(expectedErrorSourceInformation.startLine, error.getSourceInformation().startLine);
+            assertEquals(expectedErrorSourceInformation.startColumn, error.getSourceInformation().startColumn);
+            assertEquals(expectedErrorSourceInformation.endLine, error.getSourceInformation().endLine);
+            assertEquals(expectedErrorSourceInformation.endColumn, error.getSourceInformation().endColumn);
         }
         catch (Exception e)
         {
