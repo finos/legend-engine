@@ -99,7 +99,8 @@ public class HelperPersistenceBuilder
                 ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(IdentifiedConnection identifiedConnection, CompileContext context)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Conne
+    ction buildConnection(IdentifiedConnection identifiedConnection, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = identifiedConnection.connection.accept(new ConnectionFirstPassBuilder(context));
         identifiedConnection.connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
@@ -168,7 +169,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(CronTrigger val)
         {
-            return new Root_meta_pure_persistence_metamodel_trigger_CronBasedTrigger_Impl("")
+            return new Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl("")
                     ._minutes(val.minutes)
                     ._hours(val.hours)
                     ._dayOfMonth(val.dayOfMonth)
