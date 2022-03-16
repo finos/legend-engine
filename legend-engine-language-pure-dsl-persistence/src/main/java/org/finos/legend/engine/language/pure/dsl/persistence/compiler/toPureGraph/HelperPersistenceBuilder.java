@@ -3,6 +3,8 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
@@ -45,6 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
@@ -94,6 +97,13 @@ public class HelperPersistenceBuilder
     {
         return new Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl("")
                 ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
+    }
+
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(IdentifiedConnection identifiedConnection, CompileContext context)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = identifiedConnection.connection.accept(new ConnectionFirstPassBuilder(context));
+        identifiedConnection.connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
+        return pureConnection;
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape buildTargetShape(TargetShape targetShape, CompileContext context)
@@ -180,13 +190,15 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(BatchPersister val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
+                    ._connections(ListIterate.collect(val.connections, c -> buildConnection(c, context)))
                     ._targetShape(buildTargetShape(val.targetShape, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(StreamingPersister val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("");
+            return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("")
+                    ._connections(ListIterate.collect(val.connections, c -> buildConnection(c, context)));
         }
     }
 
