@@ -99,8 +99,7 @@ public class HelperPersistenceBuilder
                 ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Conne
-    ction buildConnection(IdentifiedConnection identifiedConnection, CompileContext context)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(IdentifiedConnection identifiedConnection, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = identifiedConnection.connection.accept(new ConnectionFirstPassBuilder(context));
         identifiedConnection.connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
