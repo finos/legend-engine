@@ -24,11 +24,8 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    target: " + targetFlat() + "\n" +
@@ -48,7 +45,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [7:1-28:1]: Duplicated element 'test::TestPersistence'";
+        return "COMPILATION error at [7:1-25:1]: Duplicated element 'test::TestPersistence'";
     }
 
     @Test
@@ -61,11 +58,8 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    target: " + targetFlat() + "\n" +
@@ -79,7 +73,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [9:11-12:3]: Persistence refers to a service 'test::Service' that is not defined");
+                "}\n", "COMPILATION error at [5:1-23:1]: Persistence refers to a service 'test::Service' that is not defined");
     }
 
     @Test
@@ -119,11 +113,8 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    target: " + targetFlat() + "\n" +
@@ -137,7 +128,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [42:13-51:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [39:13-48:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -177,11 +168,8 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    target: " + targetMulti() + "\n" +
@@ -205,7 +193,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [42:13-61:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [39:13-58:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -247,11 +235,8 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    target: " + targetMulti() + "\n" +
@@ -275,7 +260,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [50:9-61:9]: Property 'property1' must exist in class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [47:9-58:9]: Property 'property1' must exist in class 'test::ServiceResult'");
     }
 
     @Test
@@ -320,11 +305,8 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    target: " + targetMulti() + "\n" +
@@ -348,7 +330,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [53:9-64:9]: Target " + parts().substring(0, parts().length() - 1) + " property must refer to a Class. The property 'property1' refers to a String");
+                "}\n", "COMPILATION error at [50:9-61:9]: Target " + parts().substring(0, parts().length() - 1) + " property must refer to a Class. The property 'property1' refers to a String");
     }
 
     @Test
@@ -393,11 +375,8 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    target: " + targetMulti() + "\n" +
@@ -463,11 +442,8 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    target: " + targetFlat() + "\n" +
@@ -550,32 +526,22 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "Persistence org::dxl::ZooPersistence\n" +
                 "{\n" +
                 "  doc: 'A persistence specification for Zoos.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: org::dxl::ZooService;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: org::dxl::ZooService;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    runtime:\n" +
-                "    #{\n" +
-                "      connections:\n" +
-                "      [\n" +
-                "        ModelStore:\n" +
-                "        [\n" +
-                "          id1: test::TestConnection,\n" +
-                "          id2:\n" +
-                "          #{\n" +
-                "            JsonModelConnection\n" +
-                "            {\n" +
-                "              class: org::dxl::Animal;\n" +
-                "              url: 'my_url2';\n" +
-                "            }\n" +
-                "          }#\n" +
-                "        ]\n" +
-                "      ];\n" +
-                "      mappings: [org::dxl::Mapping];\n" +
-                "    }#;" +
+                "    connections:\n" +
+                "    [\n" +
+                "      id1: test::TestConnection,\n" +
+                "      id2:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: org::dxl::Animal;\n" +
+                "          url: 'my_url2';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ];\n" +
                 "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: org::dxl::Zoo;\n" +

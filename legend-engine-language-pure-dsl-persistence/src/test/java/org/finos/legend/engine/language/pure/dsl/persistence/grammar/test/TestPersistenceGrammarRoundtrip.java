@@ -20,31 +20,22 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::service::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::service::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    runtime:\n" +
-                "    #{\n" +
-                "      connections:\n" +
-                "      [\n" +
-                "        ModelStore:\n" +
-                "        [\n" +
-                "          id1: test::TestConnection,\n" +
-                "          id2:\n" +
-                "          #{\n" +
-                "            JsonModelConnection\n" +
-                "            {\n" +
-                "              class: test::TestClass;\n" +
-                "              url: 'my_url';\n" +
-                "            }\n" +
-                "          }#\n" +
-                "        ]\n" +
-                "      ];\n" +
-                "    }#;" +
+                "    connections:\n" +
+                "    [\n" +
+                "      id1: test::TestConnection,\n" +
+                "      id2:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: test::TestClass;\n" +
+                "          url: 'my_url';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ];\n" +
                 "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +
@@ -77,7 +68,7 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
-                "            deduplicationStrategy: OpaqueDeduplication;\n" +
+                "            deduplicationStrategy: None;\n" +
                 "            " + ingestMode() + ": BitemporalDelta\n" +
                 "            {\n" +
                 "              mergeStrategy: DeleteIndicator\n" +

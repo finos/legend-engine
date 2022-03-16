@@ -9,7 +9,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
         @JsonSubTypes.Type(value = BatchIdTransactionMilestoning.class, name = "batchIdTransactionMilestoning"),
         @JsonSubTypes.Type(value = BatchIdAndDateTimeTransactionMilestoning.class, name = "batchIdAndDateTimeTransactionMilestoning"),
         @JsonSubTypes.Type(value = DateTimeTransactionMilestoning.class, name = "dateTimeTransactionMilestoning"),
-        @JsonSubTypes.Type(value = OpaqueTransactionMilestoning.class, name = "opaqueTransactionMilestoning")
 })
 public abstract class TransactionMilestoning
 {

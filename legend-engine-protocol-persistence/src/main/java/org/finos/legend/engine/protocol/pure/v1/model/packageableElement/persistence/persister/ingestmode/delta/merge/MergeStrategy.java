@@ -8,7 +8,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = NoDeletesMergeStrategy.class, name = "noDeletesMergeStrategy"),
         @JsonSubTypes.Type(value = DeleteIndicatorMergeStrategy.class, name = "deleteIndicatorMergeStrategy"),
-        @JsonSubTypes.Type(value = OpaqueMergeStrategy.class, name = "opaqueMergeStrategy")
 })
 public abstract class MergeStrategy
 {

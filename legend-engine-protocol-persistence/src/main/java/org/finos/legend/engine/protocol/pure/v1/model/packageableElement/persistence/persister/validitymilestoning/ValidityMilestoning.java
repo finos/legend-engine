@@ -8,7 +8,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DateTimeValidityMilestoning.class, name = "dateTimeValidityMilestoning"),
-        @JsonSubTypes.Type(value = OpaqueValidityMilestoning.class, name = "opaqueValidityMilestoning")
 })
 public abstract class ValidityMilestoning
 {

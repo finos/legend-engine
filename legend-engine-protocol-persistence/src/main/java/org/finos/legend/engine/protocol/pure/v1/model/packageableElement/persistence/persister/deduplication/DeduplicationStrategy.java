@@ -9,7 +9,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
         @JsonSubTypes.Type(value = NoDeduplicationStrategy.class, name = "noDeduplicationStrategy"),
         @JsonSubTypes.Type(value = AnyVersionDeduplicationStrategy.class, name = "anyVersionDeduplicationStrategy"),
         @JsonSubTypes.Type(value = MaxVersionDeduplicationStrategy.class, name = "maxVersionDeduplicationStrategy"),
-        @JsonSubTypes.Type(value = OpaqueDeduplicationStrategy.class, name = "opaqueDeduplicationStrategy")
 })
 public abstract class DeduplicationStrategy
 {

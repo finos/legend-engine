@@ -8,7 +8,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = NoAuditing.class, name = "noAuditing"),
         @JsonSubTypes.Type(value = DateTimeAuditing.class, name = "dateTimeAuditing"),
-        @JsonSubTypes.Type(value = OpaqueAuditing.class, name = "opaqueAuditing")
 })
 public abstract class Auditing
 {

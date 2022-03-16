@@ -2,7 +2,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public interface AuditingVisitor<T>
 {
-    T visit(DateTimeAuditing val);
     T visit(NoAuditing val);
-    T visit(OpaqueAuditing val);
+    T visit(DateTimeAuditing val);
 }

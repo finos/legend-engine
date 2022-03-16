@@ -5,15 +5,20 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
-import org.finos.legend.engine.language.pure.grammar.to.HelperRuntimeGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.HelperConnectionGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.Auditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.AuditingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.DateTimeAuditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.NoAuditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.deduplication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestMode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestModeVisitor;
@@ -21,31 +26,27 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.BitemporalDelta;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.NontemporalDelta;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.UnitemporalDelta;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.MergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.MergeStrategyVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.NoDeletesMergeStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.targetshape.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.OpaqueValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoningVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ReaderVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class HelperPersistenceGrammarComposer
                 "{\n" +
                 renderDocumentation(persistence.documentation, indentLevel) +
                 renderTrigger(persistence.trigger, indentLevel) +
-                renderReader(persistence.reader, indentLevel) +
+                renderService(persistence.service, indentLevel) +
                 renderPersister(persistence.persister, indentLevel, context) +
                 renderNotifier(persistence.notifier, indentLevel) +
                 "}";
@@ -77,9 +78,9 @@ public class HelperPersistenceGrammarComposer
         return trigger.accept(new TriggerComposer(indentLevel));
     }
 
-    public static String renderReader(Reader reader, int indentLevel)
+    public static String renderService(String service, int indentLevel)
     {
-        return reader.accept(new ReaderComposer(indentLevel));
+        return getTabString(indentLevel) + "service: " + service + ";\n";
     }
 
     public static String renderPersister(Persister persister, int indentLevel, PureGrammarComposerContext context)
@@ -107,24 +108,26 @@ public class HelperPersistenceGrammarComposer
                 getTabString(indentLevel) + "]\n";
     }
 
-    private static String renderRuntime(Runtime runtime, int indentLevel, PureGrammarComposerContext context)
+    private static String renderConnections(List<IdentifiedConnection> connections, int indentLevel, PureGrammarComposerContext context)
     {
-        if (runtime instanceof LegacyRuntime)
+        DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
+        return getTabString(indentLevel) + "connections:\n" +
+                getTabString(indentLevel) + "[\n" +
+                Iterate.makeString(ListIterate.collect(connections, c -> renderIdentifiedConnection(c, indentLevel + 1, composerCore)), ",\n") + "\n" +
+                getTabString(indentLevel) + "];\n";
+    }
+
+    private static String renderIdentifiedConnection(IdentifiedConnection identifiedConnection, int indentLevel, DEPRECATED_PureGrammarComposerCore composerCore)
+    {
+        if (identifiedConnection.connection instanceof ConnectionPointer)
         {
-            return renderRuntime(((LegacyRuntime) runtime).toEngineRuntime(), indentLevel, context);
+            return getTabString(indentLevel) + PureGrammarComposerUtility.convertIdentifier(identifiedConnection.id) + ": " + PureGrammarComposerUtility.convertPath(identifiedConnection.connection.accept(composerCore));
         }
-        else if (runtime instanceof EngineRuntime)
-        {
-            return getTabString(indentLevel) + "runtime:\n" +
-                    getTabString(indentLevel) + "#{" +
-                    HelperRuntimeGrammarComposer.renderRuntimeValue((EngineRuntime) runtime, indentLevel + 1, true, DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + "\n" +
-                    getTabString(indentLevel) + "}#;";
-        }
-        else if (runtime instanceof RuntimePointer)
-        {
-            return getTabString(indentLevel) + "runtime: " + ((RuntimePointer) runtime).runtime + ";";
-        }
-        return unsupported(runtime.getClass(), "runtime type");
+        return getTabString(indentLevel) + PureGrammarComposerUtility.convertIdentifier(identifiedConnection.id) + ":\n" +
+                getTabString(indentLevel) + "#{\n" +
+                getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(identifiedConnection.connection, composerCore.toContext()) + "\n" +
+                identifiedConnection.connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
+                getTabString(indentLevel) + "}#";
     }
 
     private static String renderTargetShape(TargetShape targetShape, int indentLevel)
@@ -185,28 +188,9 @@ public class HelperPersistenceGrammarComposer
         }
 
         @Override
-        public String visit(OpaqueTrigger val)
+        public String visit(CronTrigger val)
         {
-            return getTabString(indentLevel) + "trigger: " + val.getClass().getSimpleName() + ";\n";
-        }
-    }
-
-    private static class ReaderComposer implements ReaderVisitor<String>
-    {
-        private final int indentLevel;
-
-        private ReaderComposer(int indentLevel)
-        {
-            this.indentLevel = indentLevel;
-        }
-
-        @Override
-        public String visit(ServiceReader val)
-        {
-            return getTabString(indentLevel) + "reader: Service\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "service: " + val.service + ";\n" +
-                    getTabString(indentLevel) + "}\n";
+            throw new UnsupportedOperationException("TODO: ledav -- implement cron trigger");
         }
     }
 
@@ -254,8 +238,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Streaming\n" +
                     getTabString(indentLevel) + "{\n" +
-                    (val.runtime == null ? "" : renderRuntime(val.runtime, indentLevel + 1, context)) +
-                    renderTargetShape(val.targetShape, indentLevel + 1) +
+                    renderConnections(val.connections, indentLevel + 1, context) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -264,7 +247,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Batch\n" +
                     getTabString(indentLevel) + "{\n" +
-                    (val.runtime == null ? "" : renderRuntime(val.runtime, indentLevel + 1, context)) +
+                    renderConnections(val.connections, indentLevel + 1, context) +
                     renderTargetShape(val.targetShape, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
@@ -378,12 +361,6 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel + 1) + "versionProperty: " + val.versionProperty + ";\n" +
                     getTabString(indentLevel) + "}\n";
         }
-
-        @Override
-        public String visit(OpaqueDeduplicationStrategy val)
-        {
-            return getTabString(indentLevel) + "deduplicationStrategy: OpaqueDeduplication;\n";
-        }
     }
 
     private static class IngestModeComposer implements IngestModeVisitor<String>
@@ -487,12 +464,6 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "dateTimeFieldName: '" + val.dateTimeFieldName + "';\n" +
                     getTabString(indentLevel) + "}\n";        }
-
-        @Override
-        public String visit(OpaqueAuditing val)
-        {
-            return getTabString(indentLevel) + "auditing: " + val.getClass().getSimpleName() + ";\n";
-        }
     }
 
     private static class TransactionMilestoningComposer implements TransactionMilestoningVisitor<String>
@@ -535,12 +506,6 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutFieldName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
-
-        @Override
-        public String visit(OpaqueTransactionMilestoning val)
-        {
-            return getTabString(indentLevel) + "transactionMilestoning: " + val.getClass().getSimpleName() + ";\n";
-        }
     }
 
     private static class ValidityMilestoningComposer implements ValidityMilestoningVisitor<String>
@@ -561,12 +526,6 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel + 1) + "dateTimeThruFieldName: '" + val.dateTimeThruFieldName + "';\n" +
                     renderValidityDerivation(val.derivation, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
-        }
-
-        @Override
-        public String visit(OpaqueValidityMilestoning val)
-        {
-            return getTabString(indentLevel) + "validityMilestoning: OpaqueValidityMilestoning" + val.getClass().getSimpleName() + ";\n";
         }
     }
 
@@ -623,12 +582,6 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel + 1) + "deleteProperty: " + val.deleteProperty + ";\n" +
                     renderDeleteValues(val, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
-        }
-
-        @Override
-        public String visit(OpaqueMergeStrategy val)
-        {
-            return getTabString(indentLevel) + "mergeStrategy: " + val.getClass().getSimpleName() + ";\n";
         }
 
         private static String renderDeleteValues(DeleteIndicatorMergeStrategy strategy, int indentLevel)

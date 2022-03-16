@@ -2,6 +2,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public interface ValidityDerivationVisitor<T>
 {
-    T visit(SourceSpecifiesFromAndThruDateTime val);
     T visit(SourceSpecifiesFromDateTime val);
+    T visit(SourceSpecifiesFromAndThruDateTime val);
 }

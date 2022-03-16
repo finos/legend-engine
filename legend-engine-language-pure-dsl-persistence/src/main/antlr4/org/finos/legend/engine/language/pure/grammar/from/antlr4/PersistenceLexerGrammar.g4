@@ -19,24 +19,17 @@ PERSISTENCE:                                'Persistence';
 PERSISTENCE_DOC:                            'doc';
 
 PERSISTENCE_TRIGGER:                        'trigger';
-PERSISTENCE_READER:                         'reader';
-PERSISTENCE_NOTIFIER:                       'notifier';
+PERSISTENCE_SERVICE:                        'service';
 PERSISTENCE_PERSISTER:                      'persister';
+PERSISTENCE_NOTIFIER:                       'notifier';
 
 // TRIGGER
 TRIGGER_MANUAL:                             'Manual';
-
-//TODO: ledav -- remove post migration to update model [START]
-TRIGGER_OPAQUE:                             'OpaqueTrigger';
-//TODO: ledav -- remove post migration to update model [END]
-
-// READER
-READER_SERVICE:                             'Service';
-READER_SERVICE_SERVICE:                     'service';
+TRIGGER_CRON:                               'Cron';
 
 // PERSISTER
 PERSISTER_TARGET:                           'target';
-PERSISTER_RUNTIME:                          'runtime';
+PERSISTER_CONNECTIONS:                      'connections';
 PERSISTER_STREAMING:                        'Streaming';
 PERSISTER_BATCH:                            'Batch';
 
@@ -80,10 +73,6 @@ DEDUPLICATION_ANY_VERSION:                  'AnyVersion';
 DEDUPLICATION_MAX_VERSION:                  'MaxVersion';
 DEDUPLICATION_MAX_VERSION_PROPERTY:         'versionProperty';
 
-//TODO: ledav -- remove post migration to update model [START]
-DEDUPLICATION_OPAQUE:                       'OpaqueDeduplication';
-//TODO: ledav -- remove post migration to update model [END]
-
 // INGEST MODE VALUES
 INGEST_MODE_NONTEMPORAL_SNAPSHOT:           'NontemporalSnapshot';
 INGEST_MODE_UNITEMPORAL_SNAPSHOT:           'UnitemporalSnapshot';
@@ -102,17 +91,9 @@ FILTER_DUPLICATES:                          'filterDuplicates';
 AUDITING:                                   'auditing';
 AUDITING_DATE_TIME_FIELD_NAME:              'dateTimeFieldName';
 
-//TODO: ledav -- remove post migration to update model [START]
-AUDITING_OPAQUE:                            'OpaqueAuditing';
-//TODO: ledav -- remove post migration to update model [END]
-
 TXN_MILESTONING:                            'transactionMilestoning';
 TXN_MILESTONING_BATCH_ID:                   'BatchId';
 TXN_MILESTONING_BOTH:                       'BatchIdAndDateTime';
-
-//TODO: ledav -- remove post migration to update model [START]
-TXN_MILESTONING_OPAQUE:                     'OpaqueTransactionMilestoning';
-//TODO: ledav -- remove post migration to update model [END]
 
 BATCH_ID_IN_FIELD_NAME:                     'batchIdInFieldName';
 BATCH_ID_OUT_FIELD_NAME:                    'batchIdOutFieldName';
@@ -120,10 +101,6 @@ DATE_TIME_IN_FIELD_NAME:                    'dateTimeInFieldName';
 DATE_TIME_OUT_FIELD_NAME:                   'dateTimeOutFieldName';
 
 VALIDITY_MILESTONING:                       'validityMilestoning';
-
-//TODO: ledav -- remove post migration to update model [START]
-VALIDITY_MILESTONING_OPAQUE:                'OpaqueValidityMilestoning';
-//TODO: ledav -- remove post migration to update model [END]
 
 DATE_TIME_FROM_FIELD_NAME:                  'dateTimeFromFieldName';
 DATE_TIME_THRU_FIELD_NAME:                  'dateTimeThruFieldName';
@@ -134,16 +111,8 @@ VALIDITY_DERIVATION_SOURCE_FROM_THRU:       'SourceSpecifiesFromAndThruDateTime'
 SOURCE_DATE_TIME_FROM_PROPERTY:             'sourceDateTimeFromProperty';
 SOURCE_DATE_TIME_THRU_PROPERTY:             'sourceDateTimeThruProperty';
 
-//TODO: ledav -- remove post migration to update model [START]
-VALIDITY_DERIVATION_OPAQUE:                 'OpaqueValidityDerivation';
-//TODO: ledav -- remove post migration to update model [END]
-
 MERGE_STRATEGY:                             'mergeStrategy';
 MERGE_STRATEGY_NO_DELETES:                  'NoDeletes';
 MERGE_STRATEGY_DELETE_INDICATOR:            'DeleteIndicator';
 MERGE_STRATEGY_DELETE_INDICATOR_PROPERTY:   'deleteProperty';
 MERGE_STRATEGY_DELETE_INDICATOR_VALUES:     'deleteValues';
-
-//TODO: ledav -- remove post migration to update model [START]
-MERGE_STRATEGY_OPAQUE:                      'OpaqueMerge';
-//TODO: ledav -- remove post migration to update model [END]

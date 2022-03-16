@@ -1,4 +1,4 @@
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.targetshape;
 
 public interface TargetShapeVisitor<T>
 {

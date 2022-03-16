@@ -3,9 +3,9 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.NotifyeeVisitor;
@@ -14,7 +14,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.Auditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.AuditingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.DateTimeAuditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.NoAuditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.deduplication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestMode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestModeVisitor;
@@ -22,25 +25,24 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.BitemporalDelta;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.NontemporalDelta;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.UnitemporalDelta;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.MergeStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.MergeStrategyVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.NoDeletesMergeStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.targetshape.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.OpaqueValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoningVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.Reader;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ReaderVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.reader.ServiceReader;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.targetshape.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.OpaqueTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -69,9 +71,18 @@ public class HelperPersistenceBuilder
         return trigger.accept(TRIGGER_BUILDER);
     }
 
-    public static Root_meta_pure_persistence_metamodel_reader_Reader buildReader(Reader reader, CompileContext context)
+    public static Root_meta_legend_service_metamodel_Service buildService(Persistence persistence, CompileContext context)
     {
-        return reader.accept(new ReaderBuilder(context));
+        String service = persistence.service;
+        String servicePath = service.substring(0, service.lastIndexOf("::"));
+        String serviceName = service.substring(service.lastIndexOf("::") + 2);
+        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(servicePath)._children().detect(c -> serviceName.equals(c._name()));
+
+        if (packageableElement instanceof Root_meta_legend_service_metamodel_Service)
+        {
+            return (Root_meta_legend_service_metamodel_Service) packageableElement;
+        }
+        throw new EngineException(String.format("Persistence refers to a service '%s' that is not defined", service), persistence.sourceInformation, EngineErrorType.COMPILATION);
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_Persister buildPersister(Persister persister, CompileContext context)
@@ -145,34 +156,14 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(OpaqueTrigger val)
+        public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(CronTrigger val)
         {
-            return new Root_meta_pure_persistence_metamodel_trigger_OpaqueTrigger_Impl("");
-        }
-    }
-
-    private static class ReaderBuilder implements ReaderVisitor<Root_meta_pure_persistence_metamodel_reader_Reader>
-    {
-        private final CompileContext context;
-
-        private ReaderBuilder(CompileContext context)
-        {
-            this.context = context;
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_reader_Reader visit(ServiceReader val)
-        {
-            String servicePath = val.service.substring(0, val.service.lastIndexOf("::"));
-            String serviceName = val.service.substring(val.service.lastIndexOf("::") + 2);
-            PackageableElement packageableElement = context.pureModel.getOrCreatePackage(servicePath)._children().detect(c -> serviceName.equals(c._name()));
-
-            if (packageableElement instanceof Root_meta_legend_service_metamodel_Service)
-            {
-                return new Root_meta_pure_persistence_metamodel_reader_ServiceReader_Impl("")
-                        ._service((Root_meta_legend_service_metamodel_Service) packageableElement);
-            }
-            throw new EngineException(String.format("Persistence refers to a service '%s' that is not defined", val.service), val.sourceInformation, EngineErrorType.COMPILATION);
+            return new Root_meta_pure_persistence_metamodel_trigger_CronBasedTrigger_Impl("")
+                    ._minutes(val.minutes)
+                    ._hours(val.hours)
+                    ._dayOfMonth(val.dayOfMonth)
+                    ._month(val.month)
+                    ._dayOfWeek(val.dayOfWeek);
         }
     }
 
@@ -189,16 +180,13 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(BatchPersister val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
-                    ._runtime(HelperRuntimeBuilder.buildPureRuntime(val.runtime, context))
                     ._targetShape(buildTargetShape(val.targetShape, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(StreamingPersister val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("")
-                    ._runtime(HelperRuntimeBuilder.buildPureRuntime(val.runtime, context))
-                    ._targetShape(buildTargetShape(val.targetShape, context));
+            return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("");
         }
     }
 
@@ -311,12 +299,6 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_persister_deduplication_NoDeduplicationStrategy_Impl("");
         }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(OpaqueDeduplicationStrategy val)
-        {
-            return new Root_meta_pure_persistence_metamodel_persister_deduplication_OpaqueDeduplicationStrategy_Impl("");
-        }
     }
 
     private static class IngestModeBuilder implements IngestModeVisitor<Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode>
@@ -410,12 +392,6 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_NoDeletesMergeStrategy_Impl("");
         }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy visit(OpaqueMergeStrategy val)
-        {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_OpaqueMergeStrategy_Impl("");
-        }
     }
 
     private static class AuditingBuilder implements AuditingVisitor<Root_meta_pure_persistence_metamodel_persister_audit_Auditing>
@@ -431,12 +407,6 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_audit_Auditing visit(NoAuditing val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_audit_NoAuditing_Impl("");
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_persister_audit_Auditing visit(OpaqueAuditing val)
-        {
-            return new Root_meta_pure_persistence_metamodel_persister_audit_OpaqueAuditing_Impl("");
         }
     }
 
@@ -467,12 +437,6 @@ public class HelperPersistenceBuilder
                     ._dateTimeInName(val.dateTimeInFieldName)
                     ._dateTimeOutName(val.dateTimeOutFieldName);
         }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(OpaqueTransactionMilestoning val)
-        {
-            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_OpaqueTransactionMilestoning_Impl("");
-        }
     }
 
     private static class ValidityMilestoningBuilder implements ValidityMilestoningVisitor<Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning>
@@ -483,12 +447,6 @@ public class HelperPersistenceBuilder
             return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning_Impl("")
                     ._dateTimeFromName(val.dateTimeFromFieldName)
                     ._dateTimeThruName(val.dateTimeThruFieldName);
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning visit(OpaqueValidityMilestoning val)
-        {
-            return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_OpaqueValidityMilestoning_Impl("");
         }
     }
 

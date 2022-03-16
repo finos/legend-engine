@@ -10,6 +10,7 @@ import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -35,7 +36,8 @@ public class PersistenceParserExtension implements PureGrammarParserExtension
         section.parserName = sectionSourceCode.sectionType;
         section.sourceInformation = parserInfo.sourceInformation;
 
-        PersistenceParseTreeWalker walker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, context);
+        ConnectionParser connectionParser = ConnectionParser.newInstance(context.getPureGrammarParserExtensions());
+        PersistenceParseTreeWalker walker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, connectionParser);
         walker.visit((PersistenceParserGrammar.DefinitionContext) parserInfo.rootContext);
 
         return section;
