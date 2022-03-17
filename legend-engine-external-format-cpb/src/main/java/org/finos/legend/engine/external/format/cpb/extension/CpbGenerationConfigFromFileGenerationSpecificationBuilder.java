@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.external.format.cpb.extension;
 
-import org.finos.legend.engine.external.format.cpb.schema.generations.CpbGenerationConfig;
+import org.finos.legend.engine.external.format.cpb.model.CpbGenerationConfig;
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;

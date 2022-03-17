@@ -1,4 +1,4 @@
-package org.finos.legend.engine.external.format.cpb.schema.generations;
+package org.finos.legend.engine.external.format.cpb.model;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;

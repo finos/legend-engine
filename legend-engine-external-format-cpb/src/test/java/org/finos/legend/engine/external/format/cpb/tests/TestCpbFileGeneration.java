@@ -1,27 +1,21 @@
 package org.finos.legend.engine.external.format.cpb.tests;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.IOUtils;
-import org.finos.legend.engine.external.format.cpb.extension.CpbGenerationConfigFromFileGenerationSpecificationBuilder;
 import org.finos.legend.engine.external.format.cpb.extension.CpbGenerationExtension;
-import org.finos.legend.engine.external.format.cpb.schema.generations.CpbGenerationConfig;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.*;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class TestCpbFileGeneration

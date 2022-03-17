@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.external.format.cpb.schema.generations;
+package org.finos.legend.engine.external.format.cpb;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
@@ -22,6 +22,8 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.external.format.cpb.model.CpbGenerationConfig;
+import org.finos.legend.engine.external.format.cpb.model.CpbGenerationInput;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -47,8 +49,8 @@ import javax.ws.rs.core.Response;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Z - Deprecated - Generation - Schema")
-@Path("pure/v1/schemaGeneration")
+@Api(tags = "External - Generation - Code")
+@Path("pure/v1/codeGeneration")
 @Produces(MediaType.APPLICATION_JSON)
 public class CpbGenerationService
 {

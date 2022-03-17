@@ -48,32 +48,32 @@ Service cnas::TestService
 
 ###Persistence
 
-  import cnas::*;
+import cnas::*;
 
-  PersistencePipe cnas::TestPipe
+Persistence cnas::TestPipe
+{
+doc: 'test doc';
+owners: ['owner1', 'owner2'];
+trigger: OpaqueTrigger;
+reader: Service
+{
+  service: cnas::TestService;
+}
+persister: Batch
+{
+  target: Flat
   {
-    doc: 'test doc';
-    owners: ['owner1', 'owner2'];
-    trigger: OpaqueTrigger;
-    reader: Service
-    {
-      service: cnas::TestService;
-    }
-    persister: Batch
-    {
-      target: Flat
-      {
-        modelClass: cnas::Person;
-        targetName: 's3Sink';
+    modelClass: cnas::Person;
+    targetName: 's3Sink';
 
-        deduplicationStrategy: NoDeduplication;
-        batchMode: NonMilestonedSnapshot
-        {
-          auditing: NoAuditing;
-        }
-      }
+    deduplicationStrategy: NoDeduplication;
+    batchMode: NonMilestonedSnapshot
+    {
+      auditing: NoAuditing;
     }
   }
+}
+}
 
 
 ###Pure
