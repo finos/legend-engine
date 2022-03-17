@@ -1,0 +1,92 @@
+###FileGeneration
+Cpb cnas::cpbGeneration
+{
+  scopeElements: [cnas];
+}
+
+###GenerationSpecification
+GenerationSpecification cnas::MyGenerationSpecification
+{
+  fileGenerations: [
+    cnas::cpbGeneration
+  ];
+}
+
+###Mapping
+Mapping cnas::Mapping ()
+
+###Service
+Service cnas::TestService
+{
+  pattern: 'url/myUrl/';
+  owners: ['ownerName', 'ownerName2'];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: cnas::RawPerson[1]|$src.firstName;
+    mapping: cnas::Mapping;
+    runtime:
+    #{
+      connections:
+      [
+        ModelStore:
+        [
+        ]
+      ];
+    }#;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts:
+    [
+    ];
+  }
+}
+
+
+###Persistence
+
+import cnas::*;
+
+Persistence cnas::TestPipe
+{
+doc: 'test doc';
+owners: ['owner1', 'owner2'];
+trigger: OpaqueTrigger;
+reader: Service
+{
+  service: cnas::TestService;
+}
+persister: Batch
+{
+  target: Flat
+  {
+    modelClass: cnas::Person;
+    targetName: 's3Sink';
+
+    deduplicationStrategy: NoDeduplication;
+    batchMode: NonMilestonedSnapshot
+    {
+      auditing: NoAuditing;
+    }
+  }
+}
+}
+
+
+###Pure
+Class cnas::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+}
+
+Class cnas::RawPerson
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+}

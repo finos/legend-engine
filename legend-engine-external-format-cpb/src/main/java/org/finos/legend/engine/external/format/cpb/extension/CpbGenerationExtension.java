@@ -1,8 +1,8 @@
 package org.finos.legend.engine.external.format.cpb.extension;
 
 import org.eclipse.collections.api.RichIterable;
-import org.finos.legend.engine.external.format.cpb.schema.generations.CpbGenerationConfig;
-import org.finos.legend.engine.external.format.cpb.schema.generations.CpbGenerationService;
+import org.finos.legend.engine.external.format.cpb.model.CpbGenerationConfig;
+import org.finos.legend.engine.external.format.cpb.CpbGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
@@ -36,7 +36,7 @@ public class CpbGenerationExtension implements GenerationExtension
     @Override
     public GenerationMode getMode()
     {
-        return GenerationMode.Schema;
+        return GenerationMode.Code;
     }
 
     @Override

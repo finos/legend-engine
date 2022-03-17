@@ -1,4 +1,4 @@
-package org.finos.legend.engine.external.format.cpb.schema.generations;
+package org.finos.legend.engine.external.format.cpb.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.external.shared.format.generations.GenerationInput;
