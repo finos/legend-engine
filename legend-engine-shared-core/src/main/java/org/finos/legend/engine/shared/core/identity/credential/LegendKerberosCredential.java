@@ -45,9 +45,10 @@ public class LegendKerberosCredential implements Credential
     @Override
     public boolean isValid()
     {
-        if (subject.getPrivateCredentials(KerberosTicket.class) != null)
+        Set<KerberosTicket> credentials = subject.getPrivateCredentials(KerberosTicket.class);
+        if ( credentials != null)
         {
-            Iterator<KerberosTicket> iterator = subject.getPrivateCredentials(KerberosTicket.class).iterator();
+            Iterator<KerberosTicket> iterator = credentials.iterator();
             return iterator != null && iterator.hasNext() && iterator.next().isCurrent();
         }
         return false;
