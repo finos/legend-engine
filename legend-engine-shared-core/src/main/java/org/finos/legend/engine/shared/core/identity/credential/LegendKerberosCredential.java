@@ -16,8 +16,11 @@ package org.finos.legend.engine.shared.core.identity.credential;
 
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosTicket;
+import javax.swing.text.html.HTMLDocument;
 
 import org.finos.legend.engine.shared.core.identity.Credential;
+
+import java.util.Iterator;
 
 /*
     Credential that wraps a javax.security.subject.
@@ -45,7 +48,11 @@ public class LegendKerberosCredential implements Credential
     @Override
     public boolean isValid()
     {
-        KerberosTicket kerberosTicket = subject.getPrivateCredentials(KerberosTicket.class).iterator().next();
-        return kerberosTicket!=null && kerberosTicket.isCurrent();
+        if (subject.getPrivateCredentials(KerberosTicket.class) != null)
+        {
+            Iterator<KerberosTicket> iterator = subject.getPrivateCredentials(KerberosTicket.class).iterator();
+            return iterator != null && iterator.hasNext() && iterator.next().isCurrent();
+        }
+        return false;
     }
 }
