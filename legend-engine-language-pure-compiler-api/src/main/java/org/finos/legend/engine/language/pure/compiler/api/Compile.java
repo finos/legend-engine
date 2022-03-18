@@ -20,9 +20,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
@@ -76,13 +79,13 @@ public class Compile
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
         {
             CompilerExtensions.logAvailableExtensions();
-            modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles, null);
+            Pair<PureModelContextData, PureModel> res = modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles, null);
             long end = System.currentTimeMillis();
             MetricsHandler.observe("compile model", start, end);
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
             // NOTE: we could change this to return 204 (No Content), but Pure client test will break
             // on the another hand, returning 200 Ok with no content is not appropriate. So we have to put this dummy message "OK"
-            return Response.ok("{\"message\":\"OK\"}", MediaType.APPLICATION_JSON_TYPE).build();
+            return Response.ok(new CompileResult("OK", res.getTwo().getWarnings()), MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {

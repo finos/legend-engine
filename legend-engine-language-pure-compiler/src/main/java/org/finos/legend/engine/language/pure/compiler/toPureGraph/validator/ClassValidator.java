@@ -14,11 +14,16 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.validator;
 
+import org.eclipse.collections.api.multimap.MutableMultimap;
+import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.HashSet;
@@ -36,7 +41,16 @@ public class ClassValidator
         LazyIterate.selectInstancesOf(pureModelContextData.getElements(), Class.class)
                 .forEach(_class -> classes.put(pureModel.buildPackageString(_class._package, _class.name), _class));
         this.validateGeneralization(pureModel, classes);
+        this.validateProperties(pureModel, classes);
         // TODO Check what Pure does and try to follow
+    }
+
+    private void validateProperties(PureModel pureModel, Map<String, Class> classes)
+    {
+        classes.values().forEach(c -> {
+            MutableMultimap<String, Property> prop = Iterate.groupBy(c.properties, p -> p.name);
+            pureModel.addWarnings(prop.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(a.getFirst().sourceInformation, "Duplicate property '"+a.getFirst().name+"' in the Class "+pureModel.buildPackageString(c._package, c.name))):Lists.mutable.empty()));
+        });
     }
 
     private void visitClassSuperType(Class _class, PureModel pureModel, Map<String, Class> classes, Set<Class> visitedClasses, Set<Class> discoveredClasses)

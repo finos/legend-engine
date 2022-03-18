@@ -110,6 +110,8 @@ public class PureModel implements IPureModel
     // this as part of `CompileContext`
     final CompilerExtensions extensions;
 
+    private final MutableList<Warning> warnings = Lists.mutable.empty();
+
     final Handlers handlers;
 
     private final MutableSet<String> immutables = Sets.mutable.empty();
@@ -273,6 +275,15 @@ public class PureModel implements IPureModel
             // TODO: we need to have a better strategy to throw compilation error instead of the generic exeception
             throw e;
         }
+    }
+    public void addWarnings(Iterable<Warning> warnings)
+    {
+        this.warnings.addAllIterable(warnings);
+    }
+
+    public MutableList<Warning> getWarnings()
+    {
+        return this.warnings;
     }
 
     private ObjectIntMap<String> buildDomainStats(PureModelContextData pure)

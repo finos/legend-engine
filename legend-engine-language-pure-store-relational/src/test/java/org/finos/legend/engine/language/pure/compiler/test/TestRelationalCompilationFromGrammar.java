@@ -14,8 +14,11 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
@@ -1211,5 +1214,46 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    firm: Binding simple::TestBinding: [simple::dbInc]@personSelfJoin | [simple::dbInc]personTable.FIRM\n" +
                 "  }\n" +
                 ")\n");
+    }
+
+    @Test
+    public void testUnknownSetImplementationIdWarning() throws Exception
+    {
+        Pair<PureModelContextData, PureModel>  res = test("Class simple::Person\n" +
+                "{\n" +
+                "  lastName: String[1];\n" +
+                "  firm: simple::Firm[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database simple::dbInc\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    LASTNAME VARCHAR(200)\n" +
+                "  )\n" +
+                "\n" +
+                "  Join personSelfJoin(personTable.ID = {target}.ID)\n" +
+                ")\n"+
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    lastName: [simple::dbInc]personTable.LASTNAME, \n" +
+                "    firm[x]: [simple::dbInc]@personSelfJoin\n" +
+                "  }\n" +
+                ")\n");
+
+        MutableList<Warning> warnings =  res.getTwo().getWarnings();
+        Assert.assertEquals(1, warnings.size());
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"simple::simpleRelationalMappingInc\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }
 }
