@@ -71,11 +71,7 @@ public class ModelManager
     // Remove clientVersion
     public PureModel loadModel(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm, String packageOffset)
     {
-        if(context instanceof PureModelContextData || context instanceof PureModelContextText)
-        {
-            return Compiler.compile(this.loadData(context, clientVersion, pm), this.deploymentMode, pm, packageOffset);
-        }
-        else
+        if (!(context instanceof PureModelContextData) && !(context instanceof PureModelContextText))
         {
             ModelLoader loader = this.modelLoaderForContext(context);
             if (loader.shouldCache(context))
@@ -90,15 +86,15 @@ public class ModelManager
                     throw new EngineException("Engine was not able to cache", e);
                 }
             }
-            return Compiler.compile(this.loadData(context, clientVersion, pm), this.deploymentMode, pm, packageOffset);
         }
+        return Compiler.compile(this.loadData(context, clientVersion, pm), this.deploymentMode, pm, packageOffset);
     }
 
     // Remove clientVersion
     public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm, String packageOffset)
     {
-            PureModelContextData data = this.loadData(context, clientVersion, pm);
-            return Tuples.pair(data, loadModel(data, clientVersion, pm, packageOffset));
+        PureModelContextData data = this.loadData(context, clientVersion, pm);
+        return Tuples.pair(data, loadModel(data, clientVersion, pm, packageOffset));
     }
 
     // Remove clientVersion
