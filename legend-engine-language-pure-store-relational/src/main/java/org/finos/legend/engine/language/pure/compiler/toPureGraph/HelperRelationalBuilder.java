@@ -926,6 +926,12 @@ public class HelperRelationalBuilder
 
         rpm.setSourceInformation(SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation));
 
+        if (propertyMapping.localMappingProperty != null)
+        {
+            res._localMappingPropertyType(context.resolveType(propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
+            res._localMappingPropertyMultiplicity(context.pureModel.getMultiplicity(propertyMapping.localMappingProperty.multiplicity));
+        }
+
         if (propertyMapping.enumMappingId != null)
         {
             EnumerationMapping<Object> eMap = allEnumerationMappings.select(e -> e._name().equals(propertyMapping.enumMappingId)).getFirst();
@@ -1271,6 +1277,7 @@ public class HelperRelationalBuilder
     {
         org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.FilterMapping filterMapping = new Root_meta_relational_mapping_FilterMapping_Impl("");
         filterMapping._filter(getFilter(ownerDb, srcFilterMapping.filter.name, srcFilterMapping.sourceInformation));
+        filterMapping._filterName(srcFilterMapping.filter.name);
         if (!srcFilterMapping.joins.isEmpty())
         {
             filterMapping._joinTreeNode(buildElementWithJoinsJoinTreeNode(srcFilterMapping.joins, context));
