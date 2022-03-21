@@ -1,0 +1,108 @@
+###Persistence
+Persistence cnas::TestPipe
+{
+  doc: 'test doc';
+  trigger: Manual;
+  service: cnas::TestService;
+  persister: Batch
+  {
+    connections:
+    [
+    ];
+    target: Flat
+    {
+      targetName: 's3Sink';
+      modelClass: cnas::Person;
+      deduplicationStrategy: None;
+      ingestMode: UnitemporalSnapshot
+      {
+        transactionMilestoning: BatchId
+        {
+          batchIdInFieldName: 'IN_Z';
+          batchIdOutFieldName: 'OUT_Z';
+        }
+      }
+    }
+  }
+  notifier:
+  {
+    notifyees:
+    [
+      PagerDuty
+      {
+        url: 'bugsbunny@looney.tunes';
+      }
+    ]
+  }
+}
+
+
+###Service
+Service cnas::TestService
+{
+  pattern: 'url/myUrl/';
+  owners:
+  [
+    'ownerName',
+    'ownerName2'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: cnas::RawPerson[1]|$src.firstName;
+    mapping: cnas::Mapping;
+    runtime:
+    #{
+      mappings:
+      [
+        cnas::Mapping
+      ];
+    }#;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts:
+    [
+    ];
+  }
+}
+
+
+###FileGeneration
+AwsPersistence cnas::awspersistenceGeneration
+{
+  scopeElements: [cnas];
+}
+
+
+###GenerationSpecification
+GenerationSpecification cnas::MyGenerationSpecification
+{
+  fileGenerations: [
+    cnas::awspersistenceGeneration
+  ];
+}
+
+
+###Pure
+Class cnas::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+}
+
+Class cnas::RawPerson
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+}
+
+
+###Mapping
+Mapping cnas::Mapping
+(
+)

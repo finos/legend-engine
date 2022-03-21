@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGe
 
 public enum FileGenerationType
 {
-	cpb("Cpb"),
+    awspersistence("AwsPersistence"),
     avro("Avro"),
     java("Java"),
     jsonSchema("JSON Schema"),
