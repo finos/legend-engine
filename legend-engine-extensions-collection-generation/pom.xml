@@ -130,7 +130,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-cpb</artifactId>
+            <artifactId>legend-engine-external-format-awspersistence</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

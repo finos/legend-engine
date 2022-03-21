@@ -56,7 +56,7 @@
         <module>legend-engine-external-format-avro</module>
         <module>legend-engine-external-format-jsonSchema</module>
         <module>legend-engine-external-format-rosetta</module>
-        <module>legend-engine-external-format-cpb</module>
+        <module>legend-engine-external-format-awspersistence</module>
         <module>legend-engine-external-format-protobuf</module>
         <module>legend-engine-external-language-java</module>
         <module>legend-engine-external-language-morphir</module>
@@ -798,7 +798,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-external-format-cpb</artifactId>
+                <artifactId>legend-engine-external-format-awspersistence</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

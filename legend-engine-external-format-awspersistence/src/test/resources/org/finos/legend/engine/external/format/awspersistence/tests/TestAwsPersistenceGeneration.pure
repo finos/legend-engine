@@ -1,0 +1,148 @@
+###Persistence
+Persistence cnas::TestPipe
+{
+  doc: 'test doc';
+  trigger: Manual;
+  service: cnas::TestService;
+  persister: Batch
+  {
+    connections:
+    [
+      c1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: cnas::SnowflakeStore;
+          type: Snowflake;
+          specification: Snowflake
+          {
+            name: 'test';
+            account: 'account';
+            warehouse: 'warehouseName';
+            region: 'us-east2';
+            proxyHost: 'sampleHost';
+            proxyPort: 'samplePort';
+            nonProxyHosts: 'sample';
+            accountType: MultiTenant;
+            organization: 'sampleOrganization';
+          };
+          auth: SnowflakePublic
+          {
+            publicUserName: 'name';
+            privateKeyVaultReference: 'name';
+            passPhraseVaultReference: 'name';
+          };
+        }
+      }#
+    ];
+    target: Flat
+    {
+      targetName: 's3Sink';
+      modelClass: cnas::Person;
+      deduplicationStrategy: None;
+      ingestMode: UnitemporalSnapshot
+      {
+        transactionMilestoning: BatchId
+        {
+          batchIdInFieldName: 'IN_Z';
+          batchIdOutFieldName: 'OUT_Z';
+        }
+      }
+    }
+  }
+  notifier:
+  {
+    notifyees:
+    [
+      PagerDuty
+      {
+        url: 'bugsbunny@looney.tunes';
+      }
+    ]
+  }
+}
+
+
+###Service
+Service cnas::TestService
+{
+  pattern: 'url/myUrl/';
+  owners:
+  [
+    'ownerName',
+    'ownerName2'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: cnas::RawPerson[1]|$src.firstName;
+    mapping: cnas::Mapping;
+    runtime:
+    #{
+      mappings:
+      [
+        cnas::Mapping
+      ];
+    }#;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts:
+    [
+    ];
+  }
+}
+
+
+###Relational
+Database cnas::SnowflakeStore
+(
+  Schema SAMPLE
+  (
+    Table DEMO_TABLE
+    (
+      "name" VARCHAR(100) PRIMARY KEY,
+      "age" NUMERIC(38, 0)
+    )
+  )
+)
+
+
+###FileGeneration
+AwsPersistence cnas::AwsPersistenceGeneration
+{
+  scopeElements: [cnas];
+}
+
+
+###GenerationSpecification
+GenerationSpecification cnas::MyGenerationSpecification
+{
+  fileGenerations: [
+    cnas::AwsPersistenceGeneration
+  ];
+}
+
+
+###Pure
+Class cnas::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+}
+
+Class cnas::RawPerson
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+}
+
+
+###Mapping
+Mapping cnas::Mapping
+(
+)

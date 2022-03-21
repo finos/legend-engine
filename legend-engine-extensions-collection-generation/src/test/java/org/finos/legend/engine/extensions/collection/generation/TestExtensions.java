@@ -57,7 +57,7 @@ public class TestExtensions
     private static final ImmutableList<Class<? extends GenerationExtension>> EXPECTED_GENERATION_EXTENSIONS = Lists.mutable.<Class<? extends GenerationExtension>>empty()
             .with(org.finos.legend.engine.external.format.protobuf.extension.ProtobufGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class)
-            .with(org.finos.legend.engine.external.format.cpb.extension.CpbGenerationExtension.class)
+            .with(org.finos.legend.engine.external.format.awspersistence.extension.AwsPersistenceGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.jsonSchema.extension.JSONSchemaGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationExtension.class)
             .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class)

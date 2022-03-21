@@ -229,7 +229,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-cpb</artifactId>
+            <artifactId>legend-engine-external-format-awspersistence</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
