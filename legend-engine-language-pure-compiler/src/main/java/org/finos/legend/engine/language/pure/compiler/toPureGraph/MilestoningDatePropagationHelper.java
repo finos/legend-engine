@@ -15,11 +15,15 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.list.ListIterable;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+import org.finos.legend.pure.runtime.java.compiled.compiler.Compile;
 
 import java.util.List;
 
@@ -84,6 +88,51 @@ public class MilestoningDatePropagationHelper {
         if(parameterValue instanceof SimpleFunctionExpression && checkGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) parameterValue))
         {
             setMilestoningPropagationContext((SimpleFunctionExpression) parameterValue, processingContext);
+        }
+    }
+
+    public static void updateMilestoningPropagaationContextForAutoMap(AbstractProperty<?> property, CompileContext context, int parametersCount, ValueSpecification processedParameter, ProcessingContext processingContext)
+    {
+        if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(property, context, parametersCount) && processedParameter instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) processedParameter)._func() instanceof AbstractProperty && Milestoning.isGeneratedMilestoningProperty((AbstractProperty<?>) ((SimpleFunctionExpression) processedParameter)._func(), context))
+        {
+            MilestoningDatePropagationHelper.updateMilestoningPropagationContext((SimpleFunctionExpression) processedParameter, processingContext);
+        }
+    }
+
+    public static void updateMilestoningContext(AbstractProperty<?> property, ProcessingContext processingContext, CompileContext context, SimpleFunctionExpression func)
+    {
+        if (Milestoning.isGeneratedQualifiedProperty(property, context))
+        {
+            MilestoningDatePropagationHelper.updateMilestoningPropagationContext(func, processingContext);
+        }
+        else if(property instanceof QualifiedProperty || property.getName().endsWith(Milestoning.ALL_VERSIONS_PROPERTY_NAME_SUFFIX) || property.getName().endsWith(Milestoning.RANGE_PROPERTY_NAME_SUFFIX))
+        {
+            processingContext.milestoningDatePropagationContext.setProcessingDate(null);
+            processingContext.milestoningDatePropagationContext.setBusinessDate(null);
+        }
+    }
+
+    public static void checkForValidSource(AppliedFunction appliedFunction, ProcessingContext processingContext)
+    {
+        if (!appliedFunction.function.equals("map") && !appliedFunction.function.equals("getAll") && !appliedFunction.function.equals("filter") && !appliedFunction.function.equals("project") &&!appliedFunction.function.equals("subType") && !appliedFunction.function.equals("exists") && !appliedFunction.function.equals("getAll") && !appliedFunction.parameters.isEmpty() && appliedFunction.parameters.get(0) instanceof AppliedFunction && ((AppliedFunction) appliedFunction.parameters.get(0)).function.equals("getAll"))
+        {
+            processingContext.isDatePropagationSupported = !processingContext.isDatePropagationSupported;
+        }
+    }
+
+    public static void updateMilestoningContextFromValidSources(ValueSpecification result, ProcessingContext processingContext)
+    {
+        if (result instanceof SimpleFunctionExpression && "map".equals(((SimpleFunctionExpression) result)._functionName()))
+        {
+            processingContext.milestoningDatePropagationContext.setProcessingDate(null);
+            processingContext.milestoningDatePropagationContext.setBusinessDate(null);
+        }
+        if (result instanceof SimpleFunctionExpression && MilestoningDatePropagationHelper.checkGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) result) && processingContext.isDatePropagationSupported) {
+            MilestoningDatePropagationHelper.setMilestoningPropagationContext((SimpleFunctionExpression) result, processingContext);
+        }
+        if (result instanceof SimpleFunctionExpression && MilestoningDatePropagationHelper.checkForFilter((SimpleFunctionExpression) result))
+        {
+            MilestoningDatePropagationHelper.updateMilestoningPropagationContextForFilter((SimpleFunctionExpression) result, processingContext);
         }
     }
 }

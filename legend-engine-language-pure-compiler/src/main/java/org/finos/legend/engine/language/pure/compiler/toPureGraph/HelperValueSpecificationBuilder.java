@@ -135,7 +135,6 @@ public class HelperValueSpecificationBuilder
         }
         else
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification topLevelProcessedParameter = processedParameters.get(0);
             if (firstArgument instanceof Variable)
             {
                 inferredVariable = processingContext.getInferredVariable(((Variable) firstArgument).name);
@@ -200,10 +199,7 @@ public class HelperValueSpecificationBuilder
                 List<Variable> lambdaParams = new FastList<>();
                 lambdaParams.add(automaLambdaparam);
                 automapLambda.parameters = lambdaParams;
-                if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, appliedProperty.parameters.size()) && processedParameters.get(0) instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) processedParameters.get(0))._func() instanceof AbstractProperty && Milestoning.isGeneratedMilestoningProperty((AbstractProperty<?>) ((SimpleFunctionExpression) processedParameters.get(0))._func(), context))
-                {
-                    MilestoningDatePropagationHelper.updateMilestoningPropagationContext((SimpleFunctionExpression) processedParameters.get(0), processingContext);
-                }
+                MilestoningDatePropagationHelper.updateMilestoningPropagaationContextForAutoMap(foundProperty, context, appliedProperty.parameters.size(), processedParameters.get(0), processingContext);
                 List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
                 result = context.buildFunctionExpression("map", null, newParams, openVariables, null, processingContext).getOne();
                 processingContext.pop();
@@ -220,15 +216,7 @@ public class HelperValueSpecificationBuilder
                 {
                     Milestoning.getMilestoningQualifiedPropertyWithAllDatesSupplied((FunctionExpression)result, foundProperty, sourceInformation, processingContext);
                 }
-                if (Milestoning.isGeneratedQualifiedProperty(foundProperty, context))
-                {
-                    MilestoningDatePropagationHelper.updateMilestoningPropagationContext((SimpleFunctionExpression) result, processingContext);
-                }
-                else if(foundProperty instanceof QualifiedProperty || foundProperty.getName().endsWith(Milestoning.ALL_VERSIONS_PROPERTY_NAME_SUFFIX) || foundProperty.getName().endsWith(Milestoning.RANGE_PROPERTY_NAME_SUFFIX))
-                {
-                    processingContext.milestoningDatePropagationContext.setProcessingDate(null);
-                    processingContext.milestoningDatePropagationContext.setBusinessDate(null);
-                }
+                MilestoningDatePropagationHelper.updateMilestoningContext(foundProperty, processingContext, context, (SimpleFunctionExpression) result);
             }
         }
         processingContext.pop();

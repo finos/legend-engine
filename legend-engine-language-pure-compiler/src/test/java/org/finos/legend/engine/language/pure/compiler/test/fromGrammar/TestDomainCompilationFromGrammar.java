@@ -34,13 +34,14 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
-import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite {
+public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
+{
     @Override
-    public String getDuplicatedElementTestCode() {
+    public String getDuplicatedElementTestCode()
+    {
         return "Class anything::class {}\n" +
                 "###Mapping\n" +
                 "Mapping anything::somethingelse ()\n" +
@@ -51,12 +52,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Override
-    public String getDuplicatedElementTestExpectedErrorMessage() {
+    public String getDuplicatedElementTestExpectedErrorMessage()
+    {
         return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
     @Test
-    public void testDuplicatedDomainElements() {
+    public void testDuplicatedDomainElements()
+    {
         String initialGraph = "Class anything::class\n" +
                 "{\n" +
                 "  ok : Integer[0..1];\n" +
@@ -120,94 +123,100 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMetaFunctionExecutionWithFullPath() {
+    public void testMetaFunctionExecutionWithFullPath()
+    {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,$input]->meta::pure::functions::math::max();" +
+                        "{\n"+
+                        "   [1,$input]->meta::pure::functions::math::max();"+
                         "}\n";
         test(code);
     }
 
     @Test
-    public void testMetaFunctionExecutionWithoutFullPath() {
+    public void testMetaFunctionExecutionWithoutFullPath()
+    {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,$input]->max();" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
                         "}\n";
         test(code);
     }
 
     @Test
-    public void testUserDefinedFunctionWithTheSameNameButDifferentSignatureExecutionWithImports() {
+    public void testUserDefinedFunctionWithTheSameNameButDifferentSignatureExecutionWithImports()
+    {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,$input]->max();" +
-                        "}\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n"+
                         "function example::testMaxInteger():Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,2]->max();" +
-                        "}\n" + "###Pure\n" +
-                        "import example::*;\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+"###Pure\n"+
+                        "import example::*;\n"+
                         "function example::test::go():Any[0..1]\n" +
-                        "{\n" +
-                        "   testMaxInteger(1);" +
-                        "   testMaxInteger();" +
+                        "{\n"+
+                        "   testMaxInteger(1);"+
+                        "   testMaxInteger();"+
                         "}\n";
         test(code);
     }
 
     @Test
-    public void testUserDefinedFunctionWithTheSameNameButDifferentSignatureExecution() {
+    public void testUserDefinedFunctionWithTheSameNameButDifferentSignatureExecution()
+    {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,$input]->max();" +
-                        "}\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n"+
                         "function example::testMaxInteger(input: Number[1]):Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,2]->max();" +
-                        "}\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+
                         "function example::testMaxInteger(f: Float[1], d: Float[1]):Any[0..1]\n" +
-                        "{\n" +
-                        "   [1, $f, $d]->max();" +
-                        "}\n" +
+                        "{\n"+
+                        "   [1, $f, $d]->max();"+
+                        "}\n"+
                         "function example::testMaxInteger():Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,2]->max();" +
-                        "}\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+
                         "function example::test::testMaxInteger():Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,2]->max();" +
-                        "}\n" +
+                        "{\n"+
+                        "   [1,2]->max();"+
+                        "}\n"+
                         "function example::test::go():Any[0..1]\n" +
-                        "{\n" +
-                        "   example::testMaxInteger(1);" +
-                        "   example::testMaxInteger();" +
-                        "   example::test::testMaxInteger();" +
-                        "   example::testMaxInteger(1.0, 1.123);" +
+                        "{\n"+
+                        "   example::testMaxInteger(1);"+
+                        "   example::testMaxInteger();"+
+                        "   example::test::testMaxInteger();"+
+                        "   example::testMaxInteger(1.0, 1.123);"+
                         "}\n";
         test(code);
     }
 
     @Test
-    public void testUserDefinedFunctionWithTheSameSignature() {
+    public void testUserDefinedFunctionWithTheSameSignature()
+    {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,$input]->max();" +
-                        "}\n" +
+                        "{\n"+
+                        "   [1,$input]->max();"+
+                        "}\n"+
                         "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n" +
-                        "   [1,2]->max();" +
+                        "{\n"+
+                        "   [1,2]->max();"+
                         "}\n";
-        test(code, "COMPILATION error at [4:1-6:17]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
+        test(code,"COMPILATION error at [4:1-6:17]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
     }
 
     @Test
-    public void testCycleClassSuperType() {
+    public void testCycleClassSuperType()
+    {
         test("Class test::A extends test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
@@ -238,7 +247,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testSuperTypeDuplication() {
+    public void testSuperTypeDuplication()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
@@ -251,7 +261,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testSimpleClass() {
+    public void testSimpleClass()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
@@ -265,7 +276,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testPackageWithUnderscore() {
+    public void testPackageWithUnderscore()
+    {
         test("function my::functionParent():String[1]\n" +
                 "{\n" +
                 "    my::package_with_underscore::functionName();\n" +
@@ -278,7 +290,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testElementDefinitionWithoutPackage() {
+    public void testElementDefinitionWithoutPackage()
+    {
         test("Class A\n" +
                 "{\n" +
                 "}\n", "COMPILATION error at [1:1-3:1]: Element package is required"
@@ -286,7 +299,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMeasureDefinition() {
+    public void testMeasureDefinition()
+    {
         test("Measure test::NewMeasure\n" +
                 "{\n" +
                 "   *UnitOne: x -> $x;\n" +
@@ -297,7 +311,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testNonConvertibleMeasureDefinition() {
+    public void testNonConvertibleMeasureDefinition()
+    {
         test("Measure test::NewNonConvertibleMeasure\n" +
                 "{\n" +
                 "   UnitOne;\n" +
@@ -308,7 +323,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithUnitTypeProperty() {
+    public void testClassWithUnitTypeProperty()
+    {
         String newMeasure = "Measure test::NewMeasure\n" +
                 "{\n" +
                 "   *UnitOne: x -> $x;\n" +
@@ -325,7 +341,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithNonConvertibleUnitTypeProperty() {
+    public void testClassWithNonConvertibleUnitTypeProperty()
+    {
         String newMeasure = "Measure test::NewNonConvertibleMeasure\n" +
                 "{\n" +
                 "   UnitOne;\n" +
@@ -342,7 +359,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithMissingUnitType() {
+    public void testClassWithMissingUnitType()
+    {
         String newMeasure = "Measure test::NewMeasure\n" +
                 "{\n" +
                 "   *UnitOne: x -> $x;\n" +
@@ -359,7 +377,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingProfile() {
+    public void testMissingProfile()
+    {
         test("Class <<NoProfile.NoKey>> test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
@@ -367,7 +386,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingTaggedValue() {
+    public void testMissingTaggedValue()
+    {
         test("Profile meta::pure::profiles::doc\n" +
                 "{\n" +
                 "   stereotypes: [tests];\n" +
@@ -380,7 +400,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingStereoType() {
+    public void testMissingStereoType()
+    {
         test("Profile meta::pure::profiles::doc\n" +
                 "{\n" +
                 "   stereotypes: [tests];\n" +
@@ -393,7 +414,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingSuperType() {
+    public void testMissingSuperType()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
@@ -406,7 +428,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFaultyClassSuperType() {
+    public void testFaultyClassSuperType()
+    {
         test("Enum test::A\n" +
                 "{\n" +
                 "   A, B , C\n" +
@@ -419,7 +442,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingPropertyType() {
+    public void testMissingPropertyType()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   good: String[0..1];\n" +
@@ -429,7 +453,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFaultyAssociation() {
+    public void testFaultyAssociation()
+    {
         test("Association test::FaultyAssociation\n" +
                 "{\n" +
                 "   a : String[1];\n" +
@@ -448,7 +473,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
 
 
     @Test
-    public void testPrimitive() {
+    public void testPrimitive()
+    {
         test("Class test::A\n" +
                 "[\n" +
                 "  constraint1: $this.ok->toOne() == 1,\n" +
@@ -478,7 +504,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testComplexConstraint() {
+    public void testComplexConstraint()
+    {
         test("Class test::A\n" +
                 "[\n" +
                 "  constraint1\n" +
@@ -495,7 +522,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFunctionWithExpressionInParameter() {
+    public void testFunctionWithExpressionInParameter()
+    {
         test("Class test::A\n" +
                 "[\n" +
                 "  constraint1\n" +
@@ -513,7 +541,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFunctionOrLambdaWithUnknownToken() {
+    public void testFunctionOrLambdaWithUnknownToken()
+    {
         test("Class test::A\n" +
                         "{\n" +
                         "   name : String[*];\n" +
@@ -552,7 +581,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFunctionOrLambdaWithUnknownEnumValue() {
+    public void testFunctionOrLambdaWithUnknownEnumValue()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[*];\n" +
@@ -583,7 +613,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingAssociationProperty() {
+    public void testMissingAssociationProperty()
+    {
         test("Class test::A {\n" +
                 "}\n" +
                 "Association test::FaultyAssociation\n" +
@@ -595,7 +626,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testQualifiedProperty() {
+    public void testQualifiedProperty()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[*];\n" +
@@ -604,7 +636,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingAnyAppliedProperty() {
+    public void testMissingAnyAppliedProperty()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[*];\n" +
@@ -616,7 +649,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingEnumValueInConstraint() {
+    public void testMissingEnumValueInConstraint()
+    {
         test("Enum test::PriceExpressionEnum {\n" +
                 "   AbsoluteTerms,\n" +
                 "   ParcentageOfNotional\n" +
@@ -637,7 +671,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingEnumValueInDerivedProperty() {
+    public void testMissingEnumValueInDerivedProperty()
+    {
         test("Enum test::PriceExpressionEnum {\n" +
                 "   AbsoluteTerms,\n" +
                 "   ParcentageOfNotional\n" +
@@ -659,7 +694,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingLoopedAnyAppliedProperty() {
+    public void testMissingLoopedAnyAppliedProperty()
+    {
         test("Class test::Dog\n" +
                 "{\n" +
                 "   name : String[*];\n" +
@@ -675,7 +711,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testGoodLoopedQualified() {
+    public void testGoodLoopedQualified()
+    {
         test("Class test::Dog\n" +
                 "{\n" +
                 "   name : String[*];\n" +
@@ -691,7 +728,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testGoodQualifiedProperty() {
+    public void testGoodQualifiedProperty()
+    {
         test("Class test::Dog\n" +
                 "{\n" +
                 "    funcDog(){'my Name is Bobby';}:String[1];\n" +
@@ -707,7 +745,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFailedToFindQuailifiedProperty() {
+    public void testFailedToFindQuailifiedProperty()
+    {
         test("Class test::Dog\n" +
                 "{\n" +
                 "    funcDog(){'my Name is Bobby';}:String[1];\n" +
@@ -723,7 +762,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingVariableName() {
+    public void testMissingVariableName()
+    {
         test("Enum test::A\n" +
                 "{\n" +
                 "   A, a \n" +
@@ -735,7 +775,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMapLambdaInferenceWithPrimitive() {
+    public void testMapLambdaInferenceWithPrimitive()
+    {
         test("Class test::A" +
                 "{" +
                 "   p(){[1,2]->map(a|$a+1)}:Integer[*];" +
@@ -748,7 +789,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMapLambdaInferenceWithClass() {
+    public void testMapLambdaInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -770,7 +812,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testPackageableElementMismatchNotFoundWithGetAll() {
+    public void testPackageableElementMismatchNotFoundWithGetAll()
+    {
         test("Class test::B" +
                 "{" +
                 "   z(){test::A.all()->map(a|$a.nam)}:String[*];" +
@@ -778,8 +821,9 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testPackageableElementMismatchWithGetAll() {
-        test("###Pure\n" +
+    public void testPackageableElementMismatchWithGetAll()
+    {
+        test(  "###Pure\n" +
                 "Class test::A" +
                 "{ prop : String[1];" +
                 "}" +
@@ -794,7 +838,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testSortByLambdaInferenceWithClass() {
+    public void testSortByLambdaInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -816,7 +861,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFilterLambdaInferenceWithClass() {
+    public void testFilterLambdaInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -838,7 +884,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testGroupByLambdaInferenceWithClass() {
+    public void testGroupByLambdaInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -878,7 +925,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testGroupByWithWindowLambdaInferenceWithClass() {
+    public void testGroupByWithWindowLambdaInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -900,7 +948,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testProjectInferenceWithClass() {
+    public void testProjectInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -932,7 +981,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testProjectColInferenceWithClass() {
+    public void testProjectColInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -964,7 +1014,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testProjectWithSubsetColInferenceWithClass() {
+    public void testProjectWithSubsetColInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -1017,7 +1068,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testExistsLambdaInferenceWithClass() {
+    public void testExistsLambdaInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -1039,7 +1091,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testTDSContainsInferenceWithClass() {
+    public void testTDSContainsInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -1071,7 +1124,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testTDSContainsWithLambdaInferenceWithClass() {
+    public void testTDSContainsWithLambdaInferenceWithClass()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -1103,7 +1157,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testGroupByTDS() {
+    public void testGroupByTDS()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -1125,7 +1180,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMultiplicityErrorInCollection() {
+    public void testMultiplicityErrorInCollection()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   names : String[*];\n" +
@@ -1144,7 +1200,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testConstraint() {
+    public void testConstraint()
+    {
         test("Class test::A\n" +
                 "[" +
                 "   $this.names->isNotEmpty()" +
@@ -1162,7 +1219,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testReturnTypeErrorInQualifier() {
+    public void testReturnTypeErrorInQualifier()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   names : String[*];\n" +
@@ -1176,7 +1234,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testReturnMultiplicityErrorInQualifier() {
+    public void testReturnMultiplicityErrorInQualifier()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   names : String[*];\n" +
@@ -1190,7 +1249,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testEval() {
+    public void testEval()
+    {
         test("Class test::A" +
                 "{" +
                 "   name : String[1];" +
@@ -1212,7 +1272,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testPropertyPostFunction() {
+    public void testPropertyPostFunction()
+    {
         test("Class test::Firm" +
                 "{" +
                 "   employees:test::Person[*];" +
@@ -1226,13 +1287,15 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testUnknownFunction() {
+    public void testUnknownFunction()
+    {
         test("Class test::Person[$this.lastName->ranDoMFuncTion()]{lastName:String[1];}",
                 "COMPILATION error at [1:36-49]: Can't resolve the builder for function 'ranDoMFuncTion' - stack:[Class 'test::Person' Fourth Pass, Constraint 0, new lambda, Applying ranDoMFuncTion]");
     }
 
     @Test
-    public void testEnum() {
+    public void testEnum()
+    {
         test("Enum test::A" +
                 "{" +
                 "   A,B" +
@@ -1247,7 +1310,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFunction() {
+    public void testFunction()
+    {
         PureModel model = test("Class test::A" +
                 "{" +
                 "   s:String[1];" +
@@ -1266,7 +1330,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testUserDefinedFunctionMatching() {
+    public void testUserDefinedFunctionMatching()
+    {
         test("Class test::A" +
                 "{" +
                 "   s:String[1];" +
@@ -1284,7 +1349,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testUserDefinedFunctionMatchingError() {
+    public void testUserDefinedFunctionMatchingError()
+    {
         test("Class test::A" +
                         "{" +
                         "   s:String[1];" +
@@ -1303,7 +1369,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testUserDefinedFunctionMatchingInheritance() {
+    public void testUserDefinedFunctionMatchingInheritance()
+    {
         test("Class test::B" +
                 "{" +
                 "   s:String[1];" +
@@ -1325,7 +1392,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testUserDefinedFunctionMatchingInheritanceError() {
+    public void testUserDefinedFunctionMatchingInheritanceError()
+    {
         test("Class test::B" +
                 "{" +
                 "   s:String[1];" +
@@ -1347,7 +1415,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testUserDefinedFunctionMatchingMultiplicity() {
+    public void testUserDefinedFunctionMatchingMultiplicity()
+    {
         test("Class test::A" +
                 "{" +
                 "}" +
@@ -1364,7 +1433,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testUserDefinedFunctionMatchingMultiplicityError() {
+    public void testUserDefinedFunctionMatchingMultiplicityError()
+    {
         test("Class test::A" +
                 "{" +
                 "}" +
@@ -1381,7 +1451,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFunctionReturnError() {
+    public void testFunctionReturnError()
+    {
         test("Class test::A" +
                 "{" +
                 "   s:String[1];" +
@@ -1395,7 +1466,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFunctionReferenceBeforeFunctionDefinition() {
+    public void testFunctionReferenceBeforeFunctionDefinition()
+    {
         test("function b::myFunction():String[1]" +
                 "{" +
                 "   z::otherFunction();" +
@@ -1408,7 +1480,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testDeepfetch() {
+    public void testDeepfetch()
+    {
         test("Class test::Person" +
                 "{" +
                 "   firstName:String[1];" +
@@ -1425,7 +1498,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testDeepfetchPropertyError() {
+    public void testDeepfetchPropertyError()
+    {
         test("Class test::Person\n" +
                 "{\n" +
                 "   firstName:String[1];\n" +
@@ -1445,7 +1519,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testDeepfetchTypeError() {
+    public void testDeepfetchTypeError()
+    {
         test("Class test::Person\n" +
                 "{\n" +
                 "   firstName:String[1];\n" +
@@ -1462,28 +1537,30 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMatchMaxFunction() {
+    public void testMatchMaxFunction()
+    {
         test("function example::testMaxString():Any[0..1]\n" +
-                "{\n" +
-                "   ['string1', 'string2']->max();" +
+                "{\n"+
+                "   ['string1', 'string2']->max();"+
                 "}\n" +
                 "function example::testMaxInteger():Any[0..1]\n" +
-                "{\n" +
-                "   [1,2]->max();" +
-                "}\n" +
+                "{\n"+
+                "   [1,2]->max();"+
+                "}\n"+
                 "function example::testMaxFloat():Any[0..1]\n" +
-                "{\n" +
-                "   [1.0,2.0]->max();" +
-                "}\n" +
+                "{\n"+
+                "   [1.0,2.0]->max();"+
+                "}\n"+
                 "function example::testMaxDate():Any[0..1]\n" +
-                "{\n" +
-                "   [%1999-01-01,%2000-01-01]->max();" +
+                "{\n"+
+                "   [%1999-01-01,%2000-01-01]->max();"+
                 "}\n"
         );
     }
 
     @Test
-    public void testMatchWithImport() {
+    public void testMatchWithImport()
+    {
         test("Class example::MyTest\n" +
                 "{\n" +
                 "p:String[1];\n" +
@@ -1497,7 +1574,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testAutoImports() {
+    public void testAutoImports()
+    {
         // TODO: we probably should test more types here based on the list of auto-imports
         test("Class {doc.doc = 'test'} test::doc {\n" +
                 "\n" +
@@ -1519,7 +1597,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testImportResolutionPrecedence() {
+    public void testImportResolutionPrecedence()
+    {
         // NOTE: notice that in PURE, we only validate the type of the reference during validation
         // so this test will also list `meta::pure::profiles::doc` in the list of matching resolved paths
         test("import test2::*;\n" +
@@ -1545,7 +1624,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testDuplicatedImports() {
+    public void testDuplicatedImports()
+    {
         // duplicated imports especially those that are similar to auto-imports are tolerated
         test("import meta::pure::profiles::*;\n" +
                 "import meta::pure::profiles::*;\n" +
@@ -1560,7 +1640,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingProperty() {
+    public void testMissingProperty()
+    {
         test("import anything::*;\n" +
                 "Class test::trial {\n" +
                 "   name: ritual[*];\n" +
@@ -1590,7 +1671,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingEnumValue() {
+    public void testMissingEnumValue()
+    {
         test("import anything::*;\n" +
                 "Class test::trial {\n" +
                 "   name: ritual[*];\n" +
@@ -1604,7 +1686,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingStereotype() {
+    public void testMissingStereotype()
+    {
         test("import anything::*;\n" +
                 "Class <<goes.businesstemporal>> {goes.doc = 'bla'} anything::A extends B, B\n" +
                 "{\n" +
@@ -1619,7 +1702,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMissingTag() {
+    public void testMissingTag()
+    {
         test("import anything::*;\n" +
                 "Class <<goes.test>> {goes.todo2 = 'bla'} anything::A extends B, B\n" +
                 "{\n" +
@@ -1634,7 +1718,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithImport() {
+    public void testClassWithImport()
+    {
         test("import anything::*;\n" +
                 // Class stereotypes, tagged values and supertypes
                 "Class <<goes.test>> {doc.doc = 'bla'} anything::A extends B\n" +
@@ -1669,7 +1754,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testEnumerationWithImport() {
+    public void testEnumerationWithImport()
+    {
         test("import anything::*;\n" +
                 "Profile anything::goes\n" +
                 "{\n" +
@@ -1688,7 +1774,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testAssociationWithImport() {
+    public void testAssociationWithImport()
+    {
         test("import anything::*;\n" +
                 "Class anything::goes2\n" +
                 "{\n" +
@@ -1725,7 +1812,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFunctionWithImport() {
+    public void testFunctionWithImport()
+    {
         test("import anything::*;\n" +
                 "Class anything::goes2\n" +
                 "{\n" +
@@ -1745,7 +1833,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
 
 
     @Test
-    public void testBlockAny() {
+    public void testBlockAny()
+    {
         test("Class my::Class\n" +
                 "{\n" +
                 "\n" +
@@ -1762,7 +1851,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithPath() {
+    public void testClassWithPath()
+    {
         test("Class model::Person\n" +
                 "{\n" +
                 "    firstName: String[1];\n" +
@@ -1780,7 +1870,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithStrictTime() {
+    public void testClassWithStrictTime()
+    {
         test("Class apps::Trade\n" +
                 "{\n" +
                 "   time : StrictTime[1];\n" +
@@ -1791,7 +1882,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithStrictTimeWithSubsec() {
+    public void testClassWithStrictTimeWithSubsec()
+    {
         test("Class apps::Trade\n" +
                 "{\n" +
                 "   time : StrictTime[1];\n" +
@@ -1802,7 +1894,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithStrictTimeWithParserError() {
+    public void testClassWithStrictTimeWithParserError()
+    {
         test("Class apps::Trade\n" +
                 "{\n" +
                 "   time : StrictTime[1];\n" +
@@ -1814,8 +1907,10 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithInvalidStrictTime() {
-        try {
+    public void testClassWithInvalidStrictTime()
+    {
+        try
+        {
             test("Class apps::Trade\n" +
                     "{\n" +
                     "   time : StrictTime[1];\n" +
@@ -1823,10 +1918,13 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                     "       $this.time == %200:12:22.88;\n" +
                     "   } : Boolean[1];\n" +
                     "}\n");
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Assert.assertEquals("Invalid hour: 200", e.getMessage());
         }
-        try {
+        try
+        {
             test("Class apps::Trade\n" +
                     "{\n" +
                     "   time : StrictTime[1];\n" +
@@ -1834,10 +1932,13 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                     "       $this.time == %20:122:22.88;\n" +
                     "   } : Boolean[1];\n" +
                     "}\n");
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Assert.assertEquals("Invalid minute: 122", e.getMessage());
         }
-        try {
+        try
+        {
             test("Class apps::Trade\n" +
                     "{\n" +
                     "   time : StrictTime[1];\n" +
@@ -1845,13 +1946,16 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                     "       $this.time == %20:12:61.88;\n" +
                     "   } : Boolean[1];\n" +
                     "}\n");
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Assert.assertEquals("Invalid second: 61", e.getMessage());
         }
     }
 
     @Test
-    public void testReturnTypeErrorOfStrictTime() {
+    public void testReturnTypeErrorOfStrictTime()
+    {
         test("Class test::A\n" +
                 "{\n" +
                 "   names : String[*];\n" +
@@ -1860,7 +1964,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFunctionWithDateTime() {
+    public void testFunctionWithDateTime()
+    {
         test("function test::getDateTime(): DateTime[1]\n" +
                 "{\n" +
                 "   %2020-01-01T00:00:00.000\n" +
@@ -1868,7 +1973,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testClassWithStrictDate() {
+    public void testClassWithStrictDate()
+    {
         test("Class apps::Trade\n" +
                 "{\n" +
                 "   date : StrictDate[1];\n" +
@@ -1877,9 +1983,9 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   } : Boolean[1];\n" +
                 "}\n");
     }
-
     @Test
-    public void testClassWithBusinessTemporalMilesoning() {
+    public void testClassWithBusinessTemporalMilesoning()
+    {
         Pair<PureModelContextData, PureModel> modelWithInput =
                 test("Class apps::Employee \n" +
                         "{ \n" +
@@ -1909,8 +2015,9 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertTrue("Missing worksFor property in _originalMilestonedProperties for association", worksForPropertyFromAssoc.size() == 1);
     }
 
-    public String getMilestoningModelWithDatePropagationAndInheritance() {
-        String model = "###Pure\n" +
+    public String getMilestoningModelWithDatePropagationAndInheritance()
+    {
+        String model ="###Pure\n" +
                 "Class <<temporal.businesstemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue\n" +
                 "{\n" +
                 "  value: String[1];\n" +
@@ -1938,7 +2045,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testCompilationOfBusinesstemporalDatePropagationWithInheritance() {
+    public void testCompilationOfBusinesstemporalDatePropagationWithInheritance()
+    {
         String grammar = getMilestoningModelWithDatePropagationAndInheritance();
         Pair<PureModelContextData, PureModel> modelWithInput = test(grammar);
         PureModel model = modelWithInput.getTwo();
@@ -1949,12 +2057,13 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertEquals(3, collectionsQPs.size());
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
         Assert.assertTrue("Missing productType property for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties", singleDateQPWithArgAndNoArg.size() == 2);
-        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((Root_meta_pure_metamodel_type_FunctionType_Impl) (qp._classifierGenericType()._typeArguments().getFirst()._rawType()))._parameters.size() == 2));
-        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should not contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((Root_meta_pure_metamodel_type_FunctionType_Impl) qp._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 1));
+        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp->((Root_meta_pure_metamodel_type_FunctionType_Impl) (qp._classifierGenericType()._typeArguments().getFirst()._rawType()))._parameters.size() == 2));
+        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should not contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp->((Root_meta_pure_metamodel_type_FunctionType_Impl) qp._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 1));
     }
 
     @Test
-    public void testCompilationOfNonMilestonedClasstoMilestonedClass() {
+    public void testCompilationOfNonMilestonedClasstoMilestonedClass()
+    {
         String grammar = getMilestoningModelWithDatePropagationAndInheritance();
         test(grammar);
         Pair<PureModelContextData, PureModel> modelWithInput = test(grammar);
@@ -1971,7 +2080,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFunctionNamingUsingUnderStore() {
+    public void testFunctionNamingUsingUnderStore()
+    {
         String grammar =
                 "###Pure\n" +
                         "Class <<temporal.businesstemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue\n" +
@@ -1999,7 +2109,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testLambdaReturnTypes() {
+    public void testLambdaReturnTypes()
+    {
         Pair<PureModelContextData, PureModel> modelWithInput =
                 test("###Pure \n" +
                         " \n" +
@@ -2029,7 +2140,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testCompilationOfLambdaWithBiTemporalClass() {
+    public void testCompilationOfLambdaWithBiTemporalClass()
+    {
         test("###Pure \n" +
                 " \n" +
                 "Class <<temporal.bitemporal>> main::Person \n" +
@@ -2062,788 +2174,5 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{ \n" +
                 "    main::Person.all(%2020-12-12, %2020-12-13).firm(%latest, %latest)  \n" +
                 "} \n");
-    }
-
-    @Test
-    public void testDatePropagationFromBusinessTemporalSourceToBusinessTemporalTarget() {
-        Pair<PureModelContextData, PureModel> modelWithInput =
-                test("###Pure\n" +
-                        "Class <<temporal.businesstemporal>> main::Person\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  firm: main::Firm[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.businesstemporal>> main::Firm\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "function main::walkTree(): String[*]\n" +
-                        "{\n" +
-                        "   main::Person.all(%2022-12-12).firm.name\n" +
-                        "}\n");
-        PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___String_MANY_";
-        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
-        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
-        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (((SimpleFunctionExpression) functionExpression._parametersValues().toList().get(0))._parametersValues().toList().get(1)))._values().toList().get(0);
-        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0);
-        InstanceValue parameterValue = (InstanceValue) firm_functionExpression._parametersValues().toList().get(1);
-        Assert.assertEquals(2, firm_functionExpression._parametersValues().size());
-        Assert.assertEquals(DateFunctions.newPureDate(2022, 12, 12), parameterValue._values().toList().get(0));
-    }
-
-    @Test
-    public void testDatePropagationFromBiTemporalSourceToBusinessTemporalTarget() {
-        Pair<PureModelContextData, PureModel> modelWithInput =
-                test("###Pure\n" +
-                        "Class <<temporal.bitemporal>> main::Person\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  firm: main::Firm[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.businesstemporal>> main::Firm\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "function main::walkTree(): String[*]\n" +
-                        "{\n" +
-                        "   main::Person.all(%2022-12-12, %2022-12-13).firm.name\n" +
-                        "}\n");
-        PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___String_MANY_";
-        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
-        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
-        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (((SimpleFunctionExpression) functionExpression._parametersValues().toList().get(0))._parametersValues().toList().get(1)))._values().toList().get(0);
-        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0);
-        InstanceValue parameterValue = (InstanceValue) firm_functionExpression._parametersValues().toList().get(1);
-        Assert.assertEquals(2, firm_functionExpression._parametersValues().size());
-        Assert.assertEquals(DateFunctions.newPureDate(2022, 12, 13), parameterValue._values().toList().get(0));
-    }
-
-    @Test
-    public void testDatePropagationNotSupportedFromProcessingTemporalSourceToBusinessTemporalTarget() {
-        test("###Pure\n" +
-                "Class <<temporal.processingtemporal>> main::Person\n" +
-                "{\n" +
-                "  name: String[1];\n" +
-                "  firm: main::Firm[1];\n" +
-                "}\n" +
-                "\n" +
-                "Class <<temporal.businesstemporal>> main::Firm\n" +
-                "{\n" +
-                "  name: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "function main::walkTree(): String[*]\n" +
-                "{\n" +
-                "   main::Person.all(%2022-12-12, %2022-12-12).firm.name\n" +
-                "}\n", "COMPILATION error at [13:1-16:1]: Error in 'main::walkTree': No-Arg milestoned property: 'firm' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testDatePropagationSupportedInProjectFromBitemporalToBusinessTemporal() {
-        Pair<PureModelContextData, PureModel> modelWithInput =
-                test("###Pure\n" +
-                        "Class main::Person\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  firm: main::Firm[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.bitemporal>> main::Firm\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  city: main::City[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.businesstemporal>> main::City\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "function main::walkTree(): Any[*]\n" +
-                        "{\n" +
-                        "   main::Person.all()->project([x| $x.firm(%2021-11-12, %2021-11-12).city.name], ['City name'])\n" +
-                        "}\n");
-        PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
-        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
-        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
-        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
-        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0);
-        InstanceValue parameterValue = (InstanceValue) ((SimpleFunctionExpression) firm_functionExpression._parametersValues().toList().get(0))._parametersValues().toList().get(1);
-        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), parameterValue._values().toList().get(0));
-    }
-
-    @Test
-    public void testDatePropagationSupportedInProjectFromBitemporalToProcessingTemporal() {
-        Pair<PureModelContextData, PureModel> modelWithInput =
-                test("###Pure\n" +
-                        "Class main::Person\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  firm: main::Firm[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.bitemporal>> main::Firm\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  city: main::City[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.processingtemporal>> main::City\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "function main::walkTree(): Any[*]\n" +
-                        "{\n" +
-                        "   main::Person.all()->project([x| $x.firm(%2021-11-12, %2021-11-12).city.name], ['City name'])\n" +
-                        "}\n");
-        PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
-        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
-        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
-        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
-        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0);
-        InstanceValue parameterValue = (InstanceValue) ((SimpleFunctionExpression) firm_functionExpression._parametersValues().toList().get(0))._parametersValues().toList().get(1);
-        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), parameterValue._values().toList().get(0));
-    }
-
-    @Test
-    public void testBusinessDatePropagatedToBitemporalWhenProcessingDateSupplied() {
-        Pair<PureModelContextData, PureModel> modelWithInput =
-                test("###Pure\n" +
-                        "Class main::Person\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  firm: main::Firm[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.businesstemporal>> main::Firm\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  city: main::City[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.bitemporal>> main::City\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "function main::walkTree(): Any[*]\n" +
-                        "{\n" +
-                        "   main::Person.all()->project([x| $x.firm(%2021-11-12).city(%2021-11-13).name], ['City name'])\n" +
-                        "}\n");
-        PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
-        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
-        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
-        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
-        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0);
-        InstanceValue parameterValue = (InstanceValue) ((SimpleFunctionExpression) firm_functionExpression._parametersValues().toList().get(0))._parametersValues().toList().get(2);
-        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), parameterValue._values().toList().get(0));
-    }
-
-    @Test
-    public void testProcessingDatePropagatedToBitemporalWhenBusinessDateSupplied() {
-        Pair<PureModelContextData, PureModel> modelWithInput =
-                test("###Pure\n" +
-                        "Class main::Person\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  firm: main::Firm[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.processingtemporal>> main::Firm\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "  city: main::City[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "Class <<temporal.bitemporal>> main::City\n" +
-                        "{\n" +
-                        "  name: String[1];\n" +
-                        "}\n" +
-                        "\n" +
-                        "function main::walkTree(): Any[*]\n" +
-                        "{\n" +
-                        "   main::Person.all()->project([x| $x.firm(%2021-11-12).city(%2021-11-13).name], ['City name'])\n" +
-                        "}\n");
-        PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
-        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
-        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
-        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
-        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0);
-        InstanceValue parameterValue = (InstanceValue) ((SimpleFunctionExpression) firm_functionExpression._parametersValues().toList().get(0))._parametersValues().toList().get(1);
-        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), parameterValue._values().toList().get(0));
-    }
-
-    @Test
-    public void testProcessingDateDoesntPropagateToBusinessContext() {
-        test("###Pure\n" +
-                "Class <<temporal.processingtemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.processingtemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   name : String[0..1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-05-02).classification.exchange.name}\n" +
-                "}\n", "COMPILATION error at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testBusinessDateDoesntPropagateToBusinessContext() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class  <<temporal.processingtemporal>> test::Exchange{\n" +
-                "   name : String[0..1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classification.exchange.name}\n" +
-                "}\n", "COMPILATION error at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [processingDate] parameters");
-    }
-
-    @Test
-    public void testProcessingMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughMapToNoArgMilestonedPropertyInLambda() {
-        test("###Pure\n" +
-                "Class <<temporal.processingtemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.processingtemporal>> test::Classification{\n" +
-                "   exchangeName : String[0..1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classification->map(c|$c.exchangeName)}\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughMapToNoArgMilestonedPropertyInLambda() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(businessDate=$bd)} : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classification->map(t|$t.exchange.exchangeName)}\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testMilestoningContextNotAllowedToPropagateFromEdgePointPropertyThroughMapToNoArgMilestonedPropertyInLambda() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classificationAllVersions->map(t|$t.exchange.exchangeName)}\n" +
-                "}\n", "COMPILATION error at [15:73-80]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testMilestoningContextNotAllowedToPropagateFromDerivedPropertyThroughMapToNoArgMilestonedPropertyInLambda() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(businessDate=$bd)} : test::Classification[*];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).myClassification(%2022-11-12)->map(t|$t.exchange.exchangeName)}\n" +
-                "}\n", "COMPILATION error at [16:77-84]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-   /* @Test //Needs to be fixed
-    public void testMilestoningContextNotAllowedToPropagateFromNoArgQualifiedPropertyThroughMapToFilter() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(businessDate=$bd)} : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classification->map(c|^test::Classification(businessDate=%2022-11-12))->filter(t|$t.exchange.exchangeName == '')}\n" +
-                "}\n", "COMPILATION error at [16:77-84]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }*/
-
-    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda(boolean extraFilter) {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(name='',businessDate=$bd)} : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   name : String[1];\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classification" + (extraFilter ? "->filter(t|$t.name == '')" : "") + "->filter(t2|$t2.exchange.exchangeName == '')}\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda() {
-        testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda(false);
-        testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda(true);
-    }
-
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter(boolean extraFilter, String errorNo) {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Classification{\n" +
-                "   name : String[1];\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classificationAllVersions" + (extraFilter ? "->filter(t|$t.name == '')" : "") + "->filter(t2|$t2.exchange.exchangeName == '')}\n" +
-                "}\n", "COMPILATION error at " + errorNo + ": No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter() {
-        testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter(false, "[16:78-85]");
-        testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter(true, "[16:103-110]");
-    }
-
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter(boolean extraFilter, String errorNo) {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(name='',businessDate=$bd)} : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   name : String[1];\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).myClassification(%2022-11-12)" + (extraFilter ? "->filter(t|$t.name == '')" : "") + "->filter(t|$t.exchange.exchangeName == '')}\n" +
-                "}\n", "COMPILATION error at " + errorNo + ": No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter() {
-        testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter(false, "[17:80-87]");
-        testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter(true, "[17:105-112]");
-    }
-
-    @Test
-    public void testMilestoningContextAllowedToPropagateFromAllThroughFilterThroughExistsToNoArgMilestonedPropertyInLambda() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(businessDate=$bd)} : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12)->filter(p|$p.classification->exists(c|$c.exchange.exchangeName == ''))}\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testMilestoningContextNotAllowedToPropagateFromEdgePointPropertyThroughExistsToNoArgMilestonedPropertyInLambda()
-    {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12)->filter(p|$p.classificationAllVersions->exists(c|$c.exchange.exchangeName == ''))}\n" +
-                "}\n", "COMPILATION error at [15:89-96]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testMilestoningContextNotAllowedToPropagateFromDerivedPropertyThroughExistsToNoArgMilestonedPropertyInLambda() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(businessDate=$bd)} : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-12-12)->filter(p|$p.myClassification(%2022-11-12)->exists(c|$c.exchange.exchangeName == ''))}\n" +
-                "}\n", "COMPILATION error at [16:93-100]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testMilestoningContextAllowedToPropagateThroughSubTypeToNoArgMilestonedProperty() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(businessDate=$bd)} : test::Classification[*];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classification->subType(@test::ExtendedClassification).exchange.exchangeName}\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughMapThroughSubTypeToNoArgMilestonedPropertyInLambda() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(businessDate=$bd)} : test::Classification[*];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classification->map(t|$t->subType(@test::ExtendedClassification).exchange.exchangeName)}\n" +
-                "}\n");
-    }
-
-    /*@Test
-    public void testMilestoningContextNotAllowedToPropagateThroughFunctionWhichDoesNotAllowMilestoningContextPropagation() //Needs to be fixed
-    {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   classificationType : String[0..1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-15)->test::outOfScopeFunction(p|$p.classification.classificationType == '')}\n" +
-                "}" +
-                "function test::outOfScopeFunction(value:String[*]):String[*]{$value}\n");
-    }*/
-
-    @Test
-    public void testMilestoningContextAllowedToPropagateFromAllToMultipleNoArgQualifiedProperties() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).classification.exchange.exchangeName}\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testMilestoningContextAllowedToPropagateAsVariableFromAllToNoArgQualifiedProperty() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   classificationName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   let bdVar=%2022-11-12;" +
-                "   {|test::Product.all($bdVar).classification.classificationName};" +
-                "}\n");
-    }
-
-    @Test
-    public void testMilestoningContextNotAllowedToPropagateFromMilestonedQualifiedPropertyToNoArgMilestonedProperty() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[*];\n" +
-                "   myClassification(bd:Date[1]){^test::Classification(businessDate=$bd)} : test::Classification[1];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[0..1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12).myClassification(%2022-11-12).exchange.exchangeName}\n" +
-                "}\n", "COMPILATION error at [12:1-15:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedProperty() {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[1];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-13).classificationAllVersions.exchange.exchangeName}\n" +
-                "}\n", "COMPILATION error at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testProcessingErrorWhenMilestoningContextIsNotAvailableToNoArgMilestonedProperty()
-    {
-        test("###Pure\n" +
-                "Class test::Order{\n" +
-                "   product : test::Product[1];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Product{\n" +
-                "   name : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Order.all().product.name}\n" +
-                "}\n", "COMPILATION error at [8:1-11:1]: Error in 'main::walkTree': No-Arg milestoned property: 'product' must be either called in a milestoning context or supplied with [businessDate] parameters");
-    }
-
-    @Test
-    public void testNoProcessingErrorWhenMilestoningContextIsNotAvailableFromSourceQualifiedMilestonedPropertyWithDateParam()
-    {
-        test("###Pure\n" +
-                "Class test::Order{\n" +
-                "   product : test::Product[1];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Product{\n" +
-                "   name : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Order.all().product(%2016-5-1).name}\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testMilestoningContextAllowedToPropagateThroughAutoMappedQualifiedMilestonedPropertyWithDateParam()
-    {
-        test("###Pure\n" +
-                "Class test::Order{\n" +
-                "   orderEvents : test::OrderEvents[*];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::OrderEvents{\n" +
-                "   classification : test::Classification[1];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   classificationType : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Order.all().orderEvents(%2016-5-1).classification.classificationType}\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testMilestoningContextAllowedToPropagateFromAllThroughProjectToNoArgMilestonedPropertyInLambda()
-    {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Product{\n" +
-                "   classification : test::Classification[1];\n" +
-                "}\n" +
-                "Class  <<temporal.businesstemporal>> test::Classification{\n" +
-                "   exchange : test::Exchange[1];\n" +
-                "   classificationType : String[1];\n" +
-                "}\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{\n" +
-                "   exchangeName : String[1];\n" +
-                "}\n" +
-                "function main::walkTree(): Any[*]\n" +
-                "{\n" +
-                "   {|test::Product.all(%2022-11-12)->project([p|$p.classification.classificationType, p|$p.classification.exchange.exchangeName],['exchangeType','classificationType'])}\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testBiTemporalDatesNotSupplied()
-    {
-        test("###Pure\n" +
-                "Class test::Order { createdLocation : test::Location[0..1]; }\n" +
-                "Class <<temporal.bitemporal>> test::Location{ place : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Order.all().createdLocation.place} }\n", "COMPILATION error at [4:1-80]: Error in 'main::walkTree': No-Arg milestoned property: 'createdLocation' must be either called in a milestoning context or supplied with [processingDate, businessDate] parameters");
-    }
-
-    @Test
-    public void testBiTemporalDatesArePropagatedFromBiTemporalRoot()
-    {
-        test("###Pure\n" +
-                "Class <<temporal.bitemporal>> test::Order { createdLocation : test::Location[0..1]; }\n" +
-                "Class <<temporal.bitemporal>> test::Location{ place : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Order.all(%2022-11-12, %2022-11-12).createdLocation.place} }\n");
-    }
-
-    @Test
-    public void testBiTemporalDatesArePropagatedFromBiTemporalToBiTemporalInProject()
-    {
-        test("###Pure\n" +
-                "Class  test::Order { createdLocation : test::Location[0..1]; }\n" +
-                "Class <<temporal.bitemporal>> test::Location{ place : test::Place[1];}\n" +
-                "Class <<temporal.bitemporal>> test::Place{ name : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Order.all().createdLocation(%2022-11-12, %2022-11-12).place.name} }\n");
-    }
-
-    @Test
-    public void testBusinessTemporalDatesArePropagatedFromBusinessTemporal()
-    {
-        test("###Pure\n" +
-                "Class  test::Order { createdLocation : test::Location[0..1]; }\n" +
-                "Class <<temporal.businesstemporal>> test::Location{ place : test::Place[1];}\n" +
-                "Class <<temporal.businesstemporal>> test::Place{ name : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Order.all().createdLocation(%2020-11-12).place.name} }\n");
-    }
-
-    @Test
-    public void testBiTemporalPropertyUsageWhenOnlyOneDatePropagated()
-    {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Order { createdLocation : test::Location[0..1]; }\n" +
-                "Class <<temporal.bitemporal>> test::Location{ place : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Order.all(%2022-11-12).createdLocation.place} }\n", "COMPILATION error at [4:1-91]: Error in 'main::walkTree': No-Arg milestoned property: 'createdLocation' must be either called in a milestoning context or supplied with [processingDate, businessDate] parameters");
-    }
-
-    @Test
-    public void testBusinessDatePropagatedToBiTemporalTypeWhenProcessingDateSupplied()
-    {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Order { createdLocation : test::Location[0..1]; }\n" +
-                "Class <<temporal.bitemporal>> test::Location{ place : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Order.all(%2022-11-12).createdLocation(%2022-11-12).place} }\n");
-    }
-
-    @Test
-    public void testProcessingDatePropagatedToBiTemporalTypeWhenBusinessDateSupplied()
-    {
-        test("###Pure\n" +
-                "Class <<temporal.processingtemporal>> test::Order { createdLocation : test::Location[0..1]; }\n" +
-                "Class <<temporal.bitemporal>> test::Location{ place : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Order.all(%2022-11-12).createdLocation(%2022-11-12).place} }\n");
-    }
-
-    @Test
-    public void testPropagationOfSingleDateFromBiTemporalAll()
-    {
-        test("###Pure\n" +
-                "Class <<temporal.bitemporal>> test::Product { exchange : test::Exchange[0..1]; }\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{ location : test::Location[1];}\n" +
-                "Class <<temporal.businesstemporal>> test::Location{ street : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Product.all(%2022-11-12, %2012-11-12).exchange.location.street} }\n");
-    }
-
-    @Test
-    public void testPropagationOfSingleDateFromBiTemporalQualifiedProperty()
-    {
-        test("###Pure\n" +
-                "Class test::Product { exchange : test::Exchange[0..1]; }\n" +
-                "Class <<temporal.businesstemporal>> test::Exchange{ location : test::Location[1];}\n" +
-                "Class <<temporal.businesstemporal>> test::Location{ street : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Product.all().exchange(%2022-11-12).location.street} }\n");
     }
 }
