@@ -34,16 +34,7 @@ public class TestAwsPersistenceFileGeneration
     {
         AwsPersistenceGenerationExtension generationExtension = new AwsPersistenceGenerationExtension();
         String pureCode = IOUtils.toString(Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResource("org/finos/legend/engine/external/format/awspersistence/tests/TestAwsPersistenceGeneration.pure")), StandardCharsets.UTF_8);
-
-        //debugging
-        MutableList<String> extensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty()).collect(x -> x.getKey());
-        System.out.println(extensions);
-
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureCode);
-        //System.out.println(pureModelContextData.getElements()); --works
-        //AwsPersistenceGenerationConfig awspersistenceConfig = AwsPersistenceGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
-        //System.out.println(awspersistenceConfig);
-
         PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
         FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
         List<Root_meta_pure_generation_metamodel_GenerationOutput> outputs = generationExtension.generateFromElement(fileGeneration, pureModel.getContext());

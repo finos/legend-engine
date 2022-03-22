@@ -111,7 +111,7 @@ Database cnas::SnowflakeStore
 
 
 ###FileGeneration
-awspersistence cnas::awspersistenceGeneration
+AwsPersistence cnas::AwsPersistenceGeneration
 {
   scopeElements: [cnas];
 }
@@ -121,7 +121,7 @@ awspersistence cnas::awspersistenceGeneration
 GenerationSpecification cnas::MyGenerationSpecification
 {
   fileGenerations: [
-    cnas::awspersistenceGeneration
+    cnas::AwsPersistenceGeneration
   ];
 }
 

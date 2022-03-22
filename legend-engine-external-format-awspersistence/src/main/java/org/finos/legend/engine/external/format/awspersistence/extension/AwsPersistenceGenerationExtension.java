@@ -30,7 +30,7 @@ public class AwsPersistenceGenerationExtension implements GenerationExtension
     @Override
     public String getKey()
     {
-        return "awspersistence";
+        return "awsPersistence";
     }
 
     @Override

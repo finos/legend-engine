@@ -24,7 +24,7 @@ public class AwsPersistenceGenerationConfigFromFileGenerationSpecificationBuilde
 {
     public static AwsPersistenceGenerationConfig build(FileGenerationSpecification fileGeneration)
     {
-        Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.awspersistence.name()), () -> "File generation of type of awspersistence expected, got '" + fileGeneration.type + "'");
+        Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.awsPersistence.name()), () -> "File generation of type of awspersistence expected, got '" + fileGeneration.type + "'");
         AwsPersistenceGenerationConfig awspersistenceConfig = new AwsPersistenceGenerationConfig();
         ConfigBuilder.duplicateCheck(fileGeneration.configurationProperties);
         //ConfigBuilder.noConfigurationPropertiesCheck(fileGeneration);

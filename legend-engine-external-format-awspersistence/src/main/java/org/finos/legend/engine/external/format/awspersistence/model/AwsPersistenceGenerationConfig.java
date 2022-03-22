@@ -35,9 +35,6 @@ public class AwsPersistenceGenerationConfig extends GenerationConfiguration
             awspersistenceConfig._comment(comment);
         }
 
-        //PureMap _namespaceOverride = null;
-        //awspersistenceConfig._namespaceOverride(_namespaceOverride);
-
         return awspersistenceConfig;
     }
 }
