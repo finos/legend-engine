@@ -35,11 +35,17 @@ jobs:
         # NOTE: if this gets more complicated, consider having this as a bash script
         run: mkdir -p ./legend-engine-server/target && touch ./legend-engine-server/target/legend-engine-server-dummy.jar && docker build --quiet --tag local/legend-engine-server:${{ github.sha }} ./legend-engine-server
       - name: Scan image for security issues
-        uses: Azure/container-scan@v0
-        env:
-          # Skip `won't fix` CVEs
-          # See https://github.com/Azure/container-scan/issues/61
-          TRIVY_IGNORE_UNFIXED: true
+        uses: aquasecurity/trivy-action@0.2.2
         with:
-          image-name: local/legend-engine-server:${{ github.sha }}
-          severity-threshold: CRITICAL
+          # TODO: we should probably also setup misconfiguration scanning
+          # See https://github.com/aquasecurity/trivy-action#using-trivy-to-scan-infrastucture-as-code
+          scan-type: image
+          image-ref: local/legend-engine-server:${{ github.sha }}
+          format: table
+          exit-code: 1
+          # Ignore unpatched/unfixed vulnerabilities/CVEs
+          ignore-unfixed: true
+          severity: CRITICAL
+          # Manually increase timeout as the default 2-minute is not enough
+          # See https://github.com/aquasecurity/trivy/issues/802
+          timeout: 10m

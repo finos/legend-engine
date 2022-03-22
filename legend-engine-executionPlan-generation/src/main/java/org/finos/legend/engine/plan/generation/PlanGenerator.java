@@ -19,6 +19,8 @@ import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
@@ -34,10 +36,14 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
+import org.finos.legend.pure.m3.execution.Console;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 public class PlanGenerator
 {
@@ -46,6 +52,12 @@ public class PlanGenerator
     public static String generateExecutionPlanAsString(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         return PlanGenerator.serializeToJSON(PlanGenerator.generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, planId, extensions), clientVersion, pureModel, extensions, transformers);
+    }
+
+    public static PlanWithDebug generateExecutionPlanDebug(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
+    {
+        Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> res = PlanGenerator.generateExecutionPlanAsPureDebug(l, mapping, pureRuntime, context, pureModel, platform, planId, extensions);
+        return new PlanWithDebug(PlanGenerator.stringToPlan(PlanGenerator.serializeToJSON(res.getOne(), clientVersion, pureModel, extensions, transformers)), res.getTwo());
     }
 
     public static SingleExecutionPlan generateExecutionPlan(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, Iterable<? extends PlanTransformer> transformers)
@@ -70,11 +82,22 @@ public class PlanGenerator
         }
     }
 
+    public static Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> generateExecutionPlanAsPureDebug(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
+    {
+        return generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, planId, true, extensions);
+    }
+
     public static Root_meta_pure_executionPlan_ExecutionPlan generateExecutionPlanAsPure(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
+    {
+        return generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, planId, false, extensions).getOne();
+    }
+
+    private static Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> generateExecutionPlanAsPure(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, boolean debug, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Generate Plan").startActive(true))
         {
             Root_meta_pure_executionPlan_ExecutionPlan plan;
+            String debugInfo = "";
 
             if (mapping == null)
             {
@@ -84,19 +107,38 @@ public class PlanGenerator
             }
             else
             {
-//                plan = context == null ?
-//                        core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__RouterExtension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport())
-//                        : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
-                plan = context == null ?
-                        core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, pureModel.getExecutionSupport())
-                        : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, pureModel.getExecutionSupport());
+                if (debug)
+                {
+                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                    try (PrintStream ps = new PrintStream(bs, true, StandardCharsets.UTF_8.name()))
+                    {
+                        Console console = pureModel.getExecutionSupport().getConsole();
+                        console.enable();
+                        console.setPrintStream(ps);
+                        plan = context == null ?
+                                core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__RouterExtension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport())
+                                : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
+                        debugInfo = bs.toString(StandardCharsets.UTF_8.name());
+                        console.disable();
+                    }
+                    catch (Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+                else
+                {
+                    plan = context == null ?
+                            core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, pureModel.getExecutionSupport())
+                            : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, pureModel.getExecutionSupport());
+                }
             }
             if (platform != null)
             {
                 plan = platform.bindPlan(plan, planId, pureModel, extensions);
             }
             scope.span().log(String.valueOf(LoggingEventType.PLAN_GENERATED));
-            return plan;
+            return Tuples.pair(plan, debugInfo);
         }
     }
 
