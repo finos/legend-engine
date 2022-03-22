@@ -46,8 +46,16 @@
             <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-shared-format-model</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
         </dependency>
     </dependencies>
 </project>
