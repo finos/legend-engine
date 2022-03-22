@@ -15,27 +15,23 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.validator;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Multimaps;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementationAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MappingValidator
@@ -49,12 +45,12 @@ public class MappingValidator
         LazyIterate.selectInstancesOf(pureModelContextData.getElements(), Mapping.class).forEach(mapping ->
         {
             String mappingPath = pureModel.buildPackageString(mapping._package, mapping.name);
-            mappings.put(mappingPath, (Mapping) mapping);
+            mappings.put(mappingPath, mapping);
             pureMappings.put(mappingPath, pureModel.getMapping(mappingPath, mapping.sourceInformation));
         });
         this.validateGeneralization(pureModel, mappings);
         this.validateEnumerationMappings(pureModel, mappings);
-        this.validateMappingElementIds(mappings, pureMappings);
+        this.validateMappingElementIds(pureModel, mappings, pureMappings);
         this.validateClassMappingRoots(pureModel, mappings, pureMappings);
     }
 
@@ -209,13 +205,16 @@ public class MappingValidator
         }
     }
 
-    public void validateMappingElementIds(Map<String, Mapping> mappings, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)
+
+    public void validateMappingElementIds(PureModel pureModel, Map<String, Mapping> mappings, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)
     {
         pureMappings.forEach((mappingPath, mapping) ->
         {
             try
             {
-                collectAndValidateClassMappingIds(mapping, new HashMap<>(), new HashSet<>());
+                Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId = Maps.mutable.empty();
+                collectAndValidateClassMappingIds(mapping, mappingByClassMappingId, new HashSet<>());
+                validatePropertyMappings(pureModel, mapping, mappingByClassMappingId);
             }
             catch (EngineException e)
             {
@@ -231,6 +230,35 @@ public class MappingValidator
             }
         });
     }
+
+    private void validatePropertyMappings(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId)
+    {
+        Set<String> ids = mappingByClassMappingId.keySet();
+        pureModel.addWarnings(mapping._classMappings().flatCollect(cm ->
+        {
+            if (cm instanceof InstanceSetImplementation)
+            {
+                return ((InstanceSetImplementation) cm)._propertyMappings().flatCollect(pm ->
+                                Lists.mutable.withAll(checkId(pureModel, mapping, ids, pm, pm._sourceSetImplementationId()))
+                                        .withAll(checkId(pureModel, mapping, ids, pm, pm._targetSetImplementationId()))
+                        );
+            }
+            else
+            {
+                return Lists.mutable.empty();
+            }
+        }));
+    }
+
+    private Iterable<Warning> checkId(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Set<String> ids, PropertyMapping pm, String id)
+    {
+        if (!"".equals(id) && !ids.contains(id))
+        {
+            return Lists.mutable.with(new Warning(org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), "Error '" + id + "' can't be found in the mapping " + pureModel.buildPackageString(mapping._package()._name(), mapping._name())));
+        }
+        return Lists.mutable.empty();
+    }
+
 
     public void validateClassMappingRoots(PureModel pureModel, Map<String, Mapping> mappings, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)
     {

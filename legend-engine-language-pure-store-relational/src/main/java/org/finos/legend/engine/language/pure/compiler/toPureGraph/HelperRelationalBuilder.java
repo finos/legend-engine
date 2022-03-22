@@ -923,6 +923,9 @@ public class HelperRelationalBuilder
                 ._sourceSetImplementationId(HelperRelationalBuilder.getPropertyMappingSourceId(propertyMapping, immediateParent, property, context))
                 ._targetSetImplementationId(HelperRelationalBuilder.getPropertyMappingTargetId(propertyMapping, immediateParent, property, context))
                 ._owner(immediateParent);
+
+        rpm.setSourceInformation(SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation));
+
         if (propertyMapping.enumMappingId != null)
         {
             EnumerationMapping<Object> eMap = allEnumerationMappings.select(e -> e._name().equals(propertyMapping.enumMappingId)).getFirst();
