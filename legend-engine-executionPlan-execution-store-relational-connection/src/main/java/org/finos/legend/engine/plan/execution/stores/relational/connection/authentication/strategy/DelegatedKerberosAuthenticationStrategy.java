@@ -24,6 +24,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Conne
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DelegatedKerberosAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
@@ -49,13 +51,28 @@ public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenti
         {
             throw new UnsupportedOperationException("Expected Kerberos credential was not found");
         }
-        return getConnectionUsingKerberos(ds.getDataSource(), kerberosHolder.get().getSubject());
+        Properties properties = ds.getProperties();
+        LegendKerberosCredential legendKerberosCredential = this.resolveCredential(properties);
+        return getConnectionUsingKerberos(ds.getDataSource(), legendKerberosCredential.getSubject());
     }
 
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
         return Tuples.pair(url, properties);
+    }
+
+    private LegendKerberosCredential resolveCredential(Properties properties)
+    {
+        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
+        if (identityState.getCredentialSupplier().isPresent())
+        {
+            return (LegendKerberosCredential)super.getDatabaseCredential(identityState);
+        }
+        else
+        {
+            return identityState.getIdentity().getCredential(LegendKerberosCredential.class).get();
+        }
     }
 
     @Override
