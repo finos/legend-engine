@@ -22,7 +22,6 @@ Enum meta::external::store::service::showcase::domain::SynonymType
 Class meta::external::store::service::showcase::domain::Product
 {
   productId   : String[1];
-  quantity    : String[1];
   productName : String[1];
   description : String[1];
 }
@@ -37,7 +36,7 @@ Class meta::external::store::service::showcase::domain::Trade
 {
   tradeId    : String[1];
   traderKerb : String[0..1];
-  quantity   : String[1];
+  quantity   : Integer[1];
   productName() {$this.product.productName}: String[0..1];
   justProduct() {$this.product}: meta::external::store::service::showcase::domain::Product[0..1];
 }
@@ -70,7 +69,6 @@ Association meta::external::store::service::showcase::domain::Trade_Trader
 Class meta::external::store::service::showcase::domain::S_Product
 {
   s_productId   : String[1];
-  s_quantity    : String[1];
   s_productName : String[1];
   s_description : String[1];
   s_synonyms    : meta::external::store::service::showcase::domain::S_Synonym[*];
@@ -105,15 +103,42 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
   *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore
   {
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductsByIdWithQuantityService
+     +s_tradeId: String[1];
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService
      (
-         ~request
+         ~paramMapping
          (
-            parameters
-            (
-                idWithQuantity = $this.s_productId + ':' + $this.s_quantity
-            )
+            id : $this.s_tradeId->split(':')->at(0)
          )
+     )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService
+     (
+         s_productId : $service.parameters.id
+     )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameService
+     (
+         ~paramMapping
+         (
+            name : 'product 30'
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameAndDescriptionService
+     (
+         s_productName : $service.parameters.name,
+         s_description : $service.parameters.description
+     )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameAndDescriptionService
+     (
+         ~paramMapping
+         (
+            name : 'product 30'
+         )
+         s_description : $service.parameters.description
      )
   }
 
@@ -123,7 +148,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
     tradeId: $src.s_tradeId,
     +prodId: String[1]: $src.s_tradeDetails->split(':')->at(0),
-    quantity: $src.s_tradeDetails->split(':')->at(1),
+    quantity: $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
     trader[trader_set]: $src
   }
 
@@ -141,7 +166,6 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
     ~src meta::external::store::service::showcase::domain::S_Product
 
     productId: $src.s_productId,
-    quantity: $src.s_quantity,
     productName: $src.s_productName,
     description: $src.s_description,
     synonyms[synonym_set]: $src.s_synonyms
@@ -163,19 +187,19 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
   meta::external::store::service::showcase::domain::S_Trade_S_Product[s_cross_set]: XStore
   {
-    s_product[s_trade_set, s_prod_set]: $this.s_tradeDetails == $that.s_productId
+    s_product[s_trade_set, s_prod_set]: $this.s_tradeDetails == $that.s_tradeId
   }
 
   meta::external::store::service::showcase::domain::Trade_Product[cross_set]: XStore
   {
-    product[trade_set, prod_set]: $this.prodId == $that.productId && $this.quantity == $that.quantity
+    product[trade_set, prod_set]: $this.prodId == $that.productId
   }
 )
 
 ###ServiceStore
 ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore
 (
-   description : 'Service Store Batching Example';
+   description : 'Showcase Service Store';
 
    ServiceGroup TradeServices
    (
@@ -194,13 +218,38 @@ ServiceStore meta::external::store::service::showcase::store::TradeProductServic
    (
       path : '/products';
 
-      Service ProductsByIdWithQuantityService
+      Service ProductByIdService
       (
-         path : '/getProductsByIdWithQuantity';
+         path : '/getProductById/{id}';
          method : GET;
          parameters :
          (
-            idWithQuantity : [ String ] (location = query, style = form, explode = false)
+            id : String (location = path)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+
+      Service ProductByNameService
+      (
+         path : '/getProductByName';
+         method : GET;
+         parameters :
+         (
+            name : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+
+      Service ProductByNameAndDescriptionService
+      (
+         path : '/getProductByNameAndDescription';
+         method : GET;
+         parameters :
+         (
+            name        : String (location = query),
+            description : String (location = query)
          );
          security : [];
          response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
@@ -224,7 +273,7 @@ SchemaSet meta::external::store::service::showcase::store::productSchemaSet
   format  : FlatData;
   schemas : [
     {
-        content: 'section A: DelimitedWithHeadings{  scope.untilEof;  delimiter: \',\';  Record  {      s_productId   : STRING;      s_quantity   : STRING;      s_productName : STRING;      s_description : STRING;  }}';
+        content: 'section A: DelimitedWithHeadings{  scope.untilEof;  delimiter: \',\';  Record  {      s_productId   : STRING;      s_productName : STRING;      s_description : STRING;  }}';
     }
   ];
 }

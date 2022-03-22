@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.service.showcase.jsonApis;
+package org.finos.legend.engine.plan.execution.stores.service.deprecatedGrammar.showcase.flatdataApis;
 
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestSuite;
@@ -25,14 +25,14 @@ import org.junit.Test;
 import static org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils.buildPlanForQuery;
 import static org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils.executePlan;
 
-public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
+public class ServiceStoreFlatdataShowcaseTest extends ServiceStoreTestSuite
 {
     private static String pureGrammar;
 
     @BeforeClass
     public static void setup()
     {
-        setupServer("showcase/json");
+        setupServer("deprecatedGrammar/showcase/flatdata");
 
         String serviceStoreConnection =
                 "###Connection\n" +
@@ -41,9 +41,9 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
                         "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                         "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
                         "}";
-        pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/showcase/json/testGrammar.pure") + "\n\n" + serviceStoreConnection;
+        pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/deprecatedGrammar/showcase/flatdata/testGrammar.pure") + "\n\n" + serviceStoreConnection;
     }
-
+    
     @Test
     public void serviceStoreSimpleExample()
     {
@@ -85,29 +85,21 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
                 "           meta::external::store::service::showcase::domain::S_Product {\n" +
                 "               s_productId,\n" +
                 "               s_productName,\n" +
-                "               s_description,\n" +
-                "               s_synonyms {\n" +
-                "                   s_name,\n" +
-                "                   s_type\n" +
-                "               }\n" +
+                "               s_description\n" +
                 "           }\n" +
                 "         }#)\n" +
                 "       ->serialize(#{\n" +
                 "           meta::external::store::service::showcase::domain::S_Product {\n" +
                 "               s_productId,\n" +
                 "               s_productName,\n" +
-                "               s_description,\n" +
-                "               s_synonyms {\n" +
-                "                   s_name,\n" +
-                "                   s_type\n" +
-                "               }\n" +
+                "               s_description\n" +
                 "           }\n" +
                 "        }#)};\n" +
                 "}";
 
         SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
 
-        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_productId\":\"30\",\"s_productName\":\"Product 30\",\"s_description\":\"Product 30 description\",\"s_synonyms\":[{\"s_name\":\"product 30 synonym 1\",\"s_type\":\"isin\"},{\"s_name\":\"product 30 synonym 2\",\"s_type\":\"cusip\"}]}}";
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_productId\":\"30\",\"s_productName\":\"Product 30\",\"s_description\":\"Product 30 description\"}}";
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
     }
@@ -139,68 +131,6 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
         SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
 
         String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_productId\":\"30\",\"s_productName\":\"Product 30\",\"s_description\":\"Product 30 description\"}}";
-
-        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
-    }
-
-    @Test
-    public void serviceStoreFilterExampleWithSpecialCharactersInPathParamName()
-    {
-        String query = "###Pure\n" +
-                "function showcase::query(): Any[1]\n" +
-                "{\n" +
-                "   {|meta::external::store::service::showcase::domain::S_Trade.all()" +
-                "       ->filter(p | $p.s_tradeId == '1')\n" +
-                "       ->graphFetch(#{\n" +
-                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
-                "               s_tradeId,\n" +
-                "               s_traderDetails,\n" +
-                "               s_tradeDetails\n" +
-                "           }\n" +
-                "         }#)" +
-                "       ->serialize(#{\n" +
-                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
-                "               s_tradeId,\n" +
-                "               s_traderDetails,\n" +
-                "               s_tradeDetails\n" +
-                "           }\n" +
-                "        }#)};\n" +
-                "}";
-
-        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
-
-        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"}}";
-
-        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
-    }
-
-    @Test
-    public void serviceStoreFilterExampleWithSpecialCharactersInQueryParamName()
-    {
-        String query = "###Pure\n" +
-                "function showcase::query(): Any[1]\n" +
-                "{\n" +
-                "   {|meta::external::store::service::showcase::domain::S_Trade.all()" +
-                "       ->filter(p | $p.s_tradeDetails == '30:100')\n" +
-                "       ->graphFetch(#{\n" +
-                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
-                "               s_tradeId,\n" +
-                "               s_traderDetails,\n" +
-                "               s_tradeDetails\n" +
-                "           }\n" +
-                "         }#)" +
-                "       ->serialize(#{\n" +
-                "           meta::external::store::service::showcase::domain::S_Trade {\n" +
-                "               s_tradeId,\n" +
-                "               s_traderDetails,\n" +
-                "               s_tradeDetails\n" +
-                "           }\n" +
-                "        }#)};\n" +
-                "}";
-
-        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
-
-        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"}}";
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
     }
@@ -339,47 +269,6 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
     }
 
     @Test
-    public void serviceStoreConcatenateExample()
-    {
-        String query = "###Pure\n" +
-                "function showcase::query(): Any[1]\n" +
-                "{\n" +
-                "   {productId:String[1]|meta::external::store::service::showcase::domain::S_Product.all()\n" +
-                "       ->filter(p | $p.s_productId == $productId)\n" +
-                "       ->graphFetch(#{\n" +
-                "           meta::external::store::service::showcase::domain::S_Product {\n" +
-                "               s_productId,\n" +
-                "               s_productName,\n" +
-                "               s_description\n" +
-                "           }\n" +
-                "         }#)\n" +
-                "       ->concatenate(meta::external::store::service::showcase::domain::S_Product.all()\n" +
-                "         ->filter(p | $p.s_productName == 'product 30' && $p.s_description == 'product 30 description')\n" +
-                "         ->graphFetch(#{\n" +
-                "             meta::external::store::service::showcase::domain::S_Product {\n" +
-                "                   s_productId,\n" +
-                "                   s_productName,\n" +
-                "                  s_description\n" +
-                "             }\n" +
-                "           }#)\n" +
-                "       )\n" +
-                "       ->serialize(#{\n" +
-                "           meta::external::store::service::showcase::domain::S_Product {\n" +
-                "               s_productId,\n" +
-                "               s_productName,\n" +
-                "               s_description\n" +
-                "           }\n" +
-                "        }#)};\n" +
-                "}";
-
-        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
-
-        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_productId\":\"31\",\"s_productName\":\"Product 31\",\"s_description\":\"Product 31 description\"},{\"s_productId\":\"30\",\"s_productName\":\"Product 30\",\"s_description\":\"Product 30 description\"}]}";
-
-        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan, Maps.mutable.with("productId", "31")));
-    }
-
-    @Test
     public void serviceStoreM2MChainingExample()
     {
         String query = "###Pure\n" +
@@ -419,29 +308,21 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
                 "           meta::external::store::service::showcase::domain::Product {\n" +
                 "               productId,\n" +
                 "               productName,\n" +
-                "               description,\n" +
-                "               synonyms {\n" +
-                "                   name,\n" +
-                "                   type\n" +
-                "               }\n" +
+                "               description\n" +
                 "           }\n" +
                 "         }#)\n" +
                 "       ->serialize(#{\n" +
                 "           meta::external::store::service::showcase::domain::Product {\n" +
                 "               productId,\n" +
                 "               productName,\n" +
-                "               description,\n" +
-                "               synonyms {\n" +
-                "                   name,\n" +
-                "                   type\n" +
-                "               }\n" +
+                "               description\n" +
                 "           }\n" +
                 "        }#)};\n" +
                 "}";
 
         SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
 
-        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\",\"synonyms\":[{\"name\":\"product 30 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 30 synonym 2\",\"type\":\"CUSIP\"}]}}";
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\"}}";
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
     }
@@ -534,11 +415,7 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
                 "               product {\n" +
                 "                   productId,\n" +
                 "                   productName,\n" +
-                "                   description,\n" +
-                "                   synonyms {\n" +
-                "                       name,\n" +
-                "                       type\n" +
-                "                   }\n" +
+                "                   description\n" +
                 "               }\n" +
                 "           }\n" +
                 "         }#)\n" +
@@ -554,11 +431,7 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
                 "               product {\n" +
                 "                   productId,\n" +
                 "                   productName,\n" +
-                "                   description,\n" +
-                "                   synonyms {\n" +
-                "                       name,\n" +
-                "                       type\n" +
-                "                   }\n" +
+                "                   description\n" +
                 "               }\n" +
                 "           }\n" +
                 "        }#)};\n" +
@@ -566,120 +439,7 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
 
         SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
 
-        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"tradeId\":\"1\",\"quantity\":100,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"},\"product\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\",\"synonyms\":[{\"name\":\"product 30 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 30 synonym 2\",\"type\":\"CUSIP\"}]}},{\"tradeId\":\"2\",\"quantity\":200,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"},\"product\":{\"productId\":\"31\",\"productName\":\"Product 31\",\"description\":\"Product 31 description\",\"synonyms\":[{\"name\":\"product 31 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 31 synonym 2\",\"type\":\"CUSIP\"}]}},{\"tradeId\":\"3\",\"quantity\":300,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"},\"product\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\",\"synonyms\":[{\"name\":\"product 30 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 30 synonym 2\",\"type\":\"CUSIP\"}]}},{\"tradeId\":\"4\",\"quantity\":400,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"},\"product\":{\"productId\":\"31\",\"productName\":\"Product 31\",\"description\":\"Product 31 description\",\"synonyms\":[{\"name\":\"product 31 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 31 synonym 2\",\"type\":\"CUSIP\"}]}}]}";
-
-        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
-    }
-
-    @Test
-    public void serviceStoreM2MChainingWithCrossStoreExampleWithBatchSize()
-    {
-        String query = "###Pure\n" +
-                "function showcase::query(): Any[1]\n" +
-                "{\n" +
-                "   {|meta::external::store::service::showcase::domain::Trade.all()\n" +
-                "       ->graphFetch(#{\n" +
-                "           meta::external::store::service::showcase::domain::Trade {\n" +
-                "               tradeId,\n" +
-                "               quantity,\n" +
-                "               trader {\n" +
-                "                   kerberos,\n" +
-                "                   firstName,\n" +
-                "                   lastName\n" +
-                "               },\n" +
-                "               product {\n" +
-                "                   productId,\n" +
-                "                   productName,\n" +
-                "                   description,\n" +
-                "                   synonyms {\n" +
-                "                       name,\n" +
-                "                       type\n" +
-                "                   }\n" +
-                "               }\n" +
-                "           }\n" +
-                "         }#, 10)\n" +
-                "       ->serialize(#{\n" +
-                "           meta::external::store::service::showcase::domain::Trade {\n" +
-                "               tradeId,\n" +
-                "               quantity,\n" +
-                "               trader {\n" +
-                "                   kerberos,\n" +
-                "                   firstName,\n" +
-                "                   lastName\n" +
-                "               },\n" +
-                "               product {\n" +
-                "                   productId,\n" +
-                "                   productName,\n" +
-                "                   description,\n" +
-                "                   synonyms {\n" +
-                "                       name,\n" +
-                "                       type\n" +
-                "                   }\n" +
-                "               }\n" +
-                "           }\n" +
-                "        }#)};\n" +
-                "}";
-
-        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
-
-        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"tradeId\":\"1\",\"quantity\":100,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"},\"product\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\",\"synonyms\":[{\"name\":\"product 30 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 30 synonym 2\",\"type\":\"CUSIP\"}]}},{\"tradeId\":\"2\",\"quantity\":200,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"},\"product\":{\"productId\":\"31\",\"productName\":\"Product 31\",\"description\":\"Product 31 description\",\"synonyms\":[{\"name\":\"product 31 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 31 synonym 2\",\"type\":\"CUSIP\"}]}},{\"tradeId\":\"3\",\"quantity\":300,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"},\"product\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\",\"synonyms\":[{\"name\":\"product 30 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 30 synonym 2\",\"type\":\"CUSIP\"}]}},{\"tradeId\":\"4\",\"quantity\":400,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"},\"product\":{\"productId\":\"31\",\"productName\":\"Product 31\",\"description\":\"Product 31 description\",\"synonyms\":[{\"name\":\"product 31 synonym 1\",\"type\":\"ISIN\"},{\"name\":\"product 31 synonym 2\",\"type\":\"CUSIP\"}]}}]}";
-
-        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
-    }
-
-    @Test
-    public void serviceStoreHeaderParam()
-    {
-        String query = "###Pure\n" +
-                "function showcase::query(): Any[1]\n" +
-                "{\n" +
-                "   {|meta::external::store::service::showcase::domain::Firm.all()" +
-                "       ->filter(f | $f.name == 'FirmA')\n" +
-                "       ->graphFetch(#{\n" +
-                "           meta::external::store::service::showcase::domain::Firm {\n" +
-                "               name,\n" +
-                "               employeesCount\n" +
-                "           }\n" +
-                "         }#)" +
-                "       ->serialize(#{\n" +
-                "           meta::external::store::service::showcase::domain::Firm {\n" +
-                "               name,\n" +
-                "               employeesCount\n" +
-                "           }\n" +
-                "        }#)};\n" +
-                "}";
-
-        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
-
-        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"name\":\"FirmA\",\"employeesCount\":500}}";
-
-        Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
-    }
-
-    @Test
-    public void serviceStoreHeaderParamWithList()
-    {
-        String query = "###Pure\n" +
-                "function showcase::query(): Any[1]\n" +
-                "{\n" +
-                "   {|meta::external::store::service::showcase::domain::Firm.all()" +
-                "       ->graphFetch(#{\n" +
-                "           meta::external::store::service::showcase::domain::Firm {\n" +
-                "               name,\n" +
-                "               employeesCount\n" +
-                "           }\n" +
-                "         }#)" +
-                "       ->serialize(#{\n" +
-                "           meta::external::store::service::showcase::domain::Firm {\n" +
-                "               name,\n" +
-                "               employeesCount\n" +
-                "           }\n" +
-                "        }#)};\n" +
-                "}";
-
-        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
-
-        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"name\":\"FirmA\",\"employeesCount\":500},{\"name\":\"FirmB\",\"employeesCount\":50},{\"name\":\"FirmC\",\"employeesCount\":5000}]}";
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"tradeId\":\"1\",\"quantity\":100,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"},\"product\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\"}},{\"tradeId\":\"2\",\"quantity\":200,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"},\"product\":{\"productId\":\"31\",\"productName\":\"Product 31\",\"description\":\"Product 31 description\"}},{\"tradeId\":\"3\",\"quantity\":300,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"},\"product\":{\"productId\":\"30\",\"productName\":\"Product 30\",\"description\":\"Product 30 description\"}},{\"tradeId\":\"4\",\"quantity\":400,\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"},\"product\":{\"productId\":\"31\",\"productName\":\"Product 31\",\"description\":\"Product 31 description\"}}]}";
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan));
     }

@@ -93,6 +93,12 @@ Association meta::external::store::service::showcase::domain::S_Trade_S_Product
   s_trades  : meta::external::store::service::showcase::domain::S_Trade[*];
 }
 
+Class meta::external::store::service::showcase::domain::Firm
+{
+  name           : String[1];
+  employeesCount : Integer[1];
+}
+
 ###Mapping
 Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 (
@@ -102,25 +108,34 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByIdService
      (
-         ~paramMapping
+         ~request
          (
-            "trade id" : $this.s_tradeId
+            parameters
+            (
+                "trade id" = $this.s_tradeId
+            )
          )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByTradeDetailsService
      (
-         ~paramMapping
+         ~request
          (
-            "trade.details" : $this.s_tradeDetails
+            parameters
+            (
+                "trade.details" = $this.s_tradeDetails
+            )
          )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByTraderDetailsService
      (
-         ~paramMapping
+         ~request
          (
-            "trader.details" : $this.s_traderDetails
+            parameters
+            (
+                "trader.details" = $this.s_traderDetails
+            )
          )
      )
   }
@@ -131,38 +146,84 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService
      (
-         ~paramMapping
+         ~request
          (
-            id : $this.s_tradeId->split(':')->at(0)
+            parameters
+            (
+                id = $this.s_tradeId->split(':')->at(0)
+            )
          )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService
      (
-         s_productId : $service.parameters.id
+         ~request
+         (
+            parameters
+            (
+                id = $this.s_productId
+            )
+         )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameService
      (
-         ~paramMapping
+         ~request
          (
-            name : 'product 30'
+            parameters
+            (
+                name = 'product 30'
+            )
          )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameAndDescriptionService
      (
-         s_productName : $service.parameters.name,
-         s_description : $service.parameters.description
+         ~request
+         (
+            parameters
+            (
+                name = $this.s_productName,
+                description = $this.s_description
+            )
+         )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameAndDescriptionService
      (
-         ~paramMapping
+         ~request
          (
-            name : 'product 30'
+            parameters
+            (
+                name = 'product 30',
+                description = $this.s_description
+            )
          )
-         s_description : $service.parameters.description
+     )
+  }
+
+  *meta::external::store::service::showcase::domain::Firm[firm_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] FirmServices.FirmByName
+     (
+         ~request
+         (
+            parameters
+            (
+                name = $this.name
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] FirmServices.FirmsByNames
+     (
+         ~request
+         (
+            parameters
+            (
+                name = ['FirmA', 'FirmB', 'FirmC']
+            )
+         )
      )
   }
 
@@ -315,6 +376,35 @@ ServiceStore meta::external::store::service::showcase::store::TradeProductServic
          response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
       )
    )
+
+   ServiceGroup FirmServices
+   (
+      path : '/firms';
+
+      Service FirmByName
+      (
+         path : '/getFirmByName';
+         method : GET;
+         parameters :
+         (
+            name : String (location = header)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding];
+      )
+
+      Service FirmsByNames
+      (
+         path : '/getFirmsByNames';
+         method : GET;
+         parameters :
+         (
+            name : [String] (location = header, style = simple, explode = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding];
+      )
+   )
 )
 
 ###ExternalFormat
@@ -328,6 +418,12 @@ Binding meta::external::store::service::showcase::store::prodServiceStoreSchemaB
 {
   contentType   : 'application/json';
   modelIncludes : [ meta::external::store::service::showcase::domain::S_Product, meta::external::store::service::showcase::domain::S_Synonym ];
+}
+
+Binding meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Firm ];
 }
 
 ###Runtime

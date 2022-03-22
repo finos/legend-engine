@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.service.showcase.jsonApis;
+package org.finos.legend.engine.plan.execution.stores.service.deprecatedGrammar.showcase.jsonApis;
 
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestSuite;
@@ -32,7 +32,7 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
     @BeforeClass
     public static void setup()
     {
-        setupServer("showcase/json");
+        setupServer("deprecatedGrammar/showcase/json");
 
         String serviceStoreConnection =
                 "###Connection\n" +
@@ -41,7 +41,7 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
                         "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                         "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
                         "}";
-        pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/showcase/json/testGrammar.pure") + "\n\n" + serviceStoreConnection;
+        pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/deprecatedGrammar/showcase/json/testGrammar.pure") + "\n\n" + serviceStoreConnection;
     }
 
     @Test

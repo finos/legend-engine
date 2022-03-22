@@ -1,0 +1,176 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "/employees"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": {
+          "metadata": {
+            "noOfRecords": 3
+          },
+          "employees": [
+            {
+              "firstName": "Nancy",
+              "lastName": "Fraher",
+              "dateOfBirth": "1970-12-13",
+              "firmId": 1,
+              "isAlive": false,
+              "heightInMeters": 1.71
+            },
+            {
+              "firstName": "Jason",
+              "lastName": "Schlichting",
+              "dateOfBirth": "1968-03-05",
+              "isAlive": true,
+              "firmId": 2,
+              "heightInMeters": 1.82
+            },
+            {
+              "firstName": "Jason2",
+              "lastName": "Schlichting",
+              "dateOfBirth": "1968-03-05",
+              "isAlive": true,
+              "firmId": 3,
+              "heightInMeters": 1.82
+            }
+          ],
+          "firms": [
+            {
+              "firmName": "Firm A",
+              "firmId": 1,
+              "address": [
+                {
+                  "street": "Firm A address"
+                }
+              ]
+            },
+            {
+              "firmName": "Firm B",
+              "firmId": 2,
+              "address": [
+                {
+                  "street": "Firm B address 1"
+                },
+                {
+                  "street": "Firm B address 2"
+                }
+              ]
+            },
+            {
+              "firmName": "Firm c",
+              "firmId": 3,
+              "address": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/employeesByFirmId/1"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": {
+          "metadata": {
+            "noOfRecords": 1
+          },
+          "employees": [
+            {
+              "firstName": "Nancy",
+              "lastName": "Fraher",
+              "dateOfBirth": "1970-12-13",
+              "firmId": 1,
+              "isAlive": false,
+              "heightInMeters": 1.71
+            }
+          ],
+          "firms": [
+            {
+              "firmName": "Firm A",
+              "firmId": 1,
+              "address": [
+                {
+                  "street": "Firm A address"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/employeesByFirmId/2"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": {
+          "metadata": {
+            "noOfRecords": 1
+          },
+          "employees": [
+            {
+              "firstName": "Jason",
+              "lastName": "Schlichting",
+              "dateOfBirth": "1968-03-05",
+              "isAlive": true,
+              "firmId": 2,
+              "heightInMeters": 1.82
+            }
+          ],
+          "firms": [
+            {
+              "firmName": "Firm B",
+              "firmId": 2,
+              "address": [
+                {
+                  "street": "Firm B address 1"
+                },
+                {
+                  "street": "Firm B address 2"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/employeesByFirmId/3"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": {
+          "metadata": {
+            "noOfRecords": 1
+          },
+          "employees": [
+            {
+              "firstName": "Jason2",
+              "lastName": "Schlichting",
+              "dateOfBirth": "1968-03-05",
+              "isAlive": true,
+              "firmId": 3,
+              "heightInMeters": 1.82
+            }
+          ],
+          "firms": [
+            {
+              "firmName": "Firm c",
+              "firmId": 3,
+              "address": []
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
