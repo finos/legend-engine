@@ -13,4 +13,5 @@ public class TestServerConfiguration extends ServerConfiguration
 {
     public List<DatabaseType> testConnectionsToEnable = new ArrayList<>();
     public Map<DatabaseType, RelationalDatabaseConnection> staticTestConnections = new HashMap<>();
+    public Map<DatabaseType, String> dynamicTestConnectionCreators = new HashMap<>();
 }

@@ -16,31 +16,24 @@ package org.finos.legend.engine.server.test.pureClient.stores;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.ConnectionTestManager;
 import org.finos.legend.engine.server.test.shared.PureTestHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
-import java.util.ServiceLoader;
-
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.*;
 
 public class Test_Relational_DbSpecific_UsingPureClientTestSuite extends TestSuite
 {
-    public static Test suite()
-    {
-        return wrapSuite(
-                () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> {
-                    CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
-                    TestSuite suite = new TestSuite();
-                    for (ConnectionTestManager connectionTestManager : ServiceLoader.load(ConnectionTestManager.class))
-                    {
-                        suite.addTest(buildSuite(TestCollection.collectTests(connectionTestManager.getPureTestCollectionPath(), executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    }
-                    return suite;
-                },
-                false ,"org/finos/legend/engine/server/test/userTestConfig_withTestConnections.json");
-    }
+    public static Test createSuite(String pureTestCollectionPath,String testServerConfigFilePath){
+            return wrapSuite(
+                    () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
+                    () -> {
+                        CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
+                        TestSuite suite = new TestSuite();
+                        suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+
+                        return suite;
+                    },
+                    false, testServerConfigFilePath);
+        }
 }
 

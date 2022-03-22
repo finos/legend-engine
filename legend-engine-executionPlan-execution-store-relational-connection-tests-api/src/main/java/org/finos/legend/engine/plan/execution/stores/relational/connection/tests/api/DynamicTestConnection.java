@@ -14,11 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 
+//Connections that are started on the fly by legend test server
 public interface DynamicTestConnection
 {
-    void setup();
+    DatabaseType getDatabaseType();
+
+    void setup();                                //start connection db instance , register vaults etc
 
     RelationalDatabaseConnection getConnection();
 

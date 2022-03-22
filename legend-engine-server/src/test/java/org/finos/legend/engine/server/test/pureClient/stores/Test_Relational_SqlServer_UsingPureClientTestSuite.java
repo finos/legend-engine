@@ -12,18 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api;
+package org.finos.legend.engine.server.test.pureClient.stores;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import junit.framework.Test;
 
-public interface ConnectionTestManager
+public class Test_Relational_SqlServer_UsingPureClientTestSuite extends Test_Relational_DbSpecific_UsingPureClientTestSuite
 {
-    DatabaseType getDatabaseType();
-
-    String getPureTestCollectionPath();
-
-    default DynamicTestConnection getDynamicTestConnection()
+    public static Test suite()
     {
-        return null;
+        return createSuite("meta::relational::tests::dbSpecificTests::SqlServer","userTestConfig_withH2TestConnection.json");
     }
 }
+

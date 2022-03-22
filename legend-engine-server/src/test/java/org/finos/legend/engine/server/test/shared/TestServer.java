@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import io.dropwizard.setup.Environment;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.ConnectionTestManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -49,7 +48,7 @@ public class TestServer extends Server<TestServerConfiguration>
     {
         Map<DatabaseType, RelationalDatabaseConnection> testConnections = new HashMap<>();
 
-        // register static test connections
+        // register static test connections - static connections take precedence over dynamic connections
         for (DatabaseType dbType : serverConfiguration.staticTestConnections.keySet())
         {
             if (serverConfiguration.testConnectionsToEnable.contains(dbType))
@@ -59,20 +58,18 @@ public class TestServer extends Server<TestServerConfiguration>
         }
 
         //Spin up dynamic database instances for testing
-        for (ConnectionTestManager connectionTestManager : ServiceLoader.load(ConnectionTestManager.class))
+        for (DynamicTestConnection dynamicTestConnection : ServiceLoader.load(DynamicTestConnection.class))
         {
             //run only when in config
-            if (serverConfiguration.testConnectionsToEnable.contains(connectionTestManager.getDatabaseType()))
+            if ( !testConnections.containsKey( dynamicTestConnection.getDatabaseType())                 // start dynamic connection only if no static connection available for db type
+                    && serverConfiguration.testConnectionsToEnable.contains(dynamicTestConnection.getDatabaseType())
+                    && serverConfiguration.dynamicTestConnectionCreators.get(dynamicTestConnection.getDatabaseType()).equals(dynamicTestConnection.getClass().getName()))
             {
-                DynamicTestConnection dynamicTestConnection = connectionTestManager.getDynamicTestConnection();
-                if (dynamicTestConnection != null)
-                {
-                    //run connection
+                    //run setup and start connection
                     dynamicTestConnection.setup();
-                    dynamicTestConnections.add(dynamicTestConnection);
+                    this.dynamicTestConnections.add(dynamicTestConnection);
                     //register to list
-                    testConnections.putIfAbsent(connectionTestManager.getDatabaseType(), dynamicTestConnection.getConnection());
-                }
+                    testConnections.putIfAbsent(dynamicTestConnection.getDatabaseType(), dynamicTestConnection.getConnection());
             }
         }
         return testConnections;
@@ -81,7 +78,7 @@ public class TestServer extends Server<TestServerConfiguration>
     @Override
     public void shutDown() throws Exception
     {
-        for (DynamicTestConnection dynamicTestConnection : dynamicTestConnections )
+        for (DynamicTestConnection dynamicTestConnection : this.dynamicTestConnections )
         {
             dynamicTestConnection.cleanup();
         }
