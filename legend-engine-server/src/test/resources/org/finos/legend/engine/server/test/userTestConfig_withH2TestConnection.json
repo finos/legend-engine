@@ -78,7 +78,6 @@
   },
   "testConnectionsToEnable" : ["h2"],
   "dynamicTestConnectionCreators": {
-    "h2": "org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections.H2AlloyServer",
-    "sqlServer" : "org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections.SqlServerTestContainers"
+    "h2": "org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections.H2AlloyServer"
   }
 }

@@ -20,7 +20,7 @@ public class Test_Relational_H2_UsingPureClientTestSuite extends Test_Relational
 {
     public static Test suite()
     {
-        return createSuite("meta::relational::tests::dbSpecificTests::SqlServer","userTestConfig_withSqlServerTestConnection.json");
+        return createSuite("meta::relational::tests::dbSpecificTests::SqlServer","org/finos/legend/engine/server/test/userTestConfig_withSqlServerTestConnection.json");
     }
 }
 

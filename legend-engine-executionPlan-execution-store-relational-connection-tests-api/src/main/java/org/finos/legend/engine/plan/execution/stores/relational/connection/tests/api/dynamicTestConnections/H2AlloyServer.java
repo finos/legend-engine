@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 
 public class H2AlloyServer implements DynamicTestConnection
 {
@@ -35,7 +36,9 @@ public class H2AlloyServer implements DynamicTestConnection
     public void setup()
     {
         long start = System.currentTimeMillis();
-        int relationalDBPort = 1100 + (int) (Math.random() * 30000);
+        System.out.println("Starting setup of connection for database: H2 ");
+
+        int relationalDBPort = DynamicPortGenerator.generatePort();
         try
         {
             h2Server = AlloyH2Server.startServer(relationalDBPort);
@@ -46,7 +49,7 @@ public class H2AlloyServer implements DynamicTestConnection
         }
         long end = System.currentTimeMillis();
 
-        System.out.println("H2 database started by connectionTestManager on port:" + relationalDBPort + " , time taken(ms):"+ (end-start));
+        System.out.println("Completed setup of connection for database: H2 on port:" + relationalDBPort + " , time taken(ms):"+ (end-start));
     }
 
     @Override

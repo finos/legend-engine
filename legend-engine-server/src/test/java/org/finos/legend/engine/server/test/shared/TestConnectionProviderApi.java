@@ -43,7 +43,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 
 
 @Api(tags = "Utilities - TestConnection")
-@Path("pure/v1/utilities/testConnection")
+@Path("pure/v1/utilities/tests/connections")
 @Produces(MediaType.APPLICATION_JSON)
 public class TestConnectionProviderApi
 {
@@ -58,7 +58,7 @@ public class TestConnectionProviderApi
     }
 
     @GET
-    @Path("getTestConnection/{databaseType}")
+    @Path("/{databaseType}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response getTestConnection(@Context HttpServletRequest request,
                                               @PathParam("databaseType") DatabaseType databaseType,
