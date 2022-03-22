@@ -116,14 +116,9 @@ public class HelperPersistenceBuilder
         return deduplicationStrategy.accept(new DeduplicationStrategyBuilder(inputClass, context));
     }
 
-    public static Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode buildMilestoningMode(IngestMode milestoningMode, Class<?> inputClass, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode buildIngestMode(IngestMode ingestMode, Class<?> inputClass, CompileContext context)
     {
-        return milestoningMode.accept(new IngestModeBuilder(inputClass, context));
-    }
-
-    public static Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy buildMergeStrategy(MergeStrategy mergeStrategy, Class<?> inputClass, CompileContext context)
-    {
-        return mergeStrategy.accept(new MergeStrategyBuilder(inputClass, context));
+        return ingestMode.accept(new IngestModeBuilder(inputClass, context));
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_audit_Auditing buildAuditing(Auditing auditing)
@@ -153,6 +148,11 @@ public class HelperPersistenceBuilder
         Property<?, ?> property = modelClass._properties().detect(p -> p._name().equals(propertyName));
         Assert.assertTrue(property != null, () -> String.format("Property '%s' must exist in class '%s::%s'", propertyName, modelClass._package(), modelClass._name()), sourceInformation, EngineErrorType.COMPILATION);
         return property;
+    }
+
+    private static String validateAndResolvePropertyName(Class<?> modelClass, String propertyName, SourceInformation sourceInformation, CompileContext context)
+    {
+        return validateAndResolveProperty(modelClass, propertyName, sourceInformation, context)._name();
     }
 
     // helper visitors for class hierarchies
@@ -190,7 +190,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(BatchPersister val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
-                    ._connections(ListIterate.collect(val.connections, c -> buildConnection(c, context)))
+                    ._connection(buildConnection(val.connection, context))
                     ._targetShape(buildTargetShape(val.targetShape, context));
         }
 
@@ -198,7 +198,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(StreamingPersister val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("")
-                    ._connections(ListIterate.collect(val.connections, c -> buildConnection(c, context)));
+                    ._connection(buildConnection(val.connection, context));
         }
     }
 
@@ -239,7 +239,11 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape visit(FlatTarget val)
         {
             Class<?> modelClass = context.resolveClass(val.modelClass, val.sourceInformation);
-            return buildFlatTarget(val, modelClass, context);
+            return new Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget_Impl("")
+                    ._targetName(val.targetName)
+                    ._modelClass(modelClass)
+                    ._partitionFields(ListIterate.collect(val.partitionFields, p -> validateAndResolvePropertyName(modelClass, p, val.sourceInformation, context)))
+                    ._deduplicationStrategy(buildDeduplicationStrategy(val.deduplicationStrategy, modelClass, context));
         }
 
         @Override
@@ -253,32 +257,17 @@ public class HelperPersistenceBuilder
                     ._parts(ListIterate.collect(val.parts, p -> resolvePart(p, modelClass, context)));
         }
 
-        @Override
-        public Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape visit(OpaqueTarget val)
+        private Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart resolvePart(MultiFlatTargetPart part, Class<?> modelClass, CompileContext context)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_targetshape_OpaqueTarget_Impl("")
-                    ._targetName(val.targetName);
-        }
-
-        private Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget buildFlatTarget(FlatTarget flatTarget, Class<?> modelClass, CompileContext context)
-        {
-            return new Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget_Impl("")
-                    ._targetName(flatTarget.targetName)
-                    ._modelClass(modelClass)
-                    ._partitionProperties(ListIterate.collect(flatTarget.partitionProperties, p -> validateAndResolveProperty(modelClass, p, flatTarget.sourceInformation, context)))
-                    ._deduplicationStrategy(buildDeduplicationStrategy(flatTarget.deduplicationStrategy, modelClass, context))
-                    ._ingestMode(buildMilestoningMode(flatTarget.ingestMode, modelClass, context));
-        }
-
-        private Root_meta_pure_persistence_metamodel_persister_targetshape_PropertyAndFlatTarget resolvePart(PropertyAndFlatTarget propertyAndFlatTarget, Class<?> modelClass, CompileContext context)
-        {
-            Property<?, ?> property = validateAndResolveProperty(modelClass, propertyAndFlatTarget.property, propertyAndFlatTarget.sourceInformation, context);
+            Property<?, ?> property = validateAndResolveProperty(modelClass, part.modelProperty, part.sourceInformation, context);
             Type targetType = property._genericType()._rawType();
-            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target part property must refer to a Class. The property '%s' refers to a %s", propertyAndFlatTarget.property, targetType._name()), propertyAndFlatTarget.sourceInformation, EngineErrorType.COMPILATION);
+            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target part property must refer to a Class. The property '%s' refers to a %s", part.modelProperty, targetType._name()), part.sourceInformation, EngineErrorType.COMPILATION);
 
-            return new Root_meta_pure_persistence_metamodel_persister_targetshape_PropertyAndFlatTarget_Impl("")
-                    ._property(property)
-                    ._flatTarget(buildFlatTarget(propertyAndFlatTarget.flatTarget, (Class<?>) targetType, context));
+            return new Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart_Impl("")
+                    ._modelProperty(property)
+                    ._targetName(part.targetName)
+                    ._partitionFields(ListIterate.collect(part.partitionFields, p -> validateAndResolvePropertyName(modelClass, p, part.sourceInformation, context)))
+                    ._deduplicationStrategy(buildDeduplicationStrategy(part.deduplicationStrategy, modelClass, context));
         }
     }
 
@@ -303,7 +292,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(MaxVersionDeduplicationStrategy val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_deduplication_MaxVersionDeduplicationStrategy_Impl("")
-                    ._versionProperty(validateAndResolveProperty(modelClass, val.versionProperty, val.sourceInformation, context));
+                    ._versionField(validateAndResolvePropertyName(modelClass, val.versionField, val.sourceInformation, context));
         }
 
         @Override
@@ -378,6 +367,11 @@ public class HelperPersistenceBuilder
                     ._auditing(buildAuditing(val.auditing))
                     ._filterDuplicates(val.filterDuplicates);
         }
+
+        public Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy buildMergeStrategy(MergeStrategy mergeStrategy, Class<?> inputClass, CompileContext context)
+        {
+            return mergeStrategy.accept(new MergeStrategyBuilder(inputClass, context));
+        }
     }
 
     private static class MergeStrategyBuilder implements MergeStrategyVisitor<Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy>
@@ -395,7 +389,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy visit(DeleteIndicatorMergeStrategy val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_DeleteIndicatorMergeStrategy_Impl("")
-                    ._deleteProperty(validateAndResolveProperty(modelClass, val.deleteProperty, val.sourceInformation, context))
+                    ._deleteField(validateAndResolvePropertyName(modelClass, val.deleteField, val.sourceInformation, context))
                     ._deleteValues(Lists.immutable.ofAll(val.deleteValues));
         }
 
@@ -412,7 +406,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_audit_Auditing visit(DateTimeAuditing val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_audit_DateTimeAuditing_Impl("")
-                    ._dateTimePropertyName(val.dateTimeFieldName);
+                    ._dateTimeName(val.dateTimeName);
         }
 
         @Override
@@ -428,26 +422,26 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdAndDateTimeTransactionMilestoning_Impl("")
-                    ._batchIdInName(val.batchIdInFieldName)
-                    ._batchIdOutName(val.batchIdOutFieldName)
-                    ._dateTimeInName(val.dateTimeInFieldName)
-                    ._dateTimeOutName(val.dateTimeOutFieldName);
+                    ._batchIdInName(val.batchIdInName)
+                    ._batchIdOutName(val.batchIdOutName)
+                    ._dateTimeInName(val.dateTimeInName)
+                    ._dateTimeOutName(val.dateTimeOutName);
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(BatchIdTransactionMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdTransactionMilestoning_Impl("")
-                    ._batchIdInName(val.batchIdInFieldName)
-                    ._batchIdOutName(val.batchIdOutFieldName);
+                    ._batchIdInName(val.batchIdInName)
+                    ._batchIdOutName(val.batchIdOutName);
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(DateTimeTransactionMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_DateTimeTransactionMilestoning_Impl("")
-                    ._dateTimeInName(val.dateTimeInFieldName)
-                    ._dateTimeOutName(val.dateTimeOutFieldName);
+                    ._dateTimeInName(val.dateTimeInName)
+                    ._dateTimeOutName(val.dateTimeOutName);
         }
     }
 
@@ -457,8 +451,8 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning visit(DateTimeValidityMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning_Impl("")
-                    ._dateTimeFromName(val.dateTimeFromFieldName)
-                    ._dateTimeThruName(val.dateTimeThruFieldName);
+                    ._dateTimeFromName(val.dateTimeFromName)
+                    ._dateTimeThruName(val.dateTimeThruName);
         }
     }
 
@@ -477,15 +471,15 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromAndThruDateTime val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl("")
-                    ._sourceDateTimeFromProperty(validateAndResolveProperty(modelClass, val.sourceDateTimeFromProperty, val.sourceInformation, context))
-                    ._sourceDateTimeThruProperty(validateAndResolveProperty(modelClass, val.sourceDateTimeThruProperty, val.sourceInformation, context));
+                    ._sourceDateTimeFromField(validateAndResolvePropertyName(modelClass, val.sourceDateTimeFromField, val.sourceInformation, context))
+                    ._sourceDateTimeThruField(validateAndResolvePropertyName(modelClass, val.sourceDateTimeThruField, val.sourceInformation, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromDateTime val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl("")
-                    ._sourceDateTimeFromProperty(validateAndResolveProperty(modelClass, val.sourceDateTimeFromProperty, val.sourceInformation, context));
+                    ._sourceDateTimeFromField(validateAndResolvePropertyName(modelClass, val.sourceDateTimeFromField, val.sourceInformation, context));
         }
     }
 }

@@ -108,17 +108,9 @@ public class HelperPersistenceGrammarComposer
                 getTabString(indentLevel) + "]\n";
     }
 
-    private static String renderConnections(List<IdentifiedConnection> connections, int indentLevel, PureGrammarComposerContext context)
+    private static String renderIdentifiedConnection(IdentifiedConnection identifiedConnection, int indentLevel, PureGrammarComposerContext context)
     {
         DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
-        return getTabString(indentLevel) + "connections:\n" +
-                getTabString(indentLevel) + "[\n" +
-                Iterate.makeString(ListIterate.collect(connections, c -> renderIdentifiedConnection(c, indentLevel + 1, composerCore)), ",\n") + "\n" +
-                getTabString(indentLevel) + "];\n";
-    }
-
-    private static String renderIdentifiedConnection(IdentifiedConnection identifiedConnection, int indentLevel, DEPRECATED_PureGrammarComposerCore composerCore)
-    {
         if (identifiedConnection.connection instanceof ConnectionPointer)
         {
             return getTabString(indentLevel) + PureGrammarComposerUtility.convertIdentifier(identifiedConnection.id) + ": " + PureGrammarComposerUtility.convertPath(identifiedConnection.connection.accept(composerCore));
@@ -238,7 +230,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Streaming\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderConnections(val.connections, indentLevel + 1, context) +
+                    renderIdentifiedConnection(val.connection, indentLevel + 1, context) +
+                    //TODO: ledav -- binding
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -247,8 +240,10 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Batch\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderConnections(val.connections, indentLevel + 1, context) +
+                    renderIdentifiedConnection(val.connection, indentLevel + 1, context) +
+                    //TODO: ledav -- binding
                     renderTargetShape(val.targetShape, indentLevel + 1) +
+                    renderIngestMode(val.ingestMode, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
     }
@@ -260,6 +255,18 @@ public class HelperPersistenceGrammarComposer
         private TargetShapeComposer(int indentLevel)
         {
             this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visit(FlatTarget val)
+        {
+            return getTabString(indentLevel) + "target: Flat\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    (val.modelClass == null ? "" : getTabString(indentLevel) + "modelClass: " + val.modelClass + ";\n") +
+                    getTabString(indentLevel) + "targetName: " + convertString(val.targetName, true) + ";\n" +
+                    renderPartitionFields(val.partitionFields, indentLevel) +
+                    renderDeduplicationStrategy(val.deduplicationStrategy, indentLevel) +
+                    getTabString(indentLevel) + "}\n";
         }
 
         @Override
@@ -276,24 +283,6 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel) + "}\n";
         }
 
-        @Override
-        public String visit(FlatTarget val)
-        {
-            return getTabString(indentLevel) + "target: Flat\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    renderFlatTargetProperties(val, true, indentLevel + 1) +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        @Override
-        public String visit(OpaqueTarget val)
-        {
-            return getTabString(indentLevel) + "target: OpaqueTarget\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "targetName: " + convertString(val.targetName, true) + ";\n" +
-                    getTabString(indentLevel) + "}\n";
-        }
-
         private static String renderParts(MultiFlatTarget multiFlatTarget, int indentLevel)
         {
             StringBuilder builder = new StringBuilder();
@@ -306,28 +295,18 @@ public class HelperPersistenceGrammarComposer
             return builder.toString();
         }
 
-        private static String renderPartProperties(PropertyAndFlatTarget part, int indentLevel)
+        private static String renderPartProperties(MultiFlatTargetPart part, int indentLevel)
         {
-            return getTabString(indentLevel) + "property: " + part.property + ";\n" +
-                    getTabString(indentLevel) + "flatTarget:\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    renderFlatTargetProperties(part.flatTarget,false, indentLevel + 1) +
-                    getTabString(indentLevel) + "}\n";
+            return getTabString(indentLevel) + "modelProperty: " + part.modelProperty + ";\n" +
+                    getTabString(indentLevel) + "targetName: " + convertString(part.targetName, true) + ";\n" +
+                    renderPartitionFields(part.partitionFields, indentLevel) +
+                    renderDeduplicationStrategy(part.deduplicationStrategy, indentLevel);
         }
 
-        private static String renderFlatTargetProperties(FlatTarget flatTarget, boolean includeModelClass, int indentLevel)
+        private static String renderPartitionFields(List<String> partitionFields, int indentLevel)
         {
-            return getTabString(indentLevel) + "targetName: " + convertString(flatTarget.targetName, true) + ";\n" +
-                    (includeModelClass ? getTabString(indentLevel) + "modelClass: " + flatTarget.modelClass + ";\n" : "") +
-                    renderPartitionProperties(flatTarget, indentLevel) +
-                    renderDeduplicationStrategy(flatTarget.deduplicationStrategy, indentLevel) +
-                    renderIngestMode(flatTarget.ingestMode, indentLevel);
-        }
-
-        private static String renderPartitionProperties(FlatTarget flatTarget, int indentLevel)
-        {
-            return !flatTarget.partitionProperties.isEmpty() ? getTabString(indentLevel) + "partitionProperties: " + "[" +
-                    Lists.immutable.ofAll(flatTarget.partitionProperties).makeString(", ") +
+            return !partitionFields.isEmpty() ? getTabString(indentLevel) + "partitionFields: " + "[" +
+                    Lists.immutable.ofAll(partitionFields).makeString(", ") +
                     "];\n" : "";
         }
     }
@@ -358,7 +337,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "deduplicationStrategy: MaxVersion\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "versionProperty: " + val.versionProperty + ";\n" +
+                    getTabString(indentLevel + 1) + "versionField: " + val.versionField + ";\n" +
                     getTabString(indentLevel) + "}\n";
         }
     }
@@ -462,7 +441,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "auditing: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "dateTimeFieldName: '" + val.dateTimeFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeName: '" + val.dateTimeName + "';\n" +
                     getTabString(indentLevel) + "}\n";        }
     }
 
@@ -480,8 +459,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "transactionMilestoning: BatchId\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "batchIdInFieldName: '" + val.batchIdInFieldName + "';\n" +
-                    getTabString(indentLevel + 1) + "batchIdOutFieldName: '" + val.batchIdOutFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdInName: '" + val.batchIdInName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdOutName: '" + val.batchIdOutName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -490,8 +469,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "transactionMilestoning: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "dateTimeInFieldName: '" + val.dateTimeInFieldName + "';\n" +
-                    getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeInName: '" + val.dateTimeInName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeOutName: '" + val.dateTimeOutName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -500,10 +479,10 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "transactionMilestoning: BatchIdAndDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "batchIdInFieldName: '" + val.batchIdInFieldName + "';\n" +
-                    getTabString(indentLevel + 1) + "batchIdOutFieldName: '" + val.batchIdOutFieldName + "';\n" +
-                    getTabString(indentLevel + 1) + "dateTimeInFieldName: '" + val.dateTimeInFieldName + "';\n" +
-                    getTabString(indentLevel + 1) + "dateTimeOutFieldName: '" + val.dateTimeOutFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdInName: '" + val.batchIdInName + "';\n" +
+                    getTabString(indentLevel + 1) + "batchIdOutName: '" + val.batchIdOutName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeInName: '" + val.dateTimeInName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeOutName: '" + val.dateTimeOutName + "';\n" +
                     getTabString(indentLevel) + "}\n";
         }
     }
@@ -522,8 +501,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "validityMilestoning: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "dateTimeFromFieldName: '" + val.dateTimeFromFieldName + "';\n" +
-                    getTabString(indentLevel + 1) + "dateTimeThruFieldName: '" + val.dateTimeThruFieldName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeFromFieldName: '" + val.dateTimeFromName + "';\n" +
+                    getTabString(indentLevel + 1) + "dateTimeThruFieldName: '" + val.dateTimeThruName + "';\n" +
                     renderValidityDerivation(val.derivation, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
@@ -543,7 +522,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "derivation: SourceSpecifiesFromDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "sourceDateTimeFromProperty: " + val.sourceDateTimeFromProperty + ";\n" +
+                    getTabString(indentLevel + 1) + "sourceDateTimeFromField: " + val.sourceDateTimeFromField + ";\n" +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -553,8 +532,8 @@ public class HelperPersistenceGrammarComposer
 
             return getTabString(indentLevel) + "derivation: SourceSpecifiesFromAndThruDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "sourceDateTimeFromProperty: " + val.sourceDateTimeFromProperty + ";\n" +
-                    getTabString(indentLevel + 1) + "sourceDateTimeThruProperty: " + val.sourceDateTimeThruProperty + ";\n" +
+                    getTabString(indentLevel + 1) + "sourceDateTimeFromField: " + val.sourceDateTimeFromField + ";\n" +
+                    getTabString(indentLevel + 1) + "sourceDateTimeThruField: " + val.sourceDateTimeThruField + ";\n" +
                     getTabString(indentLevel) + "}\n";
         }
     }
@@ -579,7 +558,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "mergeStrategy: DeleteIndicator\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "deleteProperty: " + val.deleteProperty + ";\n" +
+                    getTabString(indentLevel + 1) + "deleteField: " + val.deleteField + ";\n" +
                     renderDeleteValues(val, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }

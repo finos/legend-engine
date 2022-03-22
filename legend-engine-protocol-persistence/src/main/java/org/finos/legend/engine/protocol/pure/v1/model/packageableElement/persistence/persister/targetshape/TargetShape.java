@@ -8,7 +8,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = FlatTarget.class, name = "flatTarget"),
         @JsonSubTypes.Type(value = MultiFlatTarget.class, name = "multiFlatTarget"),
-        @JsonSubTypes.Type(value = OpaqueTarget.class, name = "opaqueTarget")
 })
 public abstract class TargetShape
 {

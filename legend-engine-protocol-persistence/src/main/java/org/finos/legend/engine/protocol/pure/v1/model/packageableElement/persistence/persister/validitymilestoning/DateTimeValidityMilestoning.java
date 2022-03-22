@@ -2,8 +2,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class DateTimeValidityMilestoning extends ValidityMilestoning
 {
-    public String dateTimeFromFieldName;
-    public String dateTimeThruFieldName;
+    public String dateTimeFromName;
+    public String dateTimeThruName;
 
     public <T> T accept(ValidityMilestoningVisitor<T> visitor)
     {
