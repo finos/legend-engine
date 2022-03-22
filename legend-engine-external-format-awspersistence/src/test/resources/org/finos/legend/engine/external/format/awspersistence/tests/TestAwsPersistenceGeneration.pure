@@ -8,6 +8,32 @@ Persistence cnas::TestPipe
   {
     connections:
     [
+      c1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: cnas::SnowflakeStore;
+          type: Snowflake;
+          specification: Snowflake
+          {
+            name: 'test';
+            account: 'account';
+            warehouse: 'warehouseName';
+            region: 'us-east2';
+            proxyHost: 'sampleHost';
+            proxyPort: 'samplePort';
+            nonProxyHosts: 'sample';
+            accountType: MultiTenant;
+            organization: 'sampleOrganization';
+          };
+          auth: SnowflakePublic
+          {
+            publicUserName: 'name';
+            privateKeyVaultReference: 'name';
+            passPhraseVaultReference: 'name';
+          };
+        }
+      }#
     ];
     target: Flat
     {
@@ -70,8 +96,22 @@ Service cnas::TestService
 }
 
 
+###Relational
+Database cnas::SnowflakeStore
+(
+  Schema SAMPLE
+  (
+    Table DEMO_TABLE
+    (
+      "name" VARCHAR(100) PRIMARY KEY,
+      "age" NUMERIC(38, 0)
+    )
+  )
+)
+
+
 ###FileGeneration
-AwsPersistence cnas::awspersistenceGeneration
+awspersistence cnas::awspersistenceGeneration
 {
   scopeElements: [cnas];
 }
