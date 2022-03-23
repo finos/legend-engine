@@ -1,0 +1,238 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "/trades/allTradesService1"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "s_tradeId": "1",
+            "s_traderDetails": "abc:F_Name_1:L_Name_1",
+            "s_tradeDetails": "30:100"
+          },
+          {
+            "s_tradeId": "2",
+            "s_traderDetails": "abc:F_Name_1:L_Name_1",
+            "s_tradeDetails": "31:200"
+          },
+          {
+            "s_tradeId": "3",
+            "s_traderDetails": "abc:F_Name_2:L_Name_2",
+            "s_tradeDetails": "30:300"
+          },
+          {
+            "s_tradeId": "4",
+            "s_traderDetails": "abc:F_Name_2:L_Name_2",
+            "s_tradeDetails": "31:400"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/trades/allTradesService2"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "s_tradeId": "5",
+            "s_traderDetails": "abc:F_Name_1:L_Name_1",
+            "s_tradeDetails": "40:100"
+          },
+          {
+            "s_tradeId": "6",
+            "s_traderDetails": "abc:F_Name_1:L_Name_1",
+            "s_tradeDetails": "41:200"
+          },
+          {
+            "s_tradeId": "7",
+            "s_traderDetails": "abc:F_Name_2:L_Name_2",
+            "s_tradeDetails": "40:300"
+          },
+          {
+            "s_tradeId": "8",
+            "s_traderDetails": "abc:F_Name_2:L_Name_2",
+            "s_tradeDetails": "41:400"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/products/getAllProducts1"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "s_productId": "30",
+            "s_productName": "Product 30",
+            "s_description": "Product 30 description",
+            "s_synonyms": [
+              {
+                "s_name": "product 30 synonym 1",
+                "s_type": "isin"
+              },
+              {
+                "s_name": "product 30 synonym 2",
+                "s_type": "cusip"
+              }
+            ]
+          },
+          {
+            "s_productId": "31",
+            "s_productName": "Product 31",
+            "s_description": "Product 31 description",
+            "s_synonyms": [
+              {
+                "s_name": "product 31 synonym 1",
+                "s_type": "isin"
+              },
+              {
+                "s_name": "product 31 synonym 2",
+                "s_type": "cusip"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/products/getAllProducts2"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "s_productId": "40",
+            "s_productName": "Product 40",
+            "s_description": "Product 40 description",
+            "s_synonyms": [
+              {
+                "s_name": "product 40 synonym 1",
+                "s_type": "isin"
+              },
+              {
+                "s_name": "product 40 synonym 2",
+                "s_type": "cusip"
+              }
+            ]
+          },
+          {
+            "s_productId": "41",
+            "s_productName": "Product 41",
+            "s_description": "Product 41 description",
+            "s_synonyms": [
+              {
+                "s_name": "product 41 synonym 1",
+                "s_type": "isin"
+              },
+              {
+                "s_name": "product 41 synonym 2",
+                "s_type": "cusip"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/products/getProductById1/31"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "s_productId": "31",
+            "s_productName": "Product 31",
+            "s_description": "Product 31 description",
+            "s_synonyms": [
+              {
+                "s_name": "product 31 synonym 1",
+                "s_type": "isin"
+              },
+              {
+                "s_name": "product 31 synonym 2",
+                "s_type": "cusip"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/products/getProductById1/41"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/products/getProductById2/31"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/products/getProductById2/41"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "s_productId": "41",
+            "s_productName": "Product 41",
+            "s_description": "Product 41 description",
+            "s_synonyms": [
+              {
+                "s_name": "product 41 synonym 1",
+                "s_type": "isin"
+              },
+              {
+                "s_name": "product 41 synonym 2",
+                "s_type": "cusip"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/employees"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "firstName": "FirstName ServiceStore",
+            "lastName": "LastName ServiceStore",
+            "firmId": "ServiceStore"
+          }
+        ]
+      }
+    }
+  ]
+}

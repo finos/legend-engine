@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
+@Deprecated
 public class ParameterIndexedParameterMapping extends ServiceParameterMapping
 {
     public Lambda transform;

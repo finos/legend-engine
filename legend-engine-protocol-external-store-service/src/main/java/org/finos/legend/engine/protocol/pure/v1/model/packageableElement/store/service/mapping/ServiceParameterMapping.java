@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
         @JsonSubTypes.Type(value = ParameterIndexedParameterMapping.class, name = "parameter"),
         @JsonSubTypes.Type(value = PropertyIndexedParameterMapping.class, name = "property"),
 })
+@Deprecated
 public class ServiceParameterMapping
 {
     public String serviceParameter;

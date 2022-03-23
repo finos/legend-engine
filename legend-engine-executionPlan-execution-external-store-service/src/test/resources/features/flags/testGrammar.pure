@@ -27,18 +27,24 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
   {
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByTraderDetailsService
      (
-         ~paramMapping
+         ~request
          (
-            "trader.details" : $this.s_traderDetails
+            parameters
+            (
+                "trader.details" = $this.s_traderDetails
+            )
          )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradesByRegionService
      (
-         ~paramMapping
+         ~request
          (
-            region : 'RegionA',
-            requiredParam : 'present'
+            parameters
+            (
+                region = 'RegionA',
+                requiredParam = 'present'
+            )
          )
      )
   }
@@ -52,10 +58,13 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMappingWi
   {
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradesByRegionService
      (
-       ~paramMapping
-       (
-         requiredParam : 'present'
-       )
+         ~request
+         (
+            parameters
+            (
+                requiredParam = 'present'
+            )
+         )
      )
   }
 )

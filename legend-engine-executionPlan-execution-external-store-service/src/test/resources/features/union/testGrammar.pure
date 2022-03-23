@@ -129,7 +129,13 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
         ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService1
         (
-            s_productId : $service.parameters.id
+             ~request
+             (
+                parameters
+                (
+                    id = $this.s_productId
+                )
+             )
         )
     }
 
@@ -139,7 +145,13 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
         ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService2
         (
-            s_productId : $service.parameters.id
+             ~request
+             (
+                parameters
+                (
+                    id = $this.s_productId
+                )
+             )
         )
     }
 

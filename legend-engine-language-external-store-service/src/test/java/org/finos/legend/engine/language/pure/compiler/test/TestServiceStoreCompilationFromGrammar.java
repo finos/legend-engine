@@ -75,6 +75,22 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    method : GET;\n" +
                 "    parameters :\n" +
                 "    (\n" +
+                "      serializationFormat : String ( location = header )\n" +
+                "    );\n" +
+                "    response : [ test::Person <- test::TestBinding ];\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n");
+
+        test(TEST_BINDING + "###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreCompilationWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
                 "      \"abc.xyz\" : String ( location = query )\n" +
                 "    );\n" +
                 "    response : [ test::Person <- test::TestBinding ];\n" +
@@ -390,5 +406,54 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    security : [];\n" +
                 "  )\n" +
                 ")\n", "COMPILATION error at [34:1-47:1]: Error in 'test::testServiceStoreCompilationWithSingleService': Can't find class 'test::Trade'");
+
+        // Header params can't have reserved names - Accept, Content-Type and Authorization
+        test(TEST_BINDING + "###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreCompilationWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      Accept : String ( location = header )\n" +
+                "    );\n" +
+                "    response : [ test::Person <- test::TestBinding ];\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n", "COMPILATION error at [42:7-43]: Header parameters cannot have following names : [Accept,Content-Type,Authorization]");
+
+        test(TEST_BINDING + "###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreCompilationWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      \"Content-Type\" : String ( location = header )\n" +
+                "    );\n" +
+                "    response : [ test::Person <- test::TestBinding ];\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n", "COMPILATION error at [42:7-51]: Header parameters cannot have following names : [Accept,Content-Type,Authorization]");
+
+        test(TEST_BINDING + "###ServiceStore\n" +
+                "ServiceStore test::testServiceStoreCompilationWithSingleService\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      Authorization : String ( location = header )\n" +
+                "    );\n" +
+                "    response : [ test::Person <- test::TestBinding ];\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n", "COMPILATION error at [42:7-50]: Header parameters cannot have following names : [Accept,Content-Type,Authorization]");
     }
 }

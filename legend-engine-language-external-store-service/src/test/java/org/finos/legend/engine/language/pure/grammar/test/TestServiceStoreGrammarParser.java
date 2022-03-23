@@ -270,7 +270,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
                 "  )\n"+
-                ")\n", "PARSER error at [10:7-61]: Unsupported Parameter Location - requestBody. Supported Locations are - path,query");
+                ")\n", "PARSER error at [10:7-61]: Unsupported Parameter Location - requestBody. Supported Locations are - header,path,query");
 
         // Path parameters can't be optional
         test("###ServiceStore\n" +

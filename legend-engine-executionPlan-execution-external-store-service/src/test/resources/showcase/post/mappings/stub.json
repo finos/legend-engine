@@ -1,0 +1,398 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "/products/getProductBySynonym",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "name": "38142Y716",
+              "type": "CUSIP"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": {
+          "productId": "30",
+          "productName": "Product 30",
+          "description": "Product 30 description"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/trades/getTradesByDetails",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "id": "1",
+              "product": {
+                "productId": "30",
+                "productName": "Product 30",
+                "description": "Product 30 description"
+              },
+              "trader": {
+                "kerberos": "dummy",
+                "id": 1234
+              }
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": {
+          "id": "1",
+          "quantity": 100,
+          "trader": {
+            "kerberos": "abc",
+            "id": 1234
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/firms/firmDetailsByName",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "legalNames": [
+                "Firm A",
+                "Firm B",
+                "Firm C",
+                "Firm D"
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "legalName": "Firm A",
+            "addresses": [
+              {
+                "street": "street A 1",
+                "city": "city A",
+                "country": "country A"
+              },
+              {
+                "street": "street A 2",
+                "city": "city A",
+                "country": "country A"
+              }
+            ]
+          },
+          {
+            "legalName": "Firm B",
+            "addresses": [
+              {
+                "street": "street B 1",
+                "city": "city B",
+                "country": "country B"
+              },
+              {
+                "street": "street B 2",
+                "city": "city B",
+                "country": "country B"
+              }
+            ]
+          },
+          {
+            "legalName": "Firm C",
+            "addresses": [
+            ]
+          },
+          {
+            "legalName": "Firm D",
+            "addresses": [
+              {
+                "street": "street D",
+                "city": "city D",
+                "country": "country D"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/firms/firmDetailsByName",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "legalNames": [
+                "Firm A"
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "legalName": "Firm A",
+            "addresses": [
+              {
+                "street": "street A 1",
+                "city": "city A",
+                "country": "country A"
+              },
+              {
+                "street": "street A 2",
+                "city": "city A",
+                "country": "country A"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/firms/firmDetailsByName",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "legalNames": [
+                "Firm C"
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "legalName": "Firm C"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/employees/employeeDetailsByFirm",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "legalNames": [
+                "Firm A"
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "firstName": "Person A1 firstName",
+            "lastName": "Person A1 lastName",
+            "kerberos": "Person A1 kerberos",
+            "id": "Person A1 id",
+            "designation": "Person A1 designation",
+            "age": 12,
+            "addresses": [
+              {
+                "street": "Person A1 street 1",
+                "city": "Person A1 city",
+                "country": "Person A1 country"
+              },
+              {
+                "street": "Person A1 street 2",
+                "city": "Person A1 city",
+                "country": "Person A1 country"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/employees/employeeDetailsByFirm",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "legalNames": [
+                "Firm B"
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "firstName": "Person B1 firstName",
+            "lastName": "Person B1 lastName",
+            "kerberos": "Person B1 kerberos",
+            "id": "Person B1 id",
+            "designation": "Person B1 designation",
+            "age": 12,
+            "addresses": [
+              {
+                "street": "Person B1 street 1",
+                "city": "Person B1 city",
+                "country": "Person B1 country"
+              },
+              {
+                "street": "Person B1 street 2",
+                "city": "Person B1 city",
+                "country": "Person B1 country"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/employees/employeeDetailsByFirm",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "legalNames": [
+                "Firm C"
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "firstName": "Person C1 firstName",
+            "lastName": "Person C1 lastName",
+            "kerberos": "Person C1 kerberos",
+            "id": "Person C1 id",
+            "designation": "Person C1 designation",
+            "age": 12,
+            "addresses": [
+              {
+                "street": "Person C1 street 1",
+                "city": "Person C1 city",
+                "country": "Person C1 country"
+              },
+              {
+                "street": "Person C1 street 2",
+                "city": "Person C1 city",
+                "country": "Person C1 country"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/employees/employeeDetailsByFirm",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "legalNames": [
+                "Firm D"
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "firstName": "Person D1 firstName",
+            "lastName": "Person D1 lastName",
+            "kerberos": "Person D1 kerberos",
+            "id": "Person D1 id",
+            "designation": "Person D1 designation",
+            "age": 12,
+            "addresses": [
+              {
+                "street": "Person D1 street 1",
+                "city": "Person D1 city",
+                "country": "Person D1 country"
+              },
+              {
+                "street": "Person D1 street 2",
+                "city": "Person D1 city",
+                "country": "Person D1 country"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/employees/employeeDetailsByFilters",
+        "bodyPatterns": [
+          {
+            "equalToJson": {
+              "nameFilters": [
+                {
+                  "firstName": "firstName A",
+                  "lastName": "lastName A"
+                }
+              ],
+              "designationFilters" : [
+                {
+                  "designation" : "designation A"
+                }
+              ],
+              "idFilters" : [
+                {
+                  "id" : "id A"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "firstName": "firstName A",
+            "lastName": "lastName A",
+            "kerberos": "kerberos A",
+            "id": "id A",
+            "designation": "designation A",
+            "age": 35,
+            "addresses": [
+              {
+                "street": "street 1",
+                "city": "city",
+                "country": "country"
+              },
+              {
+                "street": "street 2",
+                "city": "city",
+                "country": "country"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

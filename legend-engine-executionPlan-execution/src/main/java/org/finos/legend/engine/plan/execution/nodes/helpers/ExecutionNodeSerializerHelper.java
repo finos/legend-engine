@@ -46,9 +46,13 @@ public class ExecutionNodeSerializerHelper
         if (childResult instanceof ConstantResult)
         {
             Object value = ((ConstantResult) childResult).getValue();
+            if (value instanceof List)
+            {
+                value = ((List) value).stream();
+            }
             if (!(value instanceof Stream))
             {
-                throw new IllegalArgumentException("Result should contain a Stream");
+                value = Stream.of(value);
             }
             stream = (Stream<T>) value;
         }

@@ -76,18 +76,18 @@ public class HelperServiceStoreGrammarComposer
             builder.append(getTabString(baseIndentation + 1)).append("requestBody : ").append(renderTypeReference(service.requestBody)).append(";\n");
         }
         builder.append(getTabString(baseIndentation + 1)).append("method : ").append(service.method).append(";\n");
-        if (service.parameters != null)
+        if (service.parameters != null && !service.parameters.isEmpty())
         {
             builder.append(getTabString(baseIndentation + 1)).append("parameters :\n")
-                    .append(getTabString(baseIndentation + 1)).append("(\n")
-                    .append(String.join(",\n", ListIterate.collect(service.parameters, param -> renderServiceParameter(param, baseIndentation + 2))))
-                    .append("\n")
-                    .append(getTabString(baseIndentation + 1)).append(");\n");
+                   .append(getTabString(baseIndentation + 1)).append("(\n")
+                   .append(String.join(",\n", ListIterate.collect(service.parameters, param -> renderServiceParameter(param, baseIndentation + 2))))
+                   .append("\n")
+                   .append(getTabString(baseIndentation + 1)).append(");\n");
         }
         builder.append(getTabString(baseIndentation + 1)).append("response : ").append(renderTypeReference(service.response)).append(";\n");
         builder.append(getTabString(baseIndentation + 1)).append("security : [")
-                .append(String.join(",", ListIterate.collect(service.security, HelperServiceStoreGrammarComposer::renderAuthenticationStrategy)))
-                .append("];\n");
+               .append(String.join(",", ListIterate.collect(service.security, HelperServiceStoreGrammarComposer::renderAuthenticationStrategy)))
+               .append("];\n");
 
         builder.append(getTabString(baseIndentation)).append(")\n");
     }
@@ -97,12 +97,12 @@ public class HelperServiceStoreGrammarComposer
         StringBuilder builder = new StringBuilder();
 
         builder.append(getTabString(baseIndentation))
-                .append(renderServiceParameterName(param.name))
-                .append(" : ")
-                .append(renderTypeReference(param.type))
-                .append(" ( ")
-                .append("location = ")
-                .append(param.location.toString().toLowerCase());
+               .append(renderServiceParameterName(param.name))
+               .append(" : ")
+               .append(renderTypeReference(param.type))
+               .append(" ( ")
+               .append("location = ")
+               .append(param.location.toString().toLowerCase());
 
         if (param.serializationFormat != null && param.serializationFormat.style != null)
         {
@@ -203,55 +203,76 @@ public class HelperServiceStoreGrammarComposer
     private static void visitLocalMappingProperty(LocalMappingProperty localMappingProperty, StringBuilder builder, int baseIndentation)
     {
         builder.append(getTabString(baseIndentation))
-                .append("+")
-                .append(PureGrammarComposerUtility.convertIdentifier(localMappingProperty.name))
-                .append(" : ")
-                .append(localMappingProperty.type).append("[").append(HelperDomainGrammarComposer.renderMultiplicity(localMappingProperty.multiplicity)).append("]")
-                .append(";\n");
+               .append("+")
+               .append(PureGrammarComposerUtility.convertIdentifier(localMappingProperty.name))
+               .append(" : ")
+               .append(localMappingProperty.type).append("[").append(HelperDomainGrammarComposer.renderMultiplicity(localMappingProperty.multiplicity)).append("]")
+               .append(";\n");
     }
 
     private static void visitServiceMapping(ServiceMapping serviceMapping, StringBuilder builder, int baseIndentation)
     {
         builder.append(getTabString(baseIndentation)).append("~service ").append(renderServicePtr(serviceMapping.service)).append("\n");
 
-        if ((serviceMapping.parameterMappings != null && !serviceMapping.parameterMappings.isEmpty()) || (serviceMapping.pathOffset != null && !(serviceMapping.pathOffset.path.isEmpty())))
+        if ((serviceMapping.pathOffset != null && !(serviceMapping.pathOffset.path.isEmpty())) || (serviceMapping.requestBuildInfo != null))
         {
-            List<ParameterIndexedParameterMapping> parameterIndexedParameterMappings = ListIterate.selectInstancesOf(serviceMapping.parameterMappings, ParameterIndexedParameterMapping.class);
-            List<PropertyIndexedParameterMapping> propertyIndexedParameterMappings = ListIterate.selectInstancesOf(serviceMapping.parameterMappings, PropertyIndexedParameterMapping.class);
             builder.append(getTabString(baseIndentation)).append("(\n");
 
             if (serviceMapping.pathOffset != null && !(serviceMapping.pathOffset.path.isEmpty()))
             {
                 builder.append(getTabString(baseIndentation + 1)).append("~path " + SERVICE_MAPPING_PATH_PREFIX + ".")
-                        .append(ListAdapter.adapt(serviceMapping.pathOffset.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build())).makeString("."))
-                        .append("\n");
+                       .append(ListAdapter.adapt(serviceMapping.pathOffset.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build())).makeString("."))
+                       .append("\n");
             }
 
-            if (!parameterIndexedParameterMappings.isEmpty())
+            if (serviceMapping.requestBuildInfo != null)
             {
-                builder.append(getTabString(baseIndentation + 1)).append("~paramMapping\n")
-                        .append(getTabString(baseIndentation + 1)).append("(\n")
-                        .append(String.join(",\n", ListIterate.collect(parameterIndexedParameterMappings, pm -> visitParameterIndexedParameterMapping(pm, baseIndentation + 2)))).append("\n")
-                        .append(getTabString(baseIndentation + 1)).append(")\n");
-            }
-
-            if (!propertyIndexedParameterMappings.isEmpty())
-            {
-                builder.append(String.join(",\n", ListIterate.collect(propertyIndexedParameterMappings, pm -> visitPropertyIndexedParameterMapping(pm, baseIndentation + 1)))).append("\n");
+                visitServiceRequestBuildInfo(serviceMapping.requestBuildInfo, builder, baseIndentation + 1);
             }
 
             builder.append(getTabString(baseIndentation)).append(")\n");
         }
     }
 
-    private static String visitParameterIndexedParameterMapping(ParameterIndexedParameterMapping serviceParameterMapping, int baseIndentation)
+    private static void visitServiceRequestBuildInfo(ServiceRequestBuildInfo requestBuildInfo, StringBuilder builder, int baseIndentation)
     {
-        return getTabString(baseIndentation) + renderServiceParameterName(serviceParameterMapping.serviceParameter) + " : " + serviceParameterMapping.transform.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()).replaceFirst("\\|", "");
+        builder.append(getTabString(baseIndentation)).append("~request\n")
+               .append(getTabString(baseIndentation)).append("(\n");
+
+        if (requestBuildInfo.requestParametersBuildInfo != null)
+        {
+            visitServiceRequestParametersBuildInfo(requestBuildInfo.requestParametersBuildInfo, builder, baseIndentation + 1);
+        }
+
+        if (requestBuildInfo.requestBodyBuildInfo != null)
+        {
+            visitServiceRequestBodyBuildInfo(requestBuildInfo.requestBodyBuildInfo, builder, baseIndentation + 1);
+        }
+
+        builder.append(getTabString(baseIndentation)).append(")\n");
     }
 
-    private static String visitPropertyIndexedParameterMapping(PropertyIndexedParameterMapping serviceParameterMapping, int baseIndentation)
+    private static void visitServiceRequestParametersBuildInfo(ServiceRequestParametersBuildInfo requestParametersBuildInfo, StringBuilder builder, int baseIndentation)
     {
-        return getTabString(baseIndentation) + PureGrammarComposerUtility.convertIdentifier(serviceParameterMapping.property) + " : $service.parameters." + renderServiceParameterName(serviceParameterMapping.serviceParameter);
+        builder.append(getTabString(baseIndentation)).append("parameters\n")
+               .append(getTabString(baseIndentation)).append("(\n");
+
+        builder.append(String.join(",\n", ListIterate.collect(requestParametersBuildInfo.parameterBuildInfoList, paramBuildInfo -> composeServiceRequestParameterBuildInfo(paramBuildInfo, baseIndentation + 1))));
+        builder.append("\n");
+
+        builder.append(getTabString(baseIndentation)).append(")\n");
+    }
+
+    private static String composeServiceRequestParameterBuildInfo(ServiceRequestParameterBuildInfo requestParameterBuildInfo, int baseIndentation)
+    {
+        return getTabString(baseIndentation) + renderServiceParameterName(requestParameterBuildInfo.serviceParameter) + " = " + requestParameterBuildInfo.transform.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()).replaceFirst("\\|", "");
+    }
+
+    private static void visitServiceRequestBodyBuildInfo(ServiceRequestBodyBuildInfo requestBodyBuildInfo, StringBuilder builder, int baseIndentation)
+    {
+        builder.append(getTabString(baseIndentation)).append("body = ")
+               .append(requestBodyBuildInfo.transform.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()).replaceFirst("\\|", ""))
+               .append("\n");
     }
 
     private static String renderServiceParameterName(String serviceParameter)
