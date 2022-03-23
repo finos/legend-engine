@@ -43,7 +43,7 @@ public class TestMappingCompilationFromProtocol extends TestCompilationFromProto
     @Test
     public void testEnumerationMappingLoadingWithPackageOffset()
     {
-        testProtocolLoadingModelWithPackageOffset("enumerationMappingWithNoSourceValueType.json",null,"update::");
+        testProtocolLoadingModelWithPackageOffset("enumerationMappingWithNoSourceValueType.json", null, "update::");
         testProtocolLoadingModelWithPackageOffset("enumerationMappingWithSourceType.json", null, "update::");
     }
 }
