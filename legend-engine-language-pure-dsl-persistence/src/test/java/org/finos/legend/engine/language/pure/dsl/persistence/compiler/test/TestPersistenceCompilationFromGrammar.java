@@ -88,12 +88,14 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
-    public void flatModelClassUndefined()
+    public void bindingUndefined()
     {
         test("Class test::Person\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +
+                "\n" +
+                "Class test::ServiceResult {}\n" +
                 "\n" +
                 "###Mapping\n" +
                 "Mapping test::Mapping ()\n" +
@@ -148,7 +150,79 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [44:16-34]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [39:14-60:3]: Persister refers to a binding 'test::Binding' that is not defined");
+    }
+
+    @Test
+    public void flatModelClassUndefined()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::Person\n" +
+                "  ];\n" +
+                "}\n" +
+                "###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::ServiceResult;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [52:16-34]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -182,6 +256,14 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    data: 'test';\n" +
                 "    asserts: [];\n" +
                 "  }\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::Person\n" +
+                "  ];\n" +
                 "}\n" +
                 "###Persistence\n" +
                 "\n" +
@@ -219,7 +301,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [48:18-59:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [56:18-67:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -256,6 +338,14 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    asserts: [];\n" +
                 "  }\n" +
                 "}\n" +
+                "###ExternalFormat\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::Person\n" +
+                "  ];\n" +
+                "}\n" +
                 "###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence\n" +
@@ -292,7 +382,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [56:9-59:9]: Property 'property1' must exist in class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [64:9-67:9]: Property 'property1' must exist in class 'test::ServiceResult'");
     }
 
     @Test
@@ -332,6 +422,14 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    asserts: [];\n" +
                 "  }\n" +
                 "}\n" +
+                "###ExternalFormat\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::Person\n" +
+                "  ];\n" +
+                "}\n" +
                 "###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence\n" +
@@ -368,7 +466,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [59:9-62:9]: Target shape modelProperty 'property1' must refer to a class.");
+                "}\n", "COMPILATION error at [67:9-70:9]: Target shape modelProperty 'property1' must refer to a class.");
     }
 
     @Test
@@ -481,6 +579,14 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    asserts: [];\n" +
                 "  }\n" +
                 "}\n" +
+                "###ExternalFormat\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::Person\n" +
+                "  ];\n" +
+                "}\n" +
                 "###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -569,6 +675,14 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "}\n" +
                 "\n" +
+                "###ExternalFormat\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    org::dxl::Person\n" +
+                "  ];\n" +
+                "}\n" +
                 "###Connection\n" +
                 "JsonModelConnection test::TestConnection\n" +
                 "{\n" +
@@ -584,14 +698,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  persister: Batch\n" +
                 "  {\n" +
                 "    binding: test::Binding;\n" +
-                "    connection:\n" +
-                "    #{\n" +
-                "      JsonModelConnection\n" +
-                "      {\n" +
-                "        class: org::dxl::Animal;\n" +
-                "        url: 'my_url2';\n" +
-                "      }\n" +
-                "    }#\n" +
+                "    connection: test::TestConnection;\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: org::dxl::Zoo;\n" +

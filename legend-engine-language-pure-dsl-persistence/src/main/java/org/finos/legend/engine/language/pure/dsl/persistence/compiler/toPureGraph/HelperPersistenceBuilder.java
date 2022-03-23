@@ -80,12 +80,13 @@ public class HelperPersistenceBuilder
         String service = persistence.service;
         String servicePath = service.substring(0, service.lastIndexOf("::"));
         String serviceName = service.substring(service.lastIndexOf("::") + 2);
-        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(servicePath)._children().detect(c -> serviceName.equals(c._name()));
 
+        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(servicePath)._children().detect(c -> serviceName.equals(c._name()));
         if (packageableElement instanceof Root_meta_legend_service_metamodel_Service)
         {
             return (Root_meta_legend_service_metamodel_Service) packageableElement;
         }
+
         throw new EngineException(String.format("Persistence refers to a service '%s' that is not defined", service), persistence.sourceInformation, EngineErrorType.COMPILATION);
     }
 
@@ -98,6 +99,21 @@ public class HelperPersistenceBuilder
     {
         return new Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl("")
                 ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
+    }
+
+    public static Root_meta_external_shared_format_binding_Binding buildBinding(Persister persister, CompileContext context)
+    {
+        String binding = persister.binding;
+        String bindingPath = binding.substring(0, binding.lastIndexOf("::"));
+        String bindingName = binding.substring(binding.lastIndexOf("::") + 2);
+
+        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(bindingPath)._children().detect(c -> bindingName.equals(c._name()));
+        if (packageableElement instanceof Root_meta_external_shared_format_binding_Binding)
+        {
+            return (Root_meta_external_shared_format_binding_Binding) packageableElement;
+        }
+
+        throw new EngineException(String.format("Persister refers to a binding '%s' that is not defined", binding), persister.sourceInformation, EngineErrorType.COMPILATION);
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(Connection connection, CompileContext context)
@@ -191,6 +207,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(BatchPersister val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
+                    ._binding(buildBinding(val, context))
                     ._connection(buildConnection(val.connection, context))
                     ._targetShape(buildTargetShape(val.targetShape, context));
         }
@@ -199,6 +216,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(StreamingPersister val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("")
+                    ._binding(buildBinding(val, context))
                     ._connection(buildConnection(val.connection, context));
         }
     }
