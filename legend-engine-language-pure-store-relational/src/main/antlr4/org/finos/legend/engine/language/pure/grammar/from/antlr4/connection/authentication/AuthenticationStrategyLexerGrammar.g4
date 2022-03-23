@@ -31,16 +31,8 @@ GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH:                   'GCPApplicationDefau
 API_TOKEN_AUTH:                             'ApiToken';
 API_TOKEN_AUTH_TOKEN:                       'apiToken';
 
-GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS_AUTH:                      'GCPWorkloadIdentityFederationWithAWS';
-WORKLOAD_PROJECT_NUMBER:                                    'workloadProjectNumber';
+GCP_WORKLOAD_IDENTITY_FEDERATION_AUTH:                      'GCPWorkloadIdentityFederation';
 SERVICE_ACCOUNT_EMAIL:                                      'serviceAccountEmail';
 ADDITIONAL_GCP_SCOPES:                                                  'additionalGcpScopes';
-WORKLOAD_POOL_ID:                                           'workloadPoolId';
-WORKLOAD_PROVIDER_ID:                                       'workloadProviderId';
-AWS_ACCOUNT_ID:                                             'awsAccountId';
-AWS_REGION:                                                 'awsRegion';
-AWS_ROLE:                                              'awsRole';
-AWS_ACCESS_KEY_ID_VAULT_REFERENCE:                            'awsAccessKeyIdVaultReference';
-AWS_SECRET_ACCESS_KEY_VAULT_REFERENCE:                        'awsSecretAccessKeyVaultReference';
 BRACKET_OPEN:                                               '[';
 BRACKET_CLOSE:                                              ']';

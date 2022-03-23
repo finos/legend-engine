@@ -19,7 +19,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
@@ -32,33 +32,13 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
-public class GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy extends AuthenticationStrategy {
-    private String workloadProjectNumber;
+public class GCPWorkloadIdentityFederationAuthenticationStrategy extends AuthenticationStrategy {
     private String serviceAccountEmail;
     private List<String> additionalGcpScopes;
-    private String workloadPoolId;
-    private String workloadProviderId;
-    private String awsAccountId;
-    private String awsRegion;
-    private String awsRole;
-    private String awsSecretAccessKeyVaultReference;
-    private String awsAccessKeyIdVaultReference;
 
-    public GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy(String workloadProjectNumber, String serviceAccountEmail, List<String> additionalGcpScopes, String workloadPoolId, String workloadProviderId, String awsAccountId, String awsRegion, String awsRoleName, String awsAccessKeyIdVaultReference, String awsSecretAccessKeyVaultReference) {
-        this.workloadProjectNumber = workloadProjectNumber;
+    public GCPWorkloadIdentityFederationAuthenticationStrategy(String serviceAccountEmail, List<String> additionalGcpScopes) {
         this.serviceAccountEmail = serviceAccountEmail;
         this.additionalGcpScopes = additionalGcpScopes;
-        this.workloadPoolId = workloadPoolId;
-        this.workloadProviderId = workloadProviderId;
-        this.awsAccountId = awsAccountId;
-        this.awsRegion = awsRegion;
-        this.awsRole = awsRoleName;
-        this.awsAccessKeyIdVaultReference = awsAccessKeyIdVaultReference;
-        this.awsSecretAccessKeyVaultReference = awsSecretAccessKeyVaultReference;
-    }
-
-    public String getWorkloadProjectNumber() {
-        return workloadProjectNumber;
     }
 
     public String getServiceAccountEmail() {
@@ -68,35 +48,6 @@ public class GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy extends 
     public List<String> getAdditionalGcpScopes() {
         return additionalGcpScopes;
     }
-
-    public String getWorkloadPoolId() {
-        return workloadPoolId;
-    }
-
-    public String getWorkloadProviderId() {
-        return workloadProviderId;
-    }
-
-    public String getAwsAccountId() {
-        return awsAccountId;
-    }
-
-    public String getAwsRegion() {
-        return awsRegion;
-    }
-
-    public String getAwsRole() {
-        return awsRole;
-    }
-
-    public String getAwsSecretAccessKeyVaultReference() {
-        return awsSecretAccessKeyVaultReference;
-    }
-
-    public String getAwsAccessKeyIdVaultReference() {
-        return awsAccessKeyIdVaultReference;
-    }
-
 
     @Override
     public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
@@ -134,6 +85,6 @@ public class GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy extends 
     @Override
     public AuthenticationStrategyKey getKey()
     {
-        return new GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyKey(this.workloadProjectNumber, this.serviceAccountEmail, this.additionalGcpScopes, this.workloadPoolId, this.workloadProviderId, this.awsAccountId, this.awsRegion, this.awsRole, this.awsAccessKeyIdVaultReference, this.awsSecretAccessKeyVaultReference);
+        return new GCPWorkloadIdentityFederationAuthenticationStrategyKey(this.serviceAccountEmail, this.additionalGcpScopes);
     }
 }

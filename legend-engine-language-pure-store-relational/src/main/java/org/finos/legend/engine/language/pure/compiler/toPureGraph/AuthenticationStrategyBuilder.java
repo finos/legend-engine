@@ -64,23 +64,15 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
         {
             return new Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl("");
         }
-        else if (authenticationStrategy instanceof GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy)
+        else if (authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy_Impl("")
-                    ._workloadProjectNumber(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).workloadProjectNumber)
-                    ._serviceAccountEmail(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).serviceAccountEmail)
+            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationAuthenticationStrategy_Impl("")
+                    ._serviceAccountEmail(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).serviceAccountEmail)
                     ._additionalGcpScopes(
-                            ((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).additionalGcpScopes == null ?
+                            ((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).additionalGcpScopes == null ?
                                     FastList.newList() :
-                                    FastList.newList(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).additionalGcpScopes)
-                    )
-                    ._workloadPoolId(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).workloadPoolId)
-                    ._workloadProviderId(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).workloadProviderId)
-                    ._awsAccountId(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsAccountId)
-                    ._awsRegion(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsRegion)
-                    ._awsRole(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsRole)
-                    ._awsAccessKeyIdVaultReference(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsAccessKeyIdVaultReference)
-                    ._awsSecretAccessKeyVaultReference(((GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy) authenticationStrategy).awsSecretAccessKeyVaultReference);
+                                    FastList.newList(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).additionalGcpScopes)
+                    );
         }
         return null;
     }

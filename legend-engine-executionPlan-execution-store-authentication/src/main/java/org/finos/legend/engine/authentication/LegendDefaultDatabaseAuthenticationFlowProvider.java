@@ -25,7 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 public final class LegendDefaultDatabaseAuthenticationFlowProvider extends AbstractDatabaseAuthenticationFlowProvider
 {
-    private DatabaseAuthenticationFlowProviderConfiguration databaseAuthenticationFlowProviderConfiguration;
+    private LegendDefaultDatabaseAuthenticationFlowProviderConfiguration databaseAuthenticationFlowProviderConfiguration;
 
     public LegendDefaultDatabaseAuthenticationFlowProvider()
     {
@@ -34,7 +34,7 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
     private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows(){
         return Lists.immutable.of(
                 new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
-                new BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow(),
+                new BigQueryWithGCPWorkloadIdentityFederationFlow(databaseAuthenticationFlowProviderConfiguration),
                 new DatabricksWithApiTokenFlow(),
                 new H2StaticWithTestUserPasswordFlow(),
                 new SnowflakeWithKeyPairFlow(),
@@ -44,7 +44,12 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
 
     @Override
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration) {
-        this.databaseAuthenticationFlowProviderConfiguration = configuration;
+        if(!(configuration instanceof LegendDefaultDatabaseAuthenticationFlowProviderConfiguration))
+        {
+            String message = "Mismatch in flow provider configuration. It should be an instance of " + LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
+            throw new RuntimeException(message);
+        }
+        this.databaseAuthenticationFlowProviderConfiguration = (LegendDefaultDatabaseAuthenticationFlowProviderConfiguration) configuration;
         flows().forEach(this::registerFlow);
     }
 }

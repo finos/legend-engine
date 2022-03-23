@@ -89,12 +89,10 @@ public class AuthenticationStrategyParseTreeWalker
         return authStrategy;
     }
 
-    public GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy visitGCPWorkloadIdentityFederationAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.GcpWorkloadIdentityFederationWithAWSAuthContext authCtx)
+    public GCPWorkloadIdentityFederationAuthenticationStrategy visitGCPWorkloadIdentityFederationAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.GcpWorkloadIdentityFederationAuthContext authCtx)
     {
-        GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy authStrategy = new GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy();
+        GCPWorkloadIdentityFederationAuthenticationStrategy authStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
         authStrategy.sourceInformation = code.getSourceInformation();
-        AuthenticationStrategyParserGrammar.WorkloadProjectNumberRefContext workloadProjectNumberRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.workloadProjectNumberRef(), "workloadProjectNumber", code.getSourceInformation());
-        authStrategy.workloadProjectNumber = PureGrammarParserUtility.fromGrammarString(workloadProjectNumberRefContext.STRING().getText(), true);
         AuthenticationStrategyParserGrammar.ServiceAccountEmailRefContext gcpServiceAccountEmailRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.serviceAccountEmailRef(), "serviceAccountEmail", code.getSourceInformation());
         authStrategy.serviceAccountEmail = PureGrammarParserUtility.fromGrammarString(gcpServiceAccountEmailRefContext.STRING().getText(), true);
         AuthenticationStrategyParserGrammar.AdditionalGcpScopesRefContext additionalGcpScopesRefContext = PureGrammarParserUtility.validateAndExtractOptionalField(authCtx.additionalGcpScopesRef(),"additionalGcpScopes", code.getSourceInformation());
@@ -102,20 +100,6 @@ public class AuthenticationStrategyParseTreeWalker
         {
             authStrategy.additionalGcpScopes = ListIterate.collect(additionalGcpScopesRefContext.gcpScopesArray().STRING(), ctx -> PureGrammarParserUtility.fromGrammarString(ctx.getText(), true));
         }
-        AuthenticationStrategyParserGrammar.WorkloadPoolIdRefContext gcpPoolIdRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.workloadPoolIdRef(), "workloadPoolId", code.getSourceInformation());
-        authStrategy.workloadPoolId = PureGrammarParserUtility.fromGrammarString(gcpPoolIdRefContext.STRING().getText(), true);
-        AuthenticationStrategyParserGrammar.WorkloadProviderIdRefContext gcpProviderIdRefContext  = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.workloadProviderIdRef(), "workloadProviderId", code.getSourceInformation());
-        authStrategy.workloadProviderId = PureGrammarParserUtility.fromGrammarString(gcpProviderIdRefContext.STRING().getText(), true);
-        AuthenticationStrategyParserGrammar.AwsAccountIdRefContext awsAccountIdRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.awsAccountIdRef(), "awsAccountId", code.getSourceInformation());
-        authStrategy.awsAccountId = PureGrammarParserUtility.fromGrammarString(awsAccountIdRefContext.STRING().getText(), true);
-        AuthenticationStrategyParserGrammar.AwsRegionRefContext awsRegionRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.awsRegionRef(), "awsRegion", code.getSourceInformation());
-        authStrategy.awsRegion = PureGrammarParserUtility.fromGrammarString(awsRegionRefContext.STRING().getText(), true);
-        AuthenticationStrategyParserGrammar.AwsRoleRefContext awsRoleRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.awsRoleRef(), "awsRole", code.getSourceInformation());
-        authStrategy.awsRole = PureGrammarParserUtility.fromGrammarString(awsRoleRefContext.STRING().getText(), true);
-        AuthenticationStrategyParserGrammar.AwsAccessKeyIdVaultRefContext awsAccessKeyIdVaultRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.awsAccessKeyIdVaultRef(), "awsAccessKeyIdVaultReference", code.getSourceInformation());
-        authStrategy.awsAccessKeyIdVaultReference = PureGrammarParserUtility.fromGrammarString(awsAccessKeyIdVaultRefContext.STRING().getText(), true);
-        AuthenticationStrategyParserGrammar.AwsSecretAccessKeyVaultRefContext awsSecretAccessKeyVaultRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.awsSecretAccessKeyVaultRef(), "awsSecretAccessKeyVaultReference", code.getSourceInformation());
-        authStrategy.awsSecretAccessKeyVaultReference = PureGrammarParserUtility.fromGrammarString(awsSecretAccessKeyVaultRefContext.STRING().getText(), true);
         return authStrategy;
     }
 }

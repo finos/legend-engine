@@ -16,6 +16,7 @@ package org.finos.legend.engine.authentication.flows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -39,7 +40,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -53,7 +54,7 @@ import java.time.Clock;
 import java.time.ZoneOffset;
 import java.util.*;
 
-public class BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow implements DatabaseAuthenticationFlow<BigQueryDatasourceSpecification, GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy> {
+public class BigQueryWithGCPWorkloadIdentityFederationFlow implements DatabaseAuthenticationFlow<BigQueryDatasourceSpecification, GCPWorkloadIdentityFederationAuthenticationStrategy> {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static final String STS = "sts";
@@ -62,8 +63,11 @@ public class BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow implements Da
     public static final String GCP_STS_HOST = "sts.googleapis.com";
     public static final String GCP_IAM_CREDENTIALS_HOST = "iamcredentials.googleapis.com";
     public static final String ISO8601BasicFormat = "yyyyMMdd'T'HHmmss'Z'";
+    private final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration;
 
-    public BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow() { }
+    public BigQueryWithGCPWorkloadIdentityFederationFlow(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration) {
+        this.flowProviderConfiguration = flowProviderConfiguration;
+    }
 
     @Override
     public Class<BigQueryDatasourceSpecification> getDatasourceClass() {
@@ -71,8 +75,8 @@ public class BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow implements Da
     }
 
     @Override
-    public Class<GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy> getAuthenticationStrategyClass() {
-        return GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy.class;
+    public Class<GCPWorkloadIdentityFederationAuthenticationStrategy> getAuthenticationStrategyClass() {
+        return GCPWorkloadIdentityFederationAuthenticationStrategy.class;
     }
 
     @Override
@@ -81,25 +85,26 @@ public class BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow implements Da
     }
 
     @Override
-    public Credential makeCredential(Identity identity, BigQueryDatasourceSpecification datasourceSpecification, GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy authenticationStrategy) throws Exception {
-        Credentials credentials = assumeAWSRoleAndGetCredentials(
+    public Credential makeCredential(Identity identity, BigQueryDatasourceSpecification datasourceSpecification, GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy) throws Exception {
+        Credentials awsCredentials = assumeAWSRoleAndGetCredentials(
                 String.format("arn:aws:iam::%s:role/%s",
-                        authenticationStrategy.awsAccountId,
-                        authenticationStrategy.awsRole),
-                authenticationStrategy.awsRole, authenticationStrategy.awsRegion,
-                authenticationStrategy.awsAccessKeyIdVaultReference,
-                authenticationStrategy.awsSecretAccessKeyVaultReference);
+                        flowProviderConfiguration.awsConfig.accountId,
+                        flowProviderConfiguration.awsConfig.role),
+                flowProviderConfiguration.awsConfig.role, flowProviderConfiguration.awsConfig.region,
+                flowProviderConfiguration.awsConfig.awsAccessKeyIdVaultReference,
+                flowProviderConfiguration.awsConfig.awsSecretAccessKeyVaultReference);
         Date date = new Date();
         String currentDate = getUTCDate(date);
-        String canonicalRequestSignature = computeCanonicalRequestSignature(credentials, date, authenticationStrategy.awsRegion);
+        String canonicalAWSRequestSignature = computeCanonicalAWSRequestSignature(awsCredentials, date, flowProviderConfiguration.awsConfig.region);
         String gcpTargetResource = String.format(
                 "//iam.googleapis.com/projects/%s/locations/global/workloadIdentityPools/%s/providers/%s",
-                authenticationStrategy.workloadProjectNumber,
-                authenticationStrategy.workloadPoolId,
-                authenticationStrategy.workloadProviderId
+                flowProviderConfiguration.gcpWorkloadConfig.projectNumber,
+                flowProviderConfiguration.gcpWorkloadConfig.poolId,
+                flowProviderConfiguration.gcpWorkloadConfig.providerId
         );
-        String callerIdentityToken = makeCallerIdentityToken(credentials, currentDate, canonicalRequestSignature, gcpTargetResource);
-        String federatedAccessToken = getGCPFederatedAccessToken(SdkHttpUtils.urlEncode(callerIdentityToken), gcpTargetResource);
+        String subjectTokenType = "urn:ietf:params:aws:token-type:aws4_request";
+        String callerIdentityToken = makeAWSCallerIdentityToken(awsCredentials, currentDate, canonicalAWSRequestSignature, gcpTargetResource);
+        String federatedAccessToken = getGCPFederatedAccessToken(SdkHttpUtils.urlEncode(callerIdentityToken), gcpTargetResource, subjectTokenType);
         String serviceAccountAccessToken = getGCPServiceAccountAccessToken(federatedAccessToken, authenticationStrategy.serviceAccountEmail, authenticationStrategy.additionalGcpScopes);
         return new OAuthCredential(serviceAccountAccessToken);
     }
@@ -113,7 +118,10 @@ public class BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow implements Da
     private Credentials assumeAWSRoleAndGetCredentials(String roleArn, String roleSessionName, String region, String awsAccessKeyIdVaultReference, String awsSecretAccessKeyVaultReference) {
         StsClient stsClient = StsClient.builder()
                 .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(Vault.INSTANCE.getValue(awsAccessKeyIdVaultReference),Vault.INSTANCE.getValue(awsSecretAccessKeyVaultReference))))
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+                    Vault.INSTANCE.getValue(awsAccessKeyIdVaultReference),
+                    Vault.INSTANCE.getValue(awsSecretAccessKeyVaultReference)
+                )))
                 .build();
         AssumeRoleRequest roleRequest = AssumeRoleRequest.builder()
                 .roleArn(roleArn)
@@ -123,7 +131,7 @@ public class BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow implements Da
         return roleResponse.credentials();
     }
 
-    private String computeCanonicalRequestSignature(Credentials credentials, Date date, String awsRegion) {
+    private String computeCanonicalAWSRequestSignature(Credentials credentials, Date date, String awsRegion) {
         Aws4Signer aws4Signer = Aws4Signer.create();
         Aws4SignerParams aws4SignerParams = Aws4SignerParams.builder()
                 .signingRegion(Region.of(awsRegion))
@@ -145,7 +153,7 @@ public class BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow implements Da
         return signedSdkHttpFullRequest.headers().get("Authorization").get(0);
     }
 
-    private String makeCallerIdentityToken(Credentials credentials, String signingDate, String signature, String gcpTargetResource) {
+    private String makeAWSCallerIdentityToken(Credentials credentials, String signingDate, String signature, String gcpTargetResource) {
         return "{" +
             "\"url\": \"https://sts.amazonaws.com?Action=GetCallerIdentity&Version=2011-06-15\"," +
             "\"method\": \"POST\"," +
@@ -159,14 +167,14 @@ public class BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow implements Da
         "}";
     }
 
-    private String getGCPFederatedAccessToken(String encoded_token, String audience) throws IOException, URISyntaxException {
+    public String getGCPFederatedAccessToken(String subjectToken, String audience, String subjectTokenType) throws IOException, URISyntaxException {
         String body = "{" +
                 "\"audience\": \"" + audience + "\"," +
                 "\"grantType\": \"urn:ietf:params:oauth:grant-type:token-exchange\"," +
                 "\"requestedTokenType\": \"urn:ietf:params:oauth:token-type:access_token\"," +
                 "\"scope\": \"https://www.googleapis.com/auth/cloud-platform\"," +
-                "\"subjectTokenType\": \"urn:ietf:params:aws:token-type:aws4_request\"," +
-                "\"subjectToken\": \"" + encoded_token + "\"" +
+                "\"subjectTokenType\": \"" + subjectTokenType + "\"," +
+                "\"subjectToken\": \"" + subjectToken + "\"" +
             "}";
         HttpPost request = new HttpPost(new URIBuilder()
                 .setScheme(HTTPS)
@@ -187,13 +195,17 @@ public class BigQueryWithGCPWorkloadIdentityFederationUsingAWSFlow implements Da
         }
     }
 
-    private String getGCPServiceAccountAccessToken(String federatedAccessToken, String serviceAccountEmail, List<String> additionalGcpScopes) throws URISyntaxException, UnsupportedEncodingException, JsonProcessingException {
+    public String getGCPServiceAccountAccessToken(String federatedAccessToken, String serviceAccountEmail, List<String> additionalGcpScopes) throws URISyntaxException, UnsupportedEncodingException, JsonProcessingException {
+        List<String> gcpScopes;
         if(additionalGcpScopes == null){
-            additionalGcpScopes = FastList.newList();
+            gcpScopes = FastList.newList();
         }
-        additionalGcpScopes.add("https://www.googleapis.com/auth/bigquery");
+        else {
+            gcpScopes = FastList.newList(additionalGcpScopes);
+        }
+        gcpScopes.add("https://www.googleapis.com/auth/bigquery");
         Map<String,List<String>> map = new HashMap<>();
-        map.put("scope",additionalGcpScopes);
+        map.put("scope",gcpScopes);
         String body = OBJECT_MAPPER.writeValueAsString(map);
         HttpPost request = new HttpPost(new URIBuilder()
                 .setScheme(HTTPS)

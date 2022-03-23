@@ -182,9 +182,6 @@
                         </dependencies>
                         <!-- Without override, surefire configuration would have skipped our integration tests -->
                         <configuration combine.self="override">
-                            <includes>
-                                <include>**/ExternalIntegration*.java</include>
-                            </includes>
                             <useSystemClassLoader>false</useSystemClassLoader>
                             <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
                             <additionalClasspathElements>

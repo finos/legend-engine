@@ -18,7 +18,25 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 
 public final class LegendDefaultDatabaseAuthenticationFlowProviderConfiguration extends DatabaseAuthenticationFlowProviderConfiguration
 {
+    public AWSConfig awsConfig;
+    public GCPWorkloadConfig gcpWorkloadConfig;
+
+    public class AWSConfig {
+        public String region;
+        public String accountId;
+        public String role;
+        public String awsAccessKeyIdVaultReference;
+        public String awsSecretAccessKeyVaultReference;
+    }
+
+    public class GCPWorkloadConfig {
+        public String projectNumber;
+        public String poolId;
+        public String providerId;
+    }
+
     public LegendDefaultDatabaseAuthenticationFlowProviderConfiguration()
     {
+        // jackson
     }
 }

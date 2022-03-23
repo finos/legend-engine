@@ -16,19 +16,11 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 
 import java.util.List;
 
-public class GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy extends AuthenticationStrategy {
-    public String workloadProjectNumber;
+public class GCPWorkloadIdentityFederationAuthenticationStrategy extends AuthenticationStrategy {
     public String serviceAccountEmail;
     public List<String> additionalGcpScopes;
-    public String workloadPoolId;
-    public String workloadProviderId;
-    public String awsAccountId;
-    public String awsRegion;
-    public String awsRole;
-    public String awsAccessKeyIdVaultReference;
-    public String awsSecretAccessKeyVaultReference;
 
-    public GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy() {
+    public GCPWorkloadIdentityFederationAuthenticationStrategy() {
     }
 
     @Override
