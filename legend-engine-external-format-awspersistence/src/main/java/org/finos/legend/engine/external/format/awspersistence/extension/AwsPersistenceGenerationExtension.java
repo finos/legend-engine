@@ -59,7 +59,7 @@ public class AwsPersistenceGenerationExtension implements GenerationExtension
             @Override
             public List<GenerationProperty> getProperties(PureModel pureModel)
             {
-                return FileGenerationDescription.extractGenerationProperties(core_external_format_awspersistence_integration.Root_meta_external_format_awspersistence_generation_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
+                return FileGenerationDescription.extractGenerationProperties(core_persistence_external_format_awspersistence_integration.Root_meta_external_format_awspersistence_generation_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
             }
         };
     }
@@ -73,7 +73,7 @@ public class AwsPersistenceGenerationExtension implements GenerationExtension
     @Override
     public Root_meta_pure_generation_metamodel_GenerationConfiguration defaultConfig(CompileContext context)
     {
-        return core_external_format_awspersistence_integration.Root_meta_external_format_awspersistence_generation_defaultConfig__AwsPersistenceConfig_1_(context.pureModel.getExecutionSupport());
+        return core_persistence_external_format_awspersistence_integration.Root_meta_external_format_awspersistence_generation_defaultConfig__AwsPersistenceConfig_1_(context.pureModel.getExecutionSupport());
     }
 
     @Override
@@ -89,7 +89,7 @@ public class AwsPersistenceGenerationExtension implements GenerationExtension
         {
             FileGenerationSpecification specification = (FileGenerationSpecification) element;
             AwsPersistenceGenerationConfig awspersistenceConfig = AwsPersistenceGenerationConfigFromFileGenerationSpecificationBuilder.build(specification);
-            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_awspersistence_transformation.Root_meta_external_format_awspersistence_generation_generateAwsPersistenceFromPureWithScope_AwsPersistenceConfig_1__AwsPersistenceOutput_MANY_(awspersistenceConfig.process(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
+            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_persistence_external_format_awspersistence_transformation.Root_meta_external_format_awspersistence_generation_generateAwsPersistenceFromPureWithScope_AwsPersistenceConfig_1__AwsPersistenceOutput_MANY_(awspersistenceConfig.process(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
             return new ArrayList<>(output.toList());
         }
         return null;

@@ -34,7 +34,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.Exception
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
-import org.finos.legend.pure.generated.core_external_format_awspersistence_transformation;
+import org.finos.legend.pure.generated.core_persistence_external_format_awspersistence_transformation;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -63,7 +63,7 @@ public class AwsPersistenceGenerationService
     }
 
     @POST
-    @Path("awspersistence")
+    @Path("awsPersistence")
     @ApiOperation(value = "Generates AwsPersistence")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateAwsPersistence(AwsPersistenceGenerationInput generateAwsPersistenceInput, @ApiParam(hidden = true)  @Pac4JProfileManager ProfileManager<CommonProfile> pm)
@@ -91,7 +91,7 @@ public class AwsPersistenceGenerationService
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_AWSPERSISTENCE_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_AWSPERSISTENCE_CODE_START).toString());
             PureModel pureModel = pureModelFunc.value();
-            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_awspersistence_transformation.Root_meta_external_format_awspersistence_generation_generateAwsPersistenceFromPureWithScope_AwsPersistenceConfig_1__AwsPersistenceOutput_MANY_(awspersistenceConfig.process(pureModel), pureModel.getExecutionSupport());
+            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_persistence_external_format_awspersistence_transformation.Root_meta_external_format_awspersistence_generation_generateAwsPersistenceFromPureWithScope_AwsPersistenceConfig_1__AwsPersistenceOutput_MANY_(awspersistenceConfig.process(pureModel), pureModel.getExecutionSupport());
             LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_AWSPERSISTENCE_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_AWSPERSISTENCE_CODE_STOP, (double)System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }

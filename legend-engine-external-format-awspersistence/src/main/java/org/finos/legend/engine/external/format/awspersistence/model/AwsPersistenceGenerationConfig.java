@@ -6,7 +6,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.generations.GenerationConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_external_format_awspersistence_generation_AwsPersistenceConfig;
-import org.finos.legend.pure.generated.core_external_format_awspersistence_integration;
+import org.finos.legend.pure.generated.core_persistence_external_format_awspersistence_integration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
@@ -26,7 +26,7 @@ public class AwsPersistenceGenerationConfig extends GenerationConfiguration
 
     public Root_meta_external_format_awspersistence_generation_AwsPersistenceConfig process(PureModel pureModel)
     {
-        Root_meta_external_format_awspersistence_generation_AwsPersistenceConfig awspersistenceConfig = core_external_format_awspersistence_integration.Root_meta_external_format_awspersistence_generation_defaultConfig__AwsPersistenceConfig_1_(pureModel.getExecutionSupport());
+        Root_meta_external_format_awspersistence_generation_AwsPersistenceConfig awspersistenceConfig = core_persistence_external_format_awspersistence_integration.Root_meta_external_format_awspersistence_generation_defaultConfig__AwsPersistenceConfig_1_(pureModel.getExecutionSupport());
         List<PackageableElement> scopeElements = ListIterate.collect(this.generationScope(), e -> Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(e, pureModel.getExecutionSupport()));
         awspersistenceConfig._scopeElements((RichIterable<? extends PackageableElement>) scopeElements);
 
