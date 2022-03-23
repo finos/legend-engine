@@ -63,7 +63,7 @@ public class AwsPersistenceGenerationService
     }
 
     @POST
-    @Path("awspersistence")
+    @Path("awsPersistence")
     @ApiOperation(value = "Generates AwsPersistence")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateAwsPersistence(AwsPersistenceGenerationInput generateAwsPersistenceInput, @ApiParam(hidden = true)  @Pac4JProfileManager ProfileManager<CommonProfile> pm)
