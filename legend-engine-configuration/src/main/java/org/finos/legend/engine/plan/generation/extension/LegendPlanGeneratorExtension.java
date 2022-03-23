@@ -17,11 +17,15 @@ package org.finos.legend.engine.plan.generation.extension;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.external.shared.format.model.ExternalFormatPlanGenerationExtensionLoader;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.generation.transformers.VersionPlanTransformer;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.core_external_shared_extension;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 
 public class LegendPlanGeneratorExtension implements PlanGeneratorExtension {
@@ -35,7 +39,14 @@ public class LegendPlanGeneratorExtension implements PlanGeneratorExtension {
     @Override
     public RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> getExtraRouterExtensions(PureModel pureModel)
     {
-        return core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport());
+        MutableList<Root_meta_pure_router_extension_RouterExtension> pureRouterExtensions = Lists.mutable.empty();
+
+        RichIterable<Root_meta_external_shared_format_ExternalFormatExtension> planGenerationExtensions = LazyIterate.collect(ExternalFormatPlanGenerationExtensionLoader.extensions().values(), ext -> ext.getPureExtension(pureModel.getExecutionSupport()));
+        pureRouterExtensions.addAll(core_external_shared_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__RouterExtension_MANY_("externalFormat", planGenerationExtensions, pureModel.getExecutionSupport()).toList());
+
+        pureRouterExtensions.addAll(core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()).toList());
+
+        return pureRouterExtensions.toImmutable();
     }
 
 }
