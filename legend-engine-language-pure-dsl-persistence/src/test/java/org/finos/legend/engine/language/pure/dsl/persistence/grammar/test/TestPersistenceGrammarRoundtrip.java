@@ -3,15 +3,8 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
-public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-    protected abstract String targetFlat();
-    protected abstract String targetMulti();
-    protected abstract String targetOpaque();
-    protected abstract String ingestMode();
-    protected abstract String flatTarget();
-    protected abstract String parts();
-
     @Test
     public void persistence()
     {
@@ -24,75 +17,65 @@ public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtr
                 "  service: test::service::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    connections:\n" +
-                "    [\n" +
-                "      id1: test::TestConnection,\n" +
-                "      id2:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: org::dxl::Animal;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: DeleteIndicator\n" +
+                "      {\n" +
+                "        deleteField: deleted;\n" +
+                "        deleteValues: ['Y', '1', 'true'];\n" +
+                "      }\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'inZ';\n" +
+                "        dateTimeOutName: 'outZ';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
                 "        {\n" +
-                "          class: test::TestClass;\n" +
-                "          url: 'my_url';\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
                 "        }\n" +
-                "      }#\n" +
-                "    ];\n" +
-                "    target: " + targetMulti() + "\n" +
+                "      }\n" +
+                "    }\n" +
+                "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      " + parts() + ":\n" +
+                "      parts:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: property1;\n" +
-                "          " + flatTarget() + ":\n" +
+                "          modelProperty: property1;\n" +
+                "          targetName: 'TestDataset1';\n" +
+                "          partitionFields: [propertyA, propertyB];\n" +
+                "          deduplicationStrategy: MaxVersion\n" +
                 "          {\n" +
-                "            targetName: 'TestDataset1';\n" +
-                "            partitionProperties: [propertyA, propertyB];\n" +
-                "            deduplicationStrategy: MaxVersion\n" +
-                "            {\n" +
-                "              versionProperty: updateDateTime;\n" +
-                "            }\n" +
-                "            " + ingestMode() + ": UnitemporalDelta\n" +
-                "            {\n" +
-                "              mergeStrategy: NoDeletes;\n" +
-                "              transactionMilestoning: BatchId\n" +
-                "              {\n" +
-                "                batchIdInFieldName: 'batchIdIn';\n" +
-                "                batchIdOutFieldName: 'batchIdOut';\n" +
-                "              }\n" +
-                "            }\n" +
+                "            versionField: updateDateTime;\n" +
                 "          }\n" +
                 "        },\n" +
                 "        {\n" +
-                "          property: property2;\n" +
-                "          " + flatTarget() + ":\n" +
+                "          modelProperty: property2;\n" +
+                "          targetName: 'TestDataset1';\n" +
+                "          partitionFields: [propertyA, propertyB];\n" +
+                "          deduplicationStrategy: MaxVersion\n" +
                 "          {\n" +
-                "            targetName: 'TestDataset2';\n" +
-                "            deduplicationStrategy: None;\n" +
-                "            " + ingestMode() + ": BitemporalDelta\n" +
-                "            {\n" +
-                "              mergeStrategy: DeleteIndicator\n" +
-                "              {\n" +
-                "                deleteProperty: deleted;\n" +
-                "                deleteValues: ['Y', '1', 'true'];\n" +
-                "              }\n" +
-                "              transactionMilestoning: DateTime\n" +
-                "              {\n" +
-                "                dateTimeInFieldName: 'inZ';\n" +
-                "                dateTimeOutFieldName: 'outZ';\n" +
-                "              }\n" +
-                "              validityMilestoning: DateTime\n" +
-                "              {\n" +
-                "                dateTimeFromFieldName: 'fromZ';\n" +
-                "                dateTimeThruFieldName: 'thruZ';\n" +
-                "                derivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "                {\n" +
-                "                  sourceDateTimeFromProperty: businessDateFrom;\n" +
-                "                  sourceDateTimeThruProperty: businessDateThru;\n" +
-                "                }\n" +
-                "              }\n" +
-                "            }\n" +
+                "            versionField: updateDateTime;\n" +
                 "          }\n" +
+                "        },\n" +
+                "        {\n" +
+                "          modelProperty: property3;\n" +
+                "          targetName: 'TestDataset2';\n" +
+                "          deduplicationStrategy: None;\n" +
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +
