@@ -25,6 +25,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 
 import javax.sql.DataSource;
 import java.util.Optional;
+import java.util.Properties;
 
 public class DataSourceWithStatistics
 {
@@ -141,6 +142,11 @@ public class DataSourceWithStatistics
 
     public boolean hasActiveConnections() {
         return this.dataSource!=null && ((HikariDataSource)dataSource).getHikariPoolMXBean().getActiveConnections()>0;
+    }
+
+    public Properties getProperties()
+    {
+        return ((HikariDataSource)this.dataSource).getDataSourceProperties();
     }
 }
 
