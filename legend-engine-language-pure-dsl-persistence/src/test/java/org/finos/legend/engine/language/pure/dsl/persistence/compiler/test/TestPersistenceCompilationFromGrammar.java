@@ -3,15 +3,8 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.test;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.junit.Test;
 
-public abstract class TestPersistenceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
+public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
-    protected abstract String targetFlat();
-    protected abstract String targetMulti();
-    protected abstract String targetOpaque();
-    protected abstract String ingestMode();
-    protected abstract String flatTarget();
-    protected abstract String parts();
-
     @Override
     protected String getDuplicatedElementTestCode()
     {
@@ -28,15 +21,23 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetFlat() + "\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::Person;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      ingestMode: AppendOnly\n" +
-                "      {\n" +
-                "        auditing: None;\n" +
-                "        filterDuplicates: false;\n" +
-                "      }\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
                 "}\n";
@@ -45,7 +46,7 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [7:1-25:1]: Duplicated element 'test::TestPersistence'";
+        return "COMPILATION error at [7:1-33:1]: Duplicated element 'test::TestPersistence'";
     }
 
     @Test
@@ -62,18 +63,26 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetFlat() + "\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::Person;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      ingestMode: AppendOnly\n" +
-                "      {\n" +
-                "        auditing: None;\n" +
-                "        filterDuplicates: false;\n" +
-                "      }\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [5:1-23:1]: Persistence refers to a service 'test::Service' that is not defined");
+                "}\n", "COMPILATION error at [5:1-31:1]: Persistence refers to a service 'test::Service' that is not defined");
     }
 
     @Test
@@ -117,18 +126,26 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetFlat() + "\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::ServiceResult;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
-                "      ingestMode: AppendOnly\n" +
-                "      {\n" +
-                "        auditing: None;\n" +
-                "        filterDuplicates: false;\n" +
-                "      }\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [39:13-48:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [43:16-34]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -172,28 +189,33 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetMulti() + "\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::Person;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      " + parts() + ":\n" +
+                "      parts:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: property1;\n" +
-                "          " + flatTarget() + ":\n" +
-                "          {\n" +
-                "            targetName: 'TestDataset1';\n" +
-                "            ingestMode: AppendOnly\n" +
-                "            {\n" +
-                "              auditing: None;\n" +
-                "              filterDuplicates: false;\n" +
-                "            }\n" +
-                "          }\n" +
+                "          modelProperty: property1;\n" +
+                "          targetName: 'TestDataset1';\n" +
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
+                "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [39:13-58:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [47:18-58:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -239,28 +261,33 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetMulti() + "\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::Person;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      " + parts() + ":\n" +
+                "      parts:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: property1;\n" +
-                "          " + flatTarget() + ":\n" +
-                "          {\n" +
-                "            targetName: 'TestDataset1';\n" +
-                "            ingestMode: AppendOnly\n" +
-                "            {\n" +
-                "              auditing: None;\n" +
-                "              filterDuplicates: false;\n" +
-                "            }\n" +
-                "          }\n" +
+                "          modelProperty: property1;\n" +
+                "          targetName: 'TestDataset1';\n" +
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
+                "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [47:9-58:9]: Property 'property1' must exist in class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [55:9-58:9]: Property 'property1' must exist in class 'test::ServiceResult'");
     }
 
     @Test
@@ -309,28 +336,33 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetMulti() + "\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::Person;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      " + parts() + ":\n" +
+                "      parts:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: property1;\n" +
-                "          " + flatTarget() + ":\n" +
-                "          {\n" +
-                "            targetName: 'TestDataset1';\n" +
-                "            ingestMode: AppendOnly\n" +
-                "            {\n" +
-                "              auditing: None;\n" +
-                "              filterDuplicates: false;\n" +
-                "            }\n" +
-                "          }\n" +
+                "          modelProperty: property1;\n" +
+                "          targetName: 'TestDataset1';\n" +
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
+                "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [50:9-61:9]: Target " + parts().substring(0, parts().length() - 1) + " property must refer to a Class. The property 'property1' refers to a String");
+                "}\n", "COMPILATION error at [58:9-61:9]: Target shape 'modelProperty' must refer to a Class. The property 'property1' refers to a String");
     }
 
     @Test
@@ -379,25 +411,30 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetMulti() + "\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::Person;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      " + parts() + ":\n" +
+                "      parts:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: property1;\n" +
-                "          " + flatTarget() + ":\n" +
-                "          {\n" +
-                "            targetName: 'TestDataset1';\n" +
-                "            ingestMode: AppendOnly\n" +
-                "            {\n" +
-                "              auditing: None;\n" +
-                "              filterDuplicates: false;\n" +
-                "            }\n" +
-                "          }\n" +
+                "          modelProperty: property1;\n" +
+                "          targetName: 'TestDataset1';\n" +
                 "        }\n" +
                 "      ];\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
                 "}\n", "COMPILATION error at [8:14-19]: Can't find type 'Animal'");
@@ -446,15 +483,23 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: " + targetFlat() + "\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::Person;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
-                "      ingestMode: AppendOnly\n" +
-                "      {\n" +
-                "        auditing: None;\n" +
-                "        filterDuplicates: false;\n" +
-                "      }\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
                 "}\n");
@@ -530,64 +575,49 @@ public abstract class TestPersistenceCompilationFromGrammar extends TestCompilat
                 "  service: org::dxl::ZooService;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    connections:\n" +
-                "    [\n" +
-                "      id1: test::TestConnection,\n" +
-                "      id2:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: org::dxl::Animal;\n" +
-                "          url: 'my_url2';\n" +
-                "        }\n" +
-                "      }#\n" +
-                "    ];\n" +
-                "    target: " + targetMulti() + "\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: org::dxl::Animal;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: org::dxl::Zoo;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      " + parts() + ":\n" +
+                "      parts:\n" +
                 "      [\n" +
                 "        {\n" +
-                "          property: 'zookeeper';\n" +
-                "          " + flatTarget() + ":\n" +
-                "          {\n" +
-                "            targetName: 'PersonDataset1';\n" +
-                "            ingestMode: AppendOnly\n" +
-                "            {\n" +
-                "              auditing: None;\n" +
-                "              filterDuplicates: false;\n" +
-                "            }\n" +
-                "          }\n" +
+                "          modelProperty: 'zookeeper';\n" +
+                "          targetName: 'PersonDataset1';\n" +
                 "        },\n" +
                 "        {\n" +
-                "          property: 'owner';\n" +
-                "          " + flatTarget() + ":\n" +
-                "          {\n" +
-                "            targetName: 'PersonDataset2';\n" +
-                "            ingestMode: BitemporalSnapshot\n" +
-                "            {\n" +
-                "              transactionMilestoning: BatchIdAndDateTime\n" +
-                "              {\n" +
-                "                batchIdInFieldName: 'batchIdIn';\n" +
-                "                batchIdOutFieldName: 'batchIdOut';\n" +
-                "                dateTimeInFieldName: 'IN_Z';\n" +
-                "                dateTimeOutFieldName: 'OUT_Z';\n" +
-                "              }\n" +
-                "              validityMilestoning: DateTime\n" +
-                "              {\n" +
-                "                dateTimeFromFieldName: 'FROM_Z';\n" +
-                "                dateTimeThruFieldName: 'THRU_Z';\n" +
-                "                derivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "                {\n" +
-                "                  sourceDateTimeFromProperty: 'effectiveFrom';\n" +
-                "                  sourceDateTimeThruProperty: 'effectiveThru';\n" +
-                "                }\n" +
-                "              }\n" +
-                "            }\n" +
-                "          }\n" +
+                "          modelProperty: 'owner';\n" +
+                "          targetName: 'PersonDataset2';\n" +
                 "        }\n" +
                 "      ];\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalSnapshot\n" +
+                "    {\n" +
+                "      transactionMilestoning: BatchIdAndDateTime\n" +
+                "      {\n" +
+                "        batchIdInName: 'batchIdIn';\n" +
+                "        batchIdOutName: 'batchIdOut';\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: 'effectiveFrom';\n" +
+                "          sourceDateTimeThruField: 'effectiveThru';\n" +
+                "        }\n" +
+                "      }\n" +
                 "    }\n" +
                 "  }\n" +
                 "  notifier:\n" +

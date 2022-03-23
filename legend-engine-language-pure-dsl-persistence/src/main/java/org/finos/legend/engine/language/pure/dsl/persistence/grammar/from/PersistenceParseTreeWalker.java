@@ -156,7 +156,7 @@ public class PersistenceParseTreeWalker
         StreamingPersister streaming = new StreamingPersister();
         streaming.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // connections
+        // connection
         PersistenceParserGrammar.PersisterConnectionContext persisterConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterConnection(), "connection", streaming.sourceInformation);
         streaming.connection = persisterConnectionContext == null ? null : visitConnection(persisterConnectionContext, streaming.sourceInformation);
 
