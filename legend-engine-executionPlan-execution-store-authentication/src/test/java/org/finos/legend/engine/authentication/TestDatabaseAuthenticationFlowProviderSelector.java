@@ -38,14 +38,7 @@ public class TestDatabaseAuthenticationFlowProviderSelector
         singletonField.set(null, null);
     }
 
-    @Test
-    public void flowProviderDisabledByDefault()
-    {
-        Optional<DatabaseAuthenticationFlowProvider> providerHolder = DatabaseAuthenticationFlowProviderSelector.getProvider();
-        assertFalse(providerHolder.isPresent());
-    }
-
-    @Test
+   /* @Test
     public void explicitlyLoadFlowProvider()
     {
         Optional<DatabaseAuthenticationFlowProvider> providerHolder = DatabaseAuthenticationFlowProviderSelector.getProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class.getCanonicalName());
@@ -64,5 +57,5 @@ public class TestDatabaseAuthenticationFlowProviderSelector
         {
             assertTrue(e.getMessage().contains("Failed to locate database flow provider"));
         }
-    }
+    }*/
 }

@@ -95,7 +95,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlSe
     @After
     public void cleanup()
     {
-        DatabaseAuthenticationFlowProviderSelector.disableFlowProvider();
         Vault.INSTANCE.unregisterImplementation(this.vaultImplementation);
         this.mssqlserver.stop();
     }
