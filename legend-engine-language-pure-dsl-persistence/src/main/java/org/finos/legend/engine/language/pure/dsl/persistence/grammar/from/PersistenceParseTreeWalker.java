@@ -158,7 +158,7 @@ public class PersistenceParseTreeWalker
 
         // connections
         PersistenceParserGrammar.PersisterConnectionContext persisterConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterConnection(), "connection", streaming.sourceInformation);
-        streaming.connection = persisterConnectionContext == null ? null : visitIdentifiedConnection(persisterConnectionContext.identifiedConnection());
+        streaming.connection = persisterConnectionContext == null ? null : visitConnection(persisterConnectionContext, streaming.sourceInformation);
 
         // TODO: ledav -- binding
 
@@ -172,12 +172,12 @@ public class PersistenceParseTreeWalker
 
         // connection
         PersistenceParserGrammar.PersisterConnectionContext persisterConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterConnection(), "connection", batch.sourceInformation);
-        batch.connection = persisterConnectionContext == null ? null : visitIdentifiedConnection(persisterConnectionContext.identifiedConnection());
+        batch.connection = persisterConnectionContext == null ? null : visitConnection(persisterConnectionContext, batch.sourceInformation);
 
         // TODO: ledav -- binding
 
         // target shape
-        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "target", batch.sourceInformation);
+        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "targetShape", batch.sourceInformation);
         batch.targetShape = visitTargetShape(targetShapeContext);
 
         // ingest mode
@@ -255,22 +255,7 @@ public class PersistenceParseTreeWalker
      * connection
      **********/
 
-    private IdentifiedConnection visitIdentifiedConnection(PersistenceParserGrammar.IdentifiedConnectionContext ctx)
-    {
-        IdentifiedConnection identifiedConnection = new IdentifiedConnection();
-        identifiedConnection.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // id
-        PersistenceParserGrammar.IdentifierContext identifierContext = PureGrammarParserUtility.validateAndExtractRequiredField(Lists.fixedSize.of(ctx.identifier()), "identifier", identifiedConnection.sourceInformation);
-        identifiedConnection.id = PureGrammarParserUtility.fromIdentifier(identifierContext);
-
-        // connection
-        identifiedConnection.connection = visitConnection(ctx, identifiedConnection.sourceInformation);
-
-        return identifiedConnection;
-    }
-
-    private Connection visitConnection(PersistenceParserGrammar.IdentifiedConnectionContext ctx, SourceInformation sourceInformation)
+    private Connection visitConnection(PersistenceParserGrammar.PersisterConnectionContext ctx, SourceInformation sourceInformation)
     {
         if (ctx.connectionPointer() != null)
         {
@@ -283,7 +268,7 @@ public class PersistenceParseTreeWalker
         throw new EngineException("Unrecognized connection", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private ConnectionPointer visitConnectionPointer(PersistenceParserGrammar.IdentifiedConnectionContext ctx)
+    private ConnectionPointer visitConnectionPointer(PersistenceParserGrammar.PersisterConnectionContext ctx)
     {
         PersistenceParserGrammar.ConnectionPointerContext connectionPointerContext = ctx.connectionPointer();
         ConnectionPointer connectionPointer = new ConnectionPointer();
@@ -292,7 +277,7 @@ public class PersistenceParseTreeWalker
         return connectionPointer;
     }
 
-    private Connection visitEmbeddedConnection(PersistenceParserGrammar.IdentifiedConnectionContext ctx)
+    private Connection visitEmbeddedConnection(PersistenceParserGrammar.PersisterConnectionContext ctx)
     {
         PersistenceParserGrammar.EmbeddedConnectionContext embeddedConnectionContext = ctx.embeddedConnection();
         StringBuilder embeddedConnectionText = new StringBuilder();

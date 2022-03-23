@@ -52,6 +52,9 @@ TARGET_SHAPE_NAME:                          'targetName';
 TARGET_SHAPE_PARTITION_FIELDS:              'partitionFields';
 TARGET_SHAPE_DEDUPLICATION:                 'deduplicationStrategy';
 
+// FLAT
+TARGET_SHAPE_FLAT:                          'Flat';
+
 // MULTI-FLAT
 TARGET_SHAPE_MULTI:                         'MultiFlat';
 TARGET_SHAPE_MULTI_TXN_SCOPE:               'transactionScope';
@@ -61,9 +64,6 @@ TARGET_PART_MODEL_PROPERTY:                 'modelProperty';
 
 TXN_SCOPE_SINGLE:                           'SINGLE_TARGET';
 TXN_SCOPE_ALL:                              'ALL_TARGETS';
-
-// FLAT
-TARGET_SHAPE_FLAT:                          'Flat';
 
 // DEDUPLICATION VALUES
 DEDUPLICATION_ANY_VERSION:                  'AnyVersion';

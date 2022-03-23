@@ -12,14 +12,13 @@ options
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT | NONE | DATE_TIME
-                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE  | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
+                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
                                             | TRIGGER_MANUAL | TRIGGER_CRON
-                                            | PERSISTER_CONNECTION | PERSISTER_TARGET_SHAPE | PERSISTER_STREAMING | PERSISTER_BATCH
+                                            | PERSISTER_CONNECTION | PERSISTER_BINDING | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE | PERSISTER_STREAMING | PERSISTER_BATCH
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
-                                            | TARGET_SHAPE_NAME | TARGET_SHAPE_MODEL_CLASS
-                                            | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_PARTS | TARGET_PART_MODEL_PROPERTY | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
-                                            | TARGET_SHAPE_FLAT | TARGET_SHAPE_PARTITION_FIELDS | TARGET_SHAPE_DEDUPLICATION | PERSISTER_INGEST_MODE
-                                            | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_FIELD
+                                            | TARGET_SHAPE_MODEL_CLASS | TARGET_SHAPE_NAME | TARGET_SHAPE_PARTITION_FIELDS | TARGET_SHAPE_DEDUPLICATION
+                                            | TARGET_SHAPE_FLAT | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_PARTS | TARGET_PART_MODEL_PROPERTY | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
+                                            | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_FIELD | DEDUPLICATION_DUPLICATE_COUNT | DEDUPLICATION_DUPLICATE_COUNT_NAME
                                             | INGEST_MODE_NONTEMPORAL_SNAPSHOT | INGEST_MODE_UNITEMPORAL_SNAPSHOT | INGEST_MODE_BITEMPORAL_SNAPSHOT | INGEST_MODE_NONTEMPORAL_DELTA | INGEST_MODE_UNITEMPORAL_DELTA | INGEST_MODE_BITEMPORAL_DELTA | INGEST_MODE_APPEND_ONLY
                                             | FILTER_DUPLICATES
                                             | AUDITING | AUDITING_DATE_TIME_NAME
@@ -112,13 +111,11 @@ pagerDutyUrl:                               NOTIFYEE_PAGER_DUTY_URL COLON STRING
 ;
 persisterConnection:                        PERSISTER_CONNECTION COLON
                                                 (
-                                                    identifiedConnection
+                                                    connectionPointer
+                                                    | embeddedConnection
                                                 )
-                                            SEMI_COLON
 ;
-identifiedConnection:                       identifier COLON (connectionPointer | embeddedConnection)
-;
-connectionPointer:                          qualifiedName
+connectionPointer:                          qualifiedName SEMI_COLON
 ;
 embeddedConnection:                         ISLAND_OPEN (embeddedConnectionContent)*
 ;

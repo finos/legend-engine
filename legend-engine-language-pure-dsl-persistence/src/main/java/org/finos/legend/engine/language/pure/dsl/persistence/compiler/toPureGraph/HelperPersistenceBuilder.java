@@ -7,6 +7,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirs
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
@@ -99,10 +100,10 @@ public class HelperPersistenceBuilder
                 ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(IdentifiedConnection identifiedConnection, CompileContext context)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(Connection connection, CompileContext context)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = identifiedConnection.connection.accept(new ConnectionFirstPassBuilder(context));
-        identifiedConnection.connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
+        connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
         return pureConnection;
     }
 

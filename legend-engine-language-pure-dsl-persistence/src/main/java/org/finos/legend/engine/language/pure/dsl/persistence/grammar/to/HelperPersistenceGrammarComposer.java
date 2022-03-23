@@ -8,6 +8,7 @@ import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarCo
 import org.finos.legend.engine.language.pure.grammar.to.HelperConnectionGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.*;
@@ -46,7 +47,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
 
 import java.util.List;
 
@@ -108,17 +108,16 @@ public class HelperPersistenceGrammarComposer
                 getTabString(indentLevel) + "]\n";
     }
 
-    private static String renderIdentifiedConnection(IdentifiedConnection identifiedConnection, int indentLevel, PureGrammarComposerContext context)
+    private static String renderConnection(Connection connection, int indentLevel, PureGrammarComposerContext context)
     {
         DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
-        if (identifiedConnection.connection instanceof ConnectionPointer)
+        if (connection instanceof ConnectionPointer)
         {
-            return getTabString(indentLevel) + PureGrammarComposerUtility.convertIdentifier(identifiedConnection.id) + ": " + PureGrammarComposerUtility.convertPath(identifiedConnection.connection.accept(composerCore));
+            return getTabString(indentLevel) + PureGrammarComposerUtility.convertPath(connection.accept(composerCore));
         }
-        return getTabString(indentLevel) + PureGrammarComposerUtility.convertIdentifier(identifiedConnection.id) + ":\n" +
-                getTabString(indentLevel) + "#{\n" +
-                getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(identifiedConnection.connection, composerCore.toContext()) + "\n" +
-                identifiedConnection.connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
+        return getTabString(indentLevel) + "#{\n" +
+                getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(connection, composerCore.toContext()) + "\n" +
+                connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
                 getTabString(indentLevel) + "}#";
     }
 
@@ -230,7 +229,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Streaming\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderIdentifiedConnection(val.connection, indentLevel + 1, context) +
+                    renderConnection(val.connection, indentLevel + 1, context) +
                     //TODO: ledav -- binding
                     getTabString(indentLevel) + "}\n";
         }
@@ -240,7 +239,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Batch\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderIdentifiedConnection(val.connection, indentLevel + 1, context) +
+                    renderConnection(val.connection, indentLevel + 1, context) +
                     //TODO: ledav -- binding
                     renderTargetShape(val.targetShape, indentLevel + 1) +
                     renderIngestMode(val.ingestMode, indentLevel + 1) +
