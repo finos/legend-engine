@@ -126,6 +126,26 @@ projectId:                                    PROJECT COLON STRING SEMI_COLON
 ;
 defaultDataset:                                    DATASET COLON STRING SEMI_COLON
 ;
+
+region:                                     REGION COLON STRING SEMI_COLON
+;
+endpointURL:                                 ENDPOINT_URL COLON STRING SEMI_COLON
+;
+clusterID:                                   CLUSTER_ID COLON STRING SEMI_COLON
+;
+
+redshiftDatasourceSpecification:               REDSHIFT
+                                                BRACE_OPEN
+                                                    (
+                                                        dbHost
+                                                        |region
+                                                        |dbPort
+                                                        |dbName
+                                                        |endpointURL
+                                                        |clusterID
+                                                    )*
+                                                BRACE_CLOSE
+;
 // ----------------------------- SHARED -----------------------------
 
 dbPort:                                     PORT COLON INTEGER SEMI_COLON

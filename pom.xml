@@ -131,7 +131,7 @@
         <hikaricp.version>4.0.3</hikaricp.version>
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
-
+        <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <!-- Legend -->
         <legend.pure.version>1.52.0</legend.pure.version>
         <legend.shared.version>0.20.0</legend.shared.version>
@@ -1655,6 +1655,13 @@
                 <version>6.2.1.jre7</version>
                 <scope>runtime</scope>
             </dependency>
+            <dependency>
+                <groupId>com.amazon.redshift</groupId>
+                 <artifactId>redshift-jdbc42</artifactId>
+                <scope>runtime</scope>
+                <version>${redshiftJDBC.version}</version>
+            </dependency>
+
             <!-- Database -->
 
             <dependency>

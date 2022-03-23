@@ -198,7 +198,7 @@ public abstract class DataSourceSpecification
 
             properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_KEY, this.authenticationStrategy.getKey().shortId());
             properties.put(ConnectionStateManager.POOL_NAME_KEY, poolName);
-
+            properties.putAll(authenticationStrategy.getAuthenticationPropertiesForConnection());
             LOGGER.info("Building pool [{}] for [{}] ", poolName, identity.getName());
             HikariConfig jdbcConfig = new HikariConfig();
             jdbcConfig.setDriverClassName(databaseManager.getDriver());

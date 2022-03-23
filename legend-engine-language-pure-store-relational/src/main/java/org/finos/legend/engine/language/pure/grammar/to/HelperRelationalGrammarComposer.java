@@ -16,6 +16,8 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
+import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
@@ -644,6 +646,20 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "projectId: " + convertString(spec.projectId, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "defaultDataset: " + convertString(spec.defaultDataset, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
+        else if (_spec instanceof RedshiftDatasourceSpecification)
+        {
+            RedshiftDatasourceSpecification spec = (RedshiftDatasourceSpecification) _spec;
+            int baseIndentation = 1;
+            return "Redshift\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "host: " + convertString(spec.host, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "name: " + convertString(spec.databaseName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "region: " + convertString(spec.region, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "clusterID: " + convertString(spec.clusterID, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "endpointURL: " + convertString(spec.endpointURL, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
 
