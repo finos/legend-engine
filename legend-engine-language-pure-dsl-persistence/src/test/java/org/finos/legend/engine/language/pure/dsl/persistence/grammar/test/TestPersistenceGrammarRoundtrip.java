@@ -17,6 +17,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  service: test::service::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +

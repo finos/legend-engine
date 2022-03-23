@@ -49,7 +49,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -160,7 +159,9 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.PersisterConnectionContext persisterConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterConnection(), "connection", streaming.sourceInformation);
         streaming.connection = persisterConnectionContext == null ? null : visitConnection(persisterConnectionContext, streaming.sourceInformation);
 
-        // TODO: ledav -- binding
+        // binding
+        PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.bindingPointer(), "binding", streaming.sourceInformation);
+        streaming.binding = visitBindingPointer(bindingPointerContext, streaming.sourceInformation);
 
         return streaming;
     }
@@ -174,7 +175,9 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.PersisterConnectionContext persisterConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterConnection(), "connection", batch.sourceInformation);
         batch.connection = persisterConnectionContext == null ? null : visitConnection(persisterConnectionContext, batch.sourceInformation);
 
-        // TODO: ledav -- binding
+        // binding
+        PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.bindingPointer(), "binding", batch.sourceInformation);
+        batch.binding = visitBindingPointer(bindingPointerContext, batch.sourceInformation);
 
         // target shape
         PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "targetShape", batch.sourceInformation);
@@ -294,6 +297,15 @@ public class PersistenceParseTreeWalker
         ParseTreeWalkerSourceInformation embeddedConnectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         SourceInformation embeddedConnectionSourceInformation = walkerSourceInformation.getSourceInformation(embeddedConnectionContext);
         return this.connectionParser.parseEmbeddedRuntimeConnections(embeddedConnectionParsingText, embeddedConnectionWalkerSourceInformation, embeddedConnectionSourceInformation);
+    }
+
+    /**********
+     * binding
+     **********/
+
+    private String visitBindingPointer(PersistenceParserGrammar.BindingPointerContext ctx, SourceInformation sourceInformation)
+    {
+        return PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
     }
 
     /**********

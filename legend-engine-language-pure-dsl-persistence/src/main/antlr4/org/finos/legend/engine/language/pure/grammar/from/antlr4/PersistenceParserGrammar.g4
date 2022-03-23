@@ -70,6 +70,7 @@ streamingPersister:                         PERSISTER_STREAMING
                                                 BRACE_OPEN
                                                     (
                                                         persisterConnection
+                                                        | bindingPointer
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -77,7 +78,7 @@ batchPersister:                             PERSISTER_BATCH
                                                 BRACE_OPEN
                                                     (
                                                         persisterConnection
-                                                        | persisterBinding
+                                                        | bindingPointer
                                                         | targetShape
                                                         | ingestMode
                                                     )*
@@ -121,9 +122,7 @@ embeddedConnection:                         ISLAND_OPEN (embeddedConnectionConte
 ;
 embeddedConnectionContent:                  ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
-persisterBinding:                           PERSISTER_BINDING COLON
-                                                BRACE_OPEN
-                                                BRACE_CLOSE
+bindingPointer:                             PERSISTER_BINDING COLON qualifiedName SEMI_COLON
 ;
 targetShape:                                PERSISTER_TARGET_SHAPE COLON
                                                 (

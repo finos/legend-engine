@@ -108,6 +108,11 @@ public class HelperPersistenceGrammarComposer
                 getTabString(indentLevel) + "]\n";
     }
 
+    private static String renderBinding(String binding, int indentLevel, PureGrammarComposerContext context)
+    {
+        return getTabString(indentLevel) + "binding: " + binding + ";\n";
+    }
+
     private static String renderConnection(Connection connection, int indentLevel, PureGrammarComposerContext context)
     {
         DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
@@ -230,8 +235,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Streaming\n" +
                     getTabString(indentLevel) + "{\n" +
+                    renderBinding(val.binding, indentLevel + 1, context) +
                     renderConnection(val.connection, indentLevel + 1, context) +
-                    //TODO: ledav -- binding
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -240,8 +245,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Batch\n" +
                     getTabString(indentLevel) + "{\n" +
+                    renderBinding(val.binding, indentLevel + 1, context) +
                     renderConnection(val.connection, indentLevel + 1, context) +
-                    //TODO: ledav -- binding
                     renderIngestMode(val.ingestMode, indentLevel + 1) +
                     renderTargetShape(val.targetShape, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";

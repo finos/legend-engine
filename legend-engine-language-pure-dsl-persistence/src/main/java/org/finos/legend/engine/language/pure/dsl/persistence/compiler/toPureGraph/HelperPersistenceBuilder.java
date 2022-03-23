@@ -262,7 +262,7 @@ public class HelperPersistenceBuilder
         {
             Property<?, ?> property = validateAndResolveProperty(modelClass, part.modelProperty, part.sourceInformation, context);
             Type targetType = property._genericType()._rawType();
-            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target shape 'modelProperty' must refer to a Class. The property '%s' refers to a %s", part.modelProperty, targetType._name()), part.sourceInformation, EngineErrorType.COMPILATION);
+            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target shape modelProperty '%s' must refer to a class.", part.modelProperty), part.sourceInformation, EngineErrorType.COMPILATION);
 
             return new Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart_Impl("")
                     ._modelProperty(property)

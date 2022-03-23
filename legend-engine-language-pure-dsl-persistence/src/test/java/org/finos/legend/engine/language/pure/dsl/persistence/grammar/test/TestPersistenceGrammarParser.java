@@ -28,6 +28,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -259,6 +260,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -279,7 +281,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    ]\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [25:7-27:7]: Field 'address' is required");
+                "}\n", "PARSER error at [26:7-28:7]: Field 'address' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -290,6 +292,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -312,7 +315,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    ]\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [25:7-29:7]: Field 'address' should be specified only once");
+                "}\n", "PARSER error at [26:7-30:7]: Field 'address' should be specified only once");
     }
 
     @Test
@@ -327,6 +330,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -347,7 +351,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    ]\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [25:7-27:7]: Field 'url' is required");
+                "}\n", "PARSER error at [26:7-28:7]: Field 'url' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -358,6 +362,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -380,7 +385,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    ]\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [25:7-29:7]: Field 'url' should be specified only once");
+                "}\n", "PARSER error at [26:7-30:7]: Field 'url' should be specified only once");
     }
 
     @Test
@@ -441,8 +446,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-10:3]: Field 'targetShape' is required");
+                "}\n", "PARSER error at [8:14-11:3]: Field 'targetShape' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -453,6 +459,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -469,7 +476,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-25:3]: Field 'targetShape' should be specified only once");
+                "}\n", "PARSER error at [8:14-26:3]: Field 'targetShape' should be specified only once");
     }
 
     @Test
@@ -484,13 +491,14 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-15:3]: Field 'ingestMode' is required");
+                "}\n", "PARSER error at [8:14-16:3]: Field 'ingestMode' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -501,6 +509,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -517,7 +526,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-25:3]: Field 'ingestMode' should be specified only once");
+                "}\n", "PARSER error at [8:14-26:3]: Field 'ingestMode' should be specified only once");
     }
 
     /**********
@@ -536,6 +545,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -546,7 +556,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-13:5]: Field 'targetName' is required");
+                "}\n", "PARSER error at [11:18-14:5]: Field 'targetName' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -557,6 +567,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -569,7 +580,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-15:5]: Field 'targetName' should be specified only once");
+                "}\n", "PARSER error at [11:18-16:5]: Field 'targetName' should be specified only once");
     }
 
     @Test
@@ -584,6 +595,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -594,7 +606,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-13:5]: Field 'modelClass' is required");
+                "}\n", "PARSER error at [11:18-14:5]: Field 'modelClass' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -605,6 +617,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -617,7 +630,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-15:5]: Field 'modelClass' should be specified only once");
+                "}\n", "PARSER error at [11:18-16:5]: Field 'modelClass' should be specified only once");
     }
 
     @Test
@@ -632,6 +645,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -645,7 +659,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-16:5]: Field 'deduplicationStrategy' should be specified only once");
+                "}\n", "PARSER error at [11:18-17:5]: Field 'deduplicationStrategy' should be specified only once");
     }
 
     @Test
@@ -660,6 +674,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -673,7 +688,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-16:5]: Field 'partitionFields' should be specified only once");
+                "}\n", "PARSER error at [11:18-17:5]: Field 'partitionFields' should be specified only once");
     }
 
     /**********
@@ -692,6 +707,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
@@ -709,7 +725,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-20:5]: Field 'modelClass' is required");
+                "}\n", "PARSER error at [11:18-21:5]: Field 'modelClass' is required");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -719,6 +735,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -738,7 +755,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-22:5]: Field 'modelClass' should be specified only once");
+                "}\n", "PARSER error at [11:18-23:5]: Field 'modelClass' should be specified only once");
     }
 
     @Test
@@ -753,6 +770,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -770,7 +788,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-20:5]: Field 'transactionScope' is required");
+                "}\n", "PARSER error at [11:18-21:5]: Field 'transactionScope' is required");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -780,6 +798,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -799,7 +818,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-22:5]: Field 'transactionScope' should be specified only once");
+                "}\n", "PARSER error at [11:18-23:5]: Field 'transactionScope' should be specified only once");
     }
 
     @Test
@@ -814,13 +833,14 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-14:5]: Field 'parts' is required");
+                "}\n", "PARSER error at [11:18-15:5]: Field 'parts' is required");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -830,6 +850,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -855,7 +876,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:18-28:5]: Field 'parts' should be specified only once");
+                "}\n", "PARSER error at [11:18-29:5]: Field 'parts' should be specified only once");
     }
 
     //TODO: ledav -- MultiFlatPart
@@ -876,6 +897,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -885,7 +907,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    {\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-17:5]: Field 'auditing' is required");
+                "}\n", "PARSER error at [16:17-18:5]: Field 'auditing' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -896,6 +918,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -907,7 +930,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      auditing: None;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-19:5]: Field 'auditing' should be specified only once");
+                "}\n", "PARSER error at [16:17-20:5]: Field 'auditing' should be specified only once");
     }
 
     @Test
@@ -922,6 +945,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -931,7 +955,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    {\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-17:5]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [16:17-18:5]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -942,6 +966,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -961,7 +986,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-27:5]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [16:17-28:5]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -976,6 +1001,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -995,7 +1021,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-27:5]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [16:17-28:5]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1006,6 +1032,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1039,7 +1066,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-41:5]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [16:17-42:5]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1054,6 +1081,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1068,7 +1096,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-22:5]: Field 'validityMilestoning' is required");
+                "}\n", "PARSER error at [16:17-23:5]: Field 'validityMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1079,6 +1107,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1113,7 +1142,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-42:5]: Field 'validityMilestoning' should be specified only once");
+                "}\n", "PARSER error at [16:17-43:5]: Field 'validityMilestoning' should be specified only once");
     }
 
     @Test
@@ -1128,6 +1157,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1139,519 +1169,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      {\n" +
                 "        batchIdInName: 'IN_Z';\n" +
                 "        batchIdOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "      validityMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeFromName: 'FROM_Z';\n" +
-                "        dateTimeThruName: 'THRU_Z';\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [22:28-26:7]: Field 'derivation' is required");
-
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: BitemporalSnapshot\n" +
-                "    {\n" +
-                "      transactionMilestoning: BatchId\n" +
-                "      {\n" +
-                "        batchIdInName: 'IN_Z';\n" +
-                "        batchIdOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "      validityMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeFromName: 'FROM_Z';\n" +
-                "        dateTimeThruName: 'THRU_Z';\n" +
-                "        derivation: SourceSpecifiesFromDateTime\n" +
-                "        {\n" +
-                "          sourceDateTimeFromField: sourceFrom;\n" +
-                "        }\n" +
-                "        derivation: SourceSpecifiesFromDateTime\n" +
-                "        {\n" +
-                "          sourceDateTimeFromField: sourceFrom;\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [22:28-34:7]: Field 'derivation' should be specified only once");
-    }
-
-    /**********
-     * ingest mode - delta
-     **********/
-
-    @Test
-    public void ingestModeNontemporalDeltaMergeStrategy()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: NontemporalDelta\n" +
-                "    {\n" +
-                "      auditing: None;\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-18:5]: Field 'mergeStrategy' is required");
-
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: NontemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;" +
-                "      mergeStrategy: NoDeletes;" +
-                "      auditing: None;\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-18:5]: Field 'mergeStrategy' should be specified only once");
-    }
-
-    @Test
-    public void ingestModeNontemporalDeltaAuditing()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: NontemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-17:36]: Field 'auditing' is required");
-
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: NontemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;" +
-                "      auditing: None;\n" +
-                "      auditing: None;\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-19:5]: Field 'auditing' should be specified only once");
-    }
-
-    @Test
-    public void ingestModeUnitemporalDeltaMergeStrategy()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: UnitemporalDelta\n" +
-                "    {\n" +
-                "      transactionMilestoning: BatchId\n" +
-                "      {\n" +
-                "        batchIdInName: 'IN_Z';\n" +
-                "        batchIdOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-22:5]: Field 'mergeStrategy' is required");
-
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: UnitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      transactionMilestoning: BatchId\n" +
-                "      {\n" +
-                "        batchIdInName: 'IN_Z';\n" +
-                "        batchIdOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-24:5]: Field 'mergeStrategy' should be specified only once");
-    }
-
-    @Test
-    public void ingestModeUnitemporalDeltaTransactionMilestoning()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: UnitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-18:5]: Field 'transactionMilestoning' is required");
-
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: UnitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-28:5]: Field 'transactionMilestoning' should be specified only once");
-    }
-
-    @Test
-    public void ingestModeBitemporalDeltaTransactionMilestoning()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: BitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      validityMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeFromName: 'FROM_Z';\n" +
-                "        dateTimeThruName: 'THRU_Z';\n" +
-                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "        {\n" +
-                "          sourceDateTimeFromField: sourceFrom;\n" +
-                "          sourceDateTimeThruField: sourceThru;\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-28:5]: Field 'transactionMilestoning' is required");
-
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: BitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "      validityMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeFromName: 'FROM_Z';\n" +
-                "        dateTimeThruName: 'THRU_Z';\n" +
-                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "        {\n" +
-                "          sourceDateTimeFromField: sourceFrom;\n" +
-                "          sourceDateTimeThruField: sourceThru;\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-38:5]: Field 'transactionMilestoning' should be specified only once");
-    }
-
-    @Test
-    public void ingestModeBitemporalDeltaMergeStrategy()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: BitemporalDelta\n" +
-                "    {\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "      validityMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeFromName: 'FROM_Z';\n" +
-                "        dateTimeThruName: 'THRU_Z';\n" +
-                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "        {\n" +
-                "          sourceDateTimeFromField: sourceFrom;\n" +
-                "          sourceDateTimeThruField: sourceThru;\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-32:5]: Field 'mergeStrategy' is required");
-
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: BitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "      validityMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeFromName: 'FROM_Z';\n" +
-                "        dateTimeThruName: 'THRU_Z';\n" +
-                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "        {\n" +
-                "          sourceDateTimeFromField: sourceFrom;\n" +
-                "          sourceDateTimeThruField: sourceThru;\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-34:5]: Field 'mergeStrategy' should be specified only once");
-    }
-
-    @Test
-    public void ingestModeBitemporalDeltaValidityMilestoning()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: BitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-23:5]: Field 'validityMilestoning' is required");
-
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: BitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
-                "      }\n" +
-                "      validityMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeFromName: 'FROM_Z';\n" +
-                "        dateTimeThruName: 'THRU_Z';\n" +
-                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "        {\n" +
-                "          sourceDateTimeFromField: sourceFrom;\n" +
-                "          sourceDateTimeThruField: sourceThru;\n" +
-                "        }\n" +
-                "      }\n" +
-                "      validityMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeFromName: 'FROM_Z';\n" +
-                "        dateTimeThruName: 'THRU_Z';\n" +
-                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
-                "        {\n" +
-                "          sourceDateTimeFromField: sourceFrom;\n" +
-                "          sourceDateTimeThruField: sourceThru;\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [15:17-43:5]: Field 'validityMilestoning' should be specified only once");
-    }
-
-    @Test
-    public void ingestModeBitemporalDeltaValidityDerivation()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: BitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
                 "      }\n" +
                 "      validityMilestoning: DateTime\n" +
                 "      {\n" +
@@ -1671,6 +1188,536 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalSnapshot\n" +
+                "    {\n" +
+                "      transactionMilestoning: BatchId\n" +
+                "      {\n" +
+                "        batchIdInName: 'IN_Z';\n" +
+                "        batchIdOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "        }\n" +
+                "        derivation: SourceSpecifiesFromDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [23:28-35:7]: Field 'derivation' should be specified only once");
+    }
+
+    /**********
+     * ingest mode - delta
+     **********/
+
+    @Test
+    public void ingestModeNontemporalDeltaMergeStrategy()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: NontemporalDelta\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-19:5]: Field 'mergeStrategy' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: NontemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;" +
+                "      mergeStrategy: NoDeletes;" +
+                "      auditing: None;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-19:5]: Field 'mergeStrategy' should be specified only once");
+    }
+
+    @Test
+    public void ingestModeNontemporalDeltaAuditing()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: NontemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-18:36]: Field 'auditing' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: NontemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;" +
+                "      auditing: None;\n" +
+                "      auditing: None;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-20:5]: Field 'auditing' should be specified only once");
+    }
+
+    @Test
+    public void ingestModeUnitemporalDeltaMergeStrategy()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: UnitemporalDelta\n" +
+                "    {\n" +
+                "      transactionMilestoning: BatchId\n" +
+                "      {\n" +
+                "        batchIdInName: 'IN_Z';\n" +
+                "        batchIdOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-23:5]: Field 'mergeStrategy' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: UnitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: BatchId\n" +
+                "      {\n" +
+                "        batchIdInName: 'IN_Z';\n" +
+                "        batchIdOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-25:5]: Field 'mergeStrategy' should be specified only once");
+    }
+
+    @Test
+    public void ingestModeUnitemporalDeltaTransactionMilestoning()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: UnitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-19:5]: Field 'transactionMilestoning' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: UnitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-29:5]: Field 'transactionMilestoning' should be specified only once");
+    }
+
+    @Test
+    public void ingestModeBitemporalDeltaTransactionMilestoning()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-29:5]: Field 'transactionMilestoning' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-39:5]: Field 'transactionMilestoning' should be specified only once");
+    }
+
+    @Test
+    public void ingestModeBitemporalDeltaMergeStrategy()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-33:5]: Field 'mergeStrategy' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-35:5]: Field 'mergeStrategy' should be specified only once");
+    }
+
+    @Test
+    public void ingestModeBitemporalDeltaValidityMilestoning()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-24:5]: Field 'validityMilestoning' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [16:17-44:5]: Field 'validityMilestoning' should be specified only once");
+    }
+
+    @Test
+    public void ingestModeBitemporalDeltaValidityDerivation()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [24:28-28:7]: Field 'derivation' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1701,7 +1748,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [23:28-37:7]: Field 'derivation' should be specified only once");
+                "}\n", "PARSER error at [24:28-38:7]: Field 'derivation' should be specified only once");
     }
 
     /**********
@@ -1720,6 +1767,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1730,7 +1778,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-18:5]: Field 'auditing' is required");
+                "}\n", "PARSER error at [16:17-19:5]: Field 'auditing' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1741,6 +1789,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1753,7 +1802,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-20:5]: Field 'auditing' should be specified only once");
+                "}\n", "PARSER error at [16:17-21:5]: Field 'auditing' should be specified only once");
     }
 
     @Test
@@ -1768,6 +1817,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1778,7 +1828,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      auditing: None;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-18:5]: Field 'filterDuplicates' is required");
+                "}\n", "PARSER error at [16:17-19:5]: Field 'filterDuplicates' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1789,6 +1839,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1801,7 +1852,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [15:17-20:5]: Field 'filterDuplicates' should be specified only once");
+                "}\n", "PARSER error at [16:17-21:5]: Field 'filterDuplicates' should be specified only once");
     }
 
     @Test
@@ -1849,6 +1900,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        }\n" +
                 "      }\n" +
                 "    }\n" +
+                "    binding: test::Binding;\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
@@ -14,7 +13,7 @@ import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shar
 public abstract class Persister
 {
     public Connection connection;
-    public Binding binding;
+    public String binding;
     public SourceInformation sourceInformation;
 
     public abstract <T> T accept(PersisterVisitor<T> visitor);

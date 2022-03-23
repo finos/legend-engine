@@ -21,6 +21,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
@@ -46,7 +47,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [7:1-33:1]: Duplicated element 'test::TestPersistence'";
+        return "COMPILATION error at [7:1-34:1]: Duplicated element 'test::TestPersistence'";
     }
 
     @Test
@@ -63,6 +64,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
@@ -82,7 +84,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [5:1-31:1]: Persistence refers to a service 'test::Service' that is not defined");
+                "}\n", "COMPILATION error at [5:1-32:1]: Persistence refers to a service 'test::Service' that is not defined");
     }
 
     @Test
@@ -126,6 +128,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
@@ -145,7 +148,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [43:16-34]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [44:16-34]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -189,6 +192,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
@@ -215,7 +219,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [47:18-58:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [48:18-59:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -261,6 +265,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
@@ -287,7 +292,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [55:9-58:9]: Property 'property1' must exist in class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [56:9-59:9]: Property 'property1' must exist in class 'test::ServiceResult'");
     }
 
     @Test
@@ -336,6 +341,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
@@ -362,7 +368,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [58:9-61:9]: Target shape 'modelProperty' must refer to a Class. The property 'property1' refers to a String");
+                "}\n", "COMPILATION error at [59:9-62:9]: Target shape modelProperty 'property1' must refer to a class.");
     }
 
     @Test
@@ -411,6 +417,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
@@ -483,6 +490,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
@@ -575,6 +583,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  service: org::dxl::ZooService;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
