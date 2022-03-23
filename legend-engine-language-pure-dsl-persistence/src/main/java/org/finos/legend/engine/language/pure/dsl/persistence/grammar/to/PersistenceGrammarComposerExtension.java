@@ -17,7 +17,7 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with((elements, context, sectionName) ->
+        return Lists.fixedSize.of((elements, context, sectionName) ->
         {
             if (!PersistenceParserExtension.NAME.equals(sectionName))
             {
@@ -37,7 +37,7 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
-        return Lists.mutable.with((elements, context, composedSections) ->
+        return Lists.fixedSize.of((elements, context, composedSections) ->
         {
             List<Persistence> composableElements = ListIterate.selectInstancesOf(elements, Persistence.class);
             return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> PersistenceGrammarComposerExtension.renderPersistence(el, context)).makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
