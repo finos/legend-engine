@@ -4,6 +4,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.RelationalOperationElementGrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.RelationalOperationElementJsonToGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
@@ -24,7 +25,7 @@ public class TestRelationalOperationElementApi extends TestGrammar<RelationalOpe
     @Test
     public void testSimpleError()
     {
-        testError("add(1,", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":11,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":7,\"startLine\":1}}");
+        testError("add(1,", "Unexpected token", new SourceInformation("", 1, 7, 1, 11));
     }
 
     @Test

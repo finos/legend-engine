@@ -3,6 +3,7 @@ package org.finos.legend.engine.query.graphQL.api.grammar.test;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
@@ -33,7 +34,7 @@ public class TestGrammarApi extends TestGrammar<ExecutableDocument>
                 "  name String!\n" +
                 "  values: [String]\n" +
                 "  length(unit: LengthUnit = METER): Float\n" +
-                "}", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":13,\"endLine\":3,\"sourceId\":\"\",\"startColumn\":8,\"startLine\":3}}");
+                "}", "Unexpected token", new SourceInformation("", 3, 8, 3, 13));
     }
 
     @Test

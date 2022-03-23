@@ -4,6 +4,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
@@ -28,11 +29,10 @@ public class TestGrammarValueSpecificationApi extends TestGrammar<ValueSpecifica
     @Test
     public void testSimpleError()
     {
-        testError("1", "{\"_type\":\"integer\",\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"sourceInformation\":{\"endColumn\":1,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":1,\"startLine\":1},\"values\":[1]}");
         testError("true->func(\n" +
                 "  2\n" +
                 "  'www'\n" +
-                ")", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":7,\"endLine\":3,\"sourceId\":\"\",\"startColumn\":3,\"startLine\":3}}");
+                ")", "Unexpected token", new SourceInformation("", 3, 3, 3, 7));
     }
 
     @Test
