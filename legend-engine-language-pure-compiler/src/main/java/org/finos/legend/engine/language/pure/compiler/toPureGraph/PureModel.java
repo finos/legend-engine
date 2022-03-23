@@ -1112,9 +1112,7 @@ public class PureModel implements IPureModel
     {
         if (pureModelProcessParameter.packagePrefix != null
                 && !isImmutable(packageName)
-                && !packageName.equals("meta::pure::metamodel::type::Any")
-                && !packageName.equals("meta::pure::metamodel::type::Enumeration")
-                && !packageName.equals("meta::pure::metamodel::type::Class")
+                && !packageName.startsWith("meta::")
                 && !packageName.startsWith(pureModelProcessParameter.packagePrefix)
         )
         {
