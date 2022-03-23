@@ -39,20 +39,37 @@ public class TestCompilationFromProtocol
         public void testWithProtocolPath(String protocolPath, String expectedErrorMsg)
         {
             String jsonString = new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(protocolPath), "Can't find resource '" + protocolPath + "'"), "UTF-8").useDelimiter("\\A").next();
-            testWithJson(jsonString, expectedErrorMsg, null);
+            testWithJson(jsonString, expectedErrorMsg);
         }
 
-        public void testWithProtocolPath(String protocolPath, String expectedErrorMsg, String offset)
-        {
-            String jsonString = new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(protocolPath), "Can't find resource '" + protocolPath + "'"), "UTF-8").useDelimiter("\\A").next();
-            testWithJson(jsonString, expectedErrorMsg, offset);
-        }
-
-        public void testWithJson(String pureModelContextDataJsonStr, String expectedErrorMsg, String offset)
+        public void testWithJson(String pureModelContextDataJsonStr, String expectedErrorMsg)
         {
             try
             {
                 PureModelContextData pureModelContextData = objectMapper.readValue(pureModelContextDataJsonStr, PureModelContextData.class);
+                Compiler.compile(pureModelContextData, null, null);
+                if (expectedErrorMsg != null)
+                {
+                    Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");
+                }
+            }
+            catch (EngineException e)
+            {
+                // NOTE: for error of this type, usually no source information is attached, unless we pass it into the JSON
+                Assert.assertEquals(expectedErrorMsg, EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(), EngineErrorType.COMPILATION));
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void testProtocolLoadingModelWithPackageOffset(String protocolPath, String expectedErrorMsg, String offset)
+        {
+            String jsonString = new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(protocolPath), "Can't find resource '" + protocolPath + "'"), "UTF-8").useDelimiter("\\A").next();
+            try
+            {
+                PureModelContextData pureModelContextData = objectMapper.readValue(jsonString, PureModelContextData.class);
                 Compiler.compile(pureModelContextData, null, null, offset);
                 if (expectedErrorMsg != null)
                 {

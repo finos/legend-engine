@@ -38,6 +38,12 @@ public class TestMappingCompilationFromProtocol extends TestCompilationFromProto
         testWithProtocolPath("enumerationMappingWithNoSourceValueType.json");
         // v1_10_0 we introduced sourceType on enumeration mapping
         testWithProtocolPath("enumerationMappingWithSourceType.json");
-        testWithProtocolPath("enumerationMappingWithSourceType.json", null, "update::");
+    }
+
+    @Test
+    public void testEnumerationMappingLoadingWithPackageOffset()
+    {
+        testProtocolLoadingModelWithPackageOffset("enumerationMappingWithNoSourceValueType.json",null,"update::");
+        testProtocolLoadingModelWithPackageOffset("enumerationMappingWithSourceType.json", null, "update::");
     }
 }
