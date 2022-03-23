@@ -389,7 +389,37 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
-    public void persisterStreamingConnections()
+    public void persisterStreamingBinding()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "    connection: test::Con;\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [8:14-11:3]: Field 'binding' is required");
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    binding: test::Binding;\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [8:14-12:3]: Field 'binding' should be specified only once");
+    }
+
+    @Test
+    public void persisterStreamingConnection()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -407,7 +437,58 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
-    public void persisterBatchConnections()
+    public void persisterBatchBinding()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    connection: test::Con;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [8:14-21:3]: Field 'binding' is required");
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    binding: test::Binding;\n" +
+                "    connection: test::Con;\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [8:14-23:3]: Field 'binding' should be specified only once");
+    }
+
+    @Test
+    public void persisterBatchConnection()
     {
         test("###Persistence\n" +
                 "\n" +
