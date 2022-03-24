@@ -152,5 +152,18 @@ testAssert:                             BRACE_OPEN
                                             testParameters COMMA combinedExpression
                                         BRACE_CLOSE
 ;
-testParameters:                         BRACKET_OPEN (primitiveValue (COMMA primitiveValue)*)? BRACKET_CLOSE
+testParameters:                         BRACKET_OPEN (testParam (COMMA testParam)*)? BRACKET_CLOSE
+;
+
+testListValueParam:                          PARAM_GROUP PAREN_OPEN
+                                                        BRACKET_OPEN
+                                                            (primitiveValue (COMMA primitiveValue)*)?
+                                                        BRACKET_CLOSE
+                                                  PAREN_CLOSE
+;
+
+testSingleValueParam:                        primitiveValue
+;
+
+testParam:                              testListValueParam | testSingleValueParam
 ;
