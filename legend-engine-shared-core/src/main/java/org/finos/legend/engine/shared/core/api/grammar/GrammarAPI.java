@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.map.mutable.MapAdapter;
@@ -41,7 +42,7 @@ public class GrammarAPI
         }
     }
 
-    protected <T> Response grammarToJsonBatch(Map<String, String> input, Function2<String, Boolean, T> func, Map<String, T> result, ProfileManager<CommonProfile> pm, boolean returnSourceInfo, String spanText)
+    protected <T> Response grammarToJsonBatch(Map<String, String> input, Function3<String, String, Boolean, T> func, Map<String, T> result, ProfileManager<CommonProfile> pm, boolean returnSourceInfo, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
@@ -51,7 +52,7 @@ public class GrammarAPI
             {
                 try
                 {
-                    result.put(key, func.apply(value, returnSourceInfo));
+                    result.put(key, func.value(value, key, returnSourceInfo));
                 }
                 catch (EngineException e)
                 {

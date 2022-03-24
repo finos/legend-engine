@@ -40,7 +40,7 @@ public class TestRelationalOperationElementApi extends TestGrammar<RelationalOpe
     {
         testBatchError( with(Tuples.pair("1", "add(1"),
                              Tuples.pair("2", "'4'")),
-                        with(Tuples.pair("1", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":10,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":6,\"startLine\":1}}"),
+                        with(Tuples.pair("1", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":10,\"endLine\":1,\"sourceId\":\"1\",\"startColumn\":6,\"startLine\":1}}"),
                              Tuples.pair("2", "'4'"))
                 );
     }

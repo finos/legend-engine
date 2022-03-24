@@ -176,13 +176,13 @@ public class PureGrammarParser
         return section;
     }
 
-    public RootGraphFetchTree parseGraphFetch(String input, String s, boolean returnSourceInfo)
+    public RootGraphFetchTree parseGraphFetch(String input, String sourceId, boolean returnSourceInfo)
     {
-        return new DomainParser().parseGraphFetch(input, s, returnSourceInfo);
+        return new DomainParser().parseGraphFetch(input, sourceId, returnSourceInfo);
     }
 
-    public ValueSpecification parseValueSpecification(String input, String s, boolean returnSourceInfo)
+    public ValueSpecification parseValueSpecification(String input, String sourceId, boolean returnSourceInfo)
     {
-        return new DomainParser().parseValueSpecification(input, s, returnSourceInfo);
+        return new DomainParser().parseValueSpecification(input, sourceId, returnSourceInfo);
     }
 }

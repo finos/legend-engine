@@ -61,7 +61,7 @@ public class GrammarToJson extends GrammarAPI
     public Response lambdaBatch(Map<String, String> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue ("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b)-> PureGrammarParser.newInstance().parseLambda(a, "", b), new TypedMap(), pm, returnSourceInfo, "Grammar to Json : Lambda Batch");
+        return grammarToJsonBatch(input, (a, b, c)-> PureGrammarParser.newInstance().parseLambda(a, b, c), new TypedMap(), pm, returnSourceInfo, "Grammar to Json : Lambda Batch");
     }
 
     @POST
@@ -90,7 +90,7 @@ public class GrammarToJson extends GrammarAPI
     public Response graphFetchBatch(Map<String, String> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue ("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b)-> PureGrammarParser.newInstance().parseGraphFetch(a, "", b), new TypedMapGraph(), pm, returnSourceInfo, "Grammar to Json : GraphFetch Batch");
+        return grammarToJsonBatch(input, (a, b, c)-> PureGrammarParser.newInstance().parseGraphFetch(a, b, c), new TypedMapGraph(), pm, returnSourceInfo, "Grammar to Json : GraphFetch Batch");
     }
 
 
@@ -120,6 +120,6 @@ public class GrammarToJson extends GrammarAPI
     public Response valueSpecificationBatch(Map<String, String> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue ("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b)-> PureGrammarParser.newInstance().parseValueSpecification(a, "", b), new TypedMapVS(), pm, returnSourceInfo, "Grammar to Json : Value Specification Batch");
+        return grammarToJsonBatch(input, (a, b, c)-> PureGrammarParser.newInstance().parseValueSpecification(a, b, c), new TypedMapVS(), pm, returnSourceInfo, "Grammar to Json : Value Specification Batch");
     }
 }

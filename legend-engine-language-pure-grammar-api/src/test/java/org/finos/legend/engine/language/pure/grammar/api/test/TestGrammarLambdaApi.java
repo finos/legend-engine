@@ -65,7 +65,7 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
         testBatchError(with(Tuples.pair("1", "a: String[1]|'hello'"),
                         Tuples.pair("2", "src: String[1]|$src,")),
                 with(Tuples.pair("1", "a: String[1]|'hello'"),
-                        Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":20,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":20,\"startLine\":1}}"))
+                        Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":20,\"endLine\":1,\"sourceId\":\"2\",\"startColumn\":20,\"startLine\":1}}"))
         );
     }
 

@@ -44,7 +44,7 @@ public class RelationalOperationElementGrammarToJson extends GrammarAPI
     public Response relationalOperationElement(String input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(input, (a, b) -> RelationalGrammarParserExtension.parseRelationalOperationElement(a, b), pm, returnSourceInfo, "Grammar to Json : RelationalOperationElement");
+        return grammarToJson(input, (a, b) -> RelationalGrammarParserExtension.parseRelationalOperationElement(a, "", b), pm, returnSourceInfo, "Grammar to Json : RelationalOperationElement");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -59,6 +59,7 @@ public class RelationalOperationElementGrammarToJson extends GrammarAPI
     public Response relationalOperationElementBatch(Map<String, String> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b) -> RelationalGrammarParserExtension.parseRelationalOperationElement(a, b), new TypedMap(), pm, returnSourceInfo, "Grammar to Json : RelationalOperationElement Batch");
+        return grammarToJsonBatch(input,
+            RelationalGrammarParserExtension::parseRelationalOperationElement, new TypedMap(), pm, returnSourceInfo, "Grammar to Json : RelationalOperationElement Batch");
     }
 }

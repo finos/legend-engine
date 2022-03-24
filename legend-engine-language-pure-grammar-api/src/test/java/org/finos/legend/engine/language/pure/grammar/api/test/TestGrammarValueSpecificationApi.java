@@ -54,7 +54,7 @@ public class TestGrammarValueSpecificationApi extends TestGrammar<ValueSpecifica
                                 "  'www'\n" +
                                 ")")),
                         with(Tuples.pair("1", "1 + 1"),
-                                Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":7,\"endLine\":3,\"sourceId\":\"\",\"startColumn\":3,\"startLine\":3}}"))
+                                Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":7,\"endLine\":3,\"sourceId\":\"2\",\"startColumn\":3,\"startLine\":3}}"))
                          );
     }
 

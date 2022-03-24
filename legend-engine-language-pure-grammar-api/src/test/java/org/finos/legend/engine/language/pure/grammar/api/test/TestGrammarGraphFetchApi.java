@@ -95,7 +95,7 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
                                                 "    }\n" +
                                                 "  }\n" +
                                                 "}#"),
-                        Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":18,\"endLine\":2,\"sourceId\":\"\",\"startColumn\":14,\"startLine\":2}}"))
+                        Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":18,\"endLine\":2,\"sourceId\":\"2\",\"startColumn\":14,\"startLine\":2}}"))
         );
     }
 

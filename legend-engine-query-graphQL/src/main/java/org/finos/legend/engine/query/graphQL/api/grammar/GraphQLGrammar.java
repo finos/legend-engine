@@ -72,7 +72,7 @@ public class GraphQLGrammar extends GrammarAPI
     @Produces(MediaType.APPLICATION_JSON)
     public Response grammarToJsonBatch(Map<String, String> grammars, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
-        return grammarToJsonBatch(grammars, (a, b) -> {
+        return grammarToJsonBatch(grammars, (a, b, c) -> {
             try
             {
                 return GraphQLGrammarParser.newInstance().parseDocument(a);
