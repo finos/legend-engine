@@ -27,7 +27,6 @@ public class ProcessingContext
 {
     public MutableList<MutableMap<String, ValueSpecification>> inferredVariableList = FastList.newList();
     public MilestoningDatePropagationContext milestoningDatePropagationContext = new MilestoningDatePropagationContext();
-    public boolean isDatePropagationSupported = true;
     private final Stack<String> tags = new Stack<>();
 
     public ProcessingContext(String firstTag)

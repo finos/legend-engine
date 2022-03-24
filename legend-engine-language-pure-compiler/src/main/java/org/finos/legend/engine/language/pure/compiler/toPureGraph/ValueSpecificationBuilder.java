@@ -488,7 +488,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(AppliedFunction appliedFunction)
     {
         processingContext.push("Applying " + appliedFunction.function);
-        MilestoningDatePropagationHelper.checkForValidSource(appliedFunction, processingContext);
+        MilestoningDatePropagationHelper.checkForValidSource(appliedFunction, false, processingContext);
         if (appliedFunction.function.equals("letFunction"))
         {
             MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> vs = ListIterate.collect(appliedFunction.parameters, expression -> expression.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)));
@@ -505,7 +505,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         ValueSpecification result = func.getOne();
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
 
-        MilestoningDatePropagationHelper.checkForValidSource(appliedFunction, processingContext);
+        MilestoningDatePropagationHelper.checkForValidSource(appliedFunction, true, processingContext);
         MilestoningDatePropagationHelper.updateMilestoningContextFromValidSources(result, processingContext);
         return result;
     }

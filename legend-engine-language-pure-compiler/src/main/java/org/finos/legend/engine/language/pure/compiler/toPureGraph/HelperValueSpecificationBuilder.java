@@ -199,7 +199,7 @@ public class HelperValueSpecificationBuilder
                 List<Variable> lambdaParams = new FastList<>();
                 lambdaParams.add(automaLambdaparam);
                 automapLambda.parameters = lambdaParams;
-                MilestoningDatePropagationHelper.updateMilestoningPropagaationContextForAutoMap(foundProperty, context, appliedProperty.parameters.size(), processedParameters.get(0), processingContext);
+                MilestoningDatePropagationHelper.updateMilestoningPropagationContextForAutoMap(foundProperty, context, appliedProperty.parameters.size(), processedParameters.get(0), processingContext);
                 List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
                 result = context.buildFunctionExpression("map", null, newParams, openVariables, null, processingContext).getOne();
                 processingContext.pop();
@@ -214,7 +214,7 @@ public class HelperValueSpecificationBuilder
                         ._parametersValues(processedParameters);
                 if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
                 {
-                    Milestoning.getMilestoningQualifiedPropertyWithAllDatesSupplied((FunctionExpression)result, foundProperty, sourceInformation, processingContext);
+                    Milestoning.updateFunctionExpressionWithMilestoningDateParams((FunctionExpression)result, foundProperty, sourceInformation, processingContext);
                 }
                 MilestoningDatePropagationHelper.updateMilestoningContext(foundProperty, processingContext, context, (SimpleFunctionExpression) result);
             }

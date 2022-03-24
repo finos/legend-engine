@@ -15,26 +15,28 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
-public class MilestoningDatePropagationContext {
+public class MilestoningDatePropagationContext
+{
     private ValueSpecification businessDate;
     private ValueSpecification processingDate;
+    public boolean isDatePropagationSupported = true;
 
-    ValueSpecification getBusinessDate()
+    public ValueSpecification getBusinessDate()
     {
         return this.businessDate;
     }
 
-    ValueSpecification getProcessingDate()
+    public ValueSpecification getProcessingDate()
     {
         return this.processingDate;
     }
 
-    void setBusinessDate(ValueSpecification businessDate)
+    public void setBusinessDate(ValueSpecification businessDate)
     {
         this.businessDate = businessDate;
     }
 
-    void setProcessingDate(ValueSpecification processingDate)
+    public void setProcessingDate(ValueSpecification processingDate)
     {
         this.processingDate = processingDate;
     }

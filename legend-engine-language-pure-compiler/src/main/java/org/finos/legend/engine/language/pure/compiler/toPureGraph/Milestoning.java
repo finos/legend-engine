@@ -66,8 +66,7 @@ import java.util.function.BiConsumer;
 
 public class Milestoning
 {
-    private static final String GENERATED_MILESTONING_PATH_SUFFIX = "meta::pure::profiles::" + "milestoning" + "@" + "generatedmilestoningdateproperty";
-    public static final String RANGE_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
+    public static final String ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
     public static final String ALL_VERSIONS_PROPERTY_NAME_SUFFIX = "AllVersions";
 
     private enum GeneratedMilestoningStereotype
@@ -498,23 +497,19 @@ public class Milestoning
 
     public static boolean isAllVersionsInRangeProperty(AbstractProperty<?> property, CompileContext context)
     {
-        return isGeneratedMilestoningProperty(property, context) && property.getValueForMetaPropertyToOne("name").getName().endsWith(RANGE_PROPERTY_NAME_SUFFIX);
+        return isGeneratedMilestoningProperty(property, context) && property._name().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX);
     }
 
-    public static boolean isGeneratedMilestoningProperty(AbstractProperty<?> property, CompileContext context, final String stereotype, final String milestoningPathSuffix)
+    public static boolean isGeneratedMilestoningProperty(AbstractProperty<?> property, CompileContext context)
     {
+        String stereotype = String.valueOf(GeneratedMilestoningStereotype.generatedmilestoningproperty);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = context.pureModel.getProfile("meta::pure::profiles::milestoning");
         Stereotype milestoningStereotype = (Stereotype) Profile.findStereotype(profile, stereotype);
         RichIterable<? extends Stereotype> stereotypes =  property._stereotypes();
         return stereotypes.detect(s -> s != null && milestoningStereotype.equals(s)) != null;
     }
 
-    public static boolean isGeneratedMilestoningProperty(AbstractProperty<?> property, CompileContext context)
-    {
-        return isGeneratedMilestoningProperty(property, context, "generatedmilestoningproperty", GENERATED_MILESTONING_PATH_SUFFIX);
-    }
-
-    public static boolean isGeneratedQualifiedProperty(AbstractProperty<?> property, CompileContext context)
+    public static boolean isGeneratedQualifiedPropertyWithDatePropagationSupported(AbstractProperty<?> property, CompileContext context)
     {
         return property instanceof QualifiedProperty && isGeneratedMilestoningProperty(property, context) && !isAllVersionsInRangeProperty(property, context);
     }
@@ -532,7 +527,7 @@ public class Milestoning
 
     public static boolean isGeneratedMilestonedQualifiedPropertyWithMissingDates(AbstractProperty<?> property, CompileContext context, Integer parametersCount)
     {
-        if (isGeneratedQualifiedProperty(property, context))
+        if (isGeneratedQualifiedPropertyWithDatePropagationSupported(property, context))
         {
             return parametersCount != getCountOfParametersSatisfyingMilestoningDateRequirments((QualifiedProperty)property, context);
         }
@@ -562,16 +557,16 @@ public class Milestoning
         }
         else if (property._owner() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association)
         {
-            return ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association) property._owner())._originalMilestonedProperties().getFirst()._genericType()._rawType();
+            return ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association) property._owner())._originalMilestonedProperties().toList().select(prop -> prop._name() != property._name()).getFirst()._genericType()._rawType();
 
         }
         return null;
     }
 
-    private static Pair<MilestoningStereotype, MilestoningStereotype> getSourceTargetMilestoningStereotypes(AbstractProperty<?> func)
+    private static Pair<MilestoningStereotype, MilestoningStereotype> getSourceTargetMilestoningStereotypes(AbstractProperty<?> property)
     {
-        Class source = (Class) getMilestonedPropertyOwningType(func);
-        Class target = (Class) func._genericType()._rawType();
+        Class source = (Class) getMilestonedPropertyOwningType(property);
+        Class target = (Class) property._genericType()._rawType();
         MilestoningStereotype sourceTypeMilestoningStereotype = !Milestoning.temporalStereotypes(source._stereotypes()).isEmpty() ? Milestoning.temporalStereotypes(source._stereotypes()).get(0) : null;
         MilestoningStereotype targetTypeMilestoningStereotype = !Milestoning.temporalStereotypes(target._stereotypes()).isEmpty() ? Milestoning.temporalStereotypes(target._stereotypes()).get(0) : null;
         return Tuples.pair(sourceTypeMilestoningStereotype, targetTypeMilestoningStereotype);
@@ -618,15 +613,17 @@ public class Milestoning
             {
                 int propagatedDateIndex = Objects.requireNonNull(sourceTypeMilestoning).positionInTemporalParameterValues();
                 ValueSpecification propagatedDate;
+                int otherPropagatedDateIndex;
                 if (isProcessingTemporal(sourceTypeMilestoning))
                 {
                     propagatedDate =  processingContext.milestoningDatePropagationContext.getProcessingDate();
+                    otherPropagatedDateIndex = 1;
                 }
                 else
                 {
                     propagatedDate =  processingContext.milestoningDatePropagationContext.getBusinessDate();
+                    otherPropagatedDateIndex = 0;
                 }
-                int otherPropagatedDateIndex = isProcessingTemporal(sourceTypeMilestoning) ? 1 : 0;
                 setMilestoningDateParameters(milestoningDateParameters, propagatedDateIndex, propagatedDate);
                 setMilestoningDateParameters(milestoningDateParameters, otherPropagatedDateIndex, parametersValues.get(1));
             }
@@ -678,21 +675,16 @@ public class Milestoning
         }
     }
 
-    private static void updateFunctionExpressionWithMilestoningDateParams(FunctionExpression functionExpression, AbstractProperty<?> propertyFunc, SourceInformation sourceInformation, ProcessingContext processingContext)
+    public static void updateFunctionExpressionWithMilestoningDateParams(FunctionExpression functionExpression, AbstractProperty<?> propertyFunc, SourceInformation sourceInformation, ProcessingContext processingContext)
     {
         applyPropertyFunctionExpressionMilestonedDates(functionExpression, propertyFunc, sourceInformation, processingContext);
         String propertyName = propertyFunc._name();
         Class owner = (Class) getMilestonedPropertyOwningType(propertyFunc);
         Object prop = ListIterate.select(owner._qualifiedProperties().toList(), p -> p instanceof QualifiedProperty && ((QualifiedProperty) p)._name() == propertyName).getFirst();
-        owner._qualifiedProperties().toList().remove(propertyFunc);
-        if (prop instanceof QualifiedProperty)
+        if (prop == null)
         {
-            functionExpression._func((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object>) prop);
+            prop = ListIterate.select(owner._qualifiedPropertiesFromAssociations().toList(), p -> p instanceof QualifiedProperty && ((QualifiedProperty) p)._name() == propertyName).getFirst();
         }
-    }
-
-    public static void getMilestoningQualifiedPropertyWithAllDatesSupplied(FunctionExpression functionExpression, AbstractProperty<?> propertyFunc, SourceInformation sourceInformation, ProcessingContext processingContext)
-    {
-        updateFunctionExpressionWithMilestoningDateParams(functionExpression, propertyFunc, sourceInformation, processingContext);
+        functionExpression._func((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object>) prop);
     }
 }
