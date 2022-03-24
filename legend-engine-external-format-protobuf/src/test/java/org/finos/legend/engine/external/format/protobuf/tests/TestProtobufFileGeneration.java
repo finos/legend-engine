@@ -49,21 +49,25 @@ public class TestProtobufFileGeneration
             Assert.assertEquals("_other.proto", outputs.get(0)._fileName());
             Assert.assertEquals("syntax = \"proto3\";\n" +
                                         "package _other;\n" +
+                                        "\n" +
                                         "message OtherClass {\n" +
                                         "  string stuff = 1;\n" +
                                         "}", outputs.get(0)._content());
             Assert.assertEquals("_meta_pure_generation_tests_model.proto", outputs.get(1)._fileName());
             Assert.assertEquals("syntax = \"proto3\";\n" +
                                         "package _meta.pure.generation.tests.model;\n" +
+                                        "\n" +
                                         "message Address {\n" +
                                         "  string street = 1;\n" +
                                         "}\n" +
+                                        "\n" +
                                         "message Firm {\n" +
                                         "  string legal_name = 1;\n" +
                                         "  repeated Person employees = 2;\n" +
                                         "  repeated Address addresses = 3;\n" +
                                         "  int64 count = 4;\n" +
                                         "}\n" +
+                                        "\n" +
                                         "message Person {\n" +
                                         "  string first_name = 1;\n" +
                                         "  string last_name = 2;\n" +
