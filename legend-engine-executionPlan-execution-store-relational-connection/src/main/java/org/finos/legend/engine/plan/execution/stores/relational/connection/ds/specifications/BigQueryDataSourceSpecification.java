@@ -25,12 +25,17 @@ public class BigQueryDataSourceSpecification extends DataSourceSpecification
 {
     public static String BIGQUERY_PROJECT_ID = "bigquery_projectId";
     public static String BIGQUERY_DATASET_NAME = "bigquery_defaultDataset";
+    public static String BIGQUERY_PROXY_HOST = "bigquery_proxyHost";
+    public static String BIGQUERY_PROXY_PORT = "bigquery_proxyPort";
+
 
     public BigQueryDataSourceSpecification(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
         super(key, databaseManager, authenticationStrategy, extraUserProperties);
         this.extraDatasourceProperties.put(BIGQUERY_PROJECT_ID, key.getProjectId());
         this.extraDatasourceProperties.put(BIGQUERY_DATASET_NAME, key.getDefaultDataset());
+        this.extraDatasourceProperties.put(BIGQUERY_PROXY_HOST, key.getProxyHost());
+        this.extraDatasourceProperties.put(BIGQUERY_PROXY_PORT, key.getProxyPort());
 
         this.extraDatasourceProperties.put("projectId", key.getProjectId());
         this.extraDatasourceProperties.put("defaultDataset", key.getDefaultDataset());
