@@ -17,7 +17,7 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_SINGLE | SERVICE_MULTI
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
-                                        | SERVICE_TEST | SERVICE_TEST_TESTS | SERVICE_DATA | SERVICE_ASSERTS
+                                        | SERVICE_TEST | SERVICE_TEST_TESTS | SERVICE_DATA | SERVICE_ASSERTS | PARAM_GROUP
 ;
 
 
