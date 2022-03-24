@@ -940,5 +940,78 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    ];\n" +
                 "  }\n" +
                 "}\n");
+
+        //test  list param
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {[list(['param'])],'testexpression'}\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+
+        //test single and list param
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {[list(['param']),'testparameter'],'testexpression'}\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        //test many list param
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      {[list(['param']), 'singleparam', list([1,2,3]), list([%2019-05-24, %2019-05-25])],'testexpression'}\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
     }
 }
