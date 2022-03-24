@@ -72,6 +72,13 @@ public class SDLCLoader implements ModelLoader
         this.alloyLoader = new AlloySDLCLoader(metaDataServerConfiguration);
     }
 
+    public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader)
+    {
+        this.subjectProvider = subjectProvider;
+        this.pureLoader = pureLoader;
+        this.alloyLoader = new AlloySDLCLoader(metaDataServerConfiguration);
+    }
+
     private Subject getSubject()
     {
         if (this.subjectProvider == null)

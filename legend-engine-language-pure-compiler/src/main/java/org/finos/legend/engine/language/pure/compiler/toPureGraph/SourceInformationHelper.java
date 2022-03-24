@@ -18,7 +18,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 public class SourceInformationHelper
 {
-    static SourceInformation fromM3SourceInformation(org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation)
+    public static SourceInformation fromM3SourceInformation(org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation)
     {
         if (m3SourceInformation == null)
         {
@@ -31,7 +31,7 @@ public class SourceInformationHelper
         }
     }
 
-    static org.finos.legend.pure.m4.coreinstance.SourceInformation toM3SourceInformation(SourceInformation sourceInformation)
+    public static org.finos.legend.pure.m4.coreinstance.SourceInformation toM3SourceInformation(SourceInformation sourceInformation)
     {
         return sourceInformation != null
                 ? new org.finos.legend.pure.m4.coreinstance.SourceInformation(sourceInformation.sourceId, sourceInformation.startLine, sourceInformation.startColumn, sourceInformation.endLine, sourceInformation.endColumn)

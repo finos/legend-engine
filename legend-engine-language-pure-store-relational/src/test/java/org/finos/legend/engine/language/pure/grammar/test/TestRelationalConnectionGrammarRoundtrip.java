@@ -447,4 +447,30 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  auth: DefaultH2;\n" +
                 "}\n");
     }
+
+        @Test
+    public void testRedShiftConnectionSpecification()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Redshift;\n" +
+                "  specification: Redshift\n" +
+                "  {\n" +
+
+                "    host: 'myDBHost';\n" +
+                "    port: 1234;\n" +
+                "    name: 'database1';\n" +
+                "    region: 'east';\n" +
+                "    clusterID: 'cluster';\n" +
+                "    endpointURL: 'http://www.example.com';\n" +
+                "  };\n" +
+                "  auth: UserNamePassword\n" +
+                "  {\n" +
+                "    userNameVaultReference: 'user';\n" +
+                "    passwordVaultReference: 'pwd';\n" +
+                "  };\n" +
+                "}\n");
+    }
 }

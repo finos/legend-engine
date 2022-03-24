@@ -71,9 +71,12 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestService\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        serializationFormat : 'CSV'\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "          serializationFormat = 'CSV'\n" +
+                "        )\n" +
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
@@ -103,9 +106,12 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestService\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        \"serialization.Format\" : 'CSV'\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "          \"serialization.Format\" = 'CSV'\n" +
+                "        )\n" +
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
@@ -139,42 +145,12 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
                 "    (\n" +
-                "       alpha : $service.parameters.param\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
-
-        //With single level service group
-        test(FLATDATA_BINDING +
-                "###ServiceStore\n" +
-                "ServiceStore test::ServiceStore\n" +
-                "(\n" +
-                "  ServiceGroup TestServiceGroup\n" +
-                "  (\n" +
-                "    path : '/testServices';\n" +
-                "    Service TestService\n" +
-                "    (\n" +
-                "      path : '/testService/{param}';\n" +
-                "      method : GET;\n" +
-                "      parameters :\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        param : String ( location = path )\n" +
-                "      );\n" +
-                "      response : test::model::A <- test::Binding;\n" +
-                "      security : [];\n" +
-                "    )\n" +
-                "  )\n" +
-                ")\n" +
-                "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model::A: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param : $this.alpha\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param = $this.alpha\n" +
+                "        )\n" +
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
@@ -212,7 +188,13 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
                 "    (\n" +
-                "       alpha : $service.parameters.param\n" +
+                "      ~request\n" +
+                "      (\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param = $this.alpha\n" +
+                "        )\n" +
+                "      )\n" +
                 "    )\n" +
                 "  }\n" +
                 ")\n");
@@ -250,11 +232,14 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        param2 : 1\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param2 = 1,\n" +
+                "           param  = $this.alpha\n" +
+                "        )\n" +
                 "      )\n" +
-                "      alpha : $service.parameters.param" +
                 "    )\n" +
                 "  }\n" +
                 ")\n");
@@ -302,17 +287,23 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        param2 : 1\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param2 = 1,\n" +
+                "           param = $this.alpha" +
+                "        )\n" +
                 "      )\n" +
-                "      alpha : $service.parameters.param" +
                 "    )\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        param1 : $this.beta->toOne()\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param1 = $this.beta->toOne()\n" +
+                "        )\n" +
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
@@ -363,17 +354,23 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        param : $this.localProp,\n" +
-                "        param2 : 1\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param2 = 1,\n" +
+                "           param = $this.localProp" +
+                "        )\n" +
                 "      )\n" +
                 "    )\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        param1 : $this.beta->toOne()\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param1 = $this.beta->toOne()\n" +
+                "        )\n" +
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
@@ -421,15 +418,24 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        param2 : 1\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param2 = 1,\n" +
+                "           param = $this.localProp1" +
+                "        )\n" +
                 "      )\n" +
-                "      localProp1 : $service.parameters.param" +
                 "    )\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
                 "    (\n" +
-                "      localProp2 : $service.parameters.param1" +
+                "      ~request\n" +
+                "      (\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param1 = $this.localProp2\n" +
+                "        )\n" +
+                "      )\n" +
                 "    )\n" +
                 "  }\n" +
                 ")\n");
@@ -482,21 +488,158 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService1\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        param1 : 1\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param1 = 1,\n" +
+                "           param = $this.alpha" +
+                "        )\n" +
                 "      )\n" +
-                "      alpha : $service.parameters.param" +
                 "    )\n" +
                 "  }\n" +
                 "  *test::model::B: ServiceStore\n" +
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService2\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        param : $this.beta->toOne(),\n" +
-                "        param1 : 1.1\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           param1 = 1.1,\n" +
+                "           param = $this.beta->toOne()" +
+                "        )\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testServiceStoreRequestBodyMapping()
+    {
+        // Constant Source for Request Body Mapping
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  ServiceGroup TestServiceGroup\n" +
+                "  (\n" +
+                "    path : '/testServices';\n" +
+                "    Service TestService\n" +
+                "    (\n" +
+                "      path : '/testService';\n" +
+                "      method : POST;\n" +
+                "      requestBody : test::model::B <- test::Binding2 ;" +
+                "      response : [ test::model::A <- test::Binding ];\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
+                "    (\n" +
+                "      ~request\n" +
+                "      (\n" +
+                "        body = ^test::model::B(alpha='xyz' , gamma=1)\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        // Constant & Property Source for Request Body Mapping
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  ServiceGroup TestServiceGroup\n" +
+                "  (\n" +
+                "    path : '/testServices';\n" +
+                "    Service TestService\n" +
+                "    (\n" +
+                "      path : '/testService';\n" +
+                "      method : POST;\n" +
+                "      requestBody : test::model::B <- test::Binding2 ;" +
+                "      response : [ test::model::A <- test::Binding ];\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
+                "    (\n" +
+                "      ~request\n" +
+                "      (\n" +
+                "        body = ^test::model::B(alpha=$this.alpha , gamma=1)\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        // Nested Model for Request Body Mapping
+        test("###Pure\n" +
+                "Class test::model::A\n" +
+                "{\n" +
+                "  prop1 : String[1];\n" +
+                "  prop2 : String[1];\n" +
+                "  prop3 : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::model::B\n" +
+                "{\n" +
+                "  prop1 : String[1];\n" +
+                "  prop2 : test::model::C[1];" +
+                "}\n" +
+                "Class test::model::C\n" +
+                "{\n" +
+                "  prop1 : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###ExternalFormat\n" +
+                "Binding test::TestBinding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::model::A,\n" +
+                "    test::model::B,\n" +
+                "    test::model::C\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  ServiceGroup TestServiceGroup\n" +
+                "  (\n" +
+                "    path : '/testServices';\n" +
+                "    Service TestService\n" +
+                "    (\n" +
+                "      path : '/testService';\n" +
+                "      method : POST;\n" +
+                "      requestBody : test::model::B <- test::TestBinding ;" +
+                "      response : [ test::model::A <- test::TestBinding ];\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
+                "    (\n" +
+                "      ~request\n" +
+                "      (\n" +
+                "        body = ^test::model::B(prop1=$this.prop1 , prop2=^test::model::C(prop1=$this.prop2 + $this.prop3))\n" +
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
@@ -530,13 +673,16 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestService\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        invalid : 'PURE'\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           invalid = 'PURE'\n" +
+                "        )\n" +
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [72:9-24]: Service Parameter : 'invalid' is not valid");
+                ")\n", "COMPILATION error at [74:12-27]: Service Parameter : 'invalid' is not valid");
 
         //Multiple Parameter Mappings
         test(FLATDATA_BINDING +
@@ -562,44 +708,17 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestService\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        serializationFormat : 'CSV',\n" +
-                "        serializationFormat : 'PURE'\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           serializationFormat = 'CSV',\n" +
+                "           serializationFormat = 'PURE'\n" +
+                "        )\n" +
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [68:5-75:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
-
-        //Multiple Parameter Mappings
-        test(FLATDATA_BINDING +
-                "###ServiceStore\n" +
-                "ServiceStore test::ServiceStore\n" +
-                "(\n" +
-                "  Service TestService\n" +
-                "  (\n" +
-                "    path : '/testService';\n" +
-                "    method : GET;\n" +
-                "    parameters :\n" +
-                "    (\n" +
-                "      param : Float ( location = query )\n" +
-                "    );\n" +
-                "    response : test::model::A <- test::Binding;\n" +
-                "    security : [];\n" +
-                "  )\n" +
-                ")\n" +
-                "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model::A: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestService\n" +
-                "    (\n" +
-                "       delta : $service.parameters.param,\n" +
-                "       zeta : $service.parameters.param\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n", "COMPILATION error at [68:5-72:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [param].");
+                ")\n", "COMPILATION error at [68:5-78:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
 
         //Multiple Parameter Mappings
         test(FLATDATA_BINDING +
@@ -625,14 +744,17 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestService\n" +
                 "    (\n" +
-                "      ~paramMapping\n" +
+                "      ~request\n" +
                 "      (\n" +
-                "        serializationFormat : 'PURE'\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           serializationFormat = $this.alpha,\n" +
+                "           serializationFormat = 'PURE'\n" +
+                "        )\n" +
                 "      )\n" +
-                "      alpha : $service.parameters.serializationFormat\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [68:5-75:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
+                ")\n", "COMPILATION error at [68:5-78:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
 
         // Missing mapping for required parameter
         test("###Pure\n" +
@@ -781,11 +903,665 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    )\n" +
                 "  }\n" +
                 ")\n", "COMPILATION error at [68:5-70:5]: All required service parameters should be mapped. Required Service Parameters : [serializationFormat]. Mapped Parameters : [].");
+
+        //        typo in property name in request body mapping (TODO: fix this)
+        //        test(FLATDATA_BINDING +
+        //                "###ServiceStore\n" +
+        //                "ServiceStore test::ServiceStore\n" +
+        //                "(\n" +
+        //                "  ServiceGroup TestServiceGroup\n" +
+        //                "  (\n" +
+        //                "    path : '/testServices';\n" +
+        //                "    Service TestService\n" +
+        //                "    (\n" +
+        //                "      path : '/testService';\n" +
+        //                "      method : POST;\n" +
+        //                "      requestBody : test::model::B <- test::Binding2 ;" +
+        //                "      response : [ test::model::A <- test::Binding ];\n" +
+        //                "      security : [];\n" +
+        //                "    )\n" +
+        //                "  )\n" +
+        //                ")\n" +
+        //                "###Mapping\n" +
+        //                "Mapping test::mapping\n" +
+        //                "(\n" +
+        //                "  *test::model::A: ServiceStore\n" +
+        //                "  {\n" +
+        //                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
+        //                "    (\n" +
+        //                "      ~request\n" +
+        //                "      (\n" +
+        //                "        body = ^test::model::B(alha='xyz' , gamma=1)\n" +
+        //                "      )\n" +
+        //                "    )\n" +
+        //                "  }\n" +
+        //                ")\n", "COMPILATION error at [72:9-20]: Property 'alha' not found in class 'test::model::B'");
+
+        //        missing request body property mapping for mandatory property (TODO:fix this)
+        //        test(FLATDATA_BINDING +
+        //                "###ServiceStore\n" +
+        //                "ServiceStore test::ServiceStore\n" +
+        //                "(\n" +
+        //                "  ServiceGroup TestServiceGroup\n" +
+        //                "  (\n" +
+        //                "    path : '/testServices';\n" +
+        //                "    Service TestService\n" +
+        //                "    (\n" +
+        //                "      path : '/testService';\n" +
+        //                "      method : POST;\n" +
+        //                "      requestBody : test::model::B <- test::Binding2 ;" +
+        //                "      response : [ test::model::A <- test::Binding ];\n" +
+        //                "      security : [];\n" +
+        //                "    )\n" +
+        //                "  )\n" +
+        //                ")\n" +
+        //                "###Mapping\n" +
+        //                "Mapping test::mapping\n" +
+        //                "(\n" +
+        //                "  *test::model::A: ServiceStore\n" +
+        //                "  {\n" +
+        //                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
+        //                "    (\n" +
+        //                "      ~request\n" +
+        //                "      (\n" +
+        //                "        body = ^test::model::B(alpha='xyz' , gamma=1)\n" +
+        //                "      )\n" +
+        //                "    )\n" +
+        //                "  }\n" +
+        //                ")\n", "COMPILATION error at [72:9-20]: Property 'alha' not found in class 'test::model::B'");
     }
 
     @Test
     public void testServiceStoreMappingNotSupportedMessages()
     {
+        //Multiple Parameter Mappings
+        test(FLATDATA_BINDING +
+                "###Pure\n" +
+                "Enum test::SerializationFormat\n" +
+                "{\n" +
+                "  CSV, PURE\n" +
+                "}\n" +
+                "\n" +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = query, enum = test::SerializationFormat )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "      ~request\n" +
+                "      (\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "           serializationFormat = 'CSV'\n" +
+                "        )\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [80:12-38]: Mapping enum service parameter is not yet supported !!");
+    }
+
+    @Test
+    public void testServiceStoreMappingPathOffset()
+    {
+        test(JSON_BINDING +
+                "###Mapping\n" +
+                "Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping\n" +
+                "(\n" +
+                "    *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore\n" +
+                "    {\n" +
+                "        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService\n" +
+                "        (\n" +
+                "            ~path $service.response.employees\n" +
+                "        )\n" +
+                "    }\n" +
+                "\n" +
+                "    *meta::external::store::service::showcase::domain::Firm[firm_set]: ServiceStore\n" +
+                "    {\n" +
+                "        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService\n" +
+                "        (\n" +
+                "            ~path $service.response.firms\n" +
+                "        )\n" +
+                "    }\n" +
+                "\n" +
+                "    meta::external::store::service::showcase::domain::Person[person_set2]: ServiceStore\n" +
+                "    {\n" +
+                "        +firmId : Integer[1];\n" +
+                "\n" +
+                "        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesServiceByFirmId\n" +
+                "        (\n" +
+                "            ~path $service.response.employees\n" +
+                "\n" +
+                "            ~request\n" +
+                "            (\n" +
+                "               parameters\n" +
+                "               (\n" +
+                "                 firmId = $this.firmId\n" +
+                "               )\n" +
+                "            )\n" +
+                "        )\n" +
+                "    }\n" +
+                "\n" +
+                "    *meta::external::store::service::showcase::domain::Employment: XStore\n" +
+                "    {\n" +
+                "        employees[firm_set, person_set2] : $this.firmId == $that.firmId\n" +
+                "    }\n" +
+                ")\n\n");
+
+        test(JSON_BINDING +
+                "###Mapping\n" +
+                "Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping\n" +
+                "(\n" +
+                "    *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore\n" +
+                "    {\n" +
+                "        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService\n" +
+                "    }\n" +
+                ")\n\n", "COMPILATION error at [85:9-106]: Response type of source service should match mapping class. Found response type : meta::external::store::service::showcase::domain::ApiResponse does not match mapping class : meta::external::store::service::showcase::domain::Person");
+
+        test(JSON_BINDING +
+                "###Mapping\n" +
+                "Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping\n" +
+                "(\n" +
+                "    *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore\n" +
+                "    {\n" +
+                "        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService\n" +
+                "        (\n" +
+                "            ~path $service.response.firms\n" +
+                "        )\n" +
+                "    }\n" +
+                ")\n\n", "COMPILATION error at [85:9-88:9]: Response type of source service should match mapping class. Found response type : meta::external::store::service::showcase::domain::Firm does not match mapping class : meta::external::store::service::showcase::domain::Person");
+    }
+
+    @Test
+    //TODO: TO BE REMOVED
+    public void testDeprecatedServiceStoreMappings()
+    {
+        //With ParameterMapping & simple service path
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = query )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        serializationFormat : 'CSV'\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        //With ParameterMapping & special character in param name
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      \"serialization.Format\" : String ( location = query )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        \"serialization.Format\" : 'CSV'\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        //With single level service group
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  ServiceGroup TestServiceGroup\n" +
+                "  (\n" +
+                "    path : '/testServices';\n" +
+                "    Service TestService\n" +
+                "    (\n" +
+                "      path : '/testService/{param}';\n" +
+                "      method : GET;\n" +
+                "      parameters :\n" +
+                "      (\n" +
+                "        param : String ( location = path )\n" +
+                "      );\n" +
+                "      response : test::model::A <- test::Binding;\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param : $this.alpha\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        //With multiple parameterMapping
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  ServiceGroup TestServiceGroup1\n" +
+                "  (\n" +
+                "    path : '/testServices1';\n" +
+                "    ServiceGroup TestServiceGroup2\n" +
+                "    (\n" +
+                "      path : '/testServices2';\n" +
+                "      Service TestService\n" +
+                "      (\n" +
+                "        path : '/testService/{param}';\n" +
+                "        method : GET;\n" +
+                "        parameters :\n" +
+                "        (\n" +
+                "          param : String ( location = path ),\n" +
+                "          param2 : Integer ( location = query )\n" +
+                "        );\n" +
+                "        response : test::model::A <- test::Binding;\n" +
+                "        security : [];\n" +
+                "      )\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param2 : 1\n" +
+                "      )\n" +
+                "      alpha : $service.parameters.param" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  ServiceGroup TestServiceGroup\n" +
+                "  (\n" +
+                "    path : '/testServices';\n" +
+                "    Service TestService1\n" +
+                "    (\n" +
+                "      path : '/testService1';\n" +
+                "      method : GET;\n" +
+                "      parameters :\n" +
+                "      (\n" +
+                "        param : String ( location = query ),\n" +
+                "        param2 : Integer ( location = query )\n" +
+                "      );\n" +
+                "      response : test::model::A <- test::Binding;\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "    Service TestService2\n" +
+                "    (\n" +
+                "      path : '/testService2';\n" +
+                "      method : GET;\n" +
+                "      parameters :\n" +
+                "      (\n" +
+                "        param1 : Boolean ( location = query )\n" +
+                "      );\n" +
+                "      response : test::model::A <- test::Binding;\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param2 : 1\n" +
+                "      )\n" +
+                "      alpha : $service.parameters.param" +
+                "    )\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param1 : $this.beta->toOne()\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  ServiceGroup TestServiceGroup\n" +
+                "  (\n" +
+                "    path : '/testServices';\n" +
+                "    Service TestService1\n" +
+                "    (\n" +
+                "      path : '/testService1';\n" +
+                "      method : GET;\n" +
+                "      parameters :\n" +
+                "      (\n" +
+                "        param : String ( location = query ),\n" +
+                "        param2 : Integer ( location = query )\n" +
+                "      );\n" +
+                "      response : test::model::A <- test::Binding;\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "    Service TestService2\n" +
+                "    (\n" +
+                "      path : '/testService2';\n" +
+                "      method : GET;\n" +
+                "      parameters :\n" +
+                "      (\n" +
+                "        param1 : Boolean ( location = query )\n" +
+                "      );\n" +
+                "      response : test::model::A <- test::Binding;\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    +localProp : String[1];\n" +
+                "\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param : $this.localProp,\n" +
+                "        param2 : 1\n" +
+                "      )\n" +
+                "    )\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param1 : $this.beta->toOne()\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  ServiceGroup TestServiceGroup\n" +
+                "  (\n" +
+                "    path : '/testServices';\n" +
+                "    Service TestService1\n" +
+                "    (\n" +
+                "      path : '/testService1';\n" +
+                "      method : GET;\n" +
+                "      parameters :\n" +
+                "      (\n" +
+                "        param : String ( location = query ),\n" +
+                "        param2 : Integer ( location = query )\n" +
+                "      );\n" +
+                "      response : test::model::A <- test::Binding;\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "    Service TestService2\n" +
+                "    (\n" +
+                "      path : '/testService2';\n" +
+                "      method : GET;\n" +
+                "      parameters :\n" +
+                "      (\n" +
+                "        param1 : Boolean ( location = query )\n" +
+                "      );\n" +
+                "      response : test::model::A <- test::Binding;\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    +localProp1 : String[1];\n" +
+                "    +localProp2 : Boolean[1];\n" +
+                "\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param2 : 1\n" +
+                "      )\n" +
+                "      localProp1 : $service.parameters.param" +
+                "    )\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
+                "    (\n" +
+                "      localProp2 : $service.parameters.param1" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  ServiceGroup TestServiceGroup1\n" +
+                "  (\n" +
+                "    path : '/testServices1';\n" +
+                "    ServiceGroup TestServiceGroup2\n" +
+                "    (\n" +
+                "      path : '/testServices2';\n" +
+                "      Service TestService1\n" +
+                "      (\n" +
+                "        path : '/testService1/{param}';\n" +
+                "        method : GET;\n" +
+                "        parameters :\n" +
+                "        (\n" +
+                "          param : String ( location = path ),\n" +
+                "          param1 : Integer ( location = query )\n" +
+                "        );\n" +
+                "        response : test::model::A <- test::Binding;\n" +
+                "        security : [];\n" +
+                "      )\n" +
+                "      Service TestService2\n" +
+                "      (\n" +
+                "        path : '/testService2/{param}';\n" +
+                "        method : GET;\n" +
+                "        parameters :\n" +
+                "        (\n" +
+                "          param : Boolean ( location = path ),\n" +
+                "          param1 : Float ( location = query )\n" +
+                "        );\n" +
+                "        response : test::model::B <- test::Binding2;\n" +
+                "        security : [];\n" +
+                "      )\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService1\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param1 : 1\n" +
+                "      )\n" +
+                "      alpha : $service.parameters.param" +
+                "    )\n" +
+                "  }\n" +
+                "  *test::model::B: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService2\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        param : $this.beta->toOne(),\n" +
+                "        param1 : 1.1\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        //Invalid parameter in parameter mapping
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = query )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        invalid : 'PURE'\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [72:9-24]: Service Parameter : 'invalid' is not valid");
+
+        //Multiple Parameter Mappings
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = query )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        serializationFormat : 'CSV',\n" +
+                "        serializationFormat : 'PURE'\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [68:5-75:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
+
+        //Multiple Parameter Mappings
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      serializationFormat : String ( location = query )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "      ~paramMapping\n" +
+                "      (\n" +
+                "        serializationFormat : 'PURE'\n" +
+                "      )\n" +
+                "      alpha : $service.parameters.serializationFormat\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [68:5-75:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
+
         //Multiple Parameter Mappings
         test(FLATDATA_BINDING +
                 "###Pure\n" +
@@ -823,11 +1599,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    )\n" +
                 "  }\n" +
                 ")\n", "COMPILATION error at [78:9-35]: Mapping enum service parameter is not yet supported !!");
-    }
 
-    @Test
-    public void testServiceStoreMappingPathOffset()
-    {
         test(JSON_BINDING +
                 "###Mapping\n" +
                 "Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping\n" +
@@ -869,28 +1641,105 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    }\n" +
                 ")\n\n");
 
-        test(JSON_BINDING +
-                "###Mapping\n" +
-                "Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping\n" +
+        //With single level service group
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
                 "(\n" +
-                "    *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore\n" +
-                "    {\n" +
-                "        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService\n" +
-                "    }\n" +
-                ")\n\n", "COMPILATION error at [85:9-106]: Response type of source service should match mapping class. Found response type : meta::external::store::service::showcase::domain::ApiResponse does not match mapping class : meta::external::store::service::showcase::domain::Person");
+                "  ServiceGroup TestServiceGroup\n" +
+                "  (\n" +
+                "    path : '/testServices';\n" +
+                "    Service TestService\n" +
+                "    (\n" +
+                "      path : '/testService/{param}';\n" +
+                "      method : GET;\n" +
+                "      parameters :\n" +
+                "      (\n" +
+                "        param : String ( location = path )\n" +
+                "      );\n" +
+                "      response : test::model::A <- test::Binding;\n" +
+                "      security : [];\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
+                "    (\n" +
+                "       alpha : $service.parameters.param\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
 
-        test(JSON_BINDING +
-                "###Mapping\n" +
-                "Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping\n" +
+        //With multi level service group
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
                 "(\n" +
-                "    *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore\n" +
-                "    {\n" +
-                "        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService\n" +
+                "  ServiceGroup TestServiceGroup1\n" +
+                "  (\n" +
+                "    path : '/testServices1';\n" +
+                "    ServiceGroup TestServiceGroup2\n" +
+                "    (\n" +
+                "      path : '/testServices2';\n" +
+                "      Service TestService\n" +
+                "      (\n" +
+                "        path : '/testService/{param}';\n" +
+                "        method : GET;\n" +
+                "        parameters :\n" +
                 "        (\n" +
-                "            ~path $service.response.firms\n" +
-                "        )\n" +
-                "    }\n" +
-                ")\n\n", "COMPILATION error at [85:9-88:9]: Response type of source service should match mapping class. Found response type : meta::external::store::service::showcase::domain::Firm does not match mapping class : meta::external::store::service::showcase::domain::Person");
+                "          param : String ( location = path )\n" +
+                "        );\n" +
+                "        response : test::model::A <- test::Binding;\n" +
+                "        security : [];\n" +
+                "      )\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                "    (\n" +
+                "       alpha : $service.parameters.param\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        //Multiple Parameter Mappings
+        test(FLATDATA_BINDING +
+                "###ServiceStore\n" +
+                "ServiceStore test::ServiceStore\n" +
+                "(\n" +
+                "  Service TestService\n" +
+                "  (\n" +
+                "    path : '/testService';\n" +
+                "    method : GET;\n" +
+                "    parameters :\n" +
+                "    (\n" +
+                "      param : Float ( location = query )\n" +
+                "    );\n" +
+                "    response : test::model::A <- test::Binding;\n" +
+                "    security : [];\n" +
+                "  )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model::A: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestService\n" +
+                "    (\n" +
+                "       delta : $service.parameters.param,\n" +
+                "       zeta : $service.parameters.param\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [68:5-72:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [param].");
     }
 
     @Test

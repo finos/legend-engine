@@ -49,7 +49,13 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "  {\n" +
                 "    ~service [test::TradeProductServiceStore] TestServiceGroup.TestService\n" +
                 "    (\n" +
-                "       prop: $service.parameters.param\n" +
+                "       ~request\n" +
+                "       (\n" +
+                "           parameters\n" +
+                "           (\n" +
+                "               param = $this.prop\n" +
+                "           )\n" +
+                "       )\n" +
                 "    )\n" +
                 "  }\n" +
                 ")\n";
@@ -66,7 +72,13 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
                 "    (\n" +
-                "       prop: $service.parameters.param\n" +
+                "       ~request\n" +
+                "       (\n" +
+                "           parameters\n" +
+                "           (\n" +
+                "               param = $this.prop\n" +
+                "           )\n" +
+                "       )\n" +
                 "    )\n" +
                 "  }\n" +
                 ")\n", "PARSER error at [4:29-31]: Service Store Mapping does not support extends");
@@ -83,7 +95,13 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "  {\n" +
                 "    ~service TestServiceGroup.TestService\n" +
                 "    (\n" +
-                "      prop1 : $service.parameters.param1\n" +
+                "       ~request\n" +
+                "       (\n" +
+                "           parameters\n" +
+                "           (\n" +
+                "               param1 = $this.prop1\n" +
+                "           )\n" +
+                "       )\n" +
                 "    )\n" +
                 "  }\n" +
                 ")\n", "PARSER error at [6:14-29]: Unexpected token");
@@ -96,7 +114,13 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup.\n" +
                 "    (\n" +
-                "      prop1 : $service.parameters.param1\n" +
+                "       ~request\n" +
+                "       (\n" +
+                "           parameters\n" +
+                "           (\n" +
+                "               param1 = $this.prop1\n" +
+                "           )\n" +
+                "       )\n" +
                 "    )\n" +
                 "  }\n" +
                 ")\n", "PARSER error at [7:5]: Unexpected token");
@@ -109,10 +133,32 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "  {\n" +
                 "    ~service [test::ServiceStore] TestServiceGroup.TestServices\n" +
                 "    (\n" +
-                "      prop1 : $service.param1\n" +
+                "       ~request\n" +
+                "       (\n" +
+                "           paramers\n" +
+                "           (\n" +
+                "               param = $this.prop\n" +
+                "           )\n" +
+                "       )\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [8:24-29]: Unexpected token");
+                ")\n", "PARSER error at [10:12-19]: Unexpected token");
+
+        //Incorrect request body reference
+        test("###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                "  *test::model: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [test::ServiceStore] TestServiceGroup.TestServices\n" +
+                "    (\n" +
+                "       ~request\n" +
+                "       (\n" +
+                "           requestBody = $this.prop\n" +
+                "       )\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n", "PARSER error at [10:12-22]: Unexpected token");
     }
 
     @Test
@@ -128,7 +174,7 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "      ~path response.pathProperty\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [8:13-20]: Unexpected token");
+                ")\n", "PARSER error at [8:13-20]: no viable alternative at input '~pathresponse'");
 
         test("###Mapping\n" +
                 "Mapping test::mapping\n" +
@@ -140,6 +186,6 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "      ~path \n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [9:5]: Unexpected token");
+                ")\n", "PARSER error at [9:5]: no viable alternative at input '~path)'");
     }
 }

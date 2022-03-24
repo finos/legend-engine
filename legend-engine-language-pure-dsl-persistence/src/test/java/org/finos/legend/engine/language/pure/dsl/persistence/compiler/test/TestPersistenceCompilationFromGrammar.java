@@ -3,8 +3,15 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.test;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.junit.Test;
 
-public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
+public abstract class TestPersistenceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
+    protected abstract String targetFlat();
+    protected abstract String targetMulti();
+    protected abstract String targetOpaque();
+    protected abstract String ingestMode();
+    protected abstract String flatTarget();
+    protected abstract String parts();
+
     @Override
     protected String getDuplicatedElementTestCode()
     {
@@ -17,20 +24,17 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      batchMode: AppendOnly\n" +
+                "      ingestMode: AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -41,7 +45,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [7:1-28:1]: Duplicated element 'test::TestPersistence'";
+        return "COMPILATION error at [7:1-25:1]: Duplicated element 'test::TestPersistence'";
     }
 
     @Test
@@ -54,25 +58,22 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
-                "      batchMode: AppendOnly\n" +
+                "      ingestMode: AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [9:11-12:3]: Persistence refers to a service 'test::Service' that is not defined");
+                "}\n", "COMPILATION error at [5:1-23:1]: Persistence refers to a service 'test::Service' that is not defined");
     }
 
     @Test
@@ -112,29 +113,26 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
-                "      batchMode: AppendOnly\n" +
+                "      ingestMode: AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [42:13-51:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [39:13-48:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
-    public void groupedFlatModelClassUndefined()
+    public void multiFlatModelClassUndefined()
     {
         test("Class test::Person\n" +
                 "{\n" +
@@ -170,27 +168,24 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -198,11 +193,11 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [42:13-61:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [39:13-58:5]: Can't find class 'test::ServiceResult'");
     }
 
     @Test
-    public void groupedFlatModelPropertyUndefined()
+    public void multiFlatModelPropertyUndefined()
     {
         test("Class test::Person\n" +
                 "{\n" +
@@ -240,27 +235,24 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -268,11 +260,11 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [50:9-61:9]: Property 'property1' must exist in class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [47:9-58:9]: Property 'property1' must exist in class 'test::ServiceResult'");
     }
 
     @Test
-    public void groupedFlatModelPropertyInvalidType()
+    public void multiFlatModelPropertyInvalidType()
     {
         test("Class test::Person\n" +
                 "{\n" +
@@ -313,27 +305,24 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -341,11 +330,11 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [53:9-64:9]: Target component property must refer to a Class. The property 'property1' refers to a String");
+                "}\n", "COMPILATION error at [50:9-61:9]: Target " + parts().substring(0, parts().length() - 1) + " property must refer to a Class. The property 'property1' refers to a String");
     }
 
     @Test
-    public void groupedFlatModelPropertyUndefinedType()
+    public void multiFlatModelPropertyUndefinedType()
     {
         test("Class test::Person\n" +
                 "{\n" +
@@ -386,27 +375,24 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::ServiceResult;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
@@ -418,7 +404,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
-    public void flatSpecification()
+    public void flatShape()
     {
         test("Class test::Person\n" +
                 "{\n" +
@@ -456,20 +442,17 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Persistence test::TestPersistence \n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: Flat\n" +
+                "    target: " + targetFlat() + "\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ServiceResult;\n" +
-                "      batchMode: AppendOnly\n" +
+                "      ingestMode: AppendOnly\n" +
                 "      {\n" +
-                "        auditing: NoAuditing;\n" +
+                "        auditing: None;\n" +
                 "        filterDuplicates: false;\n" +
                 "      }\n" +
                 "    }\n" +
@@ -533,41 +516,56 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  }\n" +
                 "}\n" +
                 "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::TestConnection\n" +
+                "{\n" +
+                "  class : org::dxl::Person;" +
+                "  url : 'my_url1';\n" +
+                "}\n" +
                 "###Persistence\n" +
                 "Persistence org::dxl::ZooPersistence\n" +
                 "{\n" +
                 "  doc: 'A persistence specification for Zoos.';\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: org::dxl::ZooService;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: org::dxl::ZooService;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    connections:\n" +
+                "    [\n" +
+                "      id1: test::TestConnection,\n" +
+                "      id2:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: org::dxl::Animal;\n" +
+                "          url: 'my_url2';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ];\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: org::dxl::Zoo;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: 'zookeeper';\n" +
-                "          targetSpecification:\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'PersonDataset1';\n" +
-                "            batchMode: AppendOnly\n" +
+                "            ingestMode: AppendOnly\n" +
                 "            {\n" +
-                "              auditing: NoAuditing;\n" +
+                "              auditing: None;\n" +
                 "              filterDuplicates: false;\n" +
                 "            }\n" +
                 "          }\n" +
                 "        },\n" +
                 "        {\n" +
                 "          property: 'owner';\n" +
-                "          targetSpecification:\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'PersonDataset2';\n" +
-                "            batchMode: BitemporalSnapshot\n" +
+                "            ingestMode: BitemporalSnapshot\n" +
                 "            {\n" +
                 "              transactionMilestoning: BatchIdAndDateTime\n" +
                 "              {\n" +
@@ -591,6 +589,20 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      Email\n" +
+                "      {\n" +
+                "        address: 'x.y@z.com';\n" +
+                "      },\n" +
+                "      PagerDuty\n" +
+                "      {\n" +
+                "        url: 'https://x.com';\n" +
+                "      }\n" +
+                "    ]\n" +
                 "  }\n" +
                 "}");
     }

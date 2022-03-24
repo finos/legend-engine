@@ -53,10 +53,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalAssociationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.ElementWithJoins;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.JoinPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -111,9 +114,9 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     RelationalAssociationMapping associationMapping = new RelationalAssociationMapping();
                     associationMapping.association = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
                     associationMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
-                    // TODO? stores
                     associationMapping.sourceInformation = parserInfo.sourceInformation;
                     walker.visitRelationalAssociationMapping((RelationalParserGrammar.AssociationMappingContext) parserInfo.rootContext, associationMapping);
+                    propagateStorePath(associationMapping);
                     return associationMapping;
                 }
                 throw new EngineException("Unknown relational mapping element type: " + parserInfo.rootContext.getClass().getName(), parserInfo.sourceInformation, EngineErrorType.PARSER);
@@ -157,6 +160,9 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseDataSourceSpecification(code, p-> walker.visitSnowflakeDatasourceSpecification(code, p.snowflakeDatasourceSpecification()));
                 case "BigQuery":
                     return parseDataSourceSpecification(code, p -> walker.visitBigQueryDatasourceSpecification(code, p.bigQueryDatasourceSpecification()));
+                case "Redshift":
+                    return parseDataSourceSpecification(code, p -> walker.visitRedshiftDatasourceSpecification(code, p.redshiftDatasourceSpecification()));
+
                 default:
                     return null;
             }
@@ -352,5 +358,23 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         parser.addErrorListener(errorListener);
         RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parseTreeWalkerSourceInformation);
         return walker.visitOperation(parser.operation(), null);
+    }
+
+    public static void propagateStorePath(RelationalAssociationMapping mapping)
+    {
+        RelationalPropertyMapping propertyMapping = (RelationalPropertyMapping) mapping.propertyMappings.stream()
+                .filter(prop -> prop instanceof RelationalPropertyMapping && ((RelationalPropertyMapping) prop).relationalOperation!= null)
+                .findFirst().orElse(null);
+
+        if (propertyMapping != null && propertyMapping.relationalOperation instanceof ElementWithJoins)
+        {
+            JoinPointer pointer = ((ElementWithJoins) propertyMapping.relationalOperation).joins.stream()
+                    .filter(join -> join.db != null).findFirst().orElse(null);
+
+            if(pointer != null)
+            {
+                mapping.stores = Lists.mutable.with(pointer.db);
+            }
+        }
     }
 }

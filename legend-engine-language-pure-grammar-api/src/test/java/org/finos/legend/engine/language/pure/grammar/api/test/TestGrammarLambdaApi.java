@@ -4,6 +4,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
@@ -45,7 +46,7 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
     @Test
     public void testSimpleParsingError()
     {
-        testError("|1->toString(),", "{\"message\":\"no viable alternative at input '->toString(),'\",\"sourceInformation\":{\"endColumn\":15,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":15,\"startLine\":1}}");
+        testError("|1->toString(),", "no viable alternative at input '->toString(),'", new SourceInformation("", 1, 15, 1, 15));
     }
 
     @Test

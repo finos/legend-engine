@@ -14,8 +14,11 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
@@ -513,7 +516,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         );
 
         // association mapping on milestoned models
-        test("\n" +
+        PureModel model = test("\n" +
                 "Class model::Firm\n" +
                 "{\n" +
                 "   legalName: String[1];\n" +
@@ -547,7 +550,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "     )\n" +
                 "  }" +
                 ")"
-        );
+        ).getTwo();
+        Assert.assertNotNull(model.getMapping("model::myRelationalMapping")._associationMappings().getAny()._stores());
+        Assert.assertEquals("dbInc", model.getMapping("model::myRelationalMapping")._associationMappings().getAny()._stores().getAny()._name());
 
         // Mapping on milestoned properties
         test("\n" +
@@ -1211,5 +1216,110 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    firm: Binding simple::TestBinding: [simple::dbInc]@personSelfJoin | [simple::dbInc]personTable.FIRM\n" +
                 "  }\n" +
                 ")\n");
+    }
+
+    @Test
+    public void testLocalProperties() throws Exception
+    {
+        PureModel model = test("Class model::Person {\n" +
+                "   name:String[1];\n" +
+                "}\n" +
+                "###Relational\n" +
+                "Database model::store::db\n" +
+                "(\n" +
+                "   Table myTable(name VARCHAR(200))\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping \n" +
+                "model::mapping::myMap\n" +
+                "(\n" +
+                "   model::Person: Relational\n" +
+                "   {\n" +
+                "      name : [model::store::db]myTable.name,\n" +
+                "      + localProp : String[1] : [model::store::db]myTable.name\n" +
+                "   }\n" +
+                ")"
+        ).getTwo();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mmMapping = model.getMapping("model::mapping::myMap");
+        RootRelationalInstanceSetImplementation rootRelationalInstanceSetImplementation = ((RootRelationalInstanceSetImplementation) mmMapping._classMappings().getFirst());
+
+        Assert.assertTrue(rootRelationalInstanceSetImplementation._propertyMappings().getLast()._localMappingProperty());
+
+        Assert.assertNotNull(rootRelationalInstanceSetImplementation._propertyMappings().getLast()._localMappingPropertyMultiplicity());
+        Assert.assertNotNull(rootRelationalInstanceSetImplementation._propertyMappings().getLast()._localMappingPropertyType());
+        Assert.assertEquals("String", rootRelationalInstanceSetImplementation._propertyMappings().getLast()._localMappingPropertyType()._name());
+    }
+
+    @Test
+    public void testFilerName() throws Exception
+    {
+        PureModel model = test("Class model::Person {\n" +
+                "   name:String[1];\n" +
+                "}\n" +
+                "###Relational\n" +
+                "Database model::store::db\n" +
+                "(\n" +
+                "   Table myTable(name VARCHAR(200))\n" +
+                "   Filter myFilter(myTable.name = 'A')\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping \n" +
+                "model::mapping::myMap\n" +
+                "(\n" +
+                "   model::Person: Relational\n" +
+                "   {\n" +
+                "      ~filter [model::store::db]myFilter \n" +
+                "      name : [model::store::db]myTable.name,\n" +
+                "      + localProp : String[1] : [model::store::db]myTable.name\n" +
+                "   }\n" +
+                ")"
+        ).getTwo();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mmMapping = model.getMapping("model::mapping::myMap");
+        RootRelationalInstanceSetImplementation rootRelationalInstanceSetImplementation = ((RootRelationalInstanceSetImplementation) mmMapping._classMappings().getFirst());
+
+        Assert.assertNotNull(rootRelationalInstanceSetImplementation._filter()._filterName());
+        Assert.assertEquals("myFilter", rootRelationalInstanceSetImplementation._filter()._filterName());
+
+    }
+
+    @Test
+    public void testUnknownSetImplementationIdWarning() throws Exception
+    {
+        Pair<PureModelContextData, PureModel>  res = test("Class simple::Person\n" +
+                "{\n" +
+                "  lastName: String[1];\n" +
+                "  firm: simple::Firm[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database simple::dbInc\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    LASTNAME VARCHAR(200)\n" +
+                "  )\n" +
+                "\n" +
+                "  Join personSelfJoin(personTable.ID = {target}.ID)\n" +
+                ")\n"+
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    lastName: [simple::dbInc]personTable.LASTNAME, \n" +
+                "    firm[x]: [simple::dbInc]@personSelfJoin\n" +
+                "  }\n" +
+                ")\n");
+
+        MutableList<Warning> warnings =  res.getTwo().getWarnings();
+        Assert.assertEquals(1, warnings.size());
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"simple::simpleRelationalMappingInc\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }
 }

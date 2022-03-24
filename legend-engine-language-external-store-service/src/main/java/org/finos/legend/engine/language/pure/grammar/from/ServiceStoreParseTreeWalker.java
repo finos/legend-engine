@@ -284,7 +284,7 @@ public class ServiceStoreParseTreeWalker
 
     private String visitServiceParameterName(ServiceStoreParserGrammar.ParameterNameContext paramCtx)
     {
-        if(paramCtx.unquotedIdentifier() != null)
+        if (paramCtx.unquotedIdentifier() != null)
         {
             return PureGrammarParserUtility.fromIdentifier(paramCtx.unquotedIdentifier());
         }
@@ -385,34 +385,47 @@ public class ServiceStoreParseTreeWalker
 
         serviceMapping.service = buildServicePtr(ctx.mappingService());
 
-        if(ctx.pathMappingBlock() != null)
+        if (ctx.pathOffsetBlock() != null)
         {
-            serviceMapping.pathOffset = visitPathOffset(ctx.pathMappingBlock());
+            serviceMapping.pathOffset = visitPathOffset(ctx.pathOffsetBlock());
         }
 
-        List<ServiceParameterMapping> parameterMappings = Lists.mutable.empty();
-        if (ctx.parametersMappingBlock() != null)
+        if (ctx.requestBuildingBlock() != null)
         {
-            parameterMappings.addAll(buildParameterIndexedParameterMappings(ctx.parametersMappingBlock()));
+            serviceMapping.requestBuildInfo = visitRequestBuildingBlock(ctx.requestBuildingBlock());
         }
-        if (ctx.mappingBlock() != null)
+
+        // TODO: TO BE REMOVED
+        if (ctx.parametersMappingBlock() != null || ctx.mappingBlock() != null)
         {
-            parameterMappings.addAll(buildPropertyIndexedParameterMappings(ctx.mappingBlock()));
+            ServiceRequestBuildInfo serviceRequestBuildInfo = serviceMapping.requestBuildInfo == null ? new ServiceRequestBuildInfo() : serviceMapping.requestBuildInfo;
+            ServiceRequestParametersBuildInfo requestParametersBuildInfo = new ServiceRequestParametersBuildInfo();
+            requestParametersBuildInfo.parameterBuildInfoList = Lists.mutable.empty();
+
+            if (ctx.parametersMappingBlock() != null)
+            {
+                requestParametersBuildInfo.parameterBuildInfoList.addAll(buildParameterIndexedParameterMappings(ctx.parametersMappingBlock()));
+            }
+            if (ctx.mappingBlock() != null)
+            {
+                requestParametersBuildInfo.parameterBuildInfoList.addAll(buildPropertyIndexedParameterMappings(ctx.mappingBlock()));
+            }
+
+            serviceRequestBuildInfo.requestParametersBuildInfo = requestParametersBuildInfo;
+            serviceMapping.requestBuildInfo = serviceRequestBuildInfo;
         }
-        serviceMapping.parameterMappings = parameterMappings;
 
         return serviceMapping;
     }
 
-
-    private Path visitPathOffset(ServiceStoreParserGrammar.PathMappingBlockContext ctx)
+    private Path visitPathOffset(ServiceStoreParserGrammar.PathOffsetBlockContext ctx)
     {
         Path p = new Path();
 
         //This is replaced with response class in compilation phase
         p.startType = SERVICE_MAPPING_PATH_PREFIX;
 
-        if(ctx.identifier() != null && !ctx.identifier().isEmpty())
+        if (ctx.identifier() != null && !ctx.identifier().isEmpty())
         {
             p.path = Lists.mutable.empty();
             for (ServiceStoreParserGrammar.IdentifierContext idCtx : ctx.identifier())
@@ -428,34 +441,54 @@ public class ServiceStoreParseTreeWalker
         return p;
     }
 
-    private List<ServiceParameterMapping> buildParameterIndexedParameterMappings(ServiceStoreParserGrammar.ParametersMappingBlockContext ctx)
+    private ServiceRequestBuildInfo visitRequestBuildingBlock(ServiceStoreParserGrammar.RequestBuildingBlockContext ctx)
     {
-        return ListIterate.collect(ctx.parameterMapping(), this::buildParameterIndexedParameterMapping);
+        ServiceRequestBuildInfo requestBuildInfo = new ServiceRequestBuildInfo();
+
+        if (ctx.requestParametersBuildingBlock() != null)
+        {
+            requestBuildInfo.requestParametersBuildInfo = visitRequestParametersBuildInfo(ctx.requestParametersBuildingBlock());
+        }
+
+        if (ctx.requestBodyBuildingBlock() != null)
+        {
+            requestBuildInfo.requestBodyBuildInfo = visitRequestBodyBuildInfo(ctx.requestBodyBuildingBlock());
+        }
+
+        requestBuildInfo.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        return requestBuildInfo;
     }
 
-    private ServiceParameterMapping buildParameterIndexedParameterMapping(ServiceStoreParserGrammar.ParameterMappingContext ctx)
+    private ServiceRequestParametersBuildInfo visitRequestParametersBuildInfo(ServiceStoreParserGrammar.RequestParametersBuildingBlockContext ctx)
     {
-        ParameterIndexedParameterMapping parameterMapping = new ParameterIndexedParameterMapping();
-        parameterMapping.serviceParameter = visitServiceParameterName(ctx.parameterName());
-        parameterMapping.transform = visitLambda(ctx.combinedExpression());
-        parameterMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        ServiceRequestParametersBuildInfo requestParametersBuildInfo = new ServiceRequestParametersBuildInfo();
 
-        return parameterMapping;
+        requestParametersBuildInfo.parameterBuildInfoList = ListIterate.collect(ctx.parameterBuildingBlock(), this::visitRequestParameterBuildInfo);
+        requestParametersBuildInfo.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        return requestParametersBuildInfo;
     }
 
-    private List<ServiceParameterMapping> buildPropertyIndexedParameterMappings(ServiceStoreParserGrammar.MappingBlockContext ctx)
+    private ServiceRequestParameterBuildInfo visitRequestParameterBuildInfo(ServiceStoreParserGrammar.ParameterBuildingBlockContext ctx)
     {
-        return ListIterate.collect(ctx.elementMapping(), this::buildPropertyIndexedParameterMapping);
+        ServiceRequestParameterBuildInfo requestParameterBuildInfo = new ServiceRequestParameterBuildInfo();
+
+        requestParameterBuildInfo.serviceParameter = visitServiceParameterName(ctx.parameterName());
+        requestParameterBuildInfo.transform = visitLambda(ctx.combinedExpression());
+        requestParameterBuildInfo.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        return requestParameterBuildInfo;
     }
 
-    private ServiceParameterMapping buildPropertyIndexedParameterMapping(ServiceStoreParserGrammar.ElementMappingContext ctx)
+    private ServiceRequestBodyBuildInfo visitRequestBodyBuildInfo(ServiceStoreParserGrammar.RequestBodyBuildingBlockContext ctx)
     {
-        PropertyIndexedParameterMapping parameterMapping = new PropertyIndexedParameterMapping();
-        parameterMapping.serviceParameter = visitServiceParameterName(ctx.parameterName());
-        parameterMapping.property = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        parameterMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        ServiceRequestBodyBuildInfo requestBodyBuildInfo = new ServiceRequestBodyBuildInfo();
 
-        return parameterMapping;
+        requestBodyBuildInfo.transform = visitLambda(ctx.combinedExpression());
+        requestBodyBuildInfo.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        return requestBodyBuildInfo;
     }
 
     private Lambda visitLambda(ServiceStoreParserGrammar.CombinedExpressionContext ctx)
@@ -522,5 +555,53 @@ public class ServiceStoreParseTreeWalker
         m.lowerBound = Integer.parseInt(ctx.fromMultiplicity() != null ? ctx.fromMultiplicity().getText() : star.equals(ctx.toMultiplicity().getText()) ? "0" : ctx.toMultiplicity().getText());
         m.setUpperBound(star.equals(ctx.toMultiplicity().getText()) ? null : Integer.parseInt(ctx.toMultiplicity().getText()));
         return m;
+    }
+
+
+    // TODO: TO BE REMOVED
+    private List<ServiceRequestParameterBuildInfo> buildParameterIndexedParameterMappings(ServiceStoreParserGrammar.ParametersMappingBlockContext ctx)
+    {
+        return ListIterate.collect(ctx.parameterMapping(), this::buildParameterIndexedParameterMapping);
+    }
+
+    private ServiceRequestParameterBuildInfo buildParameterIndexedParameterMapping(ServiceStoreParserGrammar.ParameterMappingContext ctx)
+    {
+        ServiceRequestParameterBuildInfo requestParameterBuildInfo = new ServiceRequestParameterBuildInfo();
+        requestParameterBuildInfo.serviceParameter = visitServiceParameterName(ctx.parameterName());
+        requestParameterBuildInfo.transform = visitLambda(ctx.combinedExpression());
+        requestParameterBuildInfo.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        return requestParameterBuildInfo;
+    }
+
+    private List<ServiceRequestParameterBuildInfo> buildPropertyIndexedParameterMappings(ServiceStoreParserGrammar.MappingBlockContext ctx)
+    {
+        return ListIterate.collect(ctx.elementMapping(), this::buildPropertyIndexedParameterMapping);
+    }
+
+    private ServiceRequestParameterBuildInfo buildPropertyIndexedParameterMapping(ServiceStoreParserGrammar.ElementMappingContext ctx)
+    {
+        DomainParser parser = new DomainParser();
+        // prepare island grammar walker source information
+        int startLine = ctx.getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        // only add current walker source information column offset if this is the first line
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        ValueSpecification valueSpecification = parser.parseCombinedExpression("$this." + PureGrammarParserUtility.fromIdentifier(ctx.identifier()), combineExpressionSourceInformation, null);
+
+        Lambda lambda = new Lambda();
+        lambda.body = new ArrayList<>();
+        lambda.body.add(valueSpecification);
+        lambda.parameters = Lists.mutable.empty();
+        lambda.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        ServiceRequestParameterBuildInfo requestParameterBuildInfo = new ServiceRequestParameterBuildInfo();
+
+        requestParameterBuildInfo.serviceParameter = visitServiceParameterName(ctx.parameterName());
+        requestParameterBuildInfo.transform = lambda;
+        requestParameterBuildInfo.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        return requestParameterBuildInfo;
     }
 }

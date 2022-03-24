@@ -79,9 +79,12 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
         (
             ~path $service.response.employees
 
-            ~paramMapping
+            ~request
             (
-                firmId : $this.firmId
+               parameters
+               (
+                   firmId = $this.firmId
+               )
             )
         )
     }

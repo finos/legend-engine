@@ -16,6 +16,9 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import org.eclipse.collections.api.tuple.Pair;
@@ -35,13 +38,26 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
 {
     private static final String SA_USER = "sa";
     private static final String SA_PASSWORD = "";
+    private static final List<String> LEGEND_H2_EXTENSION_SQLs = getLegendH2ExtensionSQLs();
 
     @Override
     public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
         try
         {
-            return ds.getDataSource().getConnection();
+            Connection connection = ds.getDataSource().getConnection();
+            for (String sql : LEGEND_H2_EXTENSION_SQLs)
+            {
+                try (Statement statement = connection.createStatement())
+                {
+                    statement.execute(sql);
+                }
+                catch (SQLException ignored)
+                {
+                    // Ignored
+                }
+            }
+            return connection;
         }
         catch (SQLException e)
         {
@@ -78,5 +94,12 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
     public AuthenticationStrategyKey getKey()
     {
         return new DefaultH2AuthenticationStrategyKey();
+    }
+
+    private static List<String> getLegendH2ExtensionSQLs()
+    {
+        return Collections.singletonList(
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_navigate FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_json_navigate\";"
+        );
     }
 }

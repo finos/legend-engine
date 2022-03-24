@@ -14,12 +14,15 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
@@ -244,6 +247,24 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   ok : Integer[0..1];\n" +
                 "}\n", "COMPILATION error at [1:1-4:1]: Cycle detected in class supertype hierarchy: test::A -> test::B -> test::C -> test::A"
         );
+    }
+
+    @Test
+    public void testDuplicatePropertyWarning() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> res = test("Class test::A\n" +
+                "{\n" +
+                "   property : Integer[0..1];\n" +
+                "   property : String[1];\n" +
+                "   other : String[1];\n" +
+                "   ok : String[1];\n" +
+                "   other: String[1];\n" +
+                "}\n");
+        MutableList<Warning> warnings = res.getTwo().getWarnings();
+        Assert.assertEquals(2, warnings.size());
+        ObjectMapper mapper = new ObjectMapper();
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":5,\"startColumn\":4,\"endLine\":5,\"endColumn\":21},\"message\":\"Duplicate property 'other' in the Class test::A\"}", mapper.writeValueAsString(warnings.get(0)));
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":4,\"endLine\":3,\"endColumn\":28},\"message\":\"Duplicate property 'property' in the Class test::A\"}", mapper.writeValueAsString(warnings.get(1)));
     }
 
     @Test

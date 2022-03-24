@@ -21,7 +21,6 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.ExternalFormatPlanGeneratorExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
@@ -74,7 +73,6 @@ public class TestExtensions
 
     private static final ImmutableList<Class<? extends PlanGeneratorExtension>> EXPECTED_PLAN_GENERATOR_EXTENSIONS = Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty()
             .with(LegendPlanGeneratorExtension.class)
-            .with(ExternalFormatPlanGeneratorExtension.class)
             .toImmutable();
 
     private static final ImmutableList<Class<? extends ExternalFormatExtension>> EXPECTED_EXTERNAL_FORMAT_EXTENSIONS = Lists.mutable.<Class<? extends ExternalFormatExtension>>empty()

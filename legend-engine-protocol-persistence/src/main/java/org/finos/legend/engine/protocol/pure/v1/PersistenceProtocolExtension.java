@@ -28,6 +28,7 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(Persistence.class, "meta::pure::persistence::metamodel::PersistencePipe");
+        return Maps.mutable.with(
+                Persistence.class, "meta::pure::persistence::metamodel::Persistence");
     }
 }

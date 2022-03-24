@@ -26,6 +26,7 @@ public class RestServiceExecutionNode extends ExecutionNode
     public HttpMethod method;
     public String mimeType;
     public List<ServiceParameter> params;
+    public RequestBodyDescription requestBodyDescription;
     public List<SecurityScheme> securitySchemes;
 
     @Override

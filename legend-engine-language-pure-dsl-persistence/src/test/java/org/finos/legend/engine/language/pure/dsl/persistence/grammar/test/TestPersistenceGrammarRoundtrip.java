@@ -3,8 +3,15 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
-public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public abstract class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
+    protected abstract String targetFlat();
+    protected abstract String targetMulti();
+    protected abstract String targetOpaque();
+    protected abstract String ingestMode();
+    protected abstract String flatTarget();
+    protected abstract String parts();
+
     @Test
     public void persistence()
     {
@@ -13,23 +20,31 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
-                "  owners: ['owner1', 'owner2'];\n" +
-                "  trigger: OpaqueTrigger;\n" +
-                "  reader: Service\n" +
-                "  {\n" +
-                "    service: test::service::Service;\n" +
-                "  }\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::service::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    target: GroupedFlat\n" +
+                "    connections:\n" +
+                "    [\n" +
+                "      id1: test::TestConnection,\n" +
+                "      id2:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: test::TestClass;\n" +
+                "          url: 'my_url';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ];\n" +
+                "    target: " + targetMulti() + "\n" +
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
-                "      components:\n" +
+                "      " + parts() + ":\n" +
                 "      [\n" +
                 "        {\n" +
                 "          property: property1;\n" +
-                "          targetSpecification:\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset1';\n" +
                 "            partitionProperties: [propertyA, propertyB];\n" +
@@ -37,10 +52,10 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "            {\n" +
                 "              versionProperty: updateDateTime;\n" +
                 "            }\n" +
-                "            batchMode: UnitemporalDelta\n" +
+                "            " + ingestMode() + ": UnitemporalDelta\n" +
                 "            {\n" +
                 "              mergeStrategy: NoDeletes;\n" +
-                "              transactionMilestoning: BatchIdOnly\n" +
+                "              transactionMilestoning: BatchId\n" +
                 "              {\n" +
                 "                batchIdInFieldName: 'batchIdIn';\n" +
                 "                batchIdOutFieldName: 'batchIdOut';\n" +
@@ -50,18 +65,18 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "        },\n" +
                 "        {\n" +
                 "          property: property2;\n" +
-                "          targetSpecification:\n" +
+                "          " + flatTarget() + ":\n" +
                 "          {\n" +
                 "            targetName: 'TestDataset2';\n" +
-                "            deduplicationStrategy: OpaqueDeduplication;\n" +
-                "            batchMode: BitemporalDelta\n" +
+                "            deduplicationStrategy: None;\n" +
+                "            " + ingestMode() + ": BitemporalDelta\n" +
                 "            {\n" +
                 "              mergeStrategy: DeleteIndicator\n" +
                 "              {\n" +
                 "                deleteProperty: deleted;\n" +
                 "                deleteValues: ['Y', '1', 'true'];\n" +
                 "              }\n" +
-                "              transactionMilestoning: DateTimeOnly\n" +
+                "              transactionMilestoning: DateTime\n" +
                 "              {\n" +
                 "                dateTimeInFieldName: 'inZ';\n" +
                 "                dateTimeOutFieldName: 'outZ';\n" +
@@ -81,6 +96,20 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      Email\n" +
+                "      {\n" +
+                "        address: 'x.y@z.com';\n" +
+                "      },\n" +
+                "      PagerDuty\n" +
+                "      {\n" +
+                "        url: 'https://x.com';\n" +
+                "      }\n" +
+                "    ]\n" +
                 "  }\n" +
                 "}\n");
     }

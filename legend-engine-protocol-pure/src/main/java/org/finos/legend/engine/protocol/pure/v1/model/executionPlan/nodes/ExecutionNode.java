@@ -60,6 +60,7 @@ public abstract class ExecutionNode
     public ResultType resultType;
     public List<ExecutionNode> executionNodes = Collections.emptyList();
     public Multiplicity resultSizeRange;
+    public List<VariableInput> requiredVariableInputs;
     public PlatformImplementation implementation;
 
     public abstract <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor);
