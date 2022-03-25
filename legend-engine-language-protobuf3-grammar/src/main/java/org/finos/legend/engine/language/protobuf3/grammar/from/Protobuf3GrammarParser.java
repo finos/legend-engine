@@ -154,21 +154,48 @@ public class Protobuf3GrammarParser
         return option;
     }
 
-    private Object visitConstant(Protobuf3Parser.ConstantContext constantContext)
+    private Literal visitConstant(Protobuf3Parser.ConstantContext constantContext)
     {
         if (constantContext.strLit() != null) {
-            return visitStringLiteral(constantContext.strLit());
+            StringLiteral l = new StringLiteral();
+            l.value = visitStringLiteral(constantContext.strLit());
+            return l;
         } else if (constantContext.boolLit() != null) {
-            return Boolean.valueOf(constantContext.boolLit().BOOL_LIT().getText());
+            BoolLiteral l = new BoolLiteral();
+            l.value = Boolean.parseBoolean(constantContext.boolLit().BOOL_LIT().getText());
+            return l;
         } else if (constantContext.intLit() != null) {
-            return Integer.valueOf(constantContext.intLit().INT_LIT().getText());
+            IntLiteral l = new IntLiteral();
+            l.value = Integer.parseInt(constantContext.intLit().INT_LIT().getText());
+            return l;
         } else if (constantContext.floatLit() != null) {
-            return java.lang.Double.valueOf(constantContext.floatLit().FLOAT_LIT().getText());
+            FloatLiteral l = new FloatLiteral();
+            l.value = java.lang.Double.parseDouble(constantContext.floatLit().FLOAT_LIT().getText());
+            return l;
         } else if (constantContext.fullIdent() != null) {
-            return constantContext.fullIdent().getText();
+            IdentifierLiteral l = new IdentifierLiteral();
+            l.value = constantContext.fullIdent().getText();
+            return l;
+        } else if( constantContext.blockLit() != null )
+        {
+            return visitBlockLiteral(constantContext.blockLit());
         } else {
             throw new RuntimeException("Unknown constant type:" + constantContext.getText());
         }
+    }
+
+
+    private BlockLiteral visitBlockLiteral(Protobuf3Parser.BlockLitContext blockLitContext)
+    {
+        BlockLiteral blockLiteral = new BlockLiteral();
+        blockLiteral.values = Lists.mutable.ofInitialCapacity(blockLitContext.ident().size());
+        for(int i = 0; i<blockLitContext.ident().size(); i++) {
+            BlockValue value = new BlockValue();
+            value.name = blockLitContext.ident(i).getText();
+            value.value = visitConstant(blockLitContext.constant(i));
+            blockLiteral.values.add(value);
+        }
+        return blockLiteral;
     }
 
     private ProtoItemDefinition visitTopLevelDef(Protobuf3Parser.TopLevelDefContext topLevelDefContext) {
@@ -180,8 +207,12 @@ public class Protobuf3GrammarParser
         {
             return visitMessageDef( topLevelDefContext.messageDef());
         }
+        else if ( topLevelDefContext.serviceDef() != null )
+        {
+            return visitServiceDef( topLevelDefContext.serviceDef());
+        }
         else {
-            throw new RuntimeException("This is top level definition is not supported yet");
+            throw new RuntimeException("This top level definition is not supported yet");
         }
     }
 
@@ -228,6 +259,63 @@ public class Protobuf3GrammarParser
         }
         message.content = content;
         return message;
+    }
+
+    private Service visitServiceDef(Protobuf3Parser.ServiceDefContext serviceDefContext)
+    {
+        Service service = new Service();
+        service.name = serviceDefContext.serviceName().getText();
+        List<ServiceBodyItem> items = Lists.mutable.of();
+
+        for(Protobuf3Parser.ServiceElementContext element: serviceDefContext.serviceElement())
+        {
+            items.add(visitServiceElement(element));
+        }
+
+        service.content = items;
+        return service;
+    }
+
+    private ServiceBodyItem visitServiceElement(Protobuf3Parser.ServiceElementContext element)
+    {
+        if(element.rpc() != null) {
+            return visitRpc(element.rpc());
+        } else if (element.optionStatement() != null) {
+            ServiceOption serviceOption = new ServiceOption();
+            serviceOption.option = visitOptionStatementContext(element.optionStatement());
+            return serviceOption;
+        }
+        else {
+            throw new RuntimeException("Unknown service element type");
+        }
+    }
+
+    private RemoteProcedureCall visitRpc(Protobuf3Parser.RpcContext rpcContext)
+    {
+        RemoteProcedureCall rpc = new RemoteProcedureCall();
+        rpc.name = rpcContext.rpcName().getText();
+
+        List<Protobuf3Parser.MessageTypeContext> messageTypeContexts = rpcContext.messageType();
+        if (messageTypeContexts.size() > 0) {
+            Protobuf3Parser.MessageTypeContext requestTypeContext = messageTypeContexts.get(0);
+            rpc.requestType = new MessageType();
+            rpc.requestType.type = visitMessageType(requestTypeContext);
+        }
+        if (messageTypeContexts.size() > 1) {
+            Protobuf3Parser.MessageTypeContext requestTypeContext = messageTypeContexts.get(1);
+            rpc.returnType = new MessageType();
+            rpc.returnType.type = visitMessageType(requestTypeContext);
+        }
+
+        if (rpcContext.optionStatement() != null)
+        {
+            rpc.options = Lists.mutable.ofInitialCapacity(rpcContext.optionStatement().size());
+            for( Protobuf3Parser.OptionStatementContext optionStatementContext: rpcContext.optionStatement()) {
+                rpc.options.add(visitOptionStatementContext(optionStatementContext));
+            }
+        }
+
+        return rpc;
     }
 
     private ProtoBufType visitProtoType(Protobuf3Parser.Type_Context type_context)
@@ -306,20 +394,25 @@ public class Protobuf3GrammarParser
         }
         else if(type_context.messageType() != null)
         {
-            MessagePtr messagePtr = new MessagePtr();
-            messagePtr._package = type_context.messageType().ident().isEmpty() ? null : type_context.messageType().ident().stream().map(new Function<Protobuf3Parser.IdentContext, String>() {
-                @Override
-                public String apply(Protobuf3Parser.IdentContext identContext) {
-                    return identContext.IDENTIFIER().getText();
-                }
-            }).collect(Collectors.joining("."));
-
-            messagePtr.name = type_context.messageType().messageName().ident().getText();
-            return messagePtr;
+            return visitMessageType(type_context.messageType());
         }
         else {
             throw new RuntimeException("Unknown type");
         }
+    }
+
+    private MessagePtr visitMessageType(Protobuf3Parser.MessageTypeContext messageTypeContext)
+    {
+        MessagePtr messagePtr = new MessagePtr();
+        messagePtr._package = messageTypeContext.ident().isEmpty() ? null : messageTypeContext.ident().stream().map(new Function<Protobuf3Parser.IdentContext, String>() {
+            @Override
+            public String apply(Protobuf3Parser.IdentContext identContext) {
+                return identContext.IDENTIFIER().getText();
+            }
+        }).collect(Collectors.joining("."));
+
+        messagePtr.name = messageTypeContext.messageName().ident().getText();
+        return messagePtr;
     }
 
     private String visitStringLiteral(Protobuf3Parser.StrLitContext strLitContext)
