@@ -1,7 +1,17 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.test;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_BatchPersister;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_Persister;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -207,7 +217,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    #{\n" +
                 "      JsonModelConnection\n" +
                 "      {\n" +
-                "        class: test::ServiceResult;\n" +
+                "        class: test::Person;\n" +
                 "        url: 'my_url2';\n" +
                 "      }\n" +
                 "    }#\n" +
@@ -222,7 +232,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [52:16-34]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [40:1-67:1]: Error in 'test::TestPersistence': Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -301,7 +311,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [56:18-67:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [40:1-74:1]: Error in 'test::TestPersistence': Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -622,7 +632,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     @Test
     public void success()
     {
-        test("###Pure\n" +
+        Pair<PureModelContextData, PureModel> result = test("###Pure\n" +
                 "import org::dxl::*;\n" +
                 "\n" +
                 "Class org::dxl::Zoo\n" +
@@ -751,5 +761,20 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    ]\n" +
                 "  }\n" +
                 "}");
+
+        PureModel model = result.getTwo();
+
+        PackageableElement packageableElement = model.getPackageableElement("org::dxl::ZooPersistence");
+        assertNotNull(packageableElement);
+        assertTrue(packageableElement instanceof Root_meta_pure_persistence_metamodel_Persistence);
+
+        Root_meta_pure_persistence_metamodel_Persistence persistence = (Root_meta_pure_persistence_metamodel_Persistence) packageableElement;
+
+        Root_meta_pure_persistence_metamodel_persister_Persister persister = persistence._persister();
+        assertNotNull(persister);
+        assertTrue(persister instanceof Root_meta_pure_persistence_metamodel_persister_BatchPersister);
+
+        Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister = (Root_meta_pure_persistence_metamodel_persister_BatchPersister) persister;
+        assertNotNull(batchPersister._ingestMode());
     }
 }

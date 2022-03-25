@@ -48,7 +48,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
@@ -206,9 +205,12 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(BatchPersister val)
         {
+            String modelClass = val.targetShape.accept(new ModelClassExtractor());
+            Class<?> pureModelClass = context.pureModel.getClass(modelClass);
             return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
                     ._binding(buildBinding(val, context))
                     ._connection(buildConnection(val.connection, context))
+                    ._ingestMode(buildIngestMode(val.ingestMode, pureModelClass, context))
                     ._targetShape(buildTargetShape(val.targetShape, context));
         }
 
@@ -242,6 +244,21 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_notifier_PagerDutyNotifyee_Impl("")
                     ._url(val.url);
+        }
+    }
+
+    private static class ModelClassExtractor implements TargetShapeVisitor<String>
+    {
+        @Override
+        public String visit(FlatTarget val)
+        {
+            return val.modelClass;
+        }
+
+        @Override
+        public String visit(MultiFlatTarget val)
+        {
+            return val.modelClass;
         }
     }
 
