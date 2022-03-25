@@ -38,21 +38,18 @@ public class TestProtobuf3 {
                 "  string name = 1;\n" +
                 "  int32 id = 2;\n" +
                 "  string email = 3;\n" +
-                "\n" +
-                "  enum PhoneType {\n" +
-                "    MOBILE = 0;\n" +
-                "    HOME = 1;\n" +
-                "    WORK = 2;\n" +
-                "  }\n" +
-                "\n" +
-                "  message PhoneNumber {\n" +
-                "    string number = 1;\n" +
-                "    PhoneType type = 2;\n" +
-                "  }\n" +
-                "\n" +
+                "enum PhoneType {\n" +
+                "  MOBILE = 0;\n" +
+                "  HOME = 1;\n" +
+                "  WORK = 2;\n" +
+                "}\n" +
+                "message PhoneNumber {\n" +
+                "  string number = 1;\n" +
+                "  PhoneType type = 2;\n" +
+                "}\n" +
                 "  repeated PhoneNumber phones = 4;\n" +
                 "  google.protobuf.Timestamp last_updated = 5;\n" +
-                "}\n";
+                "}";
         Protobuf3GrammarParser parser = Protobuf3GrammarParser.newInstance();
         ProtoFile proto = parser.parseProto(tutorial);
 
@@ -73,6 +70,42 @@ public class TestProtobuf3 {
         Assert.assertEquals(7, message2.content.size());
 
         check(tutorial);
+    }
+
+    @Test
+    public void testService() {
+        String service =
+                "syntax = \"proto3\";\n" +
+                        "package helloworld;\n" +
+                        "\n" +
+                        "service Greeter {\n" +
+                        "  rpc SayHello(HelloRequest) returns (HelloReply) {}\n" +
+                        "  rpc SayHelloAgain(HelloRequest) returns (HelloReply) {}\n" +
+                        "}\n" +
+                        "\n" +
+                        "message HelloRequest {\n" +
+                        "  string name = 1;\n" +
+                        "}\n" +
+                        "\n" +
+                        "message HelloReply {\n" +
+                        "  string message = 1;\n" +
+                        "}";
+        check(service);
+    }
+
+    @Test
+    public void testAnnotatedService()
+    {
+        String bookService = "syntax = \"proto3\";\n" +
+                "package bookshelf;\n" +
+                "\n" +
+                "service BookShelf {\n" +
+                "  rpc ListShelves(google.protobuf.Empty) returns (ListShelvesResponse) {\n" +
+                "option (google.api.http) = { get: \"/v1/shelves\" };\n" +
+                "}\n" +
+                "}";
+
+        check(bookService);
     }
 
     protected void check(String value)
