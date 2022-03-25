@@ -246,10 +246,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithGeneratedModelCheckedForBadDataResult.json")));
     }
 
-    // Broken (speed up reveals this but also shows it won't work at volume).
-    // Can be re-enabled once pure is updated to not implement constraints on the
-    // generated schema-level class.
-    @Test @Ignore
+    @Test
     public void testDeserializeAndMapMultiSectionCsv()
     {
         String model = "###Pure\n" +
@@ -313,18 +310,12 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         String grammar = model + schemaCode + mapping + urlStreamRuntime("test::PriceRowToLoanPrice", "test::gen::TestBinding");
         String tree = "#{test::LoanPrice{accountNo,productIdType,productId,eventDate,currency,closePrice}}#";
 
-        String data ="C.O.B. ==> 20210608\n" +
-                "7010055601~GSN~6576V3~USD~~~~~0.01\n" +
-                "7010055601~GSN~6A8TY4~USD~~~~~91.997084\n" +
-                "7010055601~GSN~6A8UE6~USD~~~~~91.997084\n" +
-                "7010055601~GSN~6A8UJ5~USD~~~~~92.001084";
-
         String result = runTest(generated,
                                 grammar,
                                 "|test::LoanPrice.all()->graphFetchChecked("+tree+")->serialize("+tree+")",
                                 "test::PriceRowToLoanPrice",
                                 "test::runtime",
-                                data);
+                                resourceAsString("queries/prices.csv"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeAndMapMultiSectionCsvResult.json")));
     }
