@@ -1,0 +1,351 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class meta::external::store::service::showcase::domain::Product
+{
+  productId   : String[1];
+  productName : String[1];
+  description : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::Synonym
+{
+  name : String[1];
+  type : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::Trade
+{
+  id       : String[1];
+  quantity : Integer[1];
+  trader   : meta::external::store::service::showcase::domain::Trader[1];
+}
+
+Class meta::external::store::service::showcase::domain::TradeDetails
+{
+  id      : String[1];
+  product : meta::external::store::service::showcase::domain::Product[1];
+  trader  : meta::external::store::service::showcase::domain::Trader[1];
+}
+
+Class meta::external::store::service::showcase::domain::Trader
+{
+  kerberos : String[1];
+  id       : Integer[1];
+}
+
+Association meta::external::store::service::showcase::domain::Product_Synonym
+{
+  product  : meta::external::store::service::showcase::domain::Product[1];
+  synonyms : meta::external::store::service::showcase::domain::Synonym[*];
+}
+
+
+###Pure
+
+Class meta::external::store::service::showcase::domain::Firm
+{
+  legalName : String[1];
+  addresses : meta::external::store::service::showcase::domain::Address[*];
+}
+
+Class meta::external::store::service::showcase::domain::Employee
+{
+  firstName   : String[1];
+  lastName    : String[1];
+  kerberos    : String[1];
+  id          : String[1];
+  designation : String[1];
+  age         : Integer[1];
+  addresses   : meta::external::store::service::showcase::domain::Address[*];
+}
+
+Class meta::external::store::service::showcase::domain::Address
+{
+  street  : String[1];
+  city    : String[1];
+  country : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::FirmSearch
+{
+  legalNames : String[*];
+}
+
+Class meta::external::store::service::showcase::domain::EmployeeSearch
+{
+  designationsToSearch : String[*];
+  ids : String[*];
+}
+
+Class meta::external::store::service::showcase::domain::EmployeeSearchByFilters
+{
+  nameFilters        : meta::external::store::service::showcase::domain::NameFilter[*];
+  designationFilters : meta::external::store::service::showcase::domain::DesignationFilter[*];
+  idFilters          : meta::external::store::service::showcase::domain::IdFilter[*];
+}
+
+Class meta::external::store::service::showcase::domain::NameFilter
+{
+  firstName   : String[1];
+  lastName    : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::DesignationFilter
+{
+  designation : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::IdFilter
+{
+  id          : String[1];
+}
+
+Association meta::external::store::service::showcase::domain::Employment
+{
+  firm      : meta::external::store::service::showcase::domain::Firm[0..1];
+  employees : meta::external::store::service::showcase::domain::Employee[*];
+}
+
+###ServiceStore
+ServiceStore meta::external::store::service::showcase::store::ServiceStoreWithPostServices
+(
+   description : 'Showcase Service Store';
+
+   ServiceGroup ProductServices
+   (
+      path : '/products';
+
+      Service ProductBySynonymService
+      (
+         path : '/getProductBySynonym';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::Synonym <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup TradeServices
+   (
+       path : '/trades';
+
+       Service TradesByDetailsService
+       (
+          path : '/getTradesByDetails';
+          method : POST;
+          requestBody : meta::external::store::service::showcase::domain::TradeDetails <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding;
+          security : [];
+          response : [meta::external::store::service::showcase::domain::Trade <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+       )
+   )
+
+   ServiceGroup FirmServices
+   (
+      path : '/firms';
+
+      Service FirmDetailsByName
+      (
+         path : '/firmDetailsByName';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::FirmSearch <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup EmployeeServices
+   (
+      path : '/employees';
+
+      Service EmployeeDetailsById
+      (
+         path : '/employeeDetailsById';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::EmployeeSearch <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Employee <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding];
+      )
+
+      Service EmployeeDetailsByFilters
+      (
+         path : '/employeeDetailsByFilters';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::EmployeeSearchByFilters <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Employee <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding];
+      )
+
+      Service EmployeeDetailsByFirm
+      (
+         path : '/employeeDetailsByFirm';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::FirmSearch <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Employee <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding];
+      )
+   )
+)
+
+###ExternalFormat
+Binding meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Firm,
+                    meta::external::store::service::showcase::domain::Employee,
+                    meta::external::store::service::showcase::domain::Address,
+                    meta::external::store::service::showcase::domain::FirmSearch,
+                    meta::external::store::service::showcase::domain::EmployeeSearch,
+                    meta::external::store::service::showcase::domain::NameFilter,
+                    meta::external::store::service::showcase::domain::DesignationFilter,
+                    meta::external::store::service::showcase::domain::IdFilter,
+                    meta::external::store::service::showcase::domain::EmployeeSearchByFilters ];
+}
+
+Binding meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Product,
+                    meta::external::store::service::showcase::domain::Synonym,
+                    meta::external::store::service::showcase::domain::TradeDetails,
+                    meta::external::store::service::showcase::domain::Trader,
+                    meta::external::store::service::showcase::domain::Trade ];
+}
+
+###Runtime
+Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping
+    ];
+    connections :
+    [
+        meta::external::store::service::showcase::store::ServiceStoreWithPostServices :
+        [
+            connection_1 : meta::external::store::service::showcase::connection::serviceStoreConnection
+        ]
+    ];
+}
+
+###Mapping
+import meta::external::store::service::showcase::domain::*;
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+  *Product[prod_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] ProductServices.ProductBySynonymService
+     (
+        ~request
+        (
+            body = ^Synonym(name = '38142Y716', type = 'CUSIP')
+        )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] ProductServices.ProductBySynonymService
+     (
+        ~request
+        (
+            body = ^Synonym(name = $this.productName, type = 'CUSIP')
+        )
+     )
+  }
+
+  *Trade[trade_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] TradeServices.TradesByDetailsService
+     (
+        ~request
+        (
+            body = ^TradeDetails(id = '1',
+                                 product = ^Product(productId = '30', productName = 'Product 30', description = 'Product 30 description'),
+                                 trader = ^Trader(kerberos = 'dummy', id = 1234))
+        )
+     )
+  }
+
+
+  *Firm[firm_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] FirmServices.FirmDetailsByName
+     (
+        ~request
+        (
+            body = ^FirmSearch(legalNames = ['Firm A', 'Firm B', 'Firm C', 'Firm D'])
+        )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] FirmServices.FirmDetailsByName
+     (
+         ~request
+         (
+             body = ^FirmSearch(legalNames = $this.legalName)
+         )
+     )
+  }
+
+  *Employee[employee_set]: ServiceStore
+  {
+     +firmName: String[1];
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] EmployeeServices.EmployeeDetailsById
+     (
+         ~request
+         (
+             body = ^EmployeeSearch(ids = $this.id,
+                                    designationsToSearch = ['A', 'B', 'C', 'D'])
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] EmployeeServices.EmployeeDetailsByFilters
+     (
+         ~request
+         (
+             body = ^EmployeeSearchByFilters
+                     (
+                        nameFilters = ^NameFilter(firstName = $this.firstName, lastName = $this.lastName),
+                        designationFilters = ^DesignationFilter(designation = $this.designation),
+                        idFilters = ^IdFilter(id = $this.id)
+                     )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] EmployeeServices.EmployeeDetailsById
+     (
+         ~request
+         (
+             body = ^EmployeeSearch
+                     (
+                        ids = $this.id,
+                        designationsToSearch = ['A', 'B', 'C', 'D']
+                     )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] EmployeeServices.EmployeeDetailsByFirm
+     (
+         ~request
+         (
+             body = ^FirmSearch(legalNames = $this.firmName)
+         )
+     )
+  }
+
+  *Employment[firm_set]: XStore
+  {
+     employees[firm_set, employee_set]: $this.legalName == $that.firmName
+  }
+)

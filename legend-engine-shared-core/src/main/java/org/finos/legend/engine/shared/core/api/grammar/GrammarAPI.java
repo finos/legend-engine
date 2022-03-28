@@ -24,7 +24,7 @@ public class GrammarAPI
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
-    protected <T> Response grammarToJson(String input, Function2<String, Boolean, T> func , ProfileManager<CommonProfile> pm, boolean returnSourceInfo, String spanText)
+    protected <T> Response grammarToJson(String input, Function2<String, Boolean, T> func, ProfileManager<CommonProfile> pm, boolean returnSourceInfo, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
@@ -34,27 +34,19 @@ public class GrammarAPI
                 T data = func.apply(input, returnSourceInfo);
                 return ManageConstantResult.manageResult(profiles, data, objectMapper);
             }
-            catch (EngineException e)
-            {
-                if (!EngineErrorType.PARSER.equals(e.getErrorType()))
-                {
-                    return ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
-                }
-                return ManageConstantResult.manageResult(profiles, new ParserError(e.getMessage(), e.getSourceInformation()), objectMapper);
-            }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, Response.Status.BAD_REQUEST, profiles);
             }
         }
     }
 
-    protected <T> Response grammarToJsonBatch(Map<String, String> input, Function2<String, Boolean, T> func , Map<String, T> result, ProfileManager<CommonProfile> pm, boolean returnSourceInfo, String spanText)
+    protected <T> Response grammarToJsonBatch(Map<String, String> input, Function2<String, Boolean, T> func, Map<String, T> result, ProfileManager<CommonProfile> pm, boolean returnSourceInfo, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
-            Map<String , ParserError> errors = Maps.mutable.empty();
+            Map<String, ParserError> errors = Maps.mutable.empty();
             input.forEach((key, value) ->
             {
                 try
@@ -81,7 +73,7 @@ public class GrammarAPI
     }
 
 
-    protected  <T> Response jsonToGrammar(T graphFetchTree, RenderStyle renderStyle, Function2<T, RenderStyle, String> func, ProfileManager<CommonProfile> pm, String spanText)
+    protected <T> Response jsonToGrammar(T graphFetchTree, RenderStyle renderStyle, Function2<T, RenderStyle, String> func, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
@@ -100,7 +92,8 @@ public class GrammarAPI
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
             Map<String, Object> result = org.eclipse.collections.api.factory.Maps.mutable.empty();
-            MapAdapter.adapt(values).forEachKeyValue((key, value) -> {
+            MapAdapter.adapt(values).forEachKeyValue((key, value) ->
+            {
                 result.put(key, func.apply(value, renderStyle));
             });
             return ManageConstantResult.manageResult(profiles, result);

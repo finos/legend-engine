@@ -3,6 +3,7 @@ package org.finos.legend.engine.language.pure.grammar.api.test;
 import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
@@ -35,7 +36,7 @@ public class TestGrammarModelApi extends TestGrammar<PureModelContextData>
     @Test
     public void testSimpleError()
     {
-        testError("Class A\n{", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":1,\"endLine\":2,\"sourceId\":\"\",\"startColumn\":1,\"startLine\":2}}");
+        testError("Class A\n{", "Unexpected token", new SourceInformation("", 2, 1, 2, 1));
     }
 
     private static final GrammarToJson grammarToJson = new GrammarToJson();

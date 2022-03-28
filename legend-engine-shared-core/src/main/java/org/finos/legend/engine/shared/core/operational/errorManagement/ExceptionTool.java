@@ -33,15 +33,25 @@ public class ExceptionTool
 
     public static Response exceptionManager(Exception exception, LoggingEventType eventType, Iterable<? extends CommonProfile> pm)
     {
-        return manage(eventType, pm, new ExceptionError(-1, exception));
+        return manage(eventType, pm, new ExceptionError(-1, exception), Response.Status.INTERNAL_SERVER_ERROR);
     }
 
     public static Response exceptionManager(String message, LoggingEventType eventType, Iterable<? extends CommonProfile> pm)
     {
-        return manage(eventType, pm, new ExceptionError(-1, message));
+        return manage(eventType, pm, new ExceptionError(-1, message), Response.Status.INTERNAL_SERVER_ERROR);
     }
 
-    private static Response manage(LoggingEventType eventType, Iterable<? extends CommonProfile> pm, ExceptionError error)
+    public static Response exceptionManager(Exception exception, LoggingEventType eventType, Response.Status status, Iterable<? extends CommonProfile> pm)
+    {
+        return manage(eventType, pm, new ExceptionError(-1, exception), status);
+    }
+
+    public static Response exceptionManager(String message, LoggingEventType eventType, Response.Status status, Iterable<? extends CommonProfile> pm)
+    {
+        return manage(eventType, pm, new ExceptionError(-1, message), status);
+    }
+
+    private static Response manage(LoggingEventType eventType, Iterable<? extends CommonProfile> pm, ExceptionError error, Response.Status status)
     {
         LOGGER.error(new LogInfo(pm, eventType, error).toString());
         String text;
@@ -57,6 +67,6 @@ public class ExceptionTool
         {
             GlobalTracer.get().activeSpan().setTag("error", text);
         }
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).type(MediaType.APPLICATION_JSON_TYPE).entity(error).build();
+        return Response.status(status).type(MediaType.APPLICATION_JSON_TYPE).entity(error).build();
     }
 }

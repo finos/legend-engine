@@ -30,3 +30,4 @@ SERVICE_TEST:                       'test';
 SERVICE_TEST_TESTS:                 'tests';
 SERVICE_DATA:                       'data';
 SERVICE_ASSERTS:                    'asserts';
+PARAM_GROUP:                        'list';

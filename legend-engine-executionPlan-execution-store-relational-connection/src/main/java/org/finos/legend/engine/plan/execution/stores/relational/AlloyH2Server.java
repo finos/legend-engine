@@ -24,7 +24,7 @@ public class AlloyH2Server extends Server
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AlloyH2Server.class);
 
     private static final String H2_ALLOWED_CLASSES_PROPERTY = "h2.allowedClasses";
-    private static final String H2_ALLOWED_CLASSES_DEFAULT = "org.h2.*";
+    private static final String H2_ALLOWED_CLASSES_DEFAULT = "org.h2.*,org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions";
 
     public static Server startServer(int port) throws SQLException
     {

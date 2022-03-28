@@ -62,6 +62,23 @@ Database simple::store::SnowflakeDB
   Join manager(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
 )
 
+Database simple::store::H2DB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS VARCHAR(1000),
+      MANAGERID INTEGER
+    )
+  )
+
+  Join manager(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
+)
+
 
 ###ExternalFormat
 Binding simple::store::FirmBinding
@@ -91,6 +108,22 @@ Mapping simple::mapping::SnowflakeMapping
   }
 )
 
+Mapping simple::mapping::H2Mapping
+(
+  simple::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [simple::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [simple::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [simple::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding simple::store::FirmBinding : [simple::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    manager[simple_model_Person]: [simple::store::H2DB]@manager
+  }
+)
+
 ###Runtime
 Runtime simple::runtime::SnowflakeRuntime
 {
@@ -107,6 +140,41 @@ Runtime simple::runtime::SnowflakeRuntime
                     store: simple::store::SnowflakeDB;
                     type: Snowflake;
                     specification: LocalH2{};
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+Runtime simple::runtime::H2Runtime
+{
+    mappings :
+    [
+        simple::mapping::H2Mapping
+    ];
+    connections :
+    [
+        simple::store::H2DB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: simple::store::H2DB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP SCHEMA IF EXISTS PERSON_SCHEMA CASCADE;',
+                            'CREATE SCHEMA PERSON_SCHEMA;',
+                            'CREATE TABLE PERSON_SCHEMA.PERSON_TABLE(ID INT PRIMARY KEY, FIRSTNAME VARCHAR(100), LASTNAME VARCHAR(100), FIRM_DETAILS VARCHAR(1000), MANAGERID INT);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (1,\'Peter\',\'Smith\',\'{"legalName": "Firm X", "employeeCount": 4, "mnc": true, "estDate": "2010-03-04", "lastUpdate": "2022-01-16T01:00:00", "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\',2);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (2,\'John\',\'Johnson\',\'{"legalName": "Firm X", "employeeCount": 4, "mnc": true, "estDate": "2010-03-04", "lastUpdate": "2022-01-16T01:00:00", "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\',4);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (3,\'John\',\'Hill\',\'{"legalName": "Firm X", "employeeCount": 4, "mnc": true, "estDate": "2010-03-04", "lastUpdate": "2022-01-16T01:00:00", "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\',2);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (4,\'Anthony\',\'Allen\',\'{"legalName": "Firm X", "employeeCount": 4, "mnc": true, "estDate": "2010-03-04", "lastUpdate": "2022-01-16T01:00:00", "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\',null)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (5,\'Fabrice\',\'Roberts\',\'{"legalName": "Firm A", "employeeCount": 1, "mnc": false, "estDate": "2012-11-13", "lastUpdate": "2022-02-14T03:00:00", "otherNames": ["O3", "O4"], "address": {"name": "A2", "lines": [{"details": "D4"}, {"details": "D5"}]}}\',null)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (6,\'Oliver\',\'Hill\',\'{"legalName": "Firm B", "employeeCount": 2, "mnc": true, "estDate": "2017-7-7", "lastUpdate": "2022-9-01T06:00:00", "otherNames": ["O5", "O6"], "address": {"name": "A3", "street": "S2", "lines": [{"details": "D5"},{"details": "D6"}]}}\',7)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (7,\'David\',\'Harris\',\'{"legalName": "Firm B", "employeeCount": 2, "mnc": true, "estDate": "2017-7-7", "lastUpdate": "2022-9-01T06:00:00", "otherNames": ["O5", "O6"], "address": {"name": "A3", "lines": [{"details": "D5"},{"details": "D6"}]}}\',null)'
+                        ];
+                    };
                     auth: Test;
                 }
             }#

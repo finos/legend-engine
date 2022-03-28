@@ -107,38 +107,59 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService
      (
-         ~paramMapping
+         ~request
          (
-            id : $this.s_tradeId->split(':')->at(0)
+            parameters
+            (
+                id = $this.s_tradeId->split(':')->at(0)
+            )
          )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService
      (
-         s_productId : $service.parameters.id
+         ~request
+         (
+            parameters
+            (
+                id = $this.s_productId
+            )
+         )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameService
      (
-         ~paramMapping
+         ~request
          (
-            name : 'product 30'
+            parameters
+            (
+                name = 'product 30'
+            )
          )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameAndDescriptionService
      (
-         s_productName : $service.parameters.name,
-         s_description : $service.parameters.description
+         ~request
+         (
+            parameters
+            (
+                name = $this.s_productName,
+                description = $this.s_description
+            )
+         )
      )
 
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameAndDescriptionService
      (
-         ~paramMapping
+         ~request
          (
-            name : 'product 30'
+            parameters
+            (
+                name = 'product 30',
+                description = $this.s_description
+            )
          )
-         s_description : $service.parameters.description
      )
   }
 

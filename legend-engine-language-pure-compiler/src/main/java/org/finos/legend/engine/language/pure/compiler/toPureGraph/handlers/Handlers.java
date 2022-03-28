@@ -419,6 +419,9 @@ public class Handlers
         register("meta::pure::functions::constraints::warn_Boolean_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
 
         register("meta::pure::functions::lang::subType_Any_m__T_1__T_m_", false, ps -> res(ps.get(1)._genericType(), ps.get(0)._multiplicity()));
+        register(h("meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "zeroOne"), ps -> isOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "zeroOne"), ps -> isZeroOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_", false, ps -> res(ps.get(1)._genericType(), "zeroMany"), ps -> true));
         register("meta::pure::functions::lang::orElse_T_$0_1$__T_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"));
 
         register(h("meta::pure::functions::string::contains_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),

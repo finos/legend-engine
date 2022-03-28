@@ -16,14 +16,18 @@ package org.finos.legend.engine.test.runner.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.utility.internal.IteratorIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
@@ -60,6 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shar
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
+import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_List_Impl;
 import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
@@ -348,11 +353,47 @@ public class ServiceTestGenerationHelper
 
     private static MutableList<String> getSql(Runtime runtime, String mappingPath, String testData, PureModel pureModel)
     {
+        if (testData.contains("\""))
+        {
+            // If testData has quotes, expectation is to not split on comma characters within quoted strings
+            // The split function in PURE does not handle this
+            // Hence, try to use an advanced CSV parser in such situations
+            try
+            {
+                return getSetupSqlsForCsvDataWithQuotes(runtime, mappingPath, testData, pureModel);
+            }
+            catch (Exception ignored)
+            {
+                // Ignore and try sql generation with existing logic
+            }
+        }
+
         return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_String_1__Mapping_MANY__Runtime_1__String_MANY_(
                 testData,
                 Lists.immutable.with(pureModel.getMapping(mappingPath)),
                 HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
                 pureModel.getExecutionSupport()));
+    }
+
+    private static MutableList<String> getSetupSqlsForCsvDataWithQuotes(Runtime runtime, String mappingPath, String testData, PureModel pureModel)
+    {
+        try (CSVParser csvParser = CSVParser.parse(testData, CSVFormat.DEFAULT.withRecordSeparator("\n")))
+        {
+            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.List<String>> csvRecords = ListIterate.collect(
+                    csvParser.getRecords(),
+                    record -> new Root_meta_pure_functions_collection_List_Impl<String>("")._values(IteratorIterate.collect(record.iterator(), x -> x, FastList.newList()))
+            );
+
+            return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_List_MANY__Mapping_MANY__Runtime_1__String_MANY_(
+                    csvRecords,
+                    Lists.immutable.with(pureModel.getMapping(mappingPath)),
+                    HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
+                    pureModel.getExecutionSupport()));
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Runtime buildRelationalTestRuntime(Runtime runtime, String mappingPath, String testDataCsv, List<String> sql)

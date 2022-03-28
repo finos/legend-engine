@@ -16,8 +16,10 @@ package org.finos.legend.engine.plan.execution.stores.service.plugin;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.dependencies.store.serviceStore.IServiceParametersResolutionExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -34,6 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.util.List;
 import java.util.Map;
 
 public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
@@ -57,7 +60,7 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
                 scope.span().setTag("raw url", ((RestServiceExecutionNode) executionNode).url);
                 scope.span().setTag("method", ((RestServiceExecutionNode) executionNode).method.toString());
                 RestServiceExecutionNode node = (RestServiceExecutionNode) executionNode;
-                return ServiceExecutor.executeHttpService(node.url, node.params, node.method, node.mimeType, node.securitySchemes, this.executionState, this.profiles);
+                return ServiceExecutor.executeHttpService(node.url, node.params, node.requestBodyDescription, node.method, node.mimeType, node.securitySchemes, this.executionState, this.profiles);
             }
         }
         else if (executionNode instanceof ServiceParametersResolutionExecutionNode)
@@ -67,20 +70,17 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             IServiceParametersResolutionExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles);
             try
             {
-                Map<String, Object> inputMap = Maps.mutable.empty();
-                node.propertyInputMap.values().forEach(v -> {
-                    Result res = this.executionState.getResult(v);
-                    if (res instanceof ConstantResult)
-                    {
-                        inputMap.put(v, ((ConstantResult) res).getValue());
-                    }
-                    else
-                    {
-                        throw new RuntimeException(String.format("Expected Constant Result for %s. Found - %s", v, res.getClass().getSimpleName()));
-                    }
-                });
+                List<String> requiredSources = Lists.mutable.empty();
+                if (node.requiredVariableInputs != null)
+                {
+                    requiredSources.addAll(ListIterate.collect(node.requiredVariableInputs, s -> s.name));
+                }
+                if (node.propertyInputMap != null)
+                {
+                    requiredSources.addAll(node.propertyInputMap.values()); //TODO: TO BE REMOVED
+                }
 
-                Map<String, Object> outputMap = nodeSpecifics.resolveServiceParameters(inputMap);
+                Map<String, Object> outputMap = nodeSpecifics.resolveServiceParameters(getInputMapForSources(requiredSources));
                 outputMap.forEach((key, value) -> this.executionState.addParameterValue(key, value));
             }
             catch (Exception e)
@@ -93,6 +93,24 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
         {
             return null;
         }
+    }
+
+    private Map<String, Object> getInputMapForSources(List<String> sources)
+    {
+        Map<String, Object> inputMap = Maps.mutable.empty();
+        sources.forEach(v -> {
+            Result res = this.executionState.getResult(v);
+            if (res instanceof ConstantResult)
+            {
+                inputMap.put(v, ((ConstantResult) res).getValue());
+            }
+            else
+            {
+                throw new RuntimeException(String.format("Expected Constant Result for %s. Found - %s", v, res.getClass().getSimpleName()));
+            }
+        });
+
+        return inputMap;
     }
 
     @Deprecated

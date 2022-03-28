@@ -21,15 +21,11 @@ import java.util.function.Supplier;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.Iterate;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
-
 /*
     The selector is used to load a flow provider from the classpath.
  */
 public class DatabaseAuthenticationFlowProviderSelector
 {
-    public static final String DATABASE_AUTH_FLOW_PROVIDER_IMPL_CLASS = "org.finos.legend.engine.execution.databaseAuthFlowProviderImplClass";
-
     public static Optional<DatabaseAuthenticationFlowProvider> INSTANCE = null;
 
     private DatabaseAuthenticationFlowProviderSelector()
@@ -37,46 +33,10 @@ public class DatabaseAuthenticationFlowProviderSelector
         // singleton
     }
 
-    public static void disableFlowProvider()
-    {
-        System.clearProperty(DatabaseAuthenticationFlowProviderSelector.DATABASE_AUTH_FLOW_PROVIDER_IMPL_CLASS);
-    }
-
-    public static void enableLegendDefaultFlowProvider()
-    {
-        System.setProperty(DatabaseAuthenticationFlowProviderSelector.DATABASE_AUTH_FLOW_PROVIDER_IMPL_CLASS, LegendDefaultDatabaseAuthenticationFlowProvider.class.getCanonicalName());
-    }
-
-    public static void enableFlowProvider(Class clazz)
-    {
-        System.setProperty(DatabaseAuthenticationFlowProviderSelector.DATABASE_AUTH_FLOW_PROVIDER_IMPL_CLASS, clazz.getCanonicalName());
-    }
-
-    public static synchronized Optional<DatabaseAuthenticationFlowProvider> getProvider()
-    {
-        Supplier<MutableList<DatabaseAuthenticationFlowProvider>> locator = () -> Iterate.addAllTo(ServiceLoader.load(DatabaseAuthenticationFlowProvider.class), Lists.mutable.empty());
-        return getProviderImpl(locator);
-    }
-
     public static synchronized Optional<DatabaseAuthenticationFlowProvider> getProvider(String flowProviderClass)
     {
         Supplier<MutableList<DatabaseAuthenticationFlowProvider>> locator = () -> Iterate.addAllTo(ServiceLoader.load(DatabaseAuthenticationFlowProvider.class), Lists.mutable.empty());
         return getProviderImpl(locator, flowProviderClass);
-    }
-
-    public static synchronized Optional<DatabaseAuthenticationFlowProvider> getProviderForTests(Supplier<MutableList<DatabaseAuthenticationFlowProvider>> locator)
-    {
-        return getProviderImpl(locator);
-    }
-
-    private static synchronized Optional<DatabaseAuthenticationFlowProvider> getProviderImpl(Supplier<MutableList<DatabaseAuthenticationFlowProvider>> locator)
-    {
-        String databaseAuthFlowProviderImplClass = System.getProperty(DATABASE_AUTH_FLOW_PROVIDER_IMPL_CLASS);
-        if (databaseAuthFlowProviderImplClass == null)
-        {
-            return Optional.empty();
-        }
-        return getProviderImpl(locator, databaseAuthFlowProviderImplClass);
     }
 
     private static synchronized Optional<DatabaseAuthenticationFlowProvider> getProviderImpl(Supplier<MutableList<DatabaseAuthenticationFlowProvider>> locator, String databaseAuthFlowProviderImplClass)

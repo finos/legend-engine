@@ -16,7 +16,8 @@ unquotedIdentifier:                         VALID_STRING
                                             | DESCRIPTION | SERVICE_GROUP | SERVICE
                                             | PATH | REQUEST_BODY | METHOD | PARAMETERS | RESPONSE | SECURITY_SCHEME
                                             | ALLOW_RESERVED | REQUIRED | LOCATION | STYLE | EXPLODE | ENUM
-                                            | SERVICE_MAPPING | PARAM_MAPPING | SERVICE_REFERENCE
+                                            | SERVICE_MAPPING | PATH_OFFSET | REQUEST | BODY | SERVICE_REFERENCE
+                                            | PARAM_MAPPING                     // TODO: TO BE REMOVED
 ;
 
 identifier:                                 unquotedIdentifier | STRING
@@ -119,14 +120,26 @@ classMapping:                               (localPropertyDefinition)*
 localPropertyDefinition:                    PLUS identifier COLON type multiplicity SEMI_COLON
 ;
 serviceMapping:                             SERVICE_MAPPING mappingService
-                                            (PAREN_OPEN (pathMappingBlock)? (parametersMappingBlock)? (mappingBlock)? PAREN_CLOSE)?
+                                            (PAREN_OPEN (pathOffsetBlock)? (requestBuildingBlock)? (parametersMappingBlock)? (mappingBlock)? PAREN_CLOSE)?
 ;
 mappingService:                             BRACKET_OPEN qualifiedName BRACKET_CLOSE servicePath
 ;
 servicePath:                                identifier (DOT identifier)*
 ;
-pathMappingBlock:                           PATH_MAPPING SERVICE_REFERENCE DOT RESPONSE (DOT identifier)*
+pathOffsetBlock:                            PATH_OFFSET SERVICE_REFERENCE DOT RESPONSE (DOT identifier)*
 ;
+requestBuildingBlock:                       REQUEST PAREN_OPEN (requestParametersBuildingBlock)? (requestBodyBuildingBlock)? PAREN_CLOSE
+;
+requestParametersBuildingBlock:             PARAMETERS PAREN_OPEN (parameterBuildingBlock (COMMA parameterBuildingBlock)*) PAREN_CLOSE
+;
+parameterBuildingBlock:                     parameterName EQUAL combinedExpression
+;
+requestBodyBuildingBlock:                   BODY EQUAL combinedExpression
+;
+
+
+// -------------------------------------- SERVICE_STORE MAPPING - TODO: TO BE REMOVED --------------------------------------
+
 parametersMappingBlock:                     PARAM_MAPPING PAREN_OPEN (parameterMapping (COMMA parameterMapping)*) PAREN_CLOSE
 ;
 parameterMapping:                           parameterName COLON combinedExpression

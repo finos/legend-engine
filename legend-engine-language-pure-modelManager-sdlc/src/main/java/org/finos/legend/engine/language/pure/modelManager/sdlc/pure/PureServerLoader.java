@@ -15,7 +15,8 @@
 package org.finos.legend.engine.language.pure.modelManager.sdlc.pure;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -49,16 +50,23 @@ public class PureServerLoader
         return  metaDataServerConfiguration.getPure().getBaseUrl()+ "/alloy/pureServerBaseVersion" + urlSuffix;
     }
 
-    private String buildPureMetadataURL(PackageableElementPointer pointer, String urlSegment, String clientVersion, String urlSuffix)
+    protected String buildPureMetadataURL(PackageableElementPointer pointer, String urlSegment, String clientVersion, String urlSuffix)
     {
         return metaDataServerConfiguration.getPure().getBaseUrl() + "/alloy/" + urlSegment + "/" + clientVersion + "/" + pointer.path + urlSuffix;
+    }
+
+    protected HttpUriRequest buildRequest(String url, MutableList<CommonProfile> profiles)
+    {
+        RequestBuilder builder = RequestBuilder.get(url);
+        HttpUriRequest httpUriRequest =  builder.build();
+        return httpUriRequest;
     }
 
     public String getBaseServerVersion(MutableList<CommonProfile> profiles, Subject executionSubject)
     {
         CloseableHttpClient httpclient =  (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
-        HttpGet httpGet = new HttpGet(buildPureMetadataVersionURL(executionSubject == null ? "" : "?auth=kerberos"));
-        try (CloseableHttpResponse response = httpclient.execute(httpGet))
+        HttpUriRequest request = buildRequest(buildPureMetadataVersionURL(executionSubject == null ? "" : "?auth=kerberos"),profiles);
+        try (CloseableHttpResponse response = httpclient.execute(request))
         {
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode < 200 || statusCode >= 300)

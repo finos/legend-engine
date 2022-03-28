@@ -105,7 +105,13 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
   {
      ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductsByIdsService
      (
-         s_productId : $service.parameters.id
+         ~request
+         (
+            parameters
+            (
+                id = $this.s_productId
+            )
+         )
      )
   }
 
