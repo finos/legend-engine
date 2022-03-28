@@ -69,6 +69,7 @@ public class GCPWorkloadIdentityFederationAuthenticationStrategy extends Authent
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
         connectionProperties.put("OAuthAccessToken", oAuthCredential.getAccessToken());
+        connectionProperties.put("OAuthType","2");
         return Tuples.pair(url, connectionProperties);
     }
 
