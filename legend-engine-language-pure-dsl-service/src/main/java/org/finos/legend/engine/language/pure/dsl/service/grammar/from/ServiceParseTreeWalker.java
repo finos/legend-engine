@@ -44,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -257,8 +258,28 @@ public class ServiceParseTreeWalker
 
     private List<ValueSpecification> visitTestParameters(ServiceParserGrammar.TestParametersContext ctx)
     {
-        List<ValueSpecification> testParameters = ctx != null && ctx.primitiveValue() != null ? ListIterate.collect(ctx.primitiveValue(), this::visitTestParameter): null;
+        List<ValueSpecification> testParameters = ctx != null && ctx.testParam() != null ? ListIterate.collect(ctx.testParam(), this::visitParam): null;
         return testParameters;
+    }
+
+    private ValueSpecification visitParam(ServiceParserGrammar.TestParamContext ctx)
+    {
+        if(ctx != null)
+        {
+            if(ctx.testListValueParam() != null)
+            {
+                List<ValueSpecification> paramValues = ListIterate.collect(ctx.testListValueParam().primitiveValue(), this::visitTestParameter);
+                PureList param =  new PureList();
+                param.values = paramValues;
+                param.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.testListValueParam());
+                return param;
+            }
+            else if(ctx.testSingleValueParam() != null)
+            {
+                return visitTestParameter(ctx.testSingleValueParam().primitiveValue());
+            }
+        }
+        throw new UnsupportedOperationException();
     }
 
     private ValueSpecification visitTestParameter(ServiceParserGrammar.PrimitiveValueContext ctx) {
