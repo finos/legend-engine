@@ -12,22 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.server.test.pureClient.stores;
+package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.finos.legend.engine.server.test.shared.PureTestHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.junit.Ignore;
+
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.*;
 
+
+//Base classs for db specific tests - dont run this test directly
+@Ignore
 public class Test_Relational_DbSpecific_UsingPureClientTestSuite extends TestSuite
 {
     public static Test createSuite(String pureTestCollectionPath,String testServerConfigFilePath){
             return wrapSuite(
                     () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
                     () -> {
-                        CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
+                        CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport(true);
                         TestSuite suite = new TestSuite();
                         suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 

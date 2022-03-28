@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.server.test.pureClient.stores;
+package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
 import junit.framework.Test;
 
-public class Test_Relational_SqlServer_UsingPureClientTestSuite extends Test_Relational_DbSpecific_UsingPureClientTestSuite
+public class Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite
+        extends Test_Relational_DbSpecific_UsingPureClientTestSuite
 {
     public static Test suite()
     {
-        return createSuite("meta::relational::tests::dbSpecificTests::SqlServer","org/finos/legend/engine/server/test/userTestConfig_withH2TestConnection.json");
+        return createSuite("meta::relational::tests::dbSpecificTests::SqlServer","org/finos/legend/engine/server/test/userTestConfig_withSqlServerTestConnection.json");
     }
 }
 

@@ -380,8 +380,20 @@ public class PureTestHelper
 
     public static CompiledExecutionSupport getClassLoaderExecutionSupport()
     {
+        return getClassLoaderExecutionSupport(false);
+    }
+
+    public static CompiledExecutionSupport getClassLoaderExecutionSupport(boolean enableConsole)
+    {
         ConsoleCompiled console = new ConsoleCompiled();
-        console.disable();
+        if ( enableConsole == true )
+        {
+            console.enable();
+        }
+        else
+        {
+            console.disable();
+        }
 
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
