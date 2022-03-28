@@ -59,7 +59,7 @@ public class GCPApplicationDefaultCredentialsAuthenticationStrategy extends Auth
     {
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        connectionProperties.put("OAuthType", 3);
+        connectionProperties.put("OAuthType", "3");
         return Tuples.pair(url, connectionProperties);
     }
 
