@@ -169,13 +169,26 @@ public class HelperPersistenceBuilder
     private static Property<?, ?> validateAndResolveProperty(Class<?> modelClass, String propertyName, SourceInformation sourceInformation, CompileContext context)
     {
         Property<?, ?> property = modelClass._properties().detect(p -> p._name().equals(propertyName));
-        Assert.assertTrue(property != null, () -> String.format("Property '%s' must exist in class '%s::%s'", propertyName, modelClass._package(), modelClass._name()), sourceInformation, EngineErrorType.COMPILATION);
+        Assert.assertTrue(property != null, () -> String.format("Property '%s' must exist in class '%s'", propertyName, determineFullPath(modelClass)), sourceInformation, EngineErrorType.COMPILATION);
         return property;
     }
 
     private static String validateAndResolvePropertyName(Class<?> modelClass, String propertyName, SourceInformation sourceInformation, CompileContext context)
     {
         return validateAndResolveProperty(modelClass, propertyName, sourceInformation, context)._name();
+    }
+
+    private static String determineFullPath(Type type)
+    {
+        Deque<String> deque = new ArrayDeque<>();
+        Package currentPackage = type._package();
+        while (!currentPackage._name().equals("Root"))
+        {
+            deque.push(currentPackage._name());
+            currentPackage = currentPackage._package();
+        }
+
+        return Iterate.makeString(deque, "", "::", "::" + type._name());
     }
 
     // helper visitors for class hierarchies
@@ -279,19 +292,6 @@ public class HelperPersistenceBuilder
 
                 return determineFullPath(leafType);
             });
-        }
-
-        private String determineFullPath(Type leafType)
-        {
-            Deque<String> deque = new ArrayDeque<>();
-            Package currentPackage = leafType._package();
-            while (!currentPackage._name().equals("Root"))
-            {
-                deque.push(currentPackage._name());
-                currentPackage = currentPackage._package();
-            }
-
-            return Iterate.makeString(deque, "", "::", "::" + leafType._name());
         }
     }
 
