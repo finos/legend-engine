@@ -1028,9 +1028,9 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         Root_meta_pure_persistence_metamodel_persister_Persister persister = persistence._persister();
         assertNotNull(persister);
         assertTrue(persister instanceof Root_meta_pure_persistence_metamodel_persister_BatchPersister);
+        Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister = (Root_meta_pure_persistence_metamodel_persister_BatchPersister) persister;
 
         // binding
-        Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister = (Root_meta_pure_persistence_metamodel_persister_BatchPersister) persister;
         Root_meta_external_shared_format_binding_Binding binding = batchPersister._binding();
         assertNotNull(binding);
         assertEquals("application/json", binding._contentType());
@@ -1040,10 +1040,10 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         assertNotNull(ingestMode);
         assertTrue(ingestMode instanceof Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta);
         Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta bitemporalDelta = (Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta) ingestMode;
-        Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy mergeStrategy = bitemporalDelta._mergeStrategy();
-        assertNotNull(mergeStrategy);
 
         // merge strategy
+        Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy mergeStrategy = bitemporalDelta._mergeStrategy();
+        assertNotNull(mergeStrategy);
         assertTrue(mergeStrategy instanceof Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_DeleteIndicatorMergeStrategy);
         Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_DeleteIndicatorMergeStrategy deleteIndicator = (Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_DeleteIndicatorMergeStrategy) mergeStrategy;
         assertEquals("deleted", deleteIndicator._deleteField());
@@ -1053,5 +1053,21 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         assertEquals("true", deleteValues.get(1));
 
         // transaction milestoning
+        Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning txnMilestoning = bitemporalDelta._transactionMilestoning();
+        assertNotNull(txnMilestoning);
+        assertTrue(txnMilestoning instanceof Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdAndDateTimeTransactionMilestoning);
+        Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdAndDateTimeTransactionMilestoning batchIdAndDateTimeTxnMilestoning = (Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdAndDateTimeTransactionMilestoning) txnMilestoning;
+        assertEquals("batchIdIn", batchIdAndDateTimeTxnMilestoning._batchIdInName());
+        assertEquals("batchIdOut", batchIdAndDateTimeTxnMilestoning._batchIdOutName());
+        assertEquals("IN_Z", batchIdAndDateTimeTxnMilestoning._dateTimeInName());
+        assertEquals("OUT_Z", batchIdAndDateTimeTxnMilestoning._dateTimeOutName());
+
+        // validity milestoning
+        Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning validMilestoning = bitemporalDelta._validityMilestoning();
+        assertNotNull(validMilestoning);
+        assertTrue(validMilestoning instanceof Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning);
+        Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning dateTimeValidMilestoning = (Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning) validMilestoning;
+        assertEquals("FROM_Z", dateTimeValidMilestoning._dateTimeFromName());
+        assertEquals("THRU_Z", dateTimeValidMilestoning._dateTimeThruName());
     }
 }
