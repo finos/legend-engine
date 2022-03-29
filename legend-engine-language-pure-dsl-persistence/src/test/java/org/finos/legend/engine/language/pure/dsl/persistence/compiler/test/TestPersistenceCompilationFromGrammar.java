@@ -1069,5 +1069,13 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning dateTimeValidMilestoning = (Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning) validMilestoning;
         assertEquals("FROM_Z", dateTimeValidMilestoning._dateTimeFromName());
         assertEquals("THRU_Z", dateTimeValidMilestoning._dateTimeThruName());
+
+        // validity derivation
+        Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation validityDerivation = dateTimeValidMilestoning._derivation();
+        assertNotNull(validityDerivation);
+        assertTrue(validityDerivation instanceof Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate);
+        Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate sourceSpecifiesFromAndThru = (Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate) validityDerivation;
+        assertEquals("effectiveFrom", sourceSpecifiesFromAndThru._sourceDateTimeFromField());
+        assertEquals("effectiveThru", sourceSpecifiesFromAndThru._sourceDateTimeThruField());
     }
 }

@@ -70,7 +70,6 @@ public class HelperPersistenceBuilder
     private static final TriggerBuilder TRIGGER_BUILDER = new TriggerBuilder();
     private static final AuditingBuilder AUDITING_BUILDER = new AuditingBuilder();
     private static final TransactionMilestoningBuilder TRANSACTION_MILESTONING_BUILDER = new TransactionMilestoningBuilder();
-    private static final ValidityMilestoningBuilder VALIDITY_MILESTONING_BUILDER = new ValidityMilestoningBuilder();
 
     private HelperPersistenceBuilder()
     {
@@ -154,14 +153,14 @@ public class HelperPersistenceBuilder
         return transactionMilestoning.accept(TRANSACTION_MILESTONING_BUILDER);
     }
 
-    public static Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning buildValidityMilestoning(ValidityMilestoning validityMilestoning)
+    public static Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning buildValidityMilestoning(ValidityMilestoning validityMilestoning, Iterable<String> leafModelClasses, CompileContext context)
     {
-        return validityMilestoning.accept(VALIDITY_MILESTONING_BUILDER);
+        return validityMilestoning.accept(new ValidityMilestoningBuilder(leafModelClasses, context));
     }
 
-    public static Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation buildValidityDerivation(ValidityDerivation validityDerivation, Class<?> modelClass, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation buildValidityDerivation(ValidityDerivation validityDerivation, Iterable<String> leafModelClasses, CompileContext context)
     {
-        return validityDerivation.accept(new ValidityDerivationBuilder(modelClass, context));
+        return validityDerivation.accept(new ValidityDerivationBuilder(leafModelClasses, context));
     }
 
     // helper methods
@@ -401,7 +400,7 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_BitemporalSnapshot_Impl("")
                     ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning))
-                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning));
+                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning, leafModelClasses, context));
         }
 
         @Override
@@ -426,7 +425,7 @@ public class HelperPersistenceBuilder
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta_Impl("")
                     ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, leafModelClasses, context))
                     ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning))
-                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning));
+                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning, leafModelClasses, context));
         }
 
         @Override
@@ -521,10 +520,20 @@ public class HelperPersistenceBuilder
 
     private static class ValidityMilestoningBuilder implements ValidityMilestoningVisitor<Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning>
     {
+        private final Iterable<String> leafModelClasses;
+        private final CompileContext context;
+
+        private ValidityMilestoningBuilder(Iterable<String> leafModelClasses, CompileContext context)
+        {
+            this.leafModelClasses = leafModelClasses;
+            this.context = context;
+        }
+
         @Override
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning visit(DateTimeValidityMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning_Impl("")
+                    ._derivation(buildValidityDerivation(val.derivation, leafModelClasses, context))
                     ._dateTimeFromName(val.dateTimeFromName)
                     ._dateTimeThruName(val.dateTimeThruName);
         }
@@ -532,28 +541,43 @@ public class HelperPersistenceBuilder
 
     private static class ValidityDerivationBuilder implements ValidityDerivationVisitor<Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation>
     {
-        private final Class<?> modelClass;
+        private final Iterable<String> leafModelClasses;
         private final CompileContext context;
 
-        private ValidityDerivationBuilder(Class<?> modelClass, CompileContext context)
+        private ValidityDerivationBuilder(Iterable<String> leafModelClasses, CompileContext context)
         {
-            this.modelClass = modelClass;
+            this.leafModelClasses = leafModelClasses;
             this.context = context;
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromAndThruDateTime val)
         {
+            String sourceDateTimeFromField = Lists.immutable.ofAll(leafModelClasses)
+                    .collect(c -> validateAndResolvePropertyName(context.resolveClass(c), val.sourceDateTimeFromField, val.sourceInformation, context))
+                    .distinct()
+                    .getOnly();
+
+            String sourceDateTimeThruField = Lists.immutable.ofAll(leafModelClasses)
+                    .collect(c -> validateAndResolvePropertyName(context.resolveClass(c), val.sourceDateTimeThruField, val.sourceInformation, context))
+                    .distinct()
+                    .getOnly();
+
             return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl("")
-                    ._sourceDateTimeFromField(validateAndResolvePropertyName(modelClass, val.sourceDateTimeFromField, val.sourceInformation, context))
-                    ._sourceDateTimeThruField(validateAndResolvePropertyName(modelClass, val.sourceDateTimeThruField, val.sourceInformation, context));
+                    ._sourceDateTimeFromField(sourceDateTimeFromField)
+                    ._sourceDateTimeThruField(sourceDateTimeThruField);
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromDateTime val)
         {
+            String sourceDateTimeFromField = Lists.immutable.ofAll(leafModelClasses)
+                    .collect(c -> validateAndResolvePropertyName(context.resolveClass(c), val.sourceDateTimeFromField, val.sourceInformation, context))
+                    .distinct()
+                    .getOnly();
+
             return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl("")
-                    ._sourceDateTimeFromField(validateAndResolvePropertyName(modelClass, val.sourceDateTimeFromField, val.sourceInformation, context));
+                    ._sourceDateTimeFromField(sourceDateTimeFromField);
         }
     }
 }
