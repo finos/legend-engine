@@ -108,6 +108,11 @@ public class HelperPersistenceBuilder
 
     public static Root_meta_external_shared_format_binding_Binding buildBinding(Persister persister, CompileContext context)
     {
+        if (persister.binding == null)
+        {
+            return null;
+        }
+
         String binding = persister.binding;
         String bindingPath = binding.substring(0, binding.lastIndexOf("::"));
         String bindingName = binding.substring(binding.lastIndexOf("::") + 2);
@@ -123,6 +128,11 @@ public class HelperPersistenceBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(Connection connection, CompileContext context)
     {
+        if (connection == null)
+        {
+            return null;
+        }
+
         org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
         connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
         return pureConnection;
