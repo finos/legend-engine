@@ -212,9 +212,9 @@ public class HelperValueSpecificationBuilder
                         ._genericType(genericType)
                         ._multiplicity(multiplicity)
                         ._parametersValues(processedParameters);
-                if (Milestoning.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
+                if (MilestoningDatePropagationHelper.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
                 {
-                    Milestoning.updateFunctionExpressionWithMilestoningDateParams((FunctionExpression)result, foundProperty, sourceInformation, processingContext);
+                    MilestoningDatePropagationHelper.updateFunctionExpressionWithMilestoningDateParams((FunctionExpression)result, foundProperty, sourceInformation, processingContext);
                 }
                 MilestoningDatePropagationHelper.updateMilestoningContext(foundProperty, processingContext, context, (SimpleFunctionExpression) result);
             }

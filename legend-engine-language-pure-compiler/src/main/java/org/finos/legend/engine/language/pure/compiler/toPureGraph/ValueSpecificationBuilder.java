@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -87,7 +86,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_tds_SortInformation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapAggregation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapRank_Impl;
 import org.finos.legend.pure.generated.platform_pure_graph;
-import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
@@ -488,7 +486,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(AppliedFunction appliedFunction)
     {
         processingContext.push("Applying " + appliedFunction.function);
-        MilestoningDatePropagationHelper.checkForValidSource(appliedFunction, false, processingContext);
+        MilestoningDatePropagationHelper.isValidSource (appliedFunction, processingContext);
         if (appliedFunction.function.equals("letFunction"))
         {
             MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> vs = ListIterate.collect(appliedFunction.parameters, expression -> expression.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)));
@@ -504,8 +502,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         Assert.assertTrue(func.getOne() != null, () -> "Can't find a match for function '" + appliedFunction.function + "(" + (func.getTwo() == null ? "?" : LazyIterate.collect(func.getTwo(), v -> (v._genericType() == null ? "?" : v._genericType()._rawType()._name()) + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(v._multiplicity())).makeString(",")) + ")'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
         ValueSpecification result = func.getOne();
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
-
-        MilestoningDatePropagationHelper.checkForValidSource(appliedFunction, true, processingContext);
         MilestoningDatePropagationHelper.updateMilestoningContextFromValidSources(result, processingContext);
         return result;
     }

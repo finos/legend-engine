@@ -26,10 +26,6 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ArrayIterate;
-import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl;
@@ -50,26 +46,17 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
-import org.finos.legend.pure.m3.navigation.profile.Profile;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 
 public class Milestoning
 {
-    public static final String ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
-    public static final String ALL_VERSIONS_PROPERTY_NAME_SUFFIX = "AllVersions";
-
-    private enum GeneratedMilestoningStereotype
+    public enum GeneratedMilestoningStereotype
     {
         generatedmilestoningproperty,
         generatedmilestoningdateproperty
@@ -117,11 +104,11 @@ public class Milestoning
     public static Iterable<? extends Property> generateMilestoningProperties(Class<Object> owner, CompileContext context)
     {
         MutableList<Property> generatedMilestoningProperties = Lists.mutable.empty();
-        MutableList<MilestoningStereotype> milestoningStereotype = Lists.mutable.ofAll(temporalStereotypes(owner._stereotypes()));
-        if (milestoningStereotype.notEmpty())
+        MilestoningStereotype milestoningStereotype = temporalStereotypes(owner._stereotypes());
+        if (milestoningStereotype != null)
         {
-            MutableList<Property> generatedMilestoningDateProperties = generateMilestoningDateProperties(context, milestoningStereotype.getFirst(), owner);
-            Property generatedMilestoningRangeProperty = generateMilestoningRangeProperty(context, milestoningStereotype.getFirst(), owner);
+            MutableList<Property> generatedMilestoningDateProperties = generateMilestoningDateProperties(context, milestoningStereotype, owner);
+            Property generatedMilestoningRangeProperty = generateMilestoningRangeProperty(context, milestoningStereotype, owner);
             generatedMilestoningProperties.withAll(generatedMilestoningDateProperties).with(generatedMilestoningRangeProperty);
         }
         return generatedMilestoningProperties;
@@ -194,12 +181,11 @@ public class Milestoning
 
     private static MilestoningPropertyTransformation milestoningPropertyTransformations(Property<?, ?> originalProperty, CompileContext context, Class<?> sourceClass, PropertyOwner propertyOwner)
     {
-        List<MilestoningStereotype> returnTypeMilestoningStereotypes = temporalStereotypes(originalProperty._genericType()._rawType()._stereotypes());
+        MilestoningStereotype returnTypeMilestoningStereotype = temporalStereotypes(originalProperty._genericType()._rawType()._stereotypes());
         MilestoningPropertyTransformation milestoningPropertyTransformation = new MilestoningPropertyTransformation(originalProperty);
 
-        if (!returnTypeMilestoningStereotypes.isEmpty())
+        if (returnTypeMilestoningStereotype != null)
         {
-            MilestoningStereotype returnTypeMilestoningStereotype = returnTypeMilestoningStereotypes.get(0);
             MutableList<Stereotype> stereotypes = Lists.mutable.withAll(originalProperty._stereotypes());
             MutableList<Stereotype> withMilestoningStereotype = stereotypes.with(generatedMilestoningStereotype(context, GeneratedMilestoningStereotype.generatedmilestoningproperty));
 
@@ -209,9 +195,9 @@ public class Milestoning
             MutableList<QualifiedProperty<?>> milestoningQualifiedPropertyWithArg = newSingleDateMilestoningQualifiedPropertyWithArg(context, sourceClass, propertyOwner, originalProperty, returnTypeMilestoningStereotype, withMilestoningStereotype, edgePointProperty);
             MutableList<QualifiedProperty<?>> milestoningRangeQualifiedProperty = generateMilestoningRangeQualifiedProperty(context, sourceClass, propertyOwner, originalProperty, returnTypeMilestoningStereotype, withMilestoningStereotype, edgePointProperty);
 
-            List<MilestoningStereotype> sourceMilestoningStereotype = temporalStereotypes(sourceClass._stereotypes());
+            MilestoningStereotype sourceMilestoningStereotype = temporalStereotypes(sourceClass._stereotypes());
             milestoningQualifiedPropertyWithArg.withAll(milestoningRangeQualifiedProperty);
-            if(!sourceMilestoningStereotype.isEmpty() && (sourceMilestoningStereotype.get(0).equals(returnTypeMilestoningStereotypes.get(0)) || MilestoningStereotypeEnum.bitemporal.equals(sourceMilestoningStereotype.get(0))))
+            if(sourceMilestoningStereotype != null && (sourceMilestoningStereotype.equals(returnTypeMilestoningStereotype) || MilestoningStereotypeEnum.bitemporal.equals(sourceMilestoningStereotype)))
             {
                 QualifiedProperty<?> milestoningQualifiedPropertyNoArg = newSingleDateMilestoningQualifiedPropertyNoArg(context, sourceClass, propertyOwner, originalProperty, returnTypeMilestoningStereotype, withMilestoningStereotype, edgePointProperty);
                 milestoningQualifiedPropertyWithArg.add(milestoningQualifiedPropertyNoArg);
@@ -478,14 +464,27 @@ public class Milestoning
         return property;
     }
 
+    private static Predicate<Property<?, ?>> isGeneratedMilestoningDateProperty()
+    {
+        return p -> p._stereotypes().anySatisfy(s -> s._value().equals(GeneratedMilestoningStereotype.generatedmilestoningdateproperty.name()));
+    }
+
     private static Predicate<Property> isGeneratedMilestoningNonDateProperty()
     {
         return p -> p._stereotypes().anySatisfy(s -> s._value().equals(GeneratedMilestoningStereotype.generatedmilestoningproperty.name()));
     }
 
-    public static List<MilestoningStereotype> temporalStereotypes(RichIterable<? extends Stereotype> stereotypes)
+    public static MilestoningStereotype temporalStereotypes(RichIterable<? extends Stereotype> stereotypes)
     {
-        return ArrayIterate.select(MilestoningStereotypeEnum.values(), e -> stereotypes.anySatisfy(s -> s._value().equals(e.getPurePlatformStereotypeName())));
+        List<MilestoningStereotype> milestoningStereotypes = ArrayIterate.select(MilestoningStereotypeEnum.values(), e -> stereotypes.anySatisfy(s -> s._value().equals(e.getPurePlatformStereotypeName())));
+        if (milestoningStereotypes.size() == 1)
+        {
+            return milestoningStereotypes.get(0);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private static Stereotype generatedMilestoningStereotype(CompileContext context, GeneratedMilestoningStereotype generatedMilestoningStereotype)
@@ -494,197 +493,4 @@ public class Milestoning
     }
 
     private static final ImmutableList<String> UNI_TEMPORAL_STEREOTYPE_NAMES = Lists.immutable.of("businesstemporal", "processingtemporal");
-
-    public static boolean isAllVersionsInRangeProperty(AbstractProperty<?> property, CompileContext context)
-    {
-        return isGeneratedMilestoningProperty(property, context) && property._name().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX);
-    }
-
-    public static boolean isGeneratedMilestoningProperty(AbstractProperty<?> property, CompileContext context)
-    {
-        String stereotype = String.valueOf(GeneratedMilestoningStereotype.generatedmilestoningproperty);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = context.pureModel.getProfile("meta::pure::profiles::milestoning");
-        Stereotype milestoningStereotype = (Stereotype) Profile.findStereotype(profile, stereotype);
-        RichIterable<? extends Stereotype> stereotypes =  property._stereotypes();
-        return stereotypes.detect(s -> s != null && milestoningStereotype.equals(s)) != null;
-    }
-
-    public static boolean isGeneratedQualifiedPropertyWithDatePropagationSupported(AbstractProperty<?> property, CompileContext context)
-    {
-        return property instanceof QualifiedProperty && isGeneratedMilestoningProperty(property, context) && !isAllVersionsInRangeProperty(property, context);
-    }
-
-    private static int getCountOfParametersSatisfyingMilestoningDateRequirments(QualifiedProperty milestonedQualifiedProperty, CompileContext context)
-    {
-        if (!isGeneratedMilestoningProperty(milestonedQualifiedProperty, context))
-        {
-            throw new EngineException("Unable to get milestoning date parameters for non milestoned QualifiedProperty: " + milestonedQualifiedProperty.getName());
-        }
-        Class returnType = (Class)milestonedQualifiedProperty._genericType()._rawType();
-        MilestoningStereotype milestoningStereotype = Lists.mutable.ofAll(temporalStereotypes(returnType._stereotypes())).getFirst();
-        return 1 + milestoningStereotype.getTemporalDatePropertyNames().size();
-    }
-
-    public static boolean isGeneratedMilestonedQualifiedPropertyWithMissingDates(AbstractProperty<?> property, CompileContext context, Integer parametersCount)
-    {
-        if (isGeneratedQualifiedPropertyWithDatePropagationSupported(property, context))
-        {
-            return parametersCount != getCountOfParametersSatisfyingMilestoningDateRequirments((QualifiedProperty)property, context);
-        }
-        return false;
-    }
-
-    public static boolean isProcessingTemporal(MilestoningStereotype milestoningStereotype)
-    {
-        return milestoningStereotype != null && milestoningStereotype.getPurePlatformStereotypeName() == "processingtemporal";
-    }
-
-    public static boolean isBusinessTemporal(MilestoningStereotype milestoningStereotype)
-    {
-        return milestoningStereotype != null && milestoningStereotype.getPurePlatformStereotypeName() == "businesstemporal";
-    }
-
-    private static boolean isSingleDateTemporal(MilestoningStereotype milestoningStereotype)
-    {
-        return milestoningStereotype != null && isProcessingTemporal(milestoningStereotype) || isBusinessTemporal(milestoningStereotype);
-    }
-
-    private static Type getMilestonedPropertyOwningType(AbstractProperty<?>property)
-    {
-        if (property._owner() instanceof Class)
-        {
-            return (Class) property._owner();
-        }
-        else if (property._owner() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association)
-        {
-            return ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association) property._owner())._originalMilestonedProperties().toList().select(prop -> prop._name() != property._name()).getFirst()._genericType()._rawType();
-
-        }
-        return null;
-    }
-
-    private static Pair<MilestoningStereotype, MilestoningStereotype> getSourceTargetMilestoningStereotypes(AbstractProperty<?> property)
-    {
-        Class source = (Class) getMilestonedPropertyOwningType(property);
-        Class target = (Class) property._genericType()._rawType();
-        MilestoningStereotype sourceTypeMilestoningStereotype = !Milestoning.temporalStereotypes(source._stereotypes()).isEmpty() ? Milestoning.temporalStereotypes(source._stereotypes()).get(0) : null;
-        MilestoningStereotype targetTypeMilestoningStereotype = !Milestoning.temporalStereotypes(target._stereotypes()).isEmpty() ? Milestoning.temporalStereotypes(target._stereotypes()).get(0) : null;
-        return Tuples.pair(sourceTypeMilestoningStereotype, targetTypeMilestoningStereotype);
-    }
-
-    public static boolean isBiTemporal(MilestoningStereotype milestoningStereotype)
-    {
-        return milestoningStereotype != null && milestoningStereotype.getPurePlatformStereotypeName() == "bitemporal";
-    }
-
-    private static void setMilestoningDateParameters(ValueSpecification[] dateParamValues, int index, ValueSpecification milestoningDate)
-    {
-        dateParamValues[index] = milestoningDate;
-    }
-
-    private static boolean oneDateParamSupplied(ListIterable<? extends ValueSpecification> parameterValues)
-    {
-        return parameterValues.size() == 2;
-    }
-
-    private static boolean noDateParamSupplied(ListIterable<? extends ValueSpecification> parameterValues)
-    {
-        return parameterValues.size() == 1;
-    }
-
-    public static void applyPropertyFunctionExpressionMilestonedDates(FunctionExpression fe, AbstractProperty<?> func, SourceInformation sourceInformation, ProcessingContext processingContext)
-    {
-        Pair<MilestoningStereotype, MilestoningStereotype> sourceTargetMilestoningStereotypes = getSourceTargetMilestoningStereotypes(func);
-        MilestoningStereotype sourceTypeMilestoning = sourceTargetMilestoningStereotypes.getOne();
-        MilestoningStereotype targetTypeMilestoning = sourceTargetMilestoningStereotypes.getTwo();
-        String propertyName = func.getName();
-        MutableList<? extends ValueSpecification> parametersValues = fe._parametersValues().toList();
-        ValueSpecification[] milestoningDateParameters = new ValueSpecification[targetTypeMilestoning.getTemporalDatePropertyNames().size()];
-        fe._originalMilestonedPropertyParametersValues(fe._parametersValues());
-
-        if (isBiTemporal(targetTypeMilestoning))
-        {
-            if (isBiTemporal(sourceTypeMilestoning) && oneDateParamSupplied(parametersValues))
-            {
-                milestoningDateParameters[0] =  processingContext.milestoningDatePropagationContext.getProcessingDate();
-                milestoningDateParameters[1] = parametersValues.get(1);
-            }
-            else if (isSingleDateTemporal(sourceTypeMilestoning) && oneDateParamSupplied(parametersValues))
-            {
-                int propagatedDateIndex = Objects.requireNonNull(sourceTypeMilestoning).positionInTemporalParameterValues();
-                ValueSpecification propagatedDate;
-                int otherPropagatedDateIndex;
-                if (isProcessingTemporal(sourceTypeMilestoning))
-                {
-                    propagatedDate =  processingContext.milestoningDatePropagationContext.getProcessingDate();
-                    otherPropagatedDateIndex = 1;
-                }
-                else
-                {
-                    propagatedDate =  processingContext.milestoningDatePropagationContext.getBusinessDate();
-                    otherPropagatedDateIndex = 0;
-                }
-                setMilestoningDateParameters(milestoningDateParameters, propagatedDateIndex, propagatedDate);
-                setMilestoningDateParameters(milestoningDateParameters, otherPropagatedDateIndex, parametersValues.get(1));
-            }
-            if (isBiTemporal(sourceTypeMilestoning) && noDateParamSupplied(parametersValues))
-            {
-                milestoningDateParameters[0] = processingContext.milestoningDatePropagationContext.getProcessingDate();
-                milestoningDateParameters[1] = processingContext.milestoningDatePropagationContext.getBusinessDate();
-            }
-            if(milestoningDateParameters[0] == null || milestoningDateParameters[1] == null)
-            {
-                throw new EngineException("No-Arg milestoned property: '" + propertyName + "' must be either called in a milestoning context or supplied with " + "[processingDate, businessDate]" + " parameters", sourceInformation, EngineErrorType.COMPILATION);
-            }
-        }
-        else if (isSingleDateTemporal(targetTypeMilestoning) && noDateParamSupplied(parametersValues))
-        {
-            ValueSpecification propagatedDate;
-            if (isProcessingTemporal(targetTypeMilestoning))
-            {
-                propagatedDate = processingContext.milestoningDatePropagationContext.getProcessingDate();
-            }
-            else
-            {
-                propagatedDate = processingContext.milestoningDatePropagationContext.getBusinessDate();
-            }
-            if (isBiTemporal(sourceTypeMilestoning))
-            {
-                setMilestoningDateParameters(milestoningDateParameters, 0, propagatedDate);
-            }
-            if (sourceTypeMilestoning == targetTypeMilestoning)
-            {
-                setMilestoningDateParameters(milestoningDateParameters, 0, propagatedDate);
-            }
-            if (milestoningDateParameters[0] == null)
-            {
-                if (isProcessingTemporal(targetTypeMilestoning))
-                {
-                    throw new EngineException("No-Arg milestoned property: '" + propertyName + "' must be either called in a milestoning context or supplied with " + "[processingDate]" + " parameters", sourceInformation, EngineErrorType.COMPILATION);
-                }
-                else
-                {
-                    throw new EngineException("No-Arg milestoned property: '" + propertyName + "' must be either called in a milestoning context or supplied with " + "[businessDate]" + " parameters", sourceInformation, EngineErrorType.COMPILATION);
-                }
-            }
-        }
-        if (!ArrayIterate.isEmpty(milestoningDateParameters))
-        {
-            parametersValues = LazyIterate.concatenate(FastList.<ValueSpecification>newListWith(parametersValues.get(0)), FastList.newListWith(milestoningDateParameters)).toList();
-            fe._parametersValues(parametersValues);
-        }
-    }
-
-    public static void updateFunctionExpressionWithMilestoningDateParams(FunctionExpression functionExpression, AbstractProperty<?> propertyFunc, SourceInformation sourceInformation, ProcessingContext processingContext)
-    {
-        applyPropertyFunctionExpressionMilestonedDates(functionExpression, propertyFunc, sourceInformation, processingContext);
-        String propertyName = propertyFunc._name();
-        Class owner = (Class) getMilestonedPropertyOwningType(propertyFunc);
-        Object prop = ListIterate.select(owner._qualifiedProperties().toList(), p -> p instanceof QualifiedProperty && ((QualifiedProperty) p)._name() == propertyName).getFirst();
-        if (prop == null)
-        {
-            prop = ListIterate.select(owner._qualifiedPropertiesFromAssociations().toList(), p -> p instanceof QualifiedProperty && ((QualifiedProperty) p)._name() == propertyName).getFirst();
-        }
-        functionExpression._func((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object>) prop);
-    }
 }
