@@ -21,18 +21,24 @@ public final class LegendDefaultDatabaseAuthenticationFlowProviderConfiguration 
     public AWSConfig awsConfig;
     public GCPWorkloadConfig gcpWorkloadConfig;
 
-    public class AWSConfig {
+    public static class AWSConfig {
         public String region;
         public String accountId;
         public String role;
         public String awsAccessKeyIdVaultReference;
         public String awsSecretAccessKeyVaultReference;
+
+        public AWSConfig() {
+        }
     }
 
-    public class GCPWorkloadConfig {
+    public static class GCPWorkloadConfig {
         public String projectNumber;
         public String poolId;
         public String providerId;
+
+        public GCPWorkloadConfig() {
+        }
     }
 
     public LegendDefaultDatabaseAuthenticationFlowProviderConfiguration()
