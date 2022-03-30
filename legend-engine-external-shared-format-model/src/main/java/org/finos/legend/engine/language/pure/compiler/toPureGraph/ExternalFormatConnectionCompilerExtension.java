@@ -15,6 +15,8 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.procedure.Procedure;
+import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -25,11 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shar
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalFormatConnection;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalFormatConnection_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalSource;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
@@ -101,6 +99,21 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
                         ._url(urlStreamExternalSource.url);
             }
             return null;
+        });
+    }
+
+    @Override
+    public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
+    {
+        return Collections.singletonList(registerElementForPathToElement ->
+        {
+            registerElementForPathToElement.value("meta::external::shared::format", Lists.mutable.with(
+                    "supports_FunctionExpression_1__Boolean_1_"
+            ));
+
+            registerElementForPathToElement.value("meta::external::shared::format::executionPlan::generation", Lists.mutable.with(
+                    "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_"
+            ));
         });
     }
 }

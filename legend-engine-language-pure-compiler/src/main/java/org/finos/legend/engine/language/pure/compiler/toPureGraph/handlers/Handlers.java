@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
@@ -32,21 +33,11 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.build
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.FunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.MultiHandlerFunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.RequiredInferenceSimilarSignatureFunctionExpressionBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.MostCommonMultiplicity;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.MostCommonType;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ParametersInference;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ReturnInference;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.*;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
@@ -64,7 +55,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -73,7 +63,7 @@ public class Handlers
     private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
     private static final String META_PACKAGE_NAME = "meta";
 
-    private Set<String> registeredMetaPackages = Sets.mutable.empty();
+    private MutableSet<String> registeredMetaPackages = Sets.mutable.empty();
 
     private static Collection toCollection(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification vs)
     {
@@ -524,17 +514,15 @@ public class Handlers
                 m(h("meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))
                 )
         );
+        register("meta::pure::dataQuality::checked_T_MANY__Checked_MANY_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.pureModel.getType("meta::pure::dataQuality::Checked"))._typeArgumentsAdd(ps.get(0)._genericType()), "zeroMany"));
         register("meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.pureModel.getType("meta::pure::dataQuality::Checked"))._typeArgumentsAdd(ps.get(0)._genericType()), "zeroMany"));
+        register("meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
+        register("meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.pureModel.getType("meta::pure::dataQuality::Checked"))._typeArgumentsAdd(ps.get(0)._genericType()), "zeroMany"));
         register(m(
                 m(h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()))),
                 m(h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()) && "AlloySerializationConfig".equals(ps.get(2)._genericType()._rawType()._name()))),
                 m(h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3))
-                )
-        );
-        register(m(
-                m(h("meta::external::shared::format::executionPlan::externalize_Checked_MANY__Binding_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()))),
-                m(h("meta::external::shared::format::executionPlan::externalize_T_MANY__Binding_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2))
                 )
         );
 
@@ -1095,6 +1083,11 @@ public class Handlers
         return builder.buildFunctionExpression(parameters, openVariables, compileContext, processingContext);
     }
 
+    public ImmutableSet<String> getRegisteredMetaPackages()
+    {
+        return this.registeredMetaPackages.toImmutable();
+    }
+
     private void registerMetaPackage(FunctionHandler... handlers)
     {
         for (FunctionHandler handler: handlers)
@@ -1216,7 +1209,7 @@ public class Handlers
         return new TypeAndMultiplicity(genericType, mul);
     }
 
-    private TypeAndMultiplicity res(GenericType genericType, String mul)
+    public TypeAndMultiplicity res(GenericType genericType, String mul)
     {
         return new TypeAndMultiplicity(genericType, this.pureModel.getMultiplicity(mul));
     }

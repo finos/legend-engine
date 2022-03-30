@@ -17,11 +17,7 @@ package org.finos.legend.engine.external.shared.runtime;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.*;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -30,21 +26,21 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.DataQualityExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.InternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.UrlStreamExecutionNode;
 import org.finos.legend.engine.shared.core.url.UrlFactory;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ExternalFormatExecutionExtension implements ExecutionExtension
 {
+    private static final Map<String, ExternalFormatRuntimeExtension> EXTENSIONS = ExternalFormatRuntimeExtensionLoader.extensions();
+
     @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
@@ -57,6 +53,10 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
                                              else if (executionNode instanceof UrlStreamExecutionNode)
                                              {
                                                  return executeUrlStream((UrlStreamExecutionNode) executionNode, pm, executionState);
+                                             }
+                                             else if (executionNode instanceof InternalizeExecutionNode)
+                                             {
+                                                 return executeInternalize((InternalizeExecutionNode) executionNode, pm, executionState);
                                              }
                                              else
                                              {
@@ -78,17 +78,32 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         }
     }
 
+    private Result executeInternalize(InternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        ExternalFormatRuntimeExtension extension = EXTENSIONS.get(node.contentType);
+        if (extension == null)
+        {
+            throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
+        }
+
+        StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult) extension.executeInternalize(node, profiles, executionState);
+        return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
+    }
+
     private Result executeDataQuality(DataQualityExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         ExecutionNode inputNode = node.executionNodes().getAny();
         Result input = inputNode.accept(new ExecutionNodeExecutor(profiles, executionState));
         StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult) input;
+        return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
+    }
 
+    private Result applyConstraints(StreamingObjectResult<?> streamingObjectResult, boolean checked, boolean enableConstraints){
         Stream<IChecked<?>> checkedStream = (Stream<IChecked<?>>) streamingObjectResult.getObjectStream();
-        Stream<IChecked<?>> withConstraints = node.enableConstraints
-                                              ? checkedStream.map(this::applyConstraints)
-                                              : checkedStream;
-        if (node.checked)
+        Stream<IChecked<?>> withConstraints = enableConstraints
+                ? checkedStream.map(this::applyConstraints)
+                : checkedStream;
+        if (checked)
         {
             return new StreamingObjectResult<>(withConstraints, streamingObjectResult.getResultBuilder(), streamingObjectResult);
         }

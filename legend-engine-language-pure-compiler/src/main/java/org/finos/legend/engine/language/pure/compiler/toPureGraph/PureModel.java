@@ -311,6 +311,11 @@ public class PureModel implements IPureModel
         return result;
     }
 
+    public ImmutableSet<String> getRegisteredMetaPackages()
+    {
+        return this.handlers == null ? Sets.immutable.empty() : handlers.getRegisteredMetaPackages();
+    }
+
     private ListIterable<Map<String, String>> buildStoreStats(PureModelContextData pure, PureModel pureModel)
     {
         return LazyIterate.selectInstancesOf(pure.getElements(), org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class)

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.external.format.flatdata.read.test;
 
 import net.javacrumbs.jsonunit.JsonMatchers;
+import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.external.format.flatdata.fromModel.ModelToFlatDataConfiguration;
 import org.finos.legend.engine.external.format.flatdata.toModel.FlatDataToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.test.ModelToSchemaGenerationTest;
@@ -23,15 +24,7 @@ import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQu
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Objects;
 
 import static org.finos.legend.engine.external.shared.format.model.test.SchemaToModelGenerationTest.newExternalSchemaSetGrammarBuilder;
 
@@ -360,6 +353,79 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 .build();
     }
 
+    @Test
+    public void testInternalizeCsvWithGeneratedSchemaUsingRuntimeStream()
+    {
+        String modelGrammar = firmModel();
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+
+        String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
+        String result = runTest(generated,
+                grammar,
+                "data:ByteStream[1]|test::gen::TestBinding->internalize(test::firm::model::Person, $data)->checked()->serialize(" + personTree() + ")",
+                Maps.mutable.with("data", resource("queries/peopleWithExactHeadings.csv")));
+        System.out.println(result);
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/internalizedPeopleCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeCsvWithGeneratedSchemaUsingRuntimeString()
+    {
+        String modelGrammar = firmModel();
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+
+        String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
+        String result = runTest(generated,
+                grammar,
+                "data:String[1]|test::gen::TestBinding->internalize(test::firm::model::Person, $data)->checked()->serialize(" + personTree() + ")",
+                Maps.mutable.with("data", resourceAsString("queries/peopleWithExactHeadings.csv")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/internalizedPeopleCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeCsvWithGeneratedSchemaUsingConstantString()
+    {
+        String modelGrammar = firmModel();
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+
+        String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
+        String result = runTest(generated,
+                grammar,
+                "|test::gen::TestBinding->internalize(test::firm::model::Person, '"+ resourceAsString("queries/peopleWithExactHeadings.csv").replace("\n", "\\n").replace("'", "\\'") + "')->checked()->serialize(" + personTree() + ")",
+                Maps.mutable.empty());
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/internalizedPeopleCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeCsvWithGeneratedSchemaUsingRuntimeUrl()
+    {
+        String modelGrammar = firmModel();
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+
+        String result = runTest(generated,
+                modelGrammar,
+                "url:String[1]|test::gen::TestBinding->internalize(test::firm::model::Person, ^Url(url=$url))->checked()->serialize(" + personTree() + ")",
+                Maps.mutable.with("url", resourceUrl("queries/peopleWithExactHeadings.csv").toString()));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/internalizedPeopleCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeCsvWithGeneratedSchemaUsingConstantUrl()
+    {
+        String modelGrammar = firmModel();
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+
+        String result = runTest(generated,
+                modelGrammar,
+                "|test::gen::TestBinding->internalize(test::firm::model::Person, ^Url(url='" + resourceUrl("queries/peopleWithExactHeadings.csv").toString() + "'))->checked()->serialize(" + personTree() + ")",
+                Maps.mutable.empty());
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/internalizedPeopleCheckedResult.json")));
+    }
+
     private ModelToFlatDataConfiguration toFlatDataConfig(String className)
     {
         ModelToFlatDataConfiguration config = new ModelToFlatDataConfiguration();
@@ -385,20 +451,5 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         config.schemaClassName = schemaClassName;
         config.format = "FlatData";
         return config;
-    }
-
-    private String resourceAsString(String path)
-    {
-        byte[] bytes;
-        try
-        {
-            bytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(path), "Failed to get resource " + path).toURI()));
-        }
-        catch (IOException | URISyntaxException e)
-        {
-            throw new RuntimeException(e);
-        }
-        String string = new String(bytes, StandardCharsets.UTF_8);
-        return string.replaceAll("\\R", "\n");
     }
 }

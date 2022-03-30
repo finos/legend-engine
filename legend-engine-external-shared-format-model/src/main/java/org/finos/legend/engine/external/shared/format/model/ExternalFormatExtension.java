@@ -44,13 +44,11 @@ public interface ExternalFormatExtension<
      *
      * <pre>
      *     ###ExternalFormat
-     *     Schema my::Schema
+     *     SchemaSet my::Schemas
      *     {
      *         format: FORMAT_NAME
+     *         schemas: [...]';
      *     }
-     *     ~~START~~
-     *     schema_content
-     *     ~~END~~
      * </pre>
      */
     String getFormat();

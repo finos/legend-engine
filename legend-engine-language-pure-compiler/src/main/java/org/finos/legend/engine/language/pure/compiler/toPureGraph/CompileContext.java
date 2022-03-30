@@ -103,11 +103,14 @@ public class CompileContext
     public static class Builder
     {
         private final PureModel pureModel;
+        private ImmutableSet<String> metaImports;
         private ImmutableSet<String> imports = META_IMPORTS;
 
         public Builder(PureModel pureModel)
         {
             this.pureModel = pureModel;
+            this.metaImports = META_IMPORTS.newWithAll(pureModel.getRegisteredMetaPackages());
+            this.imports = metaImports;
         }
 
         public Builder withElement(String elementPath)
@@ -134,7 +137,7 @@ public class CompileContext
             // so system elements will always be resolved no matter what.
             if (section instanceof ImportAwareCodeSection)
             {
-                this.imports = META_IMPORTS.newWithAll(((ImportAwareCodeSection) section).imports);
+                this.imports = this.metaImports.newWithAll(((ImportAwareCodeSection) section).imports);
             }
             return this;
         }
