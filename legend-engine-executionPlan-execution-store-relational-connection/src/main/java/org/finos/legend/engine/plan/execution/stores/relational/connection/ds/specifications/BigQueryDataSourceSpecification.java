@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import java.util.Optional;
 import java.util.Properties;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
@@ -34,11 +35,16 @@ public class BigQueryDataSourceSpecification extends DataSourceSpecification
         super(key, databaseManager, authenticationStrategy, extraUserProperties);
         this.extraDatasourceProperties.put(BIGQUERY_PROJECT_ID, key.getProjectId());
         this.extraDatasourceProperties.put(BIGQUERY_DATASET_NAME, key.getDefaultDataset());
-        this.extraDatasourceProperties.put(BIGQUERY_PROXY_HOST, key.getProxyHost());
-        this.extraDatasourceProperties.put(BIGQUERY_PROXY_PORT, key.getProxyPort());
+        putIfNotEmpty(this.extraDatasourceProperties, BIGQUERY_PROXY_HOST, key.getProxyHost());
+        putIfNotEmpty(this.extraDatasourceProperties, BIGQUERY_PROXY_PORT, key.getProxyPort());
 
         this.extraDatasourceProperties.put("projectId", key.getProjectId());
         this.extraDatasourceProperties.put("defaultDataset", key.getDefaultDataset());
+    }
+
+    private void putIfNotEmpty(Properties connectionProperties, String propName, String propValue)
+    {
+        Optional.ofNullable(propValue).ifPresent(x -> connectionProperties.put(propName, propValue));
     }
 
     public BigQueryDataSourceSpecification(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
