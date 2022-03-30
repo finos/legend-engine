@@ -1950,6 +1950,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::service::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    binding: test::Binding;\n" +
                 "    connection:\n" +
                 "    #{\n" +
                 "      JsonModelConnection\n" +
@@ -1981,7 +1982,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        }\n" +
                 "      }\n" +
                 "    }\n" +
-                "    binding: test::Binding;\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::WrapperClass;\n" +

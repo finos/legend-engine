@@ -6,6 +6,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.junit.Test;
 
 import java.util.List;
@@ -635,8 +636,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     @Test
     public void multiFlatDeleteIndicatorDeletePropertyUndefined()
     {
-        test(
-                "import org::dxl::*;\n" +
+        test("import org::dxl::*;\n" +
                 "\n" +
                 "Class org::dxl::Zoo\n" +
                 "{\n" +
@@ -772,6 +772,141 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
+    public void noBinding()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::ServiceResult\n" +
+                "{\n" +
+                "   deleted: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    connection:\n" +
+                "    #{\n" +
+                "      JsonModelConnection\n" +
+                "      {\n" +
+                "        class: test::Person;\n" +
+                "        url: 'my_url2';\n" +
+                "      }\n" +
+                "    }#\n" +
+                "    ingestMode: NontemporalSnapshot\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
+    public void noConnection()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::ServiceResult\n" +
+                "{\n" +
+                "   deleted: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::Person\n" +
+                "  ];\n" +
+                "}\n" +
+                "###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    binding: test::Binding;\n" +
+                "    ingestMode: NontemporalSnapshot\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
     public void flatShape()
     {
         test("Class test::Person\n" +
@@ -853,7 +988,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
-    public void success()
+    public void multiFlatShape()
     {
         Pair<PureModelContextData, PureModel> result = test(
                 "import org::dxl::*;\n" +
@@ -1034,6 +1169,12 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         Root_meta_external_shared_format_binding_Binding binding = batchPersister._binding();
         assertNotNull(binding);
         assertEquals("application/json", binding._contentType());
+
+        // connection
+        Connection connection = batchPersister._connection();
+        assertNotNull(connection);
+        assertTrue(connection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection);
+        //TODO: ledav -- use a connection applicable for a real use case
 
         // ingest mode
         Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode ingestMode = batchPersister._ingestMode();
