@@ -402,7 +402,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    connection: test::Con;\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-11:3]: Field 'binding' is required");
+                "}\n");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -460,7 +460,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-21:3]: Field 'binding' is required");
+                "}\n");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +

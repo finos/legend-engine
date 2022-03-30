@@ -155,13 +155,13 @@ public class PersistenceParseTreeWalker
         StreamingPersister streaming = new StreamingPersister();
         streaming.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // connection
+        // connection (optional)
         PersistenceParserGrammar.PersisterConnectionContext persisterConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterConnection(), "connection", streaming.sourceInformation);
         streaming.connection = persisterConnectionContext == null ? null : visitConnection(persisterConnectionContext, streaming.sourceInformation);
 
-        // binding
-        PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.bindingPointer(), "binding", streaming.sourceInformation);
-        streaming.binding = visitBindingPointer(bindingPointerContext, streaming.sourceInformation);
+        // binding (optional)
+        PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.bindingPointer(), "binding", streaming.sourceInformation);
+        streaming.binding = bindingPointerContext == null ? null : visitBindingPointer(bindingPointerContext, streaming.sourceInformation);
 
         return streaming;
     }
@@ -171,13 +171,13 @@ public class PersistenceParseTreeWalker
         BatchPersister batch = new BatchPersister();
         batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // connection
+        // connection (optional)
         PersistenceParserGrammar.PersisterConnectionContext persisterConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterConnection(), "connection", batch.sourceInformation);
         batch.connection = persisterConnectionContext == null ? null : visitConnection(persisterConnectionContext, batch.sourceInformation);
 
-        // binding
-        PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.bindingPointer(), "binding", batch.sourceInformation);
-        batch.binding = visitBindingPointer(bindingPointerContext, batch.sourceInformation);
+        // binding (optional)
+        PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.bindingPointer(), "binding", batch.sourceInformation);
+        batch.binding = bindingPointerContext == null ? null : visitBindingPointer(bindingPointerContext, batch.sourceInformation);
 
         // target shape
         PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "targetShape", batch.sourceInformation);

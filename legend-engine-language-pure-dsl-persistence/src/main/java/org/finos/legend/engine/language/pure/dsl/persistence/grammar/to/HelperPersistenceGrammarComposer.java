@@ -235,8 +235,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Streaming\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderBinding(val.binding, indentLevel + 1, context) +
-                    renderConnection(val.connection, indentLevel + 1, context) +
+                    (val.binding == null ? "" : renderBinding(val.binding, indentLevel + 1, context)) +
+                    (val.connection == null ? "" : renderConnection(val.connection, indentLevel + 1, context)) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -245,8 +245,8 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Batch\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderBinding(val.binding, indentLevel + 1, context) +
-                    renderConnection(val.connection, indentLevel + 1, context) +
+                    (val.binding == null ? "" : renderBinding(val.binding, indentLevel + 1, context)) +
+                    (val.connection == null ? "" : renderConnection(val.connection, indentLevel + 1, context)) +
                     renderIngestMode(val.ingestMode, indentLevel + 1) +
                     renderTargetShape(val.targetShape, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
@@ -267,10 +267,10 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "targetShape: Flat\n" +
                     getTabString(indentLevel) + "{\n" +
-                    (val.modelClass == null ? "" : getTabString(indentLevel) + "modelClass: " + val.modelClass + ";\n") +
-                    getTabString(indentLevel) + "targetName: " + convertString(val.targetName, true) + ";\n" +
-                    renderPartitionFields(val.partitionFields, indentLevel) +
-                    renderDeduplicationStrategy(val.deduplicationStrategy, indentLevel) +
+                    (val.modelClass == null ? "" : getTabString(indentLevel + 1) + "modelClass: " + val.modelClass + ";\n") +
+                    getTabString(indentLevel + 1) + "targetName: " + convertString(val.targetName, true) + ";\n" +
+                    renderPartitionFields(val.partitionFields, indentLevel + 1) +
+                    renderDeduplicationStrategy(val.deduplicationStrategy, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 

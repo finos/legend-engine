@@ -6,7 +6,61 @@ import org.junit.Test;
 public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
-    public void persistence()
+    public void persistenceFlat()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "Persistence test::TestPersistence\n" +
+                "{\n" +
+                "  doc: 'test doc';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::service::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    ingestMode: BitemporalSnapshot\n" +
+                "    {\n" +
+                "      transactionMilestoning: BatchId\n" +
+                "      {\n" +
+                "        batchIdInName: 'batchIdIn';\n" +
+                "        batchIdOutName: 'batchIdOut';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      partitionFields: [propertyA, propertyB];\n" +
+                "      deduplicationStrategy: AnyVersion;\n" +
+                "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      Email\n" +
+                "      {\n" +
+                "        address: 'x.y@z.com';\n" +
+                "      },\n" +
+                "      PagerDuty\n" +
+                "      {\n" +
+                "        url: 'https://x.com';\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}\n");
+    }
+    @Test
+    public void persistenceMultiFlat()
     {
         test("###Persistence\n" +
                 "import test::*;\n" +
