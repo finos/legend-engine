@@ -41,9 +41,6 @@ jobs:
           ${DATABRICKS_API_TOKEN}
           EOF
         shell: bash
-      - name: Start databricks endpoint
-        run: databricks clusters start --cluster-id ${DATABRICKS_CLUSTERID}
-        shell: bash
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Set up JDK
@@ -67,6 +64,3 @@ jobs:
         run: |
           mvn clean install -DskipTests=true
           mvn -P run-databricks-integration -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*Databricks*" test
-      - name: Stop databricks endpoint
-        run: databricks clusters delete --cluster-id ${DATABRICKS_CLUSTERID}
-        shell: bash
