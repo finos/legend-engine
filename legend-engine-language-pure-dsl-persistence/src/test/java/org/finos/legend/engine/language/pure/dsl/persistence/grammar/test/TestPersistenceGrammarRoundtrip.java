@@ -59,6 +59,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  }\n" +
                 "}\n");
     }
+
     @Test
     public void persistenceMultiFlat()
     {
