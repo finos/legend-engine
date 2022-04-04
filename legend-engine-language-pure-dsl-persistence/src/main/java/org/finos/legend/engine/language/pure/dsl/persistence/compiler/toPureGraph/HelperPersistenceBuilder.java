@@ -361,6 +361,12 @@ public class HelperPersistenceBuilder
         }
 
         @Override
+        public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(NoDeduplicationStrategy val)
+        {
+            return new Root_meta_pure_persistence_metamodel_persister_deduplication_NoDeduplicationStrategy_Impl("");
+        }
+
+        @Override
         public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(AnyVersionDeduplicationStrategy val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_deduplication_AnyVersionDeduplicationStrategy_Impl("");
@@ -374,9 +380,10 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(NoDeduplicationStrategy val)
+        public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(DuplicateCountDeduplicationStrategy val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_deduplication_NoDeduplicationStrategy_Impl("");
+            return new Root_meta_pure_persistence_metamodel_persister_deduplication_DuplicateCountDeduplicationStrategy_Impl("")
+                    ._duplicateCountName(val.duplicateCountName);
         }
     }
 

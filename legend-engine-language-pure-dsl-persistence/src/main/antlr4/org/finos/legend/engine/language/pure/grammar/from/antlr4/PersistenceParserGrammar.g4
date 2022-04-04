@@ -188,6 +188,7 @@ deduplicationStrategy:                      TARGET_SHAPE_DEDUPLICATION COLON
                                                     noDeduplicationStrategy
                                                     | anyVersionDeduplicationStrategy
                                                     | maxVersionDeduplicationStrategy
+                                                    | duplicateCountDeduplicationStrategy
                                                 )
 ;
 noDeduplicationStrategy:                    NONE SEMI_COLON
@@ -197,11 +198,20 @@ anyVersionDeduplicationStrategy:            DEDUPLICATION_ANY_VERSION SEMI_COLON
 maxVersionDeduplicationStrategy:            DEDUPLICATION_MAX_VERSION
                                                 BRACE_OPEN
                                                     (
-                                                        deduplicationVersionProperty
+                                                        deduplicationMaxVersionField
                                                     )*
                                                 BRACE_CLOSE
 ;
-deduplicationVersionProperty:               DEDUPLICATION_MAX_VERSION_FIELD COLON identifier SEMI_COLON
+deduplicationMaxVersionField:               DEDUPLICATION_MAX_VERSION_FIELD COLON identifier SEMI_COLON
+;
+duplicateCountDeduplicationStrategy:        DEDUPLICATION_DUPLICATE_COUNT
+                                                BRACE_OPEN
+                                                    (
+                                                        deduplicationDuplicateCountName
+                                                    )*
+                                                BRACE_CLOSE
+;
+deduplicationDuplicateCountName:            DEDUPLICATION_DUPLICATE_COUNT_NAME COLON STRING SEMI_COLON
 ;
 ingestMode:                                 PERSISTER_INGEST_MODE COLON
                                                 (
@@ -280,11 +290,11 @@ noAuditing:                                 NONE SEMI_COLON
 dateTimeAuditing:                           DATE_TIME
                                                 BRACE_OPEN
                                                     (
-                                                        dateTimeFieldName
+                                                        dateTimeName
                                                     )*
                                                 BRACE_CLOSE
 ;
-dateTimeFieldName:                          AUDITING_DATE_TIME_NAME COLON STRING SEMI_COLON
+dateTimeName:                               AUDITING_DATE_TIME_NAME COLON STRING SEMI_COLON
 ;
 filterDuplicates:                           FILTER_DUPLICATES COLON (TRUE | FALSE) SEMI_COLON
 ;
@@ -298,34 +308,34 @@ transactionMilestoning:                     TXN_MILESTONING COLON
 batchIdTransactionMilestoning:              TXN_MILESTONING_BATCH_ID
                                                 BRACE_OPEN
                                                     (
-                                                        batchIdInFieldName
-                                                        | batchIdOutFieldName
+                                                        batchIdInName
+                                                        | batchIdOutName
                                                     )*
                                                 BRACE_CLOSE
 ;
-batchIdInFieldName:                         BATCH_ID_IN_NAME COLON STRING SEMI_COLON
+batchIdInName:                              BATCH_ID_IN_NAME COLON STRING SEMI_COLON
 ;
-batchIdOutFieldName:                        BATCH_ID_OUT_NAME COLON STRING SEMI_COLON
+batchIdOutName:                             BATCH_ID_OUT_NAME COLON STRING SEMI_COLON
 ;
 dateTimeTransactionMilestoning:             DATE_TIME
                                                 BRACE_OPEN
                                                     (
-                                                        dateTimeInFieldName
-                                                        | dateTimeOutFieldName
+                                                        dateTimeInName
+                                                        | dateTimeOutName
                                                     )*
                                                 BRACE_CLOSE
 ;
-dateTimeInFieldName:                        DATE_TIME_IN_NAME COLON STRING SEMI_COLON
+dateTimeInName:                             DATE_TIME_IN_NAME COLON STRING SEMI_COLON
 ;
-dateTimeOutFieldName:                       DATE_TIME_OUT_NAME COLON STRING SEMI_COLON
+dateTimeOutName:                            DATE_TIME_OUT_NAME COLON STRING SEMI_COLON
 ;
 bothTransactionMilestoning:                 TXN_MILESTONING_BOTH
                                                 BRACE_OPEN
                                                     (
-                                                        batchIdInFieldName
-                                                        | batchIdOutFieldName
-                                                        | dateTimeInFieldName
-                                                        | dateTimeOutFieldName
+                                                        batchIdInName
+                                                        | batchIdOutName
+                                                        | dateTimeInName
+                                                        | dateTimeOutName
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -337,15 +347,15 @@ validityMilestoning:                        VALIDITY_MILESTONING COLON
 dateTimeValidityMilestoning:                DATE_TIME
                                                 BRACE_OPEN
                                                     (
-                                                        dateTimeFromFieldName
-                                                        | dateTimeThruFieldName
+                                                        dateTimeFromName
+                                                        | dateTimeThruName
                                                         | validityDerivation
                                                     )*
                                                 BRACE_CLOSE
 ;
-dateTimeFromFieldName:                      DATE_TIME_FROM_NAME COLON STRING SEMI_COLON
+dateTimeFromName:                           DATE_TIME_FROM_NAME COLON STRING SEMI_COLON
 ;
-dateTimeThruFieldName:                      DATE_TIME_THRU_NAME COLON STRING SEMI_COLON
+dateTimeThruName:                           DATE_TIME_THRU_NAME COLON STRING SEMI_COLON
 ;
 validityDerivation:                         VALIDITY_DERIVATION COLON
                                                 (
@@ -356,21 +366,21 @@ validityDerivation:                         VALIDITY_DERIVATION COLON
 sourceSpecifiesFromValidityDerivation:      VALIDITY_DERIVATION_SOURCE_FROM
                                                 BRACE_OPEN
                                                     (
-                                                        validityDerivationFromProperty
+                                                        validityDerivationFromField
                                                     )*
                                                 BRACE_CLOSE
 ;
 sourceSpecifiesFromThruValidityDerivation:  VALIDITY_DERIVATION_SOURCE_FROM_THRU
                                                 BRACE_OPEN
                                                     (
-                                                        validityDerivationFromProperty
-                                                        | validityDerivationThruProperty
+                                                        validityDerivationFromField
+                                                        | validityDerivationThruField
                                                     )*
                                                 BRACE_CLOSE
 ;
-validityDerivationFromProperty:             SOURCE_DATE_TIME_FROM_FIELD COLON identifier SEMI_COLON
+validityDerivationFromField:                SOURCE_DATE_TIME_FROM_FIELD COLON identifier SEMI_COLON
 ;
-validityDerivationThruProperty:             SOURCE_DATE_TIME_THRU_FIELD COLON identifier SEMI_COLON
+validityDerivationThruField:                SOURCE_DATE_TIME_THRU_FIELD COLON identifier SEMI_COLON
 ;
 mergeStrategy:                              MERGE_STRATEGY COLON
                                                 (
@@ -383,12 +393,12 @@ noDeletesMergeStrategy:                     MERGE_STRATEGY_NO_DELETES SEMI_COLON
 deleteIndicatorMergeStrategy:               MERGE_STRATEGY_DELETE_INDICATOR
                                                 BRACE_OPEN
                                                     (
-                                                        mergeStrategyDeleteProperty
+                                                        mergeStrategyDeleteField
                                                         | mergeStrategyDeleteValues
                                                     )*
                                                 BRACE_CLOSE
 ;
-mergeStrategyDeleteProperty:                MERGE_STRATEGY_DELETE_INDICATOR_FIELD COLON identifier SEMI_COLON
+mergeStrategyDeleteField:                   MERGE_STRATEGY_DELETE_INDICATOR_FIELD COLON identifier SEMI_COLON
 ;
 mergeStrategyDeleteValues:                  MERGE_STRATEGY_DELETE_INDICATOR_VALUES COLON
                                                 BRACKET_OPEN

@@ -6,6 +6,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.junit.Test;
 
@@ -998,6 +999,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  name: String[1];\n" +
                 "  zookeeper: Person[1];\n" +
                 "  owner: Person[1];\n" +
+                "  version: Integer[1];\n" +
                 "}\n" +
                 "\n" +
                 "Class org::dxl::Person\n" +
@@ -1102,10 +1104,18 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "        {\n" +
                 "          modelProperty: 'zookeeper';\n" +
                 "          targetName: 'PersonDataset1';\n" +
+                "          deduplicationStrategy: MaxVersion\n" +
+                "          {\n" +
+                "            versionField: version;\n" +
+                "          }\n" +
                 "        },\n" +
                 "        {\n" +
                 "          modelProperty: 'owner';\n" +
                 "          targetName: 'PersonDataset2';\n" +
+                "          deduplicationStrategy: DuplicateCount\n" +
+                "          {\n" +
+                "            duplicateCountName: 'duplicateCount';\n" +
+                "          }\n" +
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +
@@ -1218,5 +1228,36 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate sourceSpecifiesFromAndThru = (Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate) validityDerivation;
         assertEquals("effectiveFrom", sourceSpecifiesFromAndThru._sourceDateTimeFromField());
         assertEquals("effectiveThru", sourceSpecifiesFromAndThru._sourceDateTimeThruField());
+
+        // target shape
+        Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape targetShape = batchPersister._targetShape();
+        assertNotNull(targetShape);
+        assertTrue(targetShape instanceof Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTarget);
+        Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTarget multiFlatTarget = (Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTarget) targetShape;
+        Class<?> modelClass = multiFlatTarget._modelClass();
+        assertNotNull(modelClass);
+        assertEquals("Zoo", modelClass._name());
+
+        // multiflat parts
+        List<? extends Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart> parts = multiFlatTarget._parts().toList();
+        assertEquals(2, parts.size());
+
+        Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart part1 = parts.get(0);
+        assertEquals("zookeeper", part1._modelProperty()._name());
+        assertEquals("PersonDataset1", part1._targetName());
+        Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy dedupStrategy1 = part1._deduplicationStrategy();
+        assertNotNull(dedupStrategy1);
+        assertTrue(dedupStrategy1 instanceof Root_meta_pure_persistence_metamodel_persister_deduplication_MaxVersionDeduplicationStrategy);
+        Root_meta_pure_persistence_metamodel_persister_deduplication_MaxVersionDeduplicationStrategy maxVersion = (Root_meta_pure_persistence_metamodel_persister_deduplication_MaxVersionDeduplicationStrategy) dedupStrategy1;
+        assertEquals("version", maxVersion._versionField());
+
+        Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart part2 = parts.get(1);
+        assertEquals("owner", part2._modelProperty()._name());
+        assertEquals("PersonDataset2", part2._targetName());
+        Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy dedupStrategy2 = part2._deduplicationStrategy();
+        assertNotNull(dedupStrategy2);
+        assertTrue(dedupStrategy2 instanceof Root_meta_pure_persistence_metamodel_persister_deduplication_DuplicateCountDeduplicationStrategy);
+        Root_meta_pure_persistence_metamodel_persister_deduplication_DuplicateCountDeduplicationStrategy duplicateCount = (Root_meta_pure_persistence_metamodel_persister_deduplication_DuplicateCountDeduplicationStrategy) dedupStrategy2;
+        assertEquals("version", duplicateCount._duplicateCountName());
     }
 }

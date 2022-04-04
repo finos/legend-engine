@@ -345,6 +345,15 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel + 1) + "versionField: " + val.versionField + ";\n" +
                     getTabString(indentLevel) + "}\n";
         }
+
+        @Override
+        public String visit(DuplicateCountDeduplicationStrategy val)
+        {
+            return getTabString(indentLevel) + "deduplicationStrategy: DuplicateCount\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "duplicateCountName: '" + val.duplicateCountName + "';\n" +
+                    getTabString(indentLevel) + "}\n";
+        }
     }
 
     private static class IngestModeComposer implements IngestModeVisitor<String>

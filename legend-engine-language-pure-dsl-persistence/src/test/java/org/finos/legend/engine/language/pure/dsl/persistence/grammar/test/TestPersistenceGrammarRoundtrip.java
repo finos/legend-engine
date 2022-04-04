@@ -40,7 +40,10 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "      modelClass: test::ModelClass;\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      partitionFields: [propertyA, propertyB];\n" +
-                "      deduplicationStrategy: AnyVersion;\n" +
+                "      deduplicationStrategy: MaxVersion\n" +
+                "      {\n" +
+                "        versionField: version;\n" +
+                "      }\n" +
                 "    }\n" +
                 "  }\n" +
                 "  notifier:\n" +
@@ -114,18 +117,15 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "          modelProperty: property1;\n" +
                 "          targetName: 'TestDataset1';\n" +
                 "          partitionFields: [propertyA, propertyB];\n" +
-                "          deduplicationStrategy: MaxVersion\n" +
-                "          {\n" +
-                "            versionField: updateDateTime;\n" +
-                "          }\n" +
+                "          deduplicationStrategy: AnyVersion;\n" +
                 "        },\n" +
                 "        {\n" +
                 "          modelProperty: property2;\n" +
                 "          targetName: 'TestDataset1';\n" +
                 "          partitionFields: [propertyA, propertyB];\n" +
-                "          deduplicationStrategy: MaxVersion\n" +
+                "          deduplicationStrategy: DuplicateCount\n" +
                 "          {\n" +
-                "            versionField: updateDateTime;\n" +
+                "            duplicateCountName: 'duplicateCount';\n" +
                 "          }\n" +
                 "        },\n" +
                 "        {\n" +

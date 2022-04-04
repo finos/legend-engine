@@ -2001,9 +2001,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "          modelProperty: property2;\n" +
                 "          targetName: 'TestDataset1';\n" +
                 "          partitionFields: [propertyA, propertyB];\n" +
-                "          deduplicationStrategy: MaxVersion\n" +
+                "          deduplicationStrategy: DuplicateCount\n" +
                 "          {\n" +
-                "            versionField: 'updateDateTime';\n" +
+                "            duplicateCountName: 'duplicateCount';\n" +
                 "          }\n" +
                 "        },\n" +
                 "        {\n" +
