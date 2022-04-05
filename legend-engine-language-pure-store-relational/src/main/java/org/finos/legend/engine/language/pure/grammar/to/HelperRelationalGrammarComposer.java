@@ -745,7 +745,7 @@ public class HelperRelationalGrammarComposer
                     "\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "serviceAccountEmail: " + convertString(auth.serviceAccountEmail, true) + ";\n" +
-                    (!auth.additionalGcpScopes.isEmpty() ? context.getIndentationString() + getTabString(baseIndentation + 1) + "additionalGcpScopes: [\n" + ListIterate.collect(auth.additionalGcpScopes, s -> context.getIndentationString() + getTabString(baseIndentation + 2) + convertString(s, true)).makeString(",\n") + "\n" + context.getIndentationString() + getTabString(baseIndentation + 2) + "];\n" : "") +
+                    (auth.additionalGcpScopes != null && !auth.additionalGcpScopes.isEmpty() ? context.getIndentationString() + getTabString(baseIndentation + 1) + "additionalGcpScopes: [\n" + ListIterate.collect(auth.additionalGcpScopes, s -> context.getIndentationString() + getTabString(baseIndentation + 2) + convertString(s, true)).makeString(",\n") + "\n" + context.getIndentationString() + getTabString(baseIndentation + 2) + "];\n" : "") +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         return null;

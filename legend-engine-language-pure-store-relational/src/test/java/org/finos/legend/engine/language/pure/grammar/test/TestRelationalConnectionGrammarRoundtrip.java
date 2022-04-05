@@ -382,11 +382,11 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  };\n" +
                 "  auth: GCPWorkloadIdentityFederation\n" +
                 "  {\n" +
-                "     serviceAccountEmail: 'name';\n" +
-                "     additionalGcpScopes: [\n" +
-                "       'gcpScope',\n" +
-                "       'anotherGcpScope'\n" +
-                "     ];\n" +
+                "    serviceAccountEmail: 'name';\n" +
+                "    additionalGcpScopes: [\n" +
+                "      'gcpScope',\n" +
+                "      'anotherGcpScope'\n" +
+                "      ];\n" +
                 "  };\n" +
                 "}\n");
     }
