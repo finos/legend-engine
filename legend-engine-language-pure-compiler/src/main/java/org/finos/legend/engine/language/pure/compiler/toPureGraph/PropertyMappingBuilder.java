@@ -184,7 +184,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
 
         String propertyName = propertyMapping.property.property;
         String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
-        Function<Type, Boolean> isTypeTemporalMilestoned = type -> !Milestoning.temporalStereotypes(type._stereotypes()).isEmpty();
+        Function<Type, Boolean> isTypeTemporalMilestoned = type -> Milestoning.temporalStereotypes(type._stereotypes()) != null;
         Property property = parent._association()._properties().detect(p -> (propertyName.equals(p.getName())) || (isTypeTemporalMilestoned.apply(p._genericType()._rawType()) && edgePointPropertyName.equals(p.getName())));
         Assert.assertTrue(property != null, () -> "Can't find property '" + propertyName + "' in association '" + (HelperModelBuilder.getElementFullPath(parent._association(), context.pureModel.getExecutionSupport())) + "'", propertyMapping.property.sourceInformation, EngineErrorType.COMPILATION);
 

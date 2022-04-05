@@ -383,7 +383,7 @@ public class HelperModelBuilder
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
         AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, sourceInformation);
-        if((abstractProperty instanceof QualifiedProperty) && !Milestoning.temporalStereotypes(abstractProperty._genericType()._rawType()._stereotypes()).isEmpty())
+        if((abstractProperty instanceof QualifiedProperty) && Milestoning.temporalStereotypes(abstractProperty._genericType()._rawType()._stereotypes()) != null)
         {
             return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property) HelperModelBuilder.getAppliedProperty(context, _class, parameters, MilestoningFunctions.getEdgePointPropertyName(name), sourceInformation);
         }

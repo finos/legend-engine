@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variabl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.AnalyticsExecutionContext;
@@ -47,6 +48,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 
 import java.util.List;
 import java.util.Objects;
@@ -104,22 +106,22 @@ public class HelperValueSpecificationBuilder
                 .reduce(lambda, (originalLambda, processor) -> processor.value(originalLambda, context, ctx), (p1, p2) -> p1);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification processProperty(CompileContext context, MutableList<String> openVariables, ProcessingContext processingContext, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, String property, SourceInformation sourceInformation)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification processProperty(CompileContext context, MutableList<String> openVariables, ProcessingContext processingContext, List<ValueSpecification> parameters, String property, SourceInformation sourceInformation)
     {
         // for X.property. X is the first parameter
         processingContext.push("Processing property " + property);
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification firstArgument = parameters.get(0);
+        ValueSpecification firstArgument = parameters.get(0);
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processedParameters = ListIterate.collect(parameters, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType;
+        GenericType genericType;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicity;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification inferredVariable;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification result;
 
-        if (firstArgument instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum // Only for backward compatibility!
+        if (firstArgument instanceof Enum // Only for backward compatibility!
             || (processedParameters.get(0)._genericType()._rawType().equals(context.pureModel.getType("meta::pure::metamodel::type::Enumeration"))))
         {
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
+            Multiplicity m = new Multiplicity();
             m.lowerBound = 1;
             m.setUpperBound(1);
             CString enumValue = new CString();
@@ -144,12 +146,12 @@ public class HelperValueSpecificationBuilder
 
             Type inferredType = inferredVariable._genericType()._rawType();
 
-            if (!(inferredType instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)) //is an enum
+            if (!(inferredType instanceof Class)) //is an enum
             {
                 inferredType = context.pureModel.getType("meta::pure::metamodel::type::Enum");
             }
 
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty<?> foundProperty = findProperty(context, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) inferredType, parameters, property, sourceInformation);
+            AbstractProperty<?> foundProperty = findProperty(context, (Class<?>) inferredType, parameters, property, sourceInformation);
 
             if (foundProperty instanceof Property)
             {
@@ -171,10 +173,10 @@ public class HelperValueSpecificationBuilder
             {
                 processingContext.push("Building Automap for  " + property);
 
-                org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
+                Multiplicity m = new Multiplicity();
                 m.lowerBound = 1;
                 m.setUpperBound(1);
-                List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> localParameters = Lists.mutable.ofAll(parameters);
+                List<ValueSpecification> localParameters = Lists.mutable.ofAll(parameters);
                 final String automapName = "v_automap";
 
                 Lambda automapLambda = new Lambda();
@@ -197,7 +199,8 @@ public class HelperValueSpecificationBuilder
                 List<Variable> lambdaParams = new FastList<>();
                 lambdaParams.add(automaLambdaparam);
                 automapLambda.parameters = lambdaParams;
-                List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
+                MilestoningDatePropagationHelper.updateMilestoningPropagationContextForAutoMap(foundProperty, context, appliedProperty.parameters.size(), processedParameters.get(0), processingContext);
+                List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
                 result = context.buildFunctionExpression("map", null, newParams, openVariables, null, processingContext).getOne();
                 processingContext.pop();
             }
@@ -209,6 +212,11 @@ public class HelperValueSpecificationBuilder
                         ._genericType(genericType)
                         ._multiplicity(multiplicity)
                         ._parametersValues(processedParameters);
+                if (MilestoningDatePropagationHelper.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
+                {
+                    MilestoningDatePropagationHelper.updateFunctionExpressionWithMilestoningDateParams((FunctionExpression)result, foundProperty, sourceInformation, processingContext);
+                }
+                MilestoningDatePropagationHelper.updateMilestoningContext(foundProperty, processingContext, context, (SimpleFunctionExpression) result);
             }
         }
         processingContext.pop();
