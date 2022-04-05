@@ -349,6 +349,21 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  };\n" +
                 "  auth: GCPApplicationDefaultCredentials;\n" +
                 "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: BigQuery;\n" +
+                "  specification: BigQuery\n" +
+                "  {\n" +
+                "    projectId: 'proj1';\n" +
+                "    defaultDataset: 'dataset1';\n" +
+                "    proxyHost: 'proxyHost1';\n" +
+                "    proxyPort: 'proxyPort1';\n" +
+                "  };\n" +
+                "  auth: GCPApplicationDefaultCredentials;\n" +
+                "}\n");
     }
 
     @Test
