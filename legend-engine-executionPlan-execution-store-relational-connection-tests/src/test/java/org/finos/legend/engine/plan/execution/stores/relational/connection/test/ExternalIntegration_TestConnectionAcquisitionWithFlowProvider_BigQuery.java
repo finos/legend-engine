@@ -54,7 +54,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
         String googleApplicationCredentials = System.getenv(GOOGLE_APPLICATION_CREDENTIALS);
         if (googleApplicationCredentials == null || googleApplicationCredentials.trim().isEmpty())
         {
-//            fail(String.format("Tests cannot be run. GCP env variable %s has not been set", GOOGLE_APPLICATION_CREDENTIALS));
+            fail(String.format("Tests cannot be run. GCP env variable %s has not been set", GOOGLE_APPLICATION_CREDENTIALS));
         }
         String awsAccessKeyId = System.getenv(AWS_ACCESS_KEY_ID);
         if (awsAccessKeyId == null || awsAccessKeyId.trim().isEmpty())
