@@ -17,6 +17,17 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  service: test::service::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "      connection:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: org::dxl::Animal;\n" +
+                "          url: 'my_url2';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    }\n" +
                 "    ingestMode: BitemporalSnapshot\n" +
                 "    {\n" +
                 "      transactionMilestoning: BatchId\n" +
@@ -75,15 +86,18 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  service: test::service::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
-                "    connection:\n" +
-                "    #{\n" +
-                "      JsonModelConnection\n" +
-                "      {\n" +
-                "        class: org::dxl::Animal;\n" +
-                "        url: 'my_url2';\n" +
-                "      }\n" +
-                "    }#\n" +
+                "    sink: ObjectStorage\n" +
+                "    {\n" +
+                "      binding: test::Binding;\n" +
+                "      connection:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: org::dxl::Animal;\n" +
+                "          url: 'my_url2';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    }\n" +
                 "    ingestMode: BitemporalDelta\n" +
                 "    {\n" +
                 "      mergeStrategy: DeleteIndicator\n" +

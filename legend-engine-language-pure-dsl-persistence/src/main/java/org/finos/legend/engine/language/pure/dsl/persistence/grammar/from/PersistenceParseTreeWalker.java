@@ -34,6 +34,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.ObjectStorageSink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.RelationalSink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.Sink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.targetshape.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.BatchIdAndDateTimeTransactionMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.BatchIdTransactionMilestoning;
@@ -149,42 +152,34 @@ public class PersistenceParseTreeWalker
 
     private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
     {
-        StreamingPersister streaming = new StreamingPersister();
-        streaming.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        StreamingPersister persister = new StreamingPersister();
+        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // connection (optional)
-        PersistenceParserGrammar.PersisterConnectionContext persisterConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterConnection(), "connection", streaming.sourceInformation);
-        streaming.connection = persisterConnectionContext == null ? null : visitConnection(persisterConnectionContext, streaming.sourceInformation);
+        // sink
+        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
+        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
 
-        // binding (optional)
-        PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.bindingPointer(), "binding", streaming.sourceInformation);
-        streaming.binding = bindingPointerContext == null ? null : visitBindingPointer(bindingPointerContext, streaming.sourceInformation);
-
-        return streaming;
+        return persister;
     }
 
     private BatchPersister visitBatchPersister(PersistenceParserGrammar.BatchPersisterContext ctx)
     {
-        BatchPersister batch = new BatchPersister();
-        batch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        BatchPersister persister = new BatchPersister();
+        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // connection (optional)
-        PersistenceParserGrammar.PersisterConnectionContext persisterConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persisterConnection(), "connection", batch.sourceInformation);
-        batch.connection = persisterConnectionContext == null ? null : visitConnection(persisterConnectionContext, batch.sourceInformation);
-
-        // binding (optional)
-        PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.bindingPointer(), "binding", batch.sourceInformation);
-        batch.binding = bindingPointerContext == null ? null : visitBindingPointer(bindingPointerContext, batch.sourceInformation);
+        // sink
+        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
+        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
 
         // target shape
-        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "targetShape", batch.sourceInformation);
-        batch.targetShape = visitTargetShape(targetShapeContext);
+        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "targetShape", persister.sourceInformation);
+        persister.targetShape = visitTargetShape(targetShapeContext);
 
         // ingest mode
-        PersistenceParserGrammar.IngestModeContext ingestModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.ingestMode(), "ingestMode", batch.sourceInformation);
-        batch.ingestMode = visitIngestMode(ingestModeContext);
+        PersistenceParserGrammar.IngestModeContext ingestModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.ingestMode(), "ingestMode", persister.sourceInformation);
+        persister.ingestMode = visitIngestMode(ingestModeContext);
 
-        return batch;
+        return persister;
     }
 
     /**********
@@ -252,10 +247,55 @@ public class PersistenceParseTreeWalker
     }
 
     /**********
+     * sink
+     **********/
+
+    private Sink visitSink(PersistenceParserGrammar.PersisterSinkContext ctx, SourceInformation sourceInformation)
+    {
+        if (ctx.relationalSink() != null)
+        {
+            return visitRelationalSink(ctx.relationalSink());
+        }
+        else if (ctx.objectStorageSink() != null)
+        {
+            return visitObjectStorageSink(ctx.objectStorageSink());
+        }
+        throw new EngineException("Unrecognized sink", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private RelationalSink visitRelationalSink(PersistenceParserGrammar.RelationalSinkContext ctx)
+    {
+        RelationalSink sink = new RelationalSink();
+        sink.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // connection (optional)
+        PersistenceParserGrammar.SinkConnectionContext sinkConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.sinkConnection(), "connection", sink.sourceInformation);
+        sink.connection = sinkConnectionContext == null ? null : visitConnection(sinkConnectionContext, sink.sourceInformation);
+
+        return sink;
+    }
+
+    private ObjectStorageSink visitObjectStorageSink(PersistenceParserGrammar.ObjectStorageSinkContext ctx)
+    {
+        ObjectStorageSink sink = new ObjectStorageSink();
+        sink.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // connection
+        PersistenceParserGrammar.SinkConnectionContext sinkConnectionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkConnection(), "connection", sink.sourceInformation);
+        sink.connection = visitConnection(sinkConnectionContext, sink.sourceInformation);
+
+        // binding
+        PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.bindingPointer(), "binding", sink.sourceInformation);
+        sink.binding = visitBindingPointer(bindingPointerContext, sink.sourceInformation);
+
+        return sink;
+    }
+
+    /**********
      * connection
      **********/
 
-    private Connection visitConnection(PersistenceParserGrammar.PersisterConnectionContext ctx, SourceInformation sourceInformation)
+    private Connection visitConnection(PersistenceParserGrammar.SinkConnectionContext ctx, SourceInformation sourceInformation)
     {
         if (ctx.connectionPointer() != null)
         {
@@ -268,7 +308,7 @@ public class PersistenceParseTreeWalker
         throw new EngineException("Unrecognized connection", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private ConnectionPointer visitConnectionPointer(PersistenceParserGrammar.PersisterConnectionContext ctx)
+    private ConnectionPointer visitConnectionPointer(PersistenceParserGrammar.SinkConnectionContext ctx)
     {
         PersistenceParserGrammar.ConnectionPointerContext connectionPointerContext = ctx.connectionPointer();
         ConnectionPointer connectionPointer = new ConnectionPointer();
@@ -277,7 +317,7 @@ public class PersistenceParseTreeWalker
         return connectionPointer;
     }
 
-    private Connection visitEmbeddedConnection(PersistenceParserGrammar.PersisterConnectionContext ctx)
+    private Connection visitEmbeddedConnection(PersistenceParserGrammar.SinkConnectionContext ctx)
     {
         PersistenceParserGrammar.EmbeddedConnectionContext embeddedConnectionContext = ctx.embeddedConnection();
         StringBuilder embeddedConnectionText = new StringBuilder();

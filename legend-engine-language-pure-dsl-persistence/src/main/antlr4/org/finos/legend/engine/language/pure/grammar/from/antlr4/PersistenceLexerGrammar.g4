@@ -28,8 +28,7 @@ TRIGGER_MANUAL:                             'Manual';
 TRIGGER_CRON:                               'Cron';
 
 // PERSISTER
-PERSISTER_CONNECTION:                       'connection';
-PERSISTER_BINDING:                          'binding';
+PERSISTER_SINK:                             'sink';
 PERSISTER_TARGET_SHAPE:                     'targetShape';
 PERSISTER_INGEST_MODE:                      'ingestMode';
 PERSISTER_STREAMING:                        'Streaming';
@@ -42,6 +41,15 @@ NOTIFYEE_EMAIL:                             'Email';
 NOTIFYEE_EMAIL_ADDRESS:                     'address';
 NOTIFYEE_PAGER_DUTY:                        'PagerDuty';
 NOTIFYEE_PAGER_DUTY_URL:                    'url';
+
+//**********
+// SINK
+//**********
+
+SINK_RELATIONAL:                            'Relational';
+SINK_OBJECT_STORAGE:                        'ObjectStorage';
+SINK_CONNECTION:                            'connection';
+SINK_BINDING:                               'binding';
 
 //**********
 // TARGET SHAPE

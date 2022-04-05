@@ -37,6 +37,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.ObjectStorageSink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.RelationalSink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.Sink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.SinkVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.targetshape.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
@@ -106,14 +110,18 @@ public class HelperPersistenceBuilder
                 ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
     }
 
-    public static Root_meta_external_shared_format_binding_Binding buildBinding(Persister persister, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_persister_sink_Sink buildSink(Sink sink, CompileContext context)
     {
-        if (persister.binding == null)
+        return sink.accept(new SinkBuilder(context));
+    }
+
+    public static Root_meta_external_shared_format_binding_Binding buildBinding(String binding, SourceInformation sourceInformation, CompileContext context)
+    {
+        if (binding == null)
         {
             return null;
         }
 
-        String binding = persister.binding;
         String bindingPath = binding.substring(0, binding.lastIndexOf("::"));
         String bindingName = binding.substring(binding.lastIndexOf("::") + 2);
 
@@ -123,13 +131,17 @@ public class HelperPersistenceBuilder
             return (Root_meta_external_shared_format_binding_Binding) packageableElement;
         }
 
-        throw new EngineException(String.format("Persister refers to a binding '%s' that is not defined", binding), persister.sourceInformation, EngineErrorType.COMPILATION);
+        throw new EngineException(String.format("Binding '%s' is not defined", binding), sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(Connection connection, CompileContext context)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(Connection connection, boolean connectionRequired, SourceInformation sourceInformation, CompileContext context)
     {
         if (connection == null)
         {
+            if (connectionRequired)
+            {
+                throw new EngineException(String.format("Connection is required"), sourceInformation, EngineErrorType.COMPILATION);
+            }
             return null;
         }
 
@@ -237,8 +249,7 @@ public class HelperPersistenceBuilder
             Iterable<String> leafModelClasses = val.targetShape.accept(new LeafModelClassExtractor(context));
 
             return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
-                    ._binding(buildBinding(val, context))
-                    ._connection(buildConnection(val.connection, context))
+                    ._sink(buildSink(val.sink, context))
                     ._ingestMode(buildIngestMode(val.ingestMode, leafModelClasses, context))
                     ._targetShape(buildTargetShape(val.targetShape, context));
         }
@@ -247,8 +258,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(StreamingPersister val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("")
-                    ._binding(buildBinding(val, context))
-                    ._connection(buildConnection(val.connection, context));
+                    ._sink(buildSink(val.sink, context));
         }
     }
 
@@ -273,6 +283,31 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_notifier_PagerDutyNotifyee_Impl("")
                     ._url(val.url);
+        }
+    }
+
+    private static class SinkBuilder implements SinkVisitor<Root_meta_pure_persistence_metamodel_persister_sink_Sink>
+    {
+        private final CompileContext context;
+
+        private SinkBuilder(CompileContext context)
+        {
+            this.context = context;
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_persister_sink_Sink visit(RelationalSink val)
+        {
+            return new Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink_Impl("")
+                    ._connection(buildConnection(val.connection, false, val.sourceInformation, context));
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_persister_sink_Sink visit(ObjectStorageSink val)
+        {
+            return new Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink_Impl("")
+                    ._binding(buildBinding(val.binding, val.sourceInformation, context))
+                    ._connection(buildConnection(val.connection, true, val.sourceInformation, context));
         }
     }
 

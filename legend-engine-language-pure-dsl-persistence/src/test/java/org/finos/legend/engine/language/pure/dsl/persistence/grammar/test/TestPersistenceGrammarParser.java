@@ -28,7 +28,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -260,7 +262,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -281,7 +285,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    ]\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [26:7-28:7]: Field 'address' is required");
+                "}\n", "PARSER error at [28:7-30:7]: Field 'address' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -292,7 +296,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -315,7 +321,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    ]\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [26:7-30:7]: Field 'address' should be specified only once");
+                "}\n", "PARSER error at [28:7-32:7]: Field 'address' should be specified only once");
     }
 
     @Test
@@ -330,7 +336,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -351,7 +359,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    ]\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [26:7-28:7]: Field 'url' is required");
+                "}\n", "PARSER error at [28:7-30:7]: Field 'url' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -362,7 +370,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -385,11 +395,11 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    ]\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [26:7-30:7]: Field 'url' should be specified only once");
+                "}\n", "PARSER error at [28:7-32:7]: Field 'url' should be specified only once");
     }
 
     @Test
-    public void persisterStreamingBinding()
+    public void persisterStreamingSink()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -400,7 +410,42 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Streaming\n" +
                 "  {\n" +
-                "    connection: test::Con;\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [8:14-10:3]: Field 'sink' is required");
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [8:14-16:3]: Field 'sink' should be specified only once");
+    }
+
+    @Test
+    public void relationalSinkConnection()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "  }\n" +
                 "}\n");
         test("###Persistence\n" +
@@ -412,14 +457,17 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Streaming\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "      connection: test::Con;\n" +
+                "      connection: test::Con;\n" +
+                "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-12:3]: Field 'binding' should be specified only once");
+                "}\n", "PARSER error at [10:11-14:5]: Field 'connection' should be specified only once");
     }
 
     @Test
-    public void persisterStreamingConnection()
+    public void objectStorageSinkConnection()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -430,14 +478,33 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Streaming\n" +
                 "  {\n" +
-                "    connection: test::Con;\n" +
-                "    connection: test::Con;\n" +
+                "    sink: ObjectStorage\n" +
+                "    {\n" +
+                "      binding: test::TestBinding;\n" +
+                "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-12:3]: Field 'connection' should be specified only once");
+                "}\n", "PARSER error at [10:11-13:5]: Field 'connection' is required");
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "    sink: ObjectStorage\n" +
+                "    {\n" +
+                "      binding: test::TestBinding;\n" +
+                "      connection: test::Con;\n" +
+                "      connection: test::Con;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [10:11-15:5]: Field 'connection' should be specified only once");
     }
 
     @Test
-    public void persisterBatchBinding()
+    public void persisterBatchSink()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -448,7 +515,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    connection: test::Con;\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -460,7 +526,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n");
+                "}\n", "PARSER error at [8:14-20:3]: Field 'sink' is required");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -470,9 +536,12 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
-                "    binding: test::Binding;\n" +
-                "    connection: test::Con;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -484,35 +553,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-23:3]: Field 'binding' should be specified only once");
-    }
-
-    @Test
-    public void persisterBatchConnection()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    connection: test::Con;\n" +
-                "    connection: test::Con;\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ModelClass;\n" +
-                "    }\n" +
-                "    ingestMode: AppendOnly\n" +
-                "    {\n" +
-                "      auditing: None;\n" +
-                "      filterDuplicates: false;\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [8:14-22:3]: Field 'connection' should be specified only once");
+                "}\n", "PARSER error at [8:14-26:3]: Field 'sink' should be specified only once");
     }
 
     @Test
@@ -527,9 +568,11 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-11:3]: Field 'targetShape' is required");
+                "}\n", "PARSER error at [8:14-13:3]: Field 'targetShape' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -540,7 +583,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -557,7 +602,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-26:3]: Field 'targetShape' should be specified only once");
+                "}\n", "PARSER error at [8:14-28:3]: Field 'targetShape' should be specified only once");
     }
 
     @Test
@@ -572,14 +617,16 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-16:3]: Field 'ingestMode' is required");
+                "}\n", "PARSER error at [8:14-18:3]: Field 'ingestMode' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -590,7 +637,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -607,7 +656,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [8:14-26:3]: Field 'ingestMode' should be specified only once");
+                "}\n", "PARSER error at [8:14-28:3]: Field 'ingestMode' should be specified only once");
     }
 
     /**********
@@ -626,7 +675,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -637,7 +688,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-14:5]: Field 'targetName' is required");
+                "}\n", "PARSER error at [13:18-16:5]: Field 'targetName' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -648,7 +699,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -661,7 +714,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-16:5]: Field 'targetName' should be specified only once");
+                "}\n", "PARSER error at [13:18-18:5]: Field 'targetName' should be specified only once");
     }
 
     @Test
@@ -676,7 +729,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -687,7 +742,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-14:5]: Field 'modelClass' is required");
+                "}\n", "PARSER error at [13:18-16:5]: Field 'modelClass' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -698,7 +753,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -711,7 +768,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-16:5]: Field 'modelClass' should be specified only once");
+                "}\n", "PARSER error at [13:18-18:5]: Field 'modelClass' should be specified only once");
     }
 
     @Test
@@ -726,7 +783,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -740,7 +799,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-17:5]: Field 'deduplicationStrategy' should be specified only once");
+                "}\n", "PARSER error at [13:18-19:5]: Field 'deduplicationStrategy' should be specified only once");
     }
 
     @Test
@@ -755,7 +814,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -769,7 +830,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-17:5]: Field 'partitionFields' should be specified only once");
+                "}\n", "PARSER error at [13:18-19:5]: Field 'partitionFields' should be specified only once");
     }
 
     /**********
@@ -788,7 +849,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
@@ -806,7 +869,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-21:5]: Field 'modelClass' is required");
+                "}\n", "PARSER error at [13:18-23:5]: Field 'modelClass' is required");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -816,7 +879,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -836,7 +901,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-23:5]: Field 'modelClass' should be specified only once");
+                "}\n", "PARSER error at [13:18-25:5]: Field 'modelClass' should be specified only once");
     }
 
     @Test
@@ -851,7 +916,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -869,7 +936,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-21:5]: Field 'transactionScope' is required");
+                "}\n", "PARSER error at [13:18-23:5]: Field 'transactionScope' is required");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -879,7 +946,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -899,7 +968,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-23:5]: Field 'transactionScope' should be specified only once");
+                "}\n", "PARSER error at [13:18-25:5]: Field 'transactionScope' should be specified only once");
     }
 
     @Test
@@ -914,14 +983,16 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
                 "      transactionScope: ALL_TARGETS;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-15:5]: Field 'parts' is required");
+                "}\n", "PARSER error at [13:18-17:5]: Field 'parts' is required");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -931,7 +1002,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
                 "      modelClass: test::ModelClass;\n" +
@@ -957,7 +1030,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [11:18-29:5]: Field 'parts' should be specified only once");
+                "}\n", "PARSER error at [13:18-31:5]: Field 'parts' should be specified only once");
     }
 
     //TODO: ledav -- MultiFlatPart
@@ -978,7 +1051,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -988,7 +1063,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    {\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-18:5]: Field 'auditing' is required");
+                "}\n", "PARSER error at [18:17-20:5]: Field 'auditing' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -999,7 +1074,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1011,7 +1088,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      auditing: None;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-20:5]: Field 'auditing' should be specified only once");
+                "}\n", "PARSER error at [18:17-22:5]: Field 'auditing' should be specified only once");
     }
 
     @Test
@@ -1026,7 +1103,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1036,7 +1115,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    {\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-18:5]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [18:17-20:5]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1047,7 +1126,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1067,7 +1148,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-28:5]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [18:17-30:5]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1082,7 +1163,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1102,7 +1185,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-28:5]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [18:17-30:5]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1113,7 +1196,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1147,7 +1232,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-42:5]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [18:17-44:5]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1162,7 +1247,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1177,7 +1264,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-23:5]: Field 'validityMilestoning' is required");
+                "}\n", "PARSER error at [18:17-25:5]: Field 'validityMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1188,7 +1275,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1223,7 +1312,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-43:5]: Field 'validityMilestoning' should be specified only once");
+                "}\n", "PARSER error at [18:17-45:5]: Field 'validityMilestoning' should be specified only once");
     }
 
     @Test
@@ -1238,7 +1327,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1258,7 +1349,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [23:28-27:7]: Field 'derivation' is required");
+                "}\n", "PARSER error at [25:28-29:7]: Field 'derivation' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1269,7 +1360,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1297,7 +1390,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [23:28-35:7]: Field 'derivation' should be specified only once");
+                "}\n", "PARSER error at [25:28-37:7]: Field 'derivation' should be specified only once");
     }
 
     /**********
@@ -1316,7 +1409,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1327,7 +1422,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      auditing: None;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-19:5]: Field 'mergeStrategy' is required");
+                "}\n", "PARSER error at [18:17-21:5]: Field 'mergeStrategy' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1338,7 +1433,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1351,7 +1448,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      auditing: None;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-19:5]: Field 'mergeStrategy' should be specified only once");
+                "}\n", "PARSER error at [18:17-21:5]: Field 'mergeStrategy' should be specified only once");
     }
 
     @Test
@@ -1366,7 +1463,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1377,7 +1476,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      mergeStrategy: NoDeletes;" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-18:36]: Field 'auditing' is required");
+                "}\n", "PARSER error at [18:17-20:36]: Field 'auditing' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1388,7 +1487,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1401,7 +1502,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      auditing: None;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-20:5]: Field 'auditing' should be specified only once");
+                "}\n", "PARSER error at [18:17-22:5]: Field 'auditing' should be specified only once");
     }
 
     @Test
@@ -1416,7 +1517,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1431,7 +1534,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-23:5]: Field 'mergeStrategy' is required");
+                "}\n", "PARSER error at [18:17-25:5]: Field 'mergeStrategy' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1442,7 +1545,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1459,7 +1564,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-25:5]: Field 'mergeStrategy' should be specified only once");
+                "}\n", "PARSER error at [18:17-27:5]: Field 'mergeStrategy' should be specified only once");
     }
 
     @Test
@@ -1474,7 +1579,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1485,7 +1592,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      mergeStrategy: NoDeletes;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-19:5]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [18:17-21:5]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1496,7 +1603,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1517,7 +1626,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-29:5]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [18:17-31:5]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1532,7 +1641,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1553,7 +1664,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-29:5]: Field 'transactionMilestoning' is required");
+                "}\n", "PARSER error at [18:17-31:5]: Field 'transactionMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1564,7 +1675,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1595,7 +1708,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-39:5]: Field 'transactionMilestoning' should be specified only once");
+                "}\n", "PARSER error at [18:17-41:5]: Field 'transactionMilestoning' should be specified only once");
     }
 
     @Test
@@ -1610,7 +1723,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1635,7 +1750,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-33:5]: Field 'mergeStrategy' is required");
+                "}\n", "PARSER error at [18:17-35:5]: Field 'mergeStrategy' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1646,7 +1761,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1673,7 +1790,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-35:5]: Field 'mergeStrategy' should be specified only once");
+                "}\n", "PARSER error at [18:17-37:5]: Field 'mergeStrategy' should be specified only once");
     }
 
     @Test
@@ -1688,7 +1805,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1704,7 +1823,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-24:5]: Field 'validityMilestoning' is required");
+                "}\n", "PARSER error at [18:17-26:5]: Field 'validityMilestoning' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1715,7 +1834,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1751,7 +1872,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-44:5]: Field 'validityMilestoning' should be specified only once");
+                "}\n", "PARSER error at [18:17-46:5]: Field 'validityMilestoning' should be specified only once");
     }
 
     @Test
@@ -1766,7 +1887,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1787,7 +1910,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [24:28-28:7]: Field 'derivation' is required");
+                "}\n", "PARSER error at [26:28-30:7]: Field 'derivation' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1798,7 +1921,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1829,7 +1954,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [24:28-38:7]: Field 'derivation' should be specified only once");
+                "}\n", "PARSER error at [26:28-40:7]: Field 'derivation' should be specified only once");
     }
 
     /**********
@@ -1848,7 +1973,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1859,7 +1986,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-19:5]: Field 'auditing' is required");
+                "}\n", "PARSER error at [18:17-21:5]: Field 'auditing' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1870,7 +1997,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1883,7 +2012,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-21:5]: Field 'auditing' should be specified only once");
+                "}\n", "PARSER error at [18:17-23:5]: Field 'auditing' should be specified only once");
     }
 
     @Test
@@ -1898,7 +2027,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1909,7 +2040,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      auditing: None;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-19:5]: Field 'filterDuplicates' is required");
+                "}\n", "PARSER error at [18:17-21:5]: Field 'filterDuplicates' is required");
 
         test("###Persistence\n" +
                 "\n" +
@@ -1920,7 +2051,9 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
@@ -1933,7 +2066,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [16:17-21:5]: Field 'filterDuplicates' should be specified only once");
+                "}\n", "PARSER error at [18:17-23:5]: Field 'filterDuplicates' should be specified only once");
     }
 
     @Test
@@ -1950,15 +2083,17 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  service: test::service::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
-                "    binding: test::Binding;\n" +
-                "    connection:\n" +
-                "    #{\n" +
-                "      JsonModelConnection\n" +
-                "      {\n" +
-                "        class: org::dxl::Animal;\n" +
-                "        url: 'my_url2';\n" +
-                "      }\n" +
-                "    }#\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "      connection:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: org::dxl::Animal;\n" +
+                "          url: 'my_url2';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    }\n" +
                 "    ingestMode: BitemporalDelta\n" +
                 "    {\n" +
                 "      mergeStrategy: DeleteIndicator\n" +

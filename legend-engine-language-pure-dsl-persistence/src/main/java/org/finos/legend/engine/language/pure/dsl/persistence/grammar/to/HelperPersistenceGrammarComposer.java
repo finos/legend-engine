@@ -34,6 +34,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.ObjectStorageSink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.RelationalSink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.Sink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.SinkVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.targetshape.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
@@ -68,27 +72,27 @@ public class HelperPersistenceGrammarComposer
                 "}";
     }
 
-    public static String renderDocumentation(String documentation, int indentLevel)
+    private static String renderDocumentation(String documentation, int indentLevel)
     {
         return getTabString(indentLevel) + "doc: " + convertString(documentation, true) + ";\n";
     }
 
-    public static String renderTrigger(Trigger trigger, int indentLevel)
+    private static String renderTrigger(Trigger trigger, int indentLevel)
     {
         return trigger.accept(new TriggerComposer(indentLevel));
     }
 
-    public static String renderService(String service, int indentLevel)
+    private static String renderService(String service, int indentLevel)
     {
         return getTabString(indentLevel) + "service: " + service + ";\n";
     }
 
-    public static String renderPersister(Persister persister, int indentLevel, PureGrammarComposerContext context)
+    private static String renderPersister(Persister persister, int indentLevel, PureGrammarComposerContext context)
     {
         return persister.accept(new PersisterComposer(indentLevel, context));
     }
 
-    public static String renderNotifier(Notifier notifier, int indentLevel)
+    private static String renderNotifier(Notifier notifier, int indentLevel)
     {
         if (notifier.notifyees.isEmpty()) {
             return "";
@@ -106,65 +110,6 @@ public class HelperPersistenceGrammarComposer
                 getTabString(indentLevel) + "[\n" +
                 Iterate.makeString(ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)), ",\n") + "\n" +
                 getTabString(indentLevel) + "]\n";
-    }
-
-    private static String renderBinding(String binding, int indentLevel, PureGrammarComposerContext context)
-    {
-        return getTabString(indentLevel) + "binding: " + binding + ";\n";
-    }
-
-    private static String renderConnection(Connection connection, int indentLevel, PureGrammarComposerContext context)
-    {
-        DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
-        if (connection instanceof ConnectionPointer)
-        {
-            return getTabString(indentLevel) + "connection: " + PureGrammarComposerUtility.convertPath(connection.accept(composerCore)) + ";\n";
-        }
-        return getTabString(indentLevel) + "connection:\n" +
-                getTabString(indentLevel) + "#{\n" +
-                getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(connection, composerCore.toContext()) + "\n" +
-                connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
-                getTabString(indentLevel) + "}#\n";
-    }
-
-    private static String renderTargetShape(TargetShape targetShape, int indentLevel)
-    {
-        return targetShape.accept(new TargetShapeComposer(indentLevel));
-    }
-
-    private static String renderDeduplicationStrategy(DeduplicationStrategy deduplicationStrategy, int indentLevel)
-    {
-        return deduplicationStrategy.accept(new DeduplicationStrategyComposer(indentLevel));
-    }
-
-    private static String renderIngestMode(IngestMode ingestMode, int indentLevel)
-    {
-        return ingestMode.accept(new IngestModeComposer(indentLevel));
-    }
-
-    private static String renderAuditing(Auditing auditing, int indentLevel)
-    {
-        return auditing.accept(new AuditingComposer(indentLevel));
-    }
-
-    private static String renderTransactionMilestoning(TransactionMilestoning transactionMilestoning, int indentLevel)
-    {
-        return transactionMilestoning.accept(new TransactionMilestoningComposer(indentLevel));
-    }
-
-    private static String renderValidityMilestoning(ValidityMilestoning validityMilestoning, int indentLevel)
-    {
-        return validityMilestoning.accept(new ValidityMilestoningComposer(indentLevel));
-    }
-
-    private static String renderValidityDerivation(ValidityDerivation validityDerivation, int indentLevel)
-    {
-        return validityDerivation.accept(new ValidityDerivationComposer(indentLevel));
-    }
-
-    private static String renderMergeStrategy(MergeStrategy mergeStrategy, int indentLevel)
-    {
-        return mergeStrategy.accept(new MergeStrategyComposer(indentLevel));
     }
 
     // helper visitors for class hierarchies
@@ -235,8 +180,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Streaming\n" +
                     getTabString(indentLevel) + "{\n" +
-                    (val.binding == null ? "" : renderBinding(val.binding, indentLevel + 1, context)) +
-                    (val.connection == null ? "" : renderConnection(val.connection, indentLevel + 1, context)) +
+                    renderSink(val.sink, indentLevel + 1, context) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -245,11 +189,75 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "persister: Batch\n" +
                     getTabString(indentLevel) + "{\n" +
-                    (val.binding == null ? "" : renderBinding(val.binding, indentLevel + 1, context)) +
-                    (val.connection == null ? "" : renderConnection(val.connection, indentLevel + 1, context)) +
+                    renderSink(val.sink, indentLevel + 1, context) +
                     renderIngestMode(val.ingestMode, indentLevel + 1) +
                     renderTargetShape(val.targetShape, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
+        }
+
+        private static String renderSink(Sink sink, int indentLevel, PureGrammarComposerContext context)
+        {
+            return sink.accept(new SinkComposer(indentLevel, context));
+        }
+
+        private static String renderIngestMode(IngestMode ingestMode, int indentLevel)
+        {
+            return ingestMode.accept(new IngestModeComposer(indentLevel));
+        }
+
+        private static String renderTargetShape(TargetShape targetShape, int indentLevel)
+        {
+            return targetShape.accept(new TargetShapeComposer(indentLevel));
+        }
+    }
+
+    private static class SinkComposer implements SinkVisitor<String>
+    {
+        private final int indentLevel;
+        private final PureGrammarComposerContext context;
+
+        private SinkComposer(int indentLevel, PureGrammarComposerContext context)
+        {
+            this.indentLevel = indentLevel;
+            this.context = context;
+        }
+
+        @Override
+        public String visit(RelationalSink val)
+        {
+            return getTabString(indentLevel) + "sink: Relational\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    (val.connection == null ? "" : renderConnection(val.connection, indentLevel + 1, context)) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        @Override
+        public String visit(ObjectStorageSink val)
+        {
+            return getTabString(indentLevel) + "sink: ObjectStorage\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderBinding(val.binding, indentLevel + 1) +
+                    renderConnection(val.connection, indentLevel + 1, context) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        private static String renderBinding(String binding, int indentLevel)
+        {
+            return getTabString(indentLevel) + "binding: " + binding + ";\n";
+        }
+
+        private static String renderConnection(Connection connection, int indentLevel, PureGrammarComposerContext context)
+        {
+            DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
+            if (connection instanceof ConnectionPointer)
+            {
+                return getTabString(indentLevel) + "connection: " + PureGrammarComposerUtility.convertPath(connection.accept(composerCore)) + ";\n";
+            }
+            return getTabString(indentLevel) + "connection:\n" +
+                    getTabString(indentLevel) + "#{\n" +
+                    getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(connection, composerCore.toContext()) + "\n" +
+                    connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
+                    getTabString(indentLevel) + "}#\n";
         }
     }
 
@@ -313,6 +321,11 @@ public class HelperPersistenceGrammarComposer
             return !partitionFields.isEmpty() ? getTabString(indentLevel) + "partitionFields: " + "[" +
                     Lists.immutable.ofAll(partitionFields).makeString(", ") +
                     "];\n" : "";
+        }
+
+        private static String renderDeduplicationStrategy(DeduplicationStrategy deduplicationStrategy, int indentLevel)
+        {
+            return deduplicationStrategy.accept(new DeduplicationStrategyComposer(indentLevel));
         }
     }
 
@@ -433,6 +446,26 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel + 1) + "filterDuplicates: " + val.filterDuplicates + ";\n" +
                     getTabString(indentLevel) + "}\n";
         }
+
+        private static String renderMergeStrategy(MergeStrategy mergeStrategy, int indentLevel)
+        {
+            return mergeStrategy.accept(new MergeStrategyComposer(indentLevel));
+        }
+
+        private static String renderAuditing(Auditing auditing, int indentLevel)
+        {
+            return auditing.accept(new AuditingComposer(indentLevel));
+        }
+
+        private static String renderTransactionMilestoning(TransactionMilestoning transactionMilestoning, int indentLevel)
+        {
+            return transactionMilestoning.accept(new TransactionMilestoningComposer(indentLevel));
+        }
+
+        private static String renderValidityMilestoning(ValidityMilestoning validityMilestoning, int indentLevel)
+        {
+            return validityMilestoning.accept(new ValidityMilestoningComposer(indentLevel));
+        }
     }
 
     private static class AuditingComposer implements AuditingVisitor<String>
@@ -519,6 +552,11 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel + 1) + "dateTimeThruName: '" + val.dateTimeThruName + "';\n" +
                     renderValidityDerivation(val.derivation, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
+        }
+
+        private static String renderValidityDerivation(ValidityDerivation validityDerivation, int indentLevel)
+        {
+            return validityDerivation.accept(new ValidityDerivationComposer(indentLevel));
         }
     }
 
