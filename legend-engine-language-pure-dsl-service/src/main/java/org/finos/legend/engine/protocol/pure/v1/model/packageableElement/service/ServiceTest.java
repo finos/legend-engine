@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-public abstract class ServiceTest
+import java.util.List;
+
+public class ServiceTest extends AtomicTest
 {
-    public SourceInformation sourceInformation;
+    public List<ParameterValue> parameters;
 }

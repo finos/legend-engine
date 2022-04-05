@@ -28,7 +28,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
+import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 
 import java.util.List;
 import java.util.Map;
@@ -52,11 +56,21 @@ public class ServiceProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(PureMultiExecution.class, "pureMultiExecution")
                         )).build(),
                 ProtocolSubTypeInfo.Builder
-                        .newInstance(ServiceTest.class)
+                        .newInstance(ServiceTest_Legacy.class)
                         .withDefaultSubType(SingleExecutionTest.class)
                         .withSubtypes(FastList.newListWith(
                                 Tuples.pair(SingleExecutionTest.class, "singleExecutionTest"),
                                 Tuples.pair(MultiExecutionTest.class, "multiExecutionTest")
+                        )).build(),
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(TestSuite.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(ServiceTestSuite.class, "serviceTestSuite")
+                        )).build(),
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(Test.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(ServiceTest.class, "serviceTest")
                         )).build()
         ));
     }

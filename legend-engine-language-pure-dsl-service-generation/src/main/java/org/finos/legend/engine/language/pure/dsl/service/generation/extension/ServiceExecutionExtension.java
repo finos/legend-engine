@@ -22,7 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
 
@@ -36,7 +36,7 @@ public interface ServiceExecutionExtension {
         return Optional.empty();
     }
 
-    default Optional<List<TestContainer>> tryToBuildTestAsserts(ServiceTest test, ObjectMapper objectMapper, PureModel pureModel)
+    default Optional<List<TestContainer>> tryToBuildTestAsserts(ServiceTest_Legacy test, ObjectMapper objectMapper, PureModel pureModel)
     {
         return Optional.empty();
     }

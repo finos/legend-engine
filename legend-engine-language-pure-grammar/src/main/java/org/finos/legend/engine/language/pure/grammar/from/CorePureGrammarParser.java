@@ -37,13 +37,16 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreA
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ModelConnectionParseTreeWalker;
-import org.finos.legend.engine.language.pure.grammar.from.data.*;
-import org.finos.legend.engine.language.pure.grammar.from.data.embedded.BinaryEmbeddedDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.data.embedded.PureCollectionEmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.data.DataParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ExternalFormatEmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ModelStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ReferenceEmbeddedDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.data.embedded.TextEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.*;
+import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.*;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -117,10 +120,17 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     public Iterable<? extends EmbeddedDataParser> getExtraEmbeddedDataParsers()
     {
         return Lists.immutable.with(
-                new BinaryEmbeddedDataParser(),
-                new PureCollectionEmbeddedDataParser(),
-                new ReferenceEmbeddedDataParser(),
-                new TextEmbeddedDataParser());
+                new ExternalFormatEmbeddedDataParser(),
+                new ModelStoreEmbeddedDataParser(),
+                new ReferenceEmbeddedDataParser());
+    }
+
+    @Override
+    public Iterable<? extends TestAssertionParser> getExtraTestAssertionParsers()
+    {
+        return Lists.immutable.with(
+                new EqualToGrammarParser(),
+                new EqualToJsonGrammarParser());
     }
 
     private static Connection parseJsonModelConnection(ConnectionValueSourceCode connectionValueSourceCode)

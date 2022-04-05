@@ -19,7 +19,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -30,9 +30,6 @@ import java.util.List;
 
 public class HelperEmbeddedDataGrammarParser
 {
-    public static final String EMBEDDED_DATA_TYPE_BINARY = "Binary";
-    public static final String EMBEDDED_DATA_TYPE_TEXT = "Text";
-
     /**
      * Helper for parsing embedded data values.  To use your grammar should include the definitions from
      * DataParserGrammar.g4:
@@ -91,6 +88,6 @@ public class HelperEmbeddedDataGrammarParser
             throw new EngineException("Embedded data must not be empty", sourceInformation, EngineErrorType.PARSER);
         }
 
-        return parser.parse(text, walkerSourceInformation, sourceInformation);
+        return parser.parse(text, walkerSourceInformation, sourceInformation, extensions);
     }
 }

@@ -291,8 +291,8 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(DataElement dataElement)
     {
-        final Root_meta_data_DataElement compiled = new Root_meta_data_DataElement_Impl(dataElement.name);
-        GenericType mappingGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::data::DataElement"));
+        final Root_meta_pure_data_DataElement compiled = new Root_meta_pure_data_DataElement_Impl(dataElement.name);
+        GenericType mappingGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::data::DataElement"));
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(dataElement._package);
         compiled._name(dataElement.name)
                 ._package(pack)

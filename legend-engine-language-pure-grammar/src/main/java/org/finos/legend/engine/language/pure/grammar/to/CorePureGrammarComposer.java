@@ -19,10 +19,14 @@ import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
 import java.util.List;
 
@@ -62,14 +66,31 @@ public class CorePureGrammarComposer implements PureGrammarComposerExtension
     }
 
     @Override
-    public List<Function2<EmbeddedData, PureGrammarComposerContext, String>> getExtraEmbeddedDataComposers()
+    public List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
     {
         return Lists.mutable.with(HelperEmbeddedDataGrammarComposer::composeCoreEmbeddedDataTypes);
     }
 
+    @Override
+    public List<Function2<TestAssertion, PureGrammarComposerContext, ContentWithType>> getExtraTestAssertionComposers()
+    {
+        return Lists.mutable.with(HelperTestAssertionGrammarComposer::composeCoreTestAssertion);
+    }
+
     public static String renderDataElement(DataElement dataElement, PureGrammarComposerContext context)
     {
-        return "Data " + HelperDomainGrammarComposer.renderAnnotations(dataElement.stereotypes, dataElement.taggedValues) + PureGrammarComposerUtility.convertPath(dataElement.getPath()) + "\n" +
-                HelperEmbeddedDataGrammarComposer.composeEmbeddedData(dataElement.data, context);
+        PureGrammarComposerContext updatedContext = PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(PureGrammarComposerUtility.getTabString()).build();
+        StringBuilder str = new StringBuilder();
+
+        str.append("Data ")
+           .append(HelperDomainGrammarComposer.renderAnnotations(dataElement.stereotypes, dataElement.taggedValues))
+           .append(PureGrammarComposerUtility.convertPath(dataElement.getPath()))
+           .append("\n");
+
+        str.append("{\n");
+        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(dataElement.data, updatedContext));
+        str.append("\n}");
+
+        return str.toString();
     }
 }

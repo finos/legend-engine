@@ -84,8 +84,19 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         {
             serviceBuilder.append(getTabString()).append(unsupported(execution.getClass(), "service execution type"));
         }
-        serviceBuilder.append(getTabString()).append("test: ");
-        serviceBuilder.append(HelperServiceGrammarComposer.renderServiceTest(service.test, context));
+
+        if(service.testSuites != null)
+        {
+            serviceBuilder.append(getTabString()).append("testSuites:\n");
+            serviceBuilder.append(getTabString()).append("[\n");
+            serviceBuilder.append(String.join(",\n", ListIterate.collect(service.testSuites, testSuite -> HelperServiceGrammarComposer.renderServiceTestSuite(testSuite, context)))).append("\n");
+            serviceBuilder.append(getTabString()).append("]\n");
+        }
+        if(service.test != null)
+        {
+            serviceBuilder.append(getTabString()).append("test: ");
+            serviceBuilder.append(HelperServiceGrammarComposer.renderServiceTest(service.test, context));
+        }
         return serviceBuilder.append("}").toString();
     }
 }

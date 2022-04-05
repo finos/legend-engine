@@ -1,0 +1,2 @@
+org.finos.legend.engine.plan.execution.stores.service.test.contentPattern.EqualToContentPatternToWiremockPatternGenerator
+org.finos.legend.engine.plan.execution.stores.service.test.contentPattern.EqualToJsonContentPatternToWiremockPatternGenerator

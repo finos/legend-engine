@@ -21,6 +21,11 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStoreEmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.ContentPattern;
+import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.EqualToJsonPattern;
+import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.EqualToPattern;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RestServiceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ServiceParametersResolutionExecutionNode;
@@ -40,6 +45,31 @@ public class ServiceStoreProtocolExtension implements PureProtocolExtension
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.mutable.with(() -> Lists.mutable.with(
+                // Class mapping
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(ClassMapping.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(RootServiceStoreClassMapping.class, "serviceStore")
+                        )).build(),
+                // Connection
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(Connection.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(ServiceStoreConnection.class, "serviceStore")
+                        )).build(),
+                // Content pattern
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(ContentPattern.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(EqualToPattern.class, "equalTo"),
+                                Tuples.pair(EqualToJsonPattern.class, "equalToJson")
+                        )).build(),
+                // Embedded Data
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(EmbeddedData.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(ServiceStoreEmbeddedData.class, "serviceStore")
+                        )).build(),
                 // Execution Nodes
                 ProtocolSubTypeInfo.Builder
                         .newInstance(ExecutionNode.class)
@@ -52,18 +82,6 @@ public class ServiceStoreProtocolExtension implements PureProtocolExtension
                         .newInstance(PackageableElement.class)
                         .withSubtypes(FastList.newListWith(
                                 Tuples.pair(ServiceStore.class, "serviceStore")
-                        )).build(),
-                // Class mapping
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(ClassMapping.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(RootServiceStoreClassMapping.class, "serviceStore")
-                        )).build(),
-                // Connection
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(Connection.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ServiceStoreConnection.class, "serviceStore")
                         )).build()
         ));
     }

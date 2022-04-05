@@ -65,7 +65,7 @@ public class HelperValueSpecificationGrammarComposer
         SPECIAL_INFIX.put("or", "||");
     }
 
-    static boolean isPrimitiveValue(ValueSpecification valueSpecification) {
+    public static boolean isPrimitiveValue(ValueSpecification valueSpecification) {
         return (valueSpecification instanceof CString ||
             valueSpecification instanceof CBoolean ||
             valueSpecification instanceof CInteger ||
