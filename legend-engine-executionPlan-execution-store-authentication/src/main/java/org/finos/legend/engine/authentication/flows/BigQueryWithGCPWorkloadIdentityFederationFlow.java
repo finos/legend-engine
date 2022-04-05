@@ -88,19 +88,19 @@ public class BigQueryWithGCPWorkloadIdentityFederationFlow implements DatabaseAu
     public Credential makeCredential(Identity identity, BigQueryDatasourceSpecification datasourceSpecification, GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy) throws Exception {
         Credentials awsCredentials = assumeAWSRoleAndGetCredentials(
                 String.format("arn:aws:iam::%s:role/%s",
-                        flowProviderConfiguration.awsConfig.accountId,
-                        flowProviderConfiguration.awsConfig.role),
-                flowProviderConfiguration.awsConfig.role, flowProviderConfiguration.awsConfig.region,
-                flowProviderConfiguration.awsConfig.awsAccessKeyIdVaultReference,
-                flowProviderConfiguration.awsConfig.awsSecretAccessKeyVaultReference);
+                        flowProviderConfiguration.getAwsConfig().getAccountId(),
+                        flowProviderConfiguration.getAwsConfig().getRole()),
+                flowProviderConfiguration.getAwsConfig().getRole(), flowProviderConfiguration.getAwsConfig().getRegion(),
+                flowProviderConfiguration.getAwsConfig().getAwsAccessKeyIdVaultReference(),
+                flowProviderConfiguration.getAwsConfig().getAwsSecretAccessKeyVaultReference());
         Date date = new Date();
         String currentDate = getUTCDate(date);
-        String canonicalAWSRequestSignature = computeCanonicalAWSRequestSignature(awsCredentials, date, flowProviderConfiguration.awsConfig.region);
+        String canonicalAWSRequestSignature = computeCanonicalAWSRequestSignature(awsCredentials, date, flowProviderConfiguration.getAwsConfig().getRegion());
         String gcpTargetResource = String.format(
                 "//iam.googleapis.com/projects/%s/locations/global/workloadIdentityPools/%s/providers/%s",
-                flowProviderConfiguration.gcpWorkloadConfig.projectNumber,
-                flowProviderConfiguration.gcpWorkloadConfig.poolId,
-                flowProviderConfiguration.gcpWorkloadConfig.providerId
+                flowProviderConfiguration.getGcpWorkloadConfig().getProjectNumber(),
+                flowProviderConfiguration.getGcpWorkloadConfig().getPoolId(),
+                flowProviderConfiguration.getGcpWorkloadConfig().getProviderId()
         );
         String subjectTokenType = "urn:ietf:params:aws:token-type:aws4_request";
         String callerIdentityToken = makeAWSCallerIdentityToken(awsCredentials, currentDate, canonicalAWSRequestSignature, gcpTargetResource);

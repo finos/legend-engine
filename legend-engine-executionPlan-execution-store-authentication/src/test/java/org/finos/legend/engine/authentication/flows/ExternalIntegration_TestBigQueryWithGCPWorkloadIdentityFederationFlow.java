@@ -40,16 +40,23 @@ public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationFl
 
     @Test
     public void makeCredential() throws Exception {
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration defaultDatabaseAuthenticationFlowProviderConfiguration = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration();
-        defaultDatabaseAuthenticationFlowProviderConfiguration.awsConfig.accountId = "564704738649";
-        defaultDatabaseAuthenticationFlowProviderConfiguration.awsConfig.region = "us-east-1";
-        defaultDatabaseAuthenticationFlowProviderConfiguration.awsConfig.role = "gcp-wif";
-        defaultDatabaseAuthenticationFlowProviderConfiguration.awsConfig.awsAccessKeyIdVaultReference = "AWS_ACCESS_KEY_ID";
-        defaultDatabaseAuthenticationFlowProviderConfiguration.awsConfig.awsSecretAccessKeyVaultReference = "AWS_SECRET_ACCESS_KEY";
-        defaultDatabaseAuthenticationFlowProviderConfiguration.gcpWorkloadConfig.projectNumber = "412074507462";
-        defaultDatabaseAuthenticationFlowProviderConfiguration.gcpWorkloadConfig.poolId = "aws-wif-pool2";
-        defaultDatabaseAuthenticationFlowProviderConfiguration.gcpWorkloadConfig.providerId = "aws-wif-provider2";
-        BigQueryWithGCPWorkloadIdentityFederationFlow flow = new BigQueryWithGCPWorkloadIdentityFederationFlow(defaultDatabaseAuthenticationFlowProviderConfiguration);
+        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
+                "us-east-1",
+                "564704738649",
+                "gcp-wif",
+                "AWS_ACCESS_KEY_ID",
+                "AWS_SECRET_ACCESS_KEY"
+        );
+        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
+                "412074507462",
+                "aws-wif-pool2",
+                "aws-wif-provider2"
+        );
+        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
+                .withAwsConfig(awsConfig)
+                .withGcpWorkloadConfig(gcpWorkloadConfig)
+                .build();
+        BigQueryWithGCPWorkloadIdentityFederationFlow flow = new BigQueryWithGCPWorkloadIdentityFederationFlow(flowProviderConfiguration);
         GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
         authenticationStrategy.serviceAccountEmail = "legend-integration-wif1@legend-integration-testing.iam.gserviceaccount.com";
         Credential credential = flow.makeCredential(identity1, new BigQueryDatasourceSpecification(), authenticationStrategy);

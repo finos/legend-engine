@@ -84,17 +84,22 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public void setup()
     {
         LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration();
-        flowProviderConfiguration.awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig();
-        flowProviderConfiguration.awsConfig.accountId = "564704738649";
-        flowProviderConfiguration.awsConfig.region = "us-east-1";
-        flowProviderConfiguration.awsConfig.role = "gcp-wif";
-        flowProviderConfiguration.awsConfig.awsAccessKeyIdVaultReference = AWS_ACCESS_KEY_ID;
-        flowProviderConfiguration.awsConfig.awsSecretAccessKeyVaultReference = AWS_SECRET_ACCESS_KEY;
-        flowProviderConfiguration.gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig();
-        flowProviderConfiguration.gcpWorkloadConfig.projectNumber = "412074507462";
-        flowProviderConfiguration.gcpWorkloadConfig.poolId = "aws-wif-pool2";
-        flowProviderConfiguration.gcpWorkloadConfig.providerId = "aws-wif-provider2";
+        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
+                "us-east-1",
+                "564704738649",
+                "gcp-wif",
+                "AWS_ACCESS_KEY_ID",
+                "AWS_SECRET_ACCESS_KEY"
+        );
+        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
+                "412074507462",
+                "aws-wif-pool2",
+                "aws-wif-provider2"
+        );
+        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
+                .withAwsConfig(awsConfig)
+                .withGcpWorkloadConfig(gcpWorkloadConfig)
+                .build();
         flowProvider.configure(flowProviderConfiguration);
         assertBigQueryWithGCPADCFlowIsAvailable(flowProvider);
         assertBigQueryWithGCPWIFFlowIsAvailable(flowProvider);
