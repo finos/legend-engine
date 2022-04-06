@@ -59,7 +59,7 @@ public class BufferedReader
         {
             this.position = 0;
             this.block = block;
-            this.cursorState = new ActiveCursorState();
+            this.cursorState = new InitialCursorState();
             block.addCursor();
         }
 
@@ -67,7 +67,7 @@ public class BufferedReader
         {
             this.position = copyOf.position;
             this.block = copyOf.block;
-            this.cursorState = new ActiveCursorState();
+            this.cursorState = new InitialCursorState();
             block.addCursor();
         }
 
@@ -120,6 +120,62 @@ public class BufferedReader
             abstract void destroy();
         }
 
+        private class InitialCursorState extends CursorState
+        {
+            private final char BOM = '\uFEFF';
+
+            @Override
+            public int advance()
+            {
+                updatePositionIfBOMPresent();
+                cursorState = new ActiveCursorState();
+                return BufferCursor.this.advance();
+            }
+
+            @Override
+            public char[] advance(int howMany)
+            {
+                updatePositionIfBOMPresent();
+                cursorState = new ActiveCursorState();
+                return BufferCursor.this.advance(howMany);
+            }
+
+            private void updatePositionIfBOMPresent()
+            {
+                if (position == 0)
+                {
+                    char ch = (char) block.charAt(position);
+                    if (ch == BOM)
+                    {
+                        position++;
+                    }
+                }
+            }
+
+            public int peek(int ahead)
+            {
+                if (ahead <= 0)
+                {
+                    throw new IllegalArgumentException("Cannot peek on characters that have been advanced");
+                }
+
+                updatePositionIfBOMPresent();
+                cursorState = new ActiveCursorState();
+                return BufferCursor.this.peek(ahead);
+            }
+
+            boolean isEndOfData()
+            {
+                return block.isEndOfData();
+            }
+
+            @Override
+            void destroy()
+            {
+                cursorState = new InactiveCursorState();
+            }
+        }
+
         private class ActiveCursorState extends CursorState
         {
             @Override
@@ -149,7 +205,7 @@ public class BufferedReader
                     }
 
                     int toTake = Math.min(toAdvance, available);
-                    block.copyChars(position, position+toTake, chars, copyTo);
+                    block.copyChars(position, position + toTake, chars, copyTo);
                     position += toTake;
                     copyTo += toTake;
                     toAdvance -= toTake;
@@ -270,7 +326,7 @@ public class BufferedReader
             {
                 createNextBlock();
             }
-            return  nextBlock;
+            return nextBlock;
         }
 
         private void createNextBlock()
@@ -361,7 +417,7 @@ public class BufferedReader
 
         DataBlock(long startIndex, char[] data)
         {
-            super(startIndex, startIndex+data.length);
+            super(startIndex, startIndex + data.length);
             this.data = data;
             BufferedReader.this.capacityUsed.addAndGet(data.length);
         }
