@@ -1137,7 +1137,7 @@ public class HelperRelationalBuilder
     {
         String propertyName = propertyMapping.property.property;
         String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
-        Function<Type, Boolean> isTypeTemporalMilestoned = type -> !Milestoning.temporalStereotypes(type._stereotypes()).isEmpty();
+        Function<Type, Boolean> isTypeTemporalMilestoned = type -> Milestoning.temporalStereotypes(type._stereotypes()) != null;
 
         // case where local property is not null and you find property in mapping class
         if (propertyMapping.localMappingProperty != null)
@@ -1250,7 +1250,7 @@ public class HelperRelationalBuilder
 
     private static MilestoningStereotype getTemporalStereotype(Class<?> immediateRelationalParentSet)
     {
-        return Lists.mutable.ofAll(Milestoning.temporalStereotypes(immediateRelationalParentSet._stereotypes())).getFirst();
+        return Milestoning.temporalStereotypes(immediateRelationalParentSet._stereotypes());
     }
 
     private static Column getColumn(TableAlias tableAlias, String propertyName)
