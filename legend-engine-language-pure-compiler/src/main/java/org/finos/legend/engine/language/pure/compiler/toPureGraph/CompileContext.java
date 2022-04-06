@@ -210,7 +210,7 @@ public class CompileContext
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(String fullPath)
     {
-        return this.resolveType(fullPath, SourceInformation.getUnknownSourceInformation());
+        return this.resolve(fullPath, SourceInformation.getUnknownSourceInformation(), path -> this.pureModel.getPackageableElement(path, SourceInformation.getUnknownSourceInformation()));
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(String fullPath, SourceInformation sourceInformation)

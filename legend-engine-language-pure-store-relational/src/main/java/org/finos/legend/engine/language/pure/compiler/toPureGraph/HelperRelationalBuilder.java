@@ -1137,7 +1137,7 @@ public class HelperRelationalBuilder
     {
         String propertyName = propertyMapping.property.property;
         String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
-        Function<Type, Boolean> isTypeTemporalMilestoned = type -> Milestoning.temporalStereotypes(type._stereotypes()) != null;
+        Function<Type, Boolean> isTypeTemporalMilestoned = type -> Milestoning.temporalStereotypes(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)type)._stereotypes()) != null;
 
         // case where local property is not null and you find property in mapping class
         if (propertyMapping.localMappingProperty != null)
@@ -1409,7 +1409,7 @@ public class HelperRelationalBuilder
 
         if (propertyMapping.target == null && ((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType instanceof Class)
         {
-            return HelperModelBuilder.getElementFullPath(((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
+            return HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) ((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
         }
         return HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping);
     }
@@ -1432,7 +1432,7 @@ public class HelperRelationalBuilder
                     return each._owner._name().equals(((Root_meta_pure_metamodel_function_property_Property_Impl) property)._owner._name());
                 }
             });
-            return HelperModelBuilder.getElementFullPath(((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) propertiesFromAssociations.getFirst())._genericType)._rawType, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
+            return HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) ((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) propertiesFromAssociations.getFirst())._genericType)._rawType, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
         }
         return propertyMapping.source == null ? parent._id() : propertyMapping.source;
     }
@@ -1530,7 +1530,7 @@ public class HelperRelationalBuilder
 
         if (!core_pure_model_modelUnit.Root_meta_pure_model_unit_resolve_ModelUnit_1__ResolvedModelUnit_1_(binding._modelUnit(), context.getExecutionSupport()).classes(context.getExecutionSupport()).contains(propertyType))
         {
-            throw new EngineException("Class: " + platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(propertyType, context.getExecutionSupport()) + " should be included in modelUnit for binding: " + propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Class: " + platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)propertyType, context.getExecutionSupport()) + " should be included in modelUnit for binding: " + propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
         }
 
         ExternalFormatExtension<?, ?, ?> schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding);

@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.AnnotatedElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
@@ -58,7 +59,7 @@ public class MilestoningDatePropagationHelper {
     {
         Assert.assertTrue(isGetAllFunctionWithMilestoningContext(func), () -> "MilestoneDatePropagationContext can only be set from getAll() function");
         ValueSpecification parameterValue = func._parametersValues().getFirst();
-        MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(parameterValue._genericType()._typeArguments().toList().getFirst()._rawType()._stereotypes());
+        MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(((AnnotatedElement)parameterValue._genericType()._typeArguments().toList().getFirst()._rawType())._stereotypes());
         ListIterable<? extends ValueSpecification> temporalParameterValues = func._parametersValues().toList();
         setMilestoningDates(temporalParameterValues, milestoningStereotype, processingContext);
     }

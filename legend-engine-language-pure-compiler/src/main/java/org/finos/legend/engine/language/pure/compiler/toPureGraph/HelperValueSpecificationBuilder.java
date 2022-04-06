@@ -36,6 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.gra
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
@@ -192,7 +193,7 @@ public class HelperValueSpecificationBuilder
                 }
                 appliedProperty.parameters.addAll(localParameters);
                 automaLambdaparam.name = automapName;
-                automaLambdaparam._class = HelperModelBuilder.getElementFullPath(inferredVariable._genericType()._rawType(), context.pureModel.getExecutionSupport());
+                automaLambdaparam._class = HelperModelBuilder.getElementFullPath((PackageableElement)inferredVariable._genericType()._rawType(), context.pureModel.getExecutionSupport());
                 automaLambdaparam.multiplicity = m;
                 automapLambda.body = Lists.mutable.of(appliedProperty);
 
