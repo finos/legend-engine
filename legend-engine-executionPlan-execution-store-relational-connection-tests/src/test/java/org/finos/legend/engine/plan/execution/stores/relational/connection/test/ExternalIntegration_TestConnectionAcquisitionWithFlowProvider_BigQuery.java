@@ -46,6 +46,20 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public static final String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
     public static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
 
+    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
+            "us-east-1",
+            "564704738649",
+            "gcp-wif",
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY"
+    );
+
+    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
+            "412074507462",
+            "aws-wif-pool2",
+            "aws-wif-provider2"
+    );
+
     private ConnectionManagerSelector connectionManagerSelector;
 
     @BeforeClass
@@ -84,18 +98,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public void setup()
     {
         LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
-                "us-east-1",
-                "564704738649",
-                "gcp-wif",
-                "AWS_ACCESS_KEY_ID",
-                "AWS_SECRET_ACCESS_KEY"
-        );
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
-                "412074507462",
-                "aws-wif-pool2",
-                "aws-wif-provider2"
-        );
         LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
                 .withAwsConfig(awsConfig)
                 .withGcpWorkloadConfig(gcpWorkloadConfig)

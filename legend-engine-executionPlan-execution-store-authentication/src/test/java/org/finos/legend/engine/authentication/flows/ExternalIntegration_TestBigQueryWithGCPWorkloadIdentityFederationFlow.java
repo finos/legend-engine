@@ -31,6 +31,19 @@ import static org.junit.Assert.*;
 
 public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationFlow {
     private final Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
+            "us-east-1",
+            "564704738649",
+            "gcp-wif",
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY"
+    );
+    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
+            "412074507462",
+            "aws-wif-pool2",
+            "aws-wif-provider2"
+    );
+
 
     @Before
     public void setup()
@@ -40,18 +53,6 @@ public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationFl
 
     @Test
     public void makeCredential() throws Exception {
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
-                "us-east-1",
-                "564704738649",
-                "gcp-wif",
-                "AWS_ACCESS_KEY_ID",
-                "AWS_SECRET_ACCESS_KEY"
-        );
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
-                "412074507462",
-                "aws-wif-pool2",
-                "aws-wif-provider2"
-        );
         LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
                 .withAwsConfig(awsConfig)
                 .withGcpWorkloadConfig(gcpWorkloadConfig)

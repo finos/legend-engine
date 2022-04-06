@@ -35,9 +35,7 @@ See the following docs for details :
 
 __Workload Identity Federation__
 
-Legend can connect to BigQuery using Workload Identity Federation. This means that BigQuery JDBC driver will require any valid Service Account Access Token obtained using configured authentication flow during runtime to connect to BigQuery.
-
-This authentication mode is usable in any environment.
+Legend supports Workload Identity Federation using AWS as identity provider to connect to BigQuery. This means that BigQuery JDBC driver will require any valid Service Account Access Token obtained using configured authentication flow during runtime to connect to BigQuery.
 
 See the following docs for details :
 * https://cloud.google.com/iam/docs/workload-identity-federation
