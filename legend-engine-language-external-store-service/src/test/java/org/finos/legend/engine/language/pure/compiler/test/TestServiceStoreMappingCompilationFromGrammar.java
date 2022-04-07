@@ -14,6 +14,10 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test;
@@ -1817,5 +1821,22 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    )\n" +
                 "  }\n" +
                 ")\n");
+    }
+
+    @Test
+    public void testMultiLevelNesting()
+    {
+        Pair<PureModelContextData, PureModel> result =
+                test(JSON_BINDING +
+                        "###Mapping\n" +
+                        "Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping\n" +
+                        "(\n" +
+                        "    *meta::external::store::service::showcase::domain::ApiResponse[response_set]: ServiceStore\n" +
+                        "    {\n" +
+                        "        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService\n" +
+                        "    }\n" +
+                        ")\n\n");
+
+        Assert.assertEquals(5, result.getTwo().getMapping("meta::external::store::service::showcase::mapping::ServiceStoreMapping")._classMappings().size());
     }
 }
