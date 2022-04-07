@@ -93,7 +93,9 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
             BigQueryDatasourceSpecification bigQueryDatasourceSpecification = (BigQueryDatasourceSpecification)datasourceSpecification;
             return new BigQueryDataSourceSpecificationKey(
                     bigQueryDatasourceSpecification.projectId,
-                    bigQueryDatasourceSpecification.defaultDataset);
+                    bigQueryDatasourceSpecification.defaultDataset,
+                    bigQueryDatasourceSpecification.proxyHost,
+                    bigQueryDatasourceSpecification.proxyPort);
         }
         else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
         {

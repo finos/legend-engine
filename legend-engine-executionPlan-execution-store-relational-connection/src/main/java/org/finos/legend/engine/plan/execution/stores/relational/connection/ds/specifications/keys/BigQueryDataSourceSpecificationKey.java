@@ -22,13 +22,15 @@ public class BigQueryDataSourceSpecificationKey implements DataSourceSpecificati
 {
     private final String projectId;
     private final String defaultDataset;
+    private String proxyHost;
+    private String proxyPort;
 
-    public BigQueryDataSourceSpecificationKey(String projectId, String defaultDataset)
-    {
+    public BigQueryDataSourceSpecificationKey(String projectId, String defaultDataset, String proxyHost, String proxyPort) {
         this.projectId = projectId;
         this.defaultDataset = defaultDataset;
+        this.proxyHost = proxyHost;
+        this.proxyPort = proxyPort;
     }
-
     public String getProjectId()
     {
         return projectId;
@@ -39,12 +41,22 @@ public class BigQueryDataSourceSpecificationKey implements DataSourceSpecificati
         return defaultDataset;
     }
 
+    public String getProxyHost() {
+        return proxyHost;
+    }
+
+    public String getProxyPort() {
+        return proxyPort;
+    }
+
     @Override
     public String toString()
     {
         return "BigQuerySpecificationKey{" +
                 "projectId='" + projectId + '\'' +
                 ",defaultDataset='" + defaultDataset + '\'' +
+                ",proxyHost='" + proxyHost + '\'' +
+                ",proxyPort='" + proxyPort + '\'' +
                 '}';
     }
 
@@ -53,7 +65,9 @@ public class BigQueryDataSourceSpecificationKey implements DataSourceSpecificati
     {
         return "BigQuery" +
                 "projectId:" + projectId + "_" +
-                "defaultDataset:" + defaultDataset + "_";
+                "defaultDataset:" + defaultDataset + "_" +
+                "proxyHost:" + proxyHost + "_" +
+                "proxyPort:" + proxyPort + "_";
     }
 
     @Override
@@ -69,12 +83,14 @@ public class BigQueryDataSourceSpecificationKey implements DataSourceSpecificati
         }
         BigQueryDataSourceSpecificationKey that = (BigQueryDataSourceSpecificationKey) o;
         return Objects.equals(projectId, that.projectId) &&
-                Objects.equals(defaultDataset, that.defaultDataset);
+                Objects.equals(defaultDataset, that.defaultDataset) &&
+                Objects.equals(proxyHost, that.proxyHost) &&
+                Objects.equals(proxyPort, that.proxyPort);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(projectId, defaultDataset);
+        return Objects.hash(projectId, defaultDataset, proxyHost, proxyPort);
     }
 }
