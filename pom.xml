@@ -34,6 +34,7 @@
         <module>legend-engine-executionPlan-dependencies</module>
         <module>legend-engine-executionPlan-execution</module>
         <module>legend-engine-executionPlan-execution-api</module>
+        <module>legend-engine-executionPlan-execution-store-relational-connection-tests-api</module>
         <module>legend-engine-executionPlan-execution-store-authentication</module>
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
         <module>legend-engine-executionPlan-execution-store-relational</module>
@@ -1675,6 +1676,19 @@
             </dependency>
 
             <!-- Database -->
+
+            <!-- Test Containers -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>1.16.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>mssqlserver</artifactId>
+                <version>1.16.3</version>
+            </dependency>
+            <!-- Test Containers -->
 
             <dependency>
                 <groupId>net.minidev</groupId>
