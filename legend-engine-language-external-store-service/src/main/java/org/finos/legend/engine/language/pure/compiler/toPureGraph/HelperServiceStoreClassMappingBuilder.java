@@ -35,6 +35,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
@@ -309,7 +310,7 @@ public class HelperServiceStoreClassMappingBuilder
 
         if (sourceDataType != pureClass)
         {
-            throw new EngineException("Response type of source service should match mapping class. Found response type : " + getElementFullPath(sourceDataType, context.pureModel.getExecutionSupport()) + " does not match mapping class : " + getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Response type of source service should match mapping class. Found response type : " + getElementFullPath((PackageableElement)sourceDataType, context.pureModel.getExecutionSupport()) + " does not match mapping class : " + getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
         }
 
         RichIterable<String> requiredServiceParameters = serviceMapping._service()._parameters().collectIf(Root_meta_external_store_service_metamodel_ServiceParameter::_required, Root_meta_external_store_service_metamodel_ServiceParameter::_name);

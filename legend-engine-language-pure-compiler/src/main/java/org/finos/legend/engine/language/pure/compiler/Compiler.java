@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProce
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.pac4j.core.profile.CommonProfile;
 
 public class Compiler
@@ -41,6 +42,6 @@ public class Compiler
     public static String getLambdaReturnType(Lambda lambda, PureModel pureModel)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification valueSpecification = HelperValueSpecificationBuilder.buildLambdaWithContext(lambda.body, lambda.parameters, new CompileContext.Builder(pureModel).build(), new ProcessingContext("Processing return type for lambda"))._expressionSequence().getLast();
-        return HelperModelBuilder.getElementFullPath(valueSpecification._genericType()._rawType(), pureModel.getExecutionSupport());
+        return HelperModelBuilder.getElementFullPath((PackageableElement)valueSpecification._genericType()._rawType(), pureModel.getExecutionSupport());
     }
 }
