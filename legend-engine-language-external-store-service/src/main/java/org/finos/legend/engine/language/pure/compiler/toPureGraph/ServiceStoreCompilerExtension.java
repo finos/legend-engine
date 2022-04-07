@@ -22,8 +22,10 @@ import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.ServiceStoreEmbeddedDataCompiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
@@ -119,5 +121,11 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
             ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
             versions.forEach(v -> registerElementForPathToElement.value("meta::protocols::pure::" + v + "::extension::store::service", Lists.mutable.with("getServiceStoreExtension_String_1__SerializerExtension_1_")));
         });
+    }
+
+    @Override
+    public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> getExtraEmbeddedDataProcessors()
+    {
+        return Collections.singletonList(ServiceStoreEmbeddedDataCompiler::compileServiceStoreEmbeddedDataCompiler);
     }
 }

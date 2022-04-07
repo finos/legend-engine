@@ -34,8 +34,10 @@ public class Service extends PackageableElement
     public String documentation;
     public boolean autoActivateUpdates = true;
     public Execution execution;
-    public ServiceTest test;
     public List<ServiceTag> tags;
+    public List<ServiceTestSuite> testSuites;
+
+    public ServiceTest_Legacy test;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

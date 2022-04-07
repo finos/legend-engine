@@ -15,42 +15,28 @@
 package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Execution;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionTest_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.PrimitiveType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class HelperServiceBuilder
@@ -123,7 +109,78 @@ public class HelperServiceBuilder
                 ._mapping(mapping)
                 ._runtime(runtime);
     }
-    public static Root_meta_legend_service_metamodel_Test processServiceTest(ServiceTest serviceTest, CompileContext context, Execution execution)
+
+    public static Root_meta_legend_service_metamodel_TestData processServiceTestSuiteData(TestData testData, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_legend_service_metamodel_TestData pureTestData = new Root_meta_legend_service_metamodel_TestData_Impl("");
+
+        if (testData.connectionsTestData != null && !testData.connectionsTestData.isEmpty())
+        {
+            List<String> connectionIds = ListIterate.collect(testData.connectionsTestData, d -> d.id);
+            List<String> duplicateConnectionIds = connectionIds.stream().filter(e -> Collections.frequency(connectionIds, e) > 1).distinct().collect(Collectors.toList());
+
+            if (!duplicateConnectionIds.isEmpty())
+            {
+                throw new EngineException("Multiple connection test data found with ids : '" + String.join(",", duplicateConnectionIds) + "'", testData.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            pureTestData._connectionsTestData(ListIterate.collect(testData.connectionsTestData, data -> HelperServiceBuilder.processServiceConnectionData(data, context, processingContext)));
+        }
+
+        return pureTestData;
+    }
+
+    private static Root_meta_legend_service_metamodel_ConnectionTestData processServiceConnectionData(ConnectionTestData connectionData, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_legend_service_metamodel_ConnectionTestData pureConnectionData = new Root_meta_legend_service_metamodel_ConnectionTestData_Impl("");
+
+        pureConnectionData._connectionId(connectionData.id);
+        pureConnectionData._testData(connectionData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+
+        return pureConnectionData;
+    }
+
+    public static Root_meta_legend_service_metamodel_ParameterValue processServiceTestParameterValue(ParameterValue parameterValue, CompileContext context)
+    {
+        Root_meta_legend_service_metamodel_ParameterValue pureParameterValue = new Root_meta_legend_service_metamodel_ParameterValue_Impl("");
+
+        pureParameterValue._name(parameterValue.name);
+        pureParameterValue._value(Lists.immutable.with(parameterValue.value.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))));
+
+        return pureParameterValue;
+    }
+
+    public static void validateServiceTestParameterValues(List<Root_meta_legend_service_metamodel_ParameterValue> parameterValues, RichIterable<? extends VariableExpression> parameters, SourceInformation sourceInformation)
+    {
+        for (VariableExpression param : parameters)
+        {
+            Optional<Root_meta_legend_service_metamodel_ParameterValue> parameterValue = ListIterate.detectOptional(parameterValues, p -> p._name().equals(param._name()));
+
+            if (parameterValue.isPresent())
+            {
+                InstanceValue paramValue = (InstanceValue) parameterValue.get()._value().getOnly();
+
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity paramMultiplicity = param._multiplicity();
+                String paramType = param._genericType()._rawType()._name();
+
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity paramValueMultiplicity = paramValue._multiplicity();
+                String paramValueType = paramValue._genericType()._rawType()._name();
+
+                if (!("Nil".equals(paramValueType) || paramType.equals(paramValueType)) || !org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.subsumes(paramMultiplicity, paramValueMultiplicity))
+                {
+                    throw new EngineException("Parameter value type does not match with parameter type for parameter: '" + param._name() + "'", sourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
+            else
+            {
+                if (param._multiplicity()._lowerBound() != null && param._multiplicity()._lowerBound()._value() != null && param._multiplicity()._lowerBound()._value() != 0)
+                {
+                    throw new EngineException("Parameter value required for parameter: '" + param._name() + "'", sourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
+        }
+    }
+
+    public static Root_meta_legend_service_metamodel_Test processServiceTest(ServiceTest_Legacy serviceTest, CompileContext context, Execution execution)
     {
         if (serviceTest instanceof SingleExecutionTest)
         {

@@ -360,4 +360,795 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "}\n"
         );
     }
+
+    @Test
+    public void testServiceTestSuite()
+    {
+        //Test Empty TestSuite
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n"
+        );
+        
+        //Test Single TestSuite without data
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+        
+        //Test Single TestSuite with data
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with multiple connections data
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#,\n" +
+                "          connection2:\n" +
+                "            ModelStore\n" +
+                "            #{\n" +
+                "              my::Person:\n" +
+                "                [\n" +
+                "                  ^my::Person(\n" +
+                "                    givenNames = ['Fred', 'William'],\n" +
+                "                    address = ^my::Address(street = 'A Road')\n" +
+                "                  )\n" +
+                "                ]\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with multiple tests
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+        
+        //Test Single TestSuite with parameter
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: param: String[1]|demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'dummy'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with multiple parameters
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: {stringParam: String[1],stringOptionalParam: String[0..1],stringListParam: String[*],integerParam: Integer[1],integerOptionalParam: Integer[0..1],integerListParam: Integer[*],floatParam: Float[1],floatOptionalParam: Float[0..1],floatListParam: Float[*],strictDateParam: StrictDate[1],strictDateOptionalParam: StrictDate[0..1],strictDateListParam: StrictDate[*],dateTimeParam: DateTime[1],dateTimeOptionalParam: DateTime[0..1],dateTimeListParam: DateTime[*],booleanParam: Boolean[1],booleanOptionalParam: Boolean[0..1],booleanListParam: Boolean[*]|demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#)};\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            stringParam = 'dummy',\n" +
+                "            stringOptionalParam = 'dummy',\n" +
+                "            stringListParam = ['dummy', 'dummy'],\n" +
+                "            integerParam = 1,\n" +
+                "            integerOptionalParam = [],\n" +
+                "            integerListParam = [1, 2],\n" +
+                "            floatParam = 1.123,\n" +
+                "            floatOptionalParam = [],\n" +
+                "            floatListParam = [1.123, 4.456],\n" +
+                "            strictDateParam = %2020-1-1,\n" +
+                "            strictDateOptionalParam = [],\n" +
+                "            strictDateListParam = [%2020-1-1, %2020-1-2],\n" +
+                "            dateTimeParam = %2020-1-1T12:12:12,\n" +
+                "            dateTimeOptionalParam = [],\n" +
+                "            dateTimeListParam = [%2020-1-1T12:12:12, %2020-1-1T12:12:13],\n" +
+                "            booleanParam = false,\n" +
+                "            booleanOptionalParam = [],\n" +
+                "            booleanListParam = [true, false]\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite without asserts
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with multiple asserts
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with complex semantics
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: param: String[1]|demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#,\n" +
+                "          connection2:\n" +
+                "            ModelStore\n" +
+                "            #{\n" +
+                "              my::Person:\n" +
+                "                [\n" +
+                "                  ^my::Person(\n" +
+                "                    givenNames = ['Fred', 'William'],\n" +
+                "                    address = ^my::Address(street = 'A Road')\n" +
+                "                  )\n" +
+                "                ]\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'value1'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'value2'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Multiple TestSuite with complex semantics
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: param: String[1]|demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#,\n" +
+                "          connection2:\n" +
+                "            ModelStore\n" +
+                "            #{\n" +
+                "              my::Person:\n" +
+                "                [\n" +
+                "                  ^my::Person(\n" +
+                "                    givenNames = ['Fred', 'William'],\n" +
+                "                    address = ^my::Address(street = 'A Road')\n" +
+                "                  )\n" +
+                "                ]\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'value1'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'value2'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    testSuite2:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nJohn,Doe\\nfirstName,lastName';\n" +
+                "            }#,\n" +
+                "          connection2:\n" +
+                "            ModelStore\n" +
+                "            #{\n" +
+                "              my::Person:\n" +
+                "                [\n" +
+                "                  ^my::Person(\n" +
+                "                    givenNames = ['John', 'Doe'],\n" +
+                "                    address = ^my::Address(street = 'A Street')\n" +
+                "                  )\n" +
+                "                ]\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'value1'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'value2'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+    }
 }

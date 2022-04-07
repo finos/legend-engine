@@ -24,7 +24,7 @@ options
 // -------------------------------------- IDENTIFIER --------------------------------------
 
 identifier:                 VALID_STRING | STRING
-                            | DATA | CONTENT_TYPE
+                            | DATA
 ;
 
 
@@ -33,7 +33,7 @@ identifier:                 VALID_STRING | STRING
 definition:                 (dataElement)*
                             EOF
 ;
-dataElement:                DATA stereotypes? taggedValues? qualifiedName embeddedData
+dataElement:                DATA stereotypes? taggedValues? qualifiedName BRACE_OPEN embeddedData BRACE_CLOSE
 ;
 embeddedData:               identifier ISLAND_OPEN (embeddedDataContent)*
 ;

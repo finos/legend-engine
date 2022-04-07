@@ -112,7 +112,7 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return walker.combinedExpression(((DomainParserGrammar) sectionParserInfo.parser).combinedExpression(), "line", typeParametersNames, lambdaContext, "", true, false);
     }
 
-    public ValueSpecification parseServiceParam(String code, ParseTreeWalkerSourceInformation serviceParamWalkerSourceInformation, PureGrammarParserContext parserContext)
+    public ValueSpecification parsePrimitiveValue(String code, ParseTreeWalkerSourceInformation serviceParamWalkerSourceInformation, PureGrammarParserContext parserContext)
     {
         List<String> typeParametersNames = new ArrayList<>();
         DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext("");

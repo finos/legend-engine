@@ -24,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,12 @@ public interface PureGrammarComposerExtension
         return new ArrayList<>();
     }
 
-    default List<Function2<EmbeddedData, PureGrammarComposerContext, String>> getExtraEmbeddedDataComposers()
+    default List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
+    {
+        return new ArrayList<>();
+    }
+
+    default List<Function2<TestAssertion, PureGrammarComposerContext, ContentWithType>> getExtraTestAssertionComposers()
     {
         return new ArrayList<>();
     }

@@ -61,59 +61,59 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     {
         // Faulty stereotype
         test("###Mapping\n" +
-            "Mapping anything::somethingelse ()\n" +
-            "###Service\n" +
-            "Service <<NoProfile.NoKey>> anything::class\n" +
-            "{\n" +
-            "  pattern: 'url/myUrl/';\n" +
-            "  owners: ['test'];\n" +
-            "  documentation: 'test';\n" +
-            "  autoActivateUpdates: true;\n" +
-            "  execution: Single\n" +
-            "  {\n" +
-            "    query: '';\n" +
-            "    mapping: anything::somethingelse;\n" +
-            "    runtime:\n" +
-            "    #{\n" +
-            "     connections: [];\n" +
-            "    }#;\n" +
-            "  }\n" +
-            "  test: Single\n" +
-            "  {\n" +
-            "    data: 'moreThanData';\n" +
-            "    asserts:\n" +
-            "    [\n" +
-            "    ];\n" +
-            "  }\n" +
-            "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+                "Mapping anything::somethingelse ()\n" +
+                "###Service\n" +
+                "Service <<NoProfile.NoKey>> anything::class\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['test'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: '';\n" +
+                "    mapping: anything::somethingelse;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "     connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
         // Faulty tagged value
 
         test("###Mapping\n" +
-            "Mapping anything::somethingelse ()\n" +
-            "###Service\n" +
-            "Service { NoProfile.NoKey = 'something' } anything::class\n" +
-            "{\n" +
-            "  pattern: 'url/myUrl/';\n" +
-            "  owners: ['test'];\n" +
-            "  documentation: 'test';\n" +
-            "  autoActivateUpdates: true;\n" +
-            "  execution: Single\n" +
-            "  {\n" +
-            "    query: '';\n" +
-            "    mapping: anything::somethingelse;\n" +
-            "    runtime:\n" +
-            "    #{\n" +
-            "     connections: [];\n" +
-            "    }#;\n" +
-            "  }\n" +
-            "  test: Single\n" +
-            "  {\n" +
-            "    data: 'moreThanData';\n" +
-            "    asserts:\n" +
-            "    [\n" +
-            "    ];\n" +
-            "  }\n" +
-            "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+                "Mapping anything::somethingelse ()\n" +
+                "###Service\n" +
+                "Service { NoProfile.NoKey = 'something' } anything::class\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['test'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: '';\n" +
+                "    mapping: anything::somethingelse;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "     connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
     }
 
     @Test
@@ -1013,5 +1013,1692 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    ];\n" +
                 "  }\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuite()
+    {
+        String resource = "Class test::model::Firm\n" +
+                "{\n" +
+                "  employees: test::model::Person[1..*];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::model::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::store::S_Firm\n" +
+                "{\n" +
+                "  employees: test::store::S_Person[1..*];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::store::S_Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Pure\n" +
+                "  {\n" +
+                "    ~src test::store::S_Firm\n" +
+                "    legalName: $src.legalName,\n" +
+                "    employees[test_model_Person]: $src.employees\n" +
+                "  }\n" +
+                "  *test::model::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::store::S_Person\n" +
+                "    firstName: $src.firstName,\n" +
+                "    lastName: $src.lastName\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::runtime::SFirmConnection\n" +
+                "{\n" +
+                "  class: test::store::S_Firm;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "JsonModelConnection test::runtime::SPersonConnection\n" +
+                "{\n" +
+                "  class: test::store::S_Person;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::SFirmRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    test::mapping::FirmMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection1: test::runtime::SFirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "Runtime test::runtime::SFirmAndSPersonRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    test::mapping::FirmMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection1: test::runtime::SFirmConnection,\n" +
+                "      connection2: test::runtime::SPersonConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n";
+
+        //Test Empty TestSuite
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: name:String[1]|test::model::Firm.all()->filter(f | $f.legalName == $name )->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite without data
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with data
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with multiple connections data
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmAndSPersonRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#,\n" +
+                "          connection2:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with multiple tests
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with parameter
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: param: String[1]|test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'dummy'" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with multiple parameters
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: {stringParam: String[1],stringOptionalParam: String[0..1],stringListParam: String[*],integerParam: Integer[1],integerOptionalParam: Integer[0..1],integerListParam: Integer[*],floatParam: Float[1],floatOptionalParam: Float[0..1],floatListParam: Float[*],strictDateParam: StrictDate[1],strictDateOptionalParam: StrictDate[0..1],strictDateListParam: StrictDate[*],dateTimeParam: DateTime[1],dateTimeOptionalParam: DateTime[0..1],dateTimeListParam: DateTime[*],booleanParam: Boolean[1],booleanOptionalParam: Boolean[0..1],booleanListParam: Boolean[*]|test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#)};\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            stringParam = 'dummy',\n" +
+                "            stringOptionalParam = 'dummy',\n" +
+                "            stringListParam = ['dummy', 'dummy'],\n" +
+                "            integerParam = 1,\n" +
+                "            integerListParam = [1, 2],\n" +
+                "            floatParam = 1.123,\n" +
+                "            floatOptionalParam = [],\n" +
+                "            floatListParam = 1.123,\n" +
+                "            strictDateParam = %2020-1-1,\n" +
+                "            strictDateOptionalParam = [],\n" +
+                "            strictDateListParam = [%2020-1-1, %2020-1-2],\n" +
+                "            dateTimeParam = %2020-1-1T12:12:12,\n" +
+                "            dateTimeOptionalParam = [],\n" +
+                "            dateTimeListParam = [%2020-1-1T12:12:12, %2020-1-1T12:12:13],\n" +
+                "            booleanParam = false,\n" +
+                "            booleanOptionalParam = [],\n" +
+                "            booleanListParam = [true, false]\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with multiple asserts
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Single TestSuite with complex semantics
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmAndSPersonRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#,\n" +
+                "          connection2:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'dummy1'" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'dummy2'" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+
+        //Test Multiple TestSuite with complex semantics
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmAndSPersonRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#,\n" +
+                "          connection2:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'dummy1'" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'dummy2'" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    testSuite2:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#,\n" +
+                "          connection2:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'dummy1'" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'dummy2'" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
+        );
+    }
+
+    @Test
+    public void testServiceTestSuiteCompilationErrorMessages()
+    {
+        String resource = "Class test::model::Firm\n" +
+                "{\n" +
+                "  employees: test::model::Person[1..*];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::model::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::store::S_Firm\n" +
+                "{\n" +
+                "  employees: test::store::S_Person[1..*];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::store::S_Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Pure\n" +
+                "  {\n" +
+                "    ~src test::store::S_Firm\n" +
+                "    legalName: $src.legalName,\n" +
+                "    employees[test_model_Person]: $src.employees\n" +
+                "  }\n" +
+                "  *test::model::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::store::S_Person\n" +
+                "    firstName: $src.firstName,\n" +
+                "    lastName: $src.lastName\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::runtime::SFirmConnection\n" +
+                "{\n" +
+                "  class: test::store::S_Firm;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "JsonModelConnection test::runtime::SPersonConnection\n" +
+                "{\n" +
+                "  class: test::store::S_Person;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::SFirmRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    test::mapping::FirmMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection1: test::runtime::SFirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "Runtime test::runtime::SFirmAndSPersonRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    test::mapping::FirmMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection1: test::runtime::SFirmConnection,\n" +
+                "      connection2: test::runtime::SPersonConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n";
+
+        //Test Single TestSuite without tests
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [106:5-123:5]: Service TestSuites should have atleast 1 test"
+        );
+
+        //Test Single TestSuite without asserts
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [122:9-127:9]: Service Tests should have atleast 1 assert"
+        );
+
+        //Multiple TestSuites with same ids
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    },\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [88:1-151:1]: Multiple testSuites found with ids : 'testSuite1'"
+        );
+
+        //Multiple Tests with same ids
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        },\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [106:5-143:5]: Multiple tests found with ids : 'test1'"
+        );
+
+        //Multiple Asserts with same ids
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#,\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [110:9-135:9]: Multiple assertions found with ids : 'assert1'"
+        );
+
+        //Multiple Test data with same connection ids
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#,\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [108:7-125:7]: Multiple connection test data found with ids : 'connection1'"
+        );
+
+        // Mis-match between parameter type & parameter value
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: param:String[1]|test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          parameters:\n" +
+                        "          [\n" +
+                        "            param = 123" +
+                        "          ]\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+        );
+
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: param:String[1]|test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          parameters:\n" +
+                        "          [\n" +
+                        "          ]\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [122:9-140:9]: Parameter value required for parameter: 'param'"
+        );
+
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: param:String[1]|test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          parameters:\n" +
+                        "          [\n" +
+                        "            param = ['dummy1', 'dummy2']" +
+                        "          ]\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+        );
+
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: param:String[0..1]|test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          parameters:\n" +
+                        "          [\n" +
+                        "            param = ['dummy1', 'dummy2']" +
+                        "          ]\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+        );
+
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: param:String[0..1]|test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          parameters:\n" +
+                        "          [\n" +
+                        "            param = 123" +
+                        "          ]\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+        );
+
+        test(resource + "###Service\n" +
+                        "Service test::service::FirmService\n" +
+                        "{\n" +
+                        "  pattern: '/testFirmService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'owner1',\n" +
+                        "    'owner2'\n" +
+                        "  ];\n" +
+                        "  documentation: '';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: param:String[*]|test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                        "    mapping: test::mapping::FirmMapping;\n" +
+                        "    runtime: test::runtime::SFirmRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          parameters:\n" +
+                        "          [\n" +
+                        "            param = 123" +
+                        "          ]\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+        );
+
+        //TODO: Test data with wrong connection id
+        //        test(resource + "###Service\n" +
+        //                "Service test::service::FirmService\n" +
+        //                "{\n" +
+        //                "  pattern: '/testFirmService';\n" +
+        //                "  owners:\n" +
+        //                "  [\n" +
+        //                "    'owner1',\n" +
+        //                "    'owner2'\n" +
+        //                "  ];\n" +
+        //                "  documentation: '';\n" +
+        //                "  autoActivateUpdates: true;\n" +
+        //                "  execution: Single\n" +
+        //                "  {\n" +
+        //                "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+        //                "    mapping: test::mapping::FirmMapping;\n" +
+        //                "    runtime: test::runtime::SFirmRuntime;\n" +
+        //                "  }\n" +
+        //                "  testSuites:\n" +
+        //                "  [\n" +
+        //                "    testSuite1:\n" +
+        //                "    {\n" +
+        //                "      data:\n" +
+        //                "      [\n" +
+        //                "        connections:\n" +
+        //                "        [\n" +
+        //                "          connection_1:\n" +
+        //                "            ExternalFormat\n" +
+        //                "            #{\n" +
+        //                "              contentType: 'application/json';\n" +
+        //                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+        //                "            }#\n" +
+        //                "        ]\n" +
+        //                "      ]\n" +
+        //                "      tests:\n" +
+        //                "      [\n" +
+        //                "        test1:\n" +
+        //                "        {\n" +
+        //                "          asserts:\n" +
+        //                "          [\n" +
+        //                "            assert1:\n" +
+        //                "              EqualToJson\n" +
+        //                "              #{\n" +
+        //                "                expected : \n" +
+        //                "                  ExternalFormat\n" +
+        //                "                  #{\n" +
+        //                "                    contentType: 'application/json';\n" +
+        //                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+        //                "                  }#;\n" +
+        //                "              }#\n" +
+        //                "          ]\n" +
+        //                "        }\n" +
+        //                "      ]\n" +
+        //                "    }\n" +
+        //                "  ]\n" +
+        //                "}\n",
+        //                ""
+        //        );
     }
 }

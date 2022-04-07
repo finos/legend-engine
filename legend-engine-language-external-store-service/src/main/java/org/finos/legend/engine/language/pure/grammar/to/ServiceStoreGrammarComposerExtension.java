@@ -22,7 +22,10 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.to.data.ServiceStoreEmbeddedDataComposer;
+import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -30,6 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -101,5 +105,11 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
             }
             return null;
         });
+    }
+
+    @Override
+    public List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
+    {
+        return Collections.singletonList(ServiceStoreEmbeddedDataComposer::composeServiceStoreEmbeddedData);
     }
 }
