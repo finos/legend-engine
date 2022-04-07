@@ -35,12 +35,17 @@ public abstract class DbSpecificTests
 
     protected abstract Subject getSubject();
 
+    protected void testConnection(Connection connection, String sqlExpression) throws Exception
+    {
+        this.testConnection(connection, 30, sqlExpression);
+    }
+
     protected void
-    testConnection(Connection connection, String sqlExpression) throws Exception
+    testConnection(Connection connection, int repeat, String sqlExpression) throws Exception
     {
         ExecutorService executor = Executors.newFixedThreadPool(5);
         MutableList<Future<Boolean>> result = FastList.newList();
-        for (int i = 0; i < 30; i++)
+        for (int i = 0; i < repeat; i++)
         {
             result.add(executor.submit(() -> {
                 try (Statement st = connection.createStatement();
@@ -50,7 +55,7 @@ public abstract class DbSpecificTests
                     {
                         for (int i1 = 1; i1 < resultSet.getMetaData().getColumnCount() + 1; i1++)
                         {
-                            System.out.println(resultSet.getMetaData().getColumnLabel(i1) + " = " + resultSet.getObject(i1));
+                            //String columnMetadata = resultSet.getMetaData().getColumnLabel(i1) + " = " + resultSet.getObject(i1);
                         }
                     }
                     return true;

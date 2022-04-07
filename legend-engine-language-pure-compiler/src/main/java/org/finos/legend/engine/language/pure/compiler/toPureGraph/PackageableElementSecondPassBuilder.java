@@ -138,8 +138,8 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> originalMilestonedProperties = association._originalMilestonedProperties().toList();
         MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?>> qualifiedProperties = association._qualifiedProperties().toList();
 
-        boolean sourceIsTemporal = !Milestoning.temporalStereotypes(class1._stereotypes()).isEmpty();
-        boolean targetIsTemporal = !Milestoning.temporalStereotypes(class2._stereotypes()).isEmpty();
+        boolean sourceIsTemporal = Milestoning.temporalStereotypes(class1._stereotypes()) != null;
+        boolean targetIsTemporal = Milestoning.temporalStereotypes(class2._stereotypes()) != null;
 
         if (sourceIsTemporal)
         {

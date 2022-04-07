@@ -19,7 +19,13 @@ Database test::DB
   (
     ID INTEGER PRIMARY KEY,
     FIRSTNAME VARCHAR(100),
-    LASTNAME VARCHAR(100)
+    LASTNAME VARCHAR(100),
+    CITY VARCHAR(100),
+    AGE INT,
+    SALARY FLOAT,
+    DOB DATE,
+    EMPLOYMENT_DATETIME TIMESTAMP,
+    ACTIVE_EMPLOYMENT VARCHAR(100)
   )
 )
 
@@ -29,6 +35,12 @@ Class test::Person
 {
   firstName: String[1];
   lastName: String[1];
+  city : String[0..1];
+  age : Integer[0..1];
+  salary : Float[0..1];
+  dob : Date[0..1];
+  employmentDateTime : DateTime[0..1];
+  activeEmployment : Boolean[1];
 }
 
 function test::fetch(ip: String[*]): String[1]
@@ -36,6 +48,35 @@ function test::fetch(ip: String[*]): String[1]
    test::Person.all()->filter(x|$x.firstName->in($ip))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
 }
 
+function test::fetchOptionalCity(optionalCity:String[0..1]):Any[*]
+{
+    test::Person.all()->filter(p|$p.city==$optionalCity)->graphFetch(#{test::Person{firstName,lastName,city}}#)->serialize(#{test::Person{firstName,lastName,city}}#)
+}
+
+function test::fetchOptionalAge(optionalAge:Integer[0..1]):Any[*]
+{
+    test::Person.all()->filter(p|$p.age==$optionalAge)->graphFetch(#{test::Person{firstName,lastName,age}}#)->serialize(#{test::Person{firstName,lastName,age}}#)
+}
+
+function test::fetchOptionalSalary(optionalSalary:Float[0..1]):Any[*]
+{
+    test::Person.all()->filter(p|$p.salary==$optionalSalary)->graphFetch(#{test::Person{firstName,lastName,salary}}#)->serialize(#{test::Person{firstName,lastName,salary}}#)
+}
+
+function test::fetchOptionalDateOfBirth(optionalDate:Date[0..1]):Any[*]
+{
+    test::Person.all()->filter(p|$p.dob==$optionalDate)->graphFetch(#{test::Person{firstName,lastName,dob}}#)->serialize(#{test::Person{firstName,lastName,dob}}#)
+}
+
+function test::fetchOptionalEmploymentDateTime(optionalDateTime:DateTime[0..1]):Any[*]
+{
+    test::Person.all()->filter(p|$p.employmentDateTime==$optionalDateTime)->graphFetch(#{test::Person{firstName,lastName,employmentDateTime}}#)->serialize(#{test::Person{firstName,lastName,employmentDateTime}}#)
+}
+
+function test::fetchOptionalActiveEmployment(optionalActiveEmployment:Boolean[0..1]):Any[*]
+{
+    test::Person.all()->filter(p|$p.activeEmployment==$optionalActiveEmployment)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
 
 ###Mapping
 Mapping test::Map
@@ -48,10 +89,15 @@ Mapping test::Map
     )
     ~mainTable [test::DB]personTable
     firstName: [test::DB]personTable.FIRSTNAME,
-    lastName: [test::DB]personTable.LASTNAME
+    lastName: [test::DB]personTable.LASTNAME,
+    city : [test::DB]personTable.CITY,
+    age : [test::DB]personTable.AGE,
+    salary : [test::DB]personTable.SALARY,
+    dob : [test::DB]personTable.DOB,
+    employmentDateTime : [test::DB]personTable.EMPLOYMENT_DATETIME,
+    activeEmployment : case(equal([test::DB]personTable.ACTIVE_EMPLOYMENT,'Y'),'true','false')
   }
 )
-
 
 ###Runtime
 Runtime test::Runtime
@@ -72,7 +118,7 @@ Runtime test::Runtime
           type: H2;
           specification: LocalH2
           {
-            testDataSetupCSV: 'default\npersonTable\nID,FIRSTNAME,LASTNAME\n1,Peter,Smith\n2,John,Johnson\n---';
+            testDataSetupCSV: 'default\npersonTable\nID,FIRSTNAME,LASTNAME,CITY,AGE,SALARY,DOB,EMPLOYMENT_DATETIME,ACTIVE_EMPLOYMENT\n1,Peter,Smith,New York,,,1982-01-20,2012-05-20T13:10:52.501,\n2,John,Johnson,,35,80000.75,,2005-03-15T18:47:52,N\n3,Bob,Stevens,Dallas,25,75000.75,1997-12-16,,Y\n---';
           };
           auth: DefaultH2;
         }

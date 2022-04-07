@@ -64,6 +64,68 @@ public class TestServiceRunner
     public static final Multiplicity PURE_ONE = new Multiplicity(1, 1);
     public static final Multiplicity PURE_MANY = new Multiplicity(1, null);
 
+    private void testOptionalParameter(String fetchFunction, String argName, Object optionalParameter, String expectedResultWithParameter, String expectedResultWithoutParameter)
+    {
+        SimpleOptionalParameterServiceRunner simpleOptionalParameterServiceRunner = new SimpleOptionalParameterServiceRunner(fetchFunction, argName);
+        ServiceRunnerInput serviceRunnerInputWithOptionalParameter = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(optionalParameter))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result1 = simpleOptionalParameterServiceRunner.run(serviceRunnerInputWithOptionalParameter);
+        Assert.assertEquals("Result when optional parameter has value", expectedResultWithParameter, result1);
+
+        ServiceRunnerInput serviceRunnerInputWithEmptyListParameter = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(Collections.emptyList()))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result2 = simpleOptionalParameterServiceRunner.run(serviceRunnerInputWithEmptyListParameter);
+        Assert.assertEquals("Result when optional parameter is an empty list", expectedResultWithoutParameter, result2);
+
+        ServiceRunnerInput serviceRunnerInputWithNullParameter = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(null))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result3 = simpleOptionalParameterServiceRunner.run(serviceRunnerInputWithNullParameter);
+        Assert.assertEquals("Result when optional parameter is null", expectedResultWithoutParameter, result3);
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalString()
+    {
+        this.testOptionalParameter("test::fetchOptionalCity", "optionalCity", "New York", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"city\":\"New York\"}", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"city\":null}");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalInteger()
+    {
+        this.testOptionalParameter("test::fetchOptionalAge", "optionalAge", 35, "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"age\":35}", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"age\":null}");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalFloat()
+    {
+        this.testOptionalParameter("test::fetchOptionalSalary", "optionalSalary", 80000.75, "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"salary\":80000.75}", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"salary\":null}");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalDate()
+    {
+        this.testOptionalParameter("test::fetchOptionalDateOfBirth", "optionalDate", "1982-01-20", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"dob\":\"1982-01-20\"}", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"dob\":null}");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalDateTimeWithNoTimeZone()
+    {
+        this.testOptionalParameter("test::fetchOptionalEmploymentDateTime", "optionalDateTime", "2005-03-15T18:47:52", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalBoolean()
+    {
+        this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", true, "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}", "[]");
+        this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", false, "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"}]", "[]");
+    }
+
     @Test
     public void testSimpleM2MServiceExecution()
     {
@@ -357,6 +419,25 @@ public class TestServiceRunner
 
         simpleM2MServiceRunnerWthGraphFetchBatchSize.setGraphFetchBatchMemoryLimit(400);
         Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"}]", simpleM2MServiceRunnerWthGraphFetchBatchSize.run(serviceRunnerInput2));
+    }
+
+    private static class SimpleOptionalParameterServiceRunner extends AbstractServicePlanExecutor
+    {
+        private String argName;
+        SimpleOptionalParameterServiceRunner(String fetchFunction, String argName)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", fetchFunction), true);
+            this.argName = argName;
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            newExecutionBuilder()
+                    .withParameter(this.argName, serviceRunnerInput.getArgs().get(0))
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
     }
 
     private static class SimpleM2MServiceRunner extends AbstractServicePlanExecutor

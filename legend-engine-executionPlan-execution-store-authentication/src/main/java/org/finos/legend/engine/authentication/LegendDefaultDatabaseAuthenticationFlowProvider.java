@@ -38,7 +38,8 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new DatabricksWithApiTokenFlow(),
                 new H2StaticWithTestUserPasswordFlow(),
                 new SnowflakeWithKeyPairFlow(),
-                new SqlServerStaticWithUserPasswordFlow()
+                new SqlServerStaticWithUserPasswordFlow(),
+                new RedshiftWithUserPasswordFlow()
         );
     }
 

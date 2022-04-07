@@ -38,6 +38,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecificati
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotypeEnum;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -51,13 +52,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
-
 import java.util.List;
 import java.util.function.BiConsumer;
 
 public class Milestoning
 {
-    private enum GeneratedMilestoningStereotype
+    public enum GeneratedMilestoningStereotype
     {
         generatedmilestoningproperty,
         generatedmilestoningdateproperty
@@ -105,11 +105,11 @@ public class Milestoning
     public static Iterable<? extends Property> generateMilestoningProperties(Class<Object> owner, CompileContext context)
     {
         MutableList<Property> generatedMilestoningProperties = Lists.mutable.empty();
-        MutableList<MilestoningStereotype> milestoningStereotype = Lists.mutable.ofAll(temporalStereotypes(owner._stereotypes()));
-        if (milestoningStereotype.notEmpty())
+        MilestoningStereotype milestoningStereotype = temporalStereotypes(owner._stereotypes());
+        if (milestoningStereotype != null)
         {
-            MutableList<Property> generatedMilestoningDateProperties = generateMilestoningDateProperties(context, milestoningStereotype.getFirst(), owner);
-            Property generatedMilestoningRangeProperty = generateMilestoningRangeProperty(context, milestoningStereotype.getFirst(), owner);
+            MutableList<Property> generatedMilestoningDateProperties = generateMilestoningDateProperties(context, milestoningStereotype, owner);
+            Property generatedMilestoningRangeProperty = generateMilestoningRangeProperty(context, milestoningStereotype, owner);
             generatedMilestoningProperties.withAll(generatedMilestoningDateProperties).with(generatedMilestoningRangeProperty);
         }
         return generatedMilestoningProperties;
@@ -182,12 +182,11 @@ public class Milestoning
 
     private static MilestoningPropertyTransformation milestoningPropertyTransformations(Property<?, ?> originalProperty, CompileContext context, Class<?> sourceClass, PropertyOwner propertyOwner)
     {
-        List<MilestoningStereotype> returnTypeMilestoningStereotypes = temporalStereotypes(originalProperty._genericType()._rawType()._stereotypes());
+        MilestoningStereotype returnTypeMilestoningStereotype = temporalStereotypes(((PackageableElement)originalProperty._genericType()._rawType())._stereotypes());
         MilestoningPropertyTransformation milestoningPropertyTransformation = new MilestoningPropertyTransformation(originalProperty);
 
-        if (!returnTypeMilestoningStereotypes.isEmpty())
+        if (returnTypeMilestoningStereotype != null)
         {
-            MilestoningStereotype returnTypeMilestoningStereotype = returnTypeMilestoningStereotypes.get(0);
             MutableList<Stereotype> stereotypes = Lists.mutable.withAll(originalProperty._stereotypes());
             MutableList<Stereotype> withMilestoningStereotype = stereotypes.with(generatedMilestoningStereotype(context, GeneratedMilestoningStereotype.generatedmilestoningproperty));
 
@@ -197,9 +196,9 @@ public class Milestoning
             MutableList<QualifiedProperty<?>> milestoningQualifiedPropertyWithArg = newSingleDateMilestoningQualifiedPropertyWithArg(context, sourceClass, propertyOwner, originalProperty, returnTypeMilestoningStereotype, withMilestoningStereotype, edgePointProperty);
             MutableList<QualifiedProperty<?>> milestoningRangeQualifiedProperty = generateMilestoningRangeQualifiedProperty(context, sourceClass, propertyOwner, originalProperty, returnTypeMilestoningStereotype, withMilestoningStereotype, edgePointProperty);
 
-            List<MilestoningStereotype> sourceMilestoningStereotype = temporalStereotypes(sourceClass._stereotypes());
+            MilestoningStereotype sourceMilestoningStereotype = temporalStereotypes(sourceClass._stereotypes());
             milestoningQualifiedPropertyWithArg.withAll(milestoningRangeQualifiedProperty);
-            if(!sourceMilestoningStereotype.isEmpty() && (sourceMilestoningStereotype.get(0).equals(returnTypeMilestoningStereotypes.get(0)) || MilestoningStereotypeEnum.bitemporal.equals(sourceMilestoningStereotype.get(0))))
+            if(sourceMilestoningStereotype != null && (sourceMilestoningStereotype.equals(returnTypeMilestoningStereotype) || MilestoningStereotypeEnum.bitemporal.equals(sourceMilestoningStereotype)))
             {
                 QualifiedProperty<?> milestoningQualifiedPropertyNoArg = newSingleDateMilestoningQualifiedPropertyNoArg(context, sourceClass, propertyOwner, originalProperty, returnTypeMilestoningStereotype, withMilestoningStereotype, edgePointProperty);
                 milestoningQualifiedPropertyWithArg.add(milestoningQualifiedPropertyNoArg);
@@ -476,9 +475,17 @@ public class Milestoning
         return p -> p._stereotypes().anySatisfy(s -> s._value().equals(GeneratedMilestoningStereotype.generatedmilestoningproperty.name()));
     }
 
-    public static List<MilestoningStereotype> temporalStereotypes(RichIterable<? extends Stereotype> stereotypes)
+    public static MilestoningStereotype temporalStereotypes(RichIterable<? extends Stereotype> stereotypes)
     {
-        return ArrayIterate.select(MilestoningStereotypeEnum.values(), e -> stereotypes.anySatisfy(s -> s._value().equals(e.getPurePlatformStereotypeName())));
+        List<MilestoningStereotype> milestoningStereotypes = ArrayIterate.select(MilestoningStereotypeEnum.values(), e -> stereotypes.anySatisfy(s -> s._value().equals(e.getPurePlatformStereotypeName())));
+        if (milestoningStereotypes.size() == 1)
+        {
+            return milestoningStereotypes.get(0);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private static Stereotype generatedMilestoningStereotype(CompileContext context, GeneratedMilestoningStereotype generatedMilestoningStereotype)
