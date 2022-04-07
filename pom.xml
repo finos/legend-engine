@@ -136,7 +136,7 @@
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <!-- Legend -->
         <legend.pure.version>1.53.0</legend.pure.version>
-        <legend.shared.version>0.20.0</legend.shared.version>
+        <legend.shared.version>0.20.1</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
