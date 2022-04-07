@@ -14,19 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.data;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = BinaryData.class, name = "BinaryData"),
-        @JsonSubTypes.Type(value = PureCollectionData.class, name = "PureCollection"),
-        @JsonSubTypes.Type(value = DataElementReference.class, name = "Reference"),
-        @JsonSubTypes.Type(value = TextData.class, name = "TextData")
-})
 public abstract class EmbeddedData
 {
-    public String _type;
     public SourceInformation sourceInformation;
+
+    public <T> T accept(EmbeddedDataVisitor<T> embeddedDataVisitor)
+    {
+        return embeddedDataVisitor.visit(this);
+    }
 }

@@ -501,6 +501,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-compiled-core-persistence</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-code-compiled-core-relational</artifactId>
             <scope>test</scope>
         </dependency>

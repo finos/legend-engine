@@ -119,6 +119,8 @@ bigQueryDatasourceSpecification:            BIGQUERY_DSP
                                                     (
                                                         projectId
                                                         | defaultDataset
+                                                        | dbProxyHost
+                                                        | dbProxyPort
                                                     )*
                                                 BRACE_CLOSE
 ;

@@ -13,7 +13,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = NontemporalSnapshot.class, name = "nonTemporalSnapshot"),
+        @JsonSubTypes.Type(value = NontemporalSnapshot.class, name = "nontemporalSnapshot"),
         @JsonSubTypes.Type(value = UnitemporalSnapshot.class, name = "unitemporalSnapshot"),
         @JsonSubTypes.Type(value = BitemporalSnapshot.class, name = "bitemporalSnapshot"),
         @JsonSubTypes.Type(value = NontemporalDelta.class, name = "nontemporalDelta"),

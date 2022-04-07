@@ -48,12 +48,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_data_Data;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
+import org.finos.legend.pure.generated.Root_meta_pure_test_Test;
+import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -108,7 +112,9 @@ public class CompilerExtensions
     private final ImmutableList<Procedure3<SetImplementation, Set<String>, CompileContext>> extraSetImplementationSourceScanners;
     private final ImmutableList<Procedure2<PureModel, PureModelContextData>> extraPostValidators;
     private final ImmutableList<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> extraExecutionOptionProcessors;
-    private final ImmutableList<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_data_Data>> extraEmbeddedDataProcessors;
+    private final ImmutableList<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> extraEmbeddedDataProcessors;
+    private final ImmutableList<Function3<Test, CompileContext, ProcessingContext, Root_meta_pure_test_Test>> extraTestProcessors;
+    private final ImmutableList<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> extraTestAssertionProcessors;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -134,6 +140,8 @@ public class CompilerExtensions
         this.extraPostValidators = this.extensions.flatCollect(CompilerExtension::getExtraPostValidators);
         this.extraExecutionOptionProcessors = this.extensions.flatCollect(CompilerExtension::getExtraExecutionOptionProcessors);
         this.extraEmbeddedDataProcessors = this.extensions.flatCollect(CompilerExtension::getExtraEmbeddedDataProcessors);
+        this.extraTestProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestProcessors);
+        this.extraTestAssertionProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestAssertionProcessors);
     }
 
     public List<CompilerExtension> getExtensions()
@@ -273,9 +281,19 @@ public class CompilerExtensions
         return this.extraExecutionOptionProcessors.castToList();
     }
 
-    public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_data_Data>> getExtraEmbeddedDataProcessors()
+    public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> getExtraEmbeddedDataProcessors()
     {
         return this.extraEmbeddedDataProcessors.castToList();
+    }
+
+    public List<Function3<Test, CompileContext, ProcessingContext, Root_meta_pure_test_Test>> getExtraTestProcessors()
+    {
+        return this.extraTestProcessors.castToList();
+    }
+
+    public List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
+    {
+        return this.extraTestAssertionProcessors.castToList();
     }
 
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()

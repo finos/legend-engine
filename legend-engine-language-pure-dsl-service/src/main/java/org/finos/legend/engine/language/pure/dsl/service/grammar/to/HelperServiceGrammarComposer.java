@@ -15,22 +15,15 @@
 package org.finos.legend.engine.language.pure.dsl.service.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
-import org.finos.legend.engine.language.pure.grammar.to.HelperRuntimeGrammarComposer;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.*;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.*;
 
 import java.util.List;
 
@@ -98,7 +91,98 @@ public class HelperServiceGrammarComposer
         return builder.append(getTabString(baseIndentation)).append("}").toString();
     }
 
-    public static String renderServiceTest(ServiceTest serviceTest, PureGrammarComposerContext context)
+    public static String renderServiceTestSuite(ServiceTestSuite serviceTestSuite, PureGrammarComposerContext context)
+    {
+        int baseIndentation = 2;
+        StringBuilder str = new StringBuilder();
+
+        str.append(getTabString(baseIndentation)).append(serviceTestSuite.id).append(":\n");
+        str.append(getTabString(baseIndentation)).append("{\n");
+
+        // testData
+
+        if(serviceTestSuite.testData != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("data").append(":\n");
+            str.append(getTabString(baseIndentation + 1)).append("[\n");
+
+            if(serviceTestSuite.testData.connectionsTestData != null && !serviceTestSuite.testData.connectionsTestData.isEmpty())
+            {
+                str.append(getTabString(baseIndentation + 2)).append("connections").append(":\n");
+                str.append(getTabString(baseIndentation + 2)).append("[\n");
+                str.append(String.join(",\n", ListIterate.collect(serviceTestSuite.testData.connectionsTestData, data -> renderConnectionData(data, baseIndentation + 3, context)))).append("\n");
+                str.append(getTabString(baseIndentation + 2)).append("]\n");
+            }
+
+            str.append(getTabString(baseIndentation + 1)).append("]\n");
+        }
+
+        // tests
+        if(serviceTestSuite.tests != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("tests").append(":\n");
+            str.append(getTabString(baseIndentation + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(serviceTestSuite.tests, test -> renderServiceTest((ServiceTest) test, baseIndentation + 2, context)))).append("\n");
+            str.append(getTabString(baseIndentation + 1)).append("]\n");
+        }
+
+        str.append(getTabString(baseIndentation)).append("}");
+
+        return str.toString();
+    }
+
+    private static String renderConnectionData(ConnectionTestData connectionData, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        str.append(getTabString(baseIndentation)).append(connectionData.id).append(":\n");
+        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(connectionData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 1)).build()));
+
+        return str.toString();
+    }
+
+    private static String renderServiceTest(ServiceTest test, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        str.append(getTabString(baseIndentation)).append(test.id).append(":\n");
+        str.append(getTabString(baseIndentation)).append("{\n");
+
+        // Parameters
+        if(test.parameters != null && !test.parameters.isEmpty())
+        {
+            str.append(getTabString(baseIndentation + 1)).append("parameters:\n");
+            str.append(getTabString(baseIndentation + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(test.parameters, param -> renderServiceTestParameter(param, baseIndentation + 2, context)))).append("\n");
+            str.append(getTabString(baseIndentation + 1)).append("]\n");
+        }
+
+        // Asserts
+        if(test.assertions != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("asserts:\n");
+            str.append(getTabString(baseIndentation + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(test.assertions, assertion -> HelperTestAssertionGrammarComposer.composeTestAssertion(assertion, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 2)).build())))).append("\n");
+            str.append(getTabString(baseIndentation + 1)).append("]\n");
+        }
+
+        str.append(getTabString(baseIndentation)).append("}");
+
+        return str.toString();
+    }
+
+    private static String renderServiceTestParameter(ParameterValue parameterValue, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        str.append(getTabString(baseIndentation)).append(parameterValue.name);
+        str.append(" = ");
+        str.append(parameterValue.value.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()));
+
+        return str.toString();
+    }
+
+    public static String renderServiceTest(ServiceTest_Legacy serviceTest, PureGrammarComposerContext context)
     {
         int baseIndentation = 1;
         if (serviceTest instanceof SingleExecutionTest)

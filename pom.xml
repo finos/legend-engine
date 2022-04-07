@@ -104,6 +104,7 @@
         <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
+        <module>legend-engine-testable</module>
     </modules>
 
     <properties>
@@ -134,7 +135,7 @@
         <snowflake.version>3.13.5</snowflake.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <!-- Legend -->
-        <legend.pure.version>1.52.2</legend.pure.version>
+        <legend.pure.version>1.53.0</legend.pure.version>
         <legend.shared.version>0.20.0</legend.shared.version>
 
         <!-- Dependency versions -->
@@ -846,7 +847,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-executionPlan-execution-store-relational-connection-tests-api</artifactId>
+                <artifactId>legend-engine-testable</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->
@@ -1113,6 +1114,12 @@
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-code-compiled-core</artifactId>
+                <version>${legend.pure.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-code-compiled-core-persistence</artifactId>
                 <version>${legend.pure.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -1707,7 +1714,6 @@
                 <groupId>com.github.tomakehurst</groupId>
                 <artifactId>wiremock-jre8</artifactId>
                 <version>${wiremock.version}</version>
-                <scope>test</scope>
                 <exclusions>
                     <exclusion>
                         <groupId>org.eclipse.jetty</groupId>
@@ -1716,6 +1722,10 @@
                     <exclusion>
                         <groupId>org.conscrypt</groupId>
                         <artifactId>conscrypt-openjdk-uber</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

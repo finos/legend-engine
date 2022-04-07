@@ -16,12 +16,18 @@ package org.finos.legend.engine.protocol.pure.v1.model.test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-public class Test
+public abstract class Test
 {
-    public String _type;
-
     @JsonProperty(required = true)
     public String id;
+
+    public SourceInformation sourceInformation;
+
+    public <T> T accept(TestVisitor<T> testVisitor)
+    {
+        return testVisitor.visit(this);
+    }
 }

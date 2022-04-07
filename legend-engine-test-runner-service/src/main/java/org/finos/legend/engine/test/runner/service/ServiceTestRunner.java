@@ -58,13 +58,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
@@ -244,7 +244,7 @@ public class ServiceTestRunner
                 .orElseThrow(() -> new UnsupportedOperationException("Service execution class '" + execution.getClass().getName() + "' not supported yet"));
     }
 
-    private List<TestContainer> getExtraServiceTestContainers(MutableList<ServiceExecutionExtension> extensions, ServiceTest test)
+    private List<TestContainer> getExtraServiceTestContainers(MutableList<ServiceExecutionExtension> extensions, ServiceTest_Legacy test)
     {
         return extensions
                 .collect(f -> f.tryToBuildTestAsserts(test, this.objectMapper, this.pureModel))
@@ -309,12 +309,12 @@ public class ServiceTestRunner
                         parameters = ListIterate.zip(((PureExecution) this.service.execution).func.parameters, tc.getOne().parametersValues).toMap(
                                 p -> p.getOne().name,
                                 p -> p.getTwo() instanceof Collection   // Condition evoked in case of studio-flow
-                                    ? new ConstantResult(
-                                    ListIterate.collect(( (Collection) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
-                                    : p.getTwo() instanceof PureList   // Condition evoked in case of pureIDE-flow
-                                    ? new ConstantResult(
-                                    ListIterate.collect(( (PureList) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
-                                    : p.getTwo().accept(new ValueSpecificationToResultVisitor()));
+                                        ? new ConstantResult(
+                                        ListIterate.collect(((Collection) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
+                                        : p.getTwo() instanceof PureList   // Condition evoked in case of pureIDE-flow
+                                        ? new ConstantResult(
+                                        ListIterate.collect(((PureList) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
+                                        : p.getTwo().accept(new ValueSpecificationToResultVisitor()));
                     }
 
                     // Execute Plan

@@ -38,6 +38,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecificati
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotypeEnum;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -181,7 +182,7 @@ public class Milestoning
 
     private static MilestoningPropertyTransformation milestoningPropertyTransformations(Property<?, ?> originalProperty, CompileContext context, Class<?> sourceClass, PropertyOwner propertyOwner)
     {
-        MilestoningStereotype returnTypeMilestoningStereotype = temporalStereotypes(originalProperty._genericType()._rawType()._stereotypes());
+        MilestoningStereotype returnTypeMilestoningStereotype = temporalStereotypes(((PackageableElement)originalProperty._genericType()._rawType())._stereotypes());
         MilestoningPropertyTransformation milestoningPropertyTransformation = new MilestoningPropertyTransformation(originalProperty);
 
         if (returnTypeMilestoningStereotype != null)
