@@ -2,8 +2,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class SourceSpecifiesFromAndThruDateTime extends ValidityDerivation
 {
-    public String sourceDateTimeFromProperty;
-    public String sourceDateTimeThruProperty;
+    public String sourceDateTimeFromField;
+    public String sourceDateTimeThruField;
 
     public <T> T accept(ValidityDerivationVisitor<T> visitor)
     {

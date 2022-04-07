@@ -19,4 +19,3 @@ import CoreLexerGrammar;
 // ------------------------------------ KEYWORD --------------------------------------
 
 DATA:                           'Data';
-CONTENT_TYPE:                   'contentType';

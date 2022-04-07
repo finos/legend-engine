@@ -35,69 +35,68 @@ public class TestDataGrammarParser extends TestGrammarParser.TestGrammarParserTe
     {
         return "###Data\n" +
                 "Data " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
-                "Text #{\n" +
-                "  contentType: 'test';\n" +
-                "  data: 'test';\n" +
-                "}#\n";
+                "{\n" +
+                "   ExternalFormat\n" +
+                "   #{\n" +
+                "     contentType: 'test';\n" +
+                "     data: 'test';\n" +
+                "   }#\n" +
+                "}\n";
     }
 
     @Test
-    public void testMissingContentType()
+    public void testMissingFields()
     {
         test("###Data\n" +
-                        "Data <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::data::MyData\n" +
-                        "Binary #{\n" +
-                        "  data: '1B4A 9DEA 230F FF20';\n" +
-                        "}#\n",
-                "PARSER error at [3:1-5:2]: Field 'contentType' is required"
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "   ExternalFormat\n" +
+                        "   #{\n" +
+                        "     data: '1B4A 9DEA 230F FF20';\n" +
+                        "   }#\n" +
+                        "}\n",
+                "PARSER error at [4:4-7:5]: Field 'contentType' is required"
         );
 
         test("###Data\n" +
-                        "Data <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::data::MyData\n" +
-                        "Text #{\n" +
-                        "  data: '{\"some\":\"data\"}';\n" +
-                        "}#\n",
-                "PARSER error at [3:1-5:2]: Field 'contentType' is required"
-        );
-    }
-
-    @Test
-    public void testMissingData()
-    {
-        test("###Data\n" +
-                        "Data <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::data::MyData\n" +
-                        "Binary #{\n" +
-                        "  contentType: 'application/x-protobuf';\n" +
-                        "}#\n",
-                "PARSER error at [3:1-5:2]: Field 'data' is required"
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "   ExternalFormat\n" +
+                        "   #{\n" +
+                        "     contentType: 'application/x-protobuf';\n" +
+                        "   }#\n" +
+                        "}\n",
+                "PARSER error at [4:4-7:5]: Field 'data' is required"
         );
 
         test("###Data\n" +
-                        "Data <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::data::MyData\n" +
-                        "Text #{\n" +
-                        "  contentType: 'application/x-protobuf';\n" +
-                        "}#\n",
-                "PARSER error at [3:1-5:2]: Field 'data' is required"
-        );
-
-        test("###Data\n" +
-                        "Data <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::data::MyData\n" +
-                        "PureCollection #{\n" +
-                        "}#\n",
-                "PARSER error at [3:1-4:2]: Field 'data' is required"
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "   Reference\n" +
+                        "   #{\n" +
+                        "   }#\n" +
+                        "}\n",
+                "PARSER error at [4:4-6:5]: Path should be provided for DataElementReference"
         );
     }
 
     @Test
-    public void testNonHexBinaryData()
+    public void testIncorrectModelStoreData()
     {
         test("###Data\n" +
-                        "Data <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::data::MyData\n" +
-                        "Binary #{\n" +
-                        "  contentType: 'application/x-protobuf';\n" +
-                        "  data: '1BXX 9DEA 230F FF20';\n" +
-                        "}#\n",
-                "PARSER error at [4:16-39]: Invalid hex data"
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "   ModelStore\n" +
+                        "   #{\n" +
+                        "     meta::Demo:\n" +
+                        "       [\n" +
+                        "       ],\n" +
+                        "     meta::Demo:\n" +
+                        "       [\n" +
+                        "       ]\n" +
+                        "   }#\n" +
+                        "}\n",
+                "PARSER error at [6:6-12:8]: Multiple entries found for type: 'meta::Demo'"
         );
     }
 }

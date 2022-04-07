@@ -94,6 +94,8 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification _bigquery = new Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification_Impl("");
             _bigquery._projectId(bigQueryDatasourceSpecification.projectId);
             _bigquery._defaultDataset(bigQueryDatasourceSpecification.defaultDataset);
+            _bigquery._proxyHost(bigQueryDatasourceSpecification.proxyHost);
+            _bigquery._proxyPort(bigQueryDatasourceSpecification.proxyPort);
             return _bigquery;
         }
          else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)

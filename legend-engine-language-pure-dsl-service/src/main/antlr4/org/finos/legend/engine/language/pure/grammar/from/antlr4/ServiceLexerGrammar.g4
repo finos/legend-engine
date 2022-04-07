@@ -26,8 +26,15 @@ SERVICE_EXECUTION_KEY:              'key';
 SERVICE_MAPPING:                    'mapping';
 SERVICE_RUNTIME:                    'runtime';
 
-SERVICE_TEST:                       'test';
+SERVICE_TEST_SUITES:                'testSuites';
+SERVICE_TEST_DATA:                  'data';
+SERVICE_TEST_CONNECTION_DATA:       'connections';
 SERVICE_TEST_TESTS:                 'tests';
-SERVICE_DATA:                       'data';
-SERVICE_ASSERTS:                    'asserts';
+SERVICE_TEST_ASSERTS:               'asserts';
+SERVICE_TEST_PARAMETERS:            'parameters';
+
 PARAM_GROUP:                        'list';
+
+// -------------------------------------- LEGACY --------------------------------------
+
+SERVICE_TEST:                       'test';

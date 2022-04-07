@@ -57,7 +57,10 @@ public class GCPApplicationDefaultCredentialsAuthenticationStrategy extends Auth
 
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
-        return Tuples.pair(url, properties);
+        Properties connectionProperties = new Properties();
+        connectionProperties.putAll(properties);
+        connectionProperties.put("OAuthType", "3");
+        return Tuples.pair(url, connectionProperties);
     }
 
     @Override

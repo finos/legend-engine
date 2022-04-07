@@ -7,6 +7,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence_Impl;
 
@@ -19,7 +20,7 @@ public class PersistenceCompilerExtension implements CompilerExtension
     {
         return Collections.singletonList(Processor.newProcessor(
                 Persistence.class,
-                Lists.fixedSize.with(Service.class, Mapping.class, PackageableConnection.class),
+                Lists.fixedSize.with(Service.class, Mapping.class, Binding.class, PackageableConnection.class),
                 (persistence, context) -> new Root_meta_pure_persistence_metamodel_Persistence_Impl("")
                         ._documentation(persistence.documentation)
                         ._trigger(HelperPersistenceBuilder.buildTrigger(persistence.trigger)),

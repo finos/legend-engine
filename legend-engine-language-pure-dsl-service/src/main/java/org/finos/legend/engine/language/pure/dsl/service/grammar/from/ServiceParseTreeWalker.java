@@ -22,8 +22,10 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -32,16 +34,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
@@ -98,10 +106,105 @@ public class ServiceParseTreeWalker
         // execution
         ServiceParserGrammar.ServiceExecContext execContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceExec(), "execution", service.sourceInformation);
         service.execution = this.visitExecution(execContext);
+        // test suites
+        // TODO: this should be marked required when every service is migrated
+        ServiceParserGrammar.ServiceTestSuitesContext testSuitesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestSuites(), "testSuites", service.sourceInformation);
+        if (testSuitesContext != null)
+        {
+            service.testSuites = ListIterate.collect(testSuitesContext.serviceTestSuite(), this::visitServiceTestSuite);
+        }
         // test
-        ServiceParserGrammar.ServiceTestContext testContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceTest(), "test", service.sourceInformation);
-        service.test = this.visitTest(testContext);
+        ServiceParserGrammar.ServiceTestContext testContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTest(), "test", service.sourceInformation);
+        if(testContext != null)
+        {
+            service.test = this.visitTest(testContext);
+        }
         return service;
+    }
+
+    private ServiceTestSuite visitServiceTestSuite(ServiceParserGrammar.ServiceTestSuiteContext ctx)
+    {
+        ServiceTestSuite serviceTestSuite = new ServiceTestSuite();
+        serviceTestSuite.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        serviceTestSuite.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        // data
+        ServiceParserGrammar.ServiceTestSuiteDataContext testSuiteDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestSuiteData(), "data", serviceTestSuite.sourceInformation);
+        if(testSuiteDataContext != null)
+        {
+            serviceTestSuite.testData = visitServiceTestData(testSuiteDataContext);
+        }
+
+        // tests
+        ServiceParserGrammar.ServiceTestSuiteTestsContext testSuiteTestsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceTestSuiteTests(), "tests", serviceTestSuite.sourceInformation);
+        serviceTestSuite.tests = ListIterate.collect(testSuiteTestsContext.serviceTestBlock(), this::visitServiceTest);
+
+        return serviceTestSuite;
+    }
+
+    private TestData visitServiceTestData(ServiceParserGrammar.ServiceTestSuiteDataContext ctx)
+    {
+        TestData testData = new TestData();
+
+        testData.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        ServiceParserGrammar.ServiceTestConnectionsDataContext testConnectionsDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestConnectionsData(), "connections", testData.sourceInformation);
+        if(testConnectionsDataContext != null)
+        {
+            testData.connectionsTestData = ListIterate.collect(testConnectionsDataContext.serviceTestConnectionData(), this::visitServiceTestConnectionData);
+        }
+
+        return testData;
+    }
+
+    private ConnectionTestData visitServiceTestConnectionData(ServiceParserGrammar.ServiceTestConnectionDataContext ctx)
+    {
+        ConnectionTestData connectionData = new ConnectionTestData();
+
+        connectionData.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        connectionData.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        connectionData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
+
+        return connectionData;
+    }
+
+    private ServiceTest visitServiceTest(ServiceParserGrammar.ServiceTestBlockContext ctx)
+    {
+        ServiceTest serviceTest = new ServiceTest();
+
+        serviceTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        serviceTest.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        // parameters
+        ServiceParserGrammar.ServiceTestParametersContext testParametersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestParameters(), "parameters", serviceTest.sourceInformation);
+        if(testParametersContext != null)
+        {
+            serviceTest.parameters = ListIterate.collect(testParametersContext.serviceTestParameter(), this::visitServiceTestParameter);
+        }
+
+        // asserts
+        ServiceParserGrammar.ServiceTestAssertsContext testAssertsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceTestAsserts(), "asserts", serviceTest.sourceInformation);
+        serviceTest.assertions = ListIterate.collect(testAssertsContext.serviceTestAssert(), this::visitServiceTestAsserts);
+
+        return serviceTest;
+    }
+
+    private ParameterValue visitServiceTestParameter(ServiceParserGrammar.ServiceTestParameterContext ctx)
+    {
+        ParameterValue parameterValue = new ParameterValue();
+
+        parameterValue.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        parameterValue.value = this.visitTestParameter(ctx.primitiveValue());
+
+        return parameterValue;
+    }
+
+    private TestAssertion visitServiceTestAsserts(ServiceParserGrammar.ServiceTestAssertContext ctx)
+    {
+        TestAssertion testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
+        testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        return testAssertion;
     }
 
     private List<TaggedValue> visitTaggedValues(ServiceParserGrammar.TaggedValuesContext ctx)
@@ -220,7 +323,7 @@ public class ServiceParseTreeWalker
         return keyedExecutionParameter;
     }
 
-    private ServiceTest visitTest(ServiceParserGrammar.ServiceTestContext ctx)
+    private ServiceTest_Legacy visitTest(ServiceParserGrammar.ServiceTestContext ctx)
     {
         if (ctx.singleTest() != null)
         {
@@ -289,7 +392,7 @@ public class ServiceParseTreeWalker
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
         ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
         String parameter = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
-        ValueSpecification valueSpecification = parser.parseServiceParam(parameter, serviceParamSourceInformation, null);
+        ValueSpecification valueSpecification = parser.parsePrimitiveValue(parameter, serviceParamSourceInformation, null);
         return valueSpecification;
     }
 

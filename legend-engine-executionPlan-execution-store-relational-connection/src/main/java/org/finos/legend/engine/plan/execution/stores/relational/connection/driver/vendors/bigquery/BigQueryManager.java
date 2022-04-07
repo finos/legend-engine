@@ -36,31 +36,21 @@ public class BigQueryManager extends DatabaseManager
     @Override
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
-        switch (authenticationStrategy.getKey().type())
-        {
-            case GCPApplicationDefaultCredentialsAuthenticationStrategyKey.TYPE:
-                return buildUrlWithApplicationDefaultCredentials(extraUserDataSourceProperties, (GCPApplicationDefaultCredentialsAuthenticationStrategy) authenticationStrategy);
-        }
-        throw new UnsupportedOperationException("Unsupported auth strategy :" + authenticationStrategy.getKey().type());
-    }
-
-    private String buildUrlWithApplicationDefaultCredentials(Properties extraUserDataSourceProperties, GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy)
-    {
-        GCPApplicationDefaultCredentialsAuthenticationStrategy GCPApplicationDefaultCredentialsAuthenticationStrategy = authenticationStrategy;
         String url = String.format("jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;" +
                         "ProjectId=%s;" +
-                        this.buildParamForDefaultDataset(extraUserDataSourceProperties) +
-                        "OAuthType=3;",
+                        this.buildParamForOptionalProperty(extraUserDataSourceProperties, BigQueryDataSourceSpecification.BIGQUERY_DATASET_NAME, "DefaultDataset") +
+                        this.buildParamForOptionalProperty(extraUserDataSourceProperties,BigQueryDataSourceSpecification.BIGQUERY_PROXY_HOST,"ProxyHost") +
+                        this.buildParamForOptionalProperty(extraUserDataSourceProperties, BigQueryDataSourceSpecification.BIGQUERY_PROXY_PORT, "ProxyPort"),
                 extraUserDataSourceProperties.getProperty(BigQueryDataSourceSpecification.BIGQUERY_PROJECT_ID));
         return url;
     }
 
-    private String buildParamForDefaultDataset(Properties extraUserDataSourceProperties)
+    private String buildParamForOptionalProperty(Properties extraUserDataSourceProperties, String optionalPropertyKey, String optionalProperty)
     {
-        String defaultDataset = extraUserDataSourceProperties.getProperty(BigQueryDataSourceSpecification.BIGQUERY_DATASET_NAME);
-        if (defaultDataset != null && !defaultDataset.trim().isEmpty())
+        String optionalPropertyValue = extraUserDataSourceProperties.getProperty(optionalPropertyKey);
+        if (optionalPropertyValue != null && !optionalPropertyValue.trim().isEmpty())
         {
-            return String.format("DefaultDataset=%s;", defaultDataset);
+            return String.format("%s=%s;",optionalProperty,optionalPropertyValue);
         }
         else
         {

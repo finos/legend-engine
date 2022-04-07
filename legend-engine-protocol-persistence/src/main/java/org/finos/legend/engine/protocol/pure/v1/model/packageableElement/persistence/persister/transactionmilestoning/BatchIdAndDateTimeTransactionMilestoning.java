@@ -2,10 +2,10 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class BatchIdAndDateTimeTransactionMilestoning extends TransactionMilestoning
 {
-    public String batchIdInFieldName;
-    public String batchIdOutFieldName;
-    public String dateTimeInFieldName;
-    public String dateTimeOutFieldName;
+    public String batchIdInName;
+    public String batchIdOutName;
+    public String dateTimeInName;
+    public String dateTimeOutName;
 
     public <T> T accept(TransactionMilestoningVisitor<T> visitor)
     {

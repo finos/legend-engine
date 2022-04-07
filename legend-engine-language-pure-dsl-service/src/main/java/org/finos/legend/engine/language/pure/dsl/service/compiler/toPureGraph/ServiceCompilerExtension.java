@@ -19,7 +19,7 @@ import org.eclipse.collections.api.block.function.Function3;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Execution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
 
@@ -33,7 +33,7 @@ public interface ServiceCompilerExtension extends CompilerExtension
         return Collections.emptyList();
     }
 
-    default List<Function3<ServiceTest, Execution, CompileContext, Root_meta_legend_service_metamodel_Test>> getExtraServiceTestProcessors()
+    default List<Function3<ServiceTest_Legacy, Execution, CompileContext, Root_meta_legend_service_metamodel_Test>> getExtraServiceTestProcessors()
     {
         return Collections.emptyList();
     }

@@ -1,0 +1,2 @@
+org.finos.legend.engine.language.pure.compiler.toPureGraph.data.contentPattern.EqualToContentPatternCompiler
+org.finos.legend.engine.language.pure.compiler.toPureGraph.data.contentPattern.EqualToJsonContentPatternCompiler
