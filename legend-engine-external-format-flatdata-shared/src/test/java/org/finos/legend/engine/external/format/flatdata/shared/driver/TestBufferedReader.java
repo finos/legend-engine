@@ -5,11 +5,13 @@ import org.finos.legend.engine.external.format.flatdata.shared.driver.core.conne
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.CharArrayReader;
 import java.io.StringReader;
 
 public class TestBufferedReader
 {
     private BufferedReader buffer = new BufferedReader(10, 100, new StringReader("Life in the model world"));
+    private BufferedReader bufferWithBOM = new BufferedReader(10, 100, new CharArrayReader(new char[]{'\uFEFF', 'L', 'i', 'f', 'e', ' ', 'i', 'n', ' ', 't', 'h', 'e', ' ', 'm', 'o', 'd', 'e', 'l', ' ', 'w', 'o', 'r', 'l', 'd'}));
 
     @Test
     public void canOpenACursorAndRead()
@@ -41,6 +43,42 @@ public class TestBufferedReader
         Assert.assertEquals('i', cursor.peek(2));
         Assert.assertEquals('n', cursor.peek(3));
         Assert.assertEquals(' ', cursor.peek(4));
+    }
+
+    @Test
+    public void canIgnoreBOMCharacterAndRead()
+    {
+        CharCursor cursor = bufferWithBOM.openCursor();
+        Assert.assertEquals('L', cursor.advance());
+        Assert.assertEquals('i', cursor.advance());
+        Assert.assertEquals('f', cursor.advance());
+        Assert.assertEquals('e', cursor.advance());
+        Assert.assertArrayEquals(" in ".toCharArray(), cursor.advance(4));
+
+        Assert.assertEquals('t', cursor.advance());
+        Assert.assertEquals('h', cursor.advance());
+        Assert.assertEquals('e', cursor.advance());
+        Assert.assertEquals(' ', cursor.advance());
+    }
+
+    @Test
+    public void canIgnoreBOMCharacterAndPeek()
+    {
+        CharCursor cursor = bufferWithBOM.openCursor();
+        Assert.assertEquals('L', cursor.peek(1));
+        Assert.assertEquals('i', cursor.peek(2));
+        Assert.assertEquals('f', cursor.peek(3));
+        Assert.assertEquals('e', cursor.peek(4));
+
+        Assert.assertEquals(' ', cursor.peek(5));
+        Assert.assertEquals('i', cursor.peek(6));
+        Assert.assertEquals('n', cursor.peek(7));
+        Assert.assertEquals(' ', cursor.peek(8));
+
+        Assert.assertEquals('t', cursor.peek(9));
+        Assert.assertEquals('h', cursor.peek(10));
+        Assert.assertEquals('e', cursor.peek(11));
+        Assert.assertEquals(' ', cursor.peek(12));
     }
 
     @Test
