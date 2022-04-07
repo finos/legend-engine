@@ -3,10 +3,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
-
-import java.util.Collections;
-import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.Sink;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
@@ -15,7 +12,7 @@ import java.util.List;
 })
 public abstract class Persister
 {
-    public List<IdentifiedConnection> connections = Collections.emptyList();
+    public Sink sink;
     public SourceInformation sourceInformation;
 
     public abstract <T> T accept(PersisterVisitor<T> visitor);

@@ -5,4 +5,5 @@ public interface DeduplicationStrategyVisitor<T>
     T visit(NoDeduplicationStrategy val);
     T visit(AnyVersionDeduplicationStrategy val);
     T visit(MaxVersionDeduplicationStrategy val);
+    T visit(DuplicateCountDeduplicationStrategy val);
 }

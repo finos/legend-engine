@@ -4,5 +4,4 @@ public interface TargetShapeVisitor<T>
 {
     T visit(FlatTarget val);
     T visit(MultiFlatTarget val);
-    T visit(OpaqueTarget val);
 }
