@@ -41,7 +41,19 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-java-compiled-core</artifactId>
+            <artifactId>legend-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-compiled-core-relational</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-compiled-core-external-query-graphql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>

@@ -619,30 +619,6 @@
                     </exclusions>
                 </dependency>
                 <dependency>
-                    <groupId>com.google.api.grpc</groupId>
-                    <artifactId>grpc-google-cloud-bigquerystorage-v1beta1</artifactId>
-                    <version>0.127.2</version>
-                    <scope>test</scope>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.checkerframework</groupId>
-                            <artifactId>checker-qual</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>com.google.api.grpc</groupId>
-                    <artifactId>grpc-google-cloud-bigquerystorage-v1beta2</artifactId>
-                    <version>0.127.2</version>
-                    <scope>test</scope>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.checkerframework</groupId>
-                            <artifactId>checker-qual</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
                     <groupId>io.grpc</groupId>
                     <artifactId>grpc-grpclb</artifactId>
                     <version>1.40.1</version>

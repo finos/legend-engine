@@ -19,6 +19,7 @@ import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.SVNCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
@@ -49,7 +50,7 @@ public abstract class GenerateJavaProject
         ClassLoader classLoader = Pure.class.getClassLoader();
         this.executionSupport = new CompiledExecutionSupport(
                 new JavaCompilerState(null, classLoader),
-                new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader), Sets.mutable.empty()),
+                new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
                 new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
                         CodeRepository.newPlatformCodeRepository(),
