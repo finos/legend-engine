@@ -87,4 +87,21 @@ public class AuthenticationStrategyParseTreeWalker
         authStrategy.sourceInformation = code.getSourceInformation();
         return authStrategy;
     }
+
+    //added new
+    public OAuthAuthenticationStrategy visitOAuthAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.OAuthContext oAuth) {
+
+        OAuthAuthenticationStrategy oAuthAuthenticationStrategy = new OAuthAuthenticationStrategy();
+        oAuthAuthenticationStrategy.sourceInformation = code.getSourceInformation();
+
+        //secret arn
+        AuthenticationStrategyParserGrammar.OAuthSecretArnContext secretArn = PureGrammarParserUtility.validateAndExtractRequiredField(oAuth.oAuthSecretArn(), "secretArn", code.getSourceInformation());
+        oAuthAuthenticationStrategy.secretArn = PureGrammarParserUtility.fromGrammarString(secretArn.STRING().getText(), true);
+
+        // token url
+        AuthenticationStrategyParserGrammar.OAuthDiscoveryUrlContext discoveryUrl = PureGrammarParserUtility.validateAndExtractRequiredField(oAuth.oAuthDiscoveryUrl(), "discoveryUrl", code.getSourceInformation());
+        oAuthAuthenticationStrategy.discoveryUrl = PureGrammarParserUtility.fromGrammarString(discoveryUrl.STRING().getText(), true);
+
+        return oAuthAuthenticationStrategy;
+    }
 }

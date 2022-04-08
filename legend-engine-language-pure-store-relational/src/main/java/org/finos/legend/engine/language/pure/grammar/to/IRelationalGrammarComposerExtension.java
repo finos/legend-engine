@@ -47,6 +47,7 @@ public interface IRelationalGrammarComposerExtension extends PureGrammarComposer
         return process(authenticationStrategy, processors, context, "Authentication Strategy", authenticationStrategy.sourceInformation);
     }
 
+
     static String process(PostProcessor postProcessor, List<Function2<PostProcessor, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context)
     {
         return process(postProcessor, processors, context, "Post Processor", postProcessor.sourceInformation);

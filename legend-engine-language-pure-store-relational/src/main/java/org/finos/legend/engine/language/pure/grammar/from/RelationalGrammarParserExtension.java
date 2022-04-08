@@ -92,35 +92,35 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
     public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
     {
         return Collections.singletonList(MappingElementParser.newParser(RELATIONAL_MAPPING_ELEMENT_TYPE,
-            (mappingElementSourceCode, parserContext) ->
-            {
-                MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
-                SourceCodeParserInfo parserInfo = getRelationalMappingElementParserInfo(mappingElementSourceCode);
-                RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parserInfo.walkerSourceInformation);
-                if (parserInfo.rootContext instanceof RelationalParserGrammar.ClassMappingContext)
+                (mappingElementSourceCode, parserContext) ->
                 {
-                    RootRelationalClassMapping classMapping = new RootRelationalClassMapping();
-                    classMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-                    classMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
-                    classMapping.root = ctx.STAR() != null;
-                    classMapping.extendsClassMappingId = ctx.superClassMappingId() != null ? ctx.superClassMappingId().getText() : null;
-                    classMapping.sourceInformation = parserInfo.sourceInformation;
-                    classMapping.classSourceInformation = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-                    walker.visitRootRelationalClassMapping((RelationalParserGrammar.ClassMappingContext) parserInfo.rootContext, classMapping, classMapping._class);
-                    return classMapping;
-                }
-                if (parserInfo.rootContext instanceof RelationalParserGrammar.AssociationMappingContext)
-                {
-                    RelationalAssociationMapping associationMapping = new RelationalAssociationMapping();
-                    associationMapping.association = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-                    associationMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
-                    associationMapping.sourceInformation = parserInfo.sourceInformation;
-                    walker.visitRelationalAssociationMapping((RelationalParserGrammar.AssociationMappingContext) parserInfo.rootContext, associationMapping);
-                    propagateStorePath(associationMapping);
-                    return associationMapping;
-                }
-                throw new EngineException("Unknown relational mapping element type: " + parserInfo.rootContext.getClass().getName(), parserInfo.sourceInformation, EngineErrorType.PARSER);
-            })
+                    MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+                    SourceCodeParserInfo parserInfo = getRelationalMappingElementParserInfo(mappingElementSourceCode);
+                    RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parserInfo.walkerSourceInformation);
+                    if (parserInfo.rootContext instanceof RelationalParserGrammar.ClassMappingContext)
+                    {
+                        RootRelationalClassMapping classMapping = new RootRelationalClassMapping();
+                        classMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+                        classMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+                        classMapping.root = ctx.STAR() != null;
+                        classMapping.extendsClassMappingId = ctx.superClassMappingId() != null ? ctx.superClassMappingId().getText() : null;
+                        classMapping.sourceInformation = parserInfo.sourceInformation;
+                        classMapping.classSourceInformation = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+                        walker.visitRootRelationalClassMapping((RelationalParserGrammar.ClassMappingContext) parserInfo.rootContext, classMapping, classMapping._class);
+                        return classMapping;
+                    }
+                    if (parserInfo.rootContext instanceof RelationalParserGrammar.AssociationMappingContext)
+                    {
+                        RelationalAssociationMapping associationMapping = new RelationalAssociationMapping();
+                        associationMapping.association = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+                        associationMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+                        associationMapping.sourceInformation = parserInfo.sourceInformation;
+                        walker.visitRelationalAssociationMapping((RelationalParserGrammar.AssociationMappingContext) parserInfo.rootContext, associationMapping);
+                        propagateStorePath(associationMapping);
+                        return associationMapping;
+                    }
+                    throw new EngineException("Unknown relational mapping element type: " + parserInfo.rootContext.getClass().getName(), parserInfo.sourceInformation, EngineErrorType.PARSER);
+                })
         );
     }
 
@@ -190,6 +190,10 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseAuthenticationStrategy(code, p -> walker.visitApiTokenAuthenticationStrategy(code, p.apiTokenAuth()));
                 case "SnowflakePublic":
                     return parseAuthenticationStrategy(code, p -> walker.visitSnowflakePublicAuthenticationStrategy(code, p.snowflakePublicAuth()));
+                // added new
+                case "OAuth":
+                    return parseAuthenticationStrategy(code, p -> walker.visitOAuthAuthenticationStrategy(code, p.oAuth()));
+
                 case "GCPApplicationDefaultCredentials":
                     return parseAuthenticationStrategy(code, p -> walker.visitGCPApplicationDefaultCredentialsAuthenticationStrategy(code, p.gcpApplicationDefaultCredentialsAuth() ));
                 default:
