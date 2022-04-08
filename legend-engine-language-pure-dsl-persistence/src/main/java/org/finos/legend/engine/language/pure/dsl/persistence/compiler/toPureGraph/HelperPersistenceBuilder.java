@@ -202,7 +202,7 @@ public class HelperPersistenceBuilder
     private static String determineFullPath(Type type)
     {
         Deque<String> deque = new ArrayDeque<>();
-        Package currentPackage = type._package();
+        Package currentPackage = ((PackageableElement)type)._package();
         while (!currentPackage._name().equals("Root"))
         {
             deque.push(currentPackage._name());
