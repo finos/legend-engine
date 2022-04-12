@@ -35,6 +35,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
@@ -70,10 +71,9 @@ public class HelperServiceStoreClassMappingBuilder
 
         validateRootServiceStoreClassMapping(res, serviceStoreClassMapping);
 
-        List<PropertyMapping> generatePropertyMappings = generatePropertyMappingsForClassMapping(res, serviceStoreClassMapping, context);
+        MutableList<EmbeddedSetImplementation> embeddedSetImplementations = Lists.mutable.empty();
+        List<PropertyMapping> generatePropertyMappings = generatePropertyMappingsForClassMapping(res, embeddedSetImplementations, serviceStoreClassMapping, context);
         res._propertyMappings(FastList.newList(generatePropertyMappings).toImmutable());
-
-        MutableList<EmbeddedSetImplementation> embeddedSetImplementations = ListIterate.selectInstancesOf(generatePropertyMappings, EmbeddedSetImplementation.class);
 
         return Tuples.pair(res, embeddedSetImplementations);
     }
@@ -212,7 +212,7 @@ public class HelperServiceStoreClassMappingBuilder
                 ._expressionSequence(valueSpecifications);
     }
 
-    private static List<PropertyMapping> generatePropertyMappingsForClassMapping(Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation rootClassMapping, RootServiceStoreClassMapping serviceStoreClassMapping, CompileContext context)
+    private static List<PropertyMapping> generatePropertyMappingsForClassMapping(Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation rootClassMapping, List<EmbeddedSetImplementation> embeddedSetImplementations, RootServiceStoreClassMapping serviceStoreClassMapping, CompileContext context)
     {
         Root_meta_external_shared_format_binding_Binding binding = rootClassMapping._servicesMapping().getAny()._service()._response()._binding();
 
@@ -221,7 +221,7 @@ public class HelperServiceStoreClassMappingBuilder
 
         if (bindingDetail instanceof Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail)
         {
-            return generatePropertyMappings((Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail) bindingDetail, rootClassMapping._class(), rootClassMapping._id(), rootClassMapping, context);
+            return generatePropertyMappings((Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail) bindingDetail, rootClassMapping._class(), rootClassMapping._id(), embeddedSetImplementations, rootClassMapping, context);
         }
         else
         {
@@ -229,7 +229,7 @@ public class HelperServiceStoreClassMappingBuilder
         }
     }
 
-    private static List<PropertyMapping> generatePropertyMappings(Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String sourceSetId, PropertyMappingsImplementation owner, CompileContext context)
+    private static List<PropertyMapping> generatePropertyMappings(Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String sourceSetId, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, CompileContext context)
     {
         RichIterable<Property> properties = bindingDetail.mappedPropertiesForClass(pureClass, context.getExecutionSupport());
 
@@ -237,7 +237,7 @@ public class HelperServiceStoreClassMappingBuilder
         RichIterable<Property> nonPrimitiveProperties = properties.select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
 
         List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId)).toList();
-        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), owner, context)).toList();
+        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, context)).toList();
 
         List<PropertyMapping> allPropertyMapping = Lists.mutable.empty();
         allPropertyMapping.addAll(primitivePropertyMappings);
@@ -257,7 +257,7 @@ public class HelperServiceStoreClassMappingBuilder
         return propertyMapping;
     }
 
-    private static PropertyMapping buildNonPrimitivePropertyMapping(Property property, String sourceSetId, Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, PropertyMappingsImplementation owner, CompileContext context)
+    private static PropertyMapping buildNonPrimitivePropertyMapping(Property property, String sourceSetId, Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, CompileContext context)
     {
         Root_meta_external_store_service_metamodel_mapping_EmbeddedServiceStoreSetImplementation propertyMapping = new Root_meta_external_store_service_metamodel_mapping_EmbeddedServiceStoreSetImplementation_Impl("");
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) property._genericType()._rawType();
@@ -272,7 +272,9 @@ public class HelperServiceStoreClassMappingBuilder
         propertyMapping._sourceSetImplementationId(sourceSetId);
         propertyMapping._targetSetImplementationId(id);
 
-        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, propertyMapping, context)).toImmutable());
+        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, context)).toImmutable());
+
+        embeddedSetImplementations.add(propertyMapping);
         return propertyMapping;
     }
 
@@ -308,7 +310,7 @@ public class HelperServiceStoreClassMappingBuilder
 
         if (sourceDataType != pureClass)
         {
-            throw new EngineException("Response type of source service should match mapping class. Found response type : " + getElementFullPath(sourceDataType, context.pureModel.getExecutionSupport()) + " does not match mapping class : " + getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Response type of source service should match mapping class. Found response type : " + getElementFullPath((PackageableElement)sourceDataType, context.pureModel.getExecutionSupport()) + " does not match mapping class : " + getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
         }
 
         RichIterable<String> requiredServiceParameters = serviceMapping._service()._parameters().collectIf(Root_meta_external_store_service_metamodel_ServiceParameter::_required, Root_meta_external_store_service_metamodel_ServiceParameter::_name);

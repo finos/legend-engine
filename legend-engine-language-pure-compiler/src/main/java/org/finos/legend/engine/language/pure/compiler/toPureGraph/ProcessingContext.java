@@ -26,6 +26,7 @@ import java.util.Stack;
 public class ProcessingContext
 {
     public MutableList<MutableMap<String, ValueSpecification>> inferredVariableList = FastList.newList();
+    public MilestoningDatePropagationContext milestoningDatePropagationContext = new MilestoningDatePropagationContext();
     private final Stack<String> tags = new Stack<>();
 
     public ProcessingContext(String firstTag)

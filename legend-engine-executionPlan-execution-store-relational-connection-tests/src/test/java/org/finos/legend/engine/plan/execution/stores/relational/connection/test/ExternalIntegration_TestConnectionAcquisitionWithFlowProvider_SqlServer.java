@@ -40,7 +40,7 @@ import static org.junit.Assume.assumeTrue;
 
 public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlServer extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
-    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer()
+    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer("mcr.microsoft.com/mssql/server:2019-latest")
             .acceptLicense();
 
     private ConnectionManagerSelector connectionManagerSelector;

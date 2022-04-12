@@ -79,7 +79,7 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     @Override
     public List<String> getRegisterablePackageableElementNames()
     {
-        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_22_0");
+        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_23_0");
         return versions.collect(v -> "meta::protocols::pure::" + v + "::external::format::json::serializerExtension_String_1__SerializerExtension_1_").toList();
     }
 }

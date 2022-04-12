@@ -18,15 +18,20 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ServiceStoreConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ServiceStoreConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.connection.ServiceStoreConnectionParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.data.ServiceStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.extensions.IServiceStoreGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
@@ -95,6 +100,12 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
             walker.visitServiceStoreConnectionValue((ServiceStoreConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
             return connectionValue;
         }));
+    }
+
+    @Override
+    public Iterable<? extends EmbeddedDataParser> getExtraEmbeddedDataParsers()
+    {
+        return Lists.immutable.with(new ServiceStoreEmbeddedDataParser());
     }
 
     private static SourceCodeParserInfo getServiceStoreMappingElementParserInfo(MappingElementSourceCode mappingElementSourceCode)

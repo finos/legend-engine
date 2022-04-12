@@ -29,7 +29,6 @@ import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.engine.server.Server;
 import org.finos.legend.pure.configuration.PureRepositoriesExternal;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
@@ -87,6 +86,12 @@ public class PureTestHelper
     @Ignore
     public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder)
     {
+        return wrapSuite(init, suiteBuilder, true, "org/finos/legend/engine/server/test/userTestConfig.json");
+    }
+
+    @Ignore
+    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder, boolean withH2, String serverConfigFilePath )
+    {
         boolean shouldCleanUp = init.value();
         TestSuite suite = suiteBuilder.value();
         if (shouldCleanUp)
@@ -101,7 +106,7 @@ public class PureTestHelper
             {
                 super.setUp();
                 shouldCleanUp = init.value();
-                state.set(initEnvironment());
+                state.set(initEnvironment(withH2, serverConfigFilePath));
             }
 
             @Override
@@ -119,15 +124,20 @@ public class PureTestHelper
         };
     }
 
-    public static ServersState initEnvironment() throws Exception
+    public static ServersState initEnvironment(boolean withH2, String serverConfigFilePath) throws Exception
     {
         int engineServerPort = 1100 + (int) (Math.random() * 30000);
         int metadataServerPort = 1100 + (int) (Math.random() * 30000);
         int relationalDBPort = 1100 + (int) (Math.random() * 30000);
 
-        // Relational
-        org.h2.tools.Server h2Server = AlloyH2Server.startServer(relationalDBPort);
-        System.out.println("H2 database started on port:" + relationalDBPort);
+        org.h2.tools.Server h2Server = null;
+
+        if (withH2)
+        {
+            // Relational
+            h2Server = AlloyH2Server.startServer(relationalDBPort);
+            System.out.println("H2 database started on port:" + relationalDBPort);
+        }
 
         // Start metadata server
         TestMetaDataServer metadataServer = new TestMetaDataServer(metadataServerPort, true);
@@ -136,18 +146,27 @@ public class PureTestHelper
         // Start engine server
         System.setProperty("dw.server.connector.port", String.valueOf(engineServerPort));
         System.setProperty("dw.metadataserver.pure.port", String.valueOf(metadataServerPort));
-        System.setProperty("dw.temporarytestdb.port", String.valueOf(relationalDBPort));
-        System.setProperty("dw.relationalexecution.temporarytestdb.port", String.valueOf(relationalDBPort));
-        System.out.println("Found Config file: " + Objects.requireNonNull(PureTestHelper.class.getClassLoader().getResource("org/finos/legend/engine/server/test/userTestConfig.json")).getFile());
+        if (withH2)
+        {
+            System.setProperty("dw.temporarytestdb.port", String.valueOf(relationalDBPort));
+            System.setProperty("dw.relationalexecution.temporarytestdb.port", String.valueOf(relationalDBPort));
+        }
 
-        Server server = new Server();
-        server.run("server", Objects.requireNonNull(PureTestHelper.class.getClassLoader().getResource("org/finos/legend/engine/server/test/userTestConfig.json")).getFile());
+
+        System.out.println("Found Config file: " + Objects.requireNonNull(PureTestHelper.class.getClassLoader().getResource(serverConfigFilePath)).getFile());
+
+        TestServer server = new TestServer();
+        server.run("server", Objects.requireNonNull(PureTestHelper.class.getClassLoader().getResource(serverConfigFilePath)).getFile());
+
         System.out.println("Alloy server started on port:" + engineServerPort);
 
         // Pure client configuration (to call the engine server)
         System.setProperty("test.metadataserver.pure.port", String.valueOf(metadataServerPort));
-        System.setProperty("alloy.test.h2.port", String.valueOf(relationalDBPort));
-        System.setProperty("legend.test.h2.port", String.valueOf(relationalDBPort));
+        if (withH2)
+        {
+            System.setProperty("alloy.test.h2.port", String.valueOf(relationalDBPort));
+            System.setProperty("legend.test.h2.port", String.valueOf(relationalDBPort));
+        }
         System.setProperty("alloy.test.server.host", "127.0.0.1");
         System.setProperty("alloy.test.server.port", String.valueOf(engineServerPort));
         System.setProperty("legend.test.server.host", "127.0.0.1");
@@ -361,8 +380,20 @@ public class PureTestHelper
 
     public static CompiledExecutionSupport getClassLoaderExecutionSupport()
     {
+        return getClassLoaderExecutionSupport(false);
+    }
+
+    public static CompiledExecutionSupport getClassLoaderExecutionSupport(boolean enableConsole)
+    {
         ConsoleCompiled console = new ConsoleCompiled();
-        console.disable();
+        if ( enableConsole == true )
+        {
+            console.enable();
+        }
+        else
+        {
+            console.disable();
+        }
 
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),

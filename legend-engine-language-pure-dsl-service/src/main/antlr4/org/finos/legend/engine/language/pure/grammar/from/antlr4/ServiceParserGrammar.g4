@@ -17,7 +17,8 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_SINGLE | SERVICE_MULTI
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
-                                        | SERVICE_TEST | SERVICE_TEST_TESTS | SERVICE_DATA | SERVICE_ASSERTS | PARAM_GROUP
+                                        | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
+                                        | SERVICE_TEST | PARAM_GROUP
 ;
 
 
@@ -40,6 +41,7 @@ service:                                SERVICE stereotypes? taggedValues? quali
                                                     | serviceAutoActivateUpdates
                                                     | serviceExec
                                                     | serviceTest
+                                                    | serviceTestSuites
                                                 )*
                                             BRACE_CLOSE
 ;
@@ -115,6 +117,39 @@ embeddedRuntimeContent:                 ISLAND_START | ISLAND_BRACE_OPEN | ISLAN
 
 // -------------------------------------- TEST --------------------------------------
 
+serviceTestSuites:                      SERVICE_TEST_SUITES COLON BRACKET_OPEN (serviceTestSuite ( COMMA serviceTestSuite )*)? BRACKET_CLOSE
+;
+serviceTestSuite:                       identifier COLON BRACE_OPEN ( serviceTestSuiteData | serviceTestSuiteTests )* BRACE_CLOSE
+;
+serviceTestSuiteData:                   SERVICE_TEST_DATA COLON BRACKET_OPEN (serviceTestConnectionsData)* BRACKET_CLOSE
+;
+serviceTestConnectionsData:             SERVICE_TEST_CONNECTION_DATA COLON BRACKET_OPEN (serviceTestConnectionData ( COMMA serviceTestConnectionData )*)? BRACKET_CLOSE
+;
+serviceTestConnectionData:              identifier COLON embeddedData
+;
+embeddedData:                           identifier ISLAND_OPEN (embeddedDataContent)*
+;
+embeddedDataContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+serviceTestSuiteTests:                  SERVICE_TEST_TESTS COLON BRACKET_OPEN ( serviceTestBlock ( COMMA serviceTestBlock )* )? BRACKET_CLOSE
+;
+serviceTestBlock:                       identifier COLON BRACE_OPEN ( serviceTestParameters | serviceTestAsserts )* BRACE_CLOSE
+;
+serviceTestParameters:                  SERVICE_TEST_PARAMETERS COLON BRACKET_OPEN ( serviceTestParameter ( COMMA serviceTestParameter )* )? BRACKET_CLOSE
+;
+serviceTestParameter:                   identifier EQUAL primitiveValue
+;
+serviceTestAsserts:                     SERVICE_TEST_ASSERTS COLON BRACKET_OPEN ( serviceTestAssert ( COMMA serviceTestAssert )* )? BRACKET_CLOSE
+;
+serviceTestAssert:                      identifier COLON testAssertion
+;
+testAssertion:                          identifier ISLAND_OPEN (testAssertionContent)*
+;
+testAssertionContent:                   ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+
+// -------------------------------------- LEGACY --------------------------------------
+
 serviceTest:                            SERVICE_TEST COLON (singleTest|multiTest)
 ;
 singleTest:                             SERVICE_SINGLE
@@ -140,9 +175,9 @@ multiTestElement:                       multiTestElementSignature COLON
 ;
 multiTestElementSignature:              SERVICE_TEST_TESTS BRACKET_OPEN STRING BRACKET_CLOSE
 ;
-testData:                               SERVICE_DATA COLON STRING SEMI_COLON
+testData:                               SERVICE_TEST_DATA COLON STRING SEMI_COLON
 ;
-testAsserts:                            SERVICE_ASSERTS COLON
+testAsserts:                            SERVICE_TEST_ASSERTS COLON
                                             BRACKET_OPEN
                                                 (testAssert (COMMA testAssert)*)?
                                             BRACKET_CLOSE

@@ -2,7 +2,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class MaxVersionDeduplicationStrategy extends DeduplicationStrategy
 {
-    public String versionProperty;
+    public String versionField;
 
     @Override
     public <T> T accept(DeduplicationStrategyVisitor<T> visitor)

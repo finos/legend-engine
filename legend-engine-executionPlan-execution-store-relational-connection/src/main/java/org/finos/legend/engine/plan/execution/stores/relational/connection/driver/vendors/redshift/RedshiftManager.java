@@ -44,7 +44,7 @@ public class RedshiftManager extends DatabaseManager
     @Override
     public String getDriver()
     {
-        return "com.gs.alloy.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftDriver";
+        return "org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftDriver";
     }
 
     @Override

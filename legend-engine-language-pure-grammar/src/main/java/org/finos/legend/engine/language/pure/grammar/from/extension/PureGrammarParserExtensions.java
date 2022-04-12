@@ -20,6 +20,8 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -35,6 +37,7 @@ public class PureGrammarParserExtensions
     private final MapIterable<String, MappingElementParser> mappingElementParsers;
     private final MapIterable<String, MappingTestInputDataParser> mappingTestInputDataParsers;
     private final MapIterable<String, EmbeddedDataParser> embeddedDataParsers;
+    private final MapIterable<String, TestAssertionParser> testAssertionParsers;
 
     private PureGrammarParserExtensions(Iterable<? extends PureGrammarParserExtension> extensions)
     {
@@ -44,6 +47,7 @@ public class PureGrammarParserExtensions
         this.mappingElementParsers = indexExtraMappingElementParsers(this.extensions);
         this.mappingTestInputDataParsers = indexExtraMappingTestInputDataParsers(this.extensions);
         this.embeddedDataParsers = indexEmbeddedDataParsers(this.extensions);
+        this.testAssertionParsers = indexTestAssertionDataParsers(this.extensions);
     }
 
     public List<PureGrammarParserExtension> getExtensions()
@@ -74,6 +78,11 @@ public class PureGrammarParserExtensions
     public EmbeddedDataParser getExtraEmbeddedDataParser(String type)
     {
         return this.embeddedDataParsers.get(type);
+    }
+
+    public TestAssertionParser getExtraTestAssertionParser(String type)
+    {
+        return this.testAssertionParsers.get(type);
     }
 
     public static PureGrammarParserExtensions fromExtensions(Iterable<? extends PureGrammarParserExtension> extensions)
@@ -132,6 +141,13 @@ public class PureGrammarParserExtensions
         return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraEmbeddedDataParsers),
                 EmbeddedDataParser::getType,
                 "Conflicting parsers for embedded data type");
+    }
+
+    private static MapIterable<String, TestAssertionParser> indexTestAssertionDataParsers(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraTestAssertionParsers),
+                TestAssertionParser::getType,
+                "Conflicting parsers for test assertion type");
     }
 
     private static <T> MapIterable<String, T> indexByKey(Iterable<? extends T> elements, Function<? super T, String> keyFn, String conflictMessagePrefix)

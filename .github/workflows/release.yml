@@ -13,9 +13,6 @@ on:
       releaseVersion:
         description: "New release version"
         required: true
-      developmentVersion:
-        description: "Version to use for the new working copy"
-        required: true
 
 jobs:
 
@@ -44,8 +41,17 @@ jobs:
           gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
           gpg-passphrase: CI_GPG_PASSPHRASE
 
+      - name: Compute next development version
+        run: |
+          releaseVersion=${{ github.event.inputs.releaseVersion }}
+          n=${releaseVersion//[!0-9]/ }
+          a=(${n//\./ })
+          nextPatch=$((${a[2]} + 1))
+          developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
+          echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
+
       - name: Prepare release
-        run: mvn -B release:prepare -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} -P release
+        run: mvn -B release:prepare -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
         run: mvn -B -Darguments="-Dmaven.test.skip=true" release:perform -P release, docker

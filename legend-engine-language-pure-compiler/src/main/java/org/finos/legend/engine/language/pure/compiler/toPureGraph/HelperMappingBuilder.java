@@ -132,7 +132,7 @@ public class HelperMappingBuilder
     {
         if (propertyMapping.target == null && property instanceof Root_meta_pure_metamodel_function_property_Property_Impl && ((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType instanceof Class)
         {
-            return HelperModelBuilder.getElementFullPath(((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
+            return HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) ((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
         }
         return HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping);
     }
