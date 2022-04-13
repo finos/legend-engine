@@ -84,6 +84,7 @@
         <module>legend-engine-test-runner-service</module>
         <module>legend-engine-configuration</module>
         <module>legend-engine-protocol</module>
+        <module>legend-engine-protocol-aws</module>
         <module>legend-engine-protocol-generation</module>
         <module>legend-engine-protocol-external-format-flatdata</module>
         <module>legend-engine-protocol-external-format-json</module>
@@ -829,6 +830,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-store-relational</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-aws</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

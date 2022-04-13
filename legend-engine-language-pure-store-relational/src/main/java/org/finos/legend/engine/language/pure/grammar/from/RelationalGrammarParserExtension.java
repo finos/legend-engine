@@ -347,6 +347,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         return new SourceCodeParserInfo(connectionValueSourceCode.code, input, connectionValueSourceCode.sourceInformation, connectionValueSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 
+
     public static RelationalOperationElement parseRelationalOperationElement(String code, boolean returnSourceInfo)
     {
         CharStream input = CharStreams.fromString(code);
