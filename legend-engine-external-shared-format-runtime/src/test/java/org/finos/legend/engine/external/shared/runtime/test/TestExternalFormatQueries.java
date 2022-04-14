@@ -48,6 +48,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public abstract class TestExternalFormatQueries
@@ -352,6 +353,6 @@ public abstract class TestExternalFormatQueries
 
     protected Reader resourceReader(String name)
     {
-        return new InputStreamReader(resource(name));
+        return new InputStreamReader(resource(name), StandardCharsets.UTF_8);
     }
 }

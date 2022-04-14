@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -33,7 +34,7 @@ import java.util.stream.Stream;
 public class TestFlatDataSerialize
 {
     @Test
-    public void testSerializePeopleCsv()
+    public void testSerializePeopleCsv() throws UnsupportedEncodingException
     {
         meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl jason = new meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl();
         jason._firstNameAdd("Jason");
@@ -49,14 +50,21 @@ public class TestFlatDataSerialize
         nancy._isAliveAdd(false);
         nancy._heightInMetersAdd(1.71);
 
-        Stream<Person> people = Stream.of(jason, nancy);
+        meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl muller = new meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl();
+        muller._firstNameAdd("Müller");
+        muller._lastNameAdd("Weiß");
+        muller._dateOfBirthAdd(LocalDate.of(1985, 1, 12));
+        muller._isAliveAdd(true);
+        muller._heightInMetersAdd(1.9);
+
+        Stream<Person> people = Stream.of(jason, nancy, muller);
         FlatDataContext<Person> context = new WritePerson().createContext();
         FlatDataWriter<Person> serializer = new FlatDataWriter<>(context, people);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         serializer.writeData(stream);
 
         String expected = resourceAsString("queries/peopleWithExactHeadings.csv");
-        Assert.assertEquals(normalizeLineBreaks(expected), normalizeLineBreaks(stream.toString()));
+        Assert.assertEquals(normalizeLineBreaks(expected), normalizeLineBreaks(stream.toString(StandardCharsets.UTF_8.name())));
     }
 
     private String resourceAsString(String path)

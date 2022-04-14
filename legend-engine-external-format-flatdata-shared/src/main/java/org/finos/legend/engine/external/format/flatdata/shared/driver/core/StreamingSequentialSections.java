@@ -27,6 +27,7 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,7 +60,7 @@ public class StreamingSequentialSections<T> implements FlatDataProcessor<T>
     {
         try
         {
-            Connection connection = new InputStreamConnection(inputStream);
+            Connection connection = new InputStreamConnection(inputStream, StandardCharsets.UTF_8);
             connection.open();
 
             ProcessingVariables variables = new ProcessingVariables(flatData);

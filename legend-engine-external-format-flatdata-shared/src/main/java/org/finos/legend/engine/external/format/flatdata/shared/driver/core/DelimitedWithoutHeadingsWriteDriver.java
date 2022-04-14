@@ -3,8 +3,11 @@ package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 
+import java.io.BufferedWriter;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 public class DelimitedWithoutHeadingsWriteDriver<T> extends DelimitedWriteDriver<T>
 {
@@ -22,7 +25,7 @@ public class DelimitedWithoutHeadingsWriteDriver<T> extends DelimitedWriteDriver
     @Override
     public void write(OutputStream stream)
     {
-        PrintWriter writer = new PrintWriter(stream);
+        PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8)));
         writeDataLines(writer);
         writer.flush();
     }

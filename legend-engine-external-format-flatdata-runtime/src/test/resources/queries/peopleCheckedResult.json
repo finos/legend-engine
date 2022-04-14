@@ -96,6 +96,53 @@
         "isAlive": false,
         "heightInMeters": 1.71
       }
+    },
+    {
+      "defects": [],
+      "source": {
+        "defects": [],
+        "source": {
+          "number": 3,
+          "lineNumber": 4,
+          "record": "Müller,Weiß,1985-01-12,true,1.9",
+          "recordValues": [
+            {
+              "address": "firstName",
+              "rawValue": "Müller"
+            },
+            {
+              "address": "lastName",
+              "rawValue": "Weiß"
+            },
+            {
+              "address": "dateOfBirth",
+              "rawValue": "1985-01-12"
+            },
+            {
+              "address": "isAlive",
+              "rawValue": "true"
+            },
+            {
+              "address": "heightInMeters",
+              "rawValue": "1.9"
+            }
+          ]
+        },
+        "value": {
+          "firstName": "Müller",
+          "lastName": "Weiß",
+          "dateOfBirth": "1985-01-12",
+          "isAlive": true,
+          "heightInMeters": 1.9
+        }
+      },
+      "value": {
+        "firstName": "Müller",
+        "lastName": "Weiß",
+        "dateOfBirth": "1985-01-12",
+        "isAlive": true,
+        "heightInMeters": 1.9
+      }
     }
   ]
 }

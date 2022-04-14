@@ -38,9 +38,10 @@ public class TestFlatDataDeserialize
         FlatDataReader<Person> deserializer = new FlatDataReader<>(context, resourceStream("queries/peopleWithExactHeadings.csv"));
         deserializer.readData(people::add);
 
-        Assert.assertEquals(2, people.size());
+        Assert.assertEquals(3, people.size());
         Assert.assertEquals(0, people.get(0).getDefects().size());
         Assert.assertEquals(0, people.get(1).getDefects().size());
+        Assert.assertEquals(0, people.get(2).getDefects().size());
 
         Person p1 = people.get(0).getValue();
         Assert.assertEquals("Jason", p1.getFirstName());
@@ -55,6 +56,13 @@ public class TestFlatDataDeserialize
         Assert.assertEquals("1970-12-13", p2.getDateOfBirth().toString());
         Assert.assertFalse(p2.getIsAlive());
         Assert.assertEquals(1.71, p2.getHeightInMeters(), 0.000000001);
+
+        Person p3 = people.get(2).getValue();
+        Assert.assertEquals("Müller", p3.getFirstName());
+        Assert.assertEquals("Weiß", p3.getLastName());
+        Assert.assertEquals("1985-01-12", p3.getDateOfBirth().toString());
+        Assert.assertTrue(p3.getIsAlive());
+        Assert.assertEquals(1.9, p3.getHeightInMeters(), 0.000000001);
     }
 
     private InputStream resourceStream(String path)
