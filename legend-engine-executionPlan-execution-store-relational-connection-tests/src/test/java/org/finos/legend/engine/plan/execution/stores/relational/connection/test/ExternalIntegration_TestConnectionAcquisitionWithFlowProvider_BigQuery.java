@@ -49,15 +49,15 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
             "us-east-1",
             "564704738649",
-            "gcp-wif",
+            "integration-wif-role1",
             "AWS_ACCESS_KEY_ID",
             "AWS_SECRET_ACCESS_KEY"
     );
 
     private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
             "412074507462",
-            "aws-wif-pool2",
-            "aws-wif-provider2"
+            "integration-wif-pool1",
+            "integration-wif-pool1-provider"
     );
 
     private ConnectionManagerSelector connectionManagerSelector;
@@ -133,7 +133,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.legend_testing_dataset.basic_test_table`");
+        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
 
     }
 
@@ -142,14 +142,14 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
 
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.legend_testing_dataset.basic_test_table`");
+        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
     @Test
     public void testBigQueryGCPADCConnection_profile() throws Exception {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.legend_testing_dataset.basic_test_table`");
+        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
     @Test
@@ -157,14 +157,14 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>)null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.legend_testing_dataset.basic_test_table`");
+        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
     private RelationalDatabaseConnection bigQueryWithGCPADCSpec() throws Exception
     {
         BigQueryDatasourceSpecification bigQueryDatasourceSpecification = new BigQueryDatasourceSpecification();
         bigQueryDatasourceSpecification.projectId = "legend-integration-testing";
-        bigQueryDatasourceSpecification.defaultDataset = "legend_testing_dataset";
+        bigQueryDatasourceSpecification.defaultDataset = "integration_dataset1";
         GCPApplicationDefaultCredentialsAuthenticationStrategy authSpec = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
         return new RelationalDatabaseConnection(bigQueryDatasourceSpecification, authSpec, DatabaseType.BigQuery);
     }
@@ -172,9 +172,9 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     private RelationalDatabaseConnection bigQueryWithGCPWIFSpec() {
         BigQueryDatasourceSpecification bigQueryDatasourceSpecification = new BigQueryDatasourceSpecification();
         bigQueryDatasourceSpecification.projectId = "legend-integration-testing";
-        bigQueryDatasourceSpecification.defaultDataset = "legend_testing_dataset";
+        bigQueryDatasourceSpecification.defaultDataset = "integration_dataset1";
         GCPWorkloadIdentityFederationAuthenticationStrategy authSpec = new GCPWorkloadIdentityFederationAuthenticationStrategy();
-        authSpec.serviceAccountEmail = "legend-integration-wif1@legend-integration-testing.iam.gserviceaccount.com";
+        authSpec.serviceAccountEmail = "integration-bq-sa1@legend-integration-testing.iam.gserviceaccount.com";
         return new RelationalDatabaseConnection(bigQueryDatasourceSpecification, authSpec, DatabaseType.BigQuery);
     }
 }
