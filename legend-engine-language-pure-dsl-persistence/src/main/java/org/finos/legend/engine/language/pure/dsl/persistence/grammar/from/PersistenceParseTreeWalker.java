@@ -808,7 +808,7 @@ public class PersistenceParseTreeWalker
         milestoning.dateTimeOutName = PureGrammarParserUtility.fromGrammarString(dateTimeOutNameContext.STRING().getText(), true);
 
         // transaction derivation
-        PersistenceParserGrammar.TransactionDerivationContext transactionDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDerivation(), "derivation", milestoning.sourceInformation);
+        PersistenceParserGrammar.TransactionDerivationContext transactionDerivationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.transactionDerivation(), "derivation", milestoning.sourceInformation);
         milestoning.derivation = visitTransactionDerivation(transactionDerivationContext);
 
         return milestoning;
@@ -836,7 +836,7 @@ public class PersistenceParseTreeWalker
         milestoning.dateTimeOutName = PureGrammarParserUtility.fromGrammarString(dateTimeOutNameContext.STRING().getText(), true);
 
         // transaction derivation
-        PersistenceParserGrammar.TransactionDerivationContext transactionDerivationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDerivation(), "derivation", milestoning.sourceInformation);
+        PersistenceParserGrammar.TransactionDerivationContext transactionDerivationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.transactionDerivation(), "derivation", milestoning.sourceInformation);
         milestoning.derivation = visitTransactionDerivation(transactionDerivationContext);
 
         return milestoning;
