@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
+
 public class DateTimeValidityMilestoning extends ValidityMilestoning
 {
     public String dateTimeFromName;
     public String dateTimeThruName;
+    public ValidityDerivation derivation;
 
     public <T> T accept(ValidityMilestoningVisitor<T> visitor)
     {
