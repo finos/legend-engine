@@ -8,6 +8,7 @@ import M3LexerGrammar;
 TRUE:                                       'true';
 FALSE:                                      'false';
 IMPORT:                                     'import';
+DERIVATION:                                 'derivation';
 NONE:                                       'None';
 DATE_TIME:                                  'DateTime';
 
@@ -28,11 +29,11 @@ TRIGGER_MANUAL:                             'Manual';
 TRIGGER_CRON:                               'Cron';
 
 // PERSISTER
+PERSISTER_STREAMING:                        'Streaming';
+PERSISTER_BATCH:                            'Batch';
 PERSISTER_SINK:                             'sink';
 PERSISTER_TARGET_SHAPE:                     'targetShape';
 PERSISTER_INGEST_MODE:                      'ingestMode';
-PERSISTER_STREAMING:                        'Streaming';
-PERSISTER_BATCH:                            'Batch';
 
 // NOTIFIER
 NOTIFIER:                                   'Notifier';
@@ -110,12 +111,16 @@ BATCH_ID_OUT_NAME:                          'batchIdOutName';
 DATE_TIME_IN_NAME:                          'dateTimeInName';
 DATE_TIME_OUT_NAME:                         'dateTimeOutName';
 
+TRANSACTION_DERIVATION_SOURCE_IN:           'SourceSpecifiesInDateTime';
+TRANSACTION_DERIVATION_SOURCE_IN_OUT:       'SourceSpecifiesInAndOutDateTime';
+SOURCE_DATE_TIME_IN_FIELD:                  'sourceDateTimeInField';
+SOURCE_DATE_TIME_OUT_FIELD:                 'sourceDateTimeOutField';
+
 VALIDITY_MILESTONING:                       'validityMilestoning';
 
 DATE_TIME_FROM_NAME:                        'dateTimeFromName';
 DATE_TIME_THRU_NAME:                        'dateTimeThruName';
 
-VALIDITY_DERIVATION:                        'derivation';
 VALIDITY_DERIVATION_SOURCE_FROM:            'SourceSpecifiesFromDateTime';
 VALIDITY_DERIVATION_SOURCE_FROM_THRU:       'SourceSpecifiesFromAndThruDateTime';
 SOURCE_DATE_TIME_FROM_FIELD:                'sourceDateTimeFromField';
