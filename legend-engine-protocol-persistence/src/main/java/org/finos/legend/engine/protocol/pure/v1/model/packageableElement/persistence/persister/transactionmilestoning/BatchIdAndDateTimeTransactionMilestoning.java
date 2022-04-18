@@ -14,12 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.TransactionDerivation;
+
 public class BatchIdAndDateTimeTransactionMilestoning extends TransactionMilestoning
 {
     public String batchIdInName;
     public String batchIdOutName;
     public String dateTimeInName;
     public String dateTimeOutName;
+    public TransactionDerivation derivation;
+
 
     public <T> T accept(TransactionMilestoningVisitor<T> visitor)
     {
