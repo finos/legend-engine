@@ -144,7 +144,8 @@ public class PersistenceParseTreeWalker
         }
         else if (ctx.TRIGGER_CRON() != null)
         {
-            throw new UnsupportedOperationException("TODO: ledav -- implement cron trigger");
+            //TODO: ledav -- implement cron trigger
+            throw new UnsupportedOperationException("Cron trigger is not yet supported.");
         }
         throw new EngineException("Unrecognized trigger", sourceInformation, EngineErrorType.PARSER);
     }

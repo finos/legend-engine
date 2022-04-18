@@ -146,7 +146,8 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(CronTrigger val)
         {
-            throw new UnsupportedOperationException("TODO: ledav -- implement cron trigger");
+            //TODO: ledav -- implement cron trigger
+            throw new UnsupportedOperationException("Cron trigger is not yet supported.");
         }
     }
 
