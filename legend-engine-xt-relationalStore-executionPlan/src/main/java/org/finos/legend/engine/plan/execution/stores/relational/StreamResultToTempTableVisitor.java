@@ -31,6 +31,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerCommands;
@@ -191,6 +192,16 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     @Override
     public Boolean visit(RedshiftCommands redshiftCommands)
     {
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    @Override
+    public Boolean visit(PostgresCommands postgresCommands)
+    {
+        if (ingestionMethod == null)
+        {
+            ingestionMethod = postgresCommands.getDefaultIngestionMethod();
+        }
         throw new UnsupportedOperationException("not yet implemented");
     }
 

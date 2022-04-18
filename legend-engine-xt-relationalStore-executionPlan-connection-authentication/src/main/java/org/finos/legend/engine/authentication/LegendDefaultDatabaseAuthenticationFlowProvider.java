@@ -34,6 +34,7 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
 
     public LegendDefaultDatabaseAuthenticationFlowProvider()
     {
+
     }
 
     private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows()
@@ -45,6 +46,7 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new H2StaticWithTestUserPasswordFlow(),
                 new SnowflakeWithKeyPairFlow(),
                 new SqlServerStaticWithUserPasswordFlow(),
+                new PostgresStaticWithUserPasswordFlow(),
                 new RedshiftWithUserPasswordFlow()
         );
     }

@@ -161,6 +161,7 @@
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
+        <postgres.version>9.4.1208.jre7</postgres.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -1853,6 +1854,13 @@
                  <artifactId>redshift-jdbc42</artifactId>
                 <scope>runtime</scope>
                 <version>${redshiftJDBC.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgres.version}</version>
+                <scope>runtime</scope>
             </dependency>
 
             <!-- Database -->
