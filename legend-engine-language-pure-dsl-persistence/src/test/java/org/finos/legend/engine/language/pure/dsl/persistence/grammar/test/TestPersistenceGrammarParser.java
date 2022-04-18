@@ -1250,6 +1250,100 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
+    public void ingestModeBitemporalSnapshotTransactionDerivation()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalSnapshot\n" +
+                "    {\n" +
+                "      transactionMilestoning: BatchIdAndDateTime\n" +
+                "      {\n" +
+                "        batchIdInName: 'BATCH_ID_IN';\n" +
+                "        batchIdOutName: 'BATCH_ID_OUT';\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalSnapshot\n" +
+                "    {\n" +
+                "      transactionMilestoning: BatchIdAndDateTime\n" +
+                "      {\n" +
+                "        batchIdInName: 'BATCH_ID_IN';\n" +
+                "        batchIdOutName: 'BATCH_ID_OUT';\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "        derivation: SourceSpecifiesInDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: sourceIn;\n" +
+                "        }\n" +
+                "        derivation: SourceSpecifiesInDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: sourceIn;\n" +
+                "        }\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "        }\n" +
+                "        derivation: SourceSpecifiesFromDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [20:31-34:7]: Field 'derivation' should be specified only once");
+    }
+
+    @Test
     public void ingestModeBitemporalSnapshotValidityMilestoning()
     {
         test("###Persistence\n" +
@@ -1726,6 +1820,98 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
+    public void ingestModeBitemporalDeltaTransactionDerivation()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "        derivation: SourceSpecifiesInAndOutDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: sourceIn;\n" +
+                "          sourceDateTimeOutField: sourceOut;\n" +
+                "        }\n" +
+                "        derivation: SourceSpecifiesInAndOutDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: sourceIn;\n" +
+                "          sourceDateTimeOutField: sourceOut;\n" +
+                "        }\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [21:31-35:7]: Field 'derivation' should be specified only once");
+    }
+
+    @Test
     public void ingestModeBitemporalDeltaMergeStrategy()
     {
         test("###Persistence\n" +
@@ -2119,6 +2305,11 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      {\n" +
                 "        dateTimeInName: 'inZ';\n" +
                 "        dateTimeOutName: 'outZ';\n" +
+                "        derivation: SourceSpecifiesInAndOutDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: sourceIn;\n" +
+                "          sourceDateTimeOutField: sourceOut;\n" +
+                "        }\n" +
                 "      }\n" +
                 "      validityMilestoning: DateTime\n" +
                 "      {\n" +

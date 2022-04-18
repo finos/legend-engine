@@ -807,9 +807,9 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.DateTimeOutNameContext dateTimeOutNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeOutName(), "dateTimeOutName", milestoning.sourceInformation);        milestoning.dateTimeOutName = PureGrammarParserUtility.fromGrammarString(dateTimeOutNameContext.STRING().getText(), true);
         milestoning.dateTimeOutName = PureGrammarParserUtility.fromGrammarString(dateTimeOutNameContext.STRING().getText(), true);
 
-        // transaction derivation
+        // transaction derivation (optional)
         PersistenceParserGrammar.TransactionDerivationContext transactionDerivationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.transactionDerivation(), "derivation", milestoning.sourceInformation);
-        milestoning.derivation = visitTransactionDerivation(transactionDerivationContext);
+        milestoning.derivation = transactionDerivationContext == null ? null : visitTransactionDerivation(transactionDerivationContext);
 
         return milestoning;
     }
@@ -835,9 +835,9 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.DateTimeOutNameContext dateTimeOutNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeOutName(), "dateTimeOutName", milestoning.sourceInformation);
         milestoning.dateTimeOutName = PureGrammarParserUtility.fromGrammarString(dateTimeOutNameContext.STRING().getText(), true);
 
-        // transaction derivation
+        // transaction derivation (optional)
         PersistenceParserGrammar.TransactionDerivationContext transactionDerivationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.transactionDerivation(), "derivation", milestoning.sourceInformation);
-        milestoning.derivation = visitTransactionDerivation(transactionDerivationContext);
+        milestoning.derivation = transactionDerivationContext == null ? null : visitTransactionDerivation(transactionDerivationContext);
 
         return milestoning;
     }
