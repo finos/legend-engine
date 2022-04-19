@@ -1060,6 +1060,8 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  name: String[1];\n" +
                 "  effectiveFrom: DateTime[1];\n" +
                 "  effectiveThru: DateTime[1];\n" +
+                "  dateTimeIn: DateTime[1];\n" +
+                "  dateTimeOut: DateTime[1];\n" +
                 "  deleted: String[1];\n" +
                 "}\n" +
                 "\n" +
@@ -1139,6 +1141,11 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "        batchIdOutName: 'batchIdOut';\n" +
                 "        dateTimeInName: 'IN_Z';\n" +
                 "        dateTimeOutName: 'OUT_Z';\n" +
+                "        derivation: SourceSpecifiesInAndOutDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: 'dateTimeIn';\n" +
+                "          sourceDateTimeOutField: 'dateTimeOut';\n" +
+                "        }\n" +
                 "      }\n" +
                 "      validityMilestoning: DateTime\n" +
                 "      {\n" +
@@ -1242,11 +1249,11 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         assertNotNull(binding);
         assertEquals("application/json", binding._contentType());
 
+        //TODO: ledav -- use a connection applicable for a real use case
         // connection
         Connection connection = objectStorageSink._connection();
         assertNotNull(connection);
         assertTrue(connection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection);
-        //TODO: ledav -- use a connection applicable for a real use case
 
         // ingest mode
         Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode ingestMode = batchPersister._ingestMode();
@@ -1274,6 +1281,14 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         assertEquals("batchIdOut", batchIdAndDateTimeTxnMilestoning._batchIdOutName());
         assertEquals("IN_Z", batchIdAndDateTimeTxnMilestoning._dateTimeInName());
         assertEquals("OUT_Z", batchIdAndDateTimeTxnMilestoning._dateTimeOutName());
+
+        // transaction derivation
+        Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_TransactionDerivation txnDerivation = batchIdAndDateTimeTxnMilestoning._derivation();
+        assertNotNull(txnDerivation);
+        assertTrue(txnDerivation instanceof Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInAndOutDate);
+        Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInAndOutDate sourceSpecifiesInAndOut = (Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInAndOutDate) txnDerivation;
+        assertEquals("dateTimeIn", sourceSpecifiesInAndOut._sourceDateTimeInField());
+        assertEquals("dateTimeOut", sourceSpecifiesInAndOut._sourceDateTimeOutField());
 
         // validity milestoning
         Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning validMilestoning = bitemporalDelta._validityMilestoning();
