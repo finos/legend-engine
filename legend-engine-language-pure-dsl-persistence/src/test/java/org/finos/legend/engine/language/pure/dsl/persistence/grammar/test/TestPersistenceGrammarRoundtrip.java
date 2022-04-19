@@ -44,19 +44,24 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "    }\n" +
                 "    ingestMode: BitemporalSnapshot\n" +
                 "    {\n" +
-                "      transactionMilestoning: BatchId\n" +
+                "      transactionMilestoning: BatchIdAndDateTime\n" +
                 "      {\n" +
                 "        batchIdInName: 'batchIdIn';\n" +
                 "        batchIdOutName: 'batchIdOut';\n" +
+                "        dateTimeInName: 'inZ';\n" +
+                "        dateTimeOutName: 'outZ';\n" +
+                "        derivation: SourceSpecifiesInDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: sourceIn;\n" +
+                "        }\n" +
                 "      }\n" +
                 "      validityMilestoning: DateTime\n" +
                 "      {\n" +
                 "        dateTimeFromName: 'FROM_Z';\n" +
                 "        dateTimeThruName: 'THRU_Z';\n" +
-                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        derivation: SourceSpecifiesFromDateTime\n" +
                 "        {\n" +
                 "          sourceDateTimeFromField: sourceFrom;\n" +
-                "          sourceDateTimeThruField: sourceThru;\n" +
                 "        }\n" +
                 "      }\n" +
                 "    }\n" +
@@ -123,6 +128,11 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "      {\n" +
                 "        dateTimeInName: 'inZ';\n" +
                 "        dateTimeOutName: 'outZ';\n" +
+                "        derivation: SourceSpecifiesInAndOutDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: sourceIn;\n" +
+                "          sourceDateTimeOutField: sourceOut;\n" +
+                "        }\n" +
                 "      }\n" +
                 "      validityMilestoning: DateTime\n" +
                 "      {\n" +

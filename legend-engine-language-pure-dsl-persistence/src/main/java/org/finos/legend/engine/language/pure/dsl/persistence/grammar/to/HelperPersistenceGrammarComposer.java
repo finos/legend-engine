@@ -54,6 +54,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.SinkVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.targetshape.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.SourceSpecifiesInAndOutDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.SourceSpecifiesInDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.TransactionDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.TransactionDerivationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoningVisitor;
@@ -533,6 +537,7 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "dateTimeInName: '" + val.dateTimeInName + "';\n" +
                     getTabString(indentLevel + 1) + "dateTimeOutName: '" + val.dateTimeOutName + "';\n" +
+                    renderTransactionDerivation(val.derivation, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -545,6 +550,42 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel + 1) + "batchIdOutName: '" + val.batchIdOutName + "';\n" +
                     getTabString(indentLevel + 1) + "dateTimeInName: '" + val.dateTimeInName + "';\n" +
                     getTabString(indentLevel + 1) + "dateTimeOutName: '" + val.dateTimeOutName + "';\n" +
+                    renderTransactionDerivation(val.derivation, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        private static String renderTransactionDerivation(TransactionDerivation transactionDerivation, int indentLevel)
+        {
+            return transactionDerivation.accept(new TransactionDerivationComposer(indentLevel));
+        }
+    }
+
+    private static class TransactionDerivationComposer implements TransactionDerivationVisitor<String>
+    {
+        private final int indentLevel;
+
+        private TransactionDerivationComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visit(SourceSpecifiesInDateTime val)
+        {
+            return getTabString(indentLevel) + "derivation: SourceSpecifiesInDateTime\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "sourceDateTimeInField: " + val.sourceDateTimeInField + ";\n" +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        @Override
+        public String visit(SourceSpecifiesInAndOutDateTime val)
+        {
+
+            return getTabString(indentLevel) + "derivation: SourceSpecifiesInAndOutDateTime\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "sourceDateTimeInField: " + val.sourceDateTimeInField + ";\n" +
+                    getTabString(indentLevel + 1) + "sourceDateTimeOutField: " + val.sourceDateTimeOutField + ";\n" +
                     getTabString(indentLevel) + "}\n";
         }
     }

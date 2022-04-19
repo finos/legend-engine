@@ -154,7 +154,7 @@ public class HelperPersistenceBuilder
         {
             if (connectionRequired)
             {
-                throw new EngineException(String.format("Connection is required"), sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Connection is required", sourceInformation, EngineErrorType.COMPILATION);
             }
             return null;
         }
