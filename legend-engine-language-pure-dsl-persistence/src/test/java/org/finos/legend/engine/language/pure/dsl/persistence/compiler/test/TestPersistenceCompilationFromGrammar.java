@@ -961,7 +961,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     @Test
     public void flatShape()
     {
-        test("Class test::Person\n" +
+        Pair<PureModelContextData, PureModel> result = test("Class test::Person\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +
@@ -969,6 +969,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Class test::ServiceResult\n" +
                 "{\n" +
                 "   deleted: String[1];\n" +
+                "   dateTimeIn: String[1];\n" +
                 "}\n" +
                 "\n" +
                 "###Mapping\n" +
@@ -995,14 +996,6 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    asserts: [];\n" +
                 "  }\n" +
                 "}\n" +
-                "###ExternalFormat\n" +
-                "Binding test::Binding\n" +
-                "{\n" +
-                "  contentType: 'application/json';\n" +
-                "  modelIncludes: [\n" +
-                "    test::Person\n" +
-                "  ];\n" +
-                "}\n" +
                 "###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -1023,14 +1016,18 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "        }\n" +
                 "      }#\n" +
                 "    }\n" +
-                "    ingestMode: NontemporalDelta\n" +
+                "    ingestMode: UnitemporalDelta\n" +
                 "    {\n" +
-                "      mergeStrategy: DeleteIndicator\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
                 "      {\n" +
-                "        deleteField: deleted;\n" +
-                "        deleteValues: ['Y', 'true'];\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "        derivation: SourceSpecifiesInDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: 'dateTimeIn';\n" +
+                "        }\n" +
                 "      }\n" +
-                "      auditing: None;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1039,6 +1036,85 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    }\n" +
                 "  }\n" +
                 "}\n");
+
+        PureModel model = result.getTwo();
+
+        // persistence
+        PackageableElement packageableElement = model.getPackageableElement("test::TestPersistence");
+        assertNotNull(packageableElement);
+        assertTrue(packageableElement instanceof Root_meta_pure_persistence_metamodel_Persistence);
+
+        Root_meta_pure_persistence_metamodel_Persistence persistence = (Root_meta_pure_persistence_metamodel_Persistence) packageableElement;
+        assertEquals("This is test documentation.", persistence._documentation());
+
+        // trigger
+        Root_meta_pure_persistence_metamodel_trigger_Trigger trigger = persistence._trigger();
+        assertNotNull(trigger);
+        assertTrue(trigger instanceof Root_meta_pure_persistence_metamodel_trigger_ManualTrigger);
+
+        // notifier
+        Root_meta_pure_persistence_metamodel_notifier_Notifier notifier = persistence._notifier();
+        assertNotNull(notifier);
+        List<? extends Root_meta_pure_persistence_metamodel_notifier_Notifyee> notifyees = notifier._notifyees().toList();
+        assertEquals(0, notifyees.size());
+
+        // persister
+        Root_meta_pure_persistence_metamodel_persister_Persister persister = persistence._persister();
+        assertNotNull(persister);
+        assertTrue(persister instanceof Root_meta_pure_persistence_metamodel_persister_BatchPersister);
+        Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister = (Root_meta_pure_persistence_metamodel_persister_BatchPersister) persister;
+
+        // sink
+        Root_meta_pure_persistence_metamodel_persister_sink_Sink sink = persister._sink();
+        assertNotNull(sink);
+        assertTrue(sink instanceof Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink);
+        Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink relationalSink = (Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink) sink;
+
+        //TODO: ledav -- use a connection applicable for a real use case
+        // connection
+        Connection connection = relationalSink._connection();
+        assertNotNull(connection);
+        assertTrue(connection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection);
+
+        // ingest mode
+        Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode ingestMode = batchPersister._ingestMode();
+        assertNotNull(ingestMode);
+        assertTrue(ingestMode instanceof Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_UnitemporalDelta);
+        Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_UnitemporalDelta unitemporalDelta = (Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_UnitemporalDelta) ingestMode;
+
+        // merge strategy
+        Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy mergeStrategy = unitemporalDelta._mergeStrategy();
+        assertNotNull(mergeStrategy);
+        assertTrue(mergeStrategy instanceof Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_NoDeletesMergeStrategy);
+
+        // transaction milestoning
+        Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning txnMilestoning = unitemporalDelta._transactionMilestoning();
+        assertNotNull(txnMilestoning);
+        assertTrue(txnMilestoning instanceof Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_DateTimeTransactionMilestoning);
+        Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_DateTimeTransactionMilestoning dateTimeTxnMilestoning = (Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_DateTimeTransactionMilestoning) txnMilestoning;
+        assertEquals("IN_Z", dateTimeTxnMilestoning._dateTimeInName());
+        assertEquals("OUT_Z", dateTimeTxnMilestoning._dateTimeOutName());
+
+        // transaction derivation
+        Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_TransactionDerivation txnDerivation = dateTimeTxnMilestoning._derivation();
+        assertNotNull(txnDerivation);
+        assertTrue(txnDerivation instanceof Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInDate);
+        Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInDate sourceSpecifiesIn = (Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInDate) txnDerivation;
+        assertEquals("dateTimeIn", sourceSpecifiesIn._sourceDateTimeInField());
+
+        // target shape
+        Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape targetShape = batchPersister._targetShape();
+        assertNotNull(targetShape);
+        assertTrue(targetShape instanceof Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget);
+        Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget flatTarget = (Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget) targetShape;
+
+        Class<?> modelClass = flatTarget._modelClass();
+        assertNotNull(modelClass);
+        assertEquals("ServiceResult", modelClass._name());
+        assertEquals("TestDataset1", flatTarget._targetName());
+        Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy dedupStrategy = flatTarget._deduplicationStrategy();
+        assertNotNull(dedupStrategy);
+        assertTrue(dedupStrategy instanceof Root_meta_pure_persistence_metamodel_persister_deduplication_NoDeduplicationStrategy);
     }
 
     @Test
