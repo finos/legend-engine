@@ -21,6 +21,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
@@ -51,6 +52,21 @@ public class TestExtensions
             .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
             .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
+            .toImmutable();
+
+    // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
+    private static final ImmutableList<Class<? extends CompilerExtension>> EXPECTED_COMPILER_EXTENSIONS = Lists.mutable.<Class<? extends CompilerExtension>>empty()
+            .with(org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.PersistenceCompilerExtension.class)
+            .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)
+            .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ExternalFormatCompilerExtension.class)
+            .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ExternalFormatConnectionCompilerExtension.class)
+            .with(org.finos.legend.engine.language.pure.dsl.diagram.compiler.toPureGraph.DiagramCompilerExtension.class)
+            .with(org.finos.legend.engine.language.pure.dsl.text.compiler.toPureGraph.TextCompilerExtension.class)
+            .with(org.finos.legend.engine.language.pure.dsl.dataSpace.compiler.toPureGraph.DataSpaceCompilerExtension.class)
+            .with(org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtensionImpl.class)
+            .with(org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph.ServiceCompilerExtensionImpl.class)
+            .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationalCompilerExtension.class)
+            .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
             .toImmutable();
 
     // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
@@ -92,6 +108,12 @@ public class TestExtensions
     public void testExpectedGenerationExtension()
     {
         assertHasExtensions(org.eclipse.collections.api.factory.Sets.mutable.withAll(EXPECTED_GENERATION_EXTENSIONS), GenerationExtension.class, true);
+    }
+
+    @Test
+    public void testExpectedCompilerExtension()
+    {
+        assertHasExtensions(org.eclipse.collections.api.factory.Sets.mutable.withAll(EXPECTED_COMPILER_EXTENSIONS), CompilerExtension.class, true);
     }
 
     @Test
