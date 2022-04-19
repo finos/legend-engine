@@ -20,6 +20,107 @@ import org.junit.Test;
 public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
+    public void permitOptionalFieldsToBeEmptyFlat()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "Persistence test::TestPersistence\n" +
+                "{\n" +
+                "  doc: 'test doc';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::service::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalSnapshot\n" +
+                "    {\n" +
+                "      transactionMilestoning: BatchIdAndDateTime\n" +
+                "      {\n" +
+                "        batchIdInName: 'batchIdIn';\n" +
+                "        batchIdOutName: 'batchIdOut';\n" +
+                "        dateTimeInName: 'inZ';\n" +
+                "        dateTimeOutName: 'outZ';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
+    public void permitOptionalFieldsToBeEmptyMultiFlat()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "Persistence test::TestPersistence\n" +
+                "{\n" +
+                "  doc: 'test doc';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::service::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: DeleteIndicator\n" +
+                "      {\n" +
+                "        deleteField: deleted;\n" +
+                "        deleteValues: ['Y', '1', 'true'];\n" +
+                "      }\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'inZ';\n" +
+                "        dateTimeOutName: 'outZ';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "    targetShape: MultiFlat\n" +
+                "    {\n" +
+                "      modelClass: test::WrapperClass;\n" +
+                "      transactionScope: ALL_TARGETS;\n" +
+                "      parts:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          modelProperty: property1;\n" +
+                "          targetName: 'TestDataset1';\n" +
+                "        },\n" +
+                "        {\n" +
+                "          modelProperty: property3;\n" +
+                "          targetName: 'TestDataset2';\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
     public void persistenceFlat()
     {
         test("###Persistence\n" +
@@ -169,7 +270,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "        {\n" +
                 "          modelProperty: property3;\n" +
                 "          targetName: 'TestDataset2';\n" +
-                "          deduplicationStrategy: None;\n" +
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +

@@ -360,7 +360,7 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(NoDeduplicationStrategy val)
         {
-            return getTabString(indentLevel) + "deduplicationStrategy: None;\n";
+            return "";
         }
 
         @Override
@@ -556,7 +556,7 @@ public class HelperPersistenceGrammarComposer
 
         private static String renderTransactionDerivation(TransactionDerivation transactionDerivation, int indentLevel)
         {
-            return transactionDerivation.accept(new TransactionDerivationComposer(indentLevel));
+            return transactionDerivation == null ? "" : transactionDerivation.accept(new TransactionDerivationComposer(indentLevel));
         }
     }
 
@@ -581,7 +581,6 @@ public class HelperPersistenceGrammarComposer
         @Override
         public String visit(SourceSpecifiesInAndOutDateTime val)
         {
-
             return getTabString(indentLevel) + "derivation: SourceSpecifiesInAndOutDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel + 1) + "sourceDateTimeInField: " + val.sourceDateTimeInField + ";\n" +
