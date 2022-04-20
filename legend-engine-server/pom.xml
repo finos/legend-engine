@@ -519,6 +519,10 @@
             <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-constraint-execution</artifactId>
+        </dependency>
         <!-- TEST -->
     </dependencies>
     <profiles>
