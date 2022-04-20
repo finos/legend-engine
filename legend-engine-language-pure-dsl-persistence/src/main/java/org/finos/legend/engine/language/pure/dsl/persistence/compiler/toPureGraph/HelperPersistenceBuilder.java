@@ -405,7 +405,7 @@ public class HelperPersistenceBuilder
                     ._modelProperty(property)
                     ._targetName(part.targetName)
                     ._partitionFields(ListIterate.collect(part.partitionFields, p -> validateAndResolvePropertyName(nestedModelClass, p, part.sourceInformation, context)))
-                    ._deduplicationStrategy(buildDeduplicationStrategy(part.deduplicationStrategy, modelClass, context));
+                    ._deduplicationStrategy(buildDeduplicationStrategy(part.deduplicationStrategy, nestedModelClass, context));
         }
     }
 

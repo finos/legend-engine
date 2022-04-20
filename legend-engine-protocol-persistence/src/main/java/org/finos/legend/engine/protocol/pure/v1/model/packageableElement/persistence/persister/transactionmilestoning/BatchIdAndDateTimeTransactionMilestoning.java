@@ -24,7 +24,6 @@ public class BatchIdAndDateTimeTransactionMilestoning extends TransactionMilesto
     public String dateTimeOutName;
     public TransactionDerivation derivation;
 
-
     public <T> T accept(TransactionMilestoningVisitor<T> visitor)
     {
         return visitor.visit(this);

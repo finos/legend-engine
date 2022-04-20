@@ -1129,7 +1129,6 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  name: String[1];\n" +
                 "  zookeeper: Person[1];\n" +
                 "  owner: Person[1];\n" +
-                "  version: Integer[1];\n" +
                 "}\n" +
                 "\n" +
                 "Class org::dxl::Person\n" +
@@ -1142,6 +1141,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  dateTimeIn: DateTime[1];\n" +
                 "  dateTimeOut: DateTime[1];\n" +
                 "  deleted: String[1];\n" +
+                "  version: Integer[1];\n" +
                 "}\n" +
                 "\n" +
                 "Class org::dxl::Animal\n" +
