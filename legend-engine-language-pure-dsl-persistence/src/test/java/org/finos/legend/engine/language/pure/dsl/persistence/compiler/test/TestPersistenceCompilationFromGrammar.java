@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.test;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -233,7 +234,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [42:18-46:5]: Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION error at [32:1-53:1]: Error in 'test::TestPersistence': Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -1134,6 +1135,8 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "Class org::dxl::Person\n" +
                 "{\n" +
                 "  name: String[1];\n" +
+                "  stripe1: Integer[1];\n" +
+                "  stripe2: Integer[1];\n" +
                 "  effectiveFrom: DateTime[1];\n" +
                 "  effectiveThru: DateTime[1];\n" +
                 "  dateTimeIn: DateTime[1];\n" +
@@ -1243,6 +1246,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "        {\n" +
                 "          modelProperty: 'zookeeper';\n" +
                 "          targetName: 'PersonDataset1';\n" +
+                "          partitionFields: ['stripe1', 'stripe2'];\n" +
                 "          deduplicationStrategy: MaxVersion\n" +
                 "          {\n" +
                 "            versionField: version;\n" +
@@ -1398,6 +1402,12 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart part1 = parts.get(0);
         assertEquals("zookeeper", part1._modelProperty()._name());
         assertEquals("PersonDataset1", part1._targetName());
+
+        List<? extends String> partitionFields1 = part1._partitionFields().toList();
+        assertEquals(2, partitionFields1.size());
+        assertEquals("stripe1", partitionFields1.get(0));
+        assertEquals("stripe2", partitionFields1.get(1));
+
         Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy dedupStrategy1 = part1._deduplicationStrategy();
         assertNotNull(dedupStrategy1);
         assertTrue(dedupStrategy1 instanceof Root_meta_pure_persistence_metamodel_persister_deduplication_MaxVersionDeduplicationStrategy);
