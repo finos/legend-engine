@@ -48,7 +48,7 @@ public class SqlServerTestContainers implements DynamicTestConnection
 
     private void startMSSQLServerContainer()
     {
-        System.out.println("Starting setup of connection for database: SqlServer ");
+        System.out.println("Starting setup of dynamic connection for database: SqlServer ");
 
         long start = System.currentTimeMillis();
         this.mssqlserver.start();
@@ -56,7 +56,7 @@ public class SqlServerTestContainers implements DynamicTestConnection
         int containerPort = this.mssqlserver.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT);
         long end = System.currentTimeMillis();
 
-        System.out.println("Completed setup of connection for database: SqlServer on host:" + containerHost + " and port:" + containerPort + " , time taken(ms):"+ (end-start));
+        System.out.println("Completed setup of dynamic connection for database: SqlServer on host:" + containerHost + " and port:" + containerPort + " , time taken(ms):"+ (end-start));
     }
 
     public void registerVault()
