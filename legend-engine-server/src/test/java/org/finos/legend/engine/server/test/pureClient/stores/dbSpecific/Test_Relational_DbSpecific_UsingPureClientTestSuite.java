@@ -14,31 +14,57 @@
 
 package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
+import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.finos.legend.engine.server.test.shared.PureTestHelper;
-import org.finos.legend.pure.m3.execution.test.TestCollection;
+import org.finos.legend.engine.server.test.shared.ServersState;
+import org.finos.legend.pure.generated.Root_meta_relational_dbTestRunner_DbTestConfig;
+import org.finos.legend.pure.generated.core_relational_relational_dbTestRunner_shared;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.junit.Ignore;
 
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.*;
 
-
-//Base classs for db specific tests - dont run this test directly
-@Ignore
-public class Test_Relational_DbSpecific_UsingPureClientTestSuite extends TestSuite
+public abstract class Test_Relational_DbSpecific_UsingPureClientTestSuite extends TestSuite
 {
-    public static Test createSuite(String pureTestCollectionPath,String testServerConfigFilePath){
-            return wrapSuite(
-                    () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                    () -> {
-                        CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport(true);
-                        TestSuite suite = new TestSuite();
-                        suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+    private static final ThreadLocal<ServersState> state = new ThreadLocal<>();
 
-                        return suite;
-                    },
-                    false, testServerConfigFilePath);
+    public static Test createSuite( String dbType, String dbTestCollectionPath, String testServerConfigFilePath ) throws Exception
+    {
+        CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
+
+        try
+        {
+            //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
+            PureTestHelper.initClientVersionIfNotAlreadySet( "vX_X_X" );
+            state.set( PureTestHelper.initEnvironment( false, testServerConfigFilePath ) );
         }
+        catch ( Exception e )
+        {
+            throw e;
+        }
+
+        Root_meta_relational_dbTestRunner_DbTestConfig dbTestConfig =
+                core_relational_relational_dbTestRunner_shared.Root_meta_relational_dbTestRunner_createDbConfig_String_1__DbTestConfig_1_(
+                        dbType, executionSupport );
+
+        TestSuite suite = buildDbSuite(
+                core_relational_relational_dbTestRunner_shared.Root_meta_relational_dbTestRunner_collectTests_String_1__DbTestCollection_1_(
+                        dbTestCollectionPath, executionSupport ),
+                dbTestConfig, executionSupport );
+
+        return new TestSetup( suite )
+        {
+            @Override
+            protected void tearDown() throws Exception
+            {
+                super.tearDown();
+                state.get().shutDown();
+                state.remove();
+            }
+        };
+
+    }
 }
 

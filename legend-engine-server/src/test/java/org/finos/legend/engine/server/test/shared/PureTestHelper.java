@@ -25,11 +25,15 @@ import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.list.primitive.LongList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.pure.configuration.PureRepositoriesExternal;
+import org.finos.legend.pure.generated.Root_meta_relational_dbTestRunner_DbTestCollection;
+import org.finos.legend.pure.generated.Root_meta_relational_dbTestRunner_DbTestConfig;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -48,6 +52,8 @@ import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
+import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiled;
+import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.FunctionProcessor;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.IdBuilder;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
@@ -58,6 +64,7 @@ import org.junit.Ignore;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -487,4 +494,103 @@ public class PureTestHelper
         afterFunctions.collect(fn -> new PureTestCase(fn, executionSupport)).each(suite::addTest);
         return suite;
     }
+
+    public static TestSuite buildDbSuite( Root_meta_relational_dbTestRunner_DbTestCollection testCollection, CoreInstance
+            inputParam, CompiledExecutionSupport executionSupport)
+    {
+        MutableList<TestSuite> subSuites = new FastList<>();
+        for (Root_meta_relational_dbTestRunner_DbTestCollection collection : testCollection._subCollections().toSortedList(Comparator.comparing(a -> a._packageName())))
+        {
+            subSuites.add(buildDbSuite(collection, inputParam, executionSupport));
+        }
+        return buildDbSuite(
+                testCollection._packageName(),
+                testCollection._beforeTests(),
+                testCollection._afterTests(),
+                testCollection._testFunctions(),
+                subSuites,
+                inputParam,
+                executionSupport
+        );
+    }
+
+    private static TestSuite buildDbSuite( String packageName,
+                                           RichIterable<? extends Function<? extends Object>> beforeFunctions,
+                                           RichIterable<? extends Function<? extends Object>>  afterFunctions,
+                                           RichIterable<? extends Function<? extends Object>>  testFunctions,
+                                           org.eclipse.collections.api.list.ListIterable<TestSuite> subSuites,
+                                           CoreInstance inputParam , CompiledExecutionSupport executionSupport)
+    {
+        TestSuite suite = new TestSuite();
+        suite.setName(packageName);
+        beforeFunctions.collect(fn -> new PureDbTestCase(fn, inputParam, executionSupport)).each(suite::addTest);
+        for (Test subSuite : subSuites.toSortedList(Comparator.comparing(TestSuite::getName)))
+        {
+            suite.addTest(subSuite);
+        }
+        for (CoreInstance testFunc : testFunctions.toSortedList(Comparator.comparing(CoreInstance::getName)))
+        {
+            Test theTest = new PureDbTestCase(testFunc, inputParam, executionSupport);
+            suite.addTest(theTest);
+        }
+        afterFunctions.collect(fn -> new PureDbTestCase(fn,inputParam, executionSupport)).each(suite::addTest);
+        return suite;
+    }
+
+    @Ignore
+    public static class PureDbTestCase extends TestCase
+    {
+        CoreInstance coreInstance;
+        CoreInstance inputParam;
+        CompiledExecutionSupport executionSupport;
+
+        public PureDbTestCase()
+        {
+        }
+
+        public PureDbTestCase( CoreInstance coreInstance, CoreInstance inputParam,
+                                          CompiledExecutionSupport executionSupport )
+        {
+            super(coreInstance.getValueForMetaPropertyToOne("functionName").getName());
+            this.coreInstance = coreInstance;
+            this.inputParam = inputParam;
+            this.executionSupport = executionSupport;
+        }
+
+        @Override
+        protected void runTest() throws Throwable
+        {
+
+            Class<?> _class = Class.forName("org.finos.legend.pure.generated." + IdBuilder.sourceToId(coreInstance.getSourceInformation()));
+
+            String methodName= FunctionProcessor.functionNameToJava(coreInstance);
+            Class[] paramClasses = {Root_meta_relational_dbTestRunner_DbTestConfig.class, ExecutionSupport.class};
+
+            Method method = _class.getMethod(methodName, paramClasses);
+
+            // NOTE: mock out the global tracer for test
+            // See https://github.com/opentracing/opentracing-java/issues/170
+            // See https://github.com/opentracing/opentracing-java/issues/364
+            GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
+            String testName = PackageableElement.getUserPathForPackageableElement(this.coreInstance);
+            System.out.print("EXECUTING " + testName + " ... ");
+            long start = System.nanoTime();
+            try
+            {
+                String res= (String) method.invoke(null, this.inputParam, this.executionSupport);
+                if(res!=null){
+                    // test asserts failed in pure
+                    System.out.format("FAILURE : (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
+                    assertTrue(res, false  );
+                }
+                System.out.format("   DONE (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
+            }
+            catch(InvocationTargetException e)
+            {
+                System.out.format("ERROR (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
+                throw e.getTargetException();
+            }
+        }
+    }
+
 }
