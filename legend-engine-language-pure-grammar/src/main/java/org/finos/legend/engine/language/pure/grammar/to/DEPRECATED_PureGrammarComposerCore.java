@@ -811,7 +811,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(PureList pureList)
     {
-        return LazyIterate.collect(pureList.values, v -> v.accept(this)).makeString("['", "','", "']");
+        return LazyIterate.collect(pureList.values, v -> v.accept(this)).makeString("list([", ",", "])");
     }
 
     @Override
