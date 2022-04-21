@@ -29,39 +29,13 @@ public class AwsGrammarComposerExtension implements IAwsGrammarComposerExtension
 
                 return Tuples.pair(AwsGrammarParserExtension.AWS_S3_CONNECTION_TYPE, context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                         (s3Connection.element != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "store: " + s3Connection.element + ";\n") : "") +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + renderPartition(s3Connection.partition) +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "partition: " + s3Connection.partition + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "region: '" + s3Connection.region + "';\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "bucket: '" + s3Connection.bucket + "';\n" +
                         context.getIndentationString() + "}");
             }
             return null;
         });
-    }
-
-    public static String renderPartition(AwsPartition partition)
-    {
-        return partition.accept(new PartitionComposer());
-    }
-    private static class PartitionComposer implements AwsPartitionVisitor<String>
-    {
-        @Override
-        public String visit(AWS val)
-        {
-            return "partition: AWS;\n";
-        }
-
-        @Override
-        public String visit(AWS_CN val)
-        {
-            return "partition: AWS_CN;\n";
-        }
-
-        @Override
-        public String visit(AWS_US_GOV val)
-        {
-            return "partition: AWS_US_GOV;\n";
-        }
-
     }
 
 }

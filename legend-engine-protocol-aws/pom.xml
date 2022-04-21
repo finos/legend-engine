@@ -64,6 +64,21 @@
 
     <dependencies>
 
+        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-java-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <!-- PURE -->
+
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -94,6 +109,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-shared-format-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
         <!-- ENGINE -->
 
@@ -158,6 +177,11 @@
             <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-persistence</artifactId>
+        </dependency>
+
         <!--        <dependency>-->
         <!--            <groupId>org.finos.legend.pure</groupId>-->
         <!--            <artifactId>legend-pure-runtime-java-extension-dsl-diagram</artifactId>-->

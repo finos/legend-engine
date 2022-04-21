@@ -2,10 +2,6 @@ package org.finos.legend.engine.language.pure.grammar.from;
 
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.AwsS3ConnectionParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.AwsPartition;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.AWS;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.AWS_US_GOV;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.AWS_CN;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.AwsPartitionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.*;
@@ -60,15 +56,15 @@ public class AwsS3ConnectionParseTreeWalker
 
         if (ctx.AWS() != null)
         {
-            return new AWS();
+            return AwsPartition.AWS;
         }
         else if (ctx.AWS_CN() != null)
         {
-            return new AWS_CN();
+            return AwsPartition.AWS_CN;
         }
         else if (ctx.AWS_US_GOV() != null)
         {
-            return new AWS_US_GOV();
+            return AwsPartition.AWS_US_GOV;
         }
         throw new EngineException("Unrecognized partition", sourceInformation, EngineErrorType.PARSER);
     }

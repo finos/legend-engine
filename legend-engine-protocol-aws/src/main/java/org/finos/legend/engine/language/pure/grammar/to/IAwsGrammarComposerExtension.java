@@ -33,18 +33,9 @@ public interface IAwsGrammarComposerExtension extends PureGrammarComposerExtensi
         return ListIterate.selectInstancesOf(context.extensions, IAwsGrammarComposerExtension.class);
     }
 
-
     static <T> String process(T item, List<Function2<T, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, String type, SourceInformation srcInfo) {
         return ListIterate
                 .collect(processors, processor -> processor.value(item, context))
-                .select(Objects::nonNull)
-                .getFirstOptional()
-                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.PARSER));
-    }
-
-    static <T> String process(T item, List<Function3<T, Integer, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, Integer offset, String type, SourceInformation srcInfo) {
-        return ListIterate
-                .collect(processors, processor -> processor.value(item, offset, context))
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.PARSER));
