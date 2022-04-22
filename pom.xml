@@ -129,7 +129,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>2.1.1</legend.pure.version>
-        <legend.shared.version>0.21.0</legend.shared.version>
+        <legend.shared.version>0.21.1-SNAPSHOT</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -525,7 +525,6 @@
                 <artifactId>legend-engine-xt-graphQL-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-tests-api</artifactId>
@@ -687,7 +686,6 @@
                 <artifactId>legend-engine-xt-protobuf</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
