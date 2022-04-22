@@ -59,15 +59,14 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
                     ._privateKeyVaultReference(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).privateKeyVaultReference)
                     ._passPhraseVaultReference(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).passPhraseVaultReference);
         }
-        /* to add once pure side is updated
-        else if (authenticationStrategy instanceof SnowflakePublicCloudAuthenticationStrategy)
+        //added new
+        else if (authenticationStrategy instanceof OAuthAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicCloudAuthenticationStrategy_Impl("")
-                    ._publicUserName(((SnowflakePublicCloudAuthenticationStrategy) authenticationStrategy).publicUserName)
-                    ._secretArn(((SnowflakePublicCloudAuthenticationStrategy) authenticationStrategy).secretArn)
-                    ._tokenUrl(((SnowflakePublicCloudAuthenticationStrategy) authenticationStrategy).tokenUrl);
+            return new Root_meta_pure_alloy_connections_alloy_authentication_OAuthAuthenticationStrategy_Impl("")
+                    ._secretArn(((OAuthAuthenticationStrategy) authenticationStrategy).secretArn)
+                    ._discoveryUrl(((OAuthAuthenticationStrategy) authenticationStrategy).discoveryUrl);
         }
-        */
+
         else if (authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
         {
             return new Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl("");

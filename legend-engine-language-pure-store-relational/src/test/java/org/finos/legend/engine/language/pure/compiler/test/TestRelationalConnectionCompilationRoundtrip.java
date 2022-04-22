@@ -6,6 +6,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_OAuthAuthenticationStrategy_Impl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,6 +38,30 @@ public class TestRelationalConnectionCompilationRoundtrip
 
         Assert.assertTrue(quoteIdentifiers);
         Assert.assertEquals("dummyPrincipal", serverPrincipal);
+
+        //added new
+        Pair<PureModelContextData, PureModel> compiledGraph2 = test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: SqlServer;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: OAuth\n" +
+                "  {\n" +
+                "    secretArn: 'name';\n" +
+                "    discoveryUrl: 'name';\n" +
+                "  };\n" +
+                "}\n");
+        Root_meta_pure_alloy_connections_RelationalDatabaseConnection connection2 = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) compiledGraph2.getTwo().getConnection("simple::Connection", SourceInformation.getUnknownSourceInformation());
+        String secretArn = ((Root_meta_pure_alloy_connections_alloy_authentication_OAuthAuthenticationStrategy_Impl) connection2._authenticationStrategy())._secretArn();
+
+        Assert.assertEquals("name", secretArn);
 
         test(TestRelationalCompilationFromGrammar.DB_INC +
                 "###Connection\n" +
