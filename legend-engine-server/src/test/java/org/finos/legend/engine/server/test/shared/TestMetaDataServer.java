@@ -30,6 +30,7 @@ import org.finos.legend.engine.server.test.shared.execute.PureFunctions;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.Revision;
@@ -65,7 +66,7 @@ public class TestMetaDataServer
         this.server = new Server(port);
         CompiledExecutionSupport executionSupport = new CompiledExecutionSupport(
                 new JavaCompilerState(null, TestMetaDataServer.class.getClassLoader()),
-                new CompiledProcessorSupport(TestMetaDataServer.class.getClassLoader(), MetadataLazy.fromClassLoader(TestMetaDataServer.class.getClassLoader()), Sets.mutable.empty()),
+                new CompiledProcessorSupport(TestMetaDataServer.class.getClassLoader(), MetadataLazy.fromClassLoader(TestMetaDataServer.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
                 new CodeStorage()
                 {
