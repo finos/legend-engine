@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>2.61.2-SNAPSHOT</version>
+        <version>3.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-executionPlan-execution-store-relational-connection-tests</artifactId>
@@ -615,30 +615,6 @@
                         <exclusion>
                             <groupId>com.google.api</groupId>
                             <artifactId>api-common</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>com.google.api.grpc</groupId>
-                    <artifactId>grpc-google-cloud-bigquerystorage-v1beta1</artifactId>
-                    <version>0.127.2</version>
-                    <scope>test</scope>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.checkerframework</groupId>
-                            <artifactId>checker-qual</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>com.google.api.grpc</groupId>
-                    <artifactId>grpc-google-cloud-bigquerystorage-v1beta2</artifactId>
-                    <version>0.127.2</version>
-                    <scope>test</scope>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.checkerframework</groupId>
-                            <artifactId>checker-qual</artifactId>
                         </exclusion>
                     </exclusions>
                 </dependency>

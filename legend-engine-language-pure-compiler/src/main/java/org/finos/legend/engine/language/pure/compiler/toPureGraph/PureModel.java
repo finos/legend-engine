@@ -76,6 +76,7 @@ import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.SVNCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
 import org.finos.legend.pure.m4.ModelRepository;
@@ -100,7 +101,7 @@ import java.util.function.Predicate;
 public class PureModel implements IPureModel {
     private static final Logger LOGGER = LoggerFactory.getLogger("Alloy Execution Server");
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
-    private static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader());
+    private static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName));
     private final CompiledExecutionSupport executionSupport;
     private final DeploymentMode deploymentMode;
     private final PureModelProcessParameter pureModelProcessParameter;

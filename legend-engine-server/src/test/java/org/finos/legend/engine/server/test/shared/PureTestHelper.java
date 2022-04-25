@@ -38,6 +38,7 @@ import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
@@ -244,7 +245,7 @@ public class PureTestHelper
     {
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
-                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), MetadataLazy.fromClassLoader(PureTestHelper.class.getClassLoader()), Sets.mutable.empty()),
+                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), MetadataLazy.fromClassLoader(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
                 new CodeStorage()
                 {
@@ -397,7 +398,7 @@ public class PureTestHelper
 
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
-                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), MetadataLazy.fromClassLoader(PureTestHelper.class.getClassLoader()), Sets.mutable.empty()),
+                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), MetadataLazy.fromClassLoader(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
                 new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), PureRepositoriesExternal.repositories(), null)),
                 null,
