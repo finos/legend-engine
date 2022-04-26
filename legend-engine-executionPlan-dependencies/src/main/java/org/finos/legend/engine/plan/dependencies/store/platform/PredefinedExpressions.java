@@ -25,7 +25,7 @@ public class PredefinedExpressions
         return PureDate.fromDate(new Date());
     }
 
-    public static Object currentUserId()
+    public static String currentUserId()
     {
         return "anonymous";
     }
