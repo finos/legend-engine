@@ -112,10 +112,6 @@ public class ExecutionNodeJavaPlatformHelper
                 Class<?>[] parameterTypes = method.getParameterTypes();
                 if (parameterTypes.length == 0)
                 {
-                    if ("org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions".equals(executionClass.getName()) && "currentUserId".equals(methodName))
-                    {
-                        return toResult(executeCurrentUserIdFromCurrentProfileContext(pm));
-                    }
                     return toResult(executeStaticJavaMethod(method));
                 }
                 if (parameterTypes.length == 1 && parameterTypes[0].isInstance(context))
@@ -125,6 +121,10 @@ public class ExecutionNodeJavaPlatformHelper
                 if (parameterTypes.length == 1 && parameterTypes[0].isInstance(context.getChildResult()))
                 {
                     return toResult(executeStaticJavaMethod(method, context.getChildResult()));
+                }
+                if (parameterTypes.length == 1 && parameterTypes[0].isInstance(pm))
+                {
+                    return toResult(executeStaticJavaMethod(method, pm));
                 }
                 if (parameterTypes.length == 2 && parameterTypes[0].isInstance(context.getChildResult()) && parameterTypes[1].isInstance(context))
                 {
@@ -167,11 +167,6 @@ public class ExecutionNodeJavaPlatformHelper
             }
             throw new RuntimeException(cause);
         }
-    }
-
-    private static Object executeCurrentUserIdFromCurrentProfileContext(MutableList<CommonProfile> profiles)
-    {
-        return SubjectTools.getKerberos(ProfileManagerHelper.extractSubject(profiles));
     }
 
     public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Class<?>> parameterTypes, List<?> parameters, ExecutionState executionState, MutableList<CommonProfile> pm)
