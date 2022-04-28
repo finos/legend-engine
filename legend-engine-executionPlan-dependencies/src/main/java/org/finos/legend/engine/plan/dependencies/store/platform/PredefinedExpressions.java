@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,17 @@
 
 package org.finos.legend.engine.plan.dependencies.store.platform;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.profiles.UserExtension;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Date;
+import java.util.Optional;
+import java.util.ServiceLoader;
 
 public class PredefinedExpressions
 {
@@ -31,6 +35,13 @@ public class PredefinedExpressions
 
     public static String currentUserId(MutableList<CommonProfile> profiles)
     {
-        return SubjectTools.getKerberos(ProfileManagerHelper.extractSubject(profiles));
+        Assert.assertTrue(!profiles.isEmpty(), () -> "Profile list cannot be empty.");
+
+        MutableList<UserExtension> extensions = Iterate.addAllTo(ServiceLoader.load(UserExtension.class), Lists.mutable.empty());
+        Optional<UserExtension> validExtension = extensions.stream().filter(extension -> extension.isValidProfile(profiles)).findFirst();
+
+        Assert.assertTrue(validExtension.isPresent(), () -> "Profile type: " + profiles.get(0).getClass().getSimpleName() + " is not suppoorted.");
+
+        return validExtension.get().getCurrentUser(profiles);
     }
 }
