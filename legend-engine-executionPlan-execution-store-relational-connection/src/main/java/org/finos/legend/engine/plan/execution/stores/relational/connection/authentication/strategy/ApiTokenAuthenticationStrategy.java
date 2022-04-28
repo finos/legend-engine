@@ -36,7 +36,6 @@ import java.util.Properties;
 public class ApiTokenAuthenticationStrategy extends AuthenticationStrategy
 {
 
-    public static String API_TOKEN = "legend_api_token";
     private final String apiToken;
 
     public ApiTokenAuthenticationStrategy(String apiToken)
@@ -63,7 +62,7 @@ public class ApiTokenAuthenticationStrategy extends AuthenticationStrategy
         ApiTokenCredential apiTokenCredential = this.resolveCredential(properties, this.apiToken);
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        connectionProperties.put(API_TOKEN, apiTokenCredential.getApiToken());
+        connectionProperties.put("PWD", apiTokenCredential.getApiToken());
         return Tuples.pair(url, connectionProperties);
     }
 
