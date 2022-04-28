@@ -12,25 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.shared.core.profiles.kerberos;
+package org.finos.legend.engine.shared.core.profiles;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
-import org.finos.legend.engine.shared.core.profiles.UserExtension;
 import org.pac4j.core.profile.CommonProfile;
 
-public class KerberosUserExtension implements UserExtension
+public interface CommonProfileExtension
 {
-    @Override
-    public boolean isValidProfile(MutableList<CommonProfile> profiles)
-    {
-        return ProfileManagerHelper.extractSubject(profiles) != null;
-    }
+    boolean matchesCurrentProfileType(MutableList<CommonProfile> profiles);
 
-    @Override
-    public String getCurrentUser(MutableList<CommonProfile> profiles)
-    {
-        return SubjectTools.getKerberos(ProfileManagerHelper.extractSubject(profiles));
-    }
+    String getCurrentUser(MutableList<CommonProfile> profiles);
 }

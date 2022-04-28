@@ -19,7 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.shared.core.operational.Assert;
-import org.finos.legend.engine.shared.core.profiles.UserExtension;
+import org.finos.legend.engine.shared.core.profiles.CommonProfileExtension;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Date;
@@ -37,10 +37,10 @@ public class PredefinedExpressions
     {
         Assert.assertTrue(!profiles.isEmpty(), () -> "Profile list cannot be empty.");
 
-        MutableList<UserExtension> extensions = Iterate.addAllTo(ServiceLoader.load(UserExtension.class), Lists.mutable.empty());
-        Optional<UserExtension> validExtension = extensions.stream().filter(extension -> extension.isValidProfile(profiles)).findFirst();
+        MutableList<CommonProfileExtension> extensions = Iterate.addAllTo(ServiceLoader.load(CommonProfileExtension.class), Lists.mutable.empty());
+        Optional<CommonProfileExtension> validExtension = extensions.stream().filter(extension -> extension.matchesCurrentProfileType(profiles)).findFirst();
 
-        Assert.assertTrue(validExtension.isPresent(), () -> "Profile type: " + profiles.get(0).getClass().getSimpleName() + " is not suppoorted.");
+        Assert.assertTrue(validExtension.isPresent(), () -> "Profile type: " + profiles.getFirst().getClass().getSimpleName() + " is not supported.");
 
         return validExtension.get().getCurrentUser(profiles);
     }
