@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>2.60.1-SNAPSHOT</version>
+    <version>3.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -135,8 +135,8 @@
         <snowflake.version>3.13.5</snowflake.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <!-- Legend -->
-        <legend.pure.version>1.53.0</legend.pure.version>
-        <legend.shared.version>0.20.1</legend.shared.version>
+        <legend.pure.version>2.0.0</legend.pure.version>
+        <legend.shared.version>0.21.0</legend.shared.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -913,6 +913,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-engine-shared</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
                 <version>${legend.pure.version}</version>
                 <exclusions>
@@ -1073,7 +1078,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-code-java-compiled-core</artifactId>
+                <artifactId>legend-pure-code-compiled-core</artifactId>
                 <version>${legend.pure.version}</version>
                 <exclusions>
                     <exclusion>
@@ -1120,27 +1125,48 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-code-compiled-core</artifactId>
+                <artifactId>legend-pure-code-compiled-core-external-format-json</artifactId>
                 <version>${legend.pure.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-code-compiled-core-persistence</artifactId>
+                <artifactId>legend-pure-code-compiled-core-external-format-flatdata</artifactId>
                 <version>${legend.pure.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-code-compiled-core-relational</artifactId>
                 <version>${legend.pure.version}</version>
-                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-code-compiled-core-persistence</artifactId>
+                <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
                 <version>${legend.pure.version}</version>
-                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-code-compiled-core-servicestore</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-code-compiled-platform-java</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-code-compiled-core-external-format-xml</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-code-compiled-core-external-query-graphql</artifactId>
+                <version>${legend.pure.version}</version>
             </dependency>
             <!-- PURE -->
 

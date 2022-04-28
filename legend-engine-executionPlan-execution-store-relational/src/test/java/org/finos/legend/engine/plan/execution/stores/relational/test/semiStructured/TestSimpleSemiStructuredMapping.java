@@ -323,21 +323,21 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
         String snowflakePlan = this.buildExecutionPlanString("simple::semiStructuredDifferentDataTypePropertyAccess", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, \"\", \"\"), (Firm Employee Count, Integer, \"\", \"\"), (Firm MNC, Boolean, \"\", \"\"), (Firm Est Date, StrictDate, \"\", \"\"), (Firm Last Update, DateTime, \"\", \"\"), (Firm Address Street, String, \"\", \"\")]\n" +
-                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Legal Name\", \"\"), (\"Firm Employee Count\", \"\"), (\"Firm MNC\", \"\"), (\"Firm Est Date\", \"\"), (\"Firm Last Update\", \"\"), (\"Firm Address Street\", \"\")]\n" +
-                "  sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Legal Name\", \"root\".FIRM_DETAILS['employeeCount'] as \"Firm Employee Count\", \"root\".FIRM_DETAILS['mnc'] as \"Firm MNC\", \"root\".FIRM_DETAILS['estDate']::date as \"Firm Est Date\", \"root\".FIRM_DETAILS['lastUpdate']::timestamp as \"Firm Last Update\", \"root\".FIRM_DETAILS['address']['street']::varchar as \"Firm Address Street\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, \"\", \"\"), (Firm Employee Count, Integer, \"\", \"\"), (Firm MNC, Boolean, \"\", \"\"), (Firm Est Date, StrictDate, \"\", \"\"), (Firm Last Update, DateTime, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Entity Type, simple::model::EntityType, \"\", \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Legal Name\", \"\"), (\"Firm Employee Count\", \"\"), (\"Firm MNC\", \"\"), (\"Firm Est Date\", \"\"), (\"Firm Last Update\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Entity Type\", \"\")]\n" +
+                "  sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Legal Name\", \"root\".FIRM_DETAILS['employeeCount'] as \"Firm Employee Count\", \"root\".FIRM_DETAILS['mnc'] as \"Firm MNC\", \"root\".FIRM_DETAILS['estDate']::date as \"Firm Est Date\", \"root\".FIRM_DETAILS['lastUpdate']::timestamp as \"Firm Last Update\", \"root\".FIRM_DETAILS['address']['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['entityType']::varchar as \"Firm Entity Type\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
         String h2Result = this.executeFunction("simple::semiStructuredDifferentDataTypePropertyAccess", h2Mapping, h2Runtime);
-        Assert.assertEquals("Peter,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1\n" +
-                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1\n" +
-                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1\n" +
-                "Anthony,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1\n" +
-                "Fabrice,Firm A,1,false,2012-11-13,2022-02-14 03:00:00.0,\n" +
-                "Oliver,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,S2\n" +
-                "David,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,\n", h2Result.replace("\r\n", "\n"));
+        Assert.assertEquals("Peter,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
+                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
+                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
+                "Anthony,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
+                "Fabrice,Firm A,1,false,2012-11-13,2022-02-14 03:00:00.0,,\n" +
+                "Oliver,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,S2,Company\n" +
+                "David,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,,Company\n", h2Result.replace("\r\n", "\n"));
     }
 
     @Test
@@ -425,6 +425,111 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
         String h2Result = this.executeFunction("simple::filterWithSemiStructuredPropertyAccessAtNestedProperty", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter\n" +
                 "John\n", h2Result.replace("\r\n", "\n"));
+    }
+
+    @Test
+    public void testIfElseLogicOnEnumProperties()
+    {
+        String snowflakePlan = this.buildExecutionPlanString("simple::ifElseLogicOnEnumProperties", snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected = "Relational\n" +
+                "(\n" +
+                "  type = TDS[(Enum Return, simple::model::EntityType, \"\", \"\")]\n" +
+                "  resultColumns = [(\"Enum Return\", \"\")]\n" +
+                "  sql = select case when \"root\".FIRSTNAME = 'John' then \"root\".FIRM_DETAILS['entityType']::varchar else \"root\".FIRM_DETAILS['entityType']::varchar end as \"Enum Return\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
+                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                ")\n";
+        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+
+        String h2Result = this.executeFunction("simple::ifElseLogicOnEnumProperties", h2Mapping, h2Runtime);
+        Assert.assertEquals("Organization\n" +
+                "Organization\n" +
+                "Organization\n" +
+                "Organization\n" +
+                "\n" +
+                "Company\n" +
+                "Company\n", h2Result.replace("\r\n", "\n"));
+    }
+
+    @Test
+    public void testFilterOnEnumPropertyWithEnumConst()
+    {
+        String snowflakePlan = this.buildExecutionPlanString("simple::filterOnEnumPropertyWithEnumConst", snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected = "Relational\n" +
+                "(\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100))]\n" +
+                "  sql = select \"root\".FIRSTNAME as \"First Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" where \"root\".FIRM_DETAILS['entityType']::varchar = 'Organization'\n" +
+                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                ")\n";
+        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+
+        String h2Result = this.executeFunction("simple::filterOnEnumPropertyWithEnumConst", h2Mapping, h2Runtime);
+        Assert.assertEquals("Peter\n" +
+                "John\n" +
+                "John\n" +
+                "Anthony\n", h2Result.replace("\r\n", "\n"));
+    }
+
+    @Test
+    public void testFilterOnEnumPropertyWithStringConst()
+    {
+        String snowflakePlan = this.buildExecutionPlanString("simple::filterOnEnumPropertyWithStringConst", snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected = "Relational\n" +
+                "(\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100))]\n" +
+                "  sql = select \"root\".FIRSTNAME as \"First Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" where \"root\".FIRM_DETAILS['entityType']::varchar = 'Organization'\n" +
+                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                ")\n";
+        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+
+        String h2Result = this.executeFunction("simple::filterOnEnumPropertyWithStringConst", h2Mapping, h2Runtime);
+        Assert.assertEquals("Peter\n" +
+                "John\n" +
+                "John\n" +
+                "Anthony\n", h2Result.replace("\r\n", "\n"));
+    }
+
+    @Test
+    public void testGroupByOnEnumProperty()
+    {
+        String snowflakePlan = this.buildExecutionPlanString("simple::groupByOnEnumProperty", snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected = "Relational\n" +
+                "(\n" +
+                "  type = TDS[(Address, simple::model::EntityType, \"\", \"\"), (Names, String, VARCHAR(200), \"\")]\n" +
+                "  resultColumns = [(\"Address\", \"\"), (\"Names\", \"\")]\n" +
+                "  sql = select \"root\".FIRM_DETAILS['entityType']::varchar as \"Address\", listagg(\"root\".FIRSTNAME, ';') as \"Names\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" group by \"root\".FIRM_DETAILS['entityType']::varchar\n" +
+                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                ")\n";
+        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+
+        String h2Result = this.executeFunction("simple::groupByOnEnumProperty", h2Mapping, h2Runtime);
+        Assert.assertEquals(",Fabrice\n" +
+                "Company,Oliver;David\n" +
+                "Organization,Peter;John;John;Anthony\n", h2Result.replace("\r\n", "\n"));
+    }
+
+    @Test
+    public void testSortByOnEnumProperty()
+    {
+        String snowflakePlan = this.buildExecutionPlanString("simple::sortByOnEnumProperty", snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected = "Relational\n" +
+                "(\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100))]\n" +
+                "  sql = select \"root\".FIRSTNAME as \"First Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" order by \"root\".FIRM_DETAILS['entityType']::varchar\n" +
+                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                ")\n";
+        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+
+        String h2Result = this.executeFunction("simple::sortByOnEnumProperty", h2Mapping, h2Runtime);
+        Assert.assertEquals("Fabrice\n" +
+                "Oliver\n" +
+                "David\n" +
+                "Peter\n" +
+                "John\n" +
+                "John\n" +
+                "Anthony\n", h2Result.replace("\r\n", "\n"));
     }
 
     public String modelResourcePath()

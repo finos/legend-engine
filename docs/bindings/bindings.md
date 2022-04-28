@@ -78,8 +78,8 @@ Each is driven by a configuration that should extend these base classes accordin
 * `meta::external::shared::format::binding::toPure::SchemaToModelConfiguration`
 * `meta::external::shared::format::binding::fromPure::ModelToSchemaConfiguration`
 
-When either form of generation happens the result is a Binding which encapsulates the source and target of the
-generation along with the generated model/schema.
+When either form of generation happens the result is a Binding and the generated model or schema.
+The Binding links the source (existing model/schema) and the target (generated schema/model).
 
 #### Execution plans
 

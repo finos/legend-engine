@@ -292,10 +292,6 @@ public class MilestoningDatePropagationHelper {
                 milestoningDateParameters[0] = processingContext.milestoningDatePropagationContext.getProcessingDate();
                 milestoningDateParameters[1] = processingContext.milestoningDatePropagationContext.getBusinessDate();
             }
-            if(milestoningDateParameters[0] == null || milestoningDateParameters[1] == null)
-            {
-                throw new EngineException("No-Arg milestoned property: '" + propertyName + "' must be either called in a milestoning context or supplied with " + "[processingDate, businessDate]" + " parameters", sourceInformation, EngineErrorType.COMPILATION);
-            }
         }
         else if (isSingleDateTemporal(targetTypeMilestoning) && noDateParamSupplied(parametersValues))
         {
@@ -315,17 +311,6 @@ public class MilestoningDatePropagationHelper {
             if (sourceTypeMilestoning == targetTypeMilestoning)
             {
                 setMilestoningDateParameters(milestoningDateParameters, 0, propagatedDate);
-            }
-            if (milestoningDateParameters[0] == null)
-            {
-                if (isProcessingTemporal(targetTypeMilestoning))
-                {
-                    throw new EngineException("No-Arg milestoned property: '" + propertyName + "' must be either called in a milestoning context or supplied with " + "[processingDate]" + " parameters", sourceInformation, EngineErrorType.COMPILATION);
-                }
-                else
-                {
-                    throw new EngineException("No-Arg milestoned property: '" + propertyName + "' must be either called in a milestoning context or supplied with " + "[businessDate]" + " parameters", sourceInformation, EngineErrorType.COMPILATION);
-                }
             }
         }
         if (!ArrayIterate.isEmpty(milestoningDateParameters))
