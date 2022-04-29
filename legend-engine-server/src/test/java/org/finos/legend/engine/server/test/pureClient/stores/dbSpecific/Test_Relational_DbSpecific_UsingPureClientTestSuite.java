@@ -34,16 +34,9 @@ public abstract class Test_Relational_DbSpecific_UsingPureClientTestSuite extend
     {
         CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
 
-        try
-        {
-            //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
-            PureTestHelper.initClientVersionIfNotAlreadySet( "vX_X_X" );
-            state.set( PureTestHelper.initEnvironment( false, testServerConfigFilePath ) );
-        }
-        catch ( Exception e )
-        {
-            throw e;
-        }
+        //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
+        PureTestHelper.initClientVersionIfNotAlreadySet( "vX_X_X" );
+        state.set( PureTestHelper.initEnvironment( false, testServerConfigFilePath ) );
 
         Root_meta_relational_dbTestRunner_DbTestConfig dbTestConfig =
                 core_relational_relational_dbTestRunner_shared.Root_meta_relational_dbTestRunner_createDbConfig_String_1__DbTestConfig_1_(
