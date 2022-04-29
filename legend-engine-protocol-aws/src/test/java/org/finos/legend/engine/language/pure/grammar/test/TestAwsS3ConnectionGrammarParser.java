@@ -54,6 +54,23 @@ public class TestAwsS3ConnectionGrammarParser extends TestGrammarParser.TestGram
                 "  partition: AWS;\n" +
                 "  store: model::firm::Person;\n" +
                 "}\n\n", "PARSER error at [2:1-6:1]: Field 'region' is required");
+        test("###Connection\n" +
+                "AwsS3Connection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  partition: AWS;\n" +
+                "  store: model::firm::Person;\n" +
+                "  region: 'US';\n" +
+                "}\n\n", "PARSER error at [2:1-7:1]: Field 'bucket' is required");
+        test("###Connection\n" +
+                "AwsS3Connection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  partition: AWS;\n" +
+                "  region: 'US';\n" +
+                "  bucket: 'abc';\n" +
+                "  bucket: 'abc';\n" +
+                "}\n", "PARSER error at [2:1-9:1]: Field 'bucket' should be specified only once");
+
         // Correctly written
         test("###Connection\n" +
                 "AwsS3Connection meta::mySimpleConnection\n" +
