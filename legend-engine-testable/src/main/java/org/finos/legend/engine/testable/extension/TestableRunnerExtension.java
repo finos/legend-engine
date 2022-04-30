@@ -18,5 +18,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_Testable;
 
 public interface TestableRunnerExtension
 {
+    String getSupportedClassifierPath();
+
     TestRunner getTestRunner(Root_meta_pure_test_Testable testable);
 }
