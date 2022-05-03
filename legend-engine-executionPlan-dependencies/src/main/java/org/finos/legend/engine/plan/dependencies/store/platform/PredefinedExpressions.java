@@ -14,17 +14,12 @@
 
 package org.finos.legend.engine.plan.dependencies.store.platform;
 
-import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
-import org.finos.legend.engine.shared.core.operational.Assert;
-import org.finos.legend.engine.shared.core.profiles.CommonProfileExtension;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Date;
-import java.util.Optional;
-import java.util.ServiceLoader;
 
 public class PredefinedExpressions
 {
@@ -35,13 +30,6 @@ public class PredefinedExpressions
 
     public static String currentUserId(MutableList<CommonProfile> profiles)
     {
-        Assert.assertTrue(!profiles.isEmpty(), () -> "Profile list cannot be empty.");
-
-        MutableList<CommonProfileExtension> extensions = Iterate.addAllTo(ServiceLoader.load(CommonProfileExtension.class), Lists.mutable.empty());
-        Optional<CommonProfileExtension> validExtension = extensions.stream().filter(extension -> extension.matchesCurrentProfileType(profiles)).findFirst();
-
-        Assert.assertTrue(validExtension.isPresent(), () -> "Profile type: " + profiles.getFirst().getClass().getSimpleName() + " is not supported.");
-
-        return validExtension.get().getCurrentUser(profiles);
+        return IdentityFactoryProvider.getInstance().makeIdentity(profiles).getName();
     }
 }
