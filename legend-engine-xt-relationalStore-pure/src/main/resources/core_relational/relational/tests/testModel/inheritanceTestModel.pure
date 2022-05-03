@@ -1,0 +1,134 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::inheritance::*;
+
+Class meta::relational::tests::model::inheritance::Vehicle
+{
+   id : Integer[1];
+   description: String[1];
+   owner:VehicleOwner[0..1];
+   mechanic:Person[0..1];
+
+   derivedOwnerDescription(){
+      $this.owner.name
+   } : String[0..1];
+
+}
+
+Class meta::relational::tests::model::inheritance::Plane extends Vehicle
+{
+
+}
+
+Class meta::relational::tests::model::inheritance::RoadVehicle extends Vehicle
+{
+   wheelCount : Integer[1];
+}
+
+Class meta::relational::tests::model::inheritance::Bicycle extends RoadVehicle
+{
+
+}
+
+Class meta::relational::tests::model::inheritance::Fuel
+{
+   description: String[1];
+}
+
+Class meta::relational::tests::model::inheritance::Gasoline extends Fuel
+{
+   octaneLevel : Integer[1];
+   combustionCharacteristics : CombustionCharacteristics[1];
+}
+
+Class meta::relational::tests::model::inheritance::Unleaded extends Gasoline
+{
+}
+
+Class meta::relational::tests::model::inheritance::CombustionCharacteristics
+{
+   idealCompression : Integer[1];
+}
+
+Enum meta::relational::tests::model::inheritance::EngineType
+{
+   V, U, H, W, X
+}
+
+Class meta::relational::tests::model::inheritance::Car extends RoadVehicle
+{
+   engineType : EngineType[1];
+}
+
+Class meta::relational::tests::model::inheritance::VehicleOwner
+{
+   vehicles : Vehicle[*];
+   name : String[1];
+}
+
+Class meta::relational::tests::model::inheritance::Person extends VehicleOwner
+{
+   name : String[1];
+}
+
+Class meta::relational::tests::model::inheritance::Airline extends VehicleOwner
+{
+   planes : Plane[*];
+}
+
+Class meta::relational::tests::model::inheritance::RacingCar extends Car
+{
+}
+
+Class meta::relational::tests::model::inheritance::Company
+{
+   name: String[1];
+}
+
+Association meta::relational::tests::model::inheritance::RacingCarSponsor
+{
+   racingCar:RacingCar[1];
+   sponsor:Company[0..1];
+}
+
+Association meta::relational::tests::model::inheritance::Driver
+{
+   person : Person[1];
+   roadVehicles : RoadVehicle[*];
+}
+
+Association meta::relational::tests::model::inheritance::Cyclist
+{
+   person : Person[1];
+   bicycles : Bicycle[*];
+}
+
+Association meta::relational::tests::model::inheritance::CarDriver
+{
+   person : Person[1];
+   cars : Car[*];
+}
+
+Association meta::relational::tests::model::inheritance::VehicleOwnerVehicle
+{
+   ownedVehicles : Vehicle[*];
+   ownedVehiclesWithEmptyDescription()
+   {
+      $this.ownedVehicles->filter(v |$v.description == '')
+   } : Vehicle[*];
+   vehicleOwner : VehicleOwner[0..1];
+}
+
+

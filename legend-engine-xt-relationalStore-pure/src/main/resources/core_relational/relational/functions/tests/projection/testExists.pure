@@ -1,0 +1,205 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::projection::exists::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+
+Class meta::relational::tests::projection::exists::MyClass
+{
+   name : String[1];
+   hasMatchingDependencies(){$this.dependencies->exists(d|$d.name == 'name2')}:Boolean[1];
+}
+
+Class meta::relational::tests::projection::exists::Dependency
+{
+    name : String[1];
+}
+
+Association meta::relational::tests::projection::exists::A
+{
+   myC : MyClass[1];
+   dependencies : Dependency[*];
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::exists::testSimpleExists():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p|$p.name, p|$p.addresses->exists(a|$a.name == 'Hoboken')], ['a', 'prop']),
+                        	meta::relational::tests::simpleRelationalMapping,
+                        meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertSameElements(['Anthony Allen true', 'David Harris false', 'Fabrice Roberts false','John Johnson true','John Hill true','Oliver Hill false','Peter Smith true'], $result.values.rows->map(r | $r.values->at(0)->toString()+' '+$r.values->at(1)->toString()));
+   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "a", exists(select 1 from (select "addresstable_0".ID as ID, null as ADDRESSID, "addresstable_0".NAME as "addressTableNAME" from addressTable as "addresstable_0" UNION ALL select "firmtable_0".ID as ID, "firmtable_0".ADDRESSID as ADDRESSID, "addresstable_1".NAME as "addressTableNAME" from firmTable as "firmtable_0" left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID)) as "unionalias_0" where ("unionalias_0".ID = "root".FIRMID or "unionalias_0".ID = "root".ADDRESSID) and "unionalias_0"."addressTableNAME" = \'Hoboken\') as "prop" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::exists::testExistsAsQualifier():Boolean[1]
+{
+   let result = execute(|MyClass.all()->project(p|$p.hasMatchingDependencies, 'prop'),
+                         meta::relational::tests::projection::exists::mapping,
+                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 3);
+   assertSameElements([false, true, true], $result.values.rows->map(r | $r.values->at(0)));
+   assertEquals('select "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId from dep as "dep_1" where "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::exists::testExistsEmbeddedOnSameTable():Boolean[1]
+{
+   let result = execute(|MyClass.all()->project(p|$p.dependencies->exists(d|$d.name == 'name2'), 'prop'),
+                         meta::relational::tests::projection::exists::mappingEmbeddedSameTable,                        
+                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 3);
+   assertSameElements([true, false, true], $result.values.rows->map(r | $r.values->at(0)));
+   assertEquals('select "root".depName = \'name2\' as "prop" from mainDenorm as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::exists::testExistsAsQualifierWithFilter():Boolean[1]
+{
+   let result = execute(|MyClass.all()->project(p|$p.hasMatchingDependencies, 'prop'),
+                         meta::relational::tests::projection::exists::mappingWithFilter,
+                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertSameElements(true, $result.values.rows->map(r | $r.values->at(0)));
+   assertEquals('select "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId from dep as "dep_1" where "dep_1".otherFilter = 2 and "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId) where "root".name = \'name3\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::exists::testExistsAsQualifierWithFilterAndWrongJoin():Boolean[1]
+{
+   let result = execute(|MyClass.all()->project(p|$p.hasMatchingDependencies, 'prop'),
+                         meta::relational::tests::projection::exists::mappingWithFilterAndWrongJoin,
+                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertSameElements(true, $result.values.rows->map(r | $r.values->at(0)));
+   assertEquals('select "dep_0".otherFilter is not null and "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId, "dep_1".otherFilter from dep as "dep_1" where "dep_1".otherFilter = 2 and "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId and "root".name = \'name3\' and "dep_0".otherFilter = 2) where "root".name = \'name3\'', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.BeforePackage>> meta::relational::tests::projection::exists::setUp():Boolean[1]
+{
+   meta::relational::tests::projection::setUp();
+   
+   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'main', $connection);
+
+   executeInDb('insert into main (id, name) values (1, \'name1\');', $connection);
+   executeInDb('insert into main (id, name) values (2, \'name2\');', $connection);
+   executeInDb('insert into main (id, name) values (3, \'name3\');', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'mainDenorm', $connection);
+
+   executeInDb('insert into mainDenorm (id, name, depName) values (1, \'name1\', \'name2\');', $connection);
+   executeInDb('insert into mainDenorm (id, name, depName) values (2, \'name2\', \'name1\');', $connection);
+   executeInDb('insert into mainDenorm (id, name, depName) values (3, \'name3\', \'name2\');', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'dep', $connection);
+
+   executeInDb('insert into dep (id, mainId, name, otherFIlter) values (1, 1, \'name1\', 0);', $connection);
+   executeInDb('insert into dep (id, mainId, name, otherFIlter) values (2, 1, \'name2\', 0);', $connection);
+   executeInDb('insert into dep (id, mainId, name, otherFIlter) values (3, 2, \'name1\', 0);', $connection);
+   executeInDb('insert into dep (id, mainId, name, otherFIlter) values (4, 2, \'name4\', 0);', $connection);
+   executeInDb('insert into dep (id, mainId, name, otherFIlter) values (5, 3, \'name1\', 0);', $connection);
+   executeInDb('insert into dep (id, mainId, name, otherFIlter) values (6, 3, \'name2\', 2);', $connection);
+   executeInDb('insert into dep (id, mainId, name, otherFIlter) values (7, 3, \'name3\', 0);', $connection);
+   
+   true;
+
+//    executeInDb('insert into Product (id, productDate, name, tradeId) values (1, \'2014-12-01 21:00:00\', \'prod 1 V1\', 1);', $connection);
+}
+
+function meta::relational::tests::projection::exists::testRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(db);
+}
+
+###Mapping
+import meta::relational::tests::projection::exists::*;
+
+Mapping meta::relational::tests::projection::exists::mappingEmbeddedSameTable
+(
+   MyClass : Relational
+             {
+                name : [db]mainDenorm.name,
+                dependencies(
+                   name: [db]mainDenorm.depName
+                )
+             }  
+)
+
+Mapping meta::relational::tests::projection::exists::mapping
+(
+   MyClass : Relational
+             {
+                name : [db]main.name,
+                dependencies : [db]@join   
+             }
+   
+   Dependency : Relational
+                {
+                   name : [db]dep.name
+                }
+)
+
+###Mapping
+import meta::relational::tests::projection::exists::*;
+
+Mapping meta::relational::tests::projection::exists::mappingWithFilter
+(
+   MyClass : Relational
+             {
+                ~filter [db]f1
+                name : [db]main.name,
+                dependencies : [db]@join   
+             }
+   
+   Dependency : Relational
+                {
+                   ~filter [db]f2 
+                   name : [db]dep.name
+                }
+)
+
+###Mapping
+import meta::relational::tests::projection::exists::*;
+
+Mapping meta::relational::tests::projection::exists::mappingWithFilterAndWrongJoin
+(
+   MyClass : Relational
+             {
+                ~filter [db]f1
+                name : [db]main.name,
+                dependencies : [db]@wrongJoin   
+             }
+   
+   Dependency : Relational
+                {
+                   ~filter [db]f2 
+                   name : [db]dep.name
+                }
+)
+
+###Relational
+Database meta::relational::tests::projection::exists::db
+(
+   Table main(id INT PRIMARY KEY , name VARCHAR(100))
+   Table mainDenorm(id INT PRIMARY KEY , name VARCHAR(100), depName VARCHAR(200))
+   Table dep(id INT PRIMARY KEY , mainId INT, name VARCHAR(200), otherFilter INT)
+   Join join(main.id = dep.mainId)
+   Join wrongJoin(main.id = dep.mainId and main.name = 'name3' and dep.otherFilter=2)
+   Filter f1(main.name = 'name3')
+   Filter f2(dep.otherFilter = 2)
+)

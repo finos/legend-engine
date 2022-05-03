@@ -1,0 +1,169 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+
+import meta::relational::tests::mapping::association::embedded::*;
+
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::association::embedded::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::embedded::model::store::createTablesAndFillDb();
+}
+
+
+
+function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToOrganisations():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::association::embedded::testFirmToOrganisations():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->project([p|$p.legalName, p|$p.organizations.name], ['firm', 'team']), associationMappingInlinedEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Firm A Team 3', 'Firm X Team 1', 'Firm X Team 1', 'Firm X Team 2', 'Firm X Team 2'], $result1.rows->map(r|$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToOrganisationsInlineEmbedded():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMappingInlinedEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToFirmAddressNestedInlineEmbedded():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.address.name], ['name', 'firm', 'add']), associationMappingInlinedEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(3, $result1.rows->size());
+   assertSameElements(['Smith Firm X 200 west', 'Johnson Firm X 200 west', 'Roberts Firm A 3 somewhere'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('add')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToFirmLocationsInlineEmbedded():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.address.location.place], ['name', 'firm', 'location']), associationMappingInlinedEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(3, $result1.rows->size());
+   assertSameElements(['Smith Firm X Loc 1', 'Johnson Firm X Loc 1', 'Roberts Firm A Loc 2'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('location')));
+}
+
+
+###Mapping
+import meta::relational::tests::mapping::embedded::model::store::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+
+
+Mapping meta::relational::tests::mapping::association::embedded::associationMapping
+(
+   include meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded
+
+    Organization[org]: Relational
+    {
+
+       name:[myDB]ORGANIZATIONS.NAME
+     
+    } 
+   
+    FirmOrganizations: Relational
+    {
+      AssociationMapping
+      (
+         organizations[meta_relational_tests_model_simple_Person_firm, org] : [myDB]@Firm_Organizations
+      )
+    }
+)
+
+Mapping meta::relational::tests::mapping::association::embedded::associationMappingInlinedEmbedded
+(
+  
+    GeographicEntityType: EnumerationMapping GE
+    {
+        CITY:  1,
+        REGION: 2
+    }
+
+    Person[p]: Relational
+    {
+       scope([myDB]PERSON_FIRM_DENORM)
+       (
+          firstName: PERSON_FIRSTNAME,
+          lastName: PERSON_LASTNAME,
+          firm() Inline[f1],
+          address
+          (
+             name: PERSON_ADDRESS_NAME,
+             type : EnumerationMapping GE : PERSON_ADDRESS_TYPE
+          )
+       )
+       
+    }
+  
+    Firm[f1]: Relational
+    {
+       scope([myDB]PERSON_FIRM_DENORM)
+       (
+          legalName: FIRM_LEGALNAME
+          ,address
+          (
+             name: FIRM_ADDRESS_NAME,
+             type : EnumerationMapping GE : FIRM_ADDRESS_TYPE
+          )
+       ),
+       employees: [myDB]@firmEmployees
+    } 
+   
+    Organization[org1]: Relational
+    {
+
+       name:[myDB]ORGANIZATIONS.NAME
+     
+    } 
+   
+    Location[loc]: Relational
+    {
+
+       place:[myDB]LOCATIONS.PLACE
+     
+    }
+              
+
+    FirmOrganizations: Relational
+    {
+      AssociationMapping
+      (
+         organizations[p_firm, org1] : [myDB]@Firm_Organizations,
+         
+         organizations[f1, org1] : [myDB]@Firm_Organizations
+      )
+    }
+   
+    AddressLocation : Relational
+    {
+      AssociationMapping
+      (
+         location[f1_address,loc]: [myDB]@Firm_Address_location > @Address_location
+      )
+    }
+   
+)
+

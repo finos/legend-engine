@@ -1,0 +1,201 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::advanced::forcedselfjoin::*;
+
+Class meta::relational::tests::advanced::forcedselfjoin::Firm
+{
+   legalName: String[1];
+}
+
+Class meta::relational::tests::advanced::forcedselfjoin::Organization
+{
+   name: String[1];
+   children: Organization[*];
+}
+
+Class meta::relational::tests::advanced::forcedselfjoin::Person
+{
+   firstName: String[1];
+   lastName: String[1];
+   name(){$this.firstName+' '+$this.lastName}:String[1];
+
+}
+
+Class meta::relational::tests::advanced::forcedselfjoin::CoveredProduct
+{
+   name: String[1];
+}
+
+Association meta::relational::tests::advanced::forcedselfjoin::personProduct
+{
+   owner: Person[1];
+   product: CoveredProduct[1];
+}
+
+Association meta::relational::tests::advanced::forcedselfjoin::Firm_Person
+{
+   firm: Firm[1];
+   employees: Person[1];
+}
+
+Association meta::relational::tests::advanced::forcedselfjoin::OrgProduct
+{
+   managedBy: Organization[1];
+   coveredProduct: CoveredProduct[1];
+}
+
+Association meta::relational::tests::advanced::forcedselfjoin::OrgPerson
+{
+   group: Organization[1];
+   member: Person[1];
+}
+
+###Pure
+import meta::relational::mapping::*;
+import meta::csv::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::advanced::forcedselfjoin::*;
+
+function meta::relational::tests::advanced::forcedselfjoin::testRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(meta::relational::tests::advanced::forcedselfjoin::IsolationTestDb);
+}
+
+function <<test.BeforePackage>> meta::relational::tests::advanced::forcedselfjoin::setUp(): Any[*]
+{
+   let connection = testRuntime().connectionByElement(IsolationTestDb)->cast(@TestDatabaseConnection);
+   executeInDb('Drop table if exists PersonTable;',$connection);
+   executeInDb('Create Table PersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), orgId INT, addressId INT, firmId INT, managerId INT);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, orgId, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',17, 1,1,2);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, orgId, addressId, firmId, managerId) values (2, \'David\', \'Scott\',18, 2,1,4);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, orgId, addressId, firmId, managerId) values (3, \'John\', \'Hill\',18, 3,2,2);', $connection);
+   
+   executeInDb('Drop table if exists FirmTable;', $connection);
+   executeInDb('Create Table FirmTable(id INT, legalName VARCHAR(200), addressId INT, ceoId INT);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (1, \'Firm X\', 8, 1);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (2, \'Firm A\', 9, 5);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (3, \'Firm B\', 10, 3);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (4, \'Firm C\', 11, 7);', $connection);
+   
+   executeInDb('Drop table if exists organizationTable;',$connection);
+   executeInDb('Create Table organizationTable(orgId INT, name VARCHAR(200), parentId INT);', $connection);
+   executeInDb('insert into organizationtable(orgId, name, parentId) values (17, \'NIC\',0 )',$connection);
+   executeInDb('insert into organizationtable(orgId, name, parentId) values (18, \'NICDev\',17 )',$connection);
+   executeInDb('insert into organizationtable(orgId, name, parentId) values (19, \'NICEngegement\',17 )',$connection);
+
+   executeInDb('Drop table if exists productTable;',$connection);
+   executeInDb('Create Table productTable(id INT, ownerId INT, name VARCHAR(200),  orgId INT);', $connection);
+
+   executeInDb('insert into productTable(id, ownerId, name, orgId) values (30,1,\'prod1\',17);',$connection);
+   executeInDb('insert into productTable(id, ownerId, name, orgId) values (31,1,\'prod2\',18);',$connection);
+   executeInDb('insert into productTable(id, ownerId, name, orgId) values (32,3,\'prod3\',17);',$connection);   
+
+   true;
+}
+
+function <<test.AfterPackage>> meta::relational::tests::advanced::forcedselfjoin::TearDown(): Any[*]
+{
+   let connection = testRuntime().connectionByElement(IsolationTestDb)->cast(@TestDatabaseConnection);
+   executeInDb('Drop table if exists PersonTable;',$connection);
+   executeInDb('Drop table if exists FirmTable;', $connection);
+   executeInDb('Drop table if exists productTable;',$connection);
+   executeInDb('Drop table if exists organizationTable;',$connection);
+
+}
+
+function <<test.Test>> meta::relational::tests::advanced::forcedselfjoin::isolationTest(): Boolean[*]
+{
+   let result = execute(|Firm.all()
+                          ->project([
+                             col(x|$x.legalName,'firmname'),
+                             col(x|$x.employees.name,'employeeProductName'),
+                             col(x|$x.employees.group.children->filter(c|$c.coveredProduct.name == $x.employees.product.name).name->toOne() , 'testCol')
+                          ])
+                       ,IsolationTestMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   let expectedCSV = 'firmname,employeeProductName,testCol\n'+
+                      'Firm X,Peter Smith,NICDev\n'+
+                      'Firm X,David Scott,\n'+
+                      'Firm A,John Hill,\n'+
+                      'Firm B, ,\n'+
+                      'Firm C, ,\n';
+   assertEquals($expectedCSV,$result.values->toCSV());
+   assertEquals('select "root".legalName as "firmname", concat("persontable_0".firstName, \' \', "persontable_0".lastName) as "employeeProductName", "persontable_1".name as "testCol" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join (select "persontable_2".ID as ID, "organizationtable_1".name as name from personTable as "persontable_2" left outer join organizationTable as "organizationtable_0" on ("organizationtable_0".orgId = "persontable_2".orgId) left outer join organizationTable as "organizationtable_1" on ("organizationtable_0".orgId = "organizationtable_1".parentId) left outer join productTable as "producttable_0" on ("producttable_0".orgId = "organizationtable_1".orgId) left outer join productTable as "producttable_1" on ("persontable_2".ID = "producttable_1".ownerId) where ("producttable_0".name = "producttable_1".name OR ("producttable_0".name is null AND "producttable_1".name is null))) as "persontable_1" on ("persontable_0".ID = "persontable_1".ID)',$result->sqlRemoveFormatting());
+}
+
+###Mapping
+import meta::relational::tests::advanced::forcedselfjoin::*;
+Mapping meta::relational::tests::advanced::forcedselfjoin::IsolationTestMapping
+(
+   
+   Person: Relational
+   {
+      scope([IsolationTestDb]default.personTable)
+      (
+         firstName : firstName,
+         lastName : lastName ,
+         product: @Person_product,
+         group: @Org_Person
+      )
+   }
+   
+   Firm: Relational
+   {
+      scope([IsolationTestDb]default.firmTable)
+      (
+         legalName : legalName,
+         employees: @Firm_Person
+      )
+   }
+      
+   Organization: Relational
+   {
+      scope([IsolationTestDb]default.organizationTable)
+      (
+         name : name,
+         children: @Org_org,
+         coveredProduct: @Org_product
+      )
+   }
+   
+   CoveredProduct: Relational
+   {
+      scope([IsolationTestDb]default.productTable)
+      (
+         name: name,
+         managedBy : @Org_product,
+         owner: @Person_product
+      )
+   }
+      
+)
+
+###Relational
+Database meta::relational::tests::advanced::forcedselfjoin::IsolationTestDb
+(
+   Table personTable (ID INT PRIMARY KEY, firstName VARCHAR(200), lastName VARCHAR(200), orgId INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+   Table firmTable(ID INT PRIMARY KEY, legalName VARCHAR(200), ADDRESSID INT, CEOID INT)
+   Table organizationTable(name VARCHAR(200) , orgId INT PRIMARY KEY, parentId Int)
+   Table productTable (Id INT PRIMARY KEY , ownerId INT, name VARCHAR(200), orgId INT)
+   
+   Join Firm_Person(firmTable.ID = personTable.FIRMID)
+   Join Org_Person(organizationTable.orgId = personTable.orgId)
+   Join Person_product( personTable.ID = productTable.ownerId)
+   Join Org_product (productTable.orgId  = organizationTable.orgId)
+   Join Org_org (organizationTable.orgId  = {target}.parentId)   
+) 
+

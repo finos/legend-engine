@@ -1,0 +1,1221 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::alloy::connections::*;
+
+function <<test.BeforePackage>> meta::relational::graphFetch::tests::simple::setup(): Boolean[1]
+{
+   meta::relational::tests::createTablesAndFillDb();
+}
+
+function <<test.BeforePackage>> meta::relational::graphFetch::tests::qualifier::setup(): Boolean[1]
+{
+   meta::relational::tests::createTablesAndFillDb();
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testSimpleGraphFetchWithPrimitivesOnly(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","lastName":"Smith"},{"firstName":"John","lastName":"Johnson"},'+
+      '{"firstName":"John","lastName":"Hill"},{"firstName":"Anthony","lastName":"Allen"},{"firstName":"Fabrice","lastName":"Roberts"},'+
+      '{"firstName":"Oliver","lastName":"Hill"},{"firstName":"David","lastName":"Harris"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'}  meta::relational::graphFetch::tests::simple::testSimpleGraphFetchWithPrimitivesOnlyFilterSingleObject(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName
+      }
+   }#;
+   let query = {|Person.all()->filter(x | $x.age < 22)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '{"firstName":"John","lastName":"Hill"}',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testSimpleGraphFetchWithPrimitivesOnlyFilterMultiObjects(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName
+      }
+   }#;
+   let query = {|Person.all()->filter(x | $x.age <= 22)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"John","lastName":"Johnson"},'+
+      '{"firstName":"John","lastName":"Hill"},{"firstName":"Anthony","lastName":"Allen"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testOneComplexProperty(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree, 2)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"Fabrice","lastName":"Roberts","firm":{"legalName":"Firm A"}},'+
+      '{"firstName":"Oliver","lastName":"Hill","firm":{"legalName":"Firm B"}},'+
+      '{"firstName":"David","lastName":"Harris","firm":{"legalName":"Firm C"}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testMultipleComplexProperties(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         },
+         address {
+            name,
+            type
+         }
+      }
+   }#;
+   let query = {|Person.all()->filter(x | $x.age <= 22)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '['+
+      '{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X"},"address":{"name":"New York","type":"CITY"}},'+
+      '{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X"},"address":{"name":"New York","type":"CITY"}},'+
+      '{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X"},"address":{"name":"New York","type":"CITY"}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testSelfJoinInGraph(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         lastName,
+         address {
+            name
+         },
+         manager {
+            lastName,
+            address {
+               name
+            }
+         }
+      }
+   }#;
+   let query = {|Person.all()->filter(x | $x.age <= 22)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"lastName":"Johnson","address":{"name":"New York"},"manager":{"lastName":"Allen","address":{"name":"New York"}}},'+
+      '{"lastName":"Hill","address":{"name":"New York"},"manager":{"lastName":"Johnson","address":{"name":"New York"}}},'+
+      '{"lastName":"Allen","address":{"name":"New York"},"manager":null}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testSortOrderAtTopPreserved(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         lastName,
+         address {
+            name
+         },
+         manager {
+            lastName,
+            address {
+               name
+            }
+         }
+      }
+   }#;
+   let query = {|Person.all()->filter(x | $x.age <= 22)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertEquals(
+      '[{"lastName":"Johnson","address":{"name":"New York"},"manager":{"lastName":"Allen","address":{"name":"New York"}}},'+
+      '{"lastName":"Hill","address":{"name":"New York"},"manager":{"lastName":"Johnson","address":{"name":"New York"}}},'+
+      '{"lastName":"Allen","address":{"name":"New York"},"manager":null}]',
+      $result
+   );
+
+   let query2 = {|Person.all()->filter(x | $x.age <= 22)->sortBy(#/Person/lastName#)->graphFetch($tree)->serialize($tree)};
+
+   let result2 = execute($query2, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertEquals(
+      '[{"lastName":"Allen","address":{"name":"New York"},"manager":null},'+
+      '{"lastName":"Johnson","address":{"name":"New York"},"manager":{"lastName":"Allen","address":{"name":"New York"}}},'+
+      '{"lastName":"Hill","address":{"name":"New York"},"manager":{"lastName":"Johnson","address":{"name":"New York"}}}]',
+      $result2
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testToManyComplexProperty(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         legalName,
+         address {
+            name
+         },
+         employees {
+            lastName
+         }
+      }
+   }#;
+   let query = {|Firm.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"legalName":"Firm X","address":{"name":"New York"},"employees":[{"lastName":"Smith"},{"lastName":"Johnson"},{"lastName":"Hill"},{"lastName":"Allen"}]},' +
+       '{"legalName":"Firm A","address":{"name":"Cupertino"},"employees":[{"lastName":"Roberts"}]},' +
+       '{"legalName":"Firm B","address":{"name":"Tokyo"},"employees":[{"lastName":"Hill"}]},' +
+       '{"legalName":"Firm C","address":{"name":"Mountain View"},"employees":[{"lastName":"Harris"}]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testMappingFilter(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         legalName,
+         address {
+            name
+         }
+      }
+   }#;
+   let query = {|Firm.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMappingWithFilter;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '{"legalName":"Firm X","address":{"name":"New York"}}',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testMappingFilterForProperty(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMappingWithFilter;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"Fabrice","lastName":"Roberts","firm":null},'+
+      '{"firstName":"Oliver","lastName":"Hill","firm":null},'+
+      '{"firstName":"David","lastName":"Harris","firm":null}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchWithSize(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree, 1)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"Fabrice","lastName":"Roberts","firm":{"legalName":"Firm A"}},'+
+      '{"firstName":"Oliver","lastName":"Hill","firm":{"legalName":"Firm B"}},'+
+      '{"firstName":"David","lastName":"Harris","firm":{"legalName":"Firm C"}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_20_0'} meta::relational::graphFetch::tests::simple::testRelationalGraphFetchWithAlloySerializationConfig(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName,
+         age,
+         firm {
+            legalName,
+            address {
+               type
+            }
+         }
+      }
+   }#;
+   let alloyConfig = alloyConfig(true, true, true, true, '@type', true, true);
+
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree, $alloyConfig)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjoxfQ","value":{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":23}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjoyfQ","value":{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":22}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjozfQ","value":{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":12}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo0fQ","value":{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":22}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo1fQ","value":{"firstName":"Fabrice","lastName":"Roberts","firm":{"legalName":"Firm A","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":34}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo2fQ","value":{"firstName":"Oliver","lastName":"Hill","firm":{"legalName":"Firm B","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":32}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo3fQ","value":{"firstName":"David","lastName":"Harris","firm":{"legalName":"Firm C","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":35}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testObjectReferenceInUsingResultReferences(): Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let tree1 = #{
+      Person {
+         firstName
+      }
+   }#;
+   let alloyConfig = alloyConfig(true, true, true, true, '@type', true, true);
+   let query1 = {|Person.all()->graphFetch($tree1)->serialize($tree1, $alloyConfig)};
+   let result1 = execute($query1, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let references = $result1->meta::json::parseJSON()->cast(@meta::json::JSONArray).values->cast(@meta::json::JSONObject)
+                       ->map(x | $x->meta::json::getValue('objectReference')->cast(@meta::json::JSONString).value);
+   assertSameElements(
+      [
+          'ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo0fQ',
+          'ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo1fQ',
+          'ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo2fQ',
+          'ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo3fQ',
+          'ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjoxfQ',
+          'ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjoyfQ',
+          'ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjozfQ'
+      ],
+      $references
+   );
+
+   let tree2 = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+
+   let referenceSubset = $references->take(3);
+   let query2 = {|Person.all()->filter(p | $p->objectReferenceIn($referenceSubset))->graphFetch($tree2)->serialize($tree2)};
+   let result2 = execute($query2, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X"}},'+
+      '{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X"}}]',
+      $result2
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchWithManyMultiplicityPrimitiveProperty(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         otherNames
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree, 1)->serialize($tree)};
+   let mapping = meta::relational::tests::PersonOtherNamesMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","otherNames":["abc","def","ghi"]},' +
+       '{"firstName":"John","otherNames":["jkl","mno"]},' +
+       '{"firstName":"John","otherNames":[]},' +
+       '{"firstName":"Anthony","otherNames":[]},' +
+       '{"firstName":"Fabrice","otherNames":[]},' +
+       '{"firstName":"Oliver","otherNames":[]},' +
+       '{"firstName":"David","otherNames":[]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchDataTypes(): Boolean[1]
+{
+   meta::relational::tests::mapping::dataType::setUp();
+
+   let tree = #{
+      meta::relational::tests::mapping::dataType::model::domain::DataDBTypes {
+         tinyInt,
+         smallInt,
+         integer,
+         bigInt,
+         varchar,
+         char,
+         date,
+         timestamp,
+         float,
+         double,
+         decimalAsFloat,
+         // real,
+         numericAsFloat,
+         bit,
+         decimal,
+         numeric,
+         floatAsDecimal
+      }
+   }#;
+   let query = {|meta::relational::tests::mapping::dataType::model::domain::DataDBTypes.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::dataType::model::mapping::testMapping;
+   let runtime = meta::relational::tests::mapping::dataType::model::store::testDataTypeMappingRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"date":"2003-07-19","floatAsDecimal":1.1,"double":2.2,"varchar":"Something","numeric":1.23456,"tinyInt":1,"integer":3,"float":1.1,"bit":true,"smallInt":2,"char":"c","numericAsFloat":1.23456,"decimal":1.234,"bigInt":1000,"timestamp":"2003-07-19T00:00:00.000000000","decimalAsFloat":1.234},'+
+      '{"date":null,"floatAsDecimal":null,"double":null,"varchar":null,"numeric":null,"tinyInt":null,"integer":null,"float":null,"bit":null,"smallInt":null,"char":null,"numericAsFloat":null,"decimal":null,"bigInt":null,"timestamp":null,"decimalAsFloat":null},'+
+      '{"date":null,"floatAsDecimal":null,"double":null,"varchar":null,"numeric":null,"tinyInt":2,"integer":null,"float":null,"bit":false,"smallInt":null,"char":null,"numericAsFloat":null,"decimal":null,"bigInt":null,"timestamp":null,"decimalAsFloat":null}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchWithTableMapperPostProcessor():Boolean[1]
+{
+   let query = {|Firm.all()->graphFetch(#{Firm{legalName,employees{firstName}}}#)->serialize(#{Firm{legalName,employees{firstName}}}#)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+
+   let runtime = ^meta::pure::runtime::Runtime
+                 (
+                    connections = ^RelationalDatabaseConnection
+                    (
+                       element = meta::relational::tests::db,
+                       type = meta::relational::runtime::DatabaseType.H2,
+                       datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
+                       authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
+                       postProcessors = ^MapperPostProcessor(mappers = ^TableNameMapper(schema = ^SchemaNameMapper(from = 'default', to = 'default'), from = 'personTable' , to = 'differentPersonTable'))
+                    )
+                 );
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"legalName":"Firm X","employees":[]},{"legalName":"Firm A","employees":[]},{"legalName":"Firm B","employees":[]},{"legalName":"Firm C","employees":[]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchWithViewRootFlat(): Boolean[1]
+{
+   let tree = #{
+      OrderPnl {
+         pnl,
+         supportContactName
+      }
+   }#;
+   let query = {|OrderPnl.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"pnl":100.0,"supportContactName":"Peter Smith"},' +
+      '{"pnl":200.0,"supportContactName":"John Johnson"},' +
+      '{"pnl":150.0,"supportContactName":"John Johnson"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchWithViewRootNested(): Boolean[1]
+{
+   let tree = #{
+      OrderPnl {
+         pnl,
+         supportContactName,
+         order {
+            id,
+            date,
+            quantity
+         }
+      }
+   }#;
+   let query = {|OrderPnl.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"pnl":100.0,"supportContactName":"Peter Smith","order":{"date":"2014-12-01","quantity":25.0,"id":1}},' +
+      '{"pnl":200.0,"supportContactName":"John Johnson","order":{"date":"2014-12-01","quantity":320.0,"id":2}},' +
+      '{"pnl":150.0,"supportContactName":"John Johnson","order":{"date":"2014-12-02","quantity":300.0,"id":4}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchWithViewRootNestedDeep(): Boolean[1]
+{
+   let tree = #{
+      AccountPnl {
+         pnl,
+         account {
+            name,
+            'category': accountCategory,
+            trades {
+               id,
+               date,
+               quantity,
+               product {
+                  name
+               }
+            }
+         }
+      }
+   }#;
+   let query = {|AccountPnl.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[' +
+      '  {' +
+      '    "account":     {' +
+      '      "name": "Account 1",' +
+      '      "trades": [' +
+      '        {' +
+      '          "date": "2014-12-01",' +
+      '          "product":           {' +
+      '            "name": "Firm X"' +
+      '          },' +
+      '          "quantity": 25.0,' +
+      '          "id": 1' +
+      '        },' +
+      '        {' +
+      '          "date": "2014-12-01",' +
+      '          "product":           {' +
+      '            "name": "Firm A"' +
+      '          },' +
+      '          "quantity": 11.0,' +
+      '          "id": 3' +
+      '        },' +
+      '        {' +
+      '          "date": "2014-12-02",' +
+      '          "product":           {' +
+      '            "name": "Firm A"' +
+      '          },' +
+      '          "quantity": 32.0,' +
+      '          "id": 5' +
+      '        },' +
+      '        {' +
+      '          "date": "2014-12-03",' +
+      '          "product":           {' +
+      '            "name": "Firm C"' +
+      '          },' +
+      '          "quantity": 27.0,' +
+      '          "id": 6' +
+      '        },' +
+      '        {' +
+      '          "date": "2014-12-03",' +
+      '          "product":           {' +
+      '            "name": "Firm C"' +
+      '          },' +
+      '          "quantity": 44.0,' +
+      '          "id": 7' +
+      '        }' +
+      '      ],' +
+      '      "category": "A"' +
+      '    },' +
+      '    "pnl": 100.0' +
+      '  },' +
+      '  {' +
+      '    "account":     {' +
+      '      "name": "Account 2",' +
+      '      "trades": [' +
+      '        {' +
+      '          "date": "2014-12-01",' +
+      '          "product":           {' +
+      '            "name": "Firm X"' +
+      '          },' +
+      '          "quantity": 320.0,' +
+      '          "id": 2' +
+      '        },' +
+      '        {' +
+      '          "date": "2014-12-02",' +
+      '          "product":           {' +
+      '            "name": "Firm A"' +
+      '          },' +
+      '          "quantity": 23.0,' +
+      '          "id": 4' +
+      '        },' +
+      '        {' +
+      '          "date": "2014-12-04",' +
+      '          "product":           {' +
+      '            "name": "Firm C"' +
+      '          },' +
+      '          "quantity": 22.0,' +
+      '          "id": 8' +
+      '        },' +
+      '        {' +
+      '          "date": "2014-12-04",' +
+      '          "product":           {' +
+      '            "name": "Firm C"' +
+      '          },' +
+      '          "quantity": 45.0,' +
+      '          "id": 9' +
+      '        },' +
+      '        {' +
+      '          "date": "2014-12-04",' +
+      '          "product":           {' +
+      '            "name": "Firm C"' +
+      '          },' +
+      '          "quantity": 38.0,' +
+      '          "id": 10' +
+      '        }' +
+      '      ],' +
+      '      "category": "A"' +
+      '    },' +
+      '    "pnl": 350.0' +
+      '  }' +
+      ']',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchWithViewAtChild(): Boolean[1]
+{
+   let tree = #{
+      Account {
+         name,
+         orders {
+            id,
+            pnl,
+            pnlContact {
+               'name': name
+            }
+         }
+      }
+   }#;
+   let query = {|Account.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"name":"Account 1","orders":[{"pnlContact":{"name":"Peter Smith"},"id":1,"pnl":100.0},{"pnlContact":null,"id":3,"pnl":null}]},' +
+      '{"name":"Account 2","orders":[{"pnlContact":{"name":"John Johnson"},"id":2,"pnl":200.0},{"pnlContact":{"name":"John Johnson"},"id":4,"pnl":150.0}]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchWithGroupByViewAtChild(): Boolean[1]
+{
+   let tree = #{
+      Account {
+         name,
+         accountPnl {
+            pnl
+         }
+      }
+   }#;
+   let query = {|Account.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"name":"Account 1","accountPnl":{"pnl":100.0}},' +
+      '{"name":"Account 2","accountPnl":{"pnl":350.0}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testSimpleGraphFetchWithQualifier(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         name
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","name()":"Peter Smith"},'+
+      '{"firstName":"John","name()":"John Johnson"},'+
+      '{"firstName":"John","name()":"John Hill"},'+
+      '{"firstName":"Anthony","name()":"Anthony Allen"},'+
+      '{"firstName":"Fabrice","name()":"Fabrice Roberts"},'+
+      '{"firstName":"Oliver","name()":"Oliver Hill"},'+
+      '{"firstName":"David","name()":"David Harris"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testSimpleGraphFetchWithQualifierWithParameter(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         fullName(false),
+         nameWithTitle('Mr')
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","fullName(false)":"Peter Smith","nameWithTitle(\'Mr\')":"Mr Peter Smith"},'+
+      '{"firstName":"John","fullName(false)":"John Johnson","nameWithTitle(\'Mr\')":"Mr John Johnson"},'+
+      '{"firstName":"John","fullName(false)":"John Hill","nameWithTitle(\'Mr\')":"Mr John Hill"},'+
+      '{"firstName":"Anthony","fullName(false)":"Anthony Allen","nameWithTitle(\'Mr\')":"Mr Anthony Allen"},'+
+      '{"firstName":"Fabrice","fullName(false)":"Fabrice Roberts","nameWithTitle(\'Mr\')":"Mr Fabrice Roberts"},'+
+      '{"firstName":"Oliver","fullName(false)":"Oliver Hill","nameWithTitle(\'Mr\')":"Mr Oliver Hill"},'+
+      '{"firstName":"David","fullName(false)":"David Harris","nameWithTitle(\'Mr\')":"Mr David Harris"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testSimpleGraphFetchAliasing(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         'fn' : name,
+         'title' : nameWithTitle('Mr')
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","fn":"Peter Smith","title":"Mr Peter Smith"},'+
+      '{"firstName":"John","fn":"John Johnson","title":"Mr John Johnson"},'+
+      '{"firstName":"John","fn":"John Hill","title":"Mr John Hill"},'+
+      '{"firstName":"Anthony","fn":"Anthony Allen","title":"Mr Anthony Allen"},'+
+      '{"firstName":"Fabrice","fn":"Fabrice Roberts","title":"Mr Fabrice Roberts"},'+
+      '{"firstName":"Oliver","fn":"Oliver Hill","title":"Mr Oliver Hill"},'+
+      '{"firstName":"David","fn":"David Harris","title":"Mr David Harris"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testNestedQualifier(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         legalName,
+         address {
+            name
+         },
+         employees {
+            'fn' : fullName(true),
+            age
+         }
+      }
+   }#;
+   let query = {|Firm.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"legalName":"Firm X","address":{"name":"New York"},"employees":[{"fn":"Smith, Peter","age":23},{"fn":"Johnson, John","age":22},{"fn":"Hill, John","age":12},{"fn":"Allen, Anthony","age":22}]},' +
+       '{"legalName":"Firm A","address":{"name":"Cupertino"},"employees":[{"fn":"Roberts, Fabrice","age":34}]},' +
+       '{"legalName":"Firm B","address":{"name":"Tokyo"},"employees":[{"fn":"Hill, Oliver","age":32}]},' +
+       '{"legalName":"Firm C","address":{"name":"Mountain View"},"employees":[{"fn":"Harris, David","age":35}]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testFilteringQualifier(): Boolean[1]
+{
+   let tree = #{
+      Product {
+         name,
+         cusip
+      }
+   }#;
+   let query = {|Product.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"name":"Firm X","cusip()":"CUSIP1"},'+
+      '{"name":"Firm A","cusip()":"CUSIP2"},'+
+      '{"name":"Firm C","cusip()":"CUSIP3"},'+
+      '{"name":"Firm D","cusip()":null}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testFilteringQualifierMulti(): Boolean[1]
+{
+   let tree = #{
+      Product {
+         name,
+         cusip,
+         isin
+      }
+   }#;
+   let query = {|Product.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"name":"Firm X","cusip()":"CUSIP1", "isin()":"ISIN1"},'+
+      '{"name":"Firm A","cusip()":"CUSIP2","isin()":"ISIN2"},'+
+      '{"name":"Firm C","cusip()":"CUSIP3","isin()":"ISIN3"},'+
+      '{"name":"Firm D","cusip()":null,"isin()":null}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testEnumParameter(): Boolean[1]
+{
+   let tree = #{
+      Product {
+         name,
+         'CUSIP' : synonymByType(ProductSynonymType.CUSIP) {
+            name
+         }
+      }
+   }#;
+   let query = {|Product.all()->filter(x | $x.synonyms->exists(y | $y.type == ProductSynonymType.CUSIP))->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"name":"Firm X","CUSIP":{"name":"CUSIP1"}},'+
+      '{"name":"Firm A","CUSIP":{"name":"CUSIP2"}},'+
+      '{"name":"Firm C","CUSIP":{"name":"CUSIP3"}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testSubAggregationInQualifier(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         legalName,
+         averageEmployeesAge(),
+         employees {
+            'fn' : fullName(true),
+            age
+         }
+      }
+   }#;
+   let query = {|Firm.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"legalName":"Firm X","averageEmployeesAge()":39.5,"employees":[{"fn":"Smith, Peter","age":23},{"fn":"Johnson, John","age":22},{"fn":"Hill, John","age":12},{"fn":"Allen, Anthony","age":22}]},' +
+       '{"legalName":"Firm A","averageEmployeesAge()":68.0,"employees":[{"fn":"Roberts, Fabrice","age":34}]},' +
+       '{"legalName":"Firm B","averageEmployeesAge()":64.0,"employees":[{"fn":"Hill, Oliver","age":32}]},' +
+       '{"legalName":"Firm C","averageEmployeesAge()":70.0,"employees":[{"fn":"Harris, David","age":35}]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testIsEmptyInQualifier(): Boolean[1]
+{
+   let tree = #{
+      Trade {
+         id,
+         'prod' : productDescription()
+      }
+   }#;
+   let query = {|Trade.all()->filter(x | $x.id > 8)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":9,"prod":"Firm C"},'+
+      '{"id":10,"prod":"Firm C"},'+
+      '{"id":11,"prod":"Unknown"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testIsNotEmptyInQualifier(): Boolean[1]
+{
+   let tree = #{
+      Trade {
+         id,
+         'acc' : accountDescription()
+      }
+   }#;
+   let query = {|Trade.all()->filter(x | $x.id > 8)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":9,"acc":"Account 2"},'+
+      '{"id":10,"acc":"Account 2"},'+
+      '{"id":11,"acc":"Unknown"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testQualifierInsideQualifier(): Boolean[1]
+{
+   let tree = #{
+      Trade {
+         id,
+         'init' : initiator() {
+            firstName
+         }
+      }
+   }#;
+   let query = {|Trade.all()->filter(x | $x.id < 3)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":1,"init":{"firstName":"Peter"}},'+
+      '{"id":2,"init":null}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testInScopeVariable(): Boolean[1]
+{
+   let query = {|
+      let var = 'Mr';
+      Person.all()->graphFetch(
+         #{
+            Person {
+               firstName,
+               fullName(false),
+               nameWithTitle($var)
+            }
+         }#
+      )->serialize(
+         #{
+            Person {
+               firstName,
+               fullName(false),
+               'nwt' : nameWithTitle($var)
+            }
+         }#
+      );
+   };
+
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","fullName(false)":"Peter Smith","nwt":"Mr Peter Smith"},'+
+      '{"firstName":"John","fullName(false)":"John Johnson","nwt":"Mr John Johnson"},'+
+      '{"firstName":"John","fullName(false)":"John Hill","nwt":"Mr John Hill"},'+
+      '{"firstName":"Anthony","fullName(false)":"Anthony Allen","nwt":"Mr Anthony Allen"},'+
+      '{"firstName":"Fabrice","fullName(false)":"Fabrice Roberts","nwt":"Mr Fabrice Roberts"},'+
+      '{"firstName":"Oliver","fullName(false)":"Oliver Hill","nwt":"Mr Oliver Hill"},'+
+      '{"firstName":"David","fullName(false)":"David Harris","nwt":"Mr David Harris"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testInScopeVariableBoolean(): Boolean[1]
+{
+   let query = {|
+      let var = 'Mr';
+      let boolVar = false;
+      Person.all()->graphFetch(
+         #{
+            Person {
+               firstName,
+               fullName($boolVar),
+               nameWithTitle($var)
+            }
+         }#
+      )->serialize(
+         #{
+            Person {
+               firstName,
+               fullName($boolVar),
+               'nwt' : nameWithTitle($var)
+            }
+         }#
+      );
+   };
+
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","fullName($boolVar)":"Peter Smith","nwt":"Mr Peter Smith"},'+
+      '{"firstName":"John","fullName($boolVar)":"John Johnson","nwt":"Mr John Johnson"},'+
+      '{"firstName":"John","fullName($boolVar)":"John Hill","nwt":"Mr John Hill"},'+
+      '{"firstName":"Anthony","fullName($boolVar)":"Anthony Allen","nwt":"Mr Anthony Allen"},'+
+      '{"firstName":"Fabrice","fullName($boolVar)":"Fabrice Roberts","nwt":"Mr Fabrice Roberts"},'+
+      '{"firstName":"Oliver","fullName($boolVar)":"Oliver Hill","nwt":"Mr Oliver Hill"},'+
+      '{"firstName":"David","fullName($boolVar)":"David Harris","nwt":"Mr David Harris"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testQualifierWithManyMultiplicityParameter_EmptyInput(): Boolean[1]
+{
+   let tree = #{
+      Product {
+         name,
+         'synonyms' : synonymsByTypes([])
+      }
+   }#;
+   let query = {|Product.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"synonyms":[],"name":"Firm X"},{"synonyms":[],"name":"Firm A"},{"synonyms":[],"name":"Firm C"},{"synonyms":[],"name":"Firm D"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testQualifierWithManyMultiplicityParameter_OneInput(): Boolean[1]
+{
+   let tree = #{
+      Product {
+         name,
+         'synonyms' : synonymsByTypes([ProductSynonymType.CUSIP])
+         {
+            typeAsString,
+            name,
+            type
+         }
+      }
+   }#;
+   let query = {|Product.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"synonyms":[{"typeAsString":"CUSIP","name":"CUSIP1","type":"CUSIP"}],"name":"Firm X"},'+
+      '{"synonyms":[{"typeAsString":"CUSIP","name":"CUSIP2","type":"CUSIP"}],"name":"Firm A"},'+
+      '{"synonyms":[{"typeAsString":"CUSIP","name":"CUSIP3","type":"CUSIP"}],"name":"Firm C"},'+
+      '{"synonyms":[],"name":"Firm D"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::qualifier::testQualifierWithManyMultiplicityParameter_MultiInputs(): Boolean[1]
+{
+   let tree = #{
+      Product {
+         name,
+         'synonyms' : synonymsByTypes([ProductSynonymType.CUSIP, ProductSynonymType.ISIN])
+         {
+            typeAsString,
+            name,
+            type
+         }
+      }
+   }#;
+   let query = {|Product.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"synonyms":[{"typeAsString":"CUSIP","name":"CUSIP1","type":"CUSIP"},{"typeAsString":"ISIN","name":"ISIN1","type":"ISIN"}],"name":"Firm X"},' +
+       '{"synonyms":[{"typeAsString":"CUSIP","name":"CUSIP2","type":"CUSIP"},{"typeAsString":"ISIN","name":"ISIN2","type":"ISIN"}],"name":"Firm A"},' +
+       '{"synonyms":[{"typeAsString":"CUSIP","name":"CUSIP3","type":"CUSIP"},{"typeAsString":"ISIN","name":"ISIN3","type":"ISIN"}],"name":"Firm C"},' +
+       '{"synonyms":[],"name":"Firm D"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::relational::graphFetch::tests::simple::testSimpleGraphFetchCheckedWithPrimitivesOnly(): Boolean[1]
+{
+   let tree = #{
+      PersonWithConstraints {
+         firstName,
+         lastName
+      }
+   }#;
+   let query = {|PersonWithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[ { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "Peter", "lastName": "Smith" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "John", "lastName": "Johnson" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "John", "lastName": "Hill" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "Anthony", "lastName": "Allen" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "Fabrice", "lastName": "Roberts" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "Oliver", "lastName": "Hill" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "David", "lastName": "Harris" } }]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::relational::graphFetch::tests::simple::testSimpleGraphFetchCheckedWithPrimitivesOnlyNoDefects(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName
+      }
+   }#;
+   let query = {|Person.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"defects":[],"value":{"firstName":"Peter","lastName":"Smith"}},{"defects":[],"value":{"firstName":"John","lastName":"Johnson"}},{"defects":[],"value":{"firstName":"John","lastName":"Hill"}},{"defects":[],"value":{"firstName":"Anthony","lastName":"Allen"}},{"defects":[],"value":{"firstName":"Fabrice","lastName":"Roberts"}},{"defects":[],"value":{"firstName":"Oliver","lastName":"Hill"}},{"defects":[],"value":{"firstName":"David","lastName":"Harris"}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::relational::graphFetch::tests::simple::testCheckedOneComplexProperty(): Boolean[1]
+{
+   let tree = #{
+      PersonWithConstraints {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+   let query = {|PersonWithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"Fabrice","lastName":"Roberts","firm":{"legalName":"Firm A"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"Oliver","lastName":"Hill","firm":{"legalName":"Firm B"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"David","lastName":"Harris","firm":{"legalName":"Firm C"}}}]',
+      $result
+   );
+}

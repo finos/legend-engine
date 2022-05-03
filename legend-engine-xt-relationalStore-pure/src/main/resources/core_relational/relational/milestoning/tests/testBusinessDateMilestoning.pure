@@ -1,0 +1,764 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::relational::validation::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::mapping::*;
+import meta::pure::runtime::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::milestoning::*;
+
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::milestoning::businessdate::*;
+
+function <<test.BeforePackage>> meta::relational::tests::milestoning::businessdate::setUp():Any[0..1]
+{
+   initDatabase();
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testConstraintUsageOfThisMilestoningContext1():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = validate(|ProductWithConstraint1.all($busDate),meta::relational::tests::milestoning::milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure property: systemDescription is processed with the correct milestoning date, note that there are no milestoning properties on its left through which a date could be propagated\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" left outer join SystemTable as "systemtable_0" on ("root".referenceSystemName = "systemtable_0".name) left outer join SystemDescriptionTable as "systemdescriptiontable_0" on ("systemtable_0".name = "systemdescriptiontable_0".systemName and "systemdescriptiontable_0".from_z <= \'2015-10-16\' and "systemdescriptiontable_0".thru_z > \'2015-10-16\') where not char_length("systemdescriptiontable_0".description) < 10 and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testConstraintUsageOfThisMilestoningContext1b():Boolean[1]
+{
+   let busDate = %2015-10-16;//parent milestoning context not propagated through map
+   let result = validate(|ProductWithConstraint1b.all($busDate),meta::relational::tests::milestoning::milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure Ensure parent (this) milestoning context propagated through (auto) map\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" left outer join SystemTable as "systemtable_0" on ("root".referenceSystemName = "systemtable_0".name) left outer join SystemDescriptionTable as "systemdescriptiontable_0" on ("systemtable_0".name = "systemdescriptiontable_0".systemName and "systemdescriptiontable_0".from_z <= \'2015-10-16\' and "systemdescriptiontable_0".thru_z > \'2015-10-16\') where not char_length("systemdescriptiontable_0".description) < 10 and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testConstraintUsageOfThisMilestoningContext1c():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = validate(|ProductWithConstraint1c.all($busDate),meta::relational::tests::milestoning::milestoningmapwithconstraints, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure parent (this) milestoning context propagated through project\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" left outer join (select distinct "systemtable_0".name from ProductTable as "root" left outer join SystemTable as "systemtable_0" on ("root".referenceSystemName = "systemtable_0".name) left outer join (select "systemdescriptiontable_1".systemName as systemName, "systemdescriptiontable_1".description as description from SystemDescriptionTable as "systemdescriptiontable_1" where "systemdescriptiontable_1".from_z <= \'2015-10-16\' and "systemdescriptiontable_1".thru_z > \'2015-10-16\') as "systemdescriptiontable_0" on ("systemtable_0".name = "systemdescriptiontable_0".systemName)) as "producttable_1" on ("root".referenceSystemName = "producttable_1".name) where not (not "producttable_1".name is null) and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testConstraintUsageOfThisMilestoningContext2():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = validate(|ProductWithConstraint2.all($busDate),meta::relational::tests::milestoning::milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure property: exchange is processed with the correct milestoning date, and that the milestoning property on the left (classification) is not propagagted\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2019-01-01\' and "productclassificationtable_0".thru_z > \'2019-01-01\') left outer join ProductExchangeTable as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-16\' and "productexchangetable_0".thru_z > \'2015-10-16\') where not char_length("productexchangetable_0".name) is null and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testConstraintUsageOfThisMilestoningContext2WithNonTemporalStore():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = validate(|ProductWithConstraint2.all($busDate),meta::relational::tests::milestoning::noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure property: exchange is processed with the correct milestoning date, and that the milestoning property on the left (classification) is not propagagted\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTableNoMilestoning as "root" left outer join ProductClassificationTableNoMilestoning as "productclassificationtablenomilestoning_0" on ("root".type = "productclassificationtablenomilestoning_0".type) left outer join ProductExchangeTableNoMilestoning as "productexchangetablenomilestoning_0" on ("productclassificationtablenomilestoning_0".exchange = "productexchangetablenomilestoning_0".name) where not char_length("productexchangetablenomilestoning_0".name) is null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testConstraintUsageOfThisMilestoningContext3():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = validate(|ProductWithConstraint3.all($busDate),meta::relational::tests::milestoning::milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure that milestoning qualified properties passed function arguments which reference $this.temporalDate are processed correctly\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'2015-10-16\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'2015-10-16\')) left outer join ProductExchangeTable as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-16\' and "productexchangetable_0".thru_z > \'2015-10-16\') where ("productexchangetable_0".name <> \'exchangeName\' OR "productexchangetable_0".name is null) and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::businessdate::testConstraintUsageOfVarReferenceWithThisMilestoningContext():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = validate(|OrderWithConstraint.all($busDate),meta::relational::tests::milestoning::milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure that milestoning qualified properties passed function arguments which reference $this.temporalDate are processed correctly\' as "MESSAGE", "root".id as "id" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id) where not not not exists(select 1 from ProductExchangeTable as "productexchangetable_0" where "productexchangetable_0".from_z <= \'2015-10-16\' and "productexchangetable_0".thru_z > \'2015-10-16\' and "producttable_0".from_z <= "root".orderDate and "producttable_0".thru_z > "root".orderDate and ("producttable_0".exchange = "productexchangetable_0".name OR ("producttable_0".exchange is null AND "productexchangetable_0".name is null)))', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testPopulationOfMilestonedThisBusinessDatesInProject():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = execute(|Product.all($busDate)->project([p|$p.name, p|$p.classificationTypeStr],['name','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName2,STOCK', 'ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".name as "name", "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);   
+
+   let result2 = execute(|Order.all()->project([o|$o.id, o|$o.product($busDate).name, o|$o.product($busDate).classificationType],['orderId','productName','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds2 = $result2.values->at(0);
+   assertEquals(['1,TDSNull,TDSNull', '2,ProductName2,STOCK'],$tds2.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".id as "orderId", "producttable_0".name as "productName", "productclassificationtable_0".type as "classificationType" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-10-16\' and "producttable_0".thru_z > \'2015-10-16\') left outer join (select "productclassificationtable_1".type as type from ProductClassificationTable as "productclassificationtable_1" where "productclassificationtable_1".from_z <= \'2015-10-16\' and "productclassificationtable_1".thru_z > \'2015-10-16\') as "productclassificationtable_0" on ("producttable_0".type = "productclassificationtable_0".type)',$result2);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestonedThisBusinessDateInPosition1InQualfiedPropertySequence():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = execute(|Product.all($busDate)->project([p|$p.name, p|$p.classificationExchangeName1],['name','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertSameSQL('select "root".name as "name", "productexchangetable_0".name as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= \'2019-01-01\' and "productexchangetable_1".thru_z > \'2019-01-01\') as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);   
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestonedThisBusinessDateInPosition2InQualfiedPropertySequence():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = execute(|Product.all($busDate)->project([p|$p.name, p|$p.classificationExchangeName2],['name','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertSameSQL('select "root".name as "name", "productexchangetable_0".name as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2019-01-01\' and "productclassificationtable_0".thru_z > \'2019-01-01\') left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= \'2015-10-16\' and "productexchangetable_1".thru_z > \'2015-10-16\') as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);   
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestonedThisBusinessDateUsedAsParameterToFunctionParametersOfMilestonedQualifiedProperty():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = execute(|Product.all($busDate)->project([p|$p.name, p|$p.classificationExchangeName3],['name','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertSameSQL('select "root".name as "name", "productexchangetable_0".name as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'2015-10-16\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'2015-10-16\')) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= dateadd(DAY, 1, \'2015-10-16\') and "productexchangetable_1".thru_z > dateadd(DAY, 1, \'2015-10-16\')) as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);   
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestonedThisBusinessDateUsedAsParameterToFunctionInMilestoningQualifiedPropertyMappedToView():Boolean[1]
+{
+   let connection = testRuntime().connections->filter(c|$c->instanceOf(DatabaseConnection))->first()->toOne()->cast(@TestDatabaseConnection);
+   let busDate = %2015-10-16;
+   let result = validate(|OrderPnlWithConstraint.all($busDate),meta::relational::tests::milestoning::ViewChainMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Constraint to ensure that $this.businessDate milestoning property is processed correctly when mapped to a View\' as "MESSAGE", "root".ID as "ID" from orderPNL as "root" left outer join (select "intermediate_1".joinId as joinId, "producttableview_0".link as link from intermediate as "intermediate_1" inner join (select "root".joinId as j, "root".linkToProduct as l, "root".type as n, dateadd(DAY, -1, \'2015-10-16\') as "k_businessDate" from intermediateTwo as "root") as "intertwoview_0" on ("intermediate_1".joinId = "intertwoview_0".j) left outer join (select "root".name as name, "root".type as type, "root".ID as link, dateadd(DAY, -1, \'2015-10-16\') as "k_businessDate" from ProductTable as "root") as "producttableview_0" on ("intertwoview_0".l = "producttableview_0".link)) as "intermediate_0" on ("root".ID = "intermediate_0".joinId) left outer join (select "intermediate_3".joinId as joinId, "intertwoview_1".l as l from intermediate as "intermediate_3" inner join (select "root".joinId as j, "root".linkToProduct as l, "root".type as n, dateadd(DAY, -1, \'2015-10-16\') as "k_businessDate" from intermediateTwo as "root") as "intertwoview_1" on ("intermediate_3".joinId = "intertwoview_1".j)) as "intermediate_2" on ("root".ID = "intermediate_2".joinId) left outer join (select "root".name as name, "root".type as type, "root".ID as link, dateadd(DAY, -1, \'2015-10-16\') as "k_businessDate" from ProductTable as "root") as "producttableview_1" on ("intermediate_2".l = "producttableview_1".link) where not ("intermediate_0".link is not null and "producttableview_1".link > 0)',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestonedQualifiedPropertyWithDateProvidedByFunction():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = execute(|Product.all($busDate)->project([p|$p.name, p|$p.classification(constantDate()).type],['name','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertSameSQL('select "root".name as "name", "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-01-01\' and "productclassificationtable_0".thru_z > \'2015-01-01\') where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);   
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testViewChainsWithBusinessDate():Boolean[1]
+{
+   let connection = testRuntime().connections->filter(c|$c->instanceOf(DatabaseConnection))->first()->toOne()->cast(@TestDatabaseConnection);
+   let businessDate = %2018-07-31;
+   let result = toSQL(|OrderPnl.all($businessDate)->project([x|$x.product.name],['name']), ViewChainMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).toSQLString($connection.type, $connection.timeZone, $connection.quoteIdentifiers, ^meta::relational::functions::sqlQueryToString::Format(newLine='', indent=''));
+   assertSameSQL('select "producttableview_0".name as "name" from orderPNL as "root" left outer join (select "intermediate_1".joinId as joinId, "intertwoview_0".l as l from intermediate as "intermediate_1" inner join (select "root".joinId as j, "root".linkToProduct as l, "root".type as n, \'2018-07-31\' as "k_businessDate" from intermediateTwo as "root") as "intertwoview_0" on ("intermediate_1".joinId = "intertwoview_0".j)) as "intermediate_0" on ("root".ID = "intermediate_0".joinId) left outer join (select "root".name as name, "root".type as type, "root".ID as link, \'2018-07-31\' as "k_businessDate" from ProductTable as "root") as "producttableview_0" on ("intermediate_0".l = "producttableview_0".link)',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testThisBusinessDateUsageInQualifiedProperty():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Product.all($businessDate), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals(2, $products->size());
+   assertEquals([$businessDate,$businessDate], $products->map(p|$p.businessDate));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::latestDate::testPopulationOfLatestMilestonedDateInQuery():Boolean[1]
+{
+   let result = execute(|Product.all(%latest), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals([2,3], $products.id);
+   assertEquals([%9999-12-31T00:00:00.0000+0000, %9999-12-31T00:00:00.0000+0000], $products.businessDate);
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'9999-12-31T00:00:00.0000+0000\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".thru_z = \'9999-12-31 00:00:00.0000\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".thru_z = \'9999-12-31 00:00:00.0000\') where "root".thru_z = \'9999-12-31 00:00:00.0000\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testPopulationOfMilestonedBusinessDateWithTimeComponentInQuery():Boolean[1]
+{
+   let result = execute(|Product.all(%2015-10-16T00:00:01.000), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals(2, $products->size());
+   assertEquals([%2015-10-16T00:00:01.000,%2015-10-16T00:00:01.000], $products->map(p|$p.businessDate));
+}
+
+function <<test.Test,test.ToFix>> meta::relational::tests::milestoning::businessdate::testPopulationOfMilestonedBusinessDateInProject():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Product.all($businessDate)->project([p|$p.businessDate],['businessDate']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assert(false);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testQueryOfMilestonedTypeWithFilterInMapping():Boolean[1]
+{
+   let result = execute(|StockProduct.all(%2015-10-16), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals(1, $products->size());
+   assertEquals([2], $products->map(p|$p.id));
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", \'2015-10-16\' as "k_businessDate" from ProductTable as "root" where "root".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::latestDate::testQueryOfMilestonedTypeUsingLatestWithFilterInMapping():Boolean[1]
+{
+   let result = execute(|StockProduct.all(%latest), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", \'9999-12-31T00:00:00.0000+0000\' as "k_businessDate" from ProductTable as "root" where "root".type = \'STOCK\' and "root".thru_z = \'9999-12-31 00:00:00.0000\'',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningQueryWithMilestoneFilterANdDifferentDatesOnTypeAndProperty():Boolean[1]
+{
+   let date = %2015-10-16;
+   let result = execute(|Product.all($date)->filter(p|$p.classification($date).type=='STOCK' && $p.exchange(%2015-10-17).name=='LNSE'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals(1, $products->size());
+   assertEquals('ProductName2', $products->at(0).name);
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'2015-10-16\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".from_z <= \'2015-10-16\' and "stockproducttable_0".thru_z > \'2015-10-16\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2015-10-16\' and "productclassificationtable_1".thru_z > \'2015-10-16\') left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-17\' and "productexchangetable_0".thru_z > \'2015-10-17\') where ("productclassificationtable_1".type = \'STOCK\' and "productexchangetable_0".name = \'LNSE\') and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::latestDate::testMilestoningQueryWithMilestoneFilterAndDifferentDatesOnTypeWithLatestDateOnProperty():Boolean[1]
+{
+   let date = %2015-10-15;
+   let result = execute(|Product.all($date)->filter(p|$p.classification(%2015-10-16).type=='STOCK' && $p.exchange(%latest).name=='LNSE'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'2015-10-15\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".from_z <= \'2015-10-15\' and "stockproducttable_0".thru_z > \'2015-10-15\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-15\' and "productclassificationtable_0".thru_z > \'2015-10-15\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2015-10-16\' and "productclassificationtable_1".thru_z > \'2015-10-16\') left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".thru_z = \'9999-12-31 00:00:00.0000\') where ("productclassificationtable_1".type = \'STOCK\' and "productexchangetable_0".name = \'LNSE\') and "root".from_z <= \'2015-10-15\' and "root".thru_z > \'2015-10-15\'', $result);
+}
+
+function <<test.ToFix>> meta::relational::tests::milestoning::businessdate::testMilestoningQueryWithMultipleChildrenFromParentAsSourceForMilestoningFilter():Boolean[1]
+{
+   let result = execute(|Product.all(%2015-10-16)->map(p|$p.classification(%2015-10-16).type), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let productTypes = $result.values;
+   assertEquals(1, $productTypes->size());
+   assertEquals(['ProductName2'], $productTypes);
+   assertSameSQL('select "root".name as "pk_0", "root".id as "id", "root".name as "name", "root".type as "type", "ProductDescriptionTable_d#2_l_d#2_m4_r".description as "stockProductName", "ProductClassificationTable_d#2_d#2_m5".type as "classificationType", \'2015-10-16\' as \"k_businessDate\" from ProductTable as "root" left outer join StockProductTable as "StockProductTable_d#2_d#2_m4" on ("root".id = "StockProductTable_d#2_d#2_m4".id and "StockProductTable_d#2_d#2_m4".from_z <= \'2015-10-16\' and "StockProductTable_d#2_d#2_m4".thru_z > \'2015-10-16\') left outer join ProductDescriptionTable as "ProductDescriptionTable_d#2_l_d#2_m4_r" on ("StockProductTable_d#2_d#2_m4".id = "ProductDescriptionTable_d#2_l_d#2_m4_r".id) left outer join ProductClassificationTable as "ProductClassificationTable_d#2_d#2_m5" on ("root".type = "ProductClassificationTable_d#2_d#2_m5".type and "ProductClassificationTable_d#2_d#2_m5".from_z <= \'2015-10-16\' and "ProductClassificationTable_d#2_d#2_m5".thru_z > \'2015-10-16\') left outer join ProductClassificationTable as "ProductClassificationTable_d#7_d_m1" on ("root".type = "ProductClassificationTable_d#7_d_m1".type) where "ProductClassificationTable_d#7_d_m1".from_z <= \'2015-10-16\' and "ProductClassificationTable_d#7_d_m1".thru_z > \'2015-10-16\' and "ProductClassificationTable_d#7_d_m1".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningQueryWithMilestoneFilterOnAssociationProperty():Boolean[1]
+{
+   let date = %2015-8-16;
+   let result = execute(|Product.all($date)->filter(p|$p.orders->exists(o|$o.id == 1)), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals(1, $products->size());
+   assertEquals('ProductName', $products->at(0).name);
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'2015-08-16\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".from_z <= \'2015-08-16\' and "stockproducttable_0".thru_z > \'2015-08-16\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-08-16\' and "productclassificationtable_0".thru_z > \'2015-08-16\') left outer join (select distinct "ordertable_1".prodFk from OrderTable as "ordertable_1" where "ordertable_1".id = 1) as "ordertable_0" on ("ordertable_0".prodFk = "root".id) where "ordertable_0".prodFk is not null and "root".from_z <= \'2015-08-16\' and "root".thru_z > \'2015-08-16\'', $result);
+}
+
+
+function <<test.ToFix>> meta::relational::tests::milestoning::businessdate::testLazyNavigationOfMilestonedProperty():Boolean[1]
+{
+   let date = %2015-10-16;
+   let result = execute(|Product.all($date)->filter(p|$p.classification($date).type=='STOCK' && $p.exchange(%2015-10-17).name=='LNSE'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals(1, $products->size());
+   assertEquals('ProductName2', $products->at(0).name);
+   false;
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testNonMilestoningQueryWithMilestoneFilterSimple():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|$o.product(%2015-10-15)->exists(p|$p.id==2)), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let orders = $result.values;
+   assertEquals(1,$orders->size());
+   assertEquals(2, $orders->at(0).id);
+   assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join (select distinct "producttable_1".id from ProductTable as "producttable_1" where "producttable_1".from_z <= \'2015-10-15\' and "producttable_1".thru_z > \'2015-10-15\' and "producttable_1".id = 2) as "producttable_0" on ("root".prodFk = "producttable_0".id) where "producttable_0".id is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::latestDate::testNonMilestoningQueryWithLatestMilestoneFilterSimple():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|$o.product(%latest)->exists(p|$p.id==2)), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join (select distinct "producttable_1".id from ProductTable as "producttable_1" where "producttable_1".thru_z = \'9999-12-31 00:00:00.0000\' and "producttable_1".id = 2) as "producttable_0" on ("root".prodFk = "producttable_0".id) where "producttable_0".id is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testNonMilestoningQueryWithMilestoneFilterOnAssociation():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|$o.ascProduct(%2015-10-15).id==2), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let orders = $result.values;
+   assertEquals(1,$orders->size());
+   assertEquals(2, $orders->at(0).id);
+   assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-10-15\' and "producttable_0".thru_z > \'2015-10-15\') where "producttable_0".id = 2', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testNonMilestoningQueryWithMilestoneFilterNoResults():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|$o.product(%2015-8-25)->exists(p|$p.id==2)), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let orders = $result.values;
+   assertEquals(0,$orders->size());
+   assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join (select distinct "producttable_1".id from ProductTable as "producttable_1" where "producttable_1".from_z <= \'2015-08-25\' and "producttable_1".thru_z > \'2015-08-25\' and "producttable_1".id = 2) as "producttable_0" on ("root".prodFk = "producttable_0".id) where "producttable_0".id is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testNonMilestoningQueryWithMilestoneFilterProject():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|$o.product(%2015-10-15)->exists(p|$p.id==2))
+                            ->project([o|$o.id,o|$o.product(%2015-10-15).name],['orderId','productName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['2,ProductName1'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".id as "orderId", "producttable_2".name as "productName" from OrderTable as "root" left outer join (select distinct "producttable_1".id from ProductTable as "producttable_1" where "producttable_1".from_z <= \'2015-10-15\' and "producttable_1".thru_z > \'2015-10-15\' and "producttable_1".id = 2) as "producttable_0" on ("root".prodFk = "producttable_0".id) left outer join ProductTable as "producttable_2" on ("root".prodFk = "producttable_2".id and "producttable_2".from_z <= \'2015-10-15\' and "producttable_2".thru_z > \'2015-10-15\') where "producttable_0".id is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testNonMilestoningQueryWithMilestoneFilterProjectUsingSamePropertyWithDifferentDates():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|$o.product(%2015-10-15)->exists(p|$p.id==2))
+                            ->project([o|$o.id,o|$o.product(%2015-10-16).name],['orderId','productName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['2,ProductName2'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".id as "orderId", "producttable_2".name as "productName" from OrderTable as "root" left outer join (select distinct "producttable_1".id from ProductTable as "producttable_1" where "producttable_1".from_z <= \'2015-10-15\' and "producttable_1".thru_z > \'2015-10-15\' and "producttable_1".id = 2) as "producttable_0" on ("root".prodFk = "producttable_0".id) left outer join ProductTable as "producttable_2" on ("root".prodFk = "producttable_2".id and "producttable_2".from_z <= \'2015-10-16\' and "producttable_2".thru_z > \'2015-10-16\') where "producttable_0".id is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningQueryWithSimpleProjectWithMilestoneFilter():Boolean[1]
+{
+   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-16).type=='STOCK' && $p.exchange(%2015-10-17).name=='LNSE')
+                                      ->project([p|$p.name, p|$p.classification(%2015-10-16).description],['name','classificationDescription']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName2,STOCK DESC-V3'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".name as "name", "productclassificationtable_0".type_description as "classificationDescription" from ProductTable as "root" left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-17\' and "productexchangetable_0".thru_z > \'2015-10-17\') left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') where ("productclassificationtable_0".type = \'STOCK\' and "productexchangetable_0".name = \'LNSE\') and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningQueryWithAggProjectWithMilestoneFilter():Boolean[1]
+{
+   let result = execute(
+             |Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-16).type=='STOCK' && $p.exchange(%2015-10-17).name=='LNSE')->project(
+                                     [
+                                        p|$p.name,
+                                        p|$p.synonyms(%2015-10-16).synonym->joinStrings('*')
+                                     ],
+                                     ['prodName','synonyms']
+                                  )
+             ,milestoningmap
+             ,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName2,GS-Mod-S1*GS-Mod-S2'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".name as "prodName", "producttable_1".aggCol as "synonyms" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-17\' and "productexchangetable_0".thru_z > \'2015-10-17\') left outer join (select "producttable_2".name as name, "producttable_2".id as id, group_concat("productsynonymtable_0".synonym separator \'*\' ) as aggCol from ProductTable as "producttable_2" left outer join ProductSynonymTable as "productsynonymtable_0" on ("producttable_2".name = "productsynonymtable_0".name and "productsynonymtable_0".from_z <= \'2015-10-16\' and "productsynonymtable_0".thru_z > \'2015-10-16\') group by "producttable_2".id,"producttable_2".name) as "producttable_1" on ("root".name = "producttable_1".name and "root".id = "producttable_1".id) where ("productclassificationtable_0".type = \'STOCK\' and "productexchangetable_0".name = \'LNSE\') and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningQueryWithGroupByFilterWithMilestoning():Boolean[1]
+{
+   let result = execute(
+             |Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-16).type=='STOCK' && $p.exchange(%2015-10-17).name=='LNSE')->groupBy(
+                                     [p|$p.name],
+                                     agg(
+                                           x|$x.synonyms(%2015-10-16).synonym,
+                                           y|$y->joinStrings('*')
+                                         ),
+                                     ['prodName', 'synonyms']
+                                  )
+             ,milestoningmap
+             ,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName2,GS-Mod-S1*GS-Mod-S2'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".name as "prodName", group_concat("productsynonymtable_0".synonym separator \'*\') as "synonyms" from ProductTable as "root" left outer join ProductSynonymTable as "productsynonymtable_0" on ("root".name = "productsynonymtable_0".name and "productsynonymtable_0".from_z <= \'2015-10-16\' and "productsynonymtable_0".thru_z > \'2015-10-16\') left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-17\' and "productexchangetable_0".thru_z > \'2015-10-17\') where ("productclassificationtable_0".type = \'STOCK\' and "productexchangetable_0".name = \'LNSE\') and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\' group by "prodName"', $result);
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::businessdate::testSimpleQueryWithParallelPathsDifferedByBusinessDate():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|or($o.product(%2015-08-15).type=='STOCK',$o.product(%2015-10-16).type=='OPTION')), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let orders = $result.values;
+   assertEquals(1,$orders->size());
+   assertEquals(1, $orders->at(0).id);
+   assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join ProductTable as "ProductTable_d#7_d_m1" on ("root".prodFk = "ProductTable_d#7_d_m1".id) left outer join ProductTable as "ProductTable_d#7_d#2_m1_d_m1" on ("root".prodFk = "ProductTable_d#7_d#2_m1_d_m1".id) where ("ProductTable_d#7_d_m1".from_z <= \'2015-08-15\' and "ProductTable_d#7_d_m1".thru_z > \'2015-08-15\' and "ProductTable_d#7_d_m1".type = \'STOCK\' or "ProductTable_d#7_d#2_m1_d_m1".from_z <= \'2015-10-16\' and "ProductTable_d#7_d#2_m1_d_m1".thru_z > \'2015-10-16\' and "ProductTable_d#7_d#2_m1_d_m1".type = \'OPTION\')',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDateInjectionFromVarReference():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|$o.product($o.orderDate->toOne()).type=='STOCK'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|Order.all()->filter(o|$o.product($o.orderDetails.settlementDate->toOne()).type=='STOCK'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   [$result, $result2]->map(r|let orders = $r.values;
+                              assertEquals(1,$orders->size());
+                              assertEquals([2], $orders->map(o|$o.id)););
+    
+   assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= "root".orderDate and "producttable_0".thru_z > "root".orderDate) where "producttable_0".type = \'STOCK\'',$result);
+   assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id) left outer join OrderDetailsTable as "orderdetailstable_0" on ("root".id = "orderdetailstable_0".id) where "producttable_0".from_z <= "orderdetailstable_0".settlementDate and "producttable_0".thru_z > "orderdetailstable_0".settlementDate and "producttable_0".type = \'STOCK\'',$result2);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDateInjectionFromVarReferenceWithProject():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|$o.product($o.orderDate->toOne()).type=='STOCK')->project(o|$o.product($o.orderDetails.settlementDate->toOne()).type,'productType'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['STOCK'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "ordertable_1".type as "productType" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= "root".orderDate and "producttable_0".thru_z > "root".orderDate) left outer join (select "ordertable_2".id as id, "orderdetailstable_0".settlementDate as settlementDate, "producttable_1".type as type from OrderTable as "ordertable_2" left outer join ProductTable as "producttable_1" on ("ordertable_2".prodFk = "producttable_1".id) left outer join OrderDetailsTable as "orderdetailstable_0" on ("ordertable_2".id = "orderdetailstable_0".id) where "producttable_1".from_z <= "orderdetailstable_0".settlementDate and "producttable_1".thru_z > "orderdetailstable_0".settlementDate) as "ordertable_1" on ("root".id = "ordertable_1".id) where "producttable_0".type = \'STOCK\'',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDateInjectionFromParentVarReferenceWithProject():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o|$o.product($o.orderDate->toOne()).type=='STOCK')->project(o|$o.product($o.orderDate->toOne())->map(p|$p.classification.type)->first(),'productType'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['STOCK'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "productclassificationtable_0".type as "productType" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= "root".orderDate and "producttable_0".thru_z > "root".orderDate) left outer join (select "productclassificationtable_1".type as type, "productclassificationtable_1".from_z as from_z, "productclassificationtable_1".thru_z as thru_z from ProductClassificationTable as "productclassificationtable_1") as "productclassificationtable_0" on ("productclassificationtable_0".from_z <= "root".orderDate and "productclassificationtable_0".thru_z > "root".orderDate and "producttable_0".type = "productclassificationtable_0".type and "productclassificationtable_0".type = \'STOCK\') where "producttable_0".type = \'STOCK\'',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDateInjectionFromVarReferenceInProjectUsingExternalFunction():Boolean[1]
+{
+   let result = execute(|Order.all()->project([o|filterOrders($o)],['orderId']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".id as "orderId" from OrderTable as "root" left outer join (select "ordertable_2".id as id from OrderTable as "ordertable_2" left outer join ProductTable as "producttable_0" on ("ordertable_2".prodFk = "producttable_0".id and "producttable_0".from_z <= "ordertable_2".orderDate and "producttable_0".thru_z > "ordertable_2".orderDate) where "producttable_0".type = \'STOCK\') as "ordertable_1" on ("root".id = "ordertable_1".id)',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDatePropagationInColFunction():Boolean[1]
+{
+   let productBusDate = %2016-01-01;
+   let result = execute(|Order.all()->project([col([o|$o.description.description],'orderDesc'),col([o|$o.product($productBusDate).name],'prodName')]), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['order description 1,TDSNull', 'order description 2,ProductName2'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "orderdescriptiontable_0".description as "orderDesc", "producttable_0".name as "prodName" from OrderTable as "root" left outer join OrderDescriptionTable as "orderdescriptiontable_0" on ("root".id = "orderdescriptiontable_0".id) left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2016-01-01\' and "producttable_0".thru_z > \'2016-01-01\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDatePropagationInColFunctionWithDoc():Boolean[1]
+{
+   let productBusDate = %2016-01-01;
+   let result = execute(|Order.all()->project([col([o|$o.description.description],'orderDesc','Spec1'),col([o|$o.product($productBusDate).name],'prodName','Spec2')]), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['order description 1,TDSNull', 'order description 2,ProductName2'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "orderdescriptiontable_0".description as "orderDesc", "producttable_0".name as "prodName" from OrderTable as "root" left outer join OrderDescriptionTable as "orderdescriptiontable_0" on ("root".id = "orderdescriptiontable_0".id) left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2016-01-01\' and "producttable_0".thru_z > \'2016-01-01\')', $result);
+}
+
+function meta::relational::tests::milestoning::businessdate::productType(order :Order[1], productBusDate:Date[1]):String[0..1]
+{
+   $order.product($productBusDate).type->first();
+}
+
+function meta::relational::tests::milestoning::businessdate::filterOrders(order :Order[1]):Integer[*]
+{
+   $order->filter(o|$o.product($o.orderDate->toOne()).type=='STOCK')->map(x|$x.id);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testQueryWithVariableRundateWithinLambda():Boolean[1]
+{
+   let result = execute({|
+      let date = %2015-10-16;
+      Product.all($date)->filter(p|$p.classification($date).type=='STOCK' && $p.exchange($date).name=='LNSE');
+   }, milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals(1, $products->size());
+   assertEquals('ProductName2', $products->at(0).name);
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'2015-10-16\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".from_z <= \'2015-10-16\' and "stockproducttable_0".thru_z > \'2015-10-16\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2015-10-16\' and "productclassificationtable_1".thru_z > \'2015-10-16\') left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-16\' and "productexchangetable_0".thru_z > \'2015-10-16\') where ("productclassificationtable_1".type = \'STOCK\' and "productexchangetable_0".name = \'LNSE\') and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testExecutionPlanForQueryWithVariableRundateWithinLambda():Boolean[1]
+{
+   let result = executionPlan({|
+      let date = %2015-10-16;
+      Product.all($date)->filter(p|$p.classification($date).type=='STOCK' && $p.exchange($date).name=='LNSE');
+   }, milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(   
+   'Sequence\n'+
+       '(\n'+
+       '  type = Class[impls=(meta::relational::tests::milestoning::Product | milestoningmap.meta_relational_tests_milestoning_Product)]\n'+
+       '  resultSizeRange = *\n'+
+       '  (\n'+
+       '    Allocation\n'+
+       '    (\n'+
+       '      type = StrictDate\n'+
+       '      resultSizeRange = 1\n'+
+       '      name = date\n'+
+       '      value = \n'+
+       '        (\n'+
+       '          Constant\n'+
+       '          (\n'+
+       '            type = StrictDate\n'+
+       '            resultSizeRange = 1\n'+
+       '            values=[2015-10-16]\n'+
+       '          )\n'+
+       '        )\n'+
+       '    )\n'+
+       '    Relational\n'+
+       '    (\n'+
+       '      type = Class[impls=(meta::relational::tests::milestoning::Product | milestoningmap.meta_relational_tests_milestoning_Product)]\n'+
+       '      resultSizeRange = *\n'+
+       '      resultColumns = [("pk_0", INT), ("pk_1", VARCHAR(200)), ("id", INT), ("name", VARCHAR(200)), ("type", VARCHAR(200)), ("stockProductName", VARCHAR(200)), ("classificationType", VARCHAR(200)), ("k_businessDate", "")]\n'+
+       '      sql = select \"root\".id as \"pk_0\", \"root\".name as \"pk_1\", \"root\".id as \"id\", \"root\".name as \"name\", \"root\".type as \"type\", \"productdescriptiontable_0\".description as \"stockProductName\", \"productclassificationtable_0\".type as \"classificationType\", \'${date}\' as \"k_businessDate\" from ProductTable as \"root\" left outer join StockProductTable as \"stockproducttable_0\" on (\"root\".id = \"stockproducttable_0\".id and \"stockproducttable_0\".from_z <= \'${date}\' and \"stockproducttable_0\".thru_z > \'${date}\') left outer join ProductDescriptionTable as \"productdescriptiontable_0\" on (\"stockproducttable_0\".id = \"productdescriptiontable_0\".id) left outer join ProductClassificationTable as \"productclassificationtable_0\" on (\"root\".type = \"productclassificationtable_0\".type and \"productclassificationtable_0\".from_z <= \'${date}\' and \"productclassificationtable_0\".thru_z > \'${date}\') left outer join ProductClassificationTable as \"productclassificationtable_1\" on (\"root\".type = \"productclassificationtable_1\".type and \"productclassificationtable_1\".from_z <= \'${date}\' and \"productclassificationtable_1\".thru_z > \'${date}\') left outer join ProductExchangeTable as \"productexchangetable_0\" on (\"root\".exchange = \"productexchangetable_0\".name and \"productexchangetable_0\".from_z <= \'${date}\' and \"productexchangetable_0\".thru_z > \'${date}\') where (\"productclassificationtable_1\".type = \'STOCK\' and \"productexchangetable_0\".name = \'LNSE\') and \"root\".from_z <= \'${date}\' and \"root\".thru_z > \'${date}\'\n'+
+       '      connection = TestDatabaseConnection(type = "H2")\n'+
+       '    )\n'+
+       '  )\n'+
+       ')\n',$result->planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testNonMilestoningQueryWithMilestoneFilterVariableRundateWithinLambda():Boolean[1]
+{
+   let result = execute({|
+      let date = %2015-10-15;
+      Order.all()->filter(o|$o.product($date)->exists(p|$p.id==2));}, milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let orders = $result.values;
+   assertEquals(1,$orders->size());
+   assertEquals(2, $orders->at(0).id);
+   assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join (select distinct "producttable_1".id from ProductTable as "producttable_1" where "producttable_1".from_z <= \'2015-10-15\' and "producttable_1".thru_z > \'2015-10-15\' and "producttable_1".id = 2) as "producttable_0" on ("root".prodFk = "producttable_0".id) where "producttable_0".id is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningCriteriaAppliedToSimplePropertyJoinFromTemporalClass():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate).stockProductName],['id','stockProductName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|Order.all()->project([o|$o.id, o|$o.product($o.orderDetails.settlementDate).classificationType],['id','productClassificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result3 = execute(|Order.all()->project([o|$o.id, o|$o.product($o.orderDetails.settlementDate->adjust(-1, DurationUnit.DAYS)).classificationType],['id','productClassificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   let tds = $result.values->at(0);
+   assertEquals(['1,TDSNull', '2,ProductName2'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".id as "id", "productdescriptiontable_0".description as "stockProductName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-10-16\' and "producttable_0".thru_z > \'2015-10-16\') left outer join (select "stockproducttable_1".id as id from StockProductTable as "stockproducttable_1" where "stockproducttable_1".from_z <= \'2015-10-16\' and "stockproducttable_1".thru_z > \'2015-10-16\') as "stockproducttable_0" on ("producttable_0".id = "stockproducttable_0".id) left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id)', $result);
+   assertSameSQL('select "root".id as "id", "productclassificationtable_0".type as "productClassificationType" from OrderTable as "root" left outer join (select "ordertable_2".id as id, "orderdetailstable_0".settlementDate as settlementDate, "producttable_0".type as type from OrderTable as "ordertable_2" left outer join ProductTable as "producttable_0" on ("ordertable_2".prodFk = "producttable_0".id) left outer join OrderDetailsTable as "orderdetailstable_0" on ("ordertable_2".id = "orderdetailstable_0".id) where "producttable_0".from_z <= "orderdetailstable_0".settlementDate and "producttable_0".thru_z > "orderdetailstable_0".settlementDate) as "ordertable_1" on ("root".id = "ordertable_1".id) left outer join (select "productclassificationtable_1".type as type, "productclassificationtable_1".from_z as from_z, "productclassificationtable_1".thru_z as thru_z from ProductClassificationTable as "productclassificationtable_1") as "productclassificationtable_0" on ("productclassificationtable_0".from_z <= "ordertable_1".settlementDate and "productclassificationtable_0".thru_z > "ordertable_1".settlementDate and "ordertable_1".type = "productclassificationtable_0".type)', $result2);
+   assertSameSQL('select "root".id as "id", "productclassificationtable_0".type as "productClassificationType" from OrderTable as "root" left outer join (select "ordertable_2".id as id, "orderdetailstable_0".settlementDate as settlementDate, "producttable_0".type as type from OrderTable as "ordertable_2" left outer join OrderDetailsTable as "orderdetailstable_0" on ("ordertable_2".id = "orderdetailstable_0".id) left outer join ProductTable as "producttable_0" on ("ordertable_2".prodFk = "producttable_0".id) where "producttable_0".from_z <= dateadd(DAY, -1, "orderdetailstable_0".settlementDate) and "producttable_0".thru_z > dateadd(DAY, -1, "orderdetailstable_0".settlementDate)) as "ordertable_1" on ("root".id = "ordertable_1".id) left outer join (select "productclassificationtable_1".type as type, "productclassificationtable_1".from_z as from_z, "productclassificationtable_1".thru_z as thru_z from ProductClassificationTable as "productclassificationtable_1") as "productclassificationtable_0" on ("productclassificationtable_0".from_z <= dateadd(DAY, -1, "ordertable_1".settlementDate) and "productclassificationtable_0".thru_z > dateadd(DAY, -1, "ordertable_1".settlementDate) and "ordertable_1".type = "productclassificationtable_0".type)', $result3);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningCriteriaAppliedToSimplePropertyJoinFromTemporalClassThroughQualifiedProperty():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.productQp($businessDate).stockProductName],['id','stockProductName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['1,TDSNull', '2,ProductName2'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".id as "id", "productdescriptiontable_0".description as "stockProductName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-10-16\' and "producttable_0".thru_z > \'2015-10-16\') left outer join (select "stockproducttable_1".id as id from StockProductTable as "stockproducttable_1" where "stockproducttable_1".from_z <= \'2015-10-16\' and "stockproducttable_1".thru_z > \'2015-10-16\') as "stockproducttable_0" on ("producttable_0".id = "stockproducttable_0".id) left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningCriteriaOriginatingFromQualifiedPropertyAppliedToSimplePropertyJoinFromTemporalClass():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate).classificationWithDateConstant().exchangeName],['id','productExchangeNameUsingDateConstantPropagatedFromQP']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".id as "id", "productexchangetable_0".name as "productExchangeNameUsingDateConstantPropagatedFromQP" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-10-16\' and "producttable_0".thru_z > \'2015-10-16\') left outer join (select "productclassificationtable_1".type as type, "productclassificationtable_1".exchange from ProductClassificationTable as "productclassificationtable_1" where "productclassificationtable_1".from_z <= \'9999-12-31\' and "productclassificationtable_1".thru_z > \'9999-12-31\') as "productclassificationtable_0" on ("producttable_0".type = "productclassificationtable_0".type) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= \'9999-12-31\' and "productexchangetable_1".thru_z > \'9999-12-31\') as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name)', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningCriteriaAppliedToJoinsOnBusinessTemporalClassForComplexProperty():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.stockProduct($businessDate).name],['orderId','stockProductName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['1,TDSNull', '2,ProductName2'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".id as "orderId", "producttable_0".name as "stockProductName" from OrderTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".prodFk = "stockproducttable_0".id and "stockproducttable_0".from_z <= \'2015-10-16\' and "stockproducttable_0".thru_z > \'2015-10-16\') left outer join (select "producttable_1".id as id, "producttable_1".name as name from ProductTable as "producttable_1" where "producttable_1".from_z <= \'2015-10-16\' and "producttable_1".thru_z > \'2015-10-16\') as "producttable_0" on ("producttable_0".id = "stockproducttable_0".id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestonedQualifiedPropertyUsedOnSuperTypeInEmbedded():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+
+   let result = execute(|StockProduct.all($businessDate)->project([s|$s.classification($businessDate).type],['classificationType']), milestoningMapWithEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   assertEquals(['STOCK', 'OPTION'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".type as "classificationType" from ProductTable as "root" where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'',$result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoneFiltersAreNotAppliedToEmbeddedPropertiesInQualifiersTriggeringIsolationSelfJoin():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+
+   let result = execute(|StockProduct.all($businessDate)->project([s|$s.classification($businessDate).exchange($businessDate).name],['1']), isolationFocusedMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   assertEquals(['LNSE'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "productexchangetable_0".name as "1" from ProductTable as "root" left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-16\' and "productexchangetable_0".thru_z > \'2015-10-16\') where "root".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testIsolationOfIntermediateJoinsInMultiLevelPropertyJoin():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+
+   let result = execute(|StockProduct.all($businessDate)->project([s|$s.classification(%2015-10-17).system.name],['name']), isolationFocusedMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   assertEquals(['SYS1'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "systemtable_0".name as "name" from ProductTable as "root" left outer join ProductClassificationSystemTable as "productclassificationsystemtable_0" on ("root".classificationSystemId = "productclassificationsystemtable_0".id and "productclassificationsystemtable_0".from_z <= \'2015-10-17\' and "productclassificationsystemtable_0".thru_z > \'2015-10-17\') left outer join SystemTable as "systemtable_0" on ("productclassificationsystemtable_0".name = "systemtable_0".name) where "root".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testIsolationWhereLeftSideOfFilterIsEmbedded():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   
+   let result = execute(|Product.all($businessDate)->filter(p|$p.classification.system.name=='SYS1')->project([p|$p.name],['name']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   
+   assertEquals(['ProductName2', 'ProductName3'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".name as "name" from ProductTable as "root" left outer join ProductClassificationSystemTable as "productclassificationsystemtable_0" on ("root".classificationSystemId = "productclassificationsystemtable_0".id and "productclassificationsystemtable_0".from_z <= \'2015-10-16\' and "productclassificationsystemtable_0".thru_z > \'2015-10-16\') left outer join SystemTable as "systemtable_0" on ("productclassificationsystemtable_0".name = "systemtable_0".name) where "systemtable_0".name = \'SYS1\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+function meta::relational::tests::milestoning::businessdate::constantDate():Date[1]
+{
+   %2015-01-01
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDateFunctionInMilestonedProperty():Boolean[1]
+{
+   let query = {|Order.all()->project([o|$o.id, o|$o.stockProduct(constantDate()).name],['orderId','stockProductName'])};
+   let sql = toSQLString($query, milestoningmap, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSameSQL('select "root".id as "orderId", "ProductTable_d#7_l_d_m2_r".name as "stockProductName" from OrderTable as "root" left outer join StockProductTable as "StockProductTable_d#7_d_m2" on ("root".prodFk = "StockProductTable_d#7_d_m2".id and "StockProductTable_d#7_d_m2".from_z <= \'2015-01-01\' and "StockProductTable_d#7_d_m2".thru_z > \'2015-01-01\') left outer join (select "ProductTable_d#7_l".id as id, "ProductTable_d#7_l".name as name from ProductTable as "ProductTable_d#7_l" where "ProductTable_d#7_l".from_z <= \'2015-01-01\' and "ProductTable_d#7_l".thru_z > \'2015-01-01\') as "ProductTable_d#7_l_d_m2_r" on ("ProductTable_d#7_l_d_m2_r".id = "StockProductTable_d#7_d_m2".id)',$sql);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDateFunctionInMilestonedPropertyWithMilestonedEntity():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let query = {|Product.all($businessDate)->filter(p|$p.classification(constantDate()).system.name=='SYS1')->project([p|$p.name],['name'])};
+   let sql = toSQLString($query, milestoningMapWithEmbeddedSimple, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSameSQL('select "root".name as "name" from ProductTable as "root" left outer join ProductClassificationSystemTable as "ProductClassificationSystemTable_d#5_d#2_m1" on ("root".classificationSystemId = "ProductClassificationSystemTable_d#5_d#2_m1".id and "ProductClassificationSystemTable_d#5_d#2_m1".from_z <= \'2015-01-01\' and "ProductClassificationSystemTable_d#5_d#2_m1".thru_z > \'2015-01-01\') left outer join SystemTable as "SystemTable_d#5_l_d#2_m1_r" on ("ProductClassificationSystemTable_d#5_d#2_m1".name = "SystemTable_d#5_l_d#2_m1_r".name) where "SystemTable_d#5_l_d#2_m1_r".name = \'SYS1\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningCriteriaAppliedToViewRoot():Boolean[1]
+{
+   let businessDate = %2016-7-22;
+   let result = execute(|TradePnl.all($businessDate), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let pnls = $result.values;
+   assertEquals(2, $pnls->size());
+   assertSameElements([200.0, 101.0], $pnls->map(p|$p.pnl));
+   assertEquals([$businessDate,$businessDate], $pnls->map(p|$p.businessDate));
+   assertSameSQL('select "root".TRADE_ID as "pk_0", "root".pnl as "pnl", "root".supportContact as "supportContactName", \'2016-07-22\' as "k_businessDate" from (select distinct "root".TRADE_ID as TRADE_ID, "root".pnl as pnl, "salespersontable_0".NAME as supportContact, \'2016-07-22\' as "k_businessDate" from tradePnlTable as "root" left outer join tradeTable as "tradetable_0" on ("root".TRADE_ID = "tradetable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("tradetable_0".accountID = "salespersontable_0".ACCOUNT_ID and "salespersontable_0".from_z <= \'2016-07-22\' and "salespersontable_0".thru_z > \'2016-07-22\') where "root".from_z <= \'2016-07-22\' and "root".thru_z > \'2016-07-22\') as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningContextPropagatedFromParentViewToViewsReferencedInItsColumns():Boolean[1]
+{
+   let businessDate = %2016-7-22;
+   let result = execute(|TradePnl.all($businessDate), milestoningmapWithNestedView, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let pnls = $result.values;
+   assertEquals(2, $pnls->size());
+   assertSameElements([200.0, 101.0], $pnls->map(p|$p.pnl));
+   assertEquals([$businessDate,$businessDate], $pnls->map(p|$p.businessDate));
+   assertSameSQL('select "root".TRADE_ID as "pk_0", "root".pnl as "pnl", "root".supportContactViaView as "supportContactName", \'2016-07-22\' as "k_businessDate" from (select distinct "root".TRADE_ID as TRADE_ID, "root".pnl as pnl, "salespersonview_0".SALES_PERSON_NAME as supportContactViaView, \'2016-07-22\' as "k_businessDate" from tradePnlTable as "root" left outer join tradeTable as "tradetable_0" on ("root".TRADE_ID = "tradetable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("tradetable_0".accountID = "salespersontable_0".ACCOUNT_ID and "salespersontable_0".from_z <= \'2016-07-22\' and "salespersontable_0".thru_z > \'2016-07-22\') left outer join (select "root".ACCOUNT_ID as ACCOUNT_ID, "root".NAME as SALES_PERSON_NAME from salesPersonTable as "root" where "root".from_z <= \'2016-07-22\' and "root".thru_z > \'2016-07-22\') as "salespersonview_0" on ("salespersontable_0".ACCOUNT_ID = "salespersonview_0".ACCOUNT_ID) where "root".from_z <= \'2016-07-22\' and "root".thru_z > \'2016-07-22\') as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningContextPropagatedWithViewAsMainRelationOfView():Boolean[1]
+{
+   let businessDate = %2016-7-22;
+   let result = execute(|TradePnl.all($businessDate), milestoningmapWithViewUsingViewColumns, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let pnls = $result.values;
+   assertEquals(2, $pnls->size());
+   assertSameElements([200.0, 101.0], $pnls->map(p|$p.pnl));
+   assertEquals([$businessDate,$businessDate], $pnls->map(p|$p.businessDate));
+   assertSameSQL('select "root".TRADE_ID as "pk_0", "root".pnl as "pnl", "root".supportContactViaView as "supportContactName", \'2016-07-22\' as "k_businessDate" from (select "root".TRADE_ID as TRADE_ID, "root".pnl as pnl, "salespersonview_0".SALES_PERSON_NAME as supportContactViaView, \'2016-07-22\' as "k_businessDate" from (select distinct "root".TRADE_ID as TRADE_ID, "root".pnl as pnl, \'2016-07-22\' as "k_businessDate" from tradePnlTable as "root" where "root".from_z <= \'2016-07-22\' and "root".thru_z > \'2016-07-22\') as "root" left outer join tradePnlTable as "tradepnltable_1" on ("root".TRADE_ID = "tradepnltable_1".TRADE_ID and "tradepnltable_1".from_z <= \'2016-07-22\' and "tradepnltable_1".thru_z > \'2016-07-22\') left outer join tradeTable as "tradetable_0" on ("tradepnltable_1".TRADE_ID = "tradetable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("tradetable_0".accountID = "salespersontable_0".ACCOUNT_ID and "salespersontable_0".from_z <= \'2016-07-22\' and "salespersontable_0".thru_z > \'2016-07-22\') left outer join (select "root".ACCOUNT_ID as ACCOUNT_ID, "root".NAME as SALES_PERSON_NAME from salesPersonTable as "root" where "root".from_z <= \'2016-07-22\' and "root".thru_z > \'2016-07-22\') as "salespersonview_0" on ("salespersontable_0".ACCOUNT_ID = "salespersonview_0".ACCOUNT_ID)) as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningCriteriaAppliedToJoinFromViewRoot():Boolean[1]
+{
+   let businessDate = %2016-7-22;
+   let result = execute(|TradePnl.all($businessDate)->project([p|$p.pnl,p|$p.supportContactName],['pnl','supportContact']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['101.0,Joe Martinez', '200.0,John Martinez'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".pnl as "pnl", "root".supportContact as "supportContact" from (select distinct "root".TRADE_ID as TRADE_ID, "root".pnl as pnl, "salespersontable_0".NAME as supportContact, \'2016-07-22\' as "k_businessDate" from tradePnlTable as "root" left outer join tradeTable as "tradetable_0" on ("root".TRADE_ID = "tradetable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("tradetable_0".accountID = "salespersontable_0".ACCOUNT_ID and "salespersontable_0".from_z <= \'2016-07-22\' and "salespersontable_0".thru_z > \'2016-07-22\') where "root".from_z <= \'2016-07-22\' and "root".thru_z > \'2016-07-22\') as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testIsolationOfCaseStmtTrueFalseFilters():Boolean[1]
+{
+   let result = execute(|Product.all(%2016-7-22)->filter(p| $p.name == if($p.id == 1 ,| $p.classification(%2016-7-23).product.name ,| $p.classification(%2016-7-24).product.name)), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals(1, $products->size());
+   assertEquals('ProductName2', $products->at(0).name);
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'2016-07-22\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".from_z <= \'2016-07-22\' and "stockproducttable_0".thru_z > \'2016-07-22\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2016-07-22\' and "productclassificationtable_0".thru_z > \'2016-07-22\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2016-07-23\' and "productclassificationtable_1".thru_z > \'2016-07-23\') left outer join ProductTable as "producttable_1" on ("producttable_1".type = "productclassificationtable_1".type and "producttable_1".from_z <= \'2016-07-23\' and "producttable_1".thru_z > \'2016-07-23\') left outer join ProductClassificationTable as "productclassificationtable_2" on ("root".type = "productclassificationtable_2".type and "productclassificationtable_2".from_z <= \'2016-07-24\' and "productclassificationtable_2".thru_z > \'2016-07-24\') left outer join ProductTable as "producttable_2" on ("producttable_2".type = "productclassificationtable_2".type and "producttable_2".from_z <= \'2016-07-24\' and "producttable_2".thru_z > \'2016-07-24\') where "root".name = case when "root".id = 1 then "producttable_1".name else "producttable_2".name end and "root".from_z <= \'2016-07-22\' and "root".thru_z > \'2016-07-22\'', $result);  
+}
+
+function <<test.BeforePackage>> meta::relational::tests::milestoning::qualifier::setUp():Any[0..1]
+{
+   initDatabase();
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::qualifier::testFilterWithMilestoning():Boolean[1]
+{
+   let result = execute({|
+      let date = %2015-10-16;
+      Product.all($date)->filter(p|$p.classification($date).type=='STOCK');
+   }, milestoningmap,  testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values;
+   assertEquals(1, $products->size());
+   assertEquals('ProductName2', $products->at(0).name);
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'2015-10-16\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".from_z <= \'2015-10-16\' and "stockproducttable_0".thru_z > \'2015-10-16\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2015-10-16\' and "productclassificationtable_1".thru_z > \'2015-10-16\') where "productclassificationtable_1".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::milestoning::qualifier::testProjectWithMilestoning():Boolean[1]
+{
+   let result = execute({|
+      let date = %2015-10-16;
+      Product.all($date)->project(p|$p.classification($date).type=='STOCK',['c1']);
+   }, milestoningmap,  testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let products = $result.values->at(0);
+   assertEquals(1, $products->size());
+   assertSameSQL('select "productclassificationtable_0".type = \'STOCK\' as "c1" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningCriteriaOriginatingFromQualifiedPropertyAppliedToSimplePropertyMultiOperationalJoinFromTemporalClass():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate).classificationWithDateConstant().exchangeName],['id','productExchangeNameUsingDateConstantPropagatedFromQP']), milestoningmapMultipleJoinOperations, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".id as "id", "productexchangetable_0".name as "productExchangeNameUsingDateConstantPropagatedFromQP" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-10-16\' and "producttable_0".thru_z > \'2015-10-16\') left outer join (select "productclassificationtable_1".type as type, "productclassificationtable_1".exchange from ProductClassificationTable as "productclassificationtable_1" where "productclassificationtable_1".from_z <= \'9999-12-31\' and "productclassificationtable_1".thru_z > \'9999-12-31\') as "productclassificationtable_0" on ("producttable_0".type = "productclassificationtable_0".type) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= \'9999-12-31\' and "productexchangetable_1".thru_z > \'9999-12-31\') as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name or ("productclassificationtable_0".exchange is null and "productexchangetable_0".name is null))', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testConcatenationOfTemporalTdsQueries():Boolean[1]
+{
+   let bds = [%2015-8-16, %2015-8-27, %2015-10-16, %2015-10-17];
+   
+   let lfs = $bds->map(bd:Date[1]| {|Product.all($bd)->filter(p|$p.classification($bd).system.name=='SYS1' || $p.type=='OPTION')->project([p|$bd, p|$p.name, p|$p.exchange($bd).name],['businessDate', 'productName', 'exchangeName'])}->evaluateAndDeactivate());
+   
+   let concatLambda = meta::relational::milestoning::concatenateTemporalTdsQueries($lfs);
+   
+   let result = execute($concatLambda, milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   let tds = $result.values->at(0);
+   assertEquals(['2015-08-16,ProductName,TDSNull', '2015-08-27,ProductName1,LNSE', '2015-08-27,ProductName3,TDSNull', '2015-10-16,ProductName2,LNSE', '2015-10-16,ProductName3,TDSNull', '2015-10-17,ProductName2,LNSE', '2015-10-17,ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "unionalias_0"."businessDate" as "businessDate", "unionalias_0"."productName" as "productName", "unionalias_0"."exchangeName" as "exchangeName" from (select \'2015-08-16\' as "businessDate", "root".name as "productName", "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) left outer join SystemTable as "systemtable_0" on ("productclassificationtable_0".system = "systemtable_0".name) left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-08-16\' and "productexchangetable_0".thru_z > \'2015-08-16\') where (("productclassificationtable_0".from_z <= \'2015-08-16\' and "productclassificationtable_0".thru_z > \'2015-08-16\' and "systemtable_0".name = \'SYS1\') or "root".type = \'OPTION\') and "root".from_z <= \'2015-08-16\' and "root".thru_z > \'2015-08-16\' UNION ALL select \'2015-08-27\' as "businessDate", "root".name as "productName", "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) left outer join SystemTable as "systemtable_0" on ("productclassificationtable_0".system = "systemtable_0".name) left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-08-27\' and "productexchangetable_0".thru_z > \'2015-08-27\') where (("productclassificationtable_0".from_z <= \'2015-08-27\' and "productclassificationtable_0".thru_z > \'2015-08-27\' and "systemtable_0".name = \'SYS1\') or "root".type = \'OPTION\') and "root".from_z <= \'2015-08-27\' and "root".thru_z > \'2015-08-27\' UNION ALL select \'2015-10-16\' as "businessDate", "root".name as "productName", "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) left outer join SystemTable as "systemtable_0" on ("productclassificationtable_0".system = "systemtable_0".name) left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-16\' and "productexchangetable_0".thru_z > \'2015-10-16\') where (("productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\' and "systemtable_0".name = \'SYS1\') or "root".type = \'OPTION\') and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\' UNION ALL select \'2015-10-17\' as "businessDate", "root".name as "productName", "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) left outer join SystemTable as "systemtable_0" on ("productclassificationtable_0".system = "systemtable_0".name) left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-17\' and "productexchangetable_0".thru_z > \'2015-10-17\') where (("productclassificationtable_0".from_z <= \'2015-10-17\' and "productclassificationtable_0".thru_z > \'2015-10-17\' and "systemtable_0".name = \'SYS1\') or "root".type = \'OPTION\') and "root".from_z <= \'2015-10-17\' and "root".thru_z > \'2015-10-17\') as "unionalias_0"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testConcatenationOfTemporalTdsQueriesWithGroupBy():Boolean[1]
+{
+   let bds = [%2015-8-16, %2015-8-27, %2015-10-16, %2015-10-17];
+  
+   let lfs = $bds->map(bd:Date[1]| {|Product.all($bd)->filter(p|$p.classification($bd).system.name=='SYS1' || $p.type=='OPTION')->project([p|$bd, p|$p.name, p|$p.exchange($bd).name],['businessDate', 'productName', 'exchangeName'])->groupBy(['businessDate', 'productName', 'exchangeName'], [agg('count', x| $x.getString('productName'), a | $a -> count())])}->evaluateAndDeactivate());
+   
+   let concatLambda = meta::relational::milestoning::concatenateTemporalTdsQueries($lfs);
+   
+   let result = execute($concatLambda, milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   let tds = $result.values->at(0);
+   assertEquals(['2015-08-16,ProductName,TDSNull,1', '2015-08-27,ProductName1,LNSE,1', '2015-08-27,ProductName3,TDSNull,1', '2015-10-16,ProductName2,LNSE,1', '2015-10-16,ProductName3,TDSNull,1', '2015-10-17,ProductName2,LNSE,1', '2015-10-17,ProductName3,TDSNull,1'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "unionalias_0"."businessDate" as "businessDate", "unionalias_0"."productName" as "productName", "unionalias_0"."exchangeName" as "exchangeName", "unionalias_0"."count" as "count" from (select \'2015-08-16\' as "businessDate", "root".name as "productName", "productexchangetable_0".name as "exchangeName", count("root".name) as "count" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) left outer join SystemTable as "systemtable_0" on ("productclassificationtable_0".system = "systemtable_0".name) left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-08-16\' and "productexchangetable_0".thru_z > \'2015-08-16\') where (("productclassificationtable_0".from_z <= \'2015-08-16\' and "productclassificationtable_0".thru_z > \'2015-08-16\' and "systemtable_0".name = \'SYS1\') or "root".type = \'OPTION\') and "root".from_z <= \'2015-08-16\' and "root".thru_z > \'2015-08-16\' group by "businessDate","productName","exchangeName" UNION ALL select \'2015-08-27\' as "businessDate", "root".name as "productName", "productexchangetable_0".name as "exchangeName", count("root".name) as "count" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) left outer join SystemTable as "systemtable_0" on ("productclassificationtable_0".system = "systemtable_0".name) left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-08-27\' and "productexchangetable_0".thru_z > \'2015-08-27\') where (("productclassificationtable_0".from_z <= \'2015-08-27\' and "productclassificationtable_0".thru_z > \'2015-08-27\' and "systemtable_0".name = \'SYS1\') or "root".type = \'OPTION\') and "root".from_z <= \'2015-08-27\' and "root".thru_z > \'2015-08-27\' group by "businessDate","productName","exchangeName" UNION ALL select \'2015-10-16\' as "businessDate", "root".name as "productName", "productexchangetable_0".name as "exchangeName", count("root".name) as "count" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) left outer join SystemTable as "systemtable_0" on ("productclassificationtable_0".system = "systemtable_0".name) left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-16\' and "productexchangetable_0".thru_z > \'2015-10-16\') where (("productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\' and "systemtable_0".name = \'SYS1\') or "root".type = \'OPTION\') and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\' group by "businessDate","productName","exchangeName" UNION ALL select \'2015-10-17\' as "businessDate", "root".name as "productName", "productexchangetable_0".name as "exchangeName", count("root".name) as "count" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) left outer join SystemTable as "systemtable_0" on ("productclassificationtable_0".system = "systemtable_0".name) left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-17\' and "productexchangetable_0".thru_z > \'2015-10-17\') where (("productclassificationtable_0".from_z <= \'2015-10-17\' and "productclassificationtable_0".thru_z > \'2015-10-17\' and "systemtable_0".name = \'SYS1\') or "root".type = \'OPTION\') and "root".from_z <= \'2015-10-17\' and "root".thru_z > \'2015-10-17\' group by "businessDate","productName","exchangeName") as "unionalias_0"', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testPartiallyMilestoningUnionOperationWithNonTemporalRoot():Boolean[1]
+{
+    let result = execute(|Order.all()->filter(o| $o.product(%2015-9-1).name == 'ProductName1'), partiallyMilestoningUnionMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let order = $result.values;
+    assertEquals([2, 2], $order.id);
+    assertEquals('select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", "root".prodFk as prodFk_0, null as prodFk_1 from OrderTable as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", null as prodFk_0, "root".prodFk as prodFk_1 from OrderTable as "root") as "unionBase" left outer join (select "root".from_z as "from_z_0", "root".thru_z as "thru_z_0", "root".id as id, "root".name as "ProductTablename_ProductTableNoMilestoningname" from ProductTable as "root" UNION ALL select null as "from_z_0", null as "thru_z_0", "root".id as id, "root".name as "ProductTablename_ProductTableNoMilestoningname" from ProductTableNoMilestoning as "root") as "unionalias_1" on (("unionBase".prodFk_0 = "unionalias_1".id or "unionBase".prodFk_1 = "unionalias_1".id) and (("unionalias_1"."from_z_0" <= \'2015-09-01\' and "unionalias_1"."thru_z_0" > \'2015-09-01\') or coalesce("unionalias_1"."from_z_0", "unionalias_1"."thru_z_0") is null)) where "unionalias_1"."ProductTablename_ProductTableNoMilestoningname" = \'ProductName1\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testPartiallyMilestoningUnionOperationWithNonTemporalRootWithPropagation():Boolean[1]
+{
+    let result = execute(|Order.all()->filter(o| $o.product(%2015-9-1).classification.description == 'STOCK DESC-V2'), partiallyMilestoningUnionMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let order = $result.values;
+    assertEquals([1, 1, 2, 2, 1, 1, 2, 2], $order.id);
+    assertEquals('select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", "root".prodFk as prodFk_0, null as prodFk_1 from OrderTable as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", null as prodFk_0, "root".prodFk as prodFk_1 from OrderTable as "root") as "unionBase" left outer join (select "root".from_z as "from_z_0", "root".thru_z as "thru_z_0", "root".id as id, "root".type as type_0, null as type_1 from ProductTable as "root" UNION ALL select null as "from_z_0", null as "thru_z_0", "root".id as id, null as type_0, "root".type as type_1 from ProductTableNoMilestoning as "root") as "unionalias_1" on (("unionBase".prodFk_0 = "unionalias_1".id or "unionBase".prodFk_1 = "unionalias_1".id) and (("unionalias_1"."from_z_0" <= \'2015-09-01\' and "unionalias_1"."thru_z_0" > \'2015-09-01\') or coalesce("unionalias_1"."from_z_0", "unionalias_1"."thru_z_0") is null)) left outer join (select "root".from_z as "from_z_0", "root".thru_z as "thru_z_0", "root".type as type, "root".type_description as "ProductClassificationTabletype_description_ProductClassificationTableNoMilestoningtype_description" from ProductClassificationTable as "root" UNION ALL select null as "from_z_0", null as "thru_z_0", "root".type as type, "root".type_description as "ProductClassificationTabletype_description_ProductClassificationTableNoMilestoningtype_description" from ProductClassificationTableNoMilestoning as "root") as "unionalias_2" on (("unionalias_1".type_0 = "unionalias_2".type or "unionalias_1".type_1 = "unionalias_2".type) and (("unionalias_2"."from_z_0" <= \'2015-09-01\' and "unionalias_2"."thru_z_0" > \'2015-09-01\') or coalesce("unionalias_2"."from_z_0", "unionalias_2"."thru_z_0") is null)) where "unionalias_2"."ProductClassificationTabletype_description_ProductClassificationTableNoMilestoningtype_description" = \'STOCK DESC-V2\'', $result->sqlRemoveFormatting());  
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testPartiallyMilestoningUnionOperationWithTemporalRootWithPropagation():Boolean[1]
+{
+    let result = execute(|Product.all(%2015-9-1)->filter(p| $p.classification.description == 'STOCK DESC-V2'), partiallyMilestoningUnionMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let product = $result.values;
+    assertEquals([2, 2, 1, 1], $product.id);
+    assertEquals('select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_1_0" as "pk_1_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."pk_1_1" as "pk_1_1", "unionBase"."id" as "id", "unionBase"."name" as "name", "unionBase"."k_businessDate" as "k_businessDate", "unionBase"."from_z_0" as "from_z_0", "unionBase"."thru_z_0" as "thru_z_0" from (select \'0\' as u_type, "root".id as "pk_0_0", "root".name as "pk_1_0", null as "pk_0_1", null as "pk_1_1", "root".id as "id", "root".name as "name", \'2015-09-01\' as "k_businessDate", "root".from_z as "from_z_0", "root".thru_z as "thru_z_0", "root".type as type_0, null as type_1 from ProductTable as "root" where "root".from_z <= \'2015-09-01\' and "root".thru_z > \'2015-09-01\' UNION ALL select \'1\' as u_type, null as "pk_0_0", null as "pk_1_0", "root".id as "pk_0_1", "root".name as "pk_1_1", "root".id as "id", "root".name as "name", \'2015-09-01\' as "k_businessDate", null as "from_z_0", null as "thru_z_0", null as type_0, "root".type as type_1 from ProductTableNoMilestoning as "root") as "unionBase" left outer join (select "root".from_z as "from_z_0", "root".thru_z as "thru_z_0", "root".type as type, "root".type_description as "ProductClassificationTabletype_description_ProductClassificationTableNoMilestoningtype_description" from ProductClassificationTable as "root" UNION ALL select null as "from_z_0", null as "thru_z_0", "root".type as type, "root".type_description as "ProductClassificationTabletype_description_ProductClassificationTableNoMilestoningtype_description" from ProductClassificationTableNoMilestoning as "root") as "unionalias_1" on (("unionBase".type_0 = "unionalias_1".type or "unionBase".type_1 = "unionalias_1".type) and (("unionalias_1"."from_z_0" <= \'2015-09-01\' and "unionalias_1"."thru_z_0" > \'2015-09-01\') or coalesce("unionalias_1"."from_z_0", "unionalias_1"."thru_z_0") is null)) where "unionalias_1"."ProductClassificationTabletype_description_ProductClassificationTableNoMilestoningtype_description" = \'STOCK DESC-V2\'', $result->sqlRemoveFormatting());  
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningContextPropagationForSimplePropertyReferenceWithMultipleJoinsViaProject():Boolean[1]
+{
+   let businessDate = %2015-9-1;
+   let result = execute(| meta::relational::tests::milestoning::Order.all()->project([o|$o.product($businessDate)->filter(p|$p.name=='ProductName1').name],['productName']) , TestMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(['TDSNull','ProductName1'], $result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "producttable_0".name as "productName" from OrderTable as "root" left outer join (select "producttable_1".id as id, "producttable_1".from_z as from_z, "producttable_1".thru_z as thru_z, "producttable3_2".name as name from ProductTable as "producttable_1" left outer join (select "producttable2_1".identifier as identifier from ProductTable2 as "producttable2_1" where "producttable2_1".from_z <= \'2015-09-01\' and "producttable2_1".thru_z > \'2015-09-01\') as "producttable2_0" on ("producttable_1".id = "producttable2_0".identifier) left outer join (select "producttable3_1".name as name, "producttable3_1".id as id from ProductTable3 as "producttable3_1" where "producttable3_1".from_z <= \'2015-09-01\' and "producttable3_1".thru_z > \'2015-09-01\') as "producttable3_0" on ("producttable2_0".identifier = "producttable3_0".id) left outer join ProductTable2 as "producttable2_2" on ("producttable_1".id = "producttable2_2".identifier and "producttable2_2".from_z <= \'2015-09-01\' and "producttable2_2".thru_z > \'2015-09-01\') left outer join (select "producttable3_2".name as name, "producttable3_2".id as id from ProductTable3 as "producttable3_2" where "producttable3_2".from_z <= \'2015-09-01\' and "producttable3_2".thru_z > \'2015-09-01\') as "producttable3_2" on ("producttable2_2".identifier = "producttable3_2".id) where "producttable3_0".name = \'ProductName1\') as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-09-01\' and "producttable_0".thru_z > \'2015-09-01\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testFilterOnMilestonedClassInProjectWithTDSFilter():Boolean[1]
+{
+   let businessDate = %2015-9-1;
+   let result = execute(| meta::relational::tests::milestoning::Order.all()->project([o|$o.product($businessDate)->filter(p|$p.name=='ProductName1').name],['productName'])->filter(x|$x.getString('productName')=='ProductName1') , TestMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(['ProductName1'], $result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "producttable_0".name as "productName" from OrderTable as "root" left outer join (select "producttable_1".id as id, "producttable_1".from_z as from_z, "producttable_1".thru_z as thru_z, "producttable3_2".name as name from ProductTable as "producttable_1" left outer join (select "producttable2_1".identifier as identifier from ProductTable2 as "producttable2_1" where "producttable2_1".from_z <= \'2015-09-01\' and "producttable2_1".thru_z > \'2015-09-01\') as "producttable2_0" on ("producttable_1".id = "producttable2_0".identifier) left outer join (select "producttable3_1".name as name, "producttable3_1".id as id from ProductTable3 as "producttable3_1" where "producttable3_1".from_z <= \'2015-09-01\' and "producttable3_1".thru_z > \'2015-09-01\') as "producttable3_0" on ("producttable2_0".identifier = "producttable3_0".id) left outer join ProductTable2 as "producttable2_2" on ("producttable_1".id = "producttable2_2".identifier and "producttable2_2".from_z <= \'2015-09-01\' and "producttable2_2".thru_z > \'2015-09-01\') left outer join (select "producttable3_2".name as name, "producttable3_2".id as id from ProductTable3 as "producttable3_2" where "producttable3_2".from_z <= \'2015-09-01\' and "producttable3_2".thru_z > \'2015-09-01\') as "producttable3_2" on ("producttable2_2".identifier = "producttable3_2".id) where "producttable3_0".name = \'ProductName1\') as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-09-01\' and "producttable_0".thru_z > \'2015-09-01\') where "producttable_0".name = \'ProductName1\'', $result->sqlRemoveFormatting());
+
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testIsolationOfMilestoningFiltersReferencedInAllPartsOfIfStmt():Boolean[1]
+{
+    let result = execute(|Order.all()->filter(o| $o.productName(%2015-8-15) == 'ProductName' ), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let orders = $result.values;
+    assertEquals([1], $orders.id);
+    assertEquals('select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-08-15\' and "producttable_0".thru_z > \'2015-08-15\') where case when "producttable_0".name is null then \'empty\' else "producttable_0".name end = \'ProductName\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMultiLevelIsolatedToSubSelectHasCorrectExtraColumns():Boolean[1]
+{
+    let result = execute(|Product.all(%latest)->project([p|$p.id, p|$p.isBrexitClassificationTypeExchange],['id', 'isBrexitClassificationTypeExchange']),
+                                                     meta::relational::tests::milestoning::milestoningmap2,
+                                                     meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->toOne();
+   assertEquals(['2, true', '3, false'], $tds.rows->map(r|$r.values->makeString(', ')));
+   assertEquals('select "root".id as "id", case when "productexchangetable_0".city = \'London\' then \'true\' else \'false\' end as "isBrexitClassificationTypeExchange" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".thru_z = \'9999-12-31 00:00:00.0000\') left outer join (select "productexchangetable_1".city as city, "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".thru_z = \'9999-12-31 00:00:00.0000\') as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".thru_z = \'9999-12-31 00:00:00.0000\'', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDeepUnionOperationWithNonTemporalAndNonUnionRoot():Boolean[1]
+{
+    let tds = execute(|Order.all()->project([col(x | $x.id, 'ID'), col(x | $x.product(%latest).classification.product.id, 'PROD ID'), col(x | $x.product(%latest).classification.description, 'PROD CLASSIFICATION')]), milestoningUnionMapWithOrderNonUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->toOne();
+    assertEquals(['1,TDSNull,TDSNull', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4'],$tds.rows->map(r|$r.values->makeString(',')));
+}

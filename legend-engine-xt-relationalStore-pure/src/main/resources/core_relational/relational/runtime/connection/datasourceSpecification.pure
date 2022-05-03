@@ -1,0 +1,89 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+}
+
+Class meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+   host: String[1];
+   port: Integer[1];
+   databaseName: String[1];
+}
+
+Class meta::pure::alloy::connections::alloy::specification::EmbeddedH2DatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+    databaseName:String[1];
+    directory:String[1];
+    autoServerMode:Boolean[1];
+}
+
+Class meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+    testDataSetupCsv:String[0..1];
+    testDataSetupSqls:String[*];
+}
+
+Class meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+    hostname:String[1];
+    port:String[1];
+    protocol:String[1];
+    httpPath:String[1];
+}
+
+Enum meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType
+{
+    VPS, MultiTenant
+}
+
+Class meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+    accountName:String[1];
+    region:String[1];
+    warehouseName:String[1];
+    databaseName:String[1];
+    role:String[0..1];
+
+    proxyHost:String[0..1];
+    proxyPort:String[0..1];
+    nonProxyHosts:String[0..1];
+
+    accountType: meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType[0..1];
+    organization:String[0..1];
+    cloudType:String[0..1];
+
+    quotedIdentifiersIgnoreCase:Boolean[0..1];
+}
+
+Class meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+    projectId:String[1];
+    defaultDataset:String[1];
+    proxyHost: String[0..1];
+    proxyPort: String[0..1];
+}
+
+Class {doc.doc ='Specification for the AWS redshift database'} meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{   
+  {doc.doc ='clusterID'} clusterID:String[1];
+  {doc.doc ='The aws region'} region:String[1];
+  {doc.doc ='the full host url'}  host:String[1];
+  {doc.doc ='database name'} databaseName:String[1];
+  {doc.doc ='port'} port:Integer[1];
+  {doc.doc ='Optional URL used for redshift service execution'}  endpointURL:String[0..1];
+}
+
+         

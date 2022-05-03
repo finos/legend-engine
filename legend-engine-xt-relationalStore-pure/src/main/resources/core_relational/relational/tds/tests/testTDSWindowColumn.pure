@@ -1,0 +1,289 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlstring::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+import meta::pure::functions::math::olap::*;
+import meta::relational::tests::model::simple::*;
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testWindowWithoutSortWithRank():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName','lastName'],y|$y->rank(),'testCol1')
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME,"root".LASTNAME ) as "testCol1" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testMultipleWindowWithSortWithRank():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName','lastName'],asc('lastName'),y|$y->averageRank(),'testCol1')
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", average_rank() OVER (Partition By "root".FIRSTNAME,"root".LASTNAME Order By "root".LASTNAME ASC) as "testCol1" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortWithRank():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName'],desc('lastName'),y|$y->denseRank(),'testCol1')
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", dense_rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "testCol1" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortingRankInMemSQL():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName'],desc('lastName'),y|$y->denseRank(),'rank')
+                             ->sort('rank')
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions(),debug());
+   assertEquals('select `firstName` as `firstName`, `lastName` as `lastName`, `age` as `age`, `rank` as `rank` from (select `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age`, dense_rank() OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME DESC) as `rank` from personTable as `root`) as `subselect` order by `rank`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortingRankInSQL():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName'],desc('lastName'),y|$y->denseRank(),'rank')
+                             ->sort('rank')
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions(),debug());
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "rank" as "rank" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", dense_rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "rank" from personTable as "root") as "subselect" order by "rank"',$result);
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortAndAggregation():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName'],asc('lastName'),func('age', y|$y->sum()),'testCol1')
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", sum("root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "testCol1" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testNoWindowWithSortAndAggregation():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(asc('lastName'),func('age', y|$y->max()),'testCol1')
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", max("root".AGE) OVER (Order By "root".LASTNAME ASC) as "testCol1" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testNoWindowWithSortAndRank():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(desc('lastName'), y|$y->rank(),'testCol1')
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Order By "root".LASTNAME DESC) as "testCol1" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testFilterAfterWindow(): Any[*]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(func('age', y|$y->min()->toOne()),'testCol7')
+                            ->olapGroupBy(['firstName'],asc('lastName'), y|$y->denseRank(),'testCol')
+                            ->filter(row | $row.getInteger('testCol') ==1)
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol7" as "testCol7", "testCol" as "testCol" from (select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol7" as "testCol7", dense_rank() OVER (Partition By "firstName" Order By "lastName" ASC) as "testCol" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "testCol7" from personTable as "root") as "subselect") as "subselect" where "testCol" = 1', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testFilterBeforeWindow(): Any[*]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->filter(row | $row.getInteger('age') ==17)
+                             ->olapGroupBy(['firstName'],asc('lastName'), y|$y->denseRank(),'testCol')
+         };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", dense_rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "testCol" from personTable as "root" where "root".AGE = 17', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testFilterBeforeAndAfterWindow(): Any[*]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(func('age', y|$y->min()->toOne()),'testCol7')
+                            ->filter(row | $row.getInteger('testCol7') >=17)
+                            ->olapGroupBy(['firstName'],asc('lastName'), y|$y->denseRank(),'testCol')
+         };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol7" as "testCol7", dense_rank() OVER (Partition By "firstName" Order By "lastName" ASC) as "testCol" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "testCol7" from personTable as "root") as "subselect" where "testCol7" >= 17', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testWindowColumnWithGroupBy():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName'],asc('lastName'),func('age', y|$y->sum()),'testCol1')
+                           ->groupBy('firstName', agg('cnt', x|$x, y| $y->count()))
+
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "firstName" as "firstName", count(*) as "cnt" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", sum("root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "testCol1" from personTable as "root") as "subselect" group by "firstName"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testSingleWindowAfterGroupBy():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->groupBy(['firstName','lastName'], agg('cnt', x|$x, y| $y->count()))
+                            ->olapGroupBy('firstName',asc('lastName'),func('cnt',y|$y->sum()),'testCol1')
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", count(*) as "cnt", sum(count(*)) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "testCol1" from personTable as "root" group by "firstName","lastName"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testWindowWithoutSortWithRankAndTdsSort():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName','lastName'],y|$y->rank(),'testCol1')
+                            ->sort('testCol1', SortDirection.DESC)->sort('firstName', SortDirection.ASC)
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol1" as "testCol1" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME,"root".LASTNAME ) as "testCol1" from personTable as "root") as "subselect" order by "firstName","testCol1" desc', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testDynaFunctionInWindow():Boolean[1]
+{
+   let func = {|Order.all()->project([ col(o|$o.id, 'id'),
+                                       col(o|$o.quantity, 'quantity'),
+                                       col(o|$o.zeroPnl, 'zeroPnl')
+                                    ])
+                          ->olapGroupBy(['zeroPnl'], asc('quantity'), y|$y->rank(), 'testcol');
+
+               };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id", "root".quantity as "quantity", case when "orderPnlView_d#3_dy0#2_d#2_m3".pnl = 0 then \'true\' else \'false\' end as "zeroPnl", rank() OVER (Partition By case when "orderPnlView_d#3_dy0#2_d#2_m3".pnl = 0 then \'true\' else \'false\' end Order By "root".quantity ASC) as "testcol" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accountTable_d#3_dy0#2_l_d#3_dy0#2_m3_r".ID as accountId, "salesPersonTable_d#3_dy0#2_l_d#3_dy0#2_m4_md".NAME as supportContact, "salesPersonTable_d#3_dy0#2_l_d#3_dy0#2_m4_md".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "orderTable_d#3_dy0#2_d#3_dy0#2_m3" on ("root".ORDER_ID = "orderTable_d#3_dy0#2_d#3_dy0#2_m3".ID) left outer join accountTable as "accountTable_d#3_dy0#2_l_d#3_dy0#2_m3_r" on ("orderTable_d#3_dy0#2_d#3_dy0#2_m3".accountID = "accountTable_d#3_dy0#2_l_d#3_dy0#2_m3_r".ID) left outer join salesPersonTable as "salesPersonTable_d#3_dy0#2_l_d#3_dy0#2_m4_md" on ("orderTable_d#3_dy0#2_d#3_dy0#2_m3".accountID = "salesPersonTable_d#3_dy0#2_l_d#3_dy0#2_m4_md".ACCOUNT_ID) where "root".pnl > 0) as "orderPnlView_d#3_dy0#2_d#2_m3" on ("orderPnlView_d#3_dy0#2_d#2_m3".ORDER_ID = "root".ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testWindowColumnRowNumber():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy([],asc('firstName'),y|$y->rowNumber(),'rowNumber')
+                            ->filter(r|$r.getInteger('rowNumber') > 10)
+               };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from personTable as "root") as "subselect" where "rowNumber" > 10', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testJoinAfterOlap():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+                            ->olapGroupBy([],asc('firstName'),y|$y->rowNumber(),'rowNumber')
+                            ->join(
+                               Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')]),
+                               meta::relational::metamodel::join::JoinType.INNER,
+                               ['firstName', 'lastName']
+                              )
+               };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "tdsJoined__d"."firstName" as "firstName", "tdsJoined__d"."lastName" as "lastName", "tdsJoined__d"."rowNumber" as "rowNumber", "tdsJoined__d"."age" as "age" from (select "joinleft__d"."firstName" as "firstName", "joinleft__d"."lastName" as "lastName", "joinleft__d"."rowNumber" as "rowNumber", "joinright__d"."age" as "age" from (select "firstName" as "firstName", "lastName" as "lastName", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from personTable as "root") as "subselect") as "joinleft__d" inner join (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root") as "joinright__d" on ("joinleft__d"."firstName" = "joinright__d"."firstName" and "joinleft__d"."lastName" = "joinright__d"."lastName")) as "tdsJoined__d"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testWindowColumnRowNumberWithStoreFilter():Boolean[1]
+{
+   let func = {|Person.all()
+                ->filter(p|$p.lastName->startsWith('David'))
+                ->groupBy([p|$p.firstName, p|$p.lastName], [agg(p|$p.age,y|$y->sum())],['firstName', 'lastName', 'ageSum'])
+                ->olapGroupBy([],asc('firstName'),y|$y->rowNumber(),'rowNumber')
+                ->filter(r|$r.getInteger('rowNumber') > 10)
+               };
+   let result =  toSQLString($func, simpleRelationalMappingIncWithStoreFilter, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and "root".LASTNAME like \'David%\' group by "firstName","lastName") as "subselect" where "rowNumber" > 10', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testOLAPGroupBySnowflake():Boolean[1]
+{
+   let func = {|
+      Person.all()
+         ->filter(p|$p.lastName->startsWith('David'))
+         ->groupBy([p|$p.firstName, p|$p.lastName], [agg(p|$p.age, y|$y->sum())], ['firstName', 'lastName', 'ageSum'])
+         ->olapGroupBy([], asc('firstName'), y|$y->rowNumber(), 'rowNumber')
+         ->filter(r|$r.getInteger('rowNumber') > 10)
+   };
+   let result = toSQLString($func, simpleRelationalMappingIncWithStoreFilter, DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and "root".LASTNAME like \'David%\' group by "root".FIRSTNAME,"root".LASTNAME) as "subselect" where "rowNumber" > 10', $result);
+}
+
+function <<test.Test, test.AlloyOnly>>
+{ meta::pure::executionPlan::profiles::serverVersion.start='v1_16_0' }
+meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortWithDenseRankAlloyOnly():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName'],desc('lastName'), func(y|$y->denseRank()),'testCol1')
+   };
+   let sqlResult =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($func, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", dense_rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "testCol1" from personTable as "root"', $sqlResult);
+   assertSameElements(['Anthony|Allen|22|1', 'David|Harris|35|1', 'Fabrice|Roberts|34|1', 'John|Hill|12|2', 'John|Johnson|22|1', 'Oliver|Hill|32|1', 'Peter|Smith|23|1'], $result.values.rows->map(r|$r.values->makeString('|')));
+}
+
+function <<test.Test, test.AlloyOnly>>
+{ meta::pure::executionPlan::profiles::serverVersion.start='v1_16_0' }
+meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortWithRankAlloyOnly():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName'],desc('lastName'), func(y|$y->rank()),'testCol1')
+   };
+   let sqlResult =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($func, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "testCol1" from personTable as "root"', $sqlResult);
+   assertSameElements(['Anthony|Allen|22|1', 'David|Harris|35|1', 'Fabrice|Roberts|34|1', 'John|Hill|12|2', 'John|Johnson|22|1', 'Oliver|Hill|32|1', 'Peter|Smith|23|1'], $result.values.rows->map(r|$r.values->makeString('|')));
+}
+
+
+function <<test.Test, test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_22_0'}
+meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[1]
+{
+   let result1 = execute(
+      {|
+         Person.all()
+            ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+            ->olapGroupBy(['firstName'], func('age', y | $y->percentile(0.9)), 'testCol1')
+      },
+      simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()
+   );
+   assertSize($result1.values.rows, 7);
+   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(0.9) within group (order by "root".AGE asc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result1);
+   assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|21.0', 'John|Johnson|22|21.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result1.values.rows->map(r|$r.values->makeString('|')));
+
+   let result2 = execute(
+      {|
+         Person.all()
+            ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+            ->olapGroupBy(['firstName'], func('age', y | $y->percentile(0.9, false, true)), 'testCol1')
+      },
+      simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()
+   );
+   assertSize($result2.values.rows, 7);
+   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(0.9) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result2);
+   assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|13.0', 'John|Johnson|22|13.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result2.values.rows->map(r|$r.values->makeString('|')));
+
+
+   let result3 = execute(
+      {|
+         Person.all()
+            ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+            ->olapGroupBy(['firstName'], func('age', y | $y->percentile(0.9, false, false)), 'testCol1')
+      },
+      simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()
+   );
+   assertSize($result3.values.rows, 7);
+   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_disc(0.9) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result3);
+   assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|12.0', 'John|Johnson|22|12.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result3.values.rows->map(r|$r.values->makeString('|')));
+}

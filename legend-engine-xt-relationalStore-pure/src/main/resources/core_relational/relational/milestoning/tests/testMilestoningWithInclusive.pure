@@ -1,0 +1,108 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::runtime::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::milestoning::inclusive::*;
+
+function <<test.Test>> meta::relational::tests::milestoning::inclusive::testInFromInclusive():Boolean[1]
+{
+   let result1 = execute(|BiTemporalProduct.all(%2018-05-05, %2018-05-04)->filter(p | $p.id == 2), InFromInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL1 = 'select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate" from BiTemporalProductTable_In_From_Inclusive as "root" where "root".id = 2 and "root".in_z <= \'2018-05-05\' and "root".out_z > \'2018-05-05\' and "root".from_z <= \'2018-05-04\' and "root".thru_z > \'2018-05-04\'';
+   assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
+   assertSameElements(['def2'], $result1.values.name);
+   
+   let result2 = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), InFromInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_In_From_Inclusive as "bitemporalproducttable_in_from_inclusive_0" on ("root".prodFk = "bitemporalproducttable_in_from_inclusive_0".id and ("bitemporalproducttable_in_from_inclusive_0".in_z <= \'2018-05-05\' and "bitemporalproducttable_in_from_inclusive_0".out_z > \'2018-05-05\' and "bitemporalproducttable_in_from_inclusive_0".from_z <= \'2018-05-04\' and "bitemporalproducttable_in_from_inclusive_0".thru_z > \'2018-05-04\')) where "bitemporalproducttable_in_from_inclusive_0".name = \'def2\'';
+   assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
+   assertSameElements([2], $result2.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::inclusive::testInThruInclusive():Boolean[1]
+{
+   let result1 = execute(|BiTemporalProduct.all(%2018-05-05, %2018-05-04)->filter(p | $p.id == 2), InThruInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL1 = 'select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate" from BiTemporalProductTable_In_Thru_Inclusive as "root" where "root".id = 2 and "root".in_z <= \'2018-05-05\' and "root".out_z > \'2018-05-05\' and "root".from_z < \'2018-05-04\' and "root".thru_z >= \'2018-05-04\'';
+   assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
+   assertSameElements(['def2'], $result1.values.name);
+   
+   let result2 = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), InThruInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_In_Thru_Inclusive as "bitemporalproducttable_in_thru_inclusive_0" on ("root".prodFk = "bitemporalproducttable_in_thru_inclusive_0".id and ("bitemporalproducttable_in_thru_inclusive_0".in_z <= \'2018-05-05\' and "bitemporalproducttable_in_thru_inclusive_0".out_z > \'2018-05-05\' and "bitemporalproducttable_in_thru_inclusive_0".from_z < \'2018-05-04\' and "bitemporalproducttable_in_thru_inclusive_0".thru_z >= \'2018-05-04\')) where "bitemporalproducttable_in_thru_inclusive_0".name = \'def2\'';
+   assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
+   assertSameElements([2], $result2.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::inclusive::testOutFromInclusive():Boolean[1]
+{
+   let result1 = execute(|BiTemporalProduct.all(%2018-05-05, %2018-05-04)->filter(p | $p.id == 2), OutFromInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL1 = 'select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate" from BiTemporalProductTable_Out_From_Inclusive as "root" where "root".id = 2 and "root".in_z < \'2018-05-05\' and "root".out_z >= \'2018-05-05\' and "root".from_z <= \'2018-05-04\' and "root".thru_z > \'2018-05-04\'';
+   assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
+   assertSameElements(['def2'], $result1.values.name);
+   
+   let result2 = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), OutFromInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_Out_From_Inclusive as "bitemporalproducttable_out_from_inclusive_0" on ("root".prodFk = "bitemporalproducttable_out_from_inclusive_0".id and ("bitemporalproducttable_out_from_inclusive_0".in_z < \'2018-05-05\' and "bitemporalproducttable_out_from_inclusive_0".out_z >= \'2018-05-05\' and "bitemporalproducttable_out_from_inclusive_0".from_z <= \'2018-05-04\' and "bitemporalproducttable_out_from_inclusive_0".thru_z > \'2018-05-04\')) where "bitemporalproducttable_out_from_inclusive_0".name = \'def2\'';
+   assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
+   assertSameElements([2], $result2.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::inclusive::testOutThruInclusive():Boolean[1]
+{
+   let result1 = execute(|BiTemporalProduct.all(%2018-05-05, %2018-05-04)->filter(p | $p.id == 2), OutThruInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL1 = 'select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate" from BiTemporalProductTable_Out_Thru_Inclusive as "root" where "root".id = 2 and "root".in_z < \'2018-05-05\' and "root".out_z >= \'2018-05-05\' and "root".from_z < \'2018-05-04\' and "root".thru_z >= \'2018-05-04\'';
+   assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
+   assertSameElements(['def2'], $result1.values.name);
+   
+   let result2 = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), OutThruInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_Out_Thru_Inclusive as "bitemporalproducttable_out_thru_inclusive_0" on ("root".prodFk = "bitemporalproducttable_out_thru_inclusive_0".id and ("bitemporalproducttable_out_thru_inclusive_0".in_z < \'2018-05-05\' and "bitemporalproducttable_out_thru_inclusive_0".out_z >= \'2018-05-05\' and "bitemporalproducttable_out_thru_inclusive_0".from_z < \'2018-05-04\' and "bitemporalproducttable_out_thru_inclusive_0".thru_z >= \'2018-05-04\')) where "bitemporalproducttable_out_thru_inclusive_0".name = \'def2\'';
+   assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
+   assertSameElements([2], $result2.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::inclusive::testInThruInclusiveUnionOutFromInclusive():Boolean[1]
+{
+   let result = execute(|BiTemporalProduct.all(%2018-05-05, %2018-05-04)->filter(p | $p.id == 2), InThruInclusiveUnionOutFromInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_1_0" as "pk_1_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."pk_1_1" as "pk_1_1", "unionBase"."id" as "id", "unionBase"."name" as "name", "unionBase"."k_processingDate" as "k_processingDate", "unionBase"."k_businessDate" as "k_businessDate", "unionBase"."from_z_0" as "from_z_0", "unionBase"."thru_z_0" as "thru_z_0", "unionBase"."in_z_0" as "in_z_0", "unionBase"."out_z_0" as "out_z_0", "unionBase"."from_z_1" as "from_z_1", "unionBase"."thru_z_1" as "thru_z_1", "unionBase"."in_z_1" as "in_z_1", "unionBase"."out_z_1" as "out_z_1" from (select \'0\' as u_type, "root".id as "pk_0_0", "root".name as "pk_1_0", null as "pk_0_1", null as "pk_1_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate", "root".from_z as "from_z_0", "root".thru_z as "thru_z_0", "root".in_z as "in_z_0", "root".out_z as "out_z_0", null as "from_z_1", null as "thru_z_1", null as "in_z_1", null as "out_z_1", "root".id as "BiTemporalProductTable_In_Thru_Inclusiveid_BiTemporalProductTable_Out_From_Inclusiveid" from BiTemporalProductTable_In_Thru_Inclusive as "root" where "root".in_z <= \'2018-05-05\' and "root".out_z > \'2018-05-05\' and "root".from_z < \'2018-05-04\' and "root".thru_z >= \'2018-05-04\' UNION ALL select \'1\' as u_type, null as "pk_0_0", null as "pk_1_0", "root".id as "pk_0_1", "root".name as "pk_1_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate", null as "from_z_0", null as "thru_z_0", null as "in_z_0", null as "out_z_0", "root".from_z as "from_z_1", "root".thru_z as "thru_z_1", "root".in_z as "in_z_1", "root".out_z as "out_z_1", "root".id as "BiTemporalProductTable_In_Thru_Inclusiveid_BiTemporalProductTable_Out_From_Inclusiveid" from BiTemporalProductTable_Out_From_Inclusive as "root" where "root".in_z < \'2018-05-05\' and "root".out_z >= \'2018-05-05\' and "root".from_z <= \'2018-05-04\' and "root".thru_z > \'2018-05-04\') as "unionBase" where "unionBase"."BiTemporalProductTable_In_Thru_Inclusiveid_BiTemporalProductTable_Out_From_Inclusiveid" = 2';
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
+   assertSameElements(['def2', 'def2'], $result.values.name);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::inclusive::testOutFromInclusiveUnionInThruInclusive():Boolean[1]
+{
+   let result = execute(|BiTemporalProduct.all(%2018-05-05, %2018-05-04)->filter(p | $p.id == 2), OutFromInclusiveUnionInThruInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_1_0" as "pk_1_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."pk_1_1" as "pk_1_1", "unionBase"."id" as "id", "unionBase"."name" as "name", "unionBase"."k_processingDate" as "k_processingDate", "unionBase"."k_businessDate" as "k_businessDate", "unionBase"."from_z_0" as "from_z_0", "unionBase"."thru_z_0" as "thru_z_0", "unionBase"."in_z_0" as "in_z_0", "unionBase"."out_z_0" as "out_z_0", "unionBase"."from_z_1" as "from_z_1", "unionBase"."thru_z_1" as "thru_z_1", "unionBase"."in_z_1" as "in_z_1", "unionBase"."out_z_1" as "out_z_1" from (select \'0\' as u_type, "root".id as "pk_0_0", "root".name as "pk_1_0", null as "pk_0_1", null as "pk_1_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate", "root".from_z as "from_z_0", "root".thru_z as "thru_z_0", "root".in_z as "in_z_0", "root".out_z as "out_z_0", null as "from_z_1", null as "thru_z_1", null as "in_z_1", null as "out_z_1", "root".id as "BiTemporalProductTable_Out_From_Inclusiveid_BiTemporalProductTable_In_Thru_Inclusiveid" from BiTemporalProductTable_Out_From_Inclusive as "root" where "root".in_z < \'2018-05-05\' and "root".out_z >= \'2018-05-05\' and "root".from_z <= \'2018-05-04\' and "root".thru_z > \'2018-05-04\' UNION ALL select \'1\' as u_type, null as "pk_0_0", null as "pk_1_0", "root".id as "pk_0_1", "root".name as "pk_1_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate", null as "from_z_0", null as "thru_z_0", null as "in_z_0", null as "out_z_0", "root".from_z as "from_z_1", "root".thru_z as "thru_z_1", "root".in_z as "in_z_1", "root".out_z as "out_z_1", "root".id as "BiTemporalProductTable_Out_From_Inclusiveid_BiTemporalProductTable_In_Thru_Inclusiveid" from BiTemporalProductTable_In_Thru_Inclusive as "root" where "root".in_z <= \'2018-05-05\' and "root".out_z > \'2018-05-05\' and "root".from_z < \'2018-05-04\' and "root".thru_z >= \'2018-05-04\') as "unionBase" where "unionBase"."BiTemporalProductTable_Out_From_Inclusiveid_BiTemporalProductTable_In_Thru_Inclusiveid" = 2';
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
+   assertSameElements(['def2', 'def2'], $result.values.name);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::inclusive::testInThruInclusiveUnionInThruInclusive():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), InThruInclusiveUnionInThruInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", null as prodFk_1 from MyOrderTable as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", "root".prodFk as prodFk_1 from MyOrderTable as "root") as "unionBase" left outer join BiTemporalProductTable_In_Thru_Inclusive as "bitemporalproducttable_in_thru_inclusive_0" on ("unionBase".prodFk_1 = "bitemporalproducttable_in_thru_inclusive_0".id and ("bitemporalproducttable_in_thru_inclusive_0".in_z <= \'2018-05-05\' and "bitemporalproducttable_in_thru_inclusive_0".out_z > \'2018-05-05\' and "bitemporalproducttable_in_thru_inclusive_0".from_z < \'2018-05-04\' and "bitemporalproducttable_in_thru_inclusive_0".thru_z >= \'2018-05-04\')) where "bitemporalproducttable_in_thru_inclusive_0".name = \'def2\'';
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
+   assertSameElements([2], $result.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::inclusive::testOutFromInclusiveUnionOutFromInclusive():Boolean[1]
+{
+   let result = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), OutFromInclusiveUnionOutFromInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", null as prodFk_1 from MyOrderTable as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", "root".prodFk as prodFk_1 from MyOrderTable as "root") as "unionBase" left outer join BiTemporalProductTable_Out_From_Inclusive as "bitemporalproducttable_out_from_inclusive_0" on ("unionBase".prodFk_1 = "bitemporalproducttable_out_from_inclusive_0".id and ("bitemporalproducttable_out_from_inclusive_0".in_z < \'2018-05-05\' and "bitemporalproducttable_out_from_inclusive_0".out_z >= \'2018-05-05\' and "bitemporalproducttable_out_from_inclusive_0".from_z <= \'2018-05-04\' and "bitemporalproducttable_out_from_inclusive_0".thru_z > \'2018-05-04\')) where "bitemporalproducttable_out_from_inclusive_0".name = \'def2\'';
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
+   assertSameElements([2], $result.values.id);
+}
+
+function <<test.BeforePackage>> meta::relational::tests::milestoning::inclusive::setUp():Runtime[1]
+{
+   initDatabase();
+}

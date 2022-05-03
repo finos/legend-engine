@@ -1,0 +1,137 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+import meta::relational::tests::mapping::extend::store::*;
+import meta::relational::tests::mapping::extend::model::*;
+
+Mapping meta::relational::tests::mapping::extend::union::embeddedPropertyMapping::testMapping
+(
+   *A : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(aSet1, aSet2)
+   }
+   
+   *B : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(bSet1, bSet2)
+   }
+   
+   *C : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(cSet1, cSet2)
+   }
+   
+   A[aSet1] : Relational
+   {
+      id : [testDatabase]ABC.id,
+      m1[set1m1](
+         id : [testDatabase]ABC.m1Id
+      ),
+      m2[set1m2](
+         id : [testDatabase]ABC.m2Id
+      )
+   }
+   
+   B[bSet1] extends [aSet1] : Relational
+   {
+      m2[set1m3](
+         id : [testDatabase]ABC.m3Id
+      ),
+      n1[set1n1](
+         id : [testDatabase]ABC.n1Id
+      ),
+      n2[set1n2](
+         id : [testDatabase]ABC.n2Id
+      )
+   }
+   
+   C[cSet1] extends [bSet1] : Relational
+   {
+      m2[set1m4](
+         id : [testDatabase]ABC.m4Id
+      ),
+      n2[set1n3](
+         id : [testDatabase]ABC.n3Id
+      ),
+      o1[set1o1](
+         id : [testDatabase]ABC.o1Id
+      ),
+      o2[set1o2](
+         id : [testDatabase]ABC.o2Id
+      )
+   }
+   
+   A[aSet2] : Relational
+   {
+      id : [testDatabase]ABC2.id,
+      m1[set2m1](
+         id : [testDatabase]ABC2.m1Id
+      ),
+      m2[set2m2](
+         id : [testDatabase]ABC2.m2Id
+      )
+   }
+
+   B[bSet2] extends [aSet2] : Relational
+   {
+      m2[set2m3](
+         id : [testDatabase]ABC2.m3Id
+      ),
+      n1[set2n1](
+         id : [testDatabase]ABC2.n1Id
+      ),
+      n2[set2n2](
+         id : [testDatabase]ABC2.n2Id
+      )
+   }
+
+   C[cSet2] extends [bSet2] : Relational
+   {
+      m2[set2m4](
+         id : [testDatabase]ABC2.m4Id
+      ),
+      n2[set2n3](
+         id : [testDatabase]ABC2.n3Id
+      ),
+      o1[set2o1](
+         id : [testDatabase]ABC2.o1Id
+      ),
+      o2[set2o2](
+         id : [testDatabase]ABC2.o2Id
+      )
+   }
+)
+
+###Pure
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::extend::union::embeddedPropertyMapping::*;
+import meta::relational::tests::mapping::extend::model::*;
+import meta::relational::tests::mapping::extend::*;
+
+function <<test.Test>> meta::relational::tests::mapping::extend::union::embeddedPropertyMapping::testEmbeddedPropertyMappingForUnionForB():Any[*]
+{
+   let result = execute(|B.all()->filter(b|$b.m1.id == 1 && $b.m2.id == 3 && $b.n1.id == 1 && $b.n2.id == 2), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", "root".m1Id as "ABCm1Id_ABC2m1Id", "root".m3Id as "ABCm3Id_ABC2m3Id", "root".n1Id as "ABCn1Id_ABC2n1Id", "root".n2Id as "ABCn2Id_ABC2n2Id" from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", "root".m1Id as "ABCm1Id_ABC2m1Id", "root".m3Id as "ABCm3Id_ABC2m3Id", "root".n1Id as "ABCn1Id_ABC2n1Id", "root".n2Id as "ABCn2Id_ABC2n2Id" from ABC2 as "root") as "unionBase" where ((("unionBase"."ABCm1Id_ABC2m1Id" = 1 and "unionBase"."ABCm3Id_ABC2m3Id" = 3) and "unionBase"."ABCn1Id_ABC2n1Id" = 1) and "unionBase"."ABCn2Id_ABC2n2Id" = 2)';
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
+   assertSameElements([1, 1], $result.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::extend::union::embeddedPropertyMapping::testEmbeddedPropertyMappingForUnionForC():Any[*]
+{
+   let result = execute(|C.all()->filter(c|$c.m1.id == 1 && $c.m2.id == 4 && $c.n1.id == 1 && $c.n2.id == 3  && $c.o1.id == 1 && $c.o2.id == 2), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", "root".m1Id as "ABCm1Id_ABC2m1Id", "root".m4Id as "ABCm4Id_ABC2m4Id", "root".n1Id as "ABCn1Id_ABC2n1Id", "root".n3Id as "ABCn3Id_ABC2n3Id", "root".o1Id as "ABCo1Id_ABC2o1Id", "root".o2Id as "ABCo2Id_ABC2o2Id" from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", "root".m1Id as "ABCm1Id_ABC2m1Id", "root".m4Id as "ABCm4Id_ABC2m4Id", "root".n1Id as "ABCn1Id_ABC2n1Id", "root".n3Id as "ABCn3Id_ABC2n3Id", "root".o1Id as "ABCo1Id_ABC2o1Id", "root".o2Id as "ABCo2Id_ABC2o2Id" from ABC2 as "root") as "unionBase" where ((((("unionBase"."ABCm1Id_ABC2m1Id" = 1 and "unionBase"."ABCm4Id_ABC2m4Id" = 4) and "unionBase"."ABCn1Id_ABC2n1Id" = 1) and "unionBase"."ABCn3Id_ABC2n3Id" = 3) and "unionBase"."ABCo1Id_ABC2o1Id" = 1) and "unionBase"."ABCo2Id_ABC2o2Id" = 2)';
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
+   assertSameElements([1, 1], $result.values.id);
+}

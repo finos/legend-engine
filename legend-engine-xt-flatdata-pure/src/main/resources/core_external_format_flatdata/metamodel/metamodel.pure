@@ -1,0 +1,93 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::flatdata::metamodel::*;
+
+Class meta::external::format::flatdata::metamodel::FlatDataDataType
+{
+  optional: Boolean[1];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataString extends FlatDataDataType
+{
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataNumber extends FlatDataDataType
+{
+   format : String[0..1];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataInteger extends FlatDataNumber
+{
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataDecimal extends FlatDataNumber
+{
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataBoolean extends FlatDataDataType
+{
+   trueString  : String[0..1];
+   falseString : String[0..1];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataTemporal extends FlatDataDataType
+{
+   format : String[*];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataDate extends FlatDataTemporal
+{
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataDateTime extends FlatDataTemporal
+{
+   timeZone   : String[0..1];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataProperty
+{
+  name: String[1];
+  value: Any[*];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataRecordType
+{
+  fields: FlatDataRecordField[*];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataRecordField
+{
+  <<meta::pure::profiles::equality.Key>> label: String[1];
+  address: String[0..1];
+  type: FlatDataDataType[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> meta::external::format::flatdata::metamodel::FlatDataSectionEnd
+{
+}
+
+Class meta::external::format::flatdata::metamodel::FlatData extends meta::external::shared::format::metamodel::SchemaDetail
+{
+   constraints: meta::pure::metamodel::constraint::Constraint[*];
+   sections   : FlatDataSection[*];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::flatdata::metamodel::FlatDataSection
+{
+   driverId          : String[1];
+   name              : String[1];
+   sectionProperties : meta::external::format::flatdata::metamodel::FlatDataProperty[*];
+   recordType        : meta::external::format::flatdata::metamodel::FlatDataRecordType[0..1];
+}

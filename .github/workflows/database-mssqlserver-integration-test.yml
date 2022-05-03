@@ -54,7 +54,7 @@ jobs:
           mvn clean install -DskipTests=true
       - name : Run Connection Protocol Integration Tests
         run :
-          mvn -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test
+          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test
       - name : Run Sql Generation Tests
         run :
           mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test

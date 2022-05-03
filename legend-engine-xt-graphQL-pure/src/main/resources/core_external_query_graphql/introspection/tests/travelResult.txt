@@ -1,0 +1,4485 @@
+Class API extends AlertObjectsUnion
+{
+  code : String[1];
+  apiData : APIData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class APIConnection
+{
+  edges : APIEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class APIData
+{
+  code : String[1];
+  id : String[1];
+  isEditable : Boolean[1];
+  label : String[0..1];
+  groups : GroupConnection[0..1];
+  resources : ResourceConnection[0..1];
+  operations : OperationConnection[0..1];
+  adviseMessageCatalog : AdviseMessage[*];
+}
+Class APIEdge
+{
+  node : API[0..1];
+  cursor : String[1];
+}
+Class AbsoluteInput
+{
+}
+Class Access extends AlertObjectsUnion,Connection
+{
+  code : String[1];
+  accessData : AccessData[0..1];
+  error : Error[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class AccessConfigurationInput
+{
+}
+Class AccessConnectUserInput
+{
+}
+Class AccessConnection
+{
+  edges : AccessEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class AccessData extends EntityData
+{
+  name : String[1];
+  isActive : Boolean[1];
+  code : String[1];
+  supplier : Supplier[1];
+  isTest : Boolean[1];
+  user : String[0..1];
+  password : String[0..1];
+  urls : Urls[0..1];
+  parameters : Parameter[*];
+  markets : String[*];
+  rateRules : RateRulesType[*];
+  shared : Access[0..1];
+  owner : Organization[0..1];
+  updateDescriptiveInfo : Integer[1];
+  descriptiveInfoLimit : Integer[1];
+  isSchedulerActive : Boolean[0..1];
+  updateList : Integer[1];
+  updateDateRange : String[1];
+  groups : GroupConnection[0..1];
+  legacyLink : LegacyLink[0..1];
+  master : Access[0..1];
+}
+Class AccessEdge
+{
+  node : Access[0..1];
+  cursor : String[1];
+}
+Class AccessFilter
+{
+}
+Class AccessFilterInput
+{
+}
+Class AccessInput
+{
+}
+Class AccessSupplierInput
+{
+}
+Class Activation
+{
+  code : String[1];
+  activationData : ActivationData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class ActivationConnectInput
+{
+}
+Class ActivationConnection
+{
+  edges : ActivationEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class ActivationData
+{
+  code : String[1];
+  access : AccessData[1];
+  buyer : OrganizationData[1];
+  seller : OrganizationData[1];
+  requester : RequesterInfo[0..1];
+  status : ActivationStatus[1];
+  contentInfoDownloaded : Boolean[1];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class ActivationEdge
+{
+  node : Activation[0..1];
+  cursor : String[1];
+}
+Class ActivationMutation
+{
+  connect : Activation[1];
+  validate : Activation[0..1];
+}
+Class ActivationQuery
+{
+  activations : ActivationConnection[1];
+}
+Class ActivationReadInput
+{
+}
+Enum ActivationStatus
+{
+  PENDING,
+  AVAILABLE,
+  MANUAL
+}
+Class ActivationValidateInput
+{
+}
+Class ActiveFilterInput
+{
+}
+Class AddMemberToOrganizationInput
+{
+}
+Class AddOn
+{
+  key : String[1];
+  value : String[1];
+}
+Class AddOns
+{
+  distribute : String[0..1];
+  distribution : AddOn[*];
+}
+Class Address
+{
+}
+Class AdminMutation
+{
+  createAccess : Access[0..1];
+  updateAccess : Access[0..1];
+  grantAccessToGroup : Access[0..1];
+  deleteAccessFromGroup : Access[0..1];
+  grantSupplierToGroup : Supplier[0..1];
+  deleteSupplierFromGroup : Supplier[0..1];
+  grantClientToGroup : Client[0..1];
+  deleteClientFromGroup : Client[0..1];
+  createClient : Client[0..1];
+  updateClient : Client[0..1];
+  createProfile : Profile[0..1];
+  updateProfile : Profile[0..1];
+  deleteProfile : Profile[0..1];
+  addEntitiesToProfile : Profile[0..1];
+  removeEntitiesFromProfile : Profile[0..1];
+  grantProfileToGroup : Profile[0..1];
+  createSystem : System[0..1];
+  updateSystem : System[0..1];
+  setSupplierMaintainer : Member[0..1];
+  setProviderMaintainer : Member[0..1];
+  updateLegacyAccess : LegacyAccess[0..1];
+  createOrganization : Organization[1];
+  createContextForSupplier : Supplier[0..1];
+  updateOrganization : Organization[1];
+  suitOrganization : Organization[1];
+  createFolder : Group[1];
+  createMember : Member[1];
+  createGroup : Group[1];
+  updateMember : Member[1];
+  addMemberToOrganization : Member[1];
+  removeMemberFromOrganization : Member[1];
+  grantPermissions : Member[1];
+  revokePermissions : Member[1];
+  clonePermissions : Member[1];
+  updateGroup : Group[1];
+  deleteMember : Member[1];
+  deleteGroup : Group[1];
+  grantApiToGroup : Group[1];
+  revokeApiFromGroup : Group[1];
+  grantMacroPermissionsToMember : Member[1];
+  revokeMacroPermissionsFromMember : Member[1];
+  addContact : Organization[1];
+  deleteContact : Organization[1];
+  createPartner : Partner[1];
+  updatePartner : Partner[1];
+  deletePartner : Partner[1];
+  addPartnerToOrganization : Partner[1];
+  deletePartnerFromOrganization : Partner[1];
+  setPrimaryPartner : Partner[1];
+  addAgent : Partner[1];
+  deleteAgent : Partner[1];
+  updateProvider : Provider[0..1];
+  initialOrganizationSetup : Organization[1];
+}
+Class AdminQuery
+{
+  jwt : String[0..1];
+  accesses : AccessConnection[0..1];
+  suppliers : SupplierConnection[0..1];
+  clients : ClientConnection[0..1];
+  serviceApi : ServiceApi[0..1];
+  pointsOfSale : PointOfSaleConnection[0..1];
+  profiles : ProfileConnection[0..1];
+  entities : EntityConnection[0..1];
+  systems : SystemConnection[0..1];
+  getSupplierMaintainer : Member[0..1];
+  getProviderMaintainer : Member[0..1];
+  organizations : OrganizationConnection[1];
+  products : ProductConnection[1];
+  members : MemberConnection[1];
+  groups : GroupConnection[1];
+  apis : APIConnection[1];
+  resources : ResourceConnection[1];
+  roles : RoleConnection[1];
+  operations : OperationConnection[1];
+  partner : Partner[1];
+  allPartners : PartnerConnection[1];
+  legacyAccesses : LegacyAccessConnection[0..1];
+  client : Client[0..1];
+  allClients : ClientConnection[1];
+  clientsByOwnerCode : ClientConnection[1];
+  clientsByGroupCode : ClientConnection[1];
+}
+Class AdviseMessage
+{
+  code : String[1];
+  type : String[1];
+  description : String[1];
+  level : AdviseMessageLevel[1];
+  external : ExternalMessage[0..1];
+  correlationID : String[1];
+}
+Enum AdviseMessageLevel
+{
+  WARN,
+  ERROR,
+  INFO
+}
+Class AgeRange
+{
+  min : Integer[1];
+  max : Integer[1];
+  type : HotelPaxType[1];
+}
+Class Aggregate
+{
+  sum : AggregateSum[0..1];
+  max : AggregateMax[0..1];
+}
+Class AggregateMax
+{
+  nights : Integer[0..1];
+  bookingWindow : Integer[0..1];
+}
+Class AggregateSum
+{
+  amount : Float[0..1];
+  amountEur : Float[0..1];
+  bookings : Integer[0..1];
+  nights : Integer[0..1];
+  bookingWindow : Integer[0..1];
+  destinationCountry : Integer[0..1];
+  originMarket : Integer[0..1];
+  supplierCode : Integer[0..1];
+  clientCode : Integer[0..1];
+  supplierOrganization : Integer[0..1];
+  clientOrganization : Integer[0..1];
+}
+Class Airport
+{
+  code : String[1];
+  airportData : AirportData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class AirportData
+{
+  code : String[1];
+  name : String[0..1];
+  location : Location[0..1];
+}
+Class Alert
+{
+  code : String[1];
+  alertData : AlertData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Enum AlertAmountBy
+{
+  NIGHT,
+  TOTAL
+}
+Class AlertAverageTimeAbsoluteByRequestsInput
+{
+}
+Class AlertAverageTimeAbsoluteByTimeInput
+{
+}
+Class AlertAverageTimeAbsoluteConfigurationByRequestsInput
+{
+}
+Class AlertAverageTimeAbsoluteConfigurationByTimeInput
+{
+}
+Class AlertAverageTimeComparativeByTimeInput
+{
+}
+Class AlertAverageTimeComparativeConfigurationByTimeInput
+{
+}
+Class AlertAverageTimeRelativeByRequestsInput
+{
+}
+Class AlertAverageTimeRelativeByTimeInput
+{
+}
+Class AlertAverageTimeRelativeConfigurationByRequestsInput
+{
+}
+Class AlertAverageTimeRelativeConfigurationByTimeInput
+{
+}
+Enum AlertBound
+{
+  UPPER,
+  LOWER,
+  BOTH
+}
+Class AlertBounds
+{
+  bound : AlertBound[1];
+  upperBound : Integer[0..1];
+  lowerBound : Integer[0..1];
+}
+Class AlertBoundsInput
+{
+}
+Enum AlertCheckPrice
+{
+  AMOUNT,
+  COMMISSION,
+  BOTH
+}
+Enum AlertComercialType
+{
+  SELLER,
+  BUYER
+}
+Class AlertCommonByRequestsInput
+{
+}
+Class AlertCommonByTimeInput
+{
+}
+Class AlertCommonComparativeInput
+{
+}
+Class AlertCommonConfigurationInput
+{
+}
+Class AlertCommonRelativeInput
+{
+}
+Class AlertConfiguration
+{
+  alertType : AlertType[1];
+  mode : AlertMode[1];
+  windowType : AlertWindowType[1];
+  periodicity : Integer[0..1];
+  window : Integer[0..1];
+  historicalWindow : Integer[0..1];
+  offset : Integer[0..1];
+  timesToAlert : Integer[1];
+  timesToRecovery : Integer[1];
+  typeConfiguration : AlertTypeConfiguration[0..1];
+  noRecoveries : Boolean[1];
+  stateChangesOnly : Boolean[1];
+  minNumberRequests : Integer[0..1];
+  percentageToAlert : Integer[0..1];
+  variation : AlertVariation[0..1];
+  email : String[*];
+  notifications : AlertNotifications[0..1];
+  hubStatus : HubStatus[*];
+  errorCode : Integer[*];
+  errorType : ErrorType[*];
+  alertObjects : AlertObjectsUnion[*];
+  groupBy : AlertGroups[*];
+  comercialType : AlertComercialType[0..1];
+}
+Class AlertConnection
+{
+  edges : AlertEdge[*];
+  pageInfo : PageInfo[1];
+  totalCount : Integer[1];
+}
+Class AlertCriteriaInput
+{
+}
+Class AlertData
+{
+  code : String[1];
+  name : String[0..1];
+  description : String[0..1];
+  configuration : AlertConfiguration[1];
+  isActive : Boolean[1];
+  history : AlertConnection[1];
+  editor : Member[1];
+  events : AlertEventConnection[1];
+  group : Group[1];
+}
+Class AlertEdge
+{
+  node : Alert[0..1];
+  cursor : String[1];
+}
+Class AlertEmailInput
+{
+}
+Enum AlertEmailType
+{
+  BCC,
+  TO
+}
+Class AlertEmails
+{
+  isActive : Boolean[1];
+  email : String[1];
+}
+Class AlertEmailsInput
+{
+}
+Class AlertErrorCodeInput
+{
+}
+Class AlertErrorRateComparativeByTimeInput
+{
+}
+Class AlertErrorRateComparativeConfigurationByTimeInput
+{
+}
+Class AlertErrorRateRelativeByRequestsInput
+{
+}
+Class AlertErrorRateRelativeByTimeInput
+{
+}
+Class AlertErrorRateRelativeConfigurationByRequestsInput
+{
+}
+Class AlertErrorRateRelativeConfigurationByTimeInput
+{
+}
+Class AlertErrorTypeInput
+{
+}
+Class AlertEvent
+{
+  code : String[1];
+  eventData : AlertEventData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class AlertEventConnection
+{
+  edges : AlertEventEdge[*];
+  pageInfo : PageInfo[1];
+  totalCount : Integer[1];
+}
+Class AlertEventData
+{
+  code : String[1];
+  groupBy : String[0..1];
+  status : AlertEventType[1];
+  details : String[1];
+  history : AlertEventConnection[1];
+}
+Class AlertEventEdge
+{
+  node : AlertEvent[0..1];
+  cursor : String[1];
+}
+Enum AlertEventType
+{
+  OK,
+  ALERTING
+}
+Class AlertFilterInput
+{
+}
+Class AlertGroupInput
+{
+}
+Enum AlertGroups
+{
+  ACCESS,
+  CLIENT,
+  SUPPLIER,
+  OPERATION,
+  HUB_STATUS,
+  ERROR_CODE,
+  ERROR_TYPE,
+  GROUP_ORG_SELLER,
+  GROUP_ORG_BUYER,
+  GROUP_FOLDER_SELLER,
+  GROUP_FOLDER_BUYER,
+  GROUP_PRODUCT_SELLER,
+  GROUP_PRODUCT_BUYER
+}
+Enum AlertGroupsInsights
+{
+  ACCESS,
+  CLIENT,
+  SUPPLIER,
+  OPERATION,
+  GROUP_ORG_SELLER,
+  GROUP_ORG_BUYER,
+  GROUP_FOLDER_SELLER,
+  GROUP_FOLDER_BUYER,
+  GROUP_PRODUCT_SELLER,
+  GROUP_PRODUCT_BUYER
+}
+Class AlertHubStatusInput
+{
+}
+Enum AlertMode
+{
+  RELATIVE,
+  ABSOLUTE,
+  COMPARATIVE
+}
+Class AlertNotifications
+{
+  emails : AlertEmails[0..1];
+  slack : AlertSlack[0..1];
+}
+Class AlertNotificationsInput
+{
+}
+Class AlertObjectInput
+{
+}
+Class AlertObjectsUnion
+{
+}
+Class AlertPeakTrafficAbsoluteByTimeInput
+{
+}
+Class AlertPeakTrafficAbsoluteConfigurationByTimeInput
+{
+}
+Class AlertPeakTrafficComparativeByTimeInput
+{
+}
+Class AlertPeakTrafficComparativeConfigurationByTimeInput
+{
+}
+Class AlertPrice
+{
+  check : AlertCheckPrice[1];
+  range : AlertRangePrice[1];
+  amount : Integer[0..1];
+  commission : Integer[0..1];
+  amountBy : AlertAmountBy[0..1];
+}
+Class AlertPriceAbsoluteByRequestsInput
+{
+}
+Class AlertPriceAbsoluteByTimeInput
+{
+}
+Class AlertPriceAbsoluteConfigurationByRequestsInput
+{
+}
+Class AlertPriceAbsoluteConfigurationByTimeInput
+{
+}
+Class AlertPriceInput
+{
+}
+Class AlertPriceRelativeByRequestsInput
+{
+}
+Class AlertPriceRelativeByTimeInput
+{
+}
+Class AlertPriceRelativeConfigurationByRequestsInput
+{
+}
+Class AlertPriceRelativeConfigurationByTimeInput
+{
+}
+Enum AlertRangePrice
+{
+  LESS,
+  GREATER
+}
+Enum AlertSharedType
+{
+  TGX,
+  GROUP
+}
+Class AlertSlack
+{
+  isActive : Boolean[1];
+  webHook : String[1];
+  advancedOptions : AlertSlackAdvancedOptions[0..1];
+}
+Class AlertSlackAdvancedOptions
+{
+  titles : AlertSlackTitles[0..1];
+  short : Boolean[0..1];
+  icon : String[0..1];
+  username : String[0..1];
+  channel : String[*];
+}
+Class AlertSlackAdvancedOptionsInput
+{
+}
+Class AlertSlackInput
+{
+}
+Class AlertSlackTitles
+{
+  ok : String[0..1];
+  alerting : String[0..1];
+}
+Class AlertSlackTitlesInput
+{
+}
+Enum AlertType
+{
+  ERROR_RATE,
+  AVERAGE_TIME,
+  PEAK_TRAFFIC,
+  PRICE,
+  BUSINESS_METRIC
+}
+Class AlertTypeConfiguration
+{
+  maxAverageTime : Integer[0..1];
+  maxTime : Integer[0..1];
+  requestsToAlert : Integer[0..1];
+  toCheck : Integer[*];
+  toCompare : Integer[*];
+  price : AlertPrice[0..1];
+  bounds : AlertBounds[0..1];
+}
+Class AlertUpdateAverageTimeAbsoluteByRequestsInput
+{
+}
+Class AlertUpdateAverageTimeAbsoluteByTimeInput
+{
+}
+Class AlertUpdateAverageTimeAbsoluteConfigurationByRequestsInput
+{
+}
+Class AlertUpdateAverageTimeAbsoluteConfigurationByTimeInput
+{
+}
+Class AlertUpdateAverageTimeComparativeByTimeInput
+{
+}
+Class AlertUpdateAverageTimeComparativeConfigurationByTimeInput
+{
+}
+Class AlertUpdateAverageTimeRelativeByRequestsInput
+{
+}
+Class AlertUpdateAverageTimeRelativeByTimeInput
+{
+}
+Class AlertUpdateAverageTimeRelativeConfigurationByRequestsInput
+{
+}
+Class AlertUpdateAverageTimeRelativeConfigurationByTimeInput
+{
+}
+Class AlertUpdateBoundsInput
+{
+}
+Class AlertUpdateCommonByRequestsInput
+{
+}
+Class AlertUpdateCommonByTimeInput
+{
+}
+Class AlertUpdateCommonComparativeInput
+{
+}
+Class AlertUpdateCommonConfigurationInput
+{
+}
+Class AlertUpdateCommonRelativeInput
+{
+}
+Class AlertUpdateEmailsInput
+{
+}
+Class AlertUpdateErrorRateComparativeByTimeInput
+{
+}
+Class AlertUpdateErrorRateComparativeConfigurationByTimeInput
+{
+}
+Class AlertUpdateErrorRateRelativeByRequestsInput
+{
+}
+Class AlertUpdateErrorRateRelativeByTimeInput
+{
+}
+Class AlertUpdateErrorRateRelativeConfigurationByRequestsInput
+{
+}
+Class AlertUpdateErrorRateRelativeConfigurationByTimeInput
+{
+}
+Class AlertUpdateNotificationsInput
+{
+}
+Class AlertUpdatePeakTrafficAbsoluteByTimeInput
+{
+}
+Class AlertUpdatePeakTrafficAbsoluteConfigurationByTimeInput
+{
+}
+Class AlertUpdatePeakTrafficComparativeByTimeInput
+{
+}
+Class AlertUpdatePeakTrafficComparativeConfigurationByTimeInput
+{
+}
+Class AlertUpdatePriceAbsoluteByRequestsInput
+{
+}
+Class AlertUpdatePriceAbsoluteByTimeInput
+{
+}
+Class AlertUpdatePriceAbsoluteConfigurationByRequestsInput
+{
+}
+Class AlertUpdatePriceAbsoluteConfigurationByTimeInput
+{
+}
+Class AlertUpdatePriceInput
+{
+}
+Class AlertUpdatePriceRelativeByRequestsInput
+{
+}
+Class AlertUpdatePriceRelativeByTimeInput
+{
+}
+Class AlertUpdatePriceRelativeConfigurationByRequestsInput
+{
+}
+Class AlertUpdatePriceRelativeConfigurationByTimeInput
+{
+}
+Class AlertUpdateSlackInput
+{
+}
+Enum AlertVariation
+{
+  INCREASE,
+  DECREASE,
+  BOTH
+}
+Enum AlertWindowType
+{
+  REQUESTS,
+  TIME
+}
+Class AlertsXMutation
+{
+  createAlertErrorRateRelativeByTime : Alert[0..1];
+  createAlertErrorRateRelativeByRequests : Alert[0..1];
+  createAlertErrorRateComparativeByTime : Alert[0..1];
+  createAlertAverageTimeRelativeByTime : Alert[0..1];
+  createAlertAverageTimeRelativeByRequests : Alert[0..1];
+  createAlertAverageTimeAbsoluteByTime : Alert[0..1];
+  createAlertAverageTimeAbsoluteByRequests : Alert[0..1];
+  createAlertAverageTimeComparativeByTime : Alert[0..1];
+  createAlertPeakTrafficAbsoluteByTime : Alert[0..1];
+  createAlertPeakTrafficComparativeByTime : Alert[0..1];
+  createAlertPriceRelativeByTime : Alert[0..1];
+  createAlertPriceRelativeByRequests : Alert[0..1];
+  createAlertPriceAbsoluteByTime : Alert[0..1];
+  createAlertPriceAbsoluteByRequests : Alert[0..1];
+  updateAlertErrorRateRelativeByTime : Alert[0..1];
+  updateAlertErrorRateRelativeByRequests : Alert[0..1];
+  updateAlertErrorRateComparativeByTime : Alert[0..1];
+  updateAlertAverageTimeRelativeByTime : Alert[0..1];
+  updateAlertAverageTimeRelativeByRequests : Alert[0..1];
+  updateAlertAverageTimeAbsoluteByTime : Alert[0..1];
+  updateAlertAverageTimeAbsoluteByRequests : Alert[0..1];
+  updateAlertAverageTimeComparativeByTime : Alert[0..1];
+  updateAlertPeakTrafficAbsoluteByTime : Alert[0..1];
+  updateAlertPeakTrafficComparativeByTime : Alert[0..1];
+  updateAlertPriceRelativeByTime : Alert[0..1];
+  updateAlertPriceRelativeByRequests : Alert[0..1];
+  updateAlertPriceAbsoluteByTime : Alert[0..1];
+  updateAlertPriceAbsoluteByRequests : Alert[0..1];
+  deleteAlert : Alert[0..1];
+}
+Class AlertsXQuery
+{
+  alerts : AlertConnection[1];
+}
+Class Amenity
+{
+  code : String[1];
+  amenityCodeSupplier : String[1];
+  type : ApplicationAreaType[1];
+  value : String[1];
+  texts : String[1];
+}
+Class AmenityStatic
+{
+  code : String[1];
+  type : ApplicationAreaType[1];
+  texts : Text[1];
+}
+Class AmountCancelPenalty
+{
+  currency : String[0..1];
+  amount : Float[0..1];
+  amountEur : Float[0..1];
+}
+Class AmountType
+{
+  amount : Float[0..1];
+  curCode : String[0..1];
+}
+Enum ApplicationAreaType
+{
+  HOTEL,
+  ROOM,
+  SERVICE,
+  GENERAL
+}
+Class AuditData
+{
+  transactions : Transactions[1];
+  timeStamp : String[1];
+  processTime : Float[1];
+}
+Class AuditRule
+{
+  code : String[1];
+  auditRuleData : AuditRuleData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class AuditRuleConnection
+{
+  edges : AuditRuleEdge[*];
+  pageInfo : PageInfo[1];
+  AdviseMessage : AdviseMessage[0..1];
+}
+Class AuditRuleCreateInput
+{
+}
+Class AuditRuleData
+{
+  product : Product[1];
+  group : Group[0..1];
+  access : Access[0..1];
+  client : Client[0..1];
+  error : AdviseMessage[0..1];
+  ttl : Integer[1];
+  remainingTTL : Integer[1];
+  percentageToAudit : Integer[1];
+  auditStatus : AuditRuleStatus[1];
+}
+Class AuditRuleEdge
+{
+  cursor : String[1];
+  node : AuditRule[0..1];
+}
+Enum AuditRuleProductInput
+{
+  legacy,
+  hotelX
+}
+Enum AuditRuleStatus
+{
+  Scheduled,
+  InProcess,
+  Finalized,
+  Deleted,
+  ALL
+}
+Class AuditRuleWhereInput
+{
+}
+Class AuditRuleWhereUniqueInput
+{
+}
+Class Bed
+{
+  type : String[0..1];
+  description : String[0..1];
+  count : Integer[0..1];
+  shared : Boolean[0..1];
+}
+Class BedStatic
+{
+  type : String[0..1];
+  count : Integer[0..1];
+  shared : Boolean[0..1];
+}
+Class Board
+{
+  code : String[1];
+  boardData : BoardData[0..1];
+  error : Error[*];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class BoardConnection
+{
+  edges : BoardEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class BoardData
+{
+  code : String[1];
+  boardCode : String[1];
+  texts : Text[*];
+}
+Class BoardEdge
+{
+  node : Board[0..1];
+  cursor : String[1];
+}
+Class BookPaxInput
+{
+}
+Class BookReferenceDatesInput
+{
+}
+Class BookReferenceInput
+{
+}
+Class BookRoomInput
+{
+}
+Enum BookStatusType
+{
+  OK,
+  KO,
+  ON_REQUEST,
+  CANCELLED,
+  UNKNOWN,
+  PENDING_COMMIT
+}
+Class BookableOptionSearch
+{
+}
+Class BookingAggregation
+{
+  status : BookStatusType[0..1];
+  client : Client[0..1];
+  supplier : Supplier[0..1];
+  currency : String[0..1];
+  bookingAt : String[0..1];
+  checkInAt : String[0..1];
+  cancelAt : String[0..1];
+  originMarket : String[0..1];
+  destinationCountry : String[0..1];
+  paxType : PaxTypeType[0..1];
+  bookingWindow : BookingWindowType[0..1];
+  lengthOfStay : Integer[0..1];
+  hotelName : String[0..1];
+  amount : Float[0..1];
+  amountEur : Float[0..1];
+  amountCancelPenalties : AmountCancelPenalty[*];
+  numBookings : Integer[0..1];
+  aggregate : Aggregate[0..1];
+}
+Enum BookingCriteriaType
+{
+  DATES,
+  REFERENCES
+}
+Class BookingDetail
+{
+  reference : Reference[1];
+  holder : Holder[0..1];
+  hotel : BookingHotelDetails[0..1];
+  price : Price[0..1];
+  cancelPolicy : CancelPolicy[0..1];
+  remarks : String[0..1];
+  status : BookStatusType[1];
+  payable : String[0..1];
+  sessionIdQuote : String[0..1];
+  sessionIdBooking : String[0..1];
+  sessionIdCancel : String[0..1];
+  client : Client[0..1];
+  supplier : Supplier[0..1];
+  access : Access[0..1];
+  executionTime : Integer[0..1];
+  timeout : Integer[0..1];
+  errorCode : String[0..1];
+}
+Class BookingHotel
+{
+  creationDate : String[0..1];
+  checkIn : String[0..1];
+  checkOut : String[0..1];
+  bookingDate : String[0..1];
+  start : String[0..1];
+  end : String[0..1];
+  hotelCode : String[0..1];
+  hotelName : String[0..1];
+  boardCode : String[0..1];
+  occupancies : Occupancy[*];
+  rooms : BookingRoom[*];
+}
+Class BookingHotelDetails
+{
+  creationDate : String[0..1];
+  checkIn : String[0..1];
+  checkOut : String[0..1];
+  bookingDate : String[0..1];
+  start : String[0..1];
+  end : String[0..1];
+  cancelDate : String[0..1];
+  hotelCode : String[0..1];
+  hotelName : String[0..1];
+  boardCode : String[0..1];
+  occupancies : Occupancy[*];
+  rooms : BookingRoom[*];
+}
+Class BookingRoom
+{
+  occupancyRefId : Integer[0..1];
+  code : String[0..1];
+  description : String[0..1];
+  price : Price[0..1];
+}
+Enum BookingWindowType
+{
+  LAST_SECOND,
+  LAST_MINUTE,
+  ABOUT_ONE_WEEK,
+  ABOUT_TWO_WEEKS,
+  ABOUT_ONE_MONTH,
+  ABOUT_TWO_MONTHS,
+  ABOUT_THREE_MONTHS,
+  MORE_THAN_THREE_MONTHS
+}
+Enum BookingsReportGroupByInput
+{
+  status,
+  clientCode,
+  clientOrganization,
+  supplierCode,
+  supplierOrganization,
+  currency,
+  bookingAt,
+  checkInAt,
+  cancelAt,
+  originMarket,
+  destinationCountry,
+  paxType,
+  lengthOfStay,
+  bookingWindow,
+  hotel
+}
+Enum BookingsReportOrderByInput
+{
+  bookingAt_ASC,
+  checkInAt_ASC,
+  cancelAt_ASC,
+  numBookings_ASC,
+  amountEur_ASC,
+  bookingAt_DES,
+  checkInAt_DES,
+  cancelAt_DES,
+  numBookings_DES,
+  amountEur_DES
+}
+Class BookingsReportWhereInput
+{
+}
+Class BusinessRules
+{
+  optionsQuota : Integer[1];
+  businessRulesType : BusinessRulesType[1];
+}
+Class BusinessRulesInput
+{
+}
+Enum BusinessRulesType
+{
+  CHEAPER_AMOUNT,
+  ROOM_TYPE
+}
+Class CancelPenalty
+{
+  deadline : String[0..1];
+  hoursBefore : Integer[1];
+  penaltyType : CancelPenaltyType[1];
+  currency : String[1];
+  value : Float[1];
+}
+Enum CancelPenaltyType
+{
+  NIGHTS,
+  PERCENT,
+  IMPORT
+}
+Class CancelPolicy
+{
+  refundable : Boolean[1];
+  cancelPenalties : CancelPenalty[*];
+}
+Class Category
+{
+  code : String[1];
+  categoryData : CategoryData[0..1];
+  error : Error[*];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class CategoryConnection
+{
+  edges : CategoryEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class CategoryData
+{
+  code : String[1];
+  categoryCode : String[1];
+  texts : Text[*];
+}
+Class CategoryEdge
+{
+  node : Category[0..1];
+  cursor : String[1];
+}
+Enum ChargeType
+{
+  INCLUDE,
+  EXCLUDE
+}
+Class CheckInformation
+{
+  instructions : Text[*];
+  specialInstructions : Text[*];
+  minAge : Integer[0..1];
+  schedule : TimeRange[0..1];
+}
+Class Client extends AlertObjectsUnion,Connection
+{
+  code : String[1];
+  clientData : ClientData[0..1];
+  error : Error[*];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class ClientConnection
+{
+  edges : ClientEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class ClientData extends EntityData
+{
+  id : String[1];
+  code : String[1];
+  name : String[1];
+  isActive : Boolean[1];
+  group : Group[0..1];
+  owner : Organization[0..1];
+  suppliers : SupplierConnection[0..1];
+}
+Class ClientEdge
+{
+  node : Client[0..1];
+  cursor : String[1];
+}
+Class ClientFilter
+{
+}
+Enum ClientOrderByInput
+{
+  code_ASC,
+  code_DESC,
+  name_ASC,
+  name_DESC,
+  created_at_ASC,
+  created_at_DESC,
+  updated_at_ASC,
+  updated_at_DESC
+}
+Class ClientWhereInput
+{
+}
+Class ClientWhereUniqueInput
+{
+}
+Class ClonePermissionsInput
+{
+}
+Enum CloudEnvironment
+{
+  AZURE,
+  GOOGLE,
+  HETZNER,
+  TOTAL_UPTIME,
+  BLUEKIRI
+}
+Class CompanyCrmData
+{
+  crmID : String[1];
+  connectionType : ConnectionType[*];
+  contract : Contract[*];
+  techPlatformName : String[0..1];
+}
+Class CompanyCrmDataInput
+{
+}
+Enum CompanyRole
+{
+  ACCOUNT_MANAGER_BUYER,
+  ACCOUNT_MANAGER_SELLER,
+  BILLING_BUYER,
+  BILLING_SELLER,
+  CONTRACTING,
+  GENERIC_ACCOUNT,
+  LEGAL,
+  PLATFOR_PRIMARY_ACCOUNT,
+  PRESS,
+  SALES_BUYER,
+  SALES_SELLER,
+  SERVICE_PROVIDER,
+  TECH_BUYER,
+  TECH_SELLER,
+  TEST,
+  TGX_HELPDESK_USER,
+  UNKNOWN
+}
+Enum ConditionType
+{
+  GTE,
+  GT,
+  LTE,
+  LT
+}
+Class ConfigurationInput
+{
+}
+Class ConnectUser
+{
+  code : String[1];
+  isActive : Boolean[1];
+  connectUserGroups : ConnectUserGroup[*];
+}
+Class ConnectUserGroup
+{
+  groupCode : String[1];
+  isActive : Boolean[1];
+}
+Class ConnectUserGroupInput
+{
+}
+Class Connection
+{
+}
+Class ConnectionConnection
+{
+  edges : ConnectionEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class ConnectionEdge
+{
+  node : Connection[0..1];
+  cursor : String[1];
+}
+Enum ConnectionType
+{
+  HOTEL_X_BUYER_ONLY,
+  HOTEL_LEGACY_BUYER_ONLY,
+  CHANNEL_X_BUYER_ONLY,
+  HOTEL_PULL_LEGACY_SELLER_ONLY,
+  HOTEL_PULL_SELLER_GENERIC,
+  HOTEL_PUSH_LEGACY_SELLER_ONLY,
+  HOTEL_PUSH_SELLER_GENERIC,
+  DMC_X,
+  FLIGHTS_LEGACY_SELLER_ONLY,
+  PAYMENT_LEGACY_SELLER_ONLY,
+  B2B_VIRTUAL_AGENCY_TOOL_BUYER_ONLY,
+  TRANSPORTATION_FLIGHT_LEGACY_BUYER_ONLY,
+  FLIGHT_X_BUYER_ONLY,
+  DIRECT_X,
+  DISTRIBUTE,
+  INVENTORY,
+  ACTIVITIES_LEGACY,
+  CARS_LEGACY,
+  TRANSFERS_LEGACY,
+  VIRTUAL_ACCOUNT_LEGACY
+}
+Class Contact
+{
+  email : String[0..1];
+  telephone : String[0..1];
+  fax : String[0..1];
+  web : String[0..1];
+}
+Enum ContactImportance
+{
+  EXECUTION_LEVEL,
+  DECISION_MAKER,
+  PRIMARY,
+  MINOR
+}
+Class ContactInfo
+{
+}
+Class Context
+{
+  code : String[1];
+  error : Error[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Enum Contract
+{
+  CONTRACT_TCP,
+  CONTRACT_AFFILIATE,
+  CONTRACT_RESELLER,
+  ANNEX_POWER_BUYER,
+  ANNEX_PREMIUM_SELLER,
+  ANNEX_SELECTIVE_PREMIUM_SELLER,
+  ANNEX_STANDARD_SELLER,
+  ANNEX_STANDARD_BUYER,
+  ANNEX_PREFERRED_SELLER
+}
+Class Coordinates
+{
+  latitude : Float[1];
+  longitude : Float[1];
+}
+Class CreateClientInput
+{
+}
+Class CreateFolderInput
+{
+}
+Class CreateGroupInput
+{
+}
+Class CreateMemberInput
+{
+}
+Class CreateOrganizationInput
+{
+}
+Class CreateProfileInput
+{
+}
+Class CreateSystemInput
+{
+}
+Class CriteriaBookingDatesInput
+{
+}
+Class CriteriaBookingReferencesInput
+{
+}
+Class CriteriaSearch
+{
+  checkIn : String[1];
+  checkOut : String[1];
+  hotels : String[1];
+  occupancies : RoomCriteria[1];
+  language : String[0..1];
+  currency : String[0..1];
+  nationality : String[0..1];
+  market : String[1];
+}
+Enum CriteriaType
+{
+  CurrentDestination_CurrentMarket,
+  CurrentDestination_NewMarket,
+  NewDestination_CurrentMarket
+}
+Class CrmData
+{
+  crmID : String[0..1];
+  contactImportance : String[0..1];
+  companyRole : String[0..1];
+}
+Class CrmDataInput
+{
+}
+Class CustomerAgent
+{
+  type : CustomerAgentType[1];
+  user : Member[1];
+}
+Enum CustomerAgentType
+{
+  KAM,
+  TECH_KAM,
+  CUSTOMER_CARE,
+  OTHER
+}
+Class DateRange
+{
+}
+Enum DateType
+{
+  ARRIVAL,
+  BOOKING
+}
+Class DefaultSettings
+{
+  connectUser : String[0..1];
+  context : String[0..1];
+  language : String[1];
+  currency : String[1];
+  nationality : String[1];
+  market : String[0..1];
+  timeouts : Timeout[1];
+  businessRules : BusinessRules[1];
+}
+Class DefaultSettingsBusinessRulesInput
+{
+}
+Class DefaultSettingsInput
+{
+}
+Class DeleteGroupInput
+{
+}
+Class DeleteMemberInput
+{
+}
+Class DeleteProfileInput
+{
+}
+Class DeltaPriceInput
+{
+}
+Class Description
+{
+  type : DescriptionType[1];
+  texts : Text[*];
+}
+Enum DescriptionType
+{
+  ADDITIONAL,
+  AMENITY,
+  ACTIVITY,
+  RESTAURANT,
+  ROOM,
+  GENERAL,
+  POOL,
+  LOCATION,
+  HOW_TO_GET
+}
+Class Destination
+{
+  code : String[1];
+  destinationData : DestinationData[0..1];
+  error : AdviseMessage[*];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class DestinationConnection
+{
+  edges : DestinationEdge[*];
+  token : String[1];
+  pageInfo : PageInfo[1];
+}
+Class DestinationData extends DestinationSearchResult
+{
+  code : String[1];
+  available : Boolean[1];
+  destinationLeaf : String[*];
+  texts : Text[1];
+  closestDestinations : String[*];
+  parent : String[0..1];
+  type : DestinationType[0..1];
+}
+Class DestinationEdge
+{
+  node : Destination[0..1];
+  cursor : String[1];
+}
+Class DestinationSearchResult
+{
+}
+Enum DestinationType
+{
+  ZONE,
+  CITY,
+  COUNTRY
+}
+Enum Discount
+{
+  BP,
+  BI,
+  DC,
+  RC,
+  RM,
+  STR,
+  ELB,
+  SDG,
+  SCL,
+  RE,
+  FAMILY1,
+  FAMILY2
+}
+Class Domain
+{
+  code : String[1];
+  domainData : DomainData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class DomainData
+{
+  id : String[1];
+  name : String[1];
+  organization : Organization[1];
+}
+Enum DurationType
+{
+  RANGE,
+  OPEN
+}
+Class EntitiesInput
+{
+}
+Class Entity
+{
+  code : String[1];
+  entity : EntityData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class EntityConnection
+{
+  edges : EntityEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class EntityData
+{
+}
+Class EntityEdge
+{
+  node : Entity[0..1];
+  cursor : String[1];
+}
+Class EntityFilter
+{
+}
+Class Environment
+{
+  code : String[1];
+  type : CloudEnvironment[1];
+  worker : String[1];
+}
+Enum EnvironmentType
+{
+  TEST,
+  LOCAL,
+  DEV,
+  PROD
+}
+Class Error
+{
+  code : String[1];
+  type : String[1];
+  description : String[1];
+}
+Class ErrorFilter
+{
+}
+Enum ErrorType
+{
+  OK,
+  PROVIDER,
+  TIMEOUT,
+  INTEGRATION
+}
+Class Exchange
+{
+  currency : String[1];
+  rate : Float[1];
+}
+Class ExpireDateInput
+{
+}
+Class ExternalMessage
+{
+  code : String[0..1];
+  message : String[1];
+}
+Class Feature
+{
+  code : String[1];
+}
+Class Fee
+{
+  amount : AmountType[0..1];
+  descText : TextType[0..1];
+}
+Class FilterInput
+{
+}
+Class FlightOffer
+{
+  code : String[1];
+  flightOfferData : FlightOfferData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class FlightOfferConnection
+{
+  edges : FlightOfferEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class FlightOfferData
+{
+  code : String[1];
+  supplier : Supplier[0..1];
+  totalPrice : AmountType[0..1];
+  offerItems : FlightOfferItem[*];
+}
+Class FlightOfferEdge
+{
+  node : FlightOffer[0..1];
+  cursor : String[1];
+}
+Class FlightOfferItem
+{
+  code : String[1];
+  offerItemData : FlightOfferItemData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class FlightOfferItemData
+{
+  code : String[1];
+  price : FlightPrice[1];
+  service : FlightService[1];
+}
+Enum FlightOfferOrderByInput
+{
+  totalPrice_ASC,
+  totalPrice_DESC
+}
+Class FlightOfferWhereInput
+{
+}
+Class FlightOrder
+{
+  code : String[1];
+  flightOrderData : FlightOrderData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class FlightOrderCreateInput
+{
+}
+Class FlightOrderData
+{
+  code : String[1];
+  status : FlightTicketStatusCode[1];
+  tickets : FlightTicket[*];
+  supplier : Supplier[1];
+  bookingRefIDs : String[*];
+  orderItems : FlightOrderItem[*];
+  totalPrice : FlightPrice[1];
+}
+Class FlightOrderItem
+{
+  code : String[1];
+  flightOrderItemData : FlightOrderItemData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class FlightOrderItemData
+{
+  code : String[1];
+  price : FlightPrice[1];
+  service : FlightService[*];
+}
+Class FlightOriginDestCriteriaInput
+{
+}
+Class FlightPax
+{
+  age : Integer[1];
+  type : IATA_PTC_CodeType[0..1];
+  paxID : String[1];
+}
+Class FlightPrice
+{
+  baseAmount : AmountType[0..1];
+  fee : Fee[*];
+  surcharge : FlightSurcharge[*];
+  taxSummary : TaxSummaryType[*];
+  totalAmount : AmountType[0..1];
+}
+Class FlightSegment
+{
+  arrival : TransportArrival[1];
+  departure : TransportDeparture[1];
+  carrier : String[0..1];
+  flightNumber : String[0..1];
+}
+Enum FlightSegmentOrderByInput
+{
+  date_ASC,
+  date_DESC
+}
+Class FlightSegmentWhereInput
+{
+}
+Class FlightService
+{
+  code : String[1];
+  flightServiceData : FlightServiceData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class FlightServiceData
+{
+  code : String[1];
+  type : String[1];
+  description : String[1];
+  pax : FlightPax[1];
+  segments : FlightSegment[1];
+}
+Class FlightSettingsInput
+{
+}
+Class FlightSupplierInput
+{
+}
+Class FlightSurcharge
+{
+  totalAmount : AmountType[0..1];
+  breakdown : Fee[*];
+}
+Class FlightTicket
+{
+  passenger : Individual[1];
+  number : String[1];
+  status : FlightTicketStatusCode[1];
+}
+Enum FlightTicketStatusCode
+{
+  OPEN,
+  CHECKED_IN,
+  VOID,
+  REFUNDED
+}
+Enum FolderTemplate
+{
+  FOLDER_SELLER,
+  FOLDER_BUYER
+}
+Class GeneratedPaymentInfo
+{
+  generatedCard : PaymentCardData[0..1];
+  id : String[1];
+  method : GeneratedPaymentMethodType[0..1];
+  supplier : SupplierData[1];
+}
+Enum GeneratedPaymentMethodType
+{
+  VIRTUAL_CARD,
+  WALLET
+}
+Class Geoname
+{
+  code : String[1];
+  geonameData : GeonameData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class GeonameData
+{
+  code : String[1];
+  name : String[1];
+  parent : Geoname[1];
+  country : String[0..1];
+  type : String[1];
+  coordinates : Coordinates[1];
+}
+Class GiataData
+{
+  id : String[1];
+  source : String[1];
+  href : String[1];
+  updatedAt : String[1];
+}
+Class GrantMacroPermissionInput
+{
+}
+Class GrantPermissionsInput
+{
+}
+Class Group extends AlertObjectsUnion
+{
+  code : String[1];
+  groupData : GroupData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class GroupAccess
+{
+  groupCodes : String[1];
+  accesses : Access[*];
+}
+Class GroupAccessInput
+{
+}
+Class GroupCommonData
+{
+}
+Class GroupConnection
+{
+  edges : GroupEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class GroupData
+{
+  id : String[1];
+  code : String[1];
+  label : String[0..1];
+  type : GroupType[1];
+  info : String[0..1];
+  isPublic : Boolean[1];
+  parent : Group[0..1];
+  children : GroupConnection[0..1];
+  descendents : GroupConnection[0..1];
+  parents : GroupConnection[0..1];
+  owner : Member[0..1];
+  isEditable : Boolean[1];
+  productId : Integer[0..1];
+  resourceId : Integer[0..1];
+  siblings : GroupConnection[0..1];
+  members : MemberConnection[0..1];
+  apis : APIConnection[0..1];
+  managedGroups : ManagedGroupConnection[0..1];
+  allMembers : MemberConnection[0..1];
+  accesses : AccessConnection[0..1];
+  suppliers : SupplierConnection[0..1];
+  clients : ClientConnection[0..1];
+  roles : RoleConnection[0..1];
+  profiles : ProfileConnection[0..1];
+  isBuyer : Boolean[1];
+  isSeller : Boolean[1];
+}
+Class GroupEdge
+{
+  node : Group[0..1];
+  cursor : String[1];
+}
+Class GroupInput
+{
+}
+Enum GroupType
+{
+  ROOT,
+  ORG,
+  GROUP,
+  PROFILE,
+  TEAM,
+  FOLDER,
+  PRODUCT,
+  RESOURCE,
+  SPECIFIC_RESOURCE
+}
+Enum GroupTypeInput
+{
+  ROOT,
+  ORG,
+  GROUP,
+  PROFILE,
+  TEAM,
+  FOLDER,
+  PRODUCT,
+  RESOURCE,
+  SPECIFIC_RESOURCE
+}
+Class Holder
+{
+  name : String[1];
+  surname : String[1];
+}
+Class HolderInput
+{
+}
+Class Hotel
+{
+  code : String[1];
+  hotelData : HotelData[0..1];
+  error : AdviseMessage[*];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class HotelBookInput
+{
+}
+Class HotelBookPayload
+{
+  stats : StatsRequest[0..1];
+  auditData : AuditData[0..1];
+  booking : HotelBookingDetail[0..1];
+  errors : Error[*];
+  warnings : Warning[*];
+}
+Class HotelBooking
+{
+  stats : StatsRequest[0..1];
+  auditData : AuditData[0..1];
+  bookings : HotelBookingDetail[*];
+  errors : Error[*];
+  warnings : Warning[*];
+}
+Class HotelBookingDetail
+{
+  reference : Reference[1];
+  holder : Holder[0..1];
+  hotel : BookingHotel[0..1];
+  price : Price[0..1];
+  quotePrice : PriceChange[0..1];
+  cancelPolicy : CancelPolicy[0..1];
+  remarks : String[0..1];
+  status : BookStatusType[1];
+  billingSupplierCode : String[0..1];
+  payable : String[0..1];
+  addOns : AddOns[0..1];
+  paymentCard : PaymentCard[0..1];
+  paymentInfo : GeneratedPaymentInfo[0..1];
+}
+Class HotelCancelDetail
+{
+  reference : Reference[0..1];
+  cancelReference : String[0..1];
+  status : BookStatusType[0..1];
+  price : Price[0..1];
+  booking : HotelBookingDetail[0..1];
+}
+Class HotelCancelInput
+{
+}
+Class HotelCancelPayload
+{
+  stats : StatsRequest[0..1];
+  auditData : AuditData[0..1];
+  cancellation : HotelCancelDetail[0..1];
+  errors : Error[*];
+  warnings : Warning[*];
+}
+Class HotelCommitDetails
+{
+  reference : Reference[1];
+  status : BookStatusType[1];
+}
+Class HotelCommitInput
+{
+}
+Class HotelCommitPayload
+{
+  stats : StatsRequest[0..1];
+  auditData : AuditData[0..1];
+  commitDetails : HotelCommitDetails[0..1];
+  errors : Error[*];
+  warnings : Warning[*];
+}
+Class HotelConnection
+{
+  edges : HotelEdge[*];
+  count : Integer[1];
+  token : String[0..1];
+  pageInfo : PageInfo[1];
+}
+Class HotelCriteriaBookingInput
+{
+}
+Class HotelCriteriaQuoteInput
+{
+}
+Class HotelCriteriaSearchInput
+{
+}
+Class HotelData extends DestinationSearchResult
+{
+  code : String[1];
+  hotelCode : String[1];
+  hotelCodeSupplier : String[0..1];
+  giataData : GiataData[0..1];
+  hotelName : String[0..1];
+  categoryCode : String[0..1];
+  property : Property[0..1];
+  chainCode : String[0..1];
+  exclusiveDeal : Boolean[1];
+  location : Location[1];
+  contact : Contact[0..1];
+  rank : Integer[1];
+  cardTypes : PaymentCardType[*];
+  amenities : AmenityStatic[*];
+  medias : Media[*];
+  descriptions : Description[*];
+  rooms : RoomConnection[0..1];
+  propertyType : PropertyType[0..1];
+  mandatoryFees : MandatoryFee[*];
+  checkIn : CheckInformation[0..1];
+  checkOut : CheckInformation[0..1];
+  allAmenities : HotelXAmenityConnection[0..1];
+}
+Class HotelEdge
+{
+  node : Hotel[0..1];
+  cursor : String[1];
+}
+Class HotelOptionQuote
+{
+  optionRefId : String[1];
+  status : StatusType[1];
+  price : Price[1];
+  searchPrice : PriceChange[0..1];
+  cancelPolicy : CancelPolicy[1];
+  remarks : String[0..1];
+  surcharges : Surcharge[*];
+  cardTypes : PaymentCardType[*];
+  addOns : AddOns[0..1];
+  rooms : RoomOptionQuote[*];
+}
+Class HotelOptionSearch
+{
+  supplierCode : String[1];
+  accessCode : String[1];
+  market : String[0..1];
+  markets : String[1];
+  hotelCode : String[1];
+  hotelCodeSupplier : String[1];
+  hotelName : String[0..1];
+  boardCode : String[1];
+  boardCodeSupplier : String[1];
+  paymentType : PaymentType[1];
+  status : StatusType[1];
+  occupancies : Occupancy[1];
+  rooms : Room[1];
+  price : Price[1];
+  supplements : Supplement[*];
+  surcharges : Surcharge[*];
+  rateRules : RateRulesType[*];
+  cancelPolicy : CancelPolicy[0..1];
+  remarks : String[0..1];
+  addOns : AddOns[0..1];
+  token : String[1];
+  id : String[1];
+  amenities : Amenity[*];
+}
+Enum HotelPaxType
+{
+  ADULT,
+  CHILD,
+  INFANT
+}
+Class HotelQuote
+{
+  stats : StatsRequest[0..1];
+  auditData : AuditData[0..1];
+  optionQuote : HotelOptionQuote[0..1];
+  errors : Error[*];
+  warnings : Warning[*];
+}
+Class HotelRuntimeConfiguration
+{
+  code : String[1];
+  hotelRuntimeConfigurationData : HotelRuntimeConfigurationData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class HotelRuntimeConfigurationData
+{
+  hotelRuntimeParameters : HotelRuntimeParameter[1];
+}
+Class HotelRuntimeParameter
+{
+  defaultValue : String[0..1];
+  description : String[1];
+  exampleValue : String[0..1];
+  key : String[0..1];
+  mandatory : Boolean[1];
+  pattern : String[0..1];
+  patternDescription : String[1];
+  possibleValues : String[*];
+  providerTagName : String[0..1];
+  show : Boolean[1];
+  tagRuntime : TagRuntimeType[1];
+  type : MetadataType[1];
+}
+Class HotelSearch
+{
+  context : String[0..1];
+  stats : StatsRequest[0..1];
+  auditData : AuditData[0..1];
+  requestCriteria : CriteriaSearch[0..1];
+  options : HotelOptionSearch[*];
+  errors : Error[*];
+  warnings : Warning[*];
+}
+Class HotelSettingsInput
+{
+}
+Class HotelXAccessInput
+{
+}
+Class HotelXAmenity
+{
+  code : String[1];
+  amenityData : HotelXAmenityData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class HotelXAmenityConnection
+{
+  edges : HotelXAmenityEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class HotelXAmenityData
+{
+  code : String[1];
+  amenityCode : String[1];
+  type : ApplicationAreaType[1];
+  texts : Text[1];
+  value : Text[1];
+  mappings : HotelXMappedCode[*];
+}
+Class HotelXAmenityEdge
+{
+  node : HotelXAmenity[1];
+  cursor : String[1];
+}
+Class HotelXBoardQueryInput
+{
+}
+Class HotelXBusinessRulesInput
+{
+}
+Class HotelXCategoryQueryInput
+{
+}
+Class HotelXCommitReferenceInput
+{
+}
+Class HotelXCommonSettings
+{
+  settings : HotelXCommonSettingsData[0..1];
+  adviseMessage : AdviseMessage[*];
+}
+Class HotelXCommonSettingsData
+{
+  currency : String[0..1];
+  businessRules : BusinessRules[0..1];
+  timeout : Timeout[0..1];
+}
+Class HotelXCommonSettingsDataInput
+{
+}
+Class HotelXCommonSettingsInput
+{
+}
+Class HotelXDefaultPlugin
+{
+  step : PluginStepType[1];
+  type : PluginType[1];
+  name : String[1];
+  run : HotelXParameter[*];
+  init : HotelXParameter[*];
+}
+Class HotelXDefaultPluginInput
+{
+}
+Class HotelXDefaultPluginStep
+{
+  step : String[1];
+  plugins : HotelXDefaultPlugin[1];
+}
+Class HotelXDefaultPluginStepInput
+{
+}
+Class HotelXDefaultSettings
+{
+  settings : HotelXDefaultSettingsData[0..1];
+  adviseMessage : AdviseMessage[*];
+}
+Class HotelXDefaultSettingsBusinessRulesInput
+{
+}
+Class HotelXDefaultSettingsData
+{
+  context : String[1];
+  language : String[1];
+  currency : String[1];
+  nationality : String[1];
+  market : String[0..1];
+  markets : String[1];
+  timeout : Timeout[1];
+  businessRules : BusinessRules[1];
+  accesses : String[*];
+  cache : String[*];
+  plugins : HotelXDefaultPluginStep[*];
+}
+Class HotelXDefaultSettingsDataInput
+{
+}
+Class HotelXDefaultSettingsInput
+{
+}
+Class HotelXDestinationListInput
+{
+}
+Class HotelXDestinationSearcherInput
+{
+}
+Class HotelXFilterInput
+{
+}
+Class HotelXFilterPluginTypeInput
+{
+}
+Class HotelXFilterSearchInput
+{
+}
+Class HotelXHotelFilterInput
+{
+}
+Class HotelXHotelListInput
+{
+}
+Class HotelXMapOptionInput
+{
+}
+Class HotelXMapSettingsInput
+{
+}
+Class HotelXMappedCode
+{
+  context : String[1];
+  code : String[1];
+}
+Class HotelXMappingReportResponse
+{
+  data : RetrieveHotelXMappingReport[0..1];
+  error : AdviseMessage[*];
+}
+Class HotelXMappingReportWhereInput
+{
+}
+Class HotelXMetadataQueryInput
+{
+}
+Class HotelXMutation
+{
+  createDefaultSettings : HotelXDefaultSettings[0..1];
+  updateDefaultSettings : HotelXDefaultSettings[0..1];
+  updateStatus : HotelXUpdateStatus[0..1];
+  createCommonSettings : HotelXCommonSettings[0..1];
+  updateCommonSettings : HotelXCommonSettings[0..1];
+  book : HotelBookPayload[0..1];
+  cancel : HotelCancelPayload[0..1];
+  commit : HotelCommitPayload[0..1];
+  loadFile : String[1];
+}
+Class HotelXParameter
+{
+  key : String[1];
+  value : String[1];
+}
+Class HotelXPluginFilterInput
+{
+}
+Class HotelXQuery
+{
+  hotelConfigurationStatusService : ServiceStatus[1];
+  defaultSettings : HotelXDefaultSettings[0..1];
+  commonSettings : HotelXCommonSettings[0..1];
+  boards : BoardConnection[1];
+  categories : CategoryConnection[1];
+  hotels : HotelConnection[1];
+  rooms : RoomConnection[1];
+  destinations : DestinationConnection[1];
+  destinationSearcher : DestinationSearchResult[1];
+  metadata : MetadataConnection[1];
+  search : HotelSearch[0..1];
+  quote : HotelQuote[0..1];
+  booking : HotelBooking[0..1];
+  searchStatusService : ServiceStatus[1];
+  quoteStatusService : ServiceStatus[1];
+  bookStatusService : ServiceStatus[1];
+  cancelStatusService : ServiceStatus[1];
+  bookingStatusService : ServiceStatus[1];
+  commitStatusService : ServiceStatus[1];
+  mapping : Mapping[1];
+  runtimeConfiguration : HotelRuntimeConfiguration[0..1];
+}
+Class HotelXRoomQueryInput
+{
+}
+Class HotelXSupplierInput
+{
+}
+Class HotelXUpdateStatus
+{
+  code : String[1];
+  hotelXUpdateStatusData : HotelXUpdateStatusData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class HotelXUpdateStatusData
+{
+  code : String[1];
+  isActive : Boolean[1];
+}
+Enum HubStatus
+{
+  OK,
+  EXCEPTION,
+  TIMEOUT,
+  UNDEFINED
+}
+Enum IATA_PTC_CodeType
+{
+  ADT,
+  CHD,
+  INF
+}
+Class IdAccessConfigurationInput
+{
+}
+Class IdGroupAccessInput
+{
+}
+Enum IdentityDocType
+{
+  NATIONAL_ID,
+  PASSPORT
+}
+Class Individual
+{
+  code : String[1];
+  name : String[0..1];
+  surname : String[1];
+  birthDate : String[0..1];
+  title : TitleNameType[0..1];
+}
+Class IndividualInput
+{
+}
+Class InsightsQuery
+{
+  bookingsReport : InsightsXBookingReport[0..1];
+  hotelXMappingReport : HotelXMappingReportResponse[1];
+  getRecommendations : RecommendationsConnection[0..1];
+}
+Class InsightsXBookingAggregation
+{
+  code : String[1];
+  InsightsXBookingAggregationData : BookingAggregation[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class InsightsXBookingAggregationConnection
+{
+  edges : InsightsXBookingAggregationEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class InsightsXBookingAggregationEdge
+{
+  node : InsightsXBookingAggregation[0..1];
+  cursor : String[1];
+}
+Class InsightsXBookingDetail
+{
+  code : String[1];
+  InsightsXBookingDetailData : BookingDetail[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class InsightsXBookingDetailConnection
+{
+  edges : InsightsXBookingDetailEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class InsightsXBookingDetailEdge
+{
+  node : InsightsXBookingDetail[0..1];
+  cursor : String[1];
+}
+Class InsightsXBookingReport
+{
+  bookingsDetails : InsightsXBookingDetailConnection[0..1];
+  bookingsAggregation : InsightsXBookingAggregationConnection[0..1];
+  adviseMessage : AdviseMessage[*];
+}
+Class LegacyAccess
+{
+  code : String[1];
+  legacyAccessData : LegacyAccessData[0..1];
+  error : Error[*];
+}
+Class LegacyAccessConnection
+{
+  edges : LegacyAccessEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class LegacyAccessData
+{
+  hubUser : String[1];
+  hubProvider : String[1];
+  isActive : Boolean[1];
+}
+Class LegacyAccessEdge
+{
+  node : LegacyAccess[0..1];
+  cursor : String[1];
+}
+Class LegacyAccessFilter
+{
+}
+Class LegacyAccessInput
+{
+}
+Class LegacyLink
+{
+  hubUser : Client[1];
+  hubProvider : Supplier[1];
+}
+Class LegacyLinkInput
+{
+}
+Class Location
+{
+  address : String[0..1];
+  city : String[0..1];
+  zipCode : String[0..1];
+  country : String[0..1];
+  coordinates : Coordinates[0..1];
+  closestDestination : DestinationData[0..1];
+  airports : Airport[*];
+  geoNames : Geoname[1];
+  state : String[0..1];
+}
+Class Logging
+{
+  code : String[1];
+  LoggingData : LoggingData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class LoggingConnection
+{
+  edges : LoggingEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class LoggingData
+{
+  product : String[1];
+  timestamp : String[1];
+  level : String[1];
+  message : String[1];
+  tgx : TGX[1];
+  document : String[1];
+}
+Class LoggingEdge
+{
+  cursor : String[1];
+  node : Logging[0..1];
+}
+Class LoggingFilterInput
+{
+}
+Class LoggingLegacy
+{
+  code : String[1];
+  LoggingLegacyData : LoggingLegacyData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class LoggingLegacyConnection
+{
+  edges : LoggingLegacyEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class LoggingLegacyData
+{
+  code : String[1];
+  timestamp : String[1];
+  sessionID : String[1];
+  access : Access[1];
+  client : Client[1];
+  operation : Operation[1];
+  trafficType : TrafficType[1];
+  cloudEnvironment : Environment[1];
+  statusType : StatsInfoTypes[1];
+  errorCode : String[1];
+  execTime : Integer[1];
+  url : String[1];
+  unencryptedURL : String[1];
+}
+Class LoggingLegacyEdge
+{
+  cursor : String[1];
+  node : LoggingLegacy[0..1];
+}
+Class LoggingLegacyFilterInput
+{
+}
+Class LoggingMutation
+{
+  createAuditRule : AuditRuleConnection[1];
+  deleteAuditRule : AuditRule[1];
+}
+Class LoggingQuery
+{
+  allAuditRules : AuditRuleConnection[1];
+  retrieveStats : LoggingLegacyConnection[1];
+}
+Class MacroPermission
+{
+  code : String[1];
+  macroPermissionData : MacroPermissionData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class MacroPermissionData
+{
+  id : String[1];
+  code : String[1];
+  productID : String[1];
+  group : String[1];
+  label : String[0..1];
+  permissions : Permission[*];
+}
+Class MacroPermissionEdge
+{
+  node : MacroPermission[0..1];
+  cursor : String[1];
+}
+Class MacroPermissionsConnection
+{
+  edges : MacroPermissionEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class ManagedGroup
+{
+  code : String[1];
+  managedGroupData : ManagedGroupData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class ManagedGroupConnection
+{
+  edges : ManagedGroupEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class ManagedGroupData
+{
+  code : String[1];
+  group : Group[1];
+  api : API[1];
+  resource : Resource[1];
+  role : Role[1];
+}
+Class ManagedGroupEdge
+{
+  node : ManagedGroup[0..1];
+  cursor : String[1];
+}
+Class MandatoryFee
+{
+  duration : String[0..1];
+  mandatoryFeeCode : String[1];
+  price : PriceStatic[1];
+  scope : String[0..1];
+  name : String[0..1];
+  text : String[0..1];
+  included : Boolean[1];
+}
+Class Map
+{
+  code : String[1];
+  maps : String[*];
+}
+Class Mapping
+{
+  contexts : MappingContext[*];
+  errors : Error[*];
+  warnings : Warning[*];
+}
+Class MappingContext
+{
+  code : String[1];
+  hotels : MappingEntity[*];
+  rooms : MappingEntity[*];
+  boards : MappingEntity[*];
+}
+Class MappingEntity
+{
+  code : String[1];
+  contexts : Map[*];
+}
+Enum MappingType
+{
+  AMENITY,
+  BOARD,
+  RATE,
+  ROOM,
+  PROMOTION,
+  HOTEL_ROOM
+}
+Class Markup
+{
+  channel : String[0..1];
+  currency : String[1];
+  binding : Boolean[1];
+  net : Float[1];
+  gross : Float[0..1];
+  exchange : Exchange[1];
+  rules : Rule[1];
+}
+Enum MarkupRuleType
+{
+  PERCENT,
+  IMPORT
+}
+Class Media
+{
+  code : String[0..1];
+  order : String[0..1];
+  type : ApplicationAreaType[1];
+  updatedAt : String[1];
+  url : String[1];
+  texts : Text[*];
+}
+Class Member
+{
+  code : String[1];
+  memberData : MemberData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class MemberConnection
+{
+  edges : MemberEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class MemberData
+{
+  id : String[1];
+  code : String[1];
+  label : String[0..1];
+  isActive : Boolean[1];
+  firstName : String[0..1];
+  lastName : String[0..1];
+  type : MemberType[1];
+  crmData : CrmData[0..1];
+  groups : GroupConnection[0..1];
+  roles : RoleConnection[0..1];
+  macroPermissions : MacroPermissionsConnection[0..1];
+}
+Class MemberEdge
+{
+  node : Member[0..1];
+  cursor : String[1];
+}
+Enum MemberType
+{
+  USER,
+  SERVICE_ACCOUNT
+}
+Class Metadata
+{
+  code : String[1];
+  metadataData : MetadataData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class MetadataBeds
+{
+  informNumberOfUnits : ReviewedBool[1];
+  informSharedBed : ReviewedBool[1];
+  informBedType : ReviewedBool[1];
+  informNumberOfBeds : ReviewedBool[1];
+}
+Class MetadataBook
+{
+  allowsDeltaPrice : ReviewedBool[1];
+  requiredAllPassengers : ReviewedBool[1];
+  allowsRemarks : ReviewedBool[1];
+  informBillingSupplier : ReviewedBool[1];
+  informHotelReference : ReviewedBool[1];
+  informPrice : ReviewedBool[1];
+  requiredNationality : ReviewedBool[0..1];
+}
+Class MetadataBooking
+{
+  queryableBySupplierReference : ReviewedBool[1];
+  queryableByClientReference : ReviewedBool[1];
+  queryableByCreationDate : ReviewedBool[1];
+  queryableByCheckinDate : ReviewedBool[1];
+  informHotelReference : ReviewedBool[0..1];
+  informCancelPolicies : ReviewedBool[0..1];
+  informPriceCancel : ReviewedBool[0..1];
+  requiresCheckInDateInReferences : ReviewedBool[1];
+  requiresCheckOutDateInReferences : ReviewedBool[1];
+  requiresReservationDateInReferences : ReviewedBool[1];
+}
+Class MetadataCancel
+{
+  mutableBySupplierReference : ReviewedBool[1];
+  mutableByClientReference : ReviewedBool[1];
+  informPriceCancel : ReviewedBool[0..1];
+}
+Class MetadataCandidate
+{
+  min : Integer[1];
+  max : Integer[1];
+  type : HotelPaxType[1];
+}
+Class MetadataConnection
+{
+  edges : MetadataEdge[*];
+  adviseMessage : AdviseMessage[*];
+  pageInfo : PageInfo[1];
+}
+Class MetadataContent
+{
+  languages : ReviewedText[1];
+}
+Class MetadataData
+{
+  supplierCode : String[1];
+  search : MetadataSearch[1];
+  quote : MetadataQuote[1];
+  book : MetadataBook[1];
+  booking : MetadataBooking[1];
+  cancel : MetadataCancel[1];
+  hotels : MetadataContent[0..1];
+  destinations : MetadataContent[0..1];
+  rooms : MetadataContent[0..1];
+  boards : MetadataContent[0..1];
+  categories : MetadataContent[0..1];
+  markets : MetadataContent[0..1];
+  currencies : MetadataContent[0..1];
+  amenities : MetadataContent[0..1];
+}
+Class MetadataEdge
+{
+  node : Metadata[0..1];
+  cursor : String[1];
+}
+Class MetadataQuote
+{
+  informBindingPrice : ReviewedBool[1];
+  informNRFRate : ReviewedBool[1];
+  informRemarks : ReviewedBool[1];
+  informCancelPolicies : ReviewedBool[1];
+  informCancelPoliciesDescription : ReviewedBool[1];
+  informSurcharges : ReviewedBool[1];
+  requiredNationality : ReviewedBool[0..1];
+}
+Class MetadataRoomCandidates
+{
+  maxNumberRoomCandidates : ReviewedInt[1];
+  paxTypeRangeInRoomCandidates : ReviwedPaxTypeRangeInRoomCandidates[0..1];
+  maxPaxInRoomCandidates : ReviewedInt[1];
+  maxPaxInAllRooms : ReviewedInt[1];
+  requiredRoomWithSamePaxConfiguration : RequiredRoomWithSamePaxConfiguration[1];
+  rateRules : ReviewedRateRule[1];
+  beds : MetadataBeds[1];
+  ageRange : ReviewedAgeRanges[1];
+}
+Class MetadataSearch
+{
+  destinations : MetadataSearchDestinations[1];
+  allowsCurrency : ReviewedBool[1];
+  implementsCombination : ReviewedBool[1];
+  numMarketsAllowed : ReviewedInt[0..1];
+  release : ReviewedInt[1];
+  minimumStay : ReviewedInt[1];
+  maxStay : ReviewedInt[1];
+  roomCandidates : MetadataRoomCandidates[1];
+  informBindingPrice : ReviewedBool[1];
+  informCancelPolicies : ReviewedBool[1];
+  informRoomCancelPolicies : ReviewedBool[1];
+  informRemarks : ReviewedBool[1];
+  paymentTypes : ReviewedPaymentType[1];
+  languages : ReviewedText[1];
+  informDailyPrice : ReviewedBool[1];
+  informDailyRatePlan : ReviewedBool[1];
+  informPromotions : ReviewedBool[1];
+  informNRFRateByRoom : ReviewedBool[1];
+  informSurcharges : ReviewedBool[1];
+  informRoomSurcharges : ReviewedBool[1];
+  informHotelName : ReviewedBool[1];
+  requiredNationality : ReviewedBool[0..1];
+}
+Class MetadataSearchDestinations
+{
+  maxNumberHotels : ReviewedInt[1];
+  recommendedNumberHotels : ReviewedInt[1];
+}
+Enum MetadataType
+{
+  STRING,
+  NUMERIC,
+  BOOLEAN,
+  XML,
+  URI
+}
+Enum Method
+{
+  ADD,
+  DEL
+}
+Enum ModeType
+{
+  BUYER,
+  SELLER
+}
+Class Mutation
+{
+  admin : AdminMutation[0..1];
+  hotelX : HotelXMutation[0..1];
+  paymentX : PaymentXMutation[0..1];
+  alertsX : AlertsXMutation[0..1];
+  logging : LoggingMutation[0..1];
+  activation : ActivationMutation[0..1];
+}
+Class Node
+{
+}
+Class Occupancy
+{
+  id : Integer[1];
+  paxes : Pax[1];
+}
+Class OccupancyRange
+{
+  min : Integer[0..1];
+  max : Integer[0..1];
+}
+Class OccupancyStatic
+{
+  total : OccupancyRange[0..1];
+  infants : OccupancyRange[0..1];
+  children : OccupancyRange[0..1];
+  adults : OccupancyRange[0..1];
+}
+Class Operation extends AlertObjectsUnion
+{
+  code : String[1];
+  operationData : OperationData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class OperationConnection
+{
+  edges : OperationEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class OperationData
+{
+  id : String[1];
+  code : String[1];
+  label : String[0..1];
+  types : OperationType[1];
+  api : API[0..1];
+}
+Class OperationDetailed
+{
+  operation : Operation[1];
+  totalHits : String[1];
+  detailedHits : StatsInfo[*];
+  cache : Boolean[1];
+  trafficType : TrafficType[1];
+}
+Class OperationEdge
+{
+  node : Operation[0..1];
+  cursor : String[1];
+}
+Enum OperationType
+{
+  SEARCH,
+  QUOTE,
+  BOOKING,
+  CANCEL,
+  SCHEDULER,
+  CREATE,
+  READ,
+  UPDATE,
+  DELETE,
+  EXECUTE,
+  OTHER
+}
+Class Organization
+{
+  code : String[1];
+  organizationData : OrganizationData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class OrganizationConnection
+{
+  edges : OrganizationEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class OrganizationContact
+{
+  type : OrganizationContactType[1];
+  user : Member[1];
+}
+Enum OrganizationContactType
+{
+  ADMIN,
+  BILLING,
+  SALES,
+  TECHNICAL,
+  OTHER
+}
+Class OrganizationData
+{
+  id : String[1];
+  code : String[1];
+  label : String[0..1];
+  type : GroupType[1];
+  info : String[0..1];
+  crmID : String[0..1];
+  crmData : CompanyCrmData[0..1];
+  payParcID : String[0..1];
+  isPublic : Boolean[0..1];
+  children : GroupConnection[0..1];
+  descendents : GroupConnection[0..1];
+  parents : GroupConnection[0..1];
+  owner : Member[1];
+  contacts : OrganizationContact[*];
+  isEditable : Boolean[1];
+  members : MemberConnection[0..1];
+  apis : APIConnection[0..1];
+  products : ProductConnection[0..1];
+  allMembers : MemberConnection[0..1];
+  accesses : AccessConnection[0..1];
+  suppliers : SupplierConnection[0..1];
+  clients : ClientConnection[0..1];
+  profiles : ProfileConnection[0..1];
+  domains : Domain[1];
+  template : String[0..1];
+  country : String[1];
+  allAccesses : AccessConnection[0..1];
+  allSuppliers : SupplierConnection[0..1];
+  allClients : ClientConnection[0..1];
+  allProfiles : ProfileConnection[0..1];
+  primaryPartner : Partner[1];
+  allPartners : PartnerConnection[1];
+  isBuyer : Boolean[1];
+  isSeller : Boolean[1];
+}
+Class OrganizationEdge
+{
+  node : Organization[0..1];
+  cursor : String[1];
+}
+Enum OrganizationOrderByInput
+{
+  code_ASC,
+  code_DESC,
+  label_ASC,
+  label_DESC,
+  created_at_ASC,
+  created_at_DESC,
+  owner_ASC,
+  owner_DESC,
+  country_ASC,
+  country_DESC
+}
+Enum OrganizationTemplate
+{
+  ORGANIZATION_BUYER,
+  ORGANIZATION_SELLER,
+  ORGANIZATION_BUYER_SELLER
+}
+Enum OrganizationTypeInput
+{
+  BUYER,
+  SELLER,
+  BOTH
+}
+Class PageInfo
+{
+  hasNextPage : Boolean[1];
+  hasPreviousPage : Boolean[1];
+  startCursor : String[0..1];
+  endCursor : String[0..1];
+}
+Class Parameter
+{
+  key : String[1];
+  value : String[1];
+}
+Class ParameterInput
+{
+}
+Class Partner
+{
+  code : String[1];
+  partnerData : PartnerData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class PartnerConnection
+{
+  edges : PartnerEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class PartnerCreateInput
+{
+}
+Class PartnerData
+{
+  code : String[1];
+  name : String[1];
+  isActive : Boolean[0..1];
+  friendlyName : String[0..1];
+  organizations : OrganizationConnection[0..1];
+  agents : CustomerAgent[*];
+}
+Class PartnerEdge
+{
+  node : Partner[0..1];
+  cursor : String[1];
+}
+Enum PartnerOrderByInput
+{
+  code_ASC,
+  code_DESC,
+  name_ASC,
+  name_DESC,
+  friendlyName_ASC,
+  friendlyName_DESC,
+  isActive_ASC,
+  isActive_DESC
+}
+Class PartnerUpdateInput
+{
+}
+Class PartnerWhereInput
+{
+}
+Class PartnerWhereUniqueInput
+{
+}
+Class Pax
+{
+  age : Integer[1];
+}
+Class PaxInput
+{
+}
+Enum PaxTypeType
+{
+  SOLO,
+  COUPLE,
+  FAMILY,
+  GROUP,
+  OTHER
+}
+Enum PayerResponseStatusType
+{
+  AUTHENTICATION_SUCCESS,
+  AUTHENTICATION_FAILED,
+  AUTHENTICATION_INCOMPLETE,
+  TRANSACTION_ATTEMPT_SUCCESS_A,
+  TRANSACTION_ATTEMPT_SUCCESS_B,
+  AUTHENTICATION_REJECTED
+}
+Class PaymentCard
+{
+  code : String[1];
+  paymentCardData : PaymentCardData[1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class PaymentCardData
+{
+  active : String[1];
+  CVC : String[1];
+  expire : String[1];
+  holder : Holder[1];
+  id : String[1];
+  number : String[1];
+  supplier : Supplier[1];
+  type : PaymentCardType[1];
+}
+Class PaymentCardInput
+{
+}
+Enum PaymentCardType
+{
+  VI,
+  AX,
+  BC,
+  CA,
+  CB,
+  CU,
+  DS,
+  DC,
+  T,
+  R,
+  N,
+  L,
+  E,
+  JC,
+  TO,
+  S,
+  EC,
+  EU,
+  TP,
+  OP,
+  ER,
+  XS,
+  O
+}
+Class PaymentInfo
+{
+}
+Class PaymentMethod
+{
+}
+Enum PaymentMethodCodeType
+{
+  CARD,
+  CASH
+}
+Enum PaymentType
+{
+  MERCHANT,
+  DIRECT,
+  CARD_BOOKING,
+  CARD_CHECK_IN,
+  PAYX
+}
+Class PaymentXExpireDate
+{
+  month : Integer[1];
+  year : Integer[1];
+}
+Class PaymentXMutation
+{
+  storeCard : PaymentXStoredCard[1];
+  deleteStoredCard : PaymentXStoredCard[1];
+}
+Class PaymentXQuery
+{
+  vaultStatusService : AdviseMessage[1];
+  allStoredCards : PaymentXStoredCardConnection[1];
+  storedCard : PaymentXStoredCard[1];
+}
+Class PaymentXStoredCard
+{
+  code : String[1];
+  storedCardData : PaymentXStoredCardData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class PaymentXStoredCardConnection
+{
+  edges : PaymentXStoredCardEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class PaymentXStoredCardData
+{
+  instance : Group[1];
+  pointOfSale : PointOfSale[1];
+  bookingReference : String[1];
+  checkOut : String[0..1];
+  checkIn : String[0..1];
+  cardType : String[0..1];
+  holder : Holder[0..1];
+  number : String[0..1];
+  CVC : String[0..1];
+  expire : PaymentXExpireDate[0..1];
+}
+Class PaymentXStoredCardEdge
+{
+  cursor : String[1];
+  node : PaymentXStoredCard[0..1];
+}
+Class PaymentXStoredCardFilterInput
+{
+}
+Class PaymentXStoredCardIDInput
+{
+}
+Class PaymentXStoredCardInput
+{
+}
+Class Permission
+{
+  role : Role[1];
+  resource : Resource[1];
+  api : API[1];
+}
+Enum PersonalTitleType
+{
+  MR,
+  MRS,
+  MISS,
+  MS
+}
+Class Phone
+{
+}
+Class PluginStepInput
+{
+}
+Enum PluginStepType
+{
+  REQUEST,
+  REQUEST_ACCESS,
+  RESPONSE_OPTION,
+  RESPONSE_ACCESS,
+  RESPONSE
+}
+Enum PluginType
+{
+  PRE_STEP,
+  HOTEL_MAP,
+  BOARD_MAP,
+  ROOM_MAP,
+  CURRENCY_CONVERSION,
+  MARKUP,
+  AGGREGATION,
+  POST_STEP,
+  COMMISSION,
+  MARKETS_GROUP,
+  AMENITY_MAP,
+  PROMOTION_MAP
+}
+Class PluginsInput
+{
+}
+Class PointOfSale
+{
+  code : String[1];
+  pointOfSaleData : PointOfSaleData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class PointOfSaleConnection
+{
+  edges : PointOfSaleEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class PointOfSaleData
+{
+  code : String[1];
+  name : String[0..1];
+  owner : Organization[0..1];
+}
+Class PointOfSaleEdge
+{
+  node : PointOfSale[0..1];
+  cursor : String[1];
+}
+Class PointOfSaleFilter
+{
+}
+Class Price
+{
+  currency : String[1];
+  binding : Boolean[1];
+  net : Float[1];
+  gross : Float[1];
+  exchange : Exchange[1];
+  markups : Markup[*];
+}
+Class PriceBreakdown
+{
+  effectiveDate : String[1];
+  expireDate : String[1];
+  start : String[1];
+  end : String[1];
+  price : Price[1];
+}
+Class PriceChange
+{
+  currency : String[1];
+  net : Float[1];
+  gross : Float[1];
+  binding : Boolean[1];
+}
+Class PriceStatic
+{
+  amount : Float[1];
+  currency : String[1];
+}
+Enum PriceType
+{
+  GROSS,
+  NET,
+  AMOUNT
+}
+Class Priceable
+{
+}
+Class Product
+{
+  code : String[1];
+  productData : ProductData[1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class ProductConnection
+{
+  edges : ProductEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class ProductData
+{
+  id : String[1];
+  code : String[1];
+  label : String[0..1];
+  apis : APIConnection[0..1];
+  macroPermissions : MacroPermissionsConnection[0..1];
+  adviseMessageCatalog : AdviseMessage[*];
+}
+Class ProductEdge
+{
+  node : Product[0..1];
+  cursor : String[1];
+}
+Class Profile
+{
+  code : String[1];
+  profileData : ProfileData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class ProfileConnection
+{
+  edges : ProfileEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class ProfileData
+{
+  code : String[1];
+  label : String[0..1];
+  type : ProfileType[1];
+  entities : EntityConnection[0..1];
+  group : Group[0..1];
+  owner : Organization[0..1];
+  isActive : Boolean[0..1];
+  isPublished : Boolean[0..1];
+}
+Class ProfileEdge
+{
+  node : Profile[0..1];
+  cursor : String[1];
+}
+Class ProfileFilter
+{
+}
+Enum ProfileType
+{
+  BUYER,
+  SELLER
+}
+Class Promotion
+{
+  code : String[1];
+  name : String[0..1];
+  supplierCode : String[1];
+  effectiveDate : String[0..1];
+  expireDate : String[0..1];
+  start : String[0..1];
+  end : String[0..1];
+}
+Class Property
+{
+  name : String[0..1];
+  code : String[0..1];
+}
+Class PropertyType
+{
+  propertyCode : String[0..1];
+  name : String[0..1];
+}
+Class Provider
+{
+  code : String[1];
+  providerData : ProviderData[0..1];
+  error : Error[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class ProviderConnection
+{
+  edges : ProviderEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class ProviderData
+{
+  code : String[1];
+  name : String[1];
+  isActive : Boolean[0..1];
+  isPublic : Boolean[0..1];
+}
+Class ProviderEdge
+{
+  cursor : String[1];
+  node : Provider[0..1];
+}
+Class ProviderInput
+{
+}
+Class Query
+{
+  admin : AdminQuery[0..1];
+  hotelX : HotelXQuery[0..1];
+  paymentX : PaymentXQuery[0..1];
+  stats : StatsQuery[0..1];
+  insights : InsightsQuery[0..1];
+  alertsX : AlertsXQuery[0..1];
+  logging : LoggingQuery[0..1];
+  activation : ActivationQuery[0..1];
+  speed : SpeedQuery[0..1];
+}
+Class RangeFilter
+{
+}
+Class RatePlan
+{
+  code : String[1];
+  supplierCode : String[1];
+  name : String[0..1];
+  effectiveDate : String[0..1];
+  expireDate : String[0..1];
+  start : String[0..1];
+  end : String[0..1];
+}
+Class RateRulesFilterInput
+{
+}
+Enum RateRulesType
+{
+  NORMAL,
+  PACKAGE,
+  OLDER55,
+  OLDER60,
+  OLDER65,
+  CANARY_RESIDENT,
+  BALEARIC_RESIDENT,
+  LARGE_FAMILY,
+  HONEYMOON,
+  PUBLIC_SERVANT,
+  UNEMPLOYED,
+  NON_REFUNDABLE,
+  MOBILE,
+  WARRANTY,
+  ESSENTIAL_WORKER
+}
+Class Ratios
+{
+  lookToQuote : Integer[1];
+  lookToBook : Integer[1];
+  quoteToBook : Integer[1];
+}
+Class Recommendation
+{
+  code : String[1];
+  recommendationData : RecommendationData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class RecommendationData
+{
+  owner : Organization[0..1];
+  originMarket : String[0..1];
+  destinationCountry : String[0..1];
+  destinationMainZone : String[0..1];
+  criteria : CriteriaType[0..1];
+}
+Class RecommendationEdge
+{
+  node : Recommendation[0..1];
+  cursor : String[1];
+}
+Class RecommendationsConnection
+{
+  edges : RecommendationEdge[*];
+  pageInfo : PageInfo[1];
+  totalCount : Integer[1];
+  adviseMessage : AdviseMessage[*];
+}
+Enum RecommendationsGroupByInput
+{
+  owner,
+  originMarket,
+  destinationCountry,
+  destinationMainZone,
+  criteria
+}
+Class RecommendationsWhereInput
+{
+}
+Class Reference
+{
+  client : String[0..1];
+  supplier : String[0..1];
+  commit : String[0..1];
+  hotel : String[0..1];
+  bookingID : String[0..1];
+}
+Class ReferenceFilter
+{
+}
+Class References
+{
+}
+Class RelativeInput
+{
+}
+Class RelayInput
+{
+}
+Class RemoveMemberFromOrganizationInput
+{
+}
+Class RequesterInfo
+{
+  organization : OrganizationData[1];
+  member : MemberData[1];
+}
+Class RequiredRoomWithSamePaxConfiguration
+{
+  samePaxNumber : ReviewedBool[1];
+  samePaxAge : ReviewedBool[1];
+}
+Class Resort
+{
+  code : String[1];
+  name : String[0..1];
+  description : String[0..1];
+}
+Class Resource
+{
+  code : String[1];
+  resourceData : ResourceData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class ResourceConnection
+{
+  edges : ResourceEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class ResourceData
+{
+  id : String[1];
+  code : String[1];
+  isEditable : Boolean[1];
+  label : String[0..1];
+  apis : APIConnection[0..1];
+  roles : RoleConnection[0..1];
+}
+Class ResourceEdge
+{
+  node : Resource[0..1];
+  cursor : String[1];
+}
+Class Response
+{
+}
+Class RetrieveHotelXMappingReport
+{
+  url : String[0..1];
+}
+Class ReviewedAgeRanges
+{
+  reviewDate : String[1];
+  ages : AgeRange[1];
+}
+Class ReviewedBool
+{
+  reviewDate : String[1];
+  value : Boolean[1];
+}
+Class ReviewedInt
+{
+  reviewDate : String[1];
+  value : Integer[1];
+}
+Class ReviewedPaymentType
+{
+  reviewDate : String[1];
+  value : PaymentType[1];
+}
+Class ReviewedRateRule
+{
+  reviewDate : String[1];
+  value : RateRulesType[1];
+}
+Class ReviewedText
+{
+  reviewDate : String[1];
+  value : String[1];
+}
+Class ReviwedPaxTypeRangeInRoomCandidates
+{
+  reviewDate : String[1];
+  candidates : MetadataCandidate[1];
+}
+Class Role
+{
+  code : String[1];
+  roleData : RoleData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class RoleConnection
+{
+  edges : RoleEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class RoleData
+{
+  id : String[1];
+  code : String[1];
+  type : RoleType[1];
+  isEditable : Boolean[1];
+  label : String[0..1];
+  isCreate : Boolean[1];
+  isRead : Boolean[1];
+  isUpdate : Boolean[1];
+  isDelete : Boolean[1];
+  isEnable : Boolean[1];
+  isExecutable : Boolean[1];
+  isSpecial : Boolean[1];
+  special : String[0..1];
+  resources : ResourceConnection[0..1];
+}
+Class RoleEdge
+{
+  node : Role[0..1];
+  cursor : String[1];
+}
+Enum RoleType
+{
+  VIEWER,
+  EDITOR,
+  ADMIN,
+  EXECUTOR,
+  SPECIFIC
+}
+Class Room
+{
+  occupancyRefId : Integer[1];
+  legacyRoomId : String[1];
+  code : String[1];
+  supplierCode : String[1];
+  description : String[0..1];
+  refundable : Boolean[0..1];
+  units : Integer[0..1];
+  roomPrice : RoomPrice[1];
+  beds : Bed[*];
+  ratePlans : RatePlan[*];
+  promotions : Promotion[*];
+  surcharges : Surcharge[*];
+  features : Feature[*];
+  amenities : Amenity[*];
+}
+Class RoomConnection
+{
+  edges : RoomEdge[*];
+  token : String[0..1];
+  pageInfo : PageInfo[1];
+}
+Class RoomCriteria
+{
+  paxes : Pax[1];
+}
+Class RoomData
+{
+  code : String[1];
+  roomCode : String[1];
+  texts : Text[*];
+  source : String[0..1];
+  occupancies : OccupancyStatic[0..1];
+  amenities : AmenityStatic[*];
+  views : View[*];
+  medias : Media[*];
+  beds : BedStatic[*];
+  area : String[0..1];
+  allAmenities : HotelXAmenityConnection[0..1];
+}
+Class RoomEdge
+{
+  node : RoomStatic[0..1];
+  cursor : String[1];
+}
+Class RoomInput
+{
+}
+Class RoomOptionQuote
+{
+  occupancyRefId : String[1];
+  legacyRoomId : String[1];
+  code : String[1];
+  supplierCode : String[1];
+  description : String[0..1];
+  features : Feature[*];
+}
+Class RoomPrice
+{
+  price : Price[1];
+  breakdown : PriceBreakdown[*];
+}
+Class RoomStatic
+{
+  code : String[1];
+  roomData : RoomData[0..1];
+  error : Error[*];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class Rule
+{
+  id : String[1];
+  name : String[0..1];
+  type : MarkupRuleType[1];
+  value : Float[1];
+}
+Class SelectedOffer
+{
+}
+Class SelectedOfferItem
+{
+}
+Class ServiceApi
+{
+  code : String[1];
+  name : String[1];
+  operations : ServiceOperation[*];
+  error : Error[*];
+}
+Class ServiceApiFilter
+{
+}
+Enum ServiceApiType
+{
+  HOTEL,
+  TRANSPORTATION,
+  CAR,
+  TRANSFERS,
+  ACTIVITIES,
+  VIRTUALACCOUNT,
+  PAYMENT,
+  PACKAGE
+}
+Class ServiceOperation
+{
+  code : String[1];
+  name : String[1];
+  type : String[1];
+  travelOperation : Integer[1];
+}
+Enum ServiceOperationType
+{
+  ALL,
+  SEARCH,
+  QUOTE,
+  BOOKING,
+  OTHER
+}
+Class ServiceStatus
+{
+  code : String[0..1];
+  type : String[0..1];
+  description : String[0..1];
+}
+Enum ServiceType
+{
+  SKI_PASS
+}
+Class SettingsBaseInput
+{
+}
+Class SpeedAccess
+{
+  code : String[1];
+  speedAccessData : SpeedAccessData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class SpeedAccessCollection
+{
+  edges : SpeedAccessEdge[*];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class SpeedAccessCollectionWhereInput
+{
+}
+Class SpeedAccessData
+{
+  code : String[1];
+  access : Access[1];
+  configuration : SpeedConfiguration[1];
+}
+Class SpeedAccessEdge
+{
+  node : SpeedAccess[0..1];
+}
+Class SpeedConfiguration
+{
+  active : Boolean[1];
+  ttl : SpeedTtl[*];
+  rqMode : SpeedRQMode[0..1];
+}
+Class SpeedConnection
+{
+  code : String[1];
+  speedConnectionData : SpeedConnectionData[0..1];
+  createdAt : String[1];
+  updatedAt : String[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class SpeedConnectionCollection
+{
+  edges : SpeedConnectionEdge[*];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class SpeedConnectionCollectionWhereInput
+{
+}
+Class SpeedConnectionData
+{
+  code : String[1];
+  buyer : SpeedOrganization[1];
+  seller : SpeedOrganization[1];
+  accesses : SpeedAccessCollection[0..1];
+  configuration : SpeedConfiguration[1];
+}
+Class SpeedConnectionEdge
+{
+  node : SpeedConnection[0..1];
+}
+Class SpeedOrganization
+{
+  code : String[1];
+  organization : Organization[1];
+}
+Class SpeedQuery
+{
+  speedConnectionCollection : SpeedConnectionCollection[1];
+  speedAccessCollection : SpeedAccessCollection[1];
+}
+Enum SpeedRQMode
+{
+  STANDARD,
+  FAST
+}
+Class SpeedTtl
+{
+  value : Integer[1];
+  from : Integer[1];
+  to : Integer[1];
+}
+Class Stat
+{
+  start : String[1];
+  end : String[1];
+  duration : Float[0..1];
+}
+Class StatAccess
+{
+  name : String[1];
+  total : Stat[1];
+  staticConfiguration : Stat[0..1];
+  hotels : Integer[1];
+  zones : Integer[1];
+  cities : Integer[1];
+  requestAccess : StatPlugin[0..1];
+  responseAccess : StatPlugin[0..1];
+  transactions : StatTransaction[1];
+  plugins : StatPlugin[*];
+}
+Class StatPlugin
+{
+  name : String[1];
+  total : Stat[1];
+}
+Class StatTransaction
+{
+  reference : String[1];
+  total : Stat[1];
+  buildRequest : Stat[1];
+  workerCommunication : Stat[1];
+  parseResponse : Stat[1];
+}
+Class Stats
+{
+  code : String[1];
+  statsData : StatsData[0..1];
+  adviseMessage : AdviseMessage[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class StatsAsset
+{
+  startTime : String[1];
+  execTime : Integer[1];
+  url : String[1];
+  unencryptedURL : String[1];
+}
+Class StatsConnection
+{
+  edges : StatsEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+}
+Class StatsData
+{
+  access : Access[1];
+  client : Client[1];
+  from : String[1];
+  to : String[1];
+  ratios : Ratios[1];
+  operations : OperationDetailed[*];
+  hits : String[1];
+}
+Class StatsEdge
+{
+  node : Stats[0..1];
+  cursor : String[1];
+}
+Class StatsFilterInput
+{
+}
+Class StatsInfo
+{
+  code : String[1];
+  type : StatsInfoTypes[1];
+  hits : String[1];
+  time : Integer[1];
+  averageTime : String[1];
+  totalTime : String[1];
+  assets : StatsAsset[*];
+}
+Enum StatsInfoTypes
+{
+  ALL,
+  OK,
+  INTEGRATION,
+  PROVIDER,
+  COMMUNICATION,
+  HUB,
+  OTHER
+}
+Class StatsQuery
+{
+  report : StatsConnection[1];
+  getActiveConnection : ConnectionConnection[1];
+}
+Class StatsRequest
+{
+  total : Stat[1];
+  validation : Stat[1];
+  process : Stat[1];
+  configuration : Stat[1];
+  request : Stat[1];
+  response : Stat[1];
+  requestPlugin : StatPlugin[0..1];
+  responsePlugin : StatPlugin[0..1];
+  hotels : Integer[1];
+  zones : Integer[1];
+  cities : Integer[1];
+  dockerID : String[1];
+  Accesses : StatAccess[1];
+}
+Class StatusFilterInput
+{
+}
+Enum StatusType
+{
+  OK,
+  RQ
+}
+Class SuitOrganizationInput
+{
+}
+Class Supplement
+{
+  code : String[1];
+  name : String[0..1];
+  description : String[0..1];
+  supplementType : SupplementType[1];
+  chargeType : ChargeType[1];
+  mandatory : Boolean[1];
+  durationType : DurationType[0..1];
+  quantity : Integer[0..1];
+  unit : UnitTimeType[0..1];
+  effectiveDate : String[0..1];
+  expireDate : String[0..1];
+  start : String[0..1];
+  end : String[0..1];
+  resort : Resort[0..1];
+  price : Price[0..1];
+}
+Enum SupplementType
+{
+  SKI_PASS,
+  LESSONS,
+  MEALS,
+  EQUIPMENT,
+  TICKET,
+  TRANSFERS,
+  GALA,
+  ACTIVITY
+}
+Class Supplier extends AlertObjectsUnion,Connection
+{
+  code : String[1];
+  supplierData : SupplierData[0..1];
+  error : Error[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class SupplierConnection
+{
+  edges : SupplierEdge[*];
+  pageInfo : PageInfo[1];
+  adviseMessage : AdviseMessage[*];
+  totalCount : Integer[1];
+}
+Class SupplierContextInput
+{
+}
+Class SupplierData extends EntityData
+{
+  code : String[1];
+  name : String[1];
+  isActive : Boolean[1];
+  provider : ProviderData[1];
+  context : String[1];
+  serviceApi : Integer[1];
+  supplierGroup : String[0..1];
+  accesses : AccessConnection[0..1];
+  owner : Organization[1];
+  groups : GroupConnection[0..1];
+  clients : ClientConnection[0..1];
+  system : System[1];
+}
+Class SupplierDetected
+{
+  code : String[1];
+  supplier : Supplier[0..1];
+  numberOfHotels : Integer[1];
+}
+Class SupplierEdge
+{
+  node : Supplier[0..1];
+  cursor : String[1];
+}
+Class SupplierFilter
+{
+}
+Class SupplierGroup
+{
+  groupCode : String[1];
+  isActive : Boolean[1];
+}
+Class SupplierGroupInput
+{
+}
+Class Surcharge
+{
+  code : String[0..1];
+  chargeType : ChargeType[1];
+  mandatory : Boolean[1];
+  price : Price[1];
+  description : String[0..1];
+}
+Class System
+{
+  code : String[1];
+  systemData : SystemData[0..1];
+  error : Error[*];
+  createdAt : String[1];
+  updatedAt : String[1];
+}
+Class SystemConnection
+{
+  edges : SystemEdge[*];
+  pageInfo : PageInfo[1];
+}
+Class SystemData
+{
+  code : String[1];
+  name : String[1];
+  isActive : Boolean[1];
+  group : Group[0..1];
+  owner : Organization[0..1];
+  suppliers : Supplier[1];
+}
+Class SystemEdge
+{
+  node : System[0..1];
+  cursor : String[1];
+}
+Class SystemFilter
+{
+}
+Class TGX
+{
+  member_id : String[1];
+  layer : Integer[1];
+  is_private : Boolean[1];
+  included_groups : String[1];
+  excluded_groups : String[1];
+  tgx_correlation_id : String[1];
+  tgx_origin : String[1];
+  tgx_origin_ip : String[1];
+  gstorage_url : String[1];
+  transaction_type : String[1];
+}
+Class TGXFilter
+{
+  member_id : String[0..1];
+  layer : Integer[0..1];
+  is_private : Boolean[0..1];
+  included_groups : String[*];
+  excluded_groups : String[*];
+  tgx_correlation_id : String[0..1];
+  tgx_origin : String[0..1];
+  tgx_origin_ip : String[0..1];
+  transaction_type : String[0..1];
+  gstorage_url : String[0..1];
+}
+Enum TagRuntimeType
+{
+  USER,
+  PASSWORD,
+  URLAVAIL,
+  URLVALUATION,
+  URLRESERVATION,
+  URLGENERIC,
+  PARAMETER
+}
+Class TaxSummaryType
+{
+  totalTaxAmount : AmountType[0..1];
+  tax : TaxType[*];
+}
+Class TaxType
+{
+  amount : AmountType[0..1];
+  descText : TextType[0..1];
+}
+Enum Template
+{
+  FOLDER_DEFAULT
+}
+Enum TermType
+{
+  TEXECT
+}
+Class Text
+{
+  text : String[1];
+  language : String[1];
+}
+Class TextType
+{
+  text : String[0..1];
+}
+Enum ThreeDSCardEnrolledStatusType
+{
+  CARD_ENROLLED,
+  CARD_NOT_ENROLLED,
+  CANT_AUTHENTICATE
+}
+Enum ThreeDSSignatureStatusType
+{
+  SIGNATURE_VALIDATED,
+  SIGNATURE_NOT_VALIDATED
+}
+Class ThreeDomainSecurityInput
+{
+}
+Class TimeRange
+{
+  startTime : String[1];
+  endTime : String[1];
+}
+Class TimeRangeInput
+{
+}
+Class Timeout
+{
+  search : Integer[1];
+  quote : Integer[1];
+  book : Integer[1];
+}
+Class TimeoutInput
+{
+}
+Enum TitleNameType
+{
+  MR,
+  MRS,
+  INF,
+  CHD
+}
+Enum TrafficType
+{
+  BASIC,
+  SPEED,
+  SCHEDULER,
+  OPTIMIZED
+}
+Class Transactions
+{
+  request : String[1];
+  response : String[1];
+  timeStamp : String[1];
+}
+Class TransportArrival
+{
+  location : String[0..1];
+}
+Class TransportDeparture
+{
+  location : String[0..1];
+  AircraftScheduled : String[0..1];
+}
+Enum UnitTimeType
+{
+  DAY,
+  HOUR
+}
+Class UpdateClientInput
+{
+}
+Class UpdateEntitiesInput
+{
+}
+Class UpdateGroupAPISInput
+{
+}
+Class UpdateGroupInput
+{
+}
+Class UpdateMemberInput
+{
+}
+Class UpdateOrganizationInput
+{
+}
+Class UpdatePartnerInput
+{
+}
+Class UpdateProfileInput
+{
+}
+Class UpdateSystemInput
+{
+}
+Class Urls
+{
+  search : String[0..1];
+  quote : String[0..1];
+  book : String[0..1];
+  generic : String[0..1];
+}
+Class UrlsInput
+{
+}
+Class View
+{
+  texts : Text[*];
+  viewCode : String[1];
+}
+Class VirtualCreditCardInput
+{
+}
+Class Warning
+{
+  code : String[1];
+  type : String[1];
+  description : String[1];
+}
+Class __Directive
+{
+  name : String[1];
+  description : String[0..1];
+  isRepeatable : Boolean[1];
+  locations : __DirectiveLocation[1];
+  args : __InputValue[1];
+}
+Enum __DirectiveLocation
+{
+  QUERY,
+  MUTATION,
+  SUBSCRIPTION,
+  FIELD,
+  FRAGMENT_DEFINITION,
+  FRAGMENT_SPREAD,
+  INLINE_FRAGMENT,
+  VARIABLE_DEFINITION,
+  SCHEMA,
+  SCALAR,
+  OBJECT,
+  FIELD_DEFINITION,
+  ARGUMENT_DEFINITION,
+  INTERFACE,
+  UNION,
+  ENUM,
+  ENUM_VALUE,
+  INPUT_OBJECT,
+  INPUT_FIELD_DEFINITION
+}
+Class __EnumValue
+{
+  name : String[1];
+  description : String[0..1];
+  isDeprecated : Boolean[1];
+  deprecationReason : String[0..1];
+}
+Class __Field
+{
+  name : String[1];
+  description : String[0..1];
+  args : __InputValue[1];
+  type : __Type[1];
+  isDeprecated : Boolean[1];
+  deprecationReason : String[0..1];
+}
+Class __InputValue
+{
+  name : String[1];
+  description : String[0..1];
+  type : __Type[1];
+  defaultValue : String[0..1];
+}
+Class __Schema
+{
+  description : String[0..1];
+  types : __Type[1];
+  queryType : __Type[1];
+  mutationType : __Type[0..1];
+  subscriptionType : __Type[0..1];
+  directives : __Directive[1];
+}
+Class __Type
+{
+  kind : __TypeKind[1];
+  name : String[0..1];
+  description : String[0..1];
+  specifiedByUrl : String[0..1];
+  fields : __Field[*];
+  interfaces : __Type[*];
+  possibleTypes : __Type[*];
+  enumValues : __EnumValue[*];
+  inputFields : __InputValue[*];
+  ofType : __Type[0..1];
+}
+Enum __TypeKind
+{
+  SCALAR,
+  OBJECT,
+  INTERFACE,
+  UNION,
+  ENUM,
+  INPUT_OBJECT,
+  LIST,
+  NON_NULL
+}

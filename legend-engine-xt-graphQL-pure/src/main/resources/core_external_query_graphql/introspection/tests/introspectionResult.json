@@ -1,0 +1,180 @@
+{
+  "directives": [],
+  "types": [
+    {
+      "fields": [
+        {
+          "args": [],
+          "name": "val",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "description": null,
+          "type": {
+            "ofType": {
+              "ofType": null,
+              "name": "String",
+              "kind": "SCALAR"
+            },
+            "name": null,
+            "kind": "NON_NULL"
+          }
+        },
+        {
+          "args": [
+            {
+              "name": "legalName",
+              "description": null,
+              "defaultValue": null,
+              "type": {
+                "ofType": null,
+                "name": "String",
+                "kind": "SCALAR"
+              }
+            }
+          ],
+          "name": "firmByLegalName",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "description": null,
+          "type": {
+            "ofType": null,
+            "name": "Firm",
+            "kind": "OBJECT"
+          }
+        },
+        {
+          "args": [
+            {
+              "name": "lastName",
+              "description": null,
+              "defaultValue": null,
+              "type": {
+                "ofType": null,
+                "name": "String",
+                "kind": "SCALAR"
+              }
+            }
+          ],
+          "name": "employeeByLastName",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "description": null,
+          "type": {
+            "ofType": null,
+            "name": "Person",
+            "kind": "OBJECT"
+          }
+        }
+      ],
+      "inputFields": [],
+      "possibleTypes": [],
+      "enumValues": [],
+      "name": "Domain",
+      "interfaces": [],
+      "kind": "OBJECT",
+      "description": null
+    },
+    {
+      "fields": [
+        {
+          "args": [],
+          "name": "legalName",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "description": null,
+          "type": {
+            "ofType": {
+              "ofType": null,
+              "name": "String",
+              "kind": "SCALAR"
+            },
+            "name": null,
+            "kind": "NON_NULL"
+          }
+        },
+        {
+          "args": [],
+          "name": "employees",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "description": null,
+          "type": {
+            "ofType": {
+              "ofType": null,
+              "name": "Person",
+              "kind": "OBJECT"
+            },
+            "name": null,
+            "kind": "LIST"
+          }
+        }
+      ],
+      "inputFields": [],
+      "possibleTypes": [],
+      "enumValues": [],
+      "name": "Firm",
+      "interfaces": [],
+      "kind": "OBJECT",
+      "description": null
+    },
+    {
+      "fields": [
+        {
+          "args": [],
+          "name": "firstName",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "description": null,
+          "type": {
+            "ofType": {
+              "ofType": null,
+              "name": "String",
+              "kind": "SCALAR"
+            },
+            "name": null,
+            "kind": "NON_NULL"
+          }
+        },
+        {
+          "args": [],
+          "name": "lastName",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "description": null,
+          "type": {
+            "ofType": {
+              "ofType": null,
+              "name": "String",
+              "kind": "SCALAR"
+            },
+            "name": null,
+            "kind": "NON_NULL"
+          }
+        }
+      ],
+      "inputFields": [],
+      "possibleTypes": [],
+      "enumValues": [],
+      "name": "Person",
+      "interfaces": [],
+      "kind": "OBJECT",
+      "description": null
+    },
+    {
+      "fields": [],
+      "inputFields": [],
+      "possibleTypes": [],
+      "enumValues": [],
+      "name": "String",
+      "interfaces": [],
+      "kind": "SCALAR",
+      "description": null
+    }
+  ],
+  "mutationType": null,
+  "subscriptionType": null,
+  "queryType": {
+    "name": "Domain",
+    "kind": "OBJECT"
+  }
+}

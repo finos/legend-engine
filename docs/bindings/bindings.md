@@ -97,7 +97,7 @@ If the models are not compatible this should be a `meta::external::shared::forma
 
 ### Model extension module
 
-See legend-engine-external-format-xml-model for an example.
+See legend-engine-xt-xml-model for an example.
 
 This module should provide an implementation of `ExternalFormatExtension`.  This provides linkages from the
 engine to the features you've coded in the pure module.
@@ -107,7 +107,7 @@ Where available you should take advantage of libraries related to the format to 
 
 ### Runtime extension module
 
-See legend-engine-external-format-xml-runtime for an example.
+See legend-engine-xt-xml-runtime for an example.
 
 This module handles the transformations of data to and from the serialized format.
 When present in the binding this should utilise the specifics of the schema.

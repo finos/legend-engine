@@ -1,0 +1,602 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::relational::tests::model::simple::*;
+
+Class meta::relational::tests::model::simple::EntityWithAddress
+{
+    address : Address[0..1];
+}
+
+Class meta::relational::tests::model::simple::EntityWithLocations
+{
+    locations : Location[*];
+    locationsByType(types:GeographicEntityType[*])
+    {
+        $this.locations->filter(l | $types->exists(type | is($l.type, $type)))
+    }:Location[*];
+}
+
+Class meta::relational::tests::model::simple::Firm extends EntityWithAddress
+{
+    <<equality.Key>> legalName : String[1];
+
+    averageEmployeesAge(){$this.employees.age->average()*2.0}:Float[1];
+    sumEmployeesAge(){$this.employees.age->sum()}:Integer[1];
+    maxEmployeesAge(){$this.employees.age->max()}:Integer[0..1];
+
+    nameAndAddress(){
+       $this.legalName + ',' + $this.address->toOne().name
+    }:String[1];
+
+    isFirmX(){
+       if ($this.legalName->toOne() == 'Firm X', | 'Yes', | 'No')
+    }:String[1];
+
+    nameAndMaskedAddress(){
+       if ($this.legalName == 'Firm X', | $this.legalName + ' , Top Secret', |  $this.legalName + ',' + $this.address->toOne().name)
+    }:String[1];
+
+    employeeByLastName(lastName:String[1]){$this.employees->filter(e|$e.lastName == $lastName)->toOne()}:Person[0..1];
+
+    employeeByLastNameFirstName(lastName:String[1]){$this.employees->filter(e|$e.lastName == $lastName)->toOne().firstName}:String[0..1];
+
+    employeeByLastNameWhereVarIsFirstEqualArg(lastName:String[1]){$this.employees->filter(e|$lastName == $e.lastName)->toOne()}:Person[0..1];
+
+    employeesByAge(age:Integer[1]){$this.employees->filter(e|$e.age->toOne() < $age)}:Person[*];
+
+    employeesByCityOrManager(city:String[1], managerName:String[1]){$this.employees->filter(e|$e.address.name == $city || $e.manager.name == $managerName)}:Person[*];
+
+    employeesByCityOrManagerAndLastName(name:String[1], city:String[1], managerName:String[1]){$this.employees->filter(e|$e.lastName == $name && ($e.address.name == $city || $e.manager.name == $managerName))->toOne()}:Person[1];
+
+    hasEmployeeBelowAge(age:Integer[1]){$this.employees->exists(e|$e.age->toOne() < $age)}:Boolean[1];
+
+    employeeWithFirmAddressName(){
+       $this.employees->filter(e|$e.name == $this.address.name)->first()
+    }:Person[0..1];
+
+    employeeWithAddressName(name:String[1]){
+       $this.employees->filter(e|$e.address.name == $name)->first()
+    }:Person[0..1];
+
+    employeesWithAddressNameSorted(name:String[1]){
+       $this.employees->filter(e|$e.address.name->toOne()->trim() == $name)->sortBy(#/Person/lastName#).lastName->joinStrings('')
+    }:String[0..1];
+
+    nickName : String[0..1];
+
+   employeeAddressesWithFirmAddressName(name:String[1],t:GeographicEntityType[1]){
+       $this.employees->map(e|$e.address)->filter(x| $name == $this.address.name  && $t == $x.type)
+    }:Address[*];
+
+   isFirmXGroup(){
+      $this.legalName->in(['Firm X', 'Firm X & Co.', 'Firm X and Group'])
+   }:Boolean[1];
+}
+
+Class meta::relational::tests::model::simple::PersonNameParameter
+{
+   lastNameFirst:Boolean[1];
+   nested:PersonNameParameterNested[1];
+}
+
+Class meta::relational::tests::model::simple::PersonNameParameterNested
+{
+   prefix:String[1];
+}
+
+Class meta::relational::tests::model::simple::Person extends EntityWithAddress, EntityWithLocations
+{
+    firstName : String[1];
+    lastName : String[1];
+    otherNames : String[*];
+
+    name(){$this.firstName+' '+$this.lastName}:String[1];
+    nameWithTitle(title:String[1]){$title+' '+$this.firstName+' '+$this.lastName}:String[1];
+    nameWithPrefixAndSuffix(prefix:String[0..1], suffixes:String[*])
+    {
+        if($prefix->isEmpty(),
+           | if($suffixes->isEmpty(),
+                | $this.firstName + ' ' + $this.lastName,
+                | $this.firstName + ' ' + $this.lastName + ', ' + $suffixes->joinStrings(', ')),
+           | if($suffixes->isEmpty(),
+                | $prefix->toOne() + ' ' + $this.firstName + ' ' + $this.lastName,
+                | $prefix->toOne() + ' ' + $this.firstName + ' ' + $this.lastName + ', ' + $suffixes->joinStrings(', ')))
+    }:String[1];
+
+    fullName(lastNameFirst:Boolean[1])
+    {
+        if($lastNameFirst, | $this.lastName + ', ' + $this.firstName, | $this.firstName + ' ' + $this.lastName)
+    }:String[1];
+
+    parameterizedName(personNameParameter:PersonNameParameter[1])
+    {
+        if($personNameParameter.lastNameFirst, | $personNameParameter.nested.prefix+' '+$this.lastName + ', ' + $this.firstName, | $this.firstName + ' ' + $this.lastName)
+    }:String[1];
+
+    allOrganizations()
+    {
+        concatenate($this.organizations, $this.organizations->map(o | $o.superOrganizations()))->removeDuplicates()
+    }:Organization[*];
+    extraInformation : String[0..1];
+    manager : Person[0..1];
+    age : Integer[0..1];
+    constant() { 'constant' } : String[1];
+
+    addresses(){
+       $this.address->concatenate($this.firm.address)
+    }:Address[*];
+
+    nickName : String[0..1];
+
+    activeEmployment: Boolean[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::model::simple::TemporalEntityWithAddress
+{
+    name : String[1];
+    address : Address[*];
+}
+
+Class meta::relational::tests::model::simple::PersonExtension extends meta::relational::tests::model::simple::Person
+{
+   birthdate: Date[0..1];
+
+   birthYear(){
+     $this.birthdate->year()
+      }:Integer[0..1];
+}
+
+Class meta::relational::tests::model::simple::FirmExtension extends Firm
+{
+   establishedDate: Date[1];
+   employeesExt: meta::relational::tests::model::simple::PersonExtension[*];
+
+   establishedYear(){
+      $this.establishedDate->year()
+   }:Integer[1];
+
+
+   allEmployeesLastName(){
+      $this.employeesExt.lastName->joinStrings(',');
+   }:String[0..1];
+}
+
+Class meta::relational::tests::model::simple::Interaction
+{
+   id : String[1];
+   source : Person[0..1];
+   target : Person[0..1];
+   active : Boolean[1];
+   time : Integer[1];
+   longestInteractionBetweenSourceAndTarget : Integer[1];
+}
+
+Class meta::relational::tests::model::simple::GeographicEntity
+{
+    type : GeographicEntityType[1];
+}
+
+Class meta::relational::tests::model::simple::Location extends GeographicEntity
+{
+    place : String[1];
+    censusdate: Date[0..1];
+}
+
+Class meta::relational::tests::model::simple::Address extends GeographicEntity
+{
+    name : String[1];
+    street : String[0..1];
+    comments : String[0..1];
+    description(){
+      'D:' + $this.name;
+    }:String[1];
+}
+
+Enum meta::relational::tests::model::simple::GeographicEntityType
+{
+    {doc.doc = 'A city, town, village, or other urban area.'} CITY,
+    <<doc.deprecated>> COUNTRY,
+    {doc.doc = 'Any geographic entity other than a city or country.'} REGION
+}
+
+Class meta::relational::tests::model::simple::PlaceOfInterest
+{
+    name : String[1];
+}
+
+Class meta::relational::tests::model::simple::Organization
+{
+    name : String[1];
+    superOrganizations()
+    {
+        let parent = $this.parent;
+        if($parent->isEmpty(), |[], |concatenate($parent, $parent->toOne().superOrganizations()));
+    }:Organization[*];
+    subOrganizations()
+    {
+        concatenate($this.children, $this.children->map(c | $c.subOrganizations()))->removeDuplicates()
+    }:Organization[*];
+    child(name:String[1])
+    {
+        $this.children->filter(c | $c.name == $name)->toOne()
+    }:Organization[1];
+    allMembers()
+    {
+        concatenate($this.members, $this.subOrganizations()->map(o | $o.members))->removeDuplicates()
+    }:Person[*];
+}
+
+Class meta::relational::tests::model::simple::Division extends Organization
+{
+}
+
+Class meta::relational::tests::model::simple::Department extends Organization
+{
+}
+
+Class meta::relational::tests::model::simple::Team extends Organization
+{
+}
+
+Class meta::relational::tests::model::simple::Application
+{
+   source : String[1];
+   date : Date[1];
+   applicant : Person[1];
+   firm : Firm[1];
+
+}
+
+Association meta::relational::tests::model::simple::Employment
+{
+    firm : Firm[0..1];
+    employees : Person[*];
+}
+
+Association meta::relational::tests::model::simple::Firm_TemporalEntityWithAddress
+{
+    firm : Firm[0..1];
+    temporalEntityWithAddress : TemporalEntityWithAddress[*];
+}
+
+Association meta::relational::tests::model::simple::FirmCEO
+{
+    ceoFirm : Firm[0..1];
+    ceo : Person[0..1];
+}
+
+Association meta::relational::tests::model::simple::FirmOrganizations
+{
+    firm : Firm[1];
+    organizations : Organization[*];
+}
+
+Association meta::relational::tests::model::simple::SubOrganization
+{
+    parent : Organization[0..1];
+    children : Organization[*];
+}
+
+Association meta::relational::tests::model::simple::Membership
+{
+    organizations : Organization[*];
+    members : Person[*];
+}
+
+Association meta::relational::tests::model::simple::PlacesOfInterest
+{
+    location : Location[1];
+    placeOfInterest : PlaceOfInterest[*];
+}
+
+Association meta::relational::tests::model::simple::AddressLocation
+{
+    location : Location[0..1];
+    addresses: Address[*];
+}
+
+
+Class meta::relational::tests::model::simple::Product
+{
+   name : String[1];
+   cusip(){$this.synonymByType(ProductSynonymType.CUSIP).name}:String[1];
+   isin(){$this.synonymByType(ProductSynonymType.ISIN).name}:String[1];
+   cusipSynonym(){$this.synonymByType(ProductSynonymType.CUSIP)}:Synonym[1];
+   isinSynonym(){$this.synonymByType(ProductSynonymType.ISIN)}:Synonym[1];
+   classification : ProductClassification[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::model::simple::ProductClassification{
+   type : String[1];
+   description : String[1];
+}
+
+Enum meta::relational::tests::model::simple::ProductSynonymType
+{
+   CUSIP,
+   ISIN,
+   GSN
+}
+
+Class meta::relational::tests::model::simple::Synonym
+{
+   typeAsString : String[1];
+   type : ProductSynonymType[1];
+   name : String[1];
+}
+
+Association meta::relational::tests::model::simple::ProdSynonym
+{
+   synonyms : Synonym[*];
+   product : Product[1];
+
+   synonymByType(type:ProductSynonymType[1]){$this.synonyms->filter(s|$s.type == $type)->toOne()}:Synonym[1];
+   synonymsByTypes(types:ProductSynonymType[*]){$this.synonyms->filter(s|$s.type->in($types))}:Synonym[*];
+}
+
+Class meta::relational::tests::model::simple::Account
+{
+   name : String[1];
+   createDate : StrictDate[1];
+
+   accountCategory(){
+      if ( $this.name->in(['Account 1', 'Account 2']), | 'A', | 'B')
+   }:String[1];
+
+   isTypeA()
+   {
+      //deliberately badly written boolean if statement for testing
+      if($this.name->contains('2'), |true, |false)
+   }:Boolean[1];
+}
+
+Class meta::relational::tests::model::simple::AccountWithConstraints
+[
+   tradesNotDoubleBooked( ~function: $this->project([a|$a.trades.id],['tradeId'])->groupBy('tradeId', agg('count', x|$x, y| $y->count()))->filter(t|$t.getInteger('count') > 1)->tdsRows()->isEmpty()
+                          ~enforcementLevel: Error
+                          ~message: 'Account has more than one trade with the same id')
+]
+{
+   name : String[1];
+   trades : Trade[*];
+}
+
+Class meta::relational::tests::model::simple::OrderPnl
+{
+   pnl:Float[1];
+   supportContactName:String[1];
+   order:Order[1];
+}
+
+Class meta::relational::tests::model::simple::AccountPnl
+{
+   pnl:Float[1];
+}
+
+Class meta::relational::tests::model::simple::Order
+{
+   id : Integer[1];
+   date : StrictDate[1];
+   quantity : Float[1];
+   settlementDateTime : DateTime[0..1];
+   pnl:Float[0..1];
+   pnlContact:Person[0..1];
+   zeroPnl : Boolean[1];
+}
+
+Class meta::relational::tests::model::simple::Trade
+{
+   id : Integer[1];
+   date : StrictDate[1];
+   quantity : Float[1];
+   product : Product[0..1];
+   settlementDateTime : DateTime[0..1];
+   latestEventDate : StrictDate[0..1];
+   events: TradeEvent[*];
+
+   productIdentifier()
+   {
+      if ($this.product->isNotEmpty(),
+               | if($this.product.cusip->isNotEmpty(),  | $this.product.cusip->toOne(),
+                                                         | $this.product->toOne().name),
+                | 'Unknown')
+   }:String[1];
+
+
+   filterProductByNameAndTradeDate(){
+      $this.product->filter(p | $p.name ==' test' && $this.date == %2020-01-01)
+   } : Product[*];
+
+   classificationType(){
+      let clasfByProductName = $this.product->filter(p | $p.name ==' test').classification(%2020-01-01)->toOne();
+      $clasfByProductName.type;
+   } : String[1];
+
+   productDescription()
+   {
+      if ($this.product->isEmpty(), | 'Unknown', | $this.product->toOne().name)
+   }:String[1];
+
+   accountDescription()
+   {
+      if ($this.account->isNotEmpty(), | $this.account->toOne().name, |'Unknown')
+   }:String[1];
+
+   productIdentifierWithNull()
+   {
+      if ($this.product->isNotEmpty(),
+               | if($this.product.cusip->isNotEmpty(),  | $this.product.cusip,
+                                                         | $this.product.name),
+                | [])
+   }:String[0..1];
+
+   customerQuantity()
+   {
+      -$this.quantity;
+   }:Float[1];
+
+   daysToLastEvent()
+   {
+      dateDiff($this.latestEventDate->toOne(), $this.date, DurationUnit.DAYS);
+   }:Integer[1];
+
+   latestEvent()
+   {
+      $this.events->filter(e | $e.date == $this.latestEventDate)->toOne()
+   }:TradeEvent[1];
+
+
+   eventsByDate(date:Date[1])
+   {
+      $this.events->filter(e | $e.date == $date)
+   }:TradeEvent[*];
+
+   tradeDateEventType()
+   {
+      $this.eventsByDate($this.date->toOne()).eventType->toOne()
+   }:String[1];
+
+   tradeDateEvent()
+   {
+      $this.eventsByDate($this.date->toOne())->toOne()
+   }:TradeEvent[1];
+
+   tradeDateEventTypeInlined()
+   {
+      $this.events->filter(e | $e.date == $this.date).eventType->toOne()
+   }:String[1];
+
+   initiator()
+   {
+      $this.eventsByDate($this.date).initiator->toOne()
+   }:Person[0..1];
+
+   initiatorInlined()
+   {
+      $this.events->filter(e | $e.date == $this.date).initiator->toOne()
+   }:Person[0..1];
+
+   initiatorInlinedByProductName()
+   {
+      $this.events->filter(e | $e.eventType == $this.product.name).initiator->toOneMany()
+   }:Person[1..*];
+}
+
+Class meta::relational::tests::model::simple::TradeEvent
+{
+   eventType : String[0..1];
+   date: StrictDate[1];
+   initiator: Person[0..1];
+   traderAddress : String[0..1];
+}
+
+Association meta::relational::tests::model::simple::Account_AccountPnl
+{
+   account : Account[0..1];
+   accountPnl : AccountPnl[0..1];
+}
+
+Association meta::relational::tests::model::simple::Trade_Accounts
+{
+   account : Account[0..1];
+   trades : Trade[*];
+}
+
+Association meta::relational::tests::model::simple::Trade_Orders
+{
+   account : Account[0..1];
+   orders : Order[*];
+}
+
+Class meta::relational::tests::model::simple::Contract
+{
+   id : String[1];
+   money : Money[1];
+}
+
+Class meta::relational::tests::model::simple::Currency
+{
+   currency : String[1];
+}
+
+Class meta::relational::tests::model::simple::Money
+{
+   amount: Float[1];
+   usdRates:  FxReferenceRate[*];
+   currency : Currency[1];
+   usdRate(d:StrictDate[1], t:NonStandardTenorQualifier[1])
+   {
+      $this.usdRates->filter(u|$u.observationDate == $d && $u.nonStandardTenorQualifier == $t)->toOne()
+   }:FxReferenceRate[1];
+   usdValueWithMap(d:StrictDate[1], t:NonStandardTenorQualifier[1])
+   {
+      if ($this.currency.currency == 'USD',|$this.amount, |$this.amount * $this.usdRate($d, $t)->map(u|$u.rate))
+   }:Float[1] ;
+   usdValueNoMap(d:StrictDate[1], t:NonStandardTenorQualifier[1])
+   {
+      if ($this.currency.currency == 'USD',|$this.amount, |$this.amount * $this.usdRate($d, $t).rate)
+   }:Float[1] ;
+}
+
+Class meta::relational::tests::model::simple::FxReferenceRate
+{
+   observationDate: DateTime[1];
+   nonStandardTenorQualifier: NonStandardTenorQualifier[0..1];
+   rate: Float[1];
+}
+
+Enum meta::relational::tests::model::simple::NonStandardTenorQualifier
+{
+   S,   // Spot
+   F,   // Forward
+   None // None
+}
+
+Association meta::relational::tests::model::simple::BridgeAsso1
+{
+    bridge : Bridge[0..1];
+    employees : Person[*];
+}
+
+Association meta::relational::tests::model::simple::BridgeAsso2
+{
+    bridge : Bridge[0..1];
+    firm : Firm[0..1];
+}
+
+Class meta::relational::tests::model::simple::Bridge
+{
+}
+
+Class meta::relational::tests::model::simple::Event
+{
+   eventName:String[1];
+   eventDate: DateTime[1];
+}
+
+Class meta::relational::tests::model::simple::ReservedWords
+{
+   window : String[1];
+   current_date : StrictDate[1];
+}
+
+Class meta::relational::tests::model::simple::PersonWithConstraints extends Person
+[
+   firstNameTest( ~function: $this.firstName == 'test'
+                          ~enforcementLevel: Error
+                          ~message: 'First name has to be test')
+]
+{}

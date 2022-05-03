@@ -1,0 +1,123 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::csv::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumns():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project(p|$p.firstName,'firstName')
+         ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'firstName'), col({r:TDSRow[1]|'Hello'}, 'hello')])
+         ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name'), ^Pair<String,String>(first = 'hello', second = 'Other')])
+         ,
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 2);   
+   
+   assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."hello" as "Other" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root") as "persontable_0"', 
+      $result->sqlRemoveFormatting());   
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumnsAfterGroupBy():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([
+            col(p|$p.firstName,'firstName'), 
+            col(p|$p.age, 'age')
+            ])
+         ->groupBy('firstName', meta::pure::tds::agg('count', x|$x, y| $y->count()))
+         ->sort(asc('firstName'))
+         ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name'), ^Pair<String,String>(first = 'count', second = 'People Count')])
+         ,
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 2);   
+   
+   assertEquals('Anthony|1,David|1,Fabrice|1,John|2,Oliver|1,Peter|1',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."count" as "People Count" from (select "root".FIRSTNAME as "firstName", count(*) as "count" from personTable as "root" group by "firstName" order by "firstName") as "persontable_0"', 
+      $result->sqlRemoveFormatting());   
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumnsAfterConcatenate():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(col(p|$p.firstName,'firstName'))
+         ->concatenate(
+            Person.all()->project(col(p|$p.firstName,'firstName'))
+         )
+         ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name')])
+         ,
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('Anthony,Anthony,David,David,Fabrice,Fabrice,John,John,John,John,Oliver,Oliver,Peter,Peter',
+      $result.values->sort(asc('First Name')).rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "unionalias_0"."firstName" as "First Name" from (select "unionalias_1"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName" from personTable as "root" UNION ALL select "root".FIRSTNAME as "firstName" from personTable as "root") as "unionalias_1") as "unionalias_0"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumnsWithQuotes():Boolean[1]
+{
+   let queryWithoutQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
+       ->project([
+                               col({r:TDSRow[1]|$r.getString('FIRST NAME')}, 'FIRST NAME'),
+                               col({r:TDSRow[1]|$r.getString('LAST NAME')}, 'LAST NAME'),
+                               col({r:TDSRow[1]|$r.getString('1columnStartsWithNumber')}, '1columnStartsWithNumber')
+                              ])
+                 ->restrict(['FIRST NAME', 'LAST NAME', '1columnStartsWithNumber'])
+                 ->renameColumns([^Pair<String,String>(first = 'FIRST NAME', second = 'firstName')])
+   };
+
+   let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   let expected = 'select "tablewithquotedcolumns_0"."FIRST NAME" as "firstName", "tablewithquotedcolumns_0"."LAST NAME" as "LAST NAME", "tablewithquotedcolumns_0"."1columnStartsWithNumber" as "1columnStartsWithNumber" from (select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber" from tableWithQuotedColumns as "root") as "tablewithquotedcolumns_0"';
+   
+   assertEquals($expected, $resWithoutQuotes->sqlRemoveFormatting());
+   
+   let queryWithQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
+       ->project([
+                               col({r:TDSRow[1]|$r.getString('FIRST NAME')}, 'FIRST NAME'),
+                               col({r:TDSRow[1]|$r.getString('LAST NAME')}, 'LAST NAME'),
+                               col({r:TDSRow[1]|$r.getString('1columnStartsWithNumber')}, '1columnStartsWithNumber')
+                              ])
+                 ->restrict(['"FIRST NAME"', '"LAST NAME"', '1columnStartsWithNumber'])
+                 ->renameColumns([^Pair<String,String>(first = '"FIRST NAME"', second = 'firstName')])
+   };
+   
+   let resWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals($expected, $resWithQuotes->sqlRemoveFormatting());   
+}
+

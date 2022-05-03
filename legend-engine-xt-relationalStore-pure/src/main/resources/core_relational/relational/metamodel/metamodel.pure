@@ -1,0 +1,43 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+
+
+Class meta::relational::metamodel::RelationDataSelectSqlQuery extends SelectSQLQuery
+{
+   relation : NamedRelation[1];
+   columnSubset : meta::relational::metamodel::Column[*];
+}
+
+Class meta::relational::metamodel::RelationData
+{
+   relation : NamedRelation[1];
+   columnSubset : meta::relational::metamodel::Column[*];
+   rows  :  DataRow[*];
+
+   schema(){
+      $this->match([t:Table[1] | $t.schema, v:View[1] | $v.schema])->cast(@Schema)
+   }:Schema[1];
+
+   database(){
+      $this.schema().database
+   }:Database[1];
+}
+
+Class meta::relational::metamodel::DataRow
+{
+   values : Any[*];
+}

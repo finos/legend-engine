@@ -1,0 +1,1130 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE_2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+
+Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_9(
+        type=meta::relational::metamodel::relation::BusinessSnapshotMilestoning,
+        position=(1762.77841, 411.56818),
+        width=194.66667,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::relational::metamodel::relation::TemporalMilestoning,
+        position=(1788.77841, 241.56818),
+        width=139.76667,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView a506bda3_8f16_4758_a31f_8ed7bd12abc5(
+        type=meta::relational::metamodel::Alias,
+        position=(-593.22473, 59.15301),
+        width=281.01493,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::relational::metamodel::relation::Union,
+        position=(951.08211, 244.19385),
+        width=241.85075,
+        height=315.94704,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::relational::metamodel::relation::Table,
+        position=(1471.11908, 317.93555),
+        width=184.64179,
+        height=114.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::relational::metamodel::relation::View,
+        position=(1243.11908, 318.93555),
+        width=216.74627,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_19(
+        type=meta::relational::metamodel::join::RelationalTreeNode,
+        position=(539.11438, 173.90738),
+        width=258.57720,
+        height=136.90948,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::relational::metamodel::relation::NamedRelation,
+        position=(1340.11908, 229.93555),
+        width=274.00000,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ff500a5e_ba7d_4501_84a8_836163f11f89(
+        type=meta::relational::metamodel::TableAlias,
+        position=(-614.61488, 163.39244),
+        width=327.41790,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView fa1f5284_e7f5_4cac_9261_a7a42d7f7e2a(
+        type=meta::relational::metamodel::ColumnName,
+        position=(-478.98123, -274.87315),
+        width=102.52239,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView 46b8df2a_6e2b_41f7_88d3_cc6491c09ca7(
+        type=meta::relational::metamodel::Column,
+        position=(-461.22093, -216.42145),
+        width=139.20896,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView b40cd3a1_5c99_4ff9_a300_c6d931fb4d0e(
+        type=meta::relational::metamodel::Literal,
+        position=(-342.49509, -267.64010),
+        width=90.92537,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_23(
+        type=meta::relational::metamodel::LiteralList,
+        position=(-133.43028, -259.26976),
+        width=77.32836,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView 2c4e94b0_900b_487c_a510_cda429934ec8(
+        type=meta::relational::functions::pureToSqlQuery::ClassInstanceHolder,
+        position=(-264.15867, -323.35459),
+        width=138.68657,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_22(
+        type=meta::relational::metamodel::TableAliasColumn,
+        position=(-254.43028, -203.26976),
+        width=327.41790,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::relational::metamodel::relation::Milestoning,
+        position=(1772.77841, 98.56818),
+        width=172.00000,
+        height=108.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::relational::metamodel::relation::Relation,
+        position=(231.43347, 52.72923),
+        width=1324.99553,
+        height=78.48606,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::relational::metamodel::SQLQuery,
+        position=(70.57300, -269.83174),
+        width=79.33333,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView a214a6b5_8043_43e2_9132_36d426495517(
+        type=meta::relational::functions::pureToSqlQuery::SelectWithCursor,
+        position=(172.63134, -255.58902),
+        width=360.46269,
+        height=128.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_26(
+        type=meta::relational::metamodel::Window,
+        position=(1351.02906, -291.47933),
+        width=192.37313,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView 7cfb8e3c_3443_4083_927f_dba741c047d4(
+        type=meta::relational::metamodel::operation::Function,
+        position=(-487.35060, -318.18768),
+        width=70.66667,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView b28979e4_033c_4247_a984_ff65c8628a20(
+        type=meta::relational::functions::pureToSqlQuery::VarPlaceHolder,
+        position=(566.23030, -328.27681),
+        width=169.76120,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView 605b06a1_462a_431a_9763_1165fd93b644(
+        type=meta::relational::functions::pureToSqlQuery::OperationWithParentPropertyMapping,
+        position=(569.86988, -204.46696),
+        width=258.97015,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_29(
+        type=meta::relational::functions::pureToSqlQuery::FreeMarkerOperationHolder,
+        position=(706.69583, -4.37103),
+        width=179.35822,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_25(
+        type=meta::relational::metamodel::DynaFunction,
+        position=(1662.32440, -247.77778),
+        width=102.52239,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView b3641948_46f5_4cd8_b7d3_1dec2bdf2986(
+        type=meta::relational::metamodel::operation::Operation,
+        position=(1673.25724, -318.77778),
+        width=76.65672,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cd0b14d7_1cbd_4a5e_a28d_d062a404ab7d(
+        type=meta::relational::metamodel::WindowColumn,
+        position=(1090.16777, -285.59340),
+        width=142.85075,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::relational::metamodel::RelationalOperationElement,
+        position=(-549.67324, -629.18170),
+        width=2009.36906,
+        height=275.81067,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_28(
+        type=meta::relational::metamodel::join::JoinTreeNode,
+        position=(1224.49416, -187.04295),
+        width=327.41790,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_27(
+        type=meta::relational::metamodel::RelationalOperationElementWithJoin,
+        position=(871.89168, -154.91886),
+        width=243.80415,
+        height=94.54783,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::relational::metamodel::relation::BusinessMilestoning,
+        position=(1686.77841, 324.56818),
+        width=163.04478,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::relational::metamodel::relation::ProcessingMilestoning,
+        position=(1875.77841, 325.56818),
+        width=158.76120,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_24(
+        type=meta::relational::metamodel::join::JoinTreeNode,
+        position=(363.16470, 344.79833),
+        width=327.41790,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_20(
+        type=meta::relational::metamodel::relation::Relation,
+        position=(711.69535, 363.38400),
+        width=232.70149,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_18(
+        type=meta::relational::metamodel::join::RootJoinTreeNode,
+        position=(638.93148, 468.53296),
+        width=182.82123,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::relational::metamodel::relation::UnionAll,
+        position=(1037.49163, 591.15230),
+        width=69.33333,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::relational::metamodel::relation::SelectSQLQuery,
+        position=(44.51571, 184.61630),
+        width=292.97068,
+        height=499.11875,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::relational::metamodel::relation::ViewSelectSQLQuery,
+        position=(1495.74198, 569.43002),
+        width=149.23438,
+        height=80.13505,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_4,
+        target=cview_1,
+        points=[(109.16583,229.18625),(110.23967,-254.83174)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_3,
+        points=[(306.89938,346.82225),(301.96891,88.02280)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_3,
+        points=[(1477.11908,251.93555),(1478.42318,125.88267)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_6,
+        target=cview_5,
+        points=[(1563.43997,374.93555),(1561.11908,253.93555)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_8,
+        target=cview_12,
+        points=[(1811.81746,335.56818),(1811.77841,276.56818)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_9,
+        target=cview_12,
+        points=[(1860.11175,433.56818),(1858.66175,263.56818)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_12,
+        target=cview_10,
+        points=[(1858.66175,263.56818),(1858.77841,152.56818)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_11,
+        target=cview_12,
+        points=[(1906.81734,336.56818),(1906.77841,264.56818)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_13,
+        target=cview_3,
+        points=[(1072.00749,402.16737),(1072.95249,74.18408)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_14,
+        target=cview_13,
+        points=[(1072.15830,606.15230),(1072.00749,402.16737)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_15,
+        target=cview_5,
+        points=[(1395.14221,332.93555),(1396.11908,262.93555)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_16,
+        target=cview_6,
+        points=[(1570.35917,609.49754),(1563.43997,374.93555)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_18,
+        target=cview_19,
+        points=[(698.90299,484.23451),(699.66345,302.48546)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=cview_18,
+        target=cview_20,
+        points=[(778.83479,474.87906),(778.75090,378.53108)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_14(
+        source=cview_3,
+        target=cview_21,
+        points=[(552.69583,72.15156),(552.75888,-425.92167)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_15(
+        source=cview_1,
+        target=cview_21,
+        points=[(110.23967,-254.83174),(112.45626,-433.45675)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_16(
+        source=a506bda3_8f16_4758_a31f_8ed7bd12abc5,
+        target=cview_21,
+        points=[(-512.84963,65.35156),(-513.36723,-458.82040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_17(
+        source=7cfb8e3c_3443_4083_927f_dba741c047d4,
+        target=cview_21,
+        points=[(-452.01726,-303.18768),(-451.36723,-430.82040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_18(
+        source=46b8df2a_6e2b_41f7_88d3_cc6491c09ca7,
+        target=cview_21,
+        points=[(-354.43028,-210.26976),(-351.36723,-479.82040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_19(
+        source=fa1f5284_e7f5_4cac_9261_a7a42d7f7e2a,
+        target=cview_21,
+        points=[(-394.45353,-271.96942),(-393.36723,-463.82040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_20(
+        source=b40cd3a1_5c99_4ff9_a300_c6d931fb4d0e,
+        target=cview_21,
+        points=[(-297.03239,-245.64010),(-295.36723,-450.82040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_21(
+        source=cd0b14d7_1cbd_4a5e_a28d_d062a404ab7d,
+        target=cview_21,
+        points=[(1197.47176,-253.89519),(1200.17823,-453.02040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_22(
+        source=a214a6b5_8043_43e2_9132_36d426495517,
+        target=cview_21,
+        points=[(209.11518,-230.46976),(209.17823,-430.02040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_23(
+        source=2c4e94b0_900b_487c_a510_cda429934ec8,
+        target=cview_21,
+        points=[(-194.81539,-301.35459),(-195.36723,-444.82040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_24(
+        source=b28979e4_033c_4247_a984_ff65c8628a20,
+        target=cview_21,
+        points=[(638.11518,-303.46976),(639.75888,-419.92167)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_25(
+        source=605b06a1_462a_431a_9763_1165fd93b644,
+        target=cview_21,
+        points=[(756.79610,-181.72897),(757.75888,-430.92167)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_26(
+        source=ff500a5e_ba7d_4501_84a8_836163f11f89,
+        target=a506bda3_8f16_4758_a31f_8ed7bd12abc5,
+        points=[(-450.90592,206.39244),(-452.71727,88.15301)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_27(
+        source=cview_22,
+        target=cview_21,
+        points=[(-40.43027,-193.26976),(-39.36723,-463.82040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_28(
+        source=cview_23,
+        target=cview_21,
+        points=[(-94.76610,-244.26976),(-92.36723,-451.82040)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_29(
+        source=cview_24,
+        target=cview_19,
+        points=[(572.66725,358.75922),(573.73568,263.38267)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_30(
+        source=cview_25,
+        target=b3641948_46f5_4cd8_b7d3_1dec2bdf2986,
+        points=[(1713.58559,-225.77778),(1711.58559,-303.77778)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_31(
+        source=cview_26,
+        target=cview_21,
+        points=[(1394.02906,-272.47933),(1394.69583,-360.37103)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_32(
+        source=cview_27,
+        target=cview_21,
+        points=[(993.79375,-107.64495),(997.69583,-369.37103)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_33(
+        source=cview_29,
+        target=cview_21,
+        points=[(839.69583,-1.37103),(844.75888,-415.92167)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::relational::metamodel::relation::Milestoning.owner,
+        source=cview_10,
+        target=cview_3
+,        points=[(1794.77841,119.56818),(1511.41883,113.83723)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::relational::metamodel::relation::Table.milestoning,
+        source=cview_6,
+        target=cview_10
+,        points=[(1563.43997,374.93555),(1673.73568,374.32017),(1673.73568,182.13267),(1787.77841,182.56818)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::relational::metamodel::relation::Union.queries,
+        source=cview_13,
+        target=cview_4
+,        points=[(957.48280,534.72532),(291.03478,534.05763)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::relational::metamodel::relation::ViewSelectSQLQuery.selectSQLQuery,
+        source=cview_16,
+        target=cview_4
+,        points=[(1509.09929,638.57376),(292.32510,639.86409)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::relational::metamodel::relation::ViewSelectSQLQuery.view,
+        source=cview_16,
+        target=cview_15
+,        points=[(1509.76509,591.34911),(1205.87348,592.12215),(1208.11068,352.44517),(1351.49221,354.93555)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::relational::metamodel::relation::SelectSQLQuery.data,
+        source=cview_4,
+        target=cview_18
+,        points=[(312.97026,482.44473),(730.34209,483.53296)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::relational::metamodel::relation::Union.currentTreeNodes,
+        source=cview_13,
+        target=cview_19
+,        points=[(988.42836,256.21529),(765.32995,254.33736)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::relational::metamodel::relation::SelectSQLQuery.leftSideOfFilter,
+        source=cview_4,
+        target=cview_19
+,        points=[(325.87348,208.89634),(643.70097,209.40841)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::relational::metamodel::relation::SelectSQLQuery.preIsolationCurrentTreeNode,
+        source=cview_4,
+        target=cview_19
+,        points=[(315.55090,287.60602),(557.31600,288.28165)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_9(
+        property=meta::relational::metamodel::relation::Relation.columns,
+        source=cview_3,
+        target=cview_21
+,        points=[(1525.29818,68.07017),(2000.29818,69.63267),(1990.54818,-600.24233),(1442.69583,-605.37103)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_10(
+        property=meta::relational::metamodel::relation::SelectSQLQuery.filteringOperation,
+        source=cview_4,
+        target=cview_21
+,        points=[(54.90574,308.25118),(-653.08018,300.46838),(-655.86358,-416.82269),(-213.50598,-418.53899)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_11(
+        property=meta::relational::metamodel::relation::SelectSQLQuery.groupBy,
+        source=cview_4,
+        target=cview_21
+,        points=[(72.97026,366.31570),(-705.66234,356.80641),(-709.64509,-467.24286),(-215.38391,-470.18217)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_12(
+        property=meta::relational::metamodel::relation::SelectSQLQuery.havingOperation,
+        source=cview_4,
+        target=cview_21
+,        points=[(58.77671,442.44473),(-750.73276,435.67965),(-758.38459,-526.06639),(-189.09283,-527.45917)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_13(
+        property=meta::relational::metamodel::relation::SelectSQLQuery.extraFilteringOperation,
+        source=cview_4,
+        target=cview_21
+,        points=[(54.90574,531.47699),(-816.46046,523.94256),(-818.88879,-569.76386),(-213.50598,-566.89579)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_14(
+        property=meta::relational::metamodel::TableAliasColumn.alias,
+        source=cview_22,
+        target=ff500a5e_ba7d_4501_84a8_836163f11f89
+,        points=[(-245.30417,-157.37103),(-264.30417,-157.37103),(-259.84963,204.35156),(-450.90593,206.39244)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_15(
+        property=meta::relational::metamodel::TableAliasColumn.column,
+        source=cview_22,
+        target=46b8df2a_6e2b_41f7_88d3_cc6491c09ca7
+,        points=[(-90.72132,-174.26976),(-391.61645,-173.42145)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_16(
+        property=meta::relational::metamodel::LiteralList.values,
+        source=cview_23,
+        target=b40cd3a1_5c99_4ff9_a300_c6d931fb4d0e
+,        points=[(-94.76610,-244.26976),(-297.03239,-245.64010)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_17(
+        property=meta::relational::metamodel::DynaFunction.parameters,
+        source=cview_25,
+        target=cview_21
+,        points=[(1713.58559,-225.77778),(1838.69583,-225.37103),(1837.54818,-452.24233),(1437.69583,-452.37103)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_18(
+        property=meta::relational::metamodel::WindowColumn.func,
+        source=cd0b14d7_1cbd_4a5e_a28d_d062a404ab7d,
+        target=cview_25
+,        points=[(1210.69583,-229.37103),(1713.58559,-225.77778)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_19(
+        property=meta::relational::metamodel::Window.partition,
+        source=cview_26,
+        target=cview_21
+,        points=[(1537.69583,-258.37103),(1615.69583,-257.37103),(1616.54818,-410.24233),(1420.69583,-409.37103)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_20(
+        property=meta::relational::metamodel::Window.sortBy,
+        source=cview_26,
+        target=cview_21
+,        points=[(1412.02906,-287.47933),(1569.41182,-286.48399),(1569.54818,-366.24233),(1445.69583,-366.37103)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_21(
+        property=meta::relational::metamodel::WindowColumn.window,
+        source=cd0b14d7_1cbd_4a5e_a28d_d062a404ab7d,
+        target=cview_26
+,        points=[(1219.69583,-270.37103),(1447.21562,-269.47933)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_22(
+        property=meta::relational::metamodel::RelationalOperationElementWithJoin.relationalOperationElement,
+        source=cview_27,
+        target=cview_21
+,        points=[(1088.69583,-72.37103),(1893.54818,-65.24233),(1890.54818,-499.24233),(1455.69583,-499.37103)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_23(
+        property=meta::relational::metamodel::RelationalOperationElementWithJoin.joinTreeNode,
+        source=cview_27,
+        target=cview_28
+,        points=[(1113.69583,-126.37103),(1233.69583,-124.37103)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_24(
+        property=meta::relational::functions::pureToSqlQuery::FreeMarkerOperationHolder.parameters,
+        source=cview_29,
+        target=cview_21
+,        points=[(796.37493,17.62897),(1948.54818,16.75767),(1940.54818,-551.24233),(1453.69583,-556.37103)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

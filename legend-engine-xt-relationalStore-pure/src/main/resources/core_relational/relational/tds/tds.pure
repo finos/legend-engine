@@ -1,0 +1,114 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::join::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::profiles::*;
+
+
+
+function 
+   {doc.doc = 'Join the two provided TDSs using the specified join type using the specified columns as keys'}
+   meta::pure::tds::join(tds1:TabularDataSet[1], tds2:TabularDataSet[1], type:JoinType[1], tdsCols : String[1..*]):TabularDataSet[1]
+{
+   $tds1->join($tds2, $type, $tdsCols, $tdsCols);
+}   
+
+function 
+   {doc.doc = 'Join the two provided TDSs using the specified join type using the specified columns as keys'}
+   meta::pure::tds::join(leftTds:TabularDataSet[1], rightTds:TabularDataSet[1], type:JoinType[1], leftTdsCols : String[1..*], rightTdsCols : String[1..*]):TabularDataSet[1]
+{
+   assertEquals($leftTdsCols->size(), $rightTdsCols->size(), | 'Same number of columns to join on must be specified for each TDS (' + $leftTdsCols->size()->makeString() + ' vs. ' + $rightTdsCols->size()->makeString() + ')');
+   assertEmpty($leftTdsCols->removeAll($leftTds.columns.name), | 'Column(s) not found in first TDS: ' + $leftTdsCols->removeAll($leftTds.columns.name)->joinStrings('[', ',', ']'));
+   assertEmpty($rightTdsCols->removeAll($rightTds.columns.name), | 'Column(s) not found in second TDS: ' + $rightTdsCols->removeAll($rightTds.columns.name)->joinStrings('[', ',', ']'));
+   
+   let commonJoinCols = $leftTdsCols->zip($rightTdsCols)->filter(p|$p.first == $p.second).first;
+   
+   assertEmpty($leftTds.columns.name->intersection($rightTds.columns.name)->removeAll($commonJoinCols));
+
+   let requiredLeftCols = if($type != JoinType.RIGHT_OUTER, | $leftTds.columns, | $leftTds.columns->filter(c|!$c.name->in($commonJoinCols)));
+   let requiredRightCols = if($type == JoinType.RIGHT_OUTER, | $rightTds.columns, | $rightTds.columns->filter(c|!$c.name->in($commonJoinCols)));
+   
+   let leftColsToDrop_ReverseSorted = $leftTds.columns->filter(col|!$requiredLeftCols->contains($col)).offset->sort()->reverse();
+   let rightColsToDrop_ReverseSorted = $rightTds.columns->filter(col|!$requiredRightCols->contains($col)).offset->sort()->reverse();
+   
+   let cols = $requiredLeftCols->map(col|if($col.offset->isEmpty(), |$col, |^$col(offset = $requiredLeftCols->indexOf($col))))
+            ->concatenate($requiredRightCols->map(col|if ($col.offset->isEmpty(), |$col, |^$col(offset = $requiredLeftCols->size() + $requiredRightCols->indexOf($col)))));
+   
+   let res = ^TabularDataSet(columns = $cols);
+   
+   let leftTdsKeyValues = $leftTds.rows->map(r|pair(list($leftTdsCols->map(c|$r.get($c))), $r));
+   let rightTdsKeyValues = $rightTds.rows->map(r|pair(list($rightTdsCols->map(c|$r.get($c))), $r));
+         
+   let leftTdsGrouped = $leftTdsKeyValues->newMultiValueMap();
+   let rightTdsGrouped = $rightTdsKeyValues->newMultiValueMap();
+   
+   let bucketKeys = if(type== JoinType.INNER || $type == JoinType.LEFT_OUTER, 
+                    | $leftTdsKeyValues,
+                    | $rightTdsKeyValues
+                    ).first->removeDuplicates();
+   
+   let rows = $bucketKeys->map(bucketKey|
+               let leftTdsRows = $leftTdsGrouped->get($bucketKey).values
+                     ->map(r|$leftColsToDrop_ReverseSorted->fold({index,tmpL| ^$tmpL(values = $tmpL.values->dropAt($index))}, $r));
+                              
+               let rightTdsRows = $rightTdsGrouped->get($bucketKey).values
+                     ->map(r|$rightColsToDrop_ReverseSorted->fold({index,tmpR| ^$tmpR(values = $tmpR.values->dropAt($index))}, $r));
+                               
+               let rows = if($type == JoinType.INNER || ($leftTdsRows->isNotEmpty() && $rightTdsRows->isNotEmpty()),
+                 | $leftTdsRows->map(r1|$rightTdsRows->map(r2|^TDSRow(values=concatenate($r1.values, $r2.values), parent=$res)));,
+                 | 
+                   if($type == JoinType.LEFT_OUTER,
+                      | $leftTdsRows->map(r1|^TDSRow(values=concatenate($r1.values, $requiredRightCols->map(c|^TDSNull())), parent=$res));,
+                      | if($type == JoinType.RIGHT_OUTER, 
+                           | $rightTdsRows->map(r2|^TDSRow(values=concatenate($requiredLeftCols->map(c|^TDSNull()), $r2.values), parent=$res)), 
+                           | fail('Unsupported join type ' + $type->makeString()); [];
+                           )
+                      )
+                 );         
+            );
+
+   $res->mutateAdd('rows', $rows);
+   $res;
+}
+
+function 
+   {doc.doc = 'Join the two provided TDSs using the specified join type and condition'}
+   meta::pure::tds::join(tds1:TabularDataSet[1], tds2:TabularDataSet[1], type:JoinType[1], joinCondition:Function<{TDSRow[1],TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]
+{
+   let cols = concatenate($tds1.columns->map(col|^TDSColumn(offset=$col.offset,  // can do simplification
+                                                            name=$col.name,
+                                                            type=$col.type)),
+                          $tds2.columns->map(col|^TDSColumn(offset=if($col.offset->size()==0, |$col.offset ,| $col.offset->toOne() + $tds1.columns->size()),
+                                                            name=$col.name,
+                                                            type=$col.type)));
+
+   let res = ^TabularDataSet(columns = $cols);
+
+   let rows = if($type == JoinType.INNER,
+                 | $tds1.rows->map(r1|$tds2.rows->filter(r2|$joinCondition->eval($r1, $r2))->map(r2|^TDSRow(values=concatenate($r1.values, $r2.values), parent=$res))),
+
+                 | if($type == JoinType.LEFT_OUTER,
+                      | $tds1.rows->map(r1| let filtered = $tds2.rows->filter(r2|$joinCondition->eval($r1, $r2));
+                                            if($filtered->isEmpty(), | ^TDSRow(values=concatenate($r1.values, $tds2.columns->map(c|^TDSNull())), parent=$res),
+                                                                       | $filtered->map(r2|^TDSRow(values=concatenate($r1.values, $r2.values), parent=$res)));),
+
+                      | $tds2.rows->map(r2| let filtered = $tds1.rows->filter(r1|$joinCondition->eval($r1,$r2));
+                                                 if($filtered->isEmpty(), | ^TDSRow(values=concatenate($tds1.columns->map(c|^TDSNull()), $r2.values), parent=$res),
+                                                                            | $filtered->map(r1|^TDSRow(values=concatenate($r1.values, $r2.values), parent=$res)));)));
+
+
+   $res->mutateAdd('rows', $rows);
+   $res;
+}

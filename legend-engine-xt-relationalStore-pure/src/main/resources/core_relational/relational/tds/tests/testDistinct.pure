@@ -1,0 +1,57 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::pure::profiles::*;
+import meta::pure::metamodel::tds::*;
+
+function <<test.Test>> meta::relational::tests::tds::distinct::testSimpleDistinct():Boolean[1]
+{
+   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct()->sort([asc('sourceName'), desc('id')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 8);
+   assertEquals(['Anthony Allen', '7'], $result.values.rows->at(0).values);
+   assertEquals(['Anthony Allen', '6'], $result.values.rows->at(1).values);
+   assertEquals(['Anthony Allen', '3'], $result.values.rows->at(2).values);
+   assertEquals(['Fabrice Roberts', '6'], $result.values.rows->at(3).values);
+   assertEquals(['John Hill', '5'], $result.values.rows->at(4).values);
+   assertEquals(['John Hill', '4'], $result.values.rows->at(5).values);
+   assertEquals(['Peter Smith', '2'], $result.values.rows->at(6).values);
+   assertEquals(['Peter Smith', '1'], $result.values.rows->at(7).values);
+}
+
+function <<test.Test>> meta::relational::tests::tds::distinct::testSimpleDistinctWithTake():Boolean[1]
+{
+   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct()->take(2), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 2);
+}
+
+function <<test.Test>> meta::relational::tests::tds::distinct::testSimpleDistinctWithFilter():Boolean[1]
+{
+   let result = execute(|Interaction.all()->filter(i|$i.id == 1)->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['Peter Smith', '1'], $result.values.rows->at(0).values);
+}
+
+function <<test.Test>> meta::relational::tests::tds::distinct::testSimpleDistinctGroupBy():Boolean[1]
+{
+   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct()->groupBy(['sourceName'], agg('count', a|$a, b|$b->count()))->sort([desc('count'), asc('sourceName')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 4);
+   assertEquals(['Anthony Allen', 3], $result.values.rows->at(0).values);
+   assertEquals(['John Hill', 2], $result.values.rows->at(1).values);
+   assertEquals(['Peter Smith', 2], $result.values.rows->at(2).values);
+   assertEquals(['Fabrice Roberts', 1], $result.values.rows->at(3).values);
+}
+

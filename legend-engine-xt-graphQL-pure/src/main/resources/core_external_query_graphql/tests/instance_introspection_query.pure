@@ -1,0 +1,281 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+//-----------
+// Generated
+//-----------
+
+// fragment FullType on __Type {
+//   kind
+//   name
+//   fields(includeDeprecated: true) {
+//     name
+//     args {
+//       ...InputValue
+//     }
+//     type {
+//       ...TypeRef
+//     }
+//     isDeprecated
+//     deprecationReason
+//   }
+//   inputFields {
+//     ...InputValue
+//   }
+//   interfaces {
+//     ...TypeRef
+//   }
+//   enumValues(includeDeprecated: true) {
+//     name
+//     isDeprecated
+//     deprecationReason
+//   }
+//   possibleTypes {
+//     ...TypeRef
+//   }
+// }
+// fragment InputValue on __InputValue {
+//   name
+//   type {
+//     ...TypeRef
+//   }
+//   defaultValue
+// }
+// fragment TypeRef on __Type {
+//   kind
+//   name
+//   ofType {
+//     kind
+//     name
+//     ofType {
+//       kind
+//       name
+//       ofType {
+//         kind
+//         name
+//         ofType {
+//           kind
+//           name
+//           ofType {
+//             kind
+//             name
+//             ofType {
+//               kind
+//               name
+//               ofType {
+//                 kind
+//                 name
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
+// query IntrospectionQuery {
+//   __schema {
+//     queryType {
+//       name
+//     }
+//     mutationType {
+//       name
+//     }
+//     types {
+//       ...FullType
+//     }
+//     directives {
+//       name
+//       locations
+//       args {
+//         ...InputValue
+//       }
+//     }
+//   }
+// }
+
+function meta::external::query::graphQL::transformation::queryToPure::tests::buildIntrospectionQuery() : meta::external::query::graphQL::metamodel::Document[1]
+{
+  ^meta::external::query::graphQL::metamodel::ExecutableDocument (
+    definitions = [^meta::external::query::graphQL::metamodel::executable::FragmentDefinition (
+      name = 'FullType',
+      selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'kind'
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'name'
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        arguments = ^meta::external::query::graphQL::metamodel::executable::Argument (
+          name = 'includeDeprecated',
+          value = ^meta::external::query::graphQL::metamodel::value::BooleanValue (
+            value = true
+          )
+        ),
+        name = 'fields',
+        selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'name'
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'args',
+          selectionSet = ^meta::external::query::graphQL::metamodel::executable::FragmentSpread (
+            name = 'InputValue'
+          )
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'type',
+          selectionSet = ^meta::external::query::graphQL::metamodel::executable::FragmentSpread (
+            name = 'TypeRef'
+          )
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'isDeprecated'
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'deprecationReason'
+        )]
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'inputFields',
+        selectionSet = ^meta::external::query::graphQL::metamodel::executable::FragmentSpread (
+          name = 'InputValue'
+        )
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'interfaces',
+        selectionSet = ^meta::external::query::graphQL::metamodel::executable::FragmentSpread (
+          name = 'TypeRef'
+        )
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        arguments = ^meta::external::query::graphQL::metamodel::executable::Argument (
+          name = 'includeDeprecated',
+          value = ^meta::external::query::graphQL::metamodel::value::BooleanValue (
+            value = true
+          )
+        ),
+        name = 'enumValues',
+        selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'name'
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'isDeprecated'
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'deprecationReason'
+        )]
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'possibleTypes',
+        selectionSet = ^meta::external::query::graphQL::metamodel::executable::FragmentSpread (
+          name = 'TypeRef'
+        )
+      )],
+      typeCondition = '__Type'
+    ), ^meta::external::query::graphQL::metamodel::executable::FragmentDefinition (
+      name = 'InputValue',
+      selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'name'
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'type',
+        selectionSet = ^meta::external::query::graphQL::metamodel::executable::FragmentSpread (
+          name = 'TypeRef'
+        )
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'defaultValue'
+      )],
+      typeCondition = '__InputValue'
+    ), ^meta::external::query::graphQL::metamodel::executable::FragmentDefinition (
+      name = 'TypeRef',
+      selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'kind'
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'name'
+      ), ^meta::external::query::graphQL::metamodel::executable::Field (
+        name = 'ofType',
+        selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'kind'
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'name'
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'ofType',
+          selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+            name = 'kind'
+          ), ^meta::external::query::graphQL::metamodel::executable::Field (
+            name = 'name'
+          ), ^meta::external::query::graphQL::metamodel::executable::Field (
+            name = 'ofType',
+            selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+              name = 'kind'
+            ), ^meta::external::query::graphQL::metamodel::executable::Field (
+              name = 'name'
+            ), ^meta::external::query::graphQL::metamodel::executable::Field (
+              name = 'ofType',
+              selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+                name = 'kind'
+              ), ^meta::external::query::graphQL::metamodel::executable::Field (
+                name = 'name'
+              ), ^meta::external::query::graphQL::metamodel::executable::Field (
+                name = 'ofType',
+                selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+                  name = 'kind'
+                ), ^meta::external::query::graphQL::metamodel::executable::Field (
+                  name = 'name'
+                ), ^meta::external::query::graphQL::metamodel::executable::Field (
+                  name = 'ofType',
+                  selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+                    name = 'kind'
+                  ), ^meta::external::query::graphQL::metamodel::executable::Field (
+                    name = 'name'
+                  ), ^meta::external::query::graphQL::metamodel::executable::Field (
+                    name = 'ofType',
+                    selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+                      name = 'kind'
+                    ), ^meta::external::query::graphQL::metamodel::executable::Field (
+                      name = 'name'
+                    )]
+                  )]
+                )]
+              )]
+            )]
+          )]
+        )]
+      )],
+      typeCondition = '__Type'
+    ), ^meta::external::query::graphQL::metamodel::executable::OperationDefinition (
+      name = 'IntrospectionQuery',
+      selectionSet = ^meta::external::query::graphQL::metamodel::executable::Field (
+        name = '__schema',
+        selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'queryType',
+          selectionSet = ^meta::external::query::graphQL::metamodel::executable::Field (
+            name = 'name'
+          )
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'mutationType',
+          selectionSet = ^meta::external::query::graphQL::metamodel::executable::Field (
+            name = 'name'
+          )
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'types',
+          selectionSet = ^meta::external::query::graphQL::metamodel::executable::FragmentSpread (
+            name = 'FullType'
+          )
+        ), ^meta::external::query::graphQL::metamodel::executable::Field (
+          name = 'directives',
+          selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+            name = 'name'
+          ), ^meta::external::query::graphQL::metamodel::executable::Field (
+            name = 'locations'
+          ), ^meta::external::query::graphQL::metamodel::executable::Field (
+            name = 'args',
+            selectionSet = ^meta::external::query::graphQL::metamodel::executable::FragmentSpread (
+              name = 'InputValue'
+            )
+          )]
+        )]
+      ),
+      type = meta::external::query::graphQL::metamodel::executable::OperationType.query
+    )]
+  )
+}

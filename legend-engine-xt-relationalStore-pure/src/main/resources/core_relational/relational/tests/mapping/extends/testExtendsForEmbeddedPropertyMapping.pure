@@ -1,0 +1,82 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+import meta::relational::tests::mapping::extend::store::*;
+import meta::relational::tests::mapping::extend::model::*;
+
+Mapping meta::relational::tests::mapping::extend::embeddedPropertyMapping::testMapping
+(
+   A[a] : Relational
+   {
+      id : [testDatabase]ABC.id,
+      m1[m1](
+         id : [testDatabase]ABC.m1Id
+      ),
+      m2[m2](
+         id : [testDatabase]ABC.m2Id
+      )
+   }
+
+   B[b] extends [a] : Relational
+   {
+      m2[m3](
+         id : [testDatabase]ABC.m3Id
+      ),
+      n1[n1](
+         id : [testDatabase]ABC.n1Id
+      ),
+      n2[n2](
+         id : [testDatabase]ABC.n2Id
+      )
+   }
+
+   C[c] extends [b] : Relational
+   {
+      m2[m4](
+         id : [testDatabase]ABC.m4Id
+      ),
+      n2[n3](
+         id : [testDatabase]ABC.n3Id
+      ),
+      o1[o1](
+         id : [testDatabase]ABC.o1Id
+      ),
+      o2[o2](
+         id : [testDatabase]ABC.o2Id
+      )
+   }
+)
+
+###Pure
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::extend::embeddedPropertyMapping::*;
+import meta::relational::tests::mapping::extend::model::*;
+import meta::relational::tests::mapping::extend::*;
+
+function <<test.Test>> meta::relational::tests::mapping::extend::embeddedPropertyMapping::testEmbeddedPropertyMappingForB():Any[*]
+{
+   let result = execute(|B.all()->filter(b|$b.m1.id == 1 && $b.m2.id == 3 && $b.n1.id == 1 && $b.n2.id == 2), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL = 'select "root".id as "pk_0", "root".id as "id" from ABC as "root" where ((("root".m1Id = 1 and "root".m3Id = 3) and "root".n1Id = 1) and "root".n2Id = 2)';
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
+   assertEquals(1, $result.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::extend::embeddedPropertyMapping::testEmbeddedPropertyMappingForC():Any[*]
+{
+   let result = execute(|C.all()->filter(c|$c.m1.id == 1 && $c.m2.id == 4 && $c.n1.id == 1 && $c.n2.id == 3  && $c.o1.id == 1 && $c.o2.id == 2), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL = 'select "root".id as "pk_0", "root".id as "id" from ABC as "root" where ((((("root".m1Id = 1 and "root".m4Id = 4) and "root".n1Id = 1) and "root".n3Id = 3) and "root".o1Id = 1) and "root".o2Id = 2)';
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
+   assertEquals(1, $result.values.id);
+}

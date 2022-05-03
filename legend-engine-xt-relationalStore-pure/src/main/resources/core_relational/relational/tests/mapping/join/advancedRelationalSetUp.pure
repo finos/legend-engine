@@ -1,0 +1,495 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::join::model::store::db
+(
+    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), ADDRESSID INT, FIRMID INT, FLAG INT,AGE INT)
+    Table personExtensionTable (ID INT PRIMARY KEY, PERSON_ID INT, EXTRAINFO VARCHAR(200), NUMBER INT,AGE INT)
+    Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT, FLAG INT)
+    Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))
+   
+    Table firmPersonBridgeTable(FIRM_ID INT PRIMARY KEY, PERSON_ID INT PRIMARY KEY)
+
+    Table TypeTable (ID INT PRIMARY KEY, TypeProperty VARCHAR(200))
+    Table TypeTableA (ID INT PRIMARY KEY, TypePropertyA VARCHAR(200))
+    Table TypeTableB (ID INT PRIMARY KEY, TypePropertyB VARCHAR(200), IN_Z TIMESTAMP, OUT_Z TIMESTAMP)
+
+    Table MiddleTable (ID INT PRIMARY KEY, LINKID INT)
+
+    Table tradeTable(ID INT PRIMARY KEY, accountID INT, quantity INT, tradeDate DATE)
+    Table accountTable(ID VARCHAR(200) PRIMARY KEY, name VARCHAR(200), createDate DATE)
+   
+    Table organizationTable(name VARCHAR(200) PRIMARY KEY, firmID INT PRIMARY KEY)
+    Table membershipTable(name VARCHAR(200) PRIMARY KEY,  memberID INT PRIMARY KEY)
+
+    Join Firm_Person(firmTable.ID = personTable.FIRMID and firmTable.FLAG is null and personTable.FLAG is not null)
+    Join Firm_Person2((firmTable.ID = personTable.FIRMID) and (firmTable.FLAG is null) and (personTable.FLAG is not null))
+    Join Firm_Person3(((firmTable.ID = personTable.FIRMID) and (firmTable.FLAG is null)) and (personTable.FLAG is not null))
+    Join Firm_Person4((firmTable.ID = personTable.FIRMID) and ((personTable.FIRSTNAME = 'Peter') or (personTable.FIRSTNAME = 'John')))
+    Join Person_MiddleTable(personTable.ID = MiddleTable.ID)
+    Join MiddleTable_PersonExtension(MiddleTable.LINKID = personExtensionTable.ID and MiddleTable.LINKID <> 999999999 and personExtensionTable.ID != -99999999)
+    Join Person_PersonExtension(personTable.ID = personExtensionTable.PERSON_ID)
+    Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)
+   
+    Join Firm_FirmPersonBridge(firmTable.ID = firmPersonBridgeTable.FIRM_ID)
+    Join Person_FirmPersonBridge(personTable.ID = firmPersonBridgeTable.PERSON_ID)
+    
+    Join TypeTableTableA (TypeTable.ID = TypeTableA.ID)
+    Join TypeTableTableB (TypeTable.ID = TypeTableB.ID)
+    Join TypeTableTableBNow (TypeTable.ID = TypeTableB.ID and TypeTableB.IN_Z <= now() and now() < TypeTableB.OUT_Z)
+    Join TypeTableTableBThen (TypeTable.ID = TypeTableB.ID and TypeTableB.IN_Z <= '2013-07-15 13:52:22.370' and '2013-07-15 13:52:22.370' < TypeTableB.OUT_Z)
+      
+    Join Trade_Account(convertVarchar128(tradeTable.accountID) = accountTable.ID)
+
+    Join Org_Membership(membershipTable.name = organizationTable.name)
+    Join Org_Person(membershipTable.memberID = personTable.ID)
+    Join Firm_Org(organizationTable.firmID = firmTable.ID)
+
+    Join Person_schemaBPerson(schemaB.personTable.ID = personTable.ID)
+    
+    Schema schemaB
+    (
+       Table personTable(ID INT PRIMARY KEY,FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200)) 
+    )
+   
+)
+
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMapping
+(
+   Person : Relational
+            {
+                scope([db]default.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    lastName : LASTNAME
+                ),
+                extraInformation : [db]@Person_PersonExtension | personExtensionTable.EXTRAINFO,
+                firm : [db]@Firm_Person
+            }
+
+   Firm : Relational
+          {
+             legalName : [db]firmTable.LEGALNAME,
+             employees : [db]@Firm_Person
+          }
+          
+   TypeBuiltOutOfMultipleJoins : Relational
+                                 {
+                                    tableProperty : [db]default.TypeTable.TypeProperty,
+                                    propertyTableA : [db]@TypeTableTableA | default.TypeTableA.TypePropertyA,
+                                    propertyTableB : [db]@TypeTableTableBNow | default.TypeTableB.TypePropertyB
+                                 }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+import meta::relational::tests::mapping::join::model::mapping::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMappingForPerson
+(
+   Person : Relational
+            {
+                scope([db]default.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    lastName : LASTNAME
+                ),
+                extraInformation : [db]@Person_PersonExtension | personExtensionTable.EXTRAINFO,
+                firm : [db]@Firm_Person
+            }
+)
+
+Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMappingForFirm
+(
+   Firm : Relational
+          {
+             legalName : [db]firmTable.LEGALNAME,
+             employees : [db]@Firm_Person
+          }
+          
+)
+
+Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMappingIncludePersonAndFirm
+(
+   include advancedRelationalMappingForPerson
+   include meta::relational::tests::mapping::join::model::mapping::advancedRelationalMappingForFirm
+   
+   TypeBuiltOutOfMultipleJoins : Relational
+                                 {
+                                    tableProperty : [db]default.TypeTable.TypeProperty,
+                                    propertyTableA : [db]@TypeTableTableA | default.TypeTableA.TypePropertyA,
+                                    propertyTableB : [db]@TypeTableTableBNow | default.TypeTableB.TypePropertyB
+                                 }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+import meta::relational::tests::mapping::join::model::mapping::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMappingForFirmIncludePerson
+(
+   include advancedRelationalMappingForPerson
+   Firm : Relational
+          {
+             legalName : [db]firmTable.LEGALNAME,
+             employees : [db]@Firm_Person
+          }
+
+)
+
+Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMappingIncludeFirmIncludePerson
+(
+   include meta::relational::tests::mapping::join::model::mapping::advancedRelationalMappingForFirmIncludePerson
+
+   TypeBuiltOutOfMultipleJoins : Relational
+                                 {
+                                    tableProperty : [db]default.TypeTable.TypeProperty,
+                                    propertyTableA : [db]@TypeTableTableA | default.TypeTableA.TypePropertyA,
+                                    propertyTableB : [db]@TypeTableTableBNow | default.TypeTableB.TypePropertyB
+                                 }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMapping2
+(
+   Person : Relational
+            {
+                scope([db]default.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    lastName : LASTNAME
+                ),
+                extraInformation : [db]@Person_MiddleTable > (OUTER)[db]@MiddleTable_PersonExtension | personExtensionTable.EXTRAINFO,
+                firm : [db]@Firm_Person2
+            }
+
+   Firm : Relational
+          {
+             legalName : [db]firmTable.LEGALNAME,
+             employees : [db]@Firm_Person2
+          }
+
+   TypeBuiltOutOfMultipleJoins : Relational
+                                 {
+                                    tableProperty : [db]default.TypeTable.TypeProperty,
+                                    propertyTableA : [db]@TypeTableTableA | default.TypeTableA.TypePropertyA,
+                                    propertyTableB : [db]@TypeTableTableBThen | default.TypeTableB.TypePropertyB
+                                 }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMapping3
+(
+   Person : Relational
+            {
+                scope([db]default.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    lastName : LASTNAME
+                ),
+                age: [db]@Person_MiddleTable > (OUTER)[db]@MiddleTable_PersonExtension | personExtensionTable.AGE,
+                extraInformation : [db]@Person_MiddleTable > (OUTER)[db]@MiddleTable_PersonExtension | personExtensionTable.EXTRAINFO,
+                firm : [db]@Firm_Person3
+            }
+
+   Firm : Relational
+          {
+             legalName : [db]firmTable.LEGALNAME,
+             employees : [db]@Firm_Person3
+          }
+
+   TypeBuiltOutOfMultipleJoinsWithDates : Relational
+                                 {
+                                    tableProperty : [db]default.TypeTable.TypeProperty,
+                                    propertyTableA : [db]@TypeTableTableA | default.TypeTableA.TypePropertyA,
+                                    propertyTableB : [db]@TypeTableTableB | default.TypeTableB.TypePropertyB,
+                                    inDate : [db]@TypeTableTableB | default.TypeTableB.IN_Z,
+                                    outDate : [db]@TypeTableTableB | default.TypeTableB.OUT_Z
+                                 }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMapping4
+(
+   Person : Relational {
+      scope([db]default.personTable)
+      (
+         firstName : FIRSTNAME,
+         lastName : LASTNAME
+      ),
+      firm : [db]@Firm_Person4
+   }
+
+   Firm : Relational {
+      legalName : [db]firmTable.LEGALNAME,
+      employees : [db]@Firm_Person4
+   }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::chainedJoins
+(
+   Person : Relational
+            {
+                scope([db]default.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    lastName : LASTNAME,
+                    age: AGE
+                ),
+                firm : [db]@Person_FirmPersonBridge > @Firm_FirmPersonBridge
+                
+            }
+
+   Firm : Relational
+          {
+             legalName : [db]firmTable.LEGALNAME,
+             employees : [db]@Firm_FirmPersonBridge > @Person_FirmPersonBridge
+          }
+   
+   
+)
+
+Mapping meta::relational::tests::mapping::join::model::mapping::chainedJoinsInner
+(
+   Person : Relational
+            {
+                scope([db]default.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    lastName : LASTNAME,
+                    extraInformation : @Person_MiddleTable > (OUTER)[db]@MiddleTable_PersonExtension | personExtensionTable.EXTRAINFO
+                ),
+                firm : [db]@Person_FirmPersonBridge > (INNER) @Firm_FirmPersonBridge
+            }
+
+   Firm : Relational
+          {
+             legalName : [db]firmTable.LEGALNAME,
+             employees : [db]@Firm_FirmPersonBridge > (INNER) @Person_FirmPersonBridge,
+             address(
+                name :   [db] case(or(equal(@Firm_FirmPersonBridge > (INNER) @Person_FirmPersonBridge |firmTable.ADDRESSID, 1), equal(@Address_Firm |addressTable.ID, 1)), 'UK', 'Europe') 
+             )
+          }
+   
+)
+
+Mapping meta::relational::tests::mapping::join::model::mapping::chainedInnerJoinsForPrimitive
+(
+   Person : Relational
+            {
+                scope([db]default.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    lastName : LASTNAME,
+                    extraInformation : [db]@Person_FirmPersonBridge > (INNER) @Firm_FirmPersonBridge | trim(firmTable.LEGALNAME)
+                )
+            }
+   
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::MappingForAccountAndTrade
+(   
+
+   Trade : Relational
+           {          
+              id : [db]tradeTable.ID,
+              quantity :[db] tradeTable.quantity,
+              account : [db] @Trade_Account,             
+              date : [db] tradeTable.tradeDate              
+           }
+
+   Account : Relational
+             {               
+                name : [db] accountTable.name,
+                createDate :[db] accountTable.createDate
+             }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::JoinSchemaBWithDefaultPersonMainTable
+(
+   Person : Relational
+            {
+                scope([db]default.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    lastName : LASTNAME
+                ),
+               extraInformation : [db]@Person_schemaBPerson | schemaB.personTable.LASTNAME
+            }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+
+Mapping meta::relational::tests::mapping::join::model::mapping::JoinSchemaBWithSchemaBPersonMainTable
+(
+   Person : Relational
+            {
+                scope([db]schemaB.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    lastName : LASTNAME
+                ),
+               extraInformation : [db]@Person_schemaBPerson | default.personTable.LASTNAME
+            }
+)
+
+###Pure
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+
+function meta::relational::tests::mapping::join::model::store::testRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(db);
+}
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::join::setUp():Boolean[1]
+{
+    createTablesAndFillDb();
+}
+
+function meta::relational::tests::mapping::join::model::store::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+
+   meta::relational::functions::toDDL::dropAndCreateSchemaInDb('schemaB', $connection);
+
+   executeInDb('Drop table if exists PersonTable;', $connection);
+   executeInDb('Create Table PersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), addressId INT, firmId INT, flag INT,AGE INT);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, addressId, firmId, flag,age) values (1, \'Peter\', \'Smith\',1,1,-1,30);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, addressId, firmId, flag,age) values (2, \'John\', \'Johnson\',2,1,-1,35);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, addressId, firmId, flag,age) values (3, \'John\', \'Hill\',3,1,-1,34);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, addressId, firmId, flag,age) values (4, \'Anthony\', \'Allen\',4,1,-1,34);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, addressId, firmId, flag,age) values (5, \'Fabrice\', \'Roberts\',5,2,-1,23);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, addressId, firmId, flag,age) values (6, \'Oliver\', \'Hill\',6,3,-1,22);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, addressId, firmId, flag,age) values (7, \'David\', \'Harris\',7,4,-1,36);', $connection);
+
+   executeInDb('Drop table if exists PersonExtensionTable;', $connection);
+   executeInDb('Create Table PersonExtensionTable(id INT, person_id INT, extraInfo VARCHAR(200),AGE INT);', $connection);
+   executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (1, 1, \'extra 1\',12);', $connection);
+   executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (2, 2, \'extra 2\',14);', $connection);
+   executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (3, 3, \'extra 3\',15);', $connection);
+   executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (4, 4, \'extra 4\',20);', $connection);
+   executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (5, 5, \'extra 5\',21);', $connection);
+   executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (6, 6, \'extra 6\',22);', $connection);
+   executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (7, 7, \'extra 7\',23);', $connection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'firmPersonBridgeTable', $connection);
+   executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (1, 1);', $connection);
+   executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (1, 2);', $connection);
+   executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (1, 3);', $connection);
+   executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (1, 4);', $connection);
+   executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (2, 5);', $connection);
+   executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (3, 6);', $connection);
+   //deliberate choice that firm 4 has no employees
+   
+   executeInDb('Drop table if exists MiddleTable;', $connection);
+   executeInDb('Create Table MiddleTable(id INT, LINKID INT);', $connection);
+   executeInDb('insert into MiddleTable (id, LINKID) values (1, 1);', $connection);
+   executeInDb('insert into MiddleTable (id, LINKID) values (2, 2);', $connection);
+   executeInDb('insert into MiddleTable (id, LINKID) values (3, 3);', $connection);
+   executeInDb('insert into MiddleTable (id, LINKID) values (4, 4);', $connection);
+   executeInDb('insert into MiddleTable (id, LINKID) values (5, 5);', $connection);
+   executeInDb('insert into MiddleTable (id, LINKID) values (6, 6);', $connection);
+   executeInDb('insert into MiddleTable (id, LINKID) values (7, 7);', $connection);
+
+   executeInDb('Drop table if exists FirmTable;', $connection);
+   executeInDb('Create Table FirmTable(id INT, legalName VARCHAR(200), addressId INT, flag INT);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, flag) values (1, \'Firm X\', 8, null);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, flag) values (2, \'Firm A\', 9, null);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, flag) values (3, \'Firm B\', 10, null);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, flag) values (4, \'Firm C\', 11, null);', $connection);
+
+   executeInDb('Drop table if exists TypeTable;', $connection);
+   executeInDb('Create Table TypeTable(id INT, TypeProperty VARCHAR(200));', $connection);
+   executeInDb('insert into TypeTable (id, TypeProperty) values (1, \'Row1\');', $connection);
+   executeInDb('insert into TypeTable (id, TypeProperty) values (2, \'Row2\');', $connection);
+   executeInDb('insert into TypeTable (id, TypeProperty) values (3, \'Row3\');', $connection);
+
+   executeInDb('Drop table if exists TypeTableA;', $connection);
+   executeInDb('Create Table TypeTableA(id INT, TypePropertyA VARCHAR(200));', $connection);
+   executeInDb('insert into TypeTableA (id, TypePropertyA) values (1, \'Row1A\');', $connection);
+   executeInDb('insert into TypeTableA (id, TypePropertyA) values (2, \'Row2A\');', $connection);
+   executeInDb('insert into TypeTableA (id, TypePropertyA) values (3, \'Row3A\');', $connection);
+
+   executeInDb('Drop table if exists TypeTableB;', $connection);
+   executeInDb('Create Table TypeTableB(id INT, TypePropertyB VARCHAR(200), IN_Z TIMESTAMP, OUT_Z TIMESTAMP);', $connection);
+   executeInDb('insert into TypeTableB (id, TypePropertyB, IN_Z, OUT_Z) values (1, \'Row1B old\', \'1900-01-01 00:00:00\', \'2014-09-24 00:00:00\');', $connection);
+   executeInDb('insert into TypeTableB (id, TypePropertyB, IN_Z, OUT_Z) values (2, \'Row2B old\', \'1900-01-01 00:00:00\', \'2014-09-24 00:00:00\');', $connection);
+   executeInDb('insert into TypeTableB (id, TypePropertyB, IN_Z, OUT_Z) values (3, \'Row3B old\', \'1900-01-01 00:00:00\', \'2014-09-24 00:00:00\');', $connection);
+   executeInDb('insert into TypeTableB (id, TypePropertyB, IN_Z, OUT_Z) values (1, \'Row1B\', \'2014-09-24 00:00:00\', \'9999-12-31 23:59:59.999\');', $connection);
+   executeInDb('insert into TypeTableB (id, TypePropertyB, IN_Z, OUT_Z) values (2, \'Row2B\', \'2014-09-24 00:00:00\', \'9999-12-31 23:59:59.999\');', $connection);
+   executeInDb('insert into TypeTableB (id, TypePropertyB, IN_Z, OUT_Z) values (3, \'Row3B\', \'2014-09-24 00:00:00\', \'9999-12-31 23:59:59.999\');', $connection);
+   
+   executeInDb('Drop table if exists accountTable;', $connection);
+   executeInDb('Create Table accountTable(ID VARCHAR(200), name VARCHAR(200), createDate DATE);', $connection);
+   executeInDb('insert into accountTable (ID, name, createDate) values (\'1\', \'Account 1\', \'2013-12-01\');', $connection);
+   
+   executeInDb('Drop table if exists tradeTable;', $connection);
+   executeInDb('Create Table tradeTable(id INT, accountId INT, quantity FLOAT, tradeDate DATE);', $connection);
+   executeInDb('insert into tradeTable (id, accountId, quantity, tradeDate) values (1, 1, 25, \'2013-12-01\');', $connection);
+
+   executeInDb('Drop table if exists schemaB.PersonTable;', $connection);
+   executeInDb('Create Table schemaB.PersonTable(id INT, firstName VARCHAR(200), LastName VARCHAR(200));', $connection);
+   executeInDb('insert into schemaB.PersonTable (id, firstName, LastName) values (1, \'Peter\', \'Peter B\');', $connection);
+   executeInDb('insert into schemaB.PersonTable (id, firstName, LastName) values (2, \'John\', \'John B\');', $connection);
+   executeInDb('insert into schemaB.PersonTable (id, firstName, LastName) values (3, \'John\', \'John B\');', $connection);
+   executeInDb('insert into schemaB.PersonTable (id, firstName, LastName) values (4, \'Anthonye\', \'Anthony B\');', $connection);
+   executeInDb('insert into schemaB.PersonTable (id, firstName, LastName) values (5, \'Oliver\', \'Oliver B\');', $connection);
+   true;
+}

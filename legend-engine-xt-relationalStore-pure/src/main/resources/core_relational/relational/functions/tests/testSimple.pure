@@ -1,0 +1,70 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+
+function <<test.BeforePackage>> meta::relational::tests::query::setUp():Boolean[1]
+{
+   createTablesAndFillDb();
+    
+   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   //firm with no people
+   executeInDb('insert into FirmTable (id, legalName, addressId) values (8, \'No Employees\', 11);', $connection);
+
+   //employee wth no address
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (8, \'No address\', \'Smith\',35, null,4,null);', $connection);
+
+   //person with no firm
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (9, \'No firm\', \'no Firm\',35, 7,null,null);', $connection);
+
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (10, \'New\', \'York\',35, 7,1,null);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (11, \'Elena\', \'Firm B\',35, 7,3,null);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (12, \'Don\', \'New York\',35, 7,1,null);', $connection);
+ 
+   true;
+}
+
+function <<test.Test>> meta::relational::tests::query::simple::testAll():Boolean[1]
+{
+   let result = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 12);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+function meta::relational::tests::query::simple::getPersonNames( columnList:String[*] ):TabularDataSet[1]
+{
+   meta::relational::tests::model::simple::Person.all()->meta::pure::tds::projectWithColumnSubset ([
+      col(x|$x.firstName, 'first'),
+      col(x|$x.lastName, 'last'),
+      col(x|$x.age, 'age'),
+      col(x|$x.firm.legalName, 'firmName'),
+      col(x|$x.firm->toOne().isFirmXGroup(), 'isGS')
+   ], $columnList );
+}
+
+function meta::relational::tests::query::simple::getTrades( columnList:String[*] ):TabularDataSet[1]
+{
+   meta::relational::tests::model::simple::Trade.all()->meta::pure::tds::projectWithColumnSubset ([
+      col(x|$x.id, 'id'),
+      col(x|$x.date, 'date'),
+      col(x|$x.quantity, 'quantity'),
+      col(x|$x.product.name, 'productName'),
+      col(x|$x.product.name, 'firmName'),
+      col(x|$x.settlementDateTime, 'time')
+   ], $columnList );
+}
