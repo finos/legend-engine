@@ -56,6 +56,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.BatchIdTransactionMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.DateTimeTransactionMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.TransactionMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.SourceSpecifiesInAndOutDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.SourceSpecifiesInDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.TransactionDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
@@ -141,7 +144,8 @@ public class PersistenceParseTreeWalker
         }
         else if (ctx.TRIGGER_CRON() != null)
         {
-            throw new UnsupportedOperationException("TODO: ledav -- implement cron trigger");
+            //TODO: ledav -- implement cron trigger
+            throw new UnsupportedOperationException("Cron trigger is not yet supported.");
         }
         throw new EngineException("Unrecognized trigger", sourceInformation, EngineErrorType.PARSER);
     }
@@ -804,6 +808,10 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.DateTimeOutNameContext dateTimeOutNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeOutName(), "dateTimeOutName", milestoning.sourceInformation);        milestoning.dateTimeOutName = PureGrammarParserUtility.fromGrammarString(dateTimeOutNameContext.STRING().getText(), true);
         milestoning.dateTimeOutName = PureGrammarParserUtility.fromGrammarString(dateTimeOutNameContext.STRING().getText(), true);
 
+        // transaction derivation (optional)
+        PersistenceParserGrammar.TransactionDerivationContext transactionDerivationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.transactionDerivation(), "derivation", milestoning.sourceInformation);
+        milestoning.derivation = transactionDerivationContext == null ? null : visitTransactionDerivation(transactionDerivationContext);
+
         return milestoning;
     }
 
@@ -828,7 +836,55 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.DateTimeOutNameContext dateTimeOutNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dateTimeOutName(), "dateTimeOutName", milestoning.sourceInformation);
         milestoning.dateTimeOutName = PureGrammarParserUtility.fromGrammarString(dateTimeOutNameContext.STRING().getText(), true);
 
+        // transaction derivation (optional)
+        PersistenceParserGrammar.TransactionDerivationContext transactionDerivationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.transactionDerivation(), "derivation", milestoning.sourceInformation);
+        milestoning.derivation = transactionDerivationContext == null ? null : visitTransactionDerivation(transactionDerivationContext);
+
         return milestoning;
+    }
+
+    // transaction derivation
+
+    private TransactionDerivation visitTransactionDerivation(PersistenceParserGrammar.TransactionDerivationContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.sourceSpecifiesInTransactionDerivation() != null)
+        {
+            return visitSourceSpecifiesInDate(ctx.sourceSpecifiesInTransactionDerivation());
+        }
+        else if (ctx.sourceSpecifiesInOutTransactionDerivation() != null)
+        {
+            return visitSourceSpecifiesInOutDate(ctx.sourceSpecifiesInOutTransactionDerivation());
+        }
+        throw new EngineException("Unrecognized transaction derivation", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private TransactionDerivation visitSourceSpecifiesInDate(PersistenceParserGrammar.SourceSpecifiesInTransactionDerivationContext ctx)
+    {
+        SourceSpecifiesInDateTime transactionDerivation = new SourceSpecifiesInDateTime();
+        transactionDerivation.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // source date time in field
+        PersistenceParserGrammar.TransactionDerivationInFieldContext transactionDerivationInFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDerivationInField(), "sourceDateTimeInField", transactionDerivation.sourceInformation);
+        transactionDerivation.sourceDateTimeInField = PureGrammarParserUtility.fromIdentifier(transactionDerivationInFieldContext.identifier());
+
+        return transactionDerivation;
+    }
+
+    private TransactionDerivation visitSourceSpecifiesInOutDate(PersistenceParserGrammar.SourceSpecifiesInOutTransactionDerivationContext ctx)
+    {
+        SourceSpecifiesInAndOutDateTime transactionDerivation = new SourceSpecifiesInAndOutDateTime();
+        transactionDerivation.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // source date time in field
+        PersistenceParserGrammar.TransactionDerivationInFieldContext transactionDerivationInFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDerivationInField(), "sourceDateTimeInField", transactionDerivation.sourceInformation);
+        transactionDerivation.sourceDateTimeInField = PureGrammarParserUtility.fromIdentifier(transactionDerivationInFieldContext.identifier());
+
+        // source date time out field
+        PersistenceParserGrammar.TransactionDerivationOutFieldContext transactionDerivationOutFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transactionDerivationOutField(), "sourceDateTimeOutField", transactionDerivation.sourceInformation);
+        transactionDerivation.sourceDateTimeOutField = PureGrammarParserUtility.fromIdentifier(transactionDerivationOutFieldContext.identifier());
+
+        return transactionDerivation;
     }
 
     /**********
@@ -865,9 +921,7 @@ public class PersistenceParseTreeWalker
         return milestoning;
     }
 
-    /**********
-     * validity derivation
-     **********/
+    // validity derivation
 
     private ValidityDerivation visitValidityDerivation(PersistenceParserGrammar.ValidityDerivationContext ctx)
     {

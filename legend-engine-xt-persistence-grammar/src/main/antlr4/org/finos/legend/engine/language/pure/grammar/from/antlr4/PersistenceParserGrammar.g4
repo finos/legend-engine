@@ -11,7 +11,7 @@ options
 
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
-                                            | TRUE | FALSE | IMPORT | NONE | DATE_TIME
+                                            | TRUE | FALSE | IMPORT | DERIVATION | NONE | DATE_TIME
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
                                             | TRIGGER_MANUAL | TRIGGER_CRON
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
@@ -24,8 +24,9 @@ identifier:                                 VALID_STRING | STRING
                                             | FILTER_DUPLICATES
                                             | AUDITING | AUDITING_DATE_TIME_NAME
                                             | TXN_MILESTONING | TXN_MILESTONING_BATCH_ID | TXN_MILESTONING_BOTH | BATCH_ID_IN_NAME | BATCH_ID_OUT_NAME | DATE_TIME_IN_NAME | DATE_TIME_OUT_NAME
+                                            | TRANSACTION_DERIVATION_SOURCE_IN | TRANSACTION_DERIVATION_SOURCE_IN_OUT | SOURCE_DATE_TIME_IN_FIELD | SOURCE_DATE_TIME_OUT_FIELD
                                             | VALIDITY_MILESTONING | DATE_TIME_FROM_NAME | DATE_TIME_THRU_NAME
-                                            | VALIDITY_DERIVATION | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU | SOURCE_DATE_TIME_FROM_FIELD | SOURCE_DATE_TIME_THRU_FIELD
+                                            | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU | SOURCE_DATE_TIME_FROM_FIELD | SOURCE_DATE_TIME_THRU_FIELD
                                             | MERGE_STRATEGY | MERGE_STRATEGY_NO_DELETES | MERGE_STRATEGY_DELETE_INDICATOR | MERGE_STRATEGY_DELETE_INDICATOR_FIELD | MERGE_STRATEGY_DELETE_INDICATOR_VALUES
 ;
 
@@ -340,6 +341,7 @@ dateTimeTransactionMilestoning:             DATE_TIME
                                                     (
                                                         dateTimeInName
                                                         | dateTimeOutName
+                                                        | transactionDerivation
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -354,8 +356,34 @@ bothTransactionMilestoning:                 TXN_MILESTONING_BOTH
                                                         | batchIdOutName
                                                         | dateTimeInName
                                                         | dateTimeOutName
+                                                        | transactionDerivation
                                                     )*
                                                 BRACE_CLOSE
+;
+transactionDerivation:                      DERIVATION COLON
+                                                (
+                                                    sourceSpecifiesInTransactionDerivation
+                                                    | sourceSpecifiesInOutTransactionDerivation
+                                                )
+;
+sourceSpecifiesInTransactionDerivation:     TRANSACTION_DERIVATION_SOURCE_IN
+                                                BRACE_OPEN
+                                                    (
+                                                        transactionDerivationInField
+                                                    )*
+                                                BRACE_CLOSE
+;
+sourceSpecifiesInOutTransactionDerivation:  TRANSACTION_DERIVATION_SOURCE_IN_OUT
+                                                BRACE_OPEN
+                                                    (
+                                                        transactionDerivationInField
+                                                        | transactionDerivationOutField
+                                                    )*
+                                                BRACE_CLOSE
+;
+transactionDerivationInField:               SOURCE_DATE_TIME_IN_FIELD COLON identifier SEMI_COLON
+;
+transactionDerivationOutField:              SOURCE_DATE_TIME_OUT_FIELD COLON identifier SEMI_COLON
 ;
 validityMilestoning:                        VALIDITY_MILESTONING COLON
                                                 (
@@ -375,7 +403,7 @@ dateTimeFromName:                           DATE_TIME_FROM_NAME COLON STRING SEM
 ;
 dateTimeThruName:                           DATE_TIME_THRU_NAME COLON STRING SEMI_COLON
 ;
-validityDerivation:                         VALIDITY_DERIVATION COLON
+validityDerivation:                         DERIVATION COLON
                                                 (
                                                     sourceSpecifiesFromValidityDerivation
                                                     | sourceSpecifiesFromThruValidityDerivation
