@@ -39,9 +39,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
+import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
+import org.finos.legend.server.pac4j.kerberos.LocalCredentials;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
@@ -421,6 +424,19 @@ public class TestServiceRunner
         Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"}]", simpleM2MServiceRunnerWthGraphFetchBatchSize.run(serviceRunnerInput2));
     }
 
+    @Test
+    public void testSimpleRelationalServiceWithUserId()
+    {
+        SimpleRelationalServiceWithUserRunner simpleRelationalServiceWithUserRunner = new SimpleRelationalServiceWithUserRunner();
+
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withIdentity(IdentityFactoryProvider.getInstance().makeIdentity(Lists.mutable.of(new KerberosProfile(LocalCredentials.INSTANCE))))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = simpleRelationalServiceWithUserRunner.run(serviceRunnerInput);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
+    }
+
     private static class SimpleOptionalParameterServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName;
@@ -435,6 +451,22 @@ public class TestServiceRunner
         {
             newExecutionBuilder()
                     .withParameter(this.argName, serviceRunnerInput.getArgs().get(0))
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
+    }
+
+    private static class SimpleRelationalServiceWithUserRunner extends AbstractServicePlanExecutor
+    {
+        SimpleRelationalServiceWithUserRunner()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetchWithUserId"), true);
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            newExecutionBuilder()
                     .withServiceRunnerInput(serviceRunnerInput)
                     .executeToStream(outputStream);
         }
