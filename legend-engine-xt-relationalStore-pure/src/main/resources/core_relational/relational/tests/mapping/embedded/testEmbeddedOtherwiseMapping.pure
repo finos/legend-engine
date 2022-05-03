@@ -1,0 +1,405 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::csv::*;
+import meta::relational::tests::mapping::embedded::advanced::mapping::*;
+import meta::relational::tests::mapping::embedded::advanced::model::*;
+import meta::relational::tests::mapping::embedded::advanced::*;
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestFilter():Boolean[1]
+{
+   let result = execute(|Product.all()->filter(p | $p.bondDetails.type == '5 years' )
+                                    ->project( [p | $p.name, p | $p.bondDetails.type], ['name', 'type'])
+                                    , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('name,type\n' + 'Product 3,5 years\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".PRODUCT_NAME as "name", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where "bond_detail_0".TYPE = \'5 years\'', $result);
+
+}
+
+// Alloy exclusion reason: 3. Using getter on an instance
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestGetter():Boolean[1]
+{
+  let result = execute(|Product.all()->filter(p | $p.name == 'Product 1' ), testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+  assertEquals('P 1', $result.values->at(0).bondDetails.description);
+  assertEquals('15 years', $result.values->at(0).bondDetails.type);
+
+  let result2 = execute(|Product.all()->filter(p | $p.name == 'Product 2' ), testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+  assertEquals('P 2', $result2.values->at(0).bondDetails.description);
+  assertEquals('15 years', $result2.values->at(0).bondDetails.type);
+
+  let result3 = execute(|Product.all()->filter(p | $p.name == 'Product 3' ), testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+  assertEquals('P 3', $result3.values->at(0).bondDetails.description);
+  assertEquals('5 years', $result3.values->at(0).bondDetails.type);
+}
+
+// Alloy exclusion reason: 3. Using getter on an instance
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestGetterDeepTraversal():Boolean[1]
+{
+  let result = execute(|Product.all()->filter(p | $p.name == 'Product 1' ), testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+  assertEquals('Party 1', $result.values->at(0).bondDetails.holder.name);
+  let result2 = execute(|Product.all()->filter(p | $p.name == 'Product 2' ), testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+  assertEquals('Party 2', $result2.values->at(0).bondDetails.holder.name);
+  let result3 = execute(|Product.all()->filter(p | $p.name == 'Product 3' ), testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+  assertEquals('Party 3', $result3.values->at(0).bondDetails.holder.name);
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestProjection():Boolean[1]
+{
+   let result = execute(|Product.all()->project([p| $p.name, p | $p.bondDetails.description,p| $p.bondDetails.type], ['name', 'description','type'])
+                        , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('name,description,type\n' + 'Product 1,Bond 1,15 years\n' + 'Product 2,Bond 2,15 years\n' + 'Product 3,SuperBond 3 super,5 years\n', $result.values->toOne()->toCSV());
+   assertSameSQL('select "root".PRODUCT_NAME as "name", "root".BOND_DETAILS as "description", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID)', $result);
+}
+
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestDenormWithComplexFilter():Boolean[1]
+{
+  //filter with two embedded properties in the filter
+  let result = execute(|Product.all()->filter(p | $p.bondDetails.type->startsWith('15') && $p.bondDetails.description->startsWith('Bond'))
+                                    ->project( [p | $p.name, p | $p.bondDetails.type], ['name', 'type'])
+                                    , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+
+  assertEquals('name,type\n' + 'Product 1,15 years\n' + 'Product 2,15 years\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".PRODUCT_NAME as "name", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where ("bond_detail_0".TYPE like \'15%\' and "root".BOND_DETAILS like \'Bond%\')', $result);
+ }
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestGroupBy():Boolean[1]
+{
+  let result = execute(|Product.all()->groupBy( [p | $p.bondDetails.type] ,
+                                 [agg(x|if ( $x.market == 'LSE' ,|5.0,|1.0),
+                                      y|$y->sum()
+                                      )],
+                                 ['Bond Type', 'Profit']
+                                 ), testMappingEmbeddedOtherwise,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('Bond Type,Profit\n' + '15 years,10.0\n' + '5 years,1.0\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "bond_detail_0".TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestGroupByComplexAgg():Boolean[1]
+{
+  let result = execute(|Product.all()->groupBy( [p | $p.bondDetails.type] ,
+                                 [agg(x|if($x.bondDetails.type->startsWith('5'),|5.0,|1.0),
+                                      y|$y->sum()
+                                      )],
+                                 ['Bond Type', 'sum']
+                                 ), testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('Bond Type,sum\n' + '15 years,2.0\n' + '5 years,5.0\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "bond_detail_0".TYPE as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestGroupByComplexExpressionEmbeddedAndJoin():Boolean[1]
+{
+  let result = execute(|Product.all()->groupBy( [p | $p.bondDetails.description] ,
+                                 [agg(x|if($x.bondDetails.type->startsWith('5'),|5.0,|1.0), 
+                                      y|$y->sum() 
+                                      )],
+                                 ['Bond Type', 'sum']
+                                 ), testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('Bond Type,sum\n' + 'Bond 1,1.0\n' + 'Bond 2,1.0\n'+ 'SuperBond 3 super,5.0\n', $result.values->toOne()->toCSV());
+  assertSameSQL( 'select "root".BOND_DETAILS as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestQualifierProperty():Boolean[1]
+{
+   let result = execute(|Product.all()->filter(p | $p.bondDetails.duration == '5' )
+                                      ->project( [p | $p.name, p | $p.bondDetails.duration], ['name', 'duration'])
+                                    , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('name,duration\n' + 'Product 3,5\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".PRODUCT_NAME as "name", case when "bond_detail_0".TYPE like \'5%\' then 5 else 0 end as "duration" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where case when "bond_detail_0".TYPE like \'5%\' then 5 else 0 end = \'5\'', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestQualifierPropertyConstantExpression():Boolean[1]
+{
+   let result = execute(|Product.all()->filter(p | $p.bondDetails.isBond )
+                                      //->project( [p | $p.name, p | $p.bondDetails.durations], ['name', 'durations'])
+                                    , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  true;
+   //assertEquals('name,duration\n' + 'Product 1,5\n' + 'Product 2,5\n', $result.values->toOne()->toCSV());
+  //assertSameSQL('select "root".PRODUCT_NAME as "name", case when "root".BOND_TYPE like \'5%\' then 5 else 0 end as "duration" from PRODUCT_DENORM as "root" where case when "root".BOND_TYPE like \'5%\' then 5 else 0 end = \'5\'', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestQualifierPropertyExpressionWithPropertyInJoinOnly():Boolean[1]
+{
+   let result = execute(|Product.all()->filter(p | $p.bondDetails.durationStartsWith('5') )
+                                      ->project( [p | $p.name, p | $p.bondDetails.type], ['name', 'type'])
+                                    , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  
+   assertEquals('name,type\n' + 'Product 3,5 years\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".PRODUCT_NAME as "name", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where "bond_detail_0".TYPE like \'5%\'', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestQualifierPropertyExpressionWithEmbeddedProperty():Boolean[1]
+{
+   let result = execute(|Product.all()->filter(p | $p.bondDetails.prefixedDescription('') != '2' )
+                                      ->project( [p | $p.name, p | $p.bondDetails.prefixedDescription('la')], ['name', 'description'])
+                                    , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  
+   assertEquals('name,description\n' + 'Product 1,laBond 1\n' + 'Product 2,laBond 2\n'+ 'Product 3,laSuperBond 3 super\n', $result.values->toOne()->toCSV());
+   assertSameSQL('select "root".PRODUCT_NAME as "name", concat(\'la\', "root".BOND_DETAILS) as "description" from PRODUCT_DENORM as "root" where (concat(\'\', "root".BOND_DETAILS) <> \'2\' OR concat(\'\', "root".BOND_DETAILS) is null)', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestQualifierPropertyExpressionWithEmbeddedPropertyandJoinProperty():Boolean[1]
+{
+   let result = execute(|Product.all()->project( [p | $p.bondDetails.fullName], ['fullName'])
+                                    , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+ 
+   assertEquals('fullName\n' + '15 years Bond 1\n' + '15 years Bond 2\n'+ '5 years SuperBond 3 super\n', $result.values->toOne()->toCSV());
+   assertSameSQL( 'select concat("bond_detail_0".TYPE, \' \', "root".BOND_DETAILS) as "fullName" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID)', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestComplexExpression():Boolean[1]
+{
+  let result = execute(|Product.all()->filter( p| if ($p.bondDetails.type->startsWith('5'),|true,|false))
+                                     ->project( [p | $p.name, p | $p.bondDetails.type], ['name', 'type'])
+                                 , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('name,type\n' + 'Product 3,5 years\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".PRODUCT_NAME as "name", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where case when "bond_detail_0".TYPE like \'5%\' then \'true\' else \'false\' end', $result);
+
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestComplexExpressionWithEnumMapping():Boolean[1]
+{
+  let result = execute(|Product.all()->filter( p| $p.bondDetails.status == Status.Closed)
+                                     ->project( [p | $p.bondDetails.status, p | $p.bondDetails.type], ['status', 'type'])
+                                 , testMappingEmbeddedOtherwise2, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('status,type\n' + 'Closed,5 years\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_STATUS as "status", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where "root".BOND_STATUS in (\'CLOSED\', \'Closed\')', $result);
+
+}
+  
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestEmbeddedToEmbedded():Boolean[1]
+{
+  let result = execute(|Product.all()->project( [p | $p.bondDetails.issuer.name], ['name'])
+                                 , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('name\n' + 'test\ntest\ntest\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select \'test\' as "name" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID)', $result);
+
+} 
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestFilterExistsOnEmbeddedProperty():Boolean[1]
+{
+  let result = execute(|Product.all()->filter(p|$p.bondDetails->exists(b|$b.description->startsWith('Bond')))
+                                      ->project([p|$p.name], ['name'])
+                                 , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('name\n' + 'Product 1\nProduct 2\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".PRODUCT_NAME as "name" from PRODUCT_DENORM as "root" where "root".BOND_DETAILS like \'Bond%\'', $result);
+} 
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestProjectExistsOnEmbeddedProperty():Boolean[1]
+{
+  let result = execute(|Product.all()->project( [p | $p.bondDetails->exists(b|$b.description->startsWith('Bond'))], ['descriptionExists'])
+                                 , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('descriptionExists\n' + 'true\ntrue\nfalse\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_DETAILS like \'Bond%\' as "descriptionExists" from PRODUCT_DENORM as "root"', $result);
+} 
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestFilterExistsOnOtherwiseProperty():Boolean[1]
+{
+  let result = execute(|Product.all()->filter(p|$p.bondDetails->exists(b|$b.type == '15 years'))
+                                      ->project([p|$p.name], ['name'])
+                                 , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('name\n' + 'Product 1\nProduct 2\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".PRODUCT_NAME as "name" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where "bond_detail_0".TYPE = \'15 years\'', $result);
+} 
+ 
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestProjectExistsOnOtherwiseProperty():Boolean[1]
+{
+  let result = execute(|Product.all()->project( [p | $p.bondDetails->exists(b|$b.type == '15 years')], ['typeExists'])
+                                 , testMappingEmbeddedOtherwise, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('typeExists\n' + 'true\ntrue\nfalse\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "bond_detail_0".TYPE = \'15 years\' as "typeExists" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID)', $result);
+} 
+ 
+###Mapping
+import meta::relational::tests::mapping::embedded::advanced::store::*;
+import meta::relational::tests::mapping::embedded::advanced::model::*;
+
+
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedOtherwise
+(
+
+  Product[pMapping1]: Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        name: PRODUCT_NAME,
+        market: MARKET_NAME,
+        bondDetails
+        (
+          description:BOND_DETAILS
+        ) Otherwise([bondMapping2]:@BondDetailJoin)
+
+     )
+  }
+
+   
+  BondDetail[bondMapping2]: Relational
+   {
+      scope([eDB]BOND_DETAIL)
+      (
+         description:NOT_SO_GOOD_DETAIL,
+         type: TYPE,
+         issuer
+         (
+            name : 'test'
+         ),
+         holder:[eDB]@BondDetailPartyJoin
+      )
+   }
+
+   Party : Relational
+   {
+      name : [eDB]Party.name
+   }
+
+)
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedOtherwise2
+(
+
+   Status: EnumerationMapping Source1
+    {
+       Pending:  ['PENDING', 'Pending'],
+       Open:  ['OPEN', 'Open'],
+       Closed: ['CLOSED', 'Closed']
+    }
+   
+  Product[pMapping1]: Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        name: PRODUCT_NAME,
+        market: MARKET_NAME,
+        bondDetails
+        (
+          description:BOND_DETAILS,
+          status: EnumerationMapping Source1 : BOND_STATUS 
+        ) Otherwise([bondMapping1]:@BondDetailJoin)
+
+     )
+  }
+
+   
+  BondDetail[bondMapping1]: Relational
+   {
+      scope([eDB]BOND_DETAIL)
+      (
+         description:NOT_SO_GOOD_DETAIL,
+         status: EnumerationMapping Source1 : STATUS,
+         type: TYPE
+      )
+   }
+
+  *BondDetail[bondMapping2]: Relational
+   {
+      scope([eDB]BOND_DETAIL)
+      (
+         description:NOT_SO_GOOD_DETAIL
+        
+      )
+   }
+
+)
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedOtherwiseWithUnion
+(
+
+
+   *Product: Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(product1, product2)
+   }
+   
+   Product[product1]: Relational
+   {
+      ~filter [eDB]productFilter1
+      scope([eDB]PRODUCT_DENORM)
+      (
+        name: PRODUCT_NAME,
+        market: MARKET_NAME,
+        bondDetails
+        (
+          description:BOND_DETAILS
+        ) Otherwise([bondMapping1]:@BondDetailJoin),
+        subProduct
+         (
+           name:SUBPRODUCT_NAME
+         ) Otherwise([product1]:@subProductSelfJoin)
+      )
+   }
+
+   Product[product2]: Relational
+   {
+      ~filter [eDB]productFilter2
+      scope([eDB]PRODUCT_DENORM)
+      (
+        name: PRODUCT_NAME,
+        market: MARKET_NAME,
+        bondDetails
+        (
+          description:BOND_DETAILS
+        ) Otherwise([bondMapping1]:@BondDetailJoin),
+        subProduct
+         (
+            name:SUBPRODUCT_NAME
+         ) Otherwise([product2]:@subProductSelfJoin)
+
+      )
+  }
+ 
+  BondDetail[bondMapping1]: Relational
+   {
+      scope([eDB]BOND_DETAIL)
+      (
+         description:NOT_SO_GOOD_DETAIL,
+         type: TYPE
+      )
+   }
+)

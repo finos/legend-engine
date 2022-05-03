@@ -45,7 +45,7 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-store-authentication</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication</artifactId>
         </dependency>
 
 
@@ -94,8 +94,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-core-relational</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -110,7 +110,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-store-relational</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -125,12 +125,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-store-relational</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-external-store-service</artifactId>
+            <artifactId>legend-engine-xt-serviceStore-executionPlan</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

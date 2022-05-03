@@ -1,0 +1,162 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::legend::service::metamodel::*;
+import meta::pure::executionPlan::tests::execution::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::executionPlan::*;
+
+function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExecutionStrategyForRelationalInstantiationExecutionNode():Boolean[1]
+{
+   let simpleService = 
+      ^Service
+      (
+         pattern = '/service/testLargeInList',
+         owners = ['dummy'],
+         documentation = 'dummy description',
+         autoActivateUpdates = true,
+         execution = ^PureSingleExecution
+                     (
+                        func = {|Person.all()->filter(p | $p.firstName->in(['A', 'B', 'C', 'D', 'E']))->project(col(p|$p.firstName, 'firstName'))},
+                        mapping = simpleRelationalMapping,
+                        runtime = meta::relational::tests::testRuntime()
+                     ),
+         test = ^SingleExecutionTest
+                 (
+                  data = 'default\n'+
+                         'personTable\n'+
+                         'id,firstName,lastName,age,addressId,firmId,managerId\n'+
+                         '1,A,Z,23,1,1,2\n'+
+                         '2,B,Y,22,2,1,4\n'+
+                         '3,C,X,12,3,1,2\n'+
+                         '4,D,W,22,4,1,\n'+
+                         '5,E,V,34,5,2,\n'+
+                         '6,F,U,32,6,3,\n'+
+                         '7,G,T,35,7,4,\n'+
+                         '\n\n\n',
+                  asserts = [
+                              ^meta::legend::service::metamodel::TestContainer(
+                                 parametersValues = [],
+                                 assert = {res:Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->map(r|$r.getString('firstName'))->sort() == ['A', 'B', 'C', 'D', 'E']}
+                              )
+                            ]
+                 )
+      );
+
+   $simpleService->executeServiceTests(2);
+   true;
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExecutionStrategyForCreateAndPopulateTempTableExecutionNode():Boolean[1]
+{
+   let serviceWithStringFilter = 
+      ^Service
+      (
+         pattern = '/service/testLargeInList',
+         owners = ['dummy'],
+         documentation = 'dummy description',
+         autoActivateUpdates = true,
+         execution = ^PureSingleExecution
+                     (
+                        func = {|Person.all()->filter(p | $p.firstName->in(['A', 'B', 'C', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50']))->project(col(p|$p.firstName, 'firstName'))},
+                        mapping = simpleRelationalMapping,
+                        runtime = meta::relational::tests::testRuntime()
+                     ),
+         test = ^SingleExecutionTest
+                 (
+                  data = 'default\n'+
+                         'personTable\n'+
+                         'id,firstName,lastName,age,addressId,firmId,managerId\n'+
+                         '1,A,Z,23,1,1,2\n'+
+                         '2,B,Y,22,2,1,4\n'+
+                         '3,C,X,12,3,1,2\n'+
+                         '4,D,W,22,4,1,\n'+
+                         '5,E,V,34,5,2,\n'+
+                         '6,F,U,32,6,3,\n'+
+                         '7,G,T,35,7,4,\n'+
+                         '\n\n\n',
+                  asserts = [
+                              ^meta::legend::service::metamodel::TestContainer(
+                                 parametersValues = [],
+                                 assert = {res:Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->map(r|$r.getString('firstName'))->sort() == ['A', 'B', 'C']}
+                              )
+                            ]
+                 )
+      );
+
+   let serviceWithIntegerFilter = 
+      ^Service
+      (
+         pattern = '/service/testLargeInList',
+         owners = ['dummy'],
+         documentation = 'dummy description',
+         autoActivateUpdates = true,
+         execution = ^PureSingleExecution
+                     (
+                        func = {|Person.all()->filter(p | $p.firstName->in(['A', 'B', 'C', 'D', 'E']) && $p.age->in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 52, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]))->project(col(p|$p.firstName, 'firstName'))},
+                        mapping = simpleRelationalMapping,
+                        runtime = meta::relational::tests::testRuntime()
+                     ),
+         test = ^SingleExecutionTest
+                 (
+                  data = 'default\n'+
+                         'personTable\n'+
+                         'id,firstName,lastName,age,addressId,firmId,managerId\n'+
+                         '1,A,Z,23,1,1,2\n'+
+                         '2,B,Y,22,2,1,4\n'+
+                         '3,C,X,12,3,1,2\n'+
+                         '4,D,W,22,4,1,\n'+
+                         '5,E,V,34,5,2,\n'+
+                         '6,F,U,32,6,3,\n'+
+                         '7,G,T,35,7,4,\n'+
+                         '\n\n\n',
+                  asserts = [
+                              ^meta::legend::service::metamodel::TestContainer(
+                                 parametersValues = [],
+                                 assert = {res:Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->map(r|$r.getString('firstName'))->sort() == ['A', 'C', 'E']}
+                              )
+                            ]
+                 )
+      );
+
+   $serviceWithStringFilter->executeServiceTests(6);
+   $serviceWithIntegerFilter->executeServiceTests(6);
+   true;
+}
+
+function <<access.private>> meta::pure::executionPlan::tests::execution::executeServiceTests(service:Service[1], expectedExecutionNodesCount:Integer[1]):String[*]
+{
+   let plan = executionPlan($service.execution->cast(@PureSingleExecution).func, $service.execution->cast(@PureSingleExecution).mapping, $service.execution->cast(@PureSingleExecution).runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals($expectedExecutionNodesCount, $plan.rootExecutionNode->meta::pure::executionPlan::allNodes(meta::pure::router::extension::defaultRelationalExtensions())->size());
+   let t = $service.test;
+   $t->setUpData($service.execution->cast(@PureSingleExecution).mapping, $service.execution->cast(@PureSingleExecution).runtime);
+   let results = $t->cast(@SingleExecutionTest).asserts->map(a | pair($t->cast(@SingleExecutionTest).asserts->indexOf($a)+1, $a.assert->evaluate(list($plan->execute($a.parametersValues, meta::pure::router::extension::defaultRelationalExtensions())))->cast(@Boolean)->toOne()));
+   $results->map(r|if($r.second,|[],|'Failed test number '+$r.first->toString()+' (counting from 1) for service \''+$service.pattern+'\''));
+}
+
+function <<access.private>> meta::pure::executionPlan::tests::execution::setUpData(t:Test[1], mapping:Mapping[1], runtime:Runtime[1]):Boolean[1]
+{
+   let databases = $mapping->extractDBs($runtime);
+   let database = if ($databases->size() == 1, | $databases->toOne(), | ^Database(name='Default_CatchAll', includes = $databases));
+   
+   meta::alloy::service::execution::setUpDataSQLs($t->cast(@SingleExecutionTest).data, $database)
+      ->map(sql| executeInDb($sql, $runtime->connectionByElement($databases->at(0))->cast(@DatabaseConnection));)->size();  // DO NOT REMOVE: size called to inhibit lazy evaluation ensuring the map is activated;
+   true;
+}

@@ -1,0 +1,967 @@
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
+
+Class meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::Trade
+{
+   tradeId : Integer[1];
+   traderKerb: String[0..1];
+   quantity : Integer[1];
+   productName(){$this.product.productName;}:String[0..1];
+   justProduct(){$this.product;}:Product[0..1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::Product
+{
+   productId : String[1];
+   productName : String[1];
+   description : String[1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::Synonym
+{
+   name : String[1];
+   type : SynonymType[1];
+}
+
+Enum meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::SynonymType
+{
+   CUSIP,
+   ISIN
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::Product_Synonym
+{
+   product : Product[1];
+   synonyms : Synonym[*];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::Trader
+{
+   kerberos : String[1];
+   firstName : String[1];
+   lastName : String[1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::TradeEvent
+{
+   eventId : String[1];
+   description : String[1];
+   timestamp : DateTime[1];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::Trade_Product
+{
+   product : Product[1];
+   trades : Trade[*];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::Trade_Trader
+{
+   trader : Trader[1];
+   trades : Trade[*];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::Trade_TradeEvent
+{
+   tradeEvents : TradeEvent[*];
+   trade : Trade[1];
+}
+
+
+Class meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::T_Trade
+{
+   prodId     : String[1];
+   tradeId    : Integer[1];
+   traderKerb : String[0..1];
+   quantity   : Integer[1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::S_Trade
+{
+   s_tradeId       : Integer[1];
+   s_traderDetails : String[1];
+   s_tradeDetails  : String[1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::S_TradesWrapper
+{
+   s_trades        : S_Trade[*];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::T_Trade_Product
+{
+   product : Product[1];
+   t_trades : T_Trade[*];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::T_Trade_Trader
+{
+   trader : Trader[1];
+   t_trades : T_Trade[*];
+}
+
+###Relational
+Database meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::db1
+(
+   Table tradeTable (tradeId_source INT PRIMARY KEY, quantity INT, productId VARCHAR(100), traderKerb VARCHAR(100))
+   Table traderTable (kerberos VARCHAR(100) PRIMARY KEY, firstName VARCHAR(100), lastName VARCHAR(100))
+   
+   Filter kerbFilter(startsWith(traderTable.kerberos,'gs_') = 'true')
+   
+   Join trade_trader(traderTable.kerberos = tradeTable.traderKerb)
+   
+   
+)
+
+###Relational
+Database meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::db2
+(
+   Table productTable (productId VARCHAR(100) PRIMARY KEY, productName VARCHAR(100), description VARCHAR(1000))
+   Table synonymTable (synonymId INT PRIMARY KEY, productId VARCHAR(100), type VARCHAR(200), name    VARCHAR(200))
+   
+   Join productTable_synonymTable (productTable.productId = synonymTable.productId)
+)
+
+
+###Relational
+Database meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::db3
+(
+   Table tradeEventTable (eventId VARCHAR(100) PRIMARY KEY, tradeId INT, timestamp TIMESTAMP, description VARCHAR(1000))
+)
+
+###Mapping
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
+
+Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1
+(
+   Trade[trade_set] : Relational {
+      tradeId : [db1]tradeTable.tradeId_source,
+      quantity : [db1]tradeTable.quantity,
+      +prodId : String[1] : [db1]tradeTable.productId,
+      trader[trader_set] : [db1]@trade_trader
+   }
+   
+   Product[prod_set] : Relational {
+      productId : [db2]productTable.productId,
+      productName : [db2]productTable.productName,
+      description : [db2]productTable.description,
+      synonyms[synonym_set] : [db2]@productTable_synonymTable
+   }
+   
+   Synonym[synonym_set] : Relational {
+      name : [db2]synonymTable.name,
+      type: EnumerationMapping SynonymTypeMapping : [db2]synonymTable.type,
+      product[prod_set] : [db2]@productTable_synonymTable
+   }
+   
+   Trader[trader_set] : Relational {
+      kerberos : [db1]traderTable.kerberos,
+      firstName : [db1]traderTable.firstName,
+      lastName : [db1]traderTable.lastName
+   }
+   
+   TradeEvent[trade_event_set] : Relational {
+      eventId : [db3]tradeEventTable.eventId,
+      description : [db3]tradeEventTable.description,
+      timestamp : [db3]tradeEventTable.timestamp,
+      +tradeIdLocal : Integer[1] : [db3]tradeEventTable.tradeId
+   }
+   
+   Trade_Product : XStore {
+      product[trade_set, prod_set] : $this.prodId == $that.productId,
+      trades[prod_set, trade_set] : $this.productId == $that.prodId
+   }
+   
+   Trade_TradeEvent : XStore {
+      tradeEvents[trade_set, trade_event_set] : $this.tradeId == $that.tradeIdLocal,
+      trade[trade_event_set, trade_set] : $this.tradeIdLocal == $that.tradeId
+   }
+   
+   SynonymType : EnumerationMapping SynonymTypeMapping {
+      CUSIP : ['cusip', 'CUSIP'],
+      ISIN  : ['isin', 'ISIN']
+   }
+)
+
+###Mapping
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
+
+Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping2
+(
+   Trade[trade_set] : Relational {
+      tradeId : [db1]tradeTable.tradeId_source,
+      quantity : [db1]tradeTable.quantity,
+      +prodId : String[1] : [db1]tradeTable.productId,
+      trader[trader_set] : [db1]@trade_trader
+   }
+   
+   TradeEvent[trade_event_set] : Relational {
+      eventId : [db3]tradeEventTable.eventId,
+      description : [db3]tradeEventTable.description,
+      timestamp : [db3]tradeEventTable.timestamp,
+      +tradeIdLocal : Integer[1] : [db3]tradeEventTable.tradeId
+   }
+   
+   Trade_TradeEvent : XStore {
+      tradeEvents[trade_set, trade_event_set] : ($this.tradeId == $that.tradeIdLocal) && ($that.timestamp > %2018-01-06),
+      trade[trade_event_set, trade_set] : ($this.timestamp > %2018-01-06) && ($this.tradeIdLocal == $that.tradeId)
+   }
+)
+
+###Mapping
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
+
+Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3
+(
+   Trade[trade_set] : Pure {
+      ~src S_Trade
+      tradeId             : $src.s_tradeId,
+      +prodId : String[1] : $src.s_tradeDetails->split(':')->at(0),
+      quantity            : $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+      trader[trader_set]  : $src
+   }
+   
+   Trader[trader_set] : Pure {
+      ~src S_Trade
+      kerberos  : $src.s_traderDetails->split(':')->at(0),
+      firstName : $src.s_traderDetails->split(':')->at(1),
+      lastName  : $src.s_traderDetails->split(':')->at(2)
+   }
+   
+   Product[prod_set] : Relational {
+      productId : [db2]productTable.productId,
+      productName : [db2]productTable.productName,
+      description : [db2]productTable.description,
+      synonyms[synonym_set] : [db2]@productTable_synonymTable
+   }
+   
+   Synonym[synonym_set] : Relational {
+      name : [db2]synonymTable.name,
+      type: EnumerationMapping SynonymTypeMapping : [db2]synonymTable.type,
+      product[prod_set] : [db2]@productTable_synonymTable
+   }
+   
+   Trade_Product : XStore {
+      product[trade_set, prod_set] : $this.prodId == $that.productId,
+      trades[prod_set, trade_set]  : $this.productId == $that.prodId
+   }
+   
+   SynonymType : EnumerationMapping SynonymTypeMapping {
+      CUSIP : ['cusip', 'CUSIP'],
+      ISIN  : ['isin', 'ISIN']
+   }
+)
+
+###Mapping
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
+
+Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping4
+(
+   T_Trade[trade_set] : Pure {
+      ~src S_Trade
+      tradeId             : $src.s_tradeId,
+      prodId              : $src.s_tradeDetails->split(':')->at(0),
+      quantity            : $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+      trader[trader_set]  : $src
+   }
+   
+   Trader[trader_set] : Pure {
+      ~src S_Trade
+      kerberos  : $src.s_traderDetails->split(':')->at(0),
+      firstName : $src.s_traderDetails->split(':')->at(1),
+      lastName  : $src.s_traderDetails->split(':')->at(2)
+   }
+   
+   Product[prod_set] : Relational {
+      productId : [db2]productTable.productId,
+      productName : [db2]productTable.productName,
+      description : [db2]productTable.description,
+      synonyms[synonym_set] : [db2]@productTable_synonymTable
+   }
+   
+   Synonym[synonym_set] : Relational {
+      name : [db2]synonymTable.name,
+      type: EnumerationMapping SynonymTypeMapping : [db2]synonymTable.type,
+      product[prod_set] : [db2]@productTable_synonymTable
+   }
+   
+   T_Trade_Product : XStore {
+      product[trade_set, prod_set] : $this.prodId == $that.productId,
+      t_trades[prod_set, trade_set]  : $this.productId == $that.prodId
+   }
+   
+   SynonymType : EnumerationMapping SynonymTypeMapping {
+      CUSIP : ['cusip', 'CUSIP'],
+      ISIN  : ['isin', 'ISIN']
+   }
+)
+
+###Mapping
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
+
+Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping5
+(
+   T_Trade[trade_set] : Pure {
+      ~src S_TradesWrapper
+      tradeId*            : $src.s_trades.s_tradeId,
+      prodId*             : $src.s_trades.s_tradeDetails->map(detail | $detail->split(':')->at(0)),
+      quantity*           : $src.s_trades.s_tradeDetails->map(detail | $detail->split(':')->at(1)->parseInteger())
+   }
+   
+   Product[prod_set] : Relational {
+      productId : [db2]productTable.productId,
+      productName : [db2]productTable.productName,
+      description : [db2]productTable.description,
+      synonyms[synonym_set] : [db2]@productTable_synonymTable
+   }
+   
+   Synonym[synonym_set] : Relational {
+      name : [db2]synonymTable.name,
+      type: EnumerationMapping SynonymTypeMapping : [db2]synonymTable.type,
+      product[prod_set] : [db2]@productTable_synonymTable
+   }
+   
+   T_Trade_Product : XStore {
+      product[trade_set, prod_set] : $this.prodId == $that.productId,
+      t_trades[prod_set, trade_set]  : $this.productId == $that.prodId
+   }
+   
+   SynonymType : EnumerationMapping SynonymTypeMapping {
+      CUSIP : ['cusip', 'CUSIP'],
+      ISIN  : ['isin', 'ISIN']
+   }
+)
+
+
+###Pure
+import meta::pure::runtime::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::pure::graphFetcha::tests::XStore::*;
+import meta::relational::runtime::*;
+
+function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::createTablesInDb():Boolean[1]
+{
+   let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=db1, type=DatabaseType.H2), ^TestDatabaseConnection(element=db2, type=DatabaseType.H2), ^TestDatabaseConnection(element=db3, type=DatabaseType.H2)]);
+   let dbConn1 = $runtime.connections->at(0)->cast(@DatabaseConnection);   
+   let dbConn2 = $runtime.connections->at(1)->cast(@DatabaseConnection);
+   let dbConn3 = $runtime.connections->at(2)->cast(@DatabaseConnection);
+
+   dropAndCreateTableInDb(db1, 'tradeTable', $dbConn1);
+   dropAndCreateTableInDb(db1, 'traderTable', $dbConn2);
+   dropAndCreateTableInDb(db2, 'productTable', $dbConn2);
+   dropAndCreateTableInDb(db2, 'synonymTable', $dbConn2);
+   dropAndCreateTableInDb(db3, 'tradeEventTable', $dbConn3);
+   
+   executeInDb('insert into tradeTable (tradeId_source, quantity, productId, traderkerb) values (1, 100, 30, \'abc\');', $dbConn2);
+   executeInDb('insert into tradeTable (tradeId_source, quantity, productId, traderkerb) values (2, 200, 31, \'abc\');', $dbConn2);
+   executeInDb('insert into tradeTable (tradeId_source, quantity, productId, traderkerb) values (3, 300, 30, \'xyz\');', $dbConn2);
+   executeInDb('insert into tradeTable (tradeId_source, quantity, productId, traderkerb) values (4, 400, 31, \'xyz\');', $dbConn2);
+
+   
+   executeInDb('insert into productTable (productId, productname, description) values (30, \'Prod_1\', \'Product 1 description\');', $dbConn2);
+   executeInDb('insert into productTable (productId, productname, description) values (31, \'Prod_2\', \'Product 2 description\');', $dbConn2);
+   
+   executeInDb('insert into synonymTable (synonymId, productId, type, name) values (1, 30, \'CUSIP\', \'Syn_1\');', $dbConn2);
+   executeInDb('insert into synonymTable (synonymId, productId, type, name) values (2, 30, \'ISIN\', \'Syn_2\');', $dbConn2);
+   executeInDb('insert into synonymTable (synonymId, productId, type, name) values (3, 31, \'cusip\', \'Syn_3\');', $dbConn2);
+   executeInDb('insert into synonymTable (synonymId, productId, type, name) values (4, 31, \'isin\', \'Syn_4\');', $dbConn2);
+
+   executeInDb('insert into traderTable (kerberos, firstName, lastName) values (\'abc\', \'F_Name1\', \'L_Name_1\');', $dbConn2);
+   executeInDb('insert into traderTable (kerberos, firstName, lastName) values (\'xyz\', \'F_Name2\', \'L_Name_2\');', $dbConn2);
+   
+   executeInDb('insert into tradeEventTable (eventId, tradeId, timestamp, description) values (\'1\', 1, \'2018-01-01 00:00:00\', \'Event_1\');', $dbConn3);
+   executeInDb('insert into tradeEventTable (eventId, tradeId, timestamp, description) values (\'2\', 1, \'2019-01-01 00:00:00\', \'Event_2\');', $dbConn3);
+   executeInDb('insert into tradeEventTable (eventId, tradeId, timestamp, description) values (\'3\', 2, \'2019-01-01 00:00:00\', \'Event_3\');', $dbConn3);
+   
+   true;
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testSimpleCrossDBPropertyAccess():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         product {
+            productName
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[{"product":{"productName":"Prod_1"},"tradeId":1},'+
+      '{"product":{"productName":"Prod_2"},"tradeId":2},'+
+      '{"product":{"productName":"Prod_1"},"tradeId":3},'+
+      '{"product":{"productName":"Prod_2"},"tradeId":4}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testSimpleCrossDBPropertyAccessWithAddedDefaults():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         product {
+            productId,
+            productName,
+            description
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"tradeId":1},'+
+      '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"tradeId":2},'+
+      '{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"tradeId":3},'+
+      '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"tradeId":4}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testMultipleCrossDBPropertyAcceses():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         product {
+            productId,
+            productName,
+            description           
+         },
+         tradeEvents {
+            eventId,
+            description,
+            timestamp            
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"tradeEvents":[{"eventId":"1","description":"Event_1","timestamp":"2018-01-01T00:00:00.000000000"},{"eventId":"2","description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":1},' +
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"tradeEvents":[{"eventId":"3","description":"Event_3","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":2},' +
+       '{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"tradeEvents":[],"tradeId":3},' +
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"tradeEvents":[],"tradeId":4}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testSameStoreAndCrossStorePropertyAcceses():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         trader {
+            firstName,
+            lastName,
+            kerberos
+         },
+         product {
+            productId,
+            productName,
+            description,
+            synonyms {
+               name,
+               type
+            }
+         },
+         tradeEvents {
+            eventId,
+            description,
+            timestamp            
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"tradeEvents":[{"eventId":"1","description":"Event_1","timestamp":"2018-01-01T00:00:00.000000000"},{"eventId":"2","description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],' +
+           '"trader":{"firstName":"F_Name1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":1' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"tradeEvents":[{"eventId":"3","description":"Event_3","timestamp":"2019-01-01T00:00:00.000000000"}],' +
+           '"trader":{"firstName":"F_Name1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":2' +
+         '},' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"tradeEvents":[],' +
+           '"trader":{"firstName":"F_Name2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":3' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"tradeEvents":[],' +
+           '"trader":{"firstName":"F_Name2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":4' +
+         '}' +
+       ']',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testDeepCrossPropertyAccesses():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         trader {
+            firstName,
+            lastName,
+            kerberos
+         },
+         product {
+            productId,
+            productName,
+            description,
+            synonyms {
+               name,
+               type               
+            }
+         },
+         tradeEvents {
+            eventId,
+            description,
+            timestamp,
+            trade {
+               tradeId
+            }
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"tradeEvents":[{"eventId":"1","trade":{"tradeId":1},"description":"Event_1","timestamp":"2018-01-01T00:00:00.000000000"},{"eventId":"2","trade":{"tradeId":1},"description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],' +
+           '"trader":{"firstName":"F_Name1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":1' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"tradeEvents":[{"eventId":"3","trade":{"tradeId":2},"description":"Event_3","timestamp":"2019-01-01T00:00:00.000000000"}],' +
+           '"trader":{"firstName":"F_Name1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":2' +
+         '},' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"tradeEvents":[],' +
+           '"trader":{"firstName":"F_Name2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":3' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"tradeEvents":[],' +
+           '"trader":{"firstName":"F_Name2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":4' +
+         '}' +
+       ']',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testDeepCrossPropertyAccesses3Levels():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         trader {
+            kerberos,
+            firstName,
+            lastName
+         },
+         product {
+            productId,
+            productName,
+            description,
+            synonyms {
+               name,
+               type
+            }
+         },
+         tradeEvents {
+            eventId,
+            description,
+            timestamp,
+            trade {
+               tradeId,
+               product {
+                  productId,
+                  productName,
+                  description,
+                  synonyms {
+                     name,
+                     type
+                  }
+               }
+            }
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"tradeEvents":[{"eventId":"1","trade":{"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},"tradeId":1},"description":"Event_1","timestamp":"2018-01-01T00:00:00.000000000"},{"eventId":"2","trade":{"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},"tradeId":1},"description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],' +
+           '"trader":{"firstName":"F_Name1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":1' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"tradeEvents":[{"eventId":"3","trade":{"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},"tradeId":2},"description":"Event_3","timestamp":"2019-01-01T00:00:00.000000000"}],' +
+           '"trader":{"firstName":"F_Name1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":2' +
+         '},' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"tradeEvents":[],' +
+           '"trader":{"firstName":"F_Name2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":3' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"tradeEvents":[],' +
+           '"trader":{"firstName":"F_Name2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":4' +
+         '}' +
+       ']',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testMultiDeepCrossPropertyAccesses():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         trader {
+            firstName,
+            lastName,
+            kerberos
+         },
+         product {
+            productId,
+            productName,
+            description,
+            synonyms {
+               name,
+               type
+            },
+            trades {
+               tradeId
+            }
+         },
+         tradeEvents {
+            eventId,
+            description,
+            timestamp,
+            trade {
+               tradeId,
+               product {
+                  productId,
+                  productName,
+                  description,
+                  synonyms {
+                     name,
+                     type                     
+                  }
+               }
+            }
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","trades":[{"tradeId":1},{"tradeId":3}],"productName":"Prod_1"},' +
+           '"tradeEvents":[{"eventId":"1","trade":{"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},"tradeId":1},"description":"Event_1","timestamp":"2018-01-01T00:00:00.000000000"},{"eventId":"2","trade":{"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},"tradeId":1},"description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],' +
+           '"trader":{"firstName":"F_Name1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":1' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","trades":[{"tradeId":2},{"tradeId":4}],"productName":"Prod_2"},' +
+           '"tradeEvents":[{"eventId":"3","trade":{"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},"tradeId":2},"description":"Event_3","timestamp":"2019-01-01T00:00:00.000000000"}],' +
+           '"trader":{"firstName":"F_Name1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":2' +
+         '},' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","trades":[{"tradeId":1},{"tradeId":3}],"productName":"Prod_1"},' +
+           '"tradeEvents":[],' +
+           '"trader":{"firstName":"F_Name2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":3' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","trades":[{"tradeId":2},{"tradeId":4}],"productName":"Prod_2"},' +
+           '"tradeEvents":[],' +
+           '"trader":{"firstName":"F_Name2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":4' +
+         '}' +
+       ']',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testCrossMappingWithMoreBooleanAlgebra():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         tradeEvents {
+            eventId,
+            description,
+            timestamp            
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping2;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[{"tradeEvents":[{"eventId":"2","description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":1},'+
+      '{"tradeEvents":[{"eventId":"3","description":"Event_3","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":2},'+
+      '{"tradeEvents":[],"tradeId":3},'+
+      '{"tradeEvents":[],"tradeId":4}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testCrossMappingJsonToDB():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         trader {
+            firstName,
+            lastName,
+            kerberos
+         },
+         product {
+            productId,
+            productName,
+            description,
+            synonyms {
+               name,
+               type
+            }
+         }
+      }
+   }#;
+   
+   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
+                            class   = S_Trade, 
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+   let dbRuntime = meta::relational::tests::testRuntime();
+   
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3;
+   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"trader":{"firstName":"F_Name_1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":1' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"trader":{"firstName":"F_Name_1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":2' +
+         '},' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"trader":{"firstName":"F_Name_2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":3' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"trader":{"firstName":"F_Name_2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":4' +
+         '}' +
+       ']',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testCrossMappingJsonToDBWithNoLocalProperties():Boolean[1]
+{
+   let tree = #{
+      T_Trade {
+         tradeId,
+         trader {
+            firstName,
+            lastName,
+            kerberos
+         },
+         product {
+            productId,
+            productName,
+            description,
+            synonyms {
+               name,
+               type
+            }
+         }
+      }
+   }#;
+   
+   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
+                            class   = S_Trade, 
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+   let dbRuntime = meta::relational::tests::testRuntime();
+   
+   let query = {|T_Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping4;
+   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"trader":{"firstName":"F_Name_1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":1' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"trader":{"firstName":"F_Name_1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":2' +
+         '},' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"trader":{"firstName":"F_Name_2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":3' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"trader":{"firstName":"F_Name_2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":4' +
+         '}' +
+       ']',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testCrossMappingJsonToDBWithExplosion():Boolean[1]
+{
+   let tree = #{
+      T_Trade {
+         tradeId,
+         product {
+            productId,
+            productName,
+            description,
+            synonyms {
+               name,
+               type
+            }
+         }
+      }
+   }#;
+   
+   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
+                            class   = S_TradesWrapper, 
+                            url     = 'data:application/json,'+
+                                      '{"s_trades" : [{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"},'+
+                                                     '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"},'+
+                                                     '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"},'+
+                                                     '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}]}'
+                         );
+   let dbRuntime = meta::relational::tests::testRuntime();
+   
+   let query = {|T_Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping5;
+   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"tradeId":1' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"tradeId":2' +
+         '},' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"description":"Product 1 description","productName":"Prod_1"},' +
+           '"tradeId":3' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"description":"Product 2 description","productName":"Prod_2"},' +
+           '"tradeId":4' +
+         '}' +
+       ']',
+      $result
+   );
+}

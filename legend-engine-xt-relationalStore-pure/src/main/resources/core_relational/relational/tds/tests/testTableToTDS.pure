@@ -1,0 +1,245 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::database::*;
+import meta::relational::tests::tds::tabletds::*;
+import meta::pure::mapping::*;
+import meta::relational::tests::tds::tdsJoin::*;
+import meta::relational::metamodel::join::*;
+import meta::csv::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
+
+
+function <<test.Test>> meta::relational::tests::tds::tabletds::testProjectStringColumn():Boolean[1]
+{
+   let result = execute(
+      | tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
+           ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'first_name'), col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name_again')]),
+      meta::relational::tests::tds::tabletds::EmptyMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 2);  
+   
+   assertEquals('Peter|Peter,John|John,John|John,Anthony|Anthony,Fabrice|Fabrice,Oliver|Oliver,David|David',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
+   
+   assertEquals('select "root".FIRSTNAME as "first_name", "root".FIRSTNAME as "name_again" from personTable as "root"',
+      $result->sqlRemoveFormatting());  
+}
+
+function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds::testView():Boolean[1]
+{
+   let result = execute(
+      | viewToTDS(viewReference(meta::relational::tests::db,'default','FirstNameAddress'))
+           ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'first_name'), col(r:TDSRow[1]|$r.getString('firstName'), 'name_again')]),
+      meta::relational::tests::tds::tabletds::EmptyMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 2);  
+   
+   assertEquals('Anthony|Anthony,David|David,Fabrice|Fabrice,John|John,Oliver|Oliver,Peter|Peter',
+      $result.values.rows->map(r|$r.values->makeString('|'))->sort()->makeString(',')); 
+   
+   assertEquals('select "root".firstName as "first_name", "root".firstName as "name_again" from (select distinct "root".FIRSTNAME as firstName, "addresstable_0".NAME as address from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)) as "root"',
+      $result->sqlRemoveFormatting());  
+}
+
+function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds::testProjectAllColumns_Single():Boolean[1]
+{
+   //executionPlan is not including the correct columns because source path is empty
+   let result = execute(
+      | tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
+         ->restrict(['FIRSTNAME']),
+      EmptyMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('Peter,John,John,Anthony,Fabrice,Oliver,David',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "root".FIRSTNAME as "FIRSTNAME" from personTable as "root"', 
+      $result->sqlRemoveFormatting());   
+}
+
+
+function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds::testProjectAllColumnsWithSpaces_Single():Boolean[1]
+{
+   //executionPlan is not including the correct columns because source path is empty
+   let result = execute(
+      | tableToTDS(tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
+         ->restrict(['FIRST NAME'])
+         ->limit(2)
+         ->sort(asc('FIRST NAME')),
+      EmptyMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('John,Peter',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "FIRST NAME" as "FIRST NAME" from (select top 2 "root"."FIRST NAME" as "FIRST NAME" from tableWithQuotedColumns as "root") as "subselect" order by "FIRST NAME"', 
+      $result->sqlRemoveFormatting());   
+}
+
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::tabletds::testInnerJoinTabletoTable():Boolean[1]
+{
+   //the ExecutionPlan for Alloy is missing the "ID" Column - bug in  execution plan SQL generation tabletoTDS
+   let result = execute(|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))->project([col(r:TDSRow[1]|$r.getInteger('ID'), 'eID')])
+                        ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','firmTable')), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('ID');}), EmptyMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 4 );
+   assertSameElements(['1,1,Firm X,8,1', '2,2,Firm A,9,5', '3,3,Firm B,10,3', '4,4,Firm C,11,7'
+                      ], $result.values.rows->map(r|$r.values->makeString(',')));
+
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tabletds::testInnerJoinTabletoObject():Boolean[1]
+{
+   let result = execute(|tableToTDS(tableReference(meta::relational::tests::dbInc,'default','personTable'))->project([col(r:TDSRow[1]|$r.getInteger('ID'), 'eID')])
+                        ->join(testJoinTDS_Firm.all()->project([#/testJoinTDS_Firm/legalName!firmName#, #/testJoinTDS_Firm/firmID!fID#]) , JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');}), testJoinTDSMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 4 );   
+   assertSameElements( ['1,Firm X,1', '2,Firm A,2', '3,Firm B,3', '4,Firm C,4'], $result.values.rows->map(r|$r.values->makeString(',')));
+}
+
+function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleFilter():Boolean[1]
+{
+   let result = execute(|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
+                        ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name')])->filter({r | $r.getString('name') == 'John'}), EmptyMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
+   assertSize($result.values.rows, 2 );
+   assertEquals(['John','John'], $result.values.rows->map(r|$r.values));
+   
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tabletds::testExtendStringLiteral():Boolean[1]
+{
+   let result = execute(
+      |tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
+                        ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'firstName')])
+                        ->extend([col({r:TDSRow[1]|'Hello'}, 'hello')]), EmptyMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 2);   
+   
+   assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root"', 
+      $result->sqlRemoveFormatting());   
+}
+
+
+function <<test.ToFix>> meta::relational::tests::tds::tabletds::testSimpleConcatenateWithDatabaseInclude():Boolean[1]
+{
+   //clustering unqiue check doesn't check the database includes and result is a PlatformJoin
+   let result = execute(
+      |tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
+                        ->project([col(r:TDSRow[1]|$r.getString('LASTNAME'), 'lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+      ,
+      simpleRelationalMapping,
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),debug());
+   
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+   
+   assertSize($tds.columns, 1);   
+   
+   assertEquals('Allen,Allen,Hill,Hill,Smith,Smith,Johnson,Johnson,Harris,Harris,Roberts,Roberts,Hill,Hill',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleConcatenate():Boolean[1]
+{
+   let result = execute(
+      |tableToTDS(tableReference(meta::relational::tests::dbInc,'default','personTable'))
+                        ->project([col(r:TDSRow[1]|$r.getString('LASTNAME'), 'lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+      ,
+      simpleRelationalMappingInc,
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+   
+   assertSize($tds.columns, 1);   
+   
+   assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleSortAsc():Boolean[1]
+{
+   let result = execute(|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
+                        ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name')])->sort('name'), EmptyMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 7 );
+   assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->makeString(','));
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" order by "name"', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tabletds::simpleGroupCount():Boolean[1]
+{
+   let result = execute(|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
+                        ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name')])
+                         ->groupBy('name', agg('cnt', x|$x, y| $y->count())), EmptyMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals([String, Integer], $result.values.columns.type);
+   let tds = $result.values->at(0);
+   assertEquals(6, $tds.rows->size());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleDistinctWithTake():Boolean[1]
+{
+   let result = execute(|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name')])->distinct()->take(2), EmptyMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 2);
+}
+
+function <<test.Test,test.ExcludeAlloy>> 
+{
+  doc.doc='Make sure that buildPureModelContextTextFromMapping includes dummyDb in model code for current protocol version'
+}
+meta::relational::tests::tds::tabletds::testExtractingDbFromTableReference():Boolean[1]
+{
+
+  let result = meta::relational::tests::tds::tabletds::EmptyMapping->buildPureModelContextTextFromMappingAndQuery(
+				{|tableToTDS(tableReference(meta::relational::tests::tds::tabletds::dummyDb,'default','dummyTable'))},
+				meta::pure::router::extension::defaultExtensions());
+
+  let expected = '###Relational\nDatabase meta::relational::tests::tds::tabletds::dummyDb\n(\n' +
+                 '   Table dummyTable( id int PRIMARY KEY, description char(32))\n)\n' +
+                 '###Mapping\nMapping meta::relational::tests::tds::tabletds::EmptyMapping()';
+
+  let actual = $result.code->replace('\r\n', '\n');
+  assertEquals($expected, $actual);
+}
+ 
+###Mapping
+Mapping meta::relational::tests::tds::tabletds::EmptyMapping()
+
+###Relational
+Database meta::relational::tests::tds::tabletds::dummyDb
+(
+   Table dummyTable( id int PRIMARY KEY, description char(32))
+)

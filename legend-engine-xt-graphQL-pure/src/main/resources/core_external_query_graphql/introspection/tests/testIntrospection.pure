@@ -1,0 +1,221 @@
+import meta::external::query::graphQL::introspection::tests::*;
+
+Class meta::external::query::graphQL::introspection::tests::Firm
+{
+  legalName : String[1];
+  employees : meta::external::query::graphQL::introspection::tests::Person[*];
+}
+
+Class meta::external::query::graphQL::introspection::tests::Person
+{
+  firstName : String[1];
+  lastName : String[1];
+}
+
+Class meta::external::query::graphQL::introspection::tests::Domain extends meta::external::query::graphQL::introspection::BaseGraphQLType
+{
+  firmByLegalName(legalName : String[1]) 
+  {
+    Firm.all()->filter(f|$f.legalName == $legalName)->first()
+  }: Firm[0..1];
+}
+
+function <<test.Test>> meta::external::query::graphQL::introspection::tests::testSimpleIntrospection():Boolean[1]
+{
+  let query = meta::external::query::graphQL::transformation::queryToPure::tests::buildIntrospectionQuery();
+  let strSresult = meta::external::query::graphQL::introspection::graphQLIntrospectionQuery(Firm, $query);
+  assertJsonStringsEqual('{"__schema":{"queryType":{"name":"Firm"},"directives":[],"mutationType":null,"types":[{"kind":"OBJECT","enumValues":[],"fields":[{"deprecationReason":null,"type":{"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"name":null},"name":"legalName","args":[],"isDeprecated":false},{"deprecationReason":null,"type":{"kind":"LIST","ofType":{"kind":"OBJECT","ofType":null,"name":"Person"},"name":null},"name":"employees","args":[],"isDeprecated":false}],"name":"Firm","interfaces":[],"possibleTypes":[],"inputFields":[]},{"kind":"OBJECT","enumValues":[],"fields":[{"deprecationReason":null,"type":{"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"name":null},"name":"firstName","args":[],"isDeprecated":false},{"deprecationReason":null,"type":{"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"name":null},"name":"lastName","args":[],"isDeprecated":false}],"name":"Person","interfaces":[],"possibleTypes":[],"inputFields":[]},{"kind":"SCALAR","enumValues":[],"fields":[],"name":"String","interfaces":[],"possibleTypes":[],"inputFields":[]}]}}', $strSresult);
+}
+
+function <<test.Test>> meta::external::query::graphQL::introspection::tests::testIntrospectionWithQualified():Boolean[1]
+{
+  let query = meta::external::query::graphQL::transformation::queryToPure::tests::buildIntrospectionQuery();
+  let strSresult = meta::external::query::graphQL::introspection::graphQLIntrospectionQuery(meta::external::query::graphQL::introspection::tests::Domain, $query);
+  assertJsonStringsEqual('{"__schema":{"queryType":{"name":"Domain"},"directives":[],"mutationType":null,"types":[{"kind":"OBJECT","enumValues":[],"fields":[{"deprecationReason":null,"type":{"kind":"OBJECT","ofType":null,"name":"Firm"},"name":"firmByLegalName","args":[{"type":{"kind":"SCALAR","ofType":null,"name":"String"},"defaultValue":null,"name":"legalName"}],"isDeprecated":false}],"name":"Domain","interfaces":[],"possibleTypes":[],"inputFields":[]},{"kind":"OBJECT","enumValues":[],"fields":[{"deprecationReason":null,"type":{"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"name":null},"name":"legalName","args":[],"isDeprecated":false},{"deprecationReason":null,"type":{"kind":"LIST","ofType":{"kind":"OBJECT","ofType":null,"name":"Person"},"name":null},"name":"employees","args":[],"isDeprecated":false}],"name":"Firm","interfaces":[],"possibleTypes":[],"inputFields":[]},{"kind":"OBJECT","enumValues":[],"fields":[{"deprecationReason":null,"type":{"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"name":null},"name":"firstName","args":[],"isDeprecated":false},{"deprecationReason":null,"type":{"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"name":null},"name":"lastName","args":[],"isDeprecated":false}],"name":"Person","interfaces":[],"possibleTypes":[],"inputFields":[]},{"kind":"SCALAR","enumValues":[],"fields":[],"name":"String","interfaces":[],"possibleTypes":[],"inputFields":[]}]}}', $strSresult); 
+}
+
+
+
+###Pure
+import meta::external::query::graphQL::introspection::model::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::introspection::tests::testPureFromIntrospection():Boolean[1]
+{
+    let str = readFile('/core_external_query_graphql/introspection/tests/introspectionResult.json')->toOne();
+    let res = $str->meta::json::fromJson(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
+    assertEquals( 'Class Domain\n' +
+                  '{\n' +
+                  '  val : String[1];\n' +
+                  '  firmByLegalName : Firm[0..1];\n' +
+                  '  employeeByLastName : Person[0..1];\n' +
+                  '}\n'+
+                  'Class Firm\n' +
+                  '{\n' +
+                  '  legalName : String[1];\n' +
+                  '  employees : Person[*];\n' +
+                  '}\n' +
+                  'Class Person\n' +
+                  '{\n' +
+                  '  firstName : String[1];\n' +
+                  '  lastName : String[1];\n' +
+                  '}'                  
+                  ,$res->sortBy(r|$r->elementToPath())->map(r|$r->printType())->joinStrings('\n'));
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::introspection::tests::testCountriesFromIntrospection():Boolean[1]
+{
+    let str = readFile('/core_external_query_graphql/introspection/tests/continents.json')->toOne();
+    let res = $str->meta::json::fromJson(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
+    assertEquals( 'Enum CacheControlScope\n' +
+                  '{\n' +
+                  '  PUBLIC,\n' +
+                  '  PRIVATE\n' +
+                  '}\n' +
+                  'Class Continent\n' +
+                  '{\n' +
+                  '  code : String[1];\n' +
+                  '  name : String[1];\n' +
+                  '  countries : Country[1];\n' +
+                  '}\n' +
+                  'Class ContinentFilterInput\n' +
+                  '{\n' +
+                  '}\n' +
+                  'Class Country\n' +
+                  '{\n' +
+                  '  code : String[1];\n' +
+                  '  name : String[1];\n' +
+                  '  native : String[1];\n' +
+                  '  phone : String[1];\n' +
+                  '  continent : Continent[1];\n' +
+                  '  capital : String[0..1];\n' +
+                  '  currency : String[0..1];\n' +
+                  '  languages : Language[1];\n' +
+                  '  emoji : String[1];\n' +
+                  '  emojiU : String[1];\n' +
+                  '  states : State[1];\n' +
+                  '}\n' +
+                  'Class CountryFilterInput\n' +
+                  '{\n' +
+                  '}\n' +
+                  'Class Language\n' +
+                  '{\n' +
+                  '  code : String[1];\n' +
+                  '  name : String[0..1];\n' +
+                  '  native : String[0..1];\n' +
+                  '  rtl : Boolean[1];\n' +
+                  '}\n' +
+                  'Class LanguageFilterInput\n' +
+                  '{\n' +
+                  '}\n' +
+                  'Class Query\n' +
+                  '{\n' +
+                  '  continents : Continent[1];\n' +
+                  '  continent : Continent[0..1];\n' +
+                  '  countries : Country[1];\n' +
+                  '  country : Country[0..1];\n' +
+                  '  languages : Language[1];\n' +
+                  '  language : Language[0..1];\n' +
+                  '}\n' +
+                  'Class State\n' +
+                  '{\n' +
+                  '  code : String[0..1];\n' +
+                  '  name : String[1];\n' +
+                  '  country : Country[1];\n' +
+                  '}\n' +
+                  'Class StringQueryOperatorInput\n' +
+                  '{\n' +
+                  '}\n' +
+                  'Class __Directive\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  locations : __DirectiveLocation[1];\n' +
+                  '  args : __InputValue[1];\n' +
+                  '}\n' +
+                  'Enum __DirectiveLocation\n' +
+                  '{\n' +
+                  '  QUERY,\n' +
+                  '  MUTATION,\n' +
+                  '  SUBSCRIPTION,\n' +
+                  '  FIELD,\n' +
+                  '  FRAGMENT_DEFINITION,\n' +
+                  '  FRAGMENT_SPREAD,\n' +
+                  '  INLINE_FRAGMENT,\n' +
+                  '  VARIABLE_DEFINITION,\n' +
+                  '  SCHEMA,\n' +
+                  '  SCALAR,\n' +
+                  '  OBJECT,\n' +
+                  '  FIELD_DEFINITION,\n' +
+                  '  ARGUMENT_DEFINITION,\n' +
+                  '  INTERFACE,\n' +
+                  '  UNION,\n' +
+                  '  ENUM,\n' +
+                  '  ENUM_VALUE,\n' +
+                  '  INPUT_OBJECT,\n' +
+                  '  INPUT_FIELD_DEFINITION\n' +
+                  '}\n' +
+                  'Class __EnumValue\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  isDeprecated : Boolean[1];\n' +
+                  '  deprecationReason : String[0..1];\n' +
+                  '}\n' +
+                  'Class __Field\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  args : __InputValue[1];\n' +
+                  '  type : __Type[1];\n' +
+                  '  isDeprecated : Boolean[1];\n' +
+                  '  deprecationReason : String[0..1];\n' +
+                  '}\n' +
+                  'Class __InputValue\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  type : __Type[1];\n' +
+                  '  defaultValue : String[0..1];\n' +
+                  '}\n' +
+                  'Class __Schema\n' +
+                  '{\n' +
+                  '  types : __Type[1];\n' +
+                  '  queryType : __Type[1];\n' +
+                  '  mutationType : __Type[0..1];\n' +
+                  '  subscriptionType : __Type[0..1];\n' +
+                  '  directives : __Directive[1];\n' +
+                  '}\n' +
+                  'Class __Type\n' +
+                  '{\n' +
+                  '  kind : __TypeKind[1];\n' +
+                  '  name : String[0..1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  fields : __Field[*];\n' +
+                  '  interfaces : __Type[*];\n' +
+                  '  possibleTypes : __Type[*];\n' +
+                  '  enumValues : __EnumValue[*];\n' +
+                  '  inputFields : __InputValue[*];\n' +
+                  '  ofType : __Type[0..1];\n' +
+                  '}\n' +
+                  'Enum __TypeKind\n' +
+                  '{\n' +
+                  '  SCALAR,\n' +
+                  '  OBJECT,\n' +
+                  '  INTERFACE,\n' +
+                  '  UNION,\n' +
+                  '  ENUM,\n' +
+                  '  INPUT_OBJECT,\n' +
+                  '  LIST,\n' +
+                  '  NON_NULL\n' +
+                  '}',$res->sortBy(r|$r->elementToPath())->map(r|$r->printType())->joinStrings('\n'));
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::introspection::tests::testTravelFromIntrospection():Boolean[1]
+{
+    let str = readFile('/core_external_query_graphql/introspection/tests/travelx.json')->toOne();
+    let expected = readFile('/core_external_query_graphql/introspection/tests/travelResult.txt')->toOne();
+    let res = $str->meta::json::fromJson(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
+    assertEquals($expected, $res->sortBy(r|$r->elementToPath())->map(r|$r->printType())->joinStrings('\n'));
+}

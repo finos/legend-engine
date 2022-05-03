@@ -1,0 +1,716 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::connection::*;
+import meta::relational::functions::typeInference::*;
+import meta::pure::deepfetch::execution::*;
+import meta::pure::router::extension::*;
+import meta::relational::functions::reportDelta::*;
+import meta::relational::mapping::*;
+import meta::pure::milestoning::*;
+import meta::pure::executionPlan::*;
+import meta::relational::functions::*;
+import meta::pure::router::systemMapping::*;
+import meta::pure::router::execution::*;
+import meta::pure::mapping::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::datatype::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::milestoning::*;
+import meta::pure::router::routing::*;
+
+
+// Execution Plan
+function meta::relational::mapping::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   let store = $sq.store->cast(@Database);
+   let fe = $sq.fe->evaluateAndDeactivate();
+   if($fe.func->in([meta::pure::graphFetch::execution::graphFetchFunctions()]),
+      |
+        // Graph Fetch Flow
+        $sq->meta::pure::graphFetch::executionPlan::planGraphFetchExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
+
+      |
+        // Normal Flow
+       let connections = $runtime.connections->filter(c | $c->instanceOf(DatabaseConnection));
+       let storeRuntime = if($connections->size() <= 1,
+                             | $runtime->toOne(),
+                             | let oldRuntime = $runtime->toOne();
+                               let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
+                               ^$oldRuntime(connections = $dbConn);
+                          );
+
+      let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
+      let originalQuery = $sq.fe->toSQLQuery($m->toOne(), $sq.inScopeVars, $queryExeCtx, $debug, $extensions);
+      $originalQuery->postProcessSQLQuery($store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $extensions)
+                    ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $debug, $extensions);
+   );
+}
+
+function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], debug:DebugContext[1], extensions:RouterExtension[*]):ExecutionNode[1]
+{
+   generateExecutionNodeForPostProcessedResult($postProcessorResult, $sq, $store, $ext, $m, $runtime, $exeCtx, $debug, true, $extensions)
+}
+
+function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], debug:DebugContext[1], wrapInInstantiationNode: Boolean[1], extensions:RouterExtension[*]):ExecutionNode[1]
+{
+   let sqlNode = generateSQLExecutionNode($postProcessorResult.query, $runtime->toOne()->connectionByElement($store)->cast(@DatabaseConnection), $extensions);
+   let relationalNode =  if($wrapInInstantiationNode, | generateInstantiationExecutionNode($sq, $ext, $postProcessorResult.query, $sqlNode, $m), | $sqlNode);
+   let nodes = $postProcessorResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessorResult.postExecutionNodes);
+   if($nodes->size()>1,
+      | if($nodes->map(node | $node->allNodes($extensions))->exists(node | $node->instanceOf(CreateAndPopulateTempTableExecutionNode)),
+           |^RelationalBlockExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions),
+           |^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions)),
+      | $relationalNode
+   );
+}
+
+function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], query:SQLQuery[1], node:ExecutionNode[1], m:Mapping[1]):ExecutionNode[1]
+{
+   let possibleClass = $sq.fe.genericType.rawType->toOne();
+   let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($sq.fe); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
+   let resultType = if($class->_subTypeOf(TabularDataSet),
+                       |let paths = $query->cast(@TdsSelectSqlQuery).paths;
+                        ^TDSResultType
+                            (
+                               type = $class,
+                               tdsColumns = $paths->map(p|
+                                                          ^TDSColumn
+                                                          (
+                                                             name = $p.first,
+                                                             type = $p.second.type->cast(@meta::pure::metamodel::type::DataType),
+                                                             documentation =  $p.second.documentation,
+                                                             enumMappingId = $p.second.propertyMapping->match([r:RelationalPropertyMapping[0..1] | $r.transformer->cast(@EnumerationMapping<Any>).name, p:PropertyMapping[0..1] | []]),
+                                                             offset = $paths->indexOf($p),
+                                                             sourceDataType = if($p.second.relationalType->isNotEmpty(),
+                                                                                 | $p.second.relationalType,
+                                                                                 | $p.second.propertyMapping->match([
+                                                                                    rpm: RelationalPropertyMapping[0..1] | $rpm->getRelationalTypeFromRelationalPropertyMapping($p.first),
+                                                                                    cpm: meta::pure::router::clustering::CrossSetImplementationPrimtivePropertyMapping[0..1] | $cpm.sourcePropertyMapping->match([rpm: RelationalPropertyMapping[0..1] | $rpm->getRelationalTypeFromRelationalPropertyMapping($p.first), pm: PropertyMapping[0..1] | []]),
+                                                                                    pm: PropertyMapping[0..1] | []
+                                                                                   ]))
+                                                          );
+                                                    )
+                            );,
+                          | if($class->_subTypeOf(RelationData),
+                               | let relationDataQuery = $query->cast(@RelationDataSelectSqlQuery);
+                                 ^RelationResultType
+                                  (
+                                     relationName = $relationDataQuery.relation.name,
+                                     relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
+                                     schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
+                                     database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
+                                     columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->cast(@TableAliasColumn).column.type)),
+                                     type = $class
+                                  );,
+                               | $class->match([
+                                  e : Enumeration<Any>[1] | ^DataTypeResultType(type=$class),
+                                  p : PrimitiveType[1] | ^DataTypeResultType(type=$class),
+                                  c : Class<Any>[1] | ^ClassResultType
+                                                      (
+                                                         type=$class,
+                                                         setImplementations = if($ext->isEmpty(),
+                                                                                 | $m->toOne().rootClassMappingByClass($c)->toOne(),
+                                                                                 | $ext->cast(@ExtendedRoutedValueSpecification).sets->at(0)
+                                                                              )->resolveOperation($m->toOne())
+                                                     )
+                                ]);
+                           )
+                    );
+
+   $resultType->match([
+      t : TDSResultType[1]       | ^RelationalTdsInstantiationExecutionNode(executionNodes = $node, resultType = $t),
+      c : ClassResultType[1]     | ^RelationalClassInstantiationExecutionNode(executionNodes = $node, resultType = $c, resultSizeRange = $sq.fe.multiplicity),
+      r : RelationResultType[1]  | ^RelationalRelationDataInstantiationExecutionNode(executionNodes = $node, resultType = $r, resultSizeRange = ZeroMany),
+      c : DataTypeResultType[1]  | ^RelationalDataTypeInstantiationExecutionNode(executionNodes = $node, resultType = $c, resultSizeRange = $sq.fe.multiplicity)
+   ]);
+}
+
+function <<access.private>> meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping(r:RelationalPropertyMapping[0..1], propertyName:String[1]):meta::relational::metamodel::datatype::DataType[0..1]
+{
+
+   if($r->isEmpty(),
+      | [] //TO FIX: support all existing tests  before introducing a fail  fail( 'Unsupported plan execution - check that you are setting Path Types - no type found for column '+$propertyName  );,
+     ,| $r->toOne().relationalOperationElement->inferRelationalType(false);
+     )->cast(@meta::relational::metamodel::datatype::DataType);
+
+}
+
+function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:DatabaseConnection[1], extensions:RouterExtension[*]):ExecutionNode[1]
+{
+   let sql = sqlQueryToString($query, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
+
+   ^SQLExecutionNode
+   (
+      sqlQuery = $sql,
+      resultColumns = $query->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->columnLabel($connection, $extensions), dataType = $c->getRelationalTypeFromRelationalOperationElement())), a:Any[1] | []]),
+      resultType = ^ResultType(type = Any),
+      connection = $connection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
+      supportFunctions = relationalPlanSupportFunctions($connection)
+   );
+
+}
+
+function meta::relational::mapping::updateConnection(conn:Connection[1], extensions:RouterExtension[*]):Connection[1]
+{
+   $conn->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_updateConnection)->concatenate([
+      c:DatabaseConnection[1] | $c 
+   ])->toOneMany())
+}
+
+function <<access.private>> meta::relational::mapping::columnLabel(v:RelationalOperationElement[1], connection: DatabaseConnection[1], extensions:RouterExtension[*]):String[1]
+{
+   $v->match(
+      [
+         a:Alias[1] | if($a.name->startsWith('"'), |'"%s"'->format($a.name->replace('"', '')), |$a.name),
+         r:RelationalOperationElement[1] | $r->meta::relational::functions::sqlQueryToString::processOperation($connection.type, $extensions)
+      ]
+   )
+}
+
+function <<access.private>> meta::relational::mapping::getRelationalTypeFromRelationalOperationElement(r:RelationalOperationElement[1]):meta::relational::metamodel::datatype::DataType[0..1]
+{
+   $r->match([
+      t:TableAliasColumn[1] | $t.column.type,
+      a:Alias[1] | $a.relationalElement->getRelationalTypeFromRelationalOperationElement(),
+      c:Column[1] | $c.type,
+      a:Any[1] | []// TOFIX - support all possible Types  fail($a->type().name ->toOne() + ' is not supported in planExecution yet')
+   ])->cast(@meta::relational::metamodel::datatype::DataType);
+}
+
+function meta::relational::mapping::relationalPlanSupportFunctions(c:DatabaseConnection[1]):String[*]
+{
+   if($c.timeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($c.timeZone->toOne()),|utcToTimeZoneSupportFunction(),|[])->concatenate(collectionRenderFunction())->concatenate(collectionSizeFunction())->concatenate(optionalVarPlaceHolderOperationSelectorFunction())->concatenate(varPlaceHolderToStringFunction());
+}
+
+function meta::relational::mapping::varPlaceHolderToStringFunction():String[*]
+{
+   '<#function varPlaceHolderToString optionalParameter prefix suffix defaultValue>' +
+         '<#if optionalParameter?is_enumerable && !optionalParameter?has_content>'+               
+               '<#return defaultValue>'+                    
+         '<#else>' +
+               '<#return prefix + optionalParameter + suffix></#if>'+
+   '</#function>';
+}
+
+function meta::relational::mapping::optionalVarPlaceHolderOperationSelectorFunction():String[1]
+{
+   '<#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause>'+
+        '<#if optionalParameter?has_content || optionalParameter?is_string>'+
+            '<#return trueClause>'+
+         '<#else>'+
+            '<#return falseClause></#if>'+
+   '</#function>';   
+}
+
+function meta::relational::mapping::collectionSizeFunction():String[1]
+{
+   '<#function collectionSize collection> <#return collection?size?c> </#function>';
+}
+
+function meta::relational::mapping::collectionRenderFunction():String[1]
+{
+   '<#function renderCollection collection separator prefix suffix defaultValue>'+
+        '<#if collection?size == 0>' +
+           '<#return defaultValue>' +
+        '</#if>' +
+        '<#return prefix + collection?join(suffix + separator + prefix) + suffix>'+
+   '</#function>';
+}
+
+function meta::relational::mapping::utcToTimeZoneSupportFunction():String[1]
+{
+   '<#function GMTtoTZ tz paramDate><#return (tz+" "+paramDate)?date.@alloyDate></#function>'+
+   '<#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue>'+
+      '<#assign result = [] />'+
+      '<#list collection as c>'+
+         '<#assign result = [prefix + (timeZone+" "+c)?date.@alloyDate + suffix] + result>'+
+      '</#list>'+
+      '<#return result?reverse?join(separator, defaultValue)>'+
+   '</#function>';
+}
+
+// Execution flow
+function meta::relational::mapping::execution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*], debug:DebugContext[1]):Result<Any|*>[1]
+{
+   execution($sq.store->cast(@Database), $sq.fe, $ext, $m, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug);
+}
+
+function meta::relational::mapping::execution(store: Database[1], f:FunctionExpression[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], inScopeVars:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):Result<Any|*>[1]
+{
+   let toSqlQueryStart = now();
+
+   let relationalExecutionContext = $exeCtx->match([r:RelationalExecutionContext[1]|$r, a:Any[0..1]|[]]);
+
+   let originalQuery = $f->toSQLQuery($m, $inScopeVars, $relationalExecutionContext, $debug, $extensions);
+   let toSqlQueryDurationMilliseconds = ($toSqlQueryStart->dateDiff(now(),DurationUnit.MILLISECONDS));
+
+   let connections = $runtime.connections->filter(c | $c->instanceOf(DatabaseConnection));
+   let storeRuntime = if($connections->size() <= 1,
+                         | $runtime->toOne(),
+                         | let oldRuntime = $runtime->toOne();
+                           let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
+                           ^$oldRuntime(connections = $dbConn);
+                      );
+
+   let postProcessorResult = postProcessQuery($exeCtx, $originalQuery, $storeRuntime, $store, $extensions);
+
+   let connection = $runtime->connectionByElement($store)->cast(@DatabaseConnection);
+
+   let sqlQueryToStringStart = now();
+   let sql = if($relationalExecutionContext.insertDriverTablePkInTempTable->isEmpty(),
+                |sqlQueryToStringPretty($postProcessorResult.query, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions),
+                |meta::relational::functions::toDDL::buildInsertSQLQueryResultIntoTable
+                                                    (
+                                                       $relationalExecutionContext.insertDriverTablePkInTempTable->toOne(),
+                                                       $postProcessorResult.query->cast(@SelectSQLQuery),
+                                                       $connection,
+                                                       $extensions,
+                                                       $debug
+                                                    )
+             );
+
+   print(if($debug->instanceOf(RelationalDebugContext) && $debug->cast(@RelationalDebugContext).logOnlyLastSQL == true,|$sql+'\n',|''));
+
+   let sqlQueryToStringDurationMilliseconds = ($sqlQueryToStringStart->dateDiff(now(),DurationUnit.MILLISECONDS));
+
+   let sqlGenerationTimeInNanoSecond = ($toSqlQueryDurationMilliseconds + $sqlQueryToStringDurationMilliseconds) * 1000000;
+
+   let possibleClass = $f.genericType.rawType;
+   //Required if the class is a dynamically created variable expression
+   let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($f); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
+   let result = executeQuery($sql, $postProcessorResult.query, if($class->toOne()->_subTypeOf(TabularDataSet), | $postProcessorResult.query->cast(@TdsSelectSqlQuery).paths, | []), $connection, $runtime, $class, $ext, $m, $sqlGenerationTimeInNanoSecond, $exeCtx.queryTimeOutInSeconds, $exeCtx, $extensions, $debug);
+
+   $postProcessorResult.resultPostProcessor->fold({pp,res| $pp->eval($res)},$result);
+
+}
+
+function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0..1], paths: Pair<String, PathInformation>[*], connection : DatabaseConnection[1], runtime: Runtime[1], class:Type[0..1], ext:RoutedValueSpecification[0..1], m: Mapping[1], sqlGenerationTimeInNanoSecond:Integer[0..1], g_queryTimeOutInSeconds: Integer[0..1], exeCtx:ExecutionContext[1], extensions: RouterExtension[*], debug:DebugContext[1]):Result<Any|*>[1]
+{
+   print(if(!$debug.debug, |'', | $debug.space+'>Execute SQL: '+$sql+'\n'));
+
+   let queryTimeOutInSeconds = if($g_queryTimeOutInSeconds->isNotEmpty(),
+                                       | $g_queryTimeOutInSeconds->toOne(),
+                                       | 3600 //1 hour
+                                       );
+   let res = executeInDb($sql, $connection->cast(@DatabaseConnection), $queryTimeOutInSeconds, 1000);
+    //let res = ^ResultSet(connectionAcquisitionTimeInNanoSecond=1,executionTimeInNanoSecond=2);
+   print(if(!$debug.debug, |'', |let ds = $res.dataSource->toOne();
+                                 $debug.space+'>Query executed in '+$res.executionTimeInNanoSecond->toString()+'ns, host: \''+$ds.host+':'+$ds.port->toOne()->toString()+'\', name: \''+$ds.name+'\', type: \''+$ds.type->toOne()->toString()+'\'\n';));
+
+   if ($class->toOne()->_subTypeOf(TabularDataSet),
+       | buildExecutionResultInTDS($sql, $res, $paths, $sqlGenerationTimeInNanoSecond),
+       | if($class->toOne()->_subTypeOf(RelationData),
+            | buildExecutionResultInRelationData($sql, $query, $res, $paths, $sqlGenerationTimeInNanoSecond),
+            | let objs = $class->match([
+                 e : Enumeration<Any>[1] | fail('Direct query on Enumerations is not supported yet!'); [];,
+                 p : PrimitiveType[1] | if($res.rows->isEmpty(),
+                                           | [],
+                                           | let offset = $res.rows->at(0).values->size()-1;
+                                             $res.rows->map(
+                                                r| let val = $r.values->at($offset); if(is($val->type(), SQLNull), |[], |$val);
+                                             );
+                                        ),
+                 c : Class<Any>[1] | let setImplementation = if($ext->isEmpty(),
+                                                                 | $m.rootClassMappingByClass($c)->toOne();,
+                                                                 | $ext->cast(@ExtendedRoutedValueSpecification).sets->at(0)
+                                                             );
+                                     $setImplementation->match(
+                                       [
+                                          r:RelationalInstanceSetImplementation[1]|buildClasses($r, $res, $m, $connection, $runtime, [], $exeCtx, $extensions, $debug),
+                                          o:OperationSetImplementation[1]|buildClasses($o->resolveOperation($m)->cast(@RelationalInstanceSetImplementation), $res, $m, $connection, $runtime, [], $exeCtx, $extensions, $debug)
+                                       ]
+                                    );
+              ]);
+              let result = ^Result<Any|*>(values=$objs, activities=^RelationalActivity(sql=$sql, executionTimeInNanoSecond=$res.executionTimeInNanoSecond, executionPlanInformation = $res.executionPlanInformation, dataSource = $res.dataSource, sqlGenerationTimeInNanoSecond = $sqlGenerationTimeInNanoSecond, connectionAcquisitionTimeInNanoSecond = $res.connectionAcquisitionTimeInNanoSecond));
+              $result;
+         )
+   );
+}
+
+function meta::relational::mapping::buildExecutionResultInTDS(sql:String[1], res:ResultSet[1], paths: Pair<String, PathInformation>[*], sqlGenerationTimeInNanoSecond:Integer[0..1]):Result<TabularDataSet|1>[1]
+{
+   let propertyMappings = $res.columnNames->map(c| let matchedPath = $paths->filter(p|$p.first->toLower() == $c->toLower());
+                                                                    if ($matchedPath->isEmpty(),
+                                                                       |  {a:Any[1]|$a},
+                                                                       |  if ($matchedPath->toOne().second.type == Boolean, | {a:Any[1]|$a == 'true' || $a == true},
+                                                                                | let pm = $matchedPath->toOne().second;
+                                                                              if ($pm.propertyMapping == [] && $pm.type != Decimal, |{a:Any[1]|$a},
+                                                                                 | if ($pm.propertyMapping == [] && $pm.type == Decimal, |{a:Any[1]|$a->cast(@Number)->toDecimal()},
+                                                                                    | if ($pm.type == Decimal, |{a:Any[1]|$pm.propertyMapping->cast(@RelationalPropertyMapping)->toOne().transform($a)->cast(@Number)->toOne()->toDecimal()},
+                                                                                       | {a:Any[1]|$pm.propertyMapping->cast(@RelationalPropertyMapping)->toOne().transform($a)}););););
+                                                                    );
+                                                                );
+
+   let indices = range(0, $propertyMappings->size(), 1);
+   let tdsNull = ^TDSNull();
+
+   let tds = ^TabularDataSet(
+                                 columns = $res.columnNames->map(c|let i = $res.columnNames->indexOf($c);
+                                                                   let matchedPath = $paths->filter(p|$p.first->toLower() == $c->toLower());
+                                                                   let type = if ($matchedPath->isEmpty(),|[],|$matchedPath->toOne().second.type)->cast(@meta::pure::metamodel::type::DataType);
+                                                                   let doc = if ($matchedPath->isEmpty(),|[],|$matchedPath->toOne().second.documentation);
+                                                                   ^TDSColumn(type=$type,
+                                                                              name=$c,
+                                                                              offset=$i,
+                                                                              documentation = $doc
+                                                                   );
+                                                            )
+              );
+
+   let tdsRows = $res.rows->map(
+                                 r | let values = $r.values;
+                                     ^TDSRow(
+                                        parent = $tds,
+                                        values = $indices->map(i|let val = $values->at($i); if(is($val->type(), SQLNull), | $tdsNull, | $propertyMappings->at($i)->eval($val));)
+                                     );
+                           );
+
+   $tds->mutateAdd('rows', $tdsRows);
+
+   ^Result<TabularDataSet|1>
+   (
+      values = $tds,
+      activities=^RelationalActivity(sql=$sql, executionTimeInNanoSecond=$res.executionTimeInNanoSecond, executionPlanInformation = $res.executionPlanInformation, dataSource = $res.dataSource, sqlGenerationTimeInNanoSecond = $sqlGenerationTimeInNanoSecond, connectionAcquisitionTimeInNanoSecond = $res.connectionAcquisitionTimeInNanoSecond)
+   );
+}
+
+function meta::relational::mapping::buildExecutionResultInRelationData(sql:String[1], query:SQLQuery[0..1], res:ResultSet[1], paths: Pair<String, PathInformation>[*], sqlGenerationTimeInNanoSecond:Integer[0..1]):Result<RelationData|1>[1]
+{
+   let tdsNull = ^TDSNull();
+   let relationDataQuery = $query->toOne()->cast(@RelationDataSelectSqlQuery);
+
+   let relationData = ^RelationData
+                       (
+                          relation = $relationDataQuery.relation,
+                          columnSubset = $relationDataQuery.columnSubset
+                       );
+
+   let dataRows = $res.rows->map(r | let values = $r.values;
+                                     ^DataRow
+                                      (
+                                         values = $values->map(x | if(is($x->type(), SQLNull), | $tdsNull, | $x))
+                                      );
+                                );
+
+   $relationData->mutateAdd('rows', $dataRows);
+
+   ^Result<RelationData|1>
+   (
+      values = $relationData,
+      activities=^RelationalActivity(sql=$sql, executionTimeInNanoSecond=$res.executionTimeInNanoSecond, executionPlanInformation = $res.executionPlanInformation, dataSource = $res.dataSource, sqlGenerationTimeInNanoSecond = $sqlGenerationTimeInNanoSecond, connectionAcquisitionTimeInNanoSecond = $res.connectionAcquisitionTimeInNanoSecond)
+   );
+}
+
+function meta::relational::mapping::buildClasses(setImplementations:RelationalInstanceSetImplementation[*], res:ResultSet[1], mapping:Mapping[1], connection:Connection[1], runtime: Runtime[1], propLookUpIndices:Integer[*], exeCtx:ExecutionContext[1], extensions: RouterExtension[*], debug:DebugContext[1]):Any[*]
+{
+   let builders =  buildBuilders($setImplementations, $res, $mapping, $connection, $runtime, [], $exeCtx, $extensions, $debug);
+   $res.rows->map(r|let buildInder = if ($setImplementations->size() == 1,|$builders->at(0),
+                                                                          |$builders->at($r.values->at(0)->cast(@String)->parseInteger()));
+                    let class = buildClass($buildInder, $r, $mapping, $connection, $runtime, $exeCtx);
+                    $class;
+               );
+}
+
+function meta::relational::mapping::buildBuilders(setImplementations:RelationalInstanceSetImplementation[*], res:ResultSet[1], mapping:Mapping[1], connection:Connection[1], runtime: Runtime[1], overridePropLookUpIndices:Integer[*], exeCtx:ExecutionContext[1], extensions: RouterExtension[*], debug:DebugContext[1]):BuilderInfo[*]
+{
+   let builders = $setImplementations->removeDuplicates()
+                                     ->fold({setImplementation,a|
+                                                let classForNew = $setImplementation->match([
+                                                                     r:RootRelationalInstanceSetImplementation[1] | $setImplementation.class;,
+                                                                     e:EmbeddedRelationalInstanceSetImplementation[1] | $e.property->genericType().typeArguments->at(1).rawType->toOne()->cast(@Class<Any>)
+                                                                     ]);
+                                                let propertyMappings = $setImplementation.allPropertyMappings()
+                                                                       ->filter(pm|$pm.localMappingProperty==false &&
+                                                                                   $pm.property->instanceOf(Property) &&
+                                                                                   $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType)
+                                                                        );
+                                                let colNamesFromRS = $res.columnNames->map(c|$c->toUpper());
+
+
+                                                let propLookUpIndices = if(!$overridePropLookUpIndices->isEmpty(),|$overridePropLookUpIndices
+                                                                                                                 ,|$propertyMappings->map(pm| let colName = $pm.property.name->toOne();
+                                                                                                                                              $colNamesFromRS->indexOf($colName->toUpper());
+                                                                                                                                         );
+                                                                           );
+
+                                                let keys = $propertyMappings->map(pm | $pm.property.name);
+                                                let transforms = $propertyMappings->map(p|if($p.property->functionReturnType().rawType == Boolean,|{a:Any[1]|$a == 'true' || $a == true},
+                                                                                             | if($p.property->functionReturnType().rawType == Decimal,|{a:Any[1]|$p->cast(@RelationalPropertyMapping).transform($a)->cast(@Number)->toDecimal()},|{a:Any[1]|$p->cast(@RelationalPropertyMapping).transform($a)});));
+
+                                                let indices = range(0, $propertyMappings->size(), 1);
+
+                                                let primaryKeyColumns = $setImplementation->match([
+                                                        r:RootRelationalInstanceSetImplementation[1] | $r.resolvePrimaryKey();,
+                                                        e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.resolvePrimaryKey()
+                                                        ]);
+
+                                                assert(!$primaryKeyColumns->isEmpty(), 'Must have a valid primary key to allow gettor to work');
+
+                                                let pks = range($a.first, $a.first+$primaryKeyColumns->size(),1);
+                                                let list = $a.second;
+                                                let temporalStrategy = getTemporalMilestoningStrategy($classForNew);
+                                                pair($a.first+$primaryKeyColumns->size(),
+                                                     ^$list(values += ^BuilderInfo( class = $classForNew,
+                                                                                keys = $keys,
+                                                                                transforms = $transforms,
+                                                                                indices = $indices,
+                                                                                pks = $pks,
+                                                                                propLookUpIndices = $propLookUpIndices,
+                                                                                milestoningStrategy = if($temporalStrategy->isEmpty(),
+                                                                                                         | {r:Row[1]|[]},
+                                                                                                         | {r:Row[1]|$temporalStrategy->toOne()->getKeyValueBuildClasses($r)}
+                                                                                                      ),
+                                                                                static = ^StaticMappingInstanceData
+                                                                                         (
+                                                                                            runtime = $runtime,
+                                                                                            mapping = $mapping,
+                                                                                            systemMapping = relationalSystemMapping(),
+                                                                                            setImplementation = $setImplementation,
+                                                                                            exeCtx = $exeCtx,
+                                                                                            debug = $debug,
+                                                                                            extensions = $extensions
+                                                                                         ),
+                                                                                sqlNull = ^SQLNull()
+                                                                              ))
+                                                    );
+                                           }, pair(if($setImplementations->size()==1,|0,|1), ^List<BuilderInfo>())).second.values;
+}
+
+function meta::relational::mapping::buildClass(buildInder:BuilderInfo[1], r:Row[1], mapping:Mapping[1], connection:Connection[1], runtime: Runtime[1], exeCtx:ExecutionContext[1]):Any[1]
+{
+   let keyExpressions = $buildInder.indices->map( i | let value = $r.values->at($buildInder.propLookUpIndices->at($i));
+                                                           ^KeyValue(
+                                                                      key = $buildInder.keys->at($i),
+                                                                      value = if($value == $buildInder.sqlNull,| [], | $buildInder.transforms->at($i)->eval($value))
+                                                            );
+                                                     )->concatenate($buildInder.milestoningStrategy->eval($r));
+
+   let keyInformation = ^KeyInformation (
+                                          static = $buildInder.static,
+                                          pk = $buildInder.pks->map(pk|$r.values->at($pk)),
+                                          sourceConnection = $connection,
+                                          buildMethod = BuildMethod.TypeQuery
+                                       );
+
+   $buildInder.class->dynamicNew(
+                             $keyExpressions,
+                             meta::pure::mapping::xStore::crossGetterOverrideToOne_Any_1__Property_1__Any_$0_1$_,
+                             meta::pure::mapping::xStore::crossGetterOverrideToMany_Any_1__Property_1__Any_MANY_,
+                             $keyInformation,
+                             $exeCtx->getConstraintsManager()
+                             );
+}
+
+// Lazy Execution of property
+function meta::relational::mapping::getterOverrideMapped(o:Any[1], propertyMapping:PropertyMapping[1]):Any[*]
+{
+   $o->processProperty($propertyMapping.property);
+}
+
+Class meta::relational::mapping::BuilderInfo
+{
+   class : Class<Any>[1];
+   keys : String[*];
+   transforms : Function<{Any[1]->Any[1]}>[*];
+   indices : Integer[*];
+   pks : Integer[*];
+   propLookUpIndices : Integer[*];
+   milestoningStrategy : Function<{Row[1]->KeyValue[*]}>[1];
+   sqlNull : SQLNull[1];
+   static : StaticMappingInstanceData[1];
+}
+
+Enum meta::relational::mapping::BuildMethod
+{
+   TypeQuery
+}
+
+Class meta::relational::mapping::KeyInformation extends MappingInstanceData
+{
+   pk : Any[*];
+   sourceConnection : Connection[1];
+   deepFetchCache : DeepFetchCache[0..1];
+   buildMethod : BuildMethod[1];
+}
+
+function meta::relational::mapping::processProperty(o:Any[1], property:Property<Nil,Any|*>[1]):Any[*]
+{
+   if ($property.name == 'classifierGenericType' || $property->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType)
+        ,| $property->rawEvalProperty($o);
+        ,|
+           let keyInformation = $o->getHiddenPayload()->cast(@KeyInformation);
+           let setImplementation = $keyInformation.static.setImplementation->toOne()->cast(@RelationalInstanceSetImplementation);
+           let extensions = $keyInformation.static.extensions;
+       
+           let mapping = $keyInformation.static.mapping;
+
+           let state = ^State(inScopeVars = ^Map<String,List<Any>>(), mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth= 0, inProjectFunctions=false, processingProjectionThread = false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
+
+           let sourceDb = $keyInformation.sourceConnection->cast(@DatabaseConnection).element;
+           let db = if ($sourceDb->instanceOf(Database),|$sourceDb,|[])->cast(@Database);
+
+           let sqlQueryToStringStart = now();
+           let targetImplSqlQueryPair = generatePropertySql($setImplementation, $property, JoinType.INNER, $keyInformation.pk, $mapping, $keyInformation.static.runtime, $db, $keyInformation.static.exeCtx, $extensions);
+           let sourceConnection = $keyInformation.sourceConnection->cast(@DatabaseConnection);
+           let sql = sqlQueryToStringPretty($targetImplSqlQueryPair.second, $sourceConnection.type, $sourceConnection.timeZone, $sourceConnection.quoteIdentifiers, $extensions);
+           let sqlQueryToStringDurationMilliseconds = ($sqlQueryToStringStart->dateDiff(now(),DurationUnit.MILLISECONDS));
+
+           let executed = executeInDb($sql, $keyInformation.sourceConnection->cast(@DatabaseConnection));
+
+           meta::pure::functions::io::logActivities(^RelationalActivity(sql=$sql,
+                                                                        sqlGenerationTimeInNanoSecond = $sqlQueryToStringDurationMilliseconds*1000000,
+                                                                        dataSource = $executed.dataSource,
+                                                                        executionTimeInNanoSecond=$executed.executionTimeInNanoSecond,
+                                                                        connectionAcquisitionTimeInNanoSecond = $executed.connectionAcquisitionTimeInNanoSecond)->toOneMany());
+           buildClasses($targetImplSqlQueryPair.first, $executed, $mapping, $keyInformation.sourceConnection, $keyInformation.static.runtime, [], $keyInformation.static.exeCtx, $keyInformation.static.extensions, $keyInformation.static.debug);
+      );
+}
+
+function meta::relational::mapping::generatePropertySql(setImplementation: RelationalInstanceSetImplementation[1], property:Property<Nil,Any|*>[1], joinType:JoinType[1], propertyPkFilterValues: Any[*], mapping:Mapping[1], runtime: Runtime[1], db:Database[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]):Pair<RelationalInstanceSetImplementation, SQLQuery>[1]
+{
+   let state = ^State(inScopeVars = ^Map<String,List<Any>>(), mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth= 0, inProjectFunctions=false,  processingProjectionThread = false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
+
+   let srcSetImplementation = $setImplementation->match([
+								 s:RootRelationalInstanceSetImplementation[1]|$s,
+								 s:EmbeddedRelationalInstanceSetImplementation[1]|$s.setMappingOwner;
+							  ]);
+
+   let context = ^DebugContext(debug=false, space='');
+
+   let mainTable = $srcSetImplementation.mainRelation->processRelation([], '', false, 0, false, [], $state, $context, $extensions);
+
+   let innerJoinFilterExists = $srcSetImplementation->getFilter().joinTreeNode.joinType == JoinType.INNER;
+   let updatedMainTable = if ($innerJoinFilterExists,
+                              | getRelationalElementWithInnerJoin($srcSetImplementation, $mainTable, [], '', $state, $context, $extensions),
+                              | $mainTable
+                           );
+   
+   let currentNode = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $updatedMainTable));
+
+   let base = ^SelectWithCursor(
+	  select = ^SelectSQLQuery(
+					  data = $currentNode
+				  ),
+	  currentTreeNode = $currentNode
+   );
+
+   let nodeId = '_a';
+
+   let primaryKeys = $setImplementation->match([
+												r:RootRelationalInstanceSetImplementation[1] | $r.resolvePrimaryKey();,
+												e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.resolvePrimaryKey()
+												]);
+
+   assert(!$primaryKeys->isEmpty(), 'Must have a valid primary key to allow gettor to work');
+
+   let pks = if(!$propertyPkFilterValues->isEmpty(),| let pkOffsets = range(0, $primaryKeys->size(), 1);
+                                                      $pkOffsets->map(offset| let pm = $primaryKeys->at($offset);
+									                                          let newQuery = $pm->processColumnsInRelationalOperationElements($state, $base, $nodeId, ^List<ColumnGroup>(), false, $context, $extensions);
+									                                          ^SelectSQLQuery( data = $newQuery.select.data, filteringOperation = ^DynaFunction(name = 'equal', parameters=[$newQuery.select.columns->toOne(), ^Literal(value=$propertyPkFilterValues->at($offset))])););
+                                                   ,| []);
+
+   let groupByQuery = $base->applyGroupBy($srcSetImplementation, $nodeId);
+   let filterQuery = if($innerJoinFilterExists, | $groupByQuery, | $groupByQuery->applyTypeFilter($srcSetImplementation, $nodeId, $state, $context, $extensions));
+
+   let pksMergeSelect = $filterQuery.select->concatenate($pks)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+
+   let pkFilter = $pksMergeSelect.filteringOperation->concatenate($pksMergeSelect.savedFilteringOperation.second)->andFilters($extensions);//^DynaFunction(name='and', parameters=$pksMergeSelect.filteringOperation->concatenate($pksMergeSelect.savedFilteringOperation.second));
+
+   let wrappedMerged = ^SelectWithCursor(
+										 select = ^SelectSQLQuery(
+																  data = $pksMergeSelect.data,
+																  filteringOperation = $pkFilter
+															   ),
+										 currentTreeNode = $pksMergeSelect.data
+									 );
+
+   let propertySetImplementation = $setImplementation->match([e:EmbeddedSetImplementation[1]|$e->meta::pure::mapping::propertyMappingsByPropertyName($property.name->toOne()),
+                                                              s:PropertyMappingsImplementation[1]|$s.propertyMappingsByPropertyName($property.name->toOne())]);
+
+   let res = processPropertyMapping($propertySetImplementation, $setImplementation.class, $wrappedMerged, ^$state(inGetterFlow=true), $joinType, $nodeId, ^List<ColumnGroup>(), $context, $extensions);
+
+   let newClass = $property->functionReturnType()->genericTypeClass();
+
+   let targetSetImplementation = getPropertyTargetSetImplementation($setImplementation, $property, $mapping);
+
+   let properties = $targetSetImplementation->dataTypePropertyMappings()
+											->map(pm|let newQuery = $pm->cast(@RelationalPropertyMapping).relationalOperationElement->processColumnsInRelationalOperationElements($state, $res->cast(@SelectWithCursor), $nodeId, ^List<ColumnGroup>(), false, $context, $extensions);
+													 rebuildSelectWithCursor($pm.property.name->toOne(), [], $newQuery, true););
+
+   let targetPrimaryKeys = $targetSetImplementation->match([
+												r:RootRelationalInstanceSetImplementation[1] | $r.resolvePrimaryKey();,
+												e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.resolvePrimaryKey()
+												]);
+
+   assert(!$targetPrimaryKeys->isEmpty(), 'Must have a valid primary key to allow gettor to work');
+
+   let targetPks = $targetPrimaryKeys->map(pm|let offset = $targetPrimaryKeys->indexOf($pm);
+															 let newQuery = $pm->processColumnsInRelationalOperationElements($state, $res->cast(@SelectWithCursor), $nodeId, ^List<ColumnGroup>(), false, $context, $extensions);
+															 rebuildSelectWithCursor('pk_'+$offset->toString(), [], $newQuery, true););
+
+   let newQuery_pre = $targetPks->concatenate($properties)->add($res->cast(@SelectWithCursor))->map(c|$c.select)->cast(@SelectSQLQuery)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+
+   let newQuery = ^$newQuery_pre(filteringOperation=$newQuery_pre.filteringOperation->concatenate($newQuery_pre.savedFilteringOperation.second)->andFilters($extensions));
+
+   let queryProcessorHolder = postProcessQuery($exeCtx, $newQuery, $runtime, $db, $extensions);
+
+   pair($targetSetImplementation, $queryProcessorHolder.query);
+
+}
+
+function meta::relational::mapping::getPropertyTargetSetImplementation(sourceSetImplementation: RelationalInstanceSetImplementation[1], property:AbstractProperty<Any>[1], mapping:Mapping[1]):RelationalInstanceSetImplementation[1]
+{
+   let propertySetImplementation = $sourceSetImplementation.propertyMappingsByPropertyName($property.name->toOne());
+   let propertyReturnTypeClass = $property->functionReturnType()->genericTypeClass();
+   $propertySetImplementation->match([
+        o:OtherwiseEmbeddedRelationalInstanceSetImplementation[1]|$mapping.classMappingById($o.otherwisePropertyMapping.targetSetImplementationId)->cast(@RelationalInstanceSetImplementation)->toOne();,
+		e:EmbeddedRelationalInstanceSetImplementation[1] | $e ,
+		r:RelationalPropertyMapping[1] |  let classMappings = $mapping.rootClassMappingByClass($propertyReturnTypeClass)->potentiallyResolveOperation($sourceSetImplementation.parent);
+										  assertSize($classMappings, 1, 'Expected 1 class mapping for %s, found %d', [$propertyReturnTypeClass.name->toOne(), $classMappings->size()]);
+										  $classMappings->toOne()->cast(@RelationalInstanceSetImplementation);
+   ]);
+}
+
+// Functions supported by relational execution
+function meta::relational::mapping::supports(f:FunctionExpression[1]):Boolean[1]
+{
+      !meta::relational::functions::pureToSqlQuery::findSupportedFunction(
+                        $f,
+                        meta::relational::functions::pureToSqlQuery::getSupportedFunctions(),
+                        meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFunctions()
+                    )->isEmpty()
+      //These are here because the router does not go deep enough, should remove
+      || [
+            meta::pure::functions::math::sum_Float_MANY__Float_1_,
+            meta::pure::functions::math::sum_Integer_MANY__Integer_1_,
+            meta::pure::functions::math::sum_Number_MANY__Number_1_
+         ]->contains($f.func);
+}
+
+function meta::relational::mapping::supportsStream(f:FunctionExpression[1]):Boolean[1]
+{
+  [
+      meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_,
+      meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_
+  ]->contains($f.func); 
+}

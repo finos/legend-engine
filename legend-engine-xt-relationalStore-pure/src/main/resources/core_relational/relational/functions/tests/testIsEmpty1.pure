@@ -1,0 +1,93 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::pure::executionPlan::tests::*;
+
+function <<test.Test>> meta::relational::tests::query::filter::isempty::testIsolationOfInputToIsEmpty():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p| $p.firm.address.name->isEmpty())
+                                    , simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals(1, $result.values->size());
+   let p = $result.values->at(0);
+   assertEmpty($p.firm);
+   assertEquals('No firm no Firm',$p.name);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME is null', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::query::filter::isempty::testIsolationOfInputToIsEmptyWithForcedFiltersOnInput():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p| $p.firm.address.name->isEmpty())
+                                    , simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals(6, $result.values->size());
+   let p = $result.values->at(0);
+   assertEquals('Fabrice Roberts,Oliver Hill,David Harris,No address Smith,No firm no Firm,Elena Firm B', $result.values.name->makeString(','));
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID and "firmtable_0".LEGALNAME = \'Firm X\') left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME is null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::isempty::testInputNotIsolatedWhenPropertyPathIsToOne():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p| $p.firm->toOne().address->toOne().name->isEmpty())
+                                    , simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals(0, $result.values->size());
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "firmtable_0".LEGALNAME = \'Firm X\' and "addresstable_0".NAME is null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::isempty::testIsolationOfTheSameInputInABooleanExprWhereOneSideIsEmpty():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p| $p.firm.address.name == 'New York' || $p.firm.address.name->isEmpty())
+                                    , simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals(12, $result.values->size());
+   assertEquals('Peter Smith,John Johnson,John Hill,Anthony Allen,Fabrice Roberts,Oliver Hill,David Harris,No address Smith,No firm no Firm,New York,Elena Firm B,Don New York', $result.values.name->makeString(','));
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) left outer join firmTable as "firmtable_1" on ("firmtable_1".ID = "root".FIRMID and "firmtable_1".LEGALNAME = \'Firm X\') left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_1".ADDRESSID) where (("firmtable_0".LEGALNAME = \'Firm X\' and "addresstable_0".NAME = \'New York\') or "addresstable_1".NAME is null)', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::query::filter::isempty::testSimpleTriangularJoinViaIsEmpty():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(p| $p.employeeWithFirmAddressName.name->isEmpty())
+                                    , simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals(0, $result.values->size());
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME) where concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) is null', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::query::filter::isempty::testIsEmptyOnQualifiedPropertyFollowedByClassPropertyInput():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f| $f.employeeByLastName('Smith').address.name->isEmpty())
+                                    , simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals(4, $result.values->size());
+   assertEquals(['Firm A', 'Firm B', 'Firm C', 'No Employees'], $result.values.legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Smith\') left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID) where "addresstable_0".NAME is null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::isempty::testIsEmptyOnCollection():Boolean[1]
+{
+   let result = executionPlan(input:String[*]| Firm.all()->filter(f| $input->isEmpty())->project([f | $f.legalName],['name'])
+                                    , simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expected = 'Sequence(type=TDS[(name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[input:String[*]])Relational(type=TDS[(name,String,VARCHAR(200),"")]resultColumns=[("name",VARCHAR(200))]sql=select"root".LEGALNAMEas"name"fromfirmTableas"root"where(${collectionSize(input)})=0connection=TestDatabaseConnection(type="H2"))))';
+   assertEquals($expected, $result->planToStringWithoutFormatting(meta::pure::router::extension::defaultRelationalExtensions()));
+   assertSameElements(templateFunctionsList(), $result.processingTemplateFunctions);
+}

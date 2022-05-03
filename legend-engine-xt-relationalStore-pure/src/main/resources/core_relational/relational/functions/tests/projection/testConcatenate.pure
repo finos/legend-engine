@@ -1,0 +1,163 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::relational::functions::sqlstring::*;
+
+
+function <<test.Test, test.ToFix>> meta::relational::tests::projection::concatenate::testSimpleConcatenate():Boolean[1]
+{
+   let result = execute(|Person.all()->concatenate(Person.all())->project([#/Person/firstName#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 14 );
+   //assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
+   //assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
+   fail('Expectations need updating once it works');
+}
+
+###Pure
+
+Class meta::relational::tests::projection::concatenate::tdsQueries::Product
+{
+   id : Integer[1];
+   name : String[1];
+   type : String[1];
+}
+
+###Relational
+
+Database meta::relational::tests::projection::concatenate::tdsQueries::ProductDatabase
+(
+   Table ProductTable(id INT PRIMARY KEY, name VARCHAR(20), type VARCHAR(20))
+)
+
+###Mapping
+import meta::relational::tests::projection::concatenate::tdsQueries::*;
+
+Mapping meta::relational::tests::projection::concatenate::tdsQueries::ProductMapping
+(
+   Product : Relational
+   {
+      id : [ProductDatabase]ProductTable.id,
+      name : [ProductDatabase]ProductTable.name,
+      type : [ProductDatabase]ProductTable.type
+   }
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::milestoning::*;
+import meta::relational::tests::projection::concatenate::tdsQueries::*;
+
+function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQueries::testConcatenationOfTdsQueries():Boolean[1]
+{
+   let lfs = [{|Product.all()->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])},
+              {|Product.all()->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])},
+              {|Product.all()->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])}]->evaluateAndDeactivate();
+   
+   let concatLambda = concatenateTemporalTdsQueries($lfs);
+   
+   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let actualResult = $actualQuery.values->at(0).rows->map(r|$r.values->makeString(','));
+   
+   let expectedQuery = 'select "unionalias_0"."id" as "id", "unionalias_0"."name" as "name", "unionalias_0"."type" as "type" from (select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root") as "unionalias_0"';
+   let expectedResult = ['1,name1,type1', '2,name2,type2', '3,name3,type3', '4,name1,type1', '5,name2,type2', '1,name1,type1', '2,name2,type2', '3,name3,type3', '4,name1,type1', '5,name2,type2', '1,name1,type1', '2,name2,type2', '3,name3,type3', '4,name1,type1', '5,name2,type2'];
+   
+   assertSameSQL($expectedQuery, $actualQuery);
+   assertEquals($expectedResult, $actualResult);
+}
+
+function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQueries::testConcatenationOfTdsQueriesWithFilter():Boolean[1]
+{
+   let lfs = [{|Product.all()->filter(p|$p.name=='name1')->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])},
+              {|Product.all()->filter(p|$p.name=='name2')->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])},
+              {|Product.all()->filter(p|$p.name=='name3')->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])}]->evaluateAndDeactivate();
+   
+   let concatLambda = concatenateTemporalTdsQueries($lfs);
+   
+   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let actualResult = $actualQuery.values->at(0).rows->map(r|$r.values->makeString(','));
+   
+   let expectedQuery = 'select "unionalias_0"."id" as "id", "unionalias_0"."name" as "name", "unionalias_0"."type" as "type" from (select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name1\' UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name2\' UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name3\') as "unionalias_0"';
+   let expectedResult = ['1,name1,type1', '4,name1,type1', '2,name2,type2', '5,name2,type2', '3,name3,type3'];
+   
+   assertSameSQL($expectedQuery, $actualQuery);
+   assertEquals($expectedResult, $actualResult);
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQueries::testConcatenationOfTdsQueriesWithGroupBy():Boolean[1]
+{
+   let lfs = [{|Product.all()->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])->groupBy(['type'], [agg('count', x| $x.getInteger('id'), a | $a -> count())])},
+              {|Product.all()->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])->groupBy(['type'], [agg('count', x| $x.getInteger('id'), a | $a -> count())])},
+              {|Product.all()->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])->groupBy(['type'], [agg('count', x| $x.getInteger('id'), a | $a -> count())])}]->evaluateAndDeactivate();
+   
+   let concatLambda = concatenateTemporalTdsQueries($lfs);
+   
+   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let actualResult = $actualQuery.values->at(0)->sort(['type','count']).rows->map(r|$r.values->makeString(','));
+   
+   let expectedQuery = 'select "unionalias_0"."type" as "type", "unionalias_0"."count" as "count" from (select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type") as "unionalias_0"';
+   let expectedResult = ['type1,2', 'type1,2', 'type1,2', 'type2,2', 'type2,2', 'type2,2', 'type3,1', 'type3,1', 'type3,1'];
+   
+   assertSameSQL($expectedQuery, $actualQuery);
+   assertEquals($expectedResult, $actualResult);
+}
+
+function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQueries::testConcatenationOfTdsQueriesWithFilterAndGroupBy():Boolean[1]
+{
+   let lfs = [{|Product.all()->filter(p|$p.name=='name1')->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])->groupBy(['type'], [agg('count', x| $x.getInteger('id'), a | $a -> count())])},
+              {|Product.all()->filter(p|$p.name=='name2')->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])->groupBy(['type'], [agg('count', x| $x.getInteger('id'), a | $a -> count())])},
+              {|Product.all()->filter(p|$p.name=='name3')->project([p|$p.id, p|$p.name, p|$p.type],['id', 'name', 'type'])->groupBy(['type'], [agg('count', x| $x.getInteger('id'), a | $a -> count())])}]->evaluateAndDeactivate();
+   
+   let concatLambda = concatenateTemporalTdsQueries($lfs);
+   
+   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let actualResult = $actualQuery.values->at(0).rows->map(r|$r.values->makeString(','));
+   
+   let expectedQuery = 'select "unionalias_0"."type" as "type", "unionalias_0"."count" as "count" from (select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name1\' group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name2\' group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name3\' group by "type") as "unionalias_0"';
+   let expectedResult = ['type1,2', 'type2,2', 'type3,1'];
+   
+   assertSameSQL($expectedQuery, $actualQuery);
+   assertEquals($expectedResult, $actualResult);
+}
+
+###Pure
+import meta::relational::runtime::*;
+import meta::relational::metamodel::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::tests::projection::concatenate::tdsQueries::*;
+
+function meta::relational::tests::projection::concatenate::tdsQueries::testRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(ProductDatabase);
+}
+
+function <<test.BeforePackage>> meta::relational::tests::projection::concatenate::tdsQueries::setUp():Boolean[1]
+{
+   let connection = testRuntime().connectionByElement(ProductDatabase)->cast(@TestDatabaseConnection);
+   
+   dropAndCreateTableInDb(ProductDatabase, 'ProductTable', $connection);
+
+   executeInDb('insert into ProductTable (id, name, type) values (1,\'name1\', \'type1\');', $connection);
+   executeInDb('insert into ProductTable (id, name, type) values (2,\'name2\', \'type2\');', $connection);
+   executeInDb('insert into ProductTable (id, name, type) values (3,\'name3\', \'type3\');', $connection);
+   executeInDb('insert into ProductTable (id, name, type) values (4,\'name1\', \'type1\');', $connection);
+   executeInDb('insert into ProductTable (id, name, type) values (5,\'name2\', \'type2\');', $connection);
+   
+   true;
+}

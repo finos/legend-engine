@@ -1,0 +1,70 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::metamodel::data::*;
+
+import meta::external::store::service::metamodel::data::*;
+
+import meta::pure::data::*;
+
+import meta::pure::functions::io::http::*;
+
+Class meta::external::store::service::metamodel::data::ServiceStoreEmbeddedData extends EmbeddedData
+{
+   serviceStubMappings : ServiceStubMapping[*];
+}
+
+Class meta::external::store::service::metamodel::data::ServiceStubMapping
+{
+   requestPattern      : ServiceRequestPattern[1];
+   responseDefinition  : ServiceResponseDefinition[1];
+}
+
+Class meta::external::store::service::metamodel::data::ServiceRequestPattern
+[
+    ($this.url->isNotEmpty() || $this.urlPath->isNotEmpty()) && ($this.url->isEmpty() || $this.urlPath->isEmpty())
+]
+{
+   url                 : String[0..1];
+   urlPath             : String[0..1];
+   
+   method              : HTTPMethod[1];
+      
+   headerParams        : Map<String, StringValuePattern>[0..1];
+   queryParams         : Map<String, StringValuePattern>[0..1];
+   
+   bodyPatterns        : StringValuePattern[*];
+}
+
+Class meta::external::store::service::metamodel::data::ServiceResponseDefinition
+{
+   body                : ExternalFormatData[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::service::metamodel::data::ContentPattern
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::service::metamodel::data::StringValuePattern extends ContentPattern
+{
+   expectedValue       : String[1];
+}
+
+Class meta::external::store::service::metamodel::data::EqualToJsonPattern extends StringValuePattern
+{
+}
+
+Class meta::external::store::service::metamodel::data::EqualToPattern extends StringValuePattern
+{
+}

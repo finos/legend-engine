@@ -1,0 +1,129 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::binding::*;
+import meta::pure::functions::io::http::*;
+import meta::external::store::service::metamodel::*;
+
+Class meta::external::store::service::metamodel::ServiceStore extends meta::pure::store::set::SetBasedStore
+{
+   description : String[0..1];
+   elements    : ServiceStoreElement[*];
+
+   getServiceStoreElementById(id:String[1]) {
+      $this.elements->filter(e | $e.id == $id)->toOne()
+   }: ServiceStoreElement[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::service::metamodel::ServiceStoreElement
+{
+   owner    : ServiceStore[1];
+   parent   : ServiceGroup[0..1];
+
+   id       : String[1];
+   path     : String[1];
+
+   resolveFullPathRecursively() {
+      if($this.parent->isEmpty(),
+         |$this.path,
+         |$this.parent->toOne().resolveFullPathRecursively() + $this.path)
+   }: String[1];
+}
+
+Class meta::external::store::service::metamodel::ServiceGroup extends ServiceStoreElement
+{
+   elements : ServiceStoreElement[*];
+
+   getServiceStoreElementById(id:String[1]) {
+      $this.elements->filter(e | $e.id == $id)->toOne()
+   }: ServiceStoreElement[1];
+}
+
+Class meta::external::store::service::metamodel::Service extends ServiceStoreElement
+[
+   supportedMethodTypes
+   (
+      ~function: $this.method->in(supportedServiceMethods())
+      ~enforcementLevel: Error
+      ~message: 'Unsuported Service Method Type. Supported Types are - ' + supportedServiceMethods()->map(m | $m->toString())->joinStrings('[', ', ',']')
+   )
+]
+{
+   requestBody : TypeReference[0..1];
+   method      : HTTPMethod[1];
+   parameters  : ServiceParameter[*];
+   response    : ComplexTypeReference[1];
+   security    : SecurityScheme[*];
+}
+
+function meta::external::store::service::metamodel::supportedServiceMethods():HTTPMethod[*]
+{
+   [HTTPMethod.GET, HTTPMethod.POST]
+}
+
+Class meta::external::store::service::metamodel::ServiceParameter
+{
+   name                 : String[1];
+   type                 : TypeReference[1];
+   location             : Location[1];
+
+   allowReserved        : Boolean[0..1];
+   required             : Boolean[0..1];
+   enum                 : Enumeration<Any>[0..1];
+   serializationFormat  : SerializationFormat[0..1];
+}
+
+Enum meta::external::store::service::metamodel::Location
+{
+   PATH,
+   QUERY,
+   HEADER
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::service::metamodel::TypeReference
+{
+  list     : Boolean[1];
+}
+
+Class meta::external::store::service::metamodel::StringTypeReference extends meta::external::store::service::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::service::metamodel::BooleanTypeReference extends meta::external::store::service::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::service::metamodel::IntegerTypeReference extends meta::external::store::service::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::service::metamodel::FloatTypeReference extends meta::external::store::service::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::service::metamodel::ComplexTypeReference extends meta::external::store::service::metamodel::TypeReference
+{
+   type    : Class<Any>[1];
+   binding : Binding[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::service::metamodel::SecurityScheme
+{
+}
+
+Class meta::external::store::service::metamodel::SerializationFormat
+{
+   style   : String[0..1];
+   explode : Boolean[0..1];
+}

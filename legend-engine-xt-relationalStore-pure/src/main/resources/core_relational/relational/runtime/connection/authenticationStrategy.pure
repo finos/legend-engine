@@ -1,0 +1,59 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+}
+
+Class meta::pure::alloy::connections::alloy::authentication::DelegatedKerberosAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+   serverPrincipal: String[0..1];
+}
+
+Class meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+   baseVaultReference: String[0..1];
+   userNameVaultReference: String[1];
+   passwordVaultReference: String[1];
+}
+
+Class meta::pure::alloy::connections::alloy::authentication::SnowflakePublicAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+    privateKeyVaultReference:String[1];
+    passPhraseVaultReference:String[1];
+    publicUserName:String[1];
+}
+
+Class meta::pure::alloy::connections::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+}
+
+Class meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+}
+
+Class meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+    apiToken:String[1];
+}
+
+Class meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy
+{
+}
+
+Class meta::pure::alloy::connections::alloy::authentication::GCPWorkloadIdentityFederationAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+    serviceAccountEmail : String[1];
+    additionalGcpScopes: String[*];
+}

@@ -1,0 +1,339 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::mapping::aggregationAware::*;
+import meta::json::*;
+import meta::pure::router::extension::*;
+import meta::protocols::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::context::*;
+import meta::pure::router::routing::*;
+import meta::protocols::pure::v1_21_0::invocation::execution::execute::*;
+import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::*;
+import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::runtime::*;
+import meta::pure::functions::io::http::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::milestoning::*;
+import meta::alloy::metadataServer::*;
+import meta::relational::milestoning::*;
+import meta::relational::mapping::*;
+
+function meta::protocols::pure::v1_21_0::invocation::execution::execute::processTDSResult(r:meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::RelationalTDSResult[1], extensions:meta::pure::router::extension::RouterExtension[*]) : Pair<List<Any>,List<Activity>>[1]
+{
+   let res = ^TabularDataSet
+             (
+                columns = $r.builder->cast(@meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::TDSBuilder).columns
+                            ->map({c |
+                                    ^TDSColumn
+                                    (
+                                       name = $c.name,
+                                       documentation = $c.doc,
+                                       type = $c.type->toOne()->stringToDataType(),
+                                       offset = $r.result.columns->indexOf($c.name)
+                                    )})
+             );
+
+   let trans = $r.builder->cast(@meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::TDSBuilder).columns.type->map(c|meta::protocols::pure::v1_21_0::invocation::execution::execute::dataTypeTransformer($c));
+
+   let ra = range($r.result.columns->size());
+
+   let newRows = $r.result.rows
+                  ->map({r |
+                            let vals = $r.values;
+                            ^TDSRow
+                            (
+                               parent = $res,
+                               values = $ra->map(i | let v = $vals->at($i);
+                                                    if($v->instanceOf(TDSNull),
+                                                       | $v,
+                                                       | $trans->at($i)->eval($v);
+                                                    );
+                                               )
+                            );
+                        });
+   $res->mutateAdd('rows', $newRows);
+   ^Pair<List<Any>, List<Activity>>(first=^List<Any>(values=$res), second=^List<Activity>(values=$r.activities->transformActivities($extensions)));
+}
+
+
+
+function meta::protocols::pure::v1_21_0::invocation::execution::execute::processDataTypeResult(r:meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::RelationalDataTypeResult[1], extensions:meta::pure::router::extension::RouterExtension[*]) : Pair<List<Any>,List<Activity>>[1]
+{
+   let type = $r.builder->cast(@meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::DataTypeBuilder).type;
+   let trans = meta::protocols::pure::v1_21_0::invocation::execution::execute::dataTypeTransformer($type);
+   ^Pair<List<Any>, List<Activity>>(first=^List<Any>(values=$r.result.rows.values->map(v|$trans->eval($v))), second=^List<Activity>(values=$r.activities->transformActivities($extensions)));
+
+}
+
+function meta::protocols::pure::v1_21_0::invocation::execution::execute::processRelationalClassResult(r:meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::RelationalClassResult[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], extensions:meta::pure::router::extension::RouterExtension[*]) : Pair<List<Any>,List<Activity>>[1]
+{
+   let builder = $r.builder->cast(@ meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ClassBuilder);
+
+   let retClass = $builder.class->pathToElement()->cast(@Class<Any>);
+
+   let setImplementations = $r.builder->cast(@meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ClassBuilder).classMappings.setImplementationId->map(
+                                             s:String[1]|$m.classMappingById($s)
+                                          )->cast(@RootRelationalInstanceSetImplementation);
+
+   let setImplMap = $setImplementations->map(set | pair($set.id, pair($set, meta::pure::milestoning::getTemporalMilestoningStrategy($set.class)->isNotEmpty() && meta::pure::milestoning::getTemporalMilestoningStrategy($set.class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($set.mainTable())))))->newMap();
+
+   let exeCtx = if($context->isEmpty(), | ^ExecutionContext(), | $context->toOne());
+   let precas =  $setImplementations->map(set | pair($set.id, precaForRelationalSetImpl($set, $m, $pureRuntime, $exeCtx, $extensions)))->newMap();
+   let objects = $r.objects->map({obj |
+   let reference = $obj->get('alloyStoreObjectReference$')->toOne()->cast(@String)->decodeAndParseAlloyObjectReference()->cast(@meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyRelationalStoreObjectReference);
+   let setId = $reference.setId;
+   let preca = $precas->get($setId)->toOne();
+
+   let pkMap = $reference.pkMap;
+   let pks = $preca.pks->size()->range()->map({pkId |
+      let key = $preca.pks->at($pkId);
+      let jsonKey = 'pk$_' + $pkId->toString() + if($reference.operationResolvedSetsId->size() == 1, | '', | '_' + $reference.operationResolvedSetsId->indexOf($setId)->toString());
+      if($key.type->isNotEmpty() && ($key.type->toOne()->instanceOf(meta::relational::metamodel::datatype::Timestamp) || $key.type->toOne()->instanceOf(meta::relational::metamodel::datatype::Date)),
+         | parseDate($pkMap->get($jsonKey)->toOne()->cast(@String)),
+         | $pkMap->get($jsonKey)->toOne()
+      );
+   });
+   let keyInformation = ^KeyInformation (
+                           static = $preca.staticMappingInstanceData,
+                           pk = $pks,
+                           sourceConnection = $preca.sourceConnection,
+                           deepFetchCache = [],
+                           buildMethod = BuildMethod.TypeQuery
+                        );
+
+   $preca.type->dynamicNew(
+                   $preca.propMap->map({precav|
+                      let v = $obj->get($precav.property.name->toOne());
+                      ^KeyValue(
+                         key = $precav.property.name->toOne(),
+                         value = if($v->isEmpty() || $v == 'NULL' || $v->toOne()->instanceOf(TDSNull),
+                                    | [],
+                                    | if($precav.property->functionReturnType().rawType == Date,
+                                         | parseDate($v->toOne()->toString()),
+                                         | $precav.transform->eval($v->toOne())
+                                      )
+                                 )->match([
+                                    l : List<Any>[*] | $l.values,
+                                    a : Any[*] | $a
+                                    ])
+                      );
+                      })->concatenate($preca.addMilestoningProperties->if(|$preca.type.rawType->toOne()->cast(@Class<Any>).properties->filter(p| $p->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType) && $p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype())->map({prop |
+                            let v = $obj->get($prop.name->toOne());
+                            ^KeyValue(
+                               key = $prop.name->toOne(),
+                               value = if($v->isEmpty() || $v == 'NULL' || $v->toOne()->instanceOf(TDSNull),
+                                          | [],
+                                          | if($prop->functionReturnType().rawType == Date,
+                                               | parseDate($v->toOne()->toString()),
+                                               | $v->toOne()
+                                            )
+                                       )
+                            );
+                         }), |[])),
+                         meta::pure::mapping::xStore::crossGetterOverrideToOne_Any_1__Property_1__Any_$0_1$_,
+                         meta::pure::mapping::xStore::crossGetterOverrideToMany_Any_1__Property_1__Any_MANY_,
+                         $keyInformation,
+                         $exeCtx->getConstraintsManager()
+                     );
+                   });
+   ^Pair<List<Any>, List<Activity>>(first=^List<Any>(values=$objects), second=^List<Activity>(values=$r.activities->transformActivities($extensions)));
+}
+
+
+
+
+function meta::protocols::pure::v1_21_0::invocation::execution::execute::generateAlloyObjectReference(mapping:Mapping[1], rootSetId:String[1], setId:String[1], runtime:Runtime[1], pkMap:Map<String, Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyObjectReference[1]
+{
+   let sets                 = $mapping.classMappingById($rootSetId)->resolveOperation($mapping);
+   assert($sets->size() >= 1, | 'No Set Implementation found for setId : ' + $rootSetId + ', in mapping : ' + $mapping->elementToPath());
+
+   let set                  = $sets->filter(s | $s.id == $setId)->toOne();
+
+   $set->match([
+      r: RelationalInstanceSetImplementation[1] | meta::protocols::pure::v1_21_0::invocation::execution::execute::generateAlloyRelationalStoreObjectReference($mapping, $r, $sets, $runtime, $pkMap, $extensions);,
+      s: SetImplementation[1]                   | fail('Not Supported Yet!!'); ^meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyObjectReference(type = meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyObjectReferenceType.Relational, pathToMapping='', setId='');
+   ]);
+}
+
+function meta::protocols::pure::v1_21_0::invocation::execution::execute::generateAlloyRelationalStoreObjectReference(mapping:Mapping[1], set:RelationalInstanceSetImplementation[1], sets:SetImplementation[*], runtime:Runtime[1], pkMap:Map<String, Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyRelationalStoreObjectReference[1]
+{
+   let store                = $set.stores->toOne();
+   let databaseConnection   = $runtime->connectionByElement($store->toOne())->meta::protocols::pure::v1_21_0::transformation::fromPureGraph::runtime::transformConnection($extensions)->cast(@meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::DatabaseConnection);
+
+   let setIdx               = if($sets->size() == 1, | '', | '_' + $sets->indexOf($set)->toString());
+   let transformedPkMap     = meta::relational::mapping::resolvePrimaryKeysNames($set->cast(@RelationalInstanceSetImplementation), $pkMap, $setIdx, true, $extensions);
+
+   ^meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyRelationalStoreObjectReference(
+      type = meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyObjectReferenceType.Relational,
+      pathToMapping = $mapping->elementToPath(),
+      setId = $set.id,
+      operationResolvedSetsId = $sets.id,
+      databaseConnection = $databaseConnection,
+      pkMap = $transformedPkMap);
+}
+
+function meta::protocols::pure::v1_21_0::invocation::execution::execute::decodeAndParseAlloyObjectReference(ref : String[1]):meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyObjectReference[1]
+{
+   let parsedObjectRef = meta::alloy::objectReference::decodeAndParseAlloyObjectReference($ref);
+   let type            = $parsedObjectRef->get('type')->cast(@String)->toOne();
+   
+   if($type->toLower() == 'relational',
+      | meta::protocols::pure::v1_21_0::invocation::execution::execute::getAlloyRelationalStoreObjectReference($parsedObjectRef),
+      | fail('Not Supported Yet!!'); 
+        ^meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyObjectReference
+         (
+            type = meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyObjectReferenceType.Relational,
+            pathToMapping = '',
+            setId = ''
+         ););
+}
+
+function meta::protocols::pure::v1_21_0::invocation::execution::execute::getAlloyRelationalStoreObjectReference(parsedObjectRef : Map<String, Any>[1]):meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyRelationalStoreObjectReference[1]
+{
+   let databaseConnection = $parsedObjectRef->get('databaseConnection')->cast(@String)->toOne()
+                                            ->meta::json::parseJSON()->cast(@JSONObject)
+                                            ->map(o | ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::DatabaseConnection(_type = $o->getValue('_type')->cast(@JSONString).value->toOne(),
+                                                                                                                                                   element = $o->getValue('element')->cast(@JSONString).value->toOne(),
+                                                                                                                                                   type = $o->getValue('type')->cast(@JSONString).value->toOne()));
+   ^meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyRelationalStoreObjectReference
+   (
+      type = meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyObjectReferenceType.Relational,
+      pathToMapping = $parsedObjectRef->get('pathToMapping')->cast(@String)->toOne(),
+      operationResolvedSetsId = $parsedObjectRef->get('operationResolvedSetsId')->cast(@List<String>).values,
+      setId = $parsedObjectRef->get('setId')->cast(@String)->toOne(),
+      databaseConnection = $databaseConnection,
+      pkMap = $parsedObjectRef->get('pkMap')->cast(@Map<String, Any>)->toOne()
+   );
+}
+
+function meta::protocols::pure::v1_21_0::invocation::execution::execute::getAlloyObjectReferenceAsMap(ref : String[1]):Map<String, Any>[1]
+{
+   let objReference = meta::protocols::pure::v1_21_0::invocation::execution::execute::decodeAndParseAlloyObjectReference($ref);
+
+   $objReference->match([
+      r:meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyRelationalStoreObjectReference[1] |
+                                                                                                            [
+                                                                                                               pair('type', $r.type->toString()),
+                                                                                                               pair('pathToMapping', $r.pathToMapping),
+                                                                                                               pair('operationResolvedSetsId', $r.operationResolvedSetsId->list()),
+                                                                                                               pair('setId', $r.setId),
+                                                                                                               pair('databaseConnection', $r.databaseConnection),
+                                                                                                               pair('pkMap', $r.pkMap)
+                                                                                                            ]->newMap();,
+      o:meta::protocols::pure::v1_21_0::metamodel::objectReference::AlloyObjectReference[1] | fail('Not Supported Yet!!'); ^Map<String, Any>();
+   ]);
+}
+
+function meta::protocols::pure::v1_21_0::invocation::execution::execute::transformActivities(activities:meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ExecutionActivity[*], extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::mapping::Activity[*]
+{
+   $activities->map(activity|$activity->match([
+      a:meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::AggregationAwareActivity[1]    | ^AggregationAwareActivity(rewrittenQuery = $a.rewrittenQuery),
+      r:meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::RelationalExecutionActivity[1] | ^RelationalActivity(sql=$r.sql)
+   ]->concatenate($extensions.serializerExtension('v1_21_0')->cast(@meta::protocols::pure::v1_21_0::extension::SerializerExtension_v1_21_0).transfers_execute_transformActivity)->toOneMany()))
+}
+
+function <<access.private>> meta::protocols::pure::v1_21_0::invocation::execution::execute::precaForRelationalSetImpl(setImplementation:RootRelationalInstanceSetImplementation[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*]):RelationalSetImplPrecalc[1]
+{
+   let propertyMappings = $setImplementation.allPropertyMappings()
+                                    ->filter(pm|$pm.localMappingProperty==false &&
+                                                $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType)
+                                    );
+
+   let ps = $propertyMappings->map(p|^meta::protocols::pure::v1_21_0::invocation::execution::execute::PropMapPrecalc(
+                                                                                                    property = $p.property,
+                                                                                                    transform = if ($p->cast(@RelationalPropertyMapping).transformer->isEmpty(),
+                                                                                                                    |let type = $p.property->functionReturnType().rawType->toOne();
+                                                                                                                         if ($type == DateTime,
+                                                                                                                            |{z:Any[1]|$z->cast(@String)->parseDate()},
+                                                                                                                            |if ($type == StrictDate,
+                                                                                                                               |{z:Any[1]|$z->cast(@String)->parseDate()->datePart()->cast(@StrictDate)},
+                                                                                                                               |{z:Any[1]|$z}
+                                                                                                                             )
+                                                                                                                        );,
+                                                                                                                    |{z:Any[1]|extractEnumValue(
+                                                                                                                                   $p.property->functionReturnType().rawType->toOne()->cast(@Enumeration<Any>),
+                                                                                                                                   $z->toString()
+                                                                                                                               )}
+                                                                                                                )
+                                                                                            )
+                       );
+   ^RelationalSetImplPrecalc
+   (
+      type = ^GenericType(rawType = $setImplementation.class),
+      staticMappingInstanceData = ^meta::pure::mapping::StaticMappingInstanceData
+                                   (
+                                      runtime = $runtime,
+                                      mapping = $mapping,
+                                      systemMapping = meta::pure::router::systemMapping::relationalSystemMapping(),
+                                      setImplementation = $setImplementation,
+                                      exeCtx = $exeCtx,
+                                      debug = noDebug(),
+                                      extensions = $extensions
+                                   ),
+      pks = if($setImplementation->meta::relational::functions::pureToSqlQuery::getGroupBy()->isEmpty() && ($setImplementation->meta::relational::functions::pureToSqlQuery::getDistinct()->isEmpty() || $setImplementation->meta::relational::functions::pureToSqlQuery::getDistinct()->toOne() == false),
+               | $setImplementation.resolvePrimaryKey()->map(pk | ^RelationalSetPrimaryKey(element = $pk, type = $pk->meta::relational::functions::typeInference::inferRelationalType())),
+               | []),
+      sourceConnection = $runtime->connectionByElement($setImplementation->meta::pure::router::clustering::getResolvedStore($mapping)->toOne())->toOne(),
+      propMap = $ps,
+      addMilestoningProperties = meta::pure::milestoning::getTemporalMilestoningStrategy($setImplementation.class)->isNotEmpty() && meta::pure::milestoning::getTemporalMilestoningStrategy($setImplementation.class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($setImplementation.mainTable()))
+   );
+}
+
+function <<access.private>> meta::protocols::pure::v1_21_0::invocation::execution::execute::dataTypeTransformer(c:String[1]):Function<{Any[1]->Any[1]}>[1]
+{
+   if($c == 'Float' || $c == 'Number',
+      |{a:Any[1]|$a->cast(@Number)*1.0},
+      |if ($c == 'Decimal',
+           |{a:Any[1]|let e = $a->cast(@Number)*1.0; $e->toDecimal();},
+           |if ($c == 'StrictDate',
+              |{a:Any[1]|$a->cast(@String)->parseDate()->datePart()->cast(@StrictDate)},
+              |if ($c == 'Date' || $c == 'DateTime',
+                   |{a:Any[1]|$a->cast(@String)->parseDate()},
+                   |if ($c == 'Boolean',
+                        |{a:Any[1]|if($a=='false'||$a==false,|false,|true);},
+                        |if ($c->contains('::'),
+                             |let t = $c->pathToElement()->cast(@Enumeration<Any>);
+                              {a:Any[1]|$t->extractEnumValue($a->toString())};,
+                             |{a:Any[1]|$a}
+                         )
+                    )
+               )
+           )
+       )
+   );
+}
+
+Class <<access.private>> meta::protocols::pure::v1_21_0::invocation::execution::execute::RelationalSetImplPrecalc
+{
+   type : GenericType[1];
+   staticMappingInstanceData: meta::pure::mapping::StaticMappingInstanceData[1];
+   propMap : PropMapPrecalc[*];
+   sourceConnection : Connection[1];
+   pks: meta::protocols::pure::v1_21_0::invocation::execution::execute::RelationalSetPrimaryKey[*];
+   addMilestoningProperties : Boolean[1];
+}
+
+Class meta::protocols::pure::v1_21_0::invocation::execution::execute::RelationalSetPrimaryKey
+{
+   element : meta::relational::metamodel::RelationalOperationElement[1];
+   type : meta::relational::metamodel::datatype::DataType[0..1];
+}
+
+Class <<access.private>> meta::protocols::pure::v1_21_0::invocation::execution::execute::PropMapPrecalc
+{
+   property : Property<Nil,Any|*>[1];
+   transform : Function<{Any[1]->Any[1]}>[1];
+}

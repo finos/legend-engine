@@ -1,0 +1,47 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::pure::profiles::*;
+import meta::pure::metamodel::tds::*;
+import meta::relational::functions::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::mapping::*;
+
+function <<test.BeforePackage>> meta::relational::tests::advanced::forced::qualifier::setUp():Boolean[1]
+{
+    meta::relational::tests::createTablesAndFillDb();
+}
+
+function <<test.Test>> meta::relational::tests::advanced::forced::qualifier::testDerivedWithFilteringTwoPropertiesForcedCorrelated():Boolean[1]
+{
+   let result = meta::relational::tests::advanced::forced::qualifier::testDerivedWithFilteringTwoProperties(IsolationStrategy.BuildCorrelatedSubQuery);
+   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip", "synonymtable_2".NAME as "isin" from productSchema.productTable as "root" left outer join (select "synonymtable_1".PRODID as PRODID, "synonymtable_1".NAME as NAME from productSchema.synonymTable as "synonymtable_1" where "synonymtable_1".TYPE = \'CUSIP\') as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID) left outer join (select "synonymtable_3".PRODID as PRODID, "synonymtable_3".NAME as NAME from productSchema.synonymTable as "synonymtable_3" where "synonymtable_3".TYPE = \'ISIN\') as "synonymtable_2" on ("synonymtable_2".PRODID = "root".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::advanced::forced::qualifier::testDerivedWithFilteringTwoPropertiesForcedOnClause():Boolean[1]
+{
+   let result = meta::relational::tests::advanced::forced::qualifier::testDerivedWithFilteringTwoProperties(IsolationStrategy.MoveFilterInOnClause);
+   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip", "synonymtable_1".NAME as "isin" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\') left outer join productSchema.synonymTable as "synonymtable_1" on ("synonymtable_1".PRODID = "root".ID and "synonymtable_1".TYPE = \'ISIN\')', $result->sqlRemoveFormatting());
+}
+
+function meta::relational::tests::advanced::forced::qualifier::testDerivedWithFilteringTwoProperties(isolation:IsolationStrategy[1]):Result<Any|*>[1]
+{
+   let result = execute(|Product.all()->project([#/Product/name#, #/Product/cusip#, #/Product/isin#]), simpleRelationalMapping, testRuntime(),  meta::pure::router::extension::defaultRelationalExtensions(),^RelationalDebugContext(debug=false, space='', forcedIsolation = $isolation));
+   assertSize($result.values.rows, 4);
+   assertEquals('CUSIP1,CUSIP2,CUSIP3,Firm A,Firm C,Firm D,Firm X,ISIN1,ISIN2,ISIN3,TDSNull,TDSNull', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
+   $result;
+}

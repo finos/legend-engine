@@ -149,7 +149,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-store-relational-grammar-api</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

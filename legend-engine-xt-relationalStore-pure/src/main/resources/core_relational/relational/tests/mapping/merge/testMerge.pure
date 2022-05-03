@@ -1,0 +1,201 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::merge::*;
+import meta::csv::*;
+import meta::relational::metamodel::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::union::*;
+import meta::relational::runtime::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::merge::setUp():Boolean[1]
+{
+   createTables();
+   true;
+}
+
+
+function meta::relational::tests::mapping::merge::createTables():Boolean[1]
+{
+   let connection = createRuntime(MergeAliasDb).connectionByElement(MergeAliasDb)->cast(@TestDatabaseConnection);
+
+   executeInDb('Drop table if exists AddressSet;', $connection);
+   executeInDb('Create Table AddressSet (ownerName VARCHAR(200), name VARCHAR(200));', $connection);
+   executeInDb('insert into AddressSet (ownerName, name) values (\'Firm X\', \'30 Hudson\');', $connection);
+   executeInDb('insert into AddressSet (ownerName, name) values (\'Firm X\', \'200 W\');', $connection);
+
+   executeInDb('insert into AddressSet (ownerName, name) values (\'Firm A\', \'Somwhere In CA\');', $connection);
+
+   executeInDb('Drop table if exists personSet;', $connection);
+   executeInDb('Create Table PersonSet (ID INT, lastName VARCHAR(200), FirmID INT,orgName VARCHAR(200));', $connection);
+   executeInDb('insert into PersonSet (ID, lastName, FirmID,orgName) values (1, \'Scott\', 1,\'Ayco\');', $connection);
+   executeInDb('insert into PersonSet (ID, lastName, FirmID,orgName) values (2, \'Anand\', 1,\'Symphony\');', $connection);
+   executeInDb('insert into PersonSet (ID, lastName, FirmID,orgName) values (1, \'Taylor\', 1,\'Ayco\');', $connection);
+
+   executeInDb('insert into PersonSet (ID, lastName, FirmID,orgName) values (2, \'Wright\', 1,\'NIC\');', $connection);
+
+   executeInDb('Drop table if exists FirmSet1;', $connection);
+   executeInDb('Create Table FirmSet1(ID INTEGER, LegalName VARCHAR(200));', $connection);
+   executeInDb('insert into FirmSet1 (ID, LegalName) values (1, \'Firm X\');', $connection);
+
+   executeInDb('Drop table if exists FirmSet2;', $connection);
+   executeInDb('Create Table FirmSet2(ID INTEGER, LegalName VARCHAR(200));', $connection);
+   executeInDb('insert into FirmSet2 (ID, LegalName) values (2, \'Firm A\');', $connection);
+
+   executeInDb('Drop table if exists organizationSet;', $connection);
+   executeInDb('Create Table organizationSet(parentId INTEGER, name VARCHAR(200));', $connection);
+   executeInDb('insert into organizationSet (parentId, name) values (1, \'Ayco\');', $connection);
+
+
+   true;
+}
+
+function meta::relational::tests::mapping::merge::createRuntime(db:Database[1]):Runtime[1]
+{
+   meta::relational::tests::testRuntime($db);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::merge::testDynafunctionMerge():Boolean[1]
+{
+  let runtime = createRuntime(MergeAliasDb);
+  let result = execute(|Person.all()->project([f|$f.lastName, f| $f.extraInformation],['Employee Name','Ayco Certified Americas?']), MergeAliasMapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+  assertSameSQL('select "root".lastName as "Employee Name", concat(\'Ayco Certified: \', case when (\'Ayco\' = "organizationset_0".name and (\'30 Hudson\' = "addressset_0".name or \'200 W\' = "addressset_1".name or \'200 W\' = "addressset_0".name or \'30 Hudson\' = "addressset_1".name)) then \'Yes\' else \'No\' end) as "Ayco Certified Americas?" from personSet as "root" left outer join organizationSet as "organizationset_0" on ("organizationset_0".name = "root".orgName) left outer join FirmSet1 as "firmset1_0" on ("organizationset_0".parentId = "firmset1_0".ID) left outer join addressSet as "addressset_0" on ("firmset1_0".LegalName = "addressset_0".ownerName) left outer join FirmSet2 as "firmset2_0" on ("organizationset_0".parentId = "firmset2_0".ID) left outer join addressSet as "addressset_1" on ("firmset2_0".LegalName = "addressset_1".ownerName)',$result);
+
+}
+
+###Mapping
+import meta::relational::tests::mapping::merge::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::merge::MergeAliasMapping
+(
+
+    *Firm : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)
+            }
+
+   Firm[firm_set1] : Relational
+          {
+              legalName : [MergeAliasDb]FirmSet1.LegalName
+
+          }
+
+   Firm[firm_set2]  : Relational
+          {
+             legalName : [MergeAliasDb]FirmSet2.LegalName
+
+          }
+   Person:Relational
+   {
+      scope([MergeAliasDb])
+      (
+         lastName: [MergeAliasDb]personSet.lastName,
+         extraInformation:concat('Ayco Certified: ',
+                            case(
+                               and(
+                                     equal('Ayco', @personSet_organization_Join| organizationSet.name),
+                                  or(
+                                     equal('30 Hudson', @personSet_organization_Join> @firmSet1_organization_Join> @firmSet1_addressJoin| addressSet.name),
+                                     equal('200 W' ,@personSet_organization_Join> @firmSet2_organization_Join> @firmSet2_addressJoin| addressSet.name),
+                                     equal('200 W',@personSet_organization_Join>  @firmSet1_organization_Join> @firmSet1_addressJoin| addressSet.name),
+                                     equal('30 Hudson',@personSet_organization_Join> @firmSet2_organization_Join> @firmSet2_addressJoin| addressSet.name)
+                                  )
+
+
+                               ),
+                               'Yes',
+                               'No'
+                               )
+                            )
+
+
+         )
+   }
+
+
+
+   Organization: Relational
+   {
+      scope([MergeAliasDb]organizationSet)
+      (
+         name:name
+         )
+   }
+)
+
+
+###Relational
+Database meta::relational::tests::mapping::merge::MergeAliasDb
+(
+   Table personSet
+   (
+      ID INTEGER PRIMARY KEY,
+      lastName VARCHAR(200),
+      firmId INTEGER,
+      orgName VARCHAR(200)
+
+   )
+
+   Table FirmSet1
+   (
+      ID INTEGER PRIMARY KEY,
+      LegalName VARCHAR(200)
+
+   )
+
+   Table FirmSet2
+   (
+      ID INTEGER PRIMARY KEY,
+      LegalName VARCHAR(200)
+
+   )
+
+   Table addressSet
+   (
+      ownerName  VARCHAR(200),
+      name VARCHAR(200) PRIMARY KEY
+   )
+
+  Table organizationSet
+   (
+      name VARCHAR(200) PRIMARY KEY,
+      parentId INTEGER
+   )
+
+    Join personSet_organization_Join( organizationSet.name= personSet.orgName)
+
+   Join firmSet1_organization_Join( organizationSet.parentId= FirmSet1.ID)
+
+   Join firmSet2_organization_Join( organizationSet.parentId= FirmSet2.ID)
+
+  Join firmSet1_personSet_Join(  FirmSet1.ID=personSet.firmId )
+
+  Join firmSet2_personSet_Join(  personSet.firmId=FirmSet2.ID)
+
+  Join firmSet1_addressJoin( FirmSet1.LegalName = addressSet.ownerName)
+
+   Join  firmSet2_addressJoin( FirmSet2.LegalName = addressSet.ownerName)
+
+
+)

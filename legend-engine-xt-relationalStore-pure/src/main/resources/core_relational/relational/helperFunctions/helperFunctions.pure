@@ -1,0 +1,343 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::csv::*;
+import meta::relational::functions::database::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::router::routing::*;
+import meta::pure::router::extension::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::mapping::*;
+import meta::relational::functions::toDDL::*;
+
+function meta::relational::mapping::sql(result:Result<Any|*>[1]):String[1]
+{
+   $result->sql(0)
+}
+
+function meta::relational::mapping::sql(result:Result<Any|*>[1], activityNumber:Integer[1]):String[1]
+{
+   $result.activities->filter(a | $a->instanceOf(RelationalActivity))->at($activityNumber)->cast(@RelationalActivity).sql
+}
+
+function meta::relational::mapping::sqlRemoveFormatting(result:Result<Any|*>[1]):String[1]
+{
+   $result->sqlRemoveFormatting(0);
+}
+
+function meta::relational::mapping::sqlRemoveFormatting(result:Result<Any|*>[1], activityNumber:Integer[1]):String[1]
+{
+    $result->sql($activityNumber)->sqlRemoveFormatting()
+}
+
+function meta::relational::mapping::sqlRemoveFormatting(sql : String[1]):String[1]
+{
+   $sql->replace('\n', '')->replace('\t', '')
+}
+
+function meta::relational::runtime::extractDBs(m:meta::pure::mapping::Mapping[*], r:Runtime[1]):Database[*]
+{
+   let allMappings = $m->concatenate(getMappingsFromRuntime($r));
+
+   let dbFromMappings = $allMappings->map(m| let db = $m->extractDBs();
+                                            print(if($db->size() > 1, |'WARNING: The system found multiple databases in the mapping "'+$m->elementToPath()+'": '+$db.name->joinStrings(','), |''));
+                                            $db;);
+   let dbFromRuntime = $r.connections.element->filter(c | $c->instanceOf(Database))->cast(@Database);
+
+   $dbFromMappings->concatenate($dbFromRuntime)->removeDuplicates();
+}
+
+function meta::relational::runtime::extractDBs(m:meta::pure::mapping::Mapping[1]):Database[*]
+{
+   $m->extractDBs($m);
+}
+
+function <<access.private>> meta::relational::runtime::extractDBs(m:meta::pure::mapping::Mapping[1], topMapping: meta::pure::mapping::Mapping[1]):Database[*]
+{
+   $m.includes.included->map(i|$i->extractDBs($topMapping))
+   ->concatenate(
+      $m.classMappings->filter(r|$r->instanceOf(meta::relational::mapping::RootRelationalInstanceSetImplementation))->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).mainTableAlias.database->map(n|$topMapping.resolveStore($n)->cast(@Database))
+   )->removeDuplicates();
+}
+
+function meta::relational::functions::database::setUpData(t:String[1], mapping:Mapping[1]):String[*]
+{
+   let databases = $mapping->extractDBs()->removeDuplicates();
+
+   print(if($databases->size() > 1, |'WARNING: The system found multiple databases in the mapping "'+$mapping->elementToPath()+'": '+$databases.name->joinStrings(','), |''));
+
+   let database = if ($databases->size() == 1, | $databases->at(0), | ^Database(name='Default_CatchAll', includes = $databases));
+
+   meta::alloy::service::execution::setUpDataSQLs($t, $database);
+}
+
+
+function meta::relational::functions::database::setUpData(t:String[1], mapping:Mapping[*], runtime:Runtime[1]):String[*]
+{
+   let databases = $mapping->extractDBs($runtime);
+
+   let database = if ($databases->size() == 1, | $databases->at(0), | ^Database(name='Default_CatchAll', includes = $databases));
+
+   meta::alloy::service::execution::setUpDataSQLs($t, $database);
+}
+
+function meta::relational::functions::database::setUpData(records:List<String>[*], mapping:Mapping[*], runtime:Runtime[1]):String[*]
+{
+   let databases = $mapping->extractDBs($runtime);
+
+   let database = if ($databases->size() == 1, | $databases->at(0), | ^Database(name='Default_CatchAll', includes = $databases));
+
+   meta::alloy::service::execution::setUpDataSQLs($records, $database);
+}
+
+// This function is needed because split does not preserve empty strings
+// We work around by inserting a non-empty value, doing a split, and then removing the non-empty value
+function <<access.private>> meta::alloy::service::execution::splitWithEmptyValue(s:String[1]) : String[*]
+{
+   let delimForEmptyCsvField = '|EMPTY|';
+
+   $s->meta::alloy::service::execution::replaceWithEmptyValue($delimForEmptyCsvField)
+        ->split(',')
+        ->map(csv_val| if($csv_val == $delimForEmptyCsvField, | '' ,| $csv_val));
+}
+
+function <<access.private>> meta::alloy::service::execution::replaceWithEmptyValue(s:String[1], delimForEmptyCsvField: String[1]) : String[1]
+{
+   let news = if($s->endsWith(','), | $s + $delimForEmptyCsvField, |$s);
+
+   let replaced = $news->replace(',,', ','+$delimForEmptyCsvField+',');
+
+   if ($replaced->contains(',,'), | meta::alloy::service::execution::replaceWithEmptyValue($replaced, $delimForEmptyCsvField), | $replaced);
+}
+
+function <<access.private>> meta::alloy::service::execution::schemaAndTableSetup(db:Database[1]):String[*]
+{
+   let allSchemas = $db->allSchemas();
+
+   let schemaSetup = $allSchemas->map({schema |
+      [
+         meta::relational::functions::toDDL::dropSchemaStatement($schema.name),
+         meta::relational::functions::toDDL::createSchemaStatement($schema.name)
+      ]
+   });
+
+   let tableSetup = $allSchemas->map({schema |
+      $schema.tables->map({t |
+         [
+            dropTableStatement($db, $schema.name, $t.name),
+            createTableStatement($db, $schema.name, $t.name)
+         ]
+      })
+   });
+
+   $schemaSetup->concatenate($tableSetup);
+}
+
+function meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Database[1]) : String[*]
+{
+   let schemaAndTableSetup = $db->meta::alloy::service::execution::schemaAndTableSetup();
+
+   let formattedData = $data->split('\n')
+                            ->map(l|list($l->meta::alloy::service::execution::splitWithEmptyValue()))
+                            ->concatenate(list(''));
+
+   $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($formattedData, $db, t:Table[1]|$t));
+}
+
+function meta::alloy::service::execution::setUpDataSQLs(records:List<String>[*], db:Database[1]) : String[*]
+{
+   let schemaAndTableSetup = $db->meta::alloy::service::execution::schemaAndTableSetup();
+   $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($records, $db, t:Table[1]|$t));
+}
+
+function {service.contentType='text/csv', service.contentDisposition='attachment;filename=result.csv'} meta::csv::toCSV(t:TabularDataSet[1]):String[1]
+{
+   $t->meta::csv::toCSV(false);
+}
+
+function {service.contentType='text/csv', service.contentDisposition='attachment;filename=result.csv'} meta::csv::toCSV(t:TabularDataSet[1], renderTdsNull:Boolean[1]):String[1]
+{
+   $t->toCSV(SimpleDateTimeFormat(), ISO8601DateFormat(), $renderTdsNull);
+}
+
+function meta::csv::toCSV(t:TabularDataSet[1], dateTimeFormat:String[1], dateFormat:String[1], renderTdsNull:Boolean[1]):String[1]
+{
+   $t.columns->map(c | $c.name->toCSVString($dateTimeFormat, $dateFormat, $renderTdsNull))->joinStrings(',') + '\n' +
+   $t.rows->map(r | $r.values->map(v | $v->toCSVString($dateTimeFormat, $dateFormat, $renderTdsNull))->joinStrings(','))->joinStrings('', '\n', '\n');
+}
+
+function meta::csv::toCSVString(anything:Any[1]):String[1]
+{
+   $anything->toCSVString(SimpleDateTimeFormat(), ISO8601DateFormat());
+}
+
+function meta::csv::dataValueToCSV(value:Any[0..1], dateTimeFormat:String[1], dateFormat:String[1]):String[1]
+{
+    if($value->isEmpty(), |'', |$value->toOne()->toCSVString($dateTimeFormat, $dateFormat))
+}
+
+function <<access.protected>> meta::csv::toCSVString(anything:Any[1], dateTimeFormat:String[1], dateFormat:String[1]):String[1]
+{
+   meta::csv::toCSVString($anything, $dateTimeFormat, $dateFormat, false)
+}
+
+function <<access.protected>> meta::csv::toCSVString(anything:Any[1], dateTimeFormat:String[1], dateFormat:String[1], renderTdsNull:Boolean[1]):String[1]
+{
+   $anything->match([
+                        n:TDSNull[1]|if($renderTdsNull,|'TDSNull',|''),
+                        d:Date[1]|$d->formatDateTime($dateTimeFormat, $dateFormat),
+                        a:Any[1]|$a->toString()->escapeCSVString()
+                    ]);
+}
+
+function <<access.private>> meta::csv::formatDateTime(date: Date[1], dateTimeFormat:String[1], dateFormat:String[1]):String[1]
+{
+   if($date->hasHour(),
+         |format($dateTimeFormat, $date)->escapeCSVString(),
+         |format($dateFormat, $date));
+}
+
+function <<access.private>> meta::csv::escapeCSVString(string:String[1]):String[1]
+{
+   if($string->contains(',') || $string->contains('"') || $string->contains('\n') || $string->contains('\r'),
+      | '"' + $string->replace('"', '""') + '"',
+      | $string);
+}
+
+function meta::relational::mapping::findPropertySequence(v:ValueSpecification[1]):Pair<Class<Any>,AbstractProperty<Any>>[*]
+{
+   $v->match([
+               fe:FunctionExpression[1]|
+                     $fe.func->match(
+                        [
+                           p:AbstractProperty<Any>[1]|pair($fe.parametersValues->at(0).genericType.rawType->cast(@Class<Any>)->toOne(), $p)->concatenate(if($fe.parametersValues->size()==1,|$fe.parametersValues->at(0)->findPropertySequence(),|[]));,
+                           f:NativeFunction<Any>[1]|if(($f == map_T_m__Function_1__V_m_ || $f == map_T_MANY__Function_1__V_MANY_) && $fe.parametersValues->at(1)->byPassRouterInfo()->instanceOf(InstanceValue),|pair($fe.parametersValues->at(0).genericType.rawType->cast(@Class<Any>)->toOne(), $fe.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)
+                           ->match([a:AbstractProperty<Any>[1]|$a,
+                                    l:LambdaFunction<Any>[1] |$l.expressionSequence->at(0)->byPassRouterInfo()->cast(@FunctionExpression).func;
+                                   ])
+                           ->cast(@AbstractProperty<Any>))->concatenate($fe.parametersValues->at(0)->findPropertySequence()),|[]),
+                           a:Any[1]|[]
+                        ]
+                 );,
+               e:ExtendedRoutedValueSpecification[1]|$e->byPassRouterInfo()->findPropertySequence(),
+               a:Any[1]|[];
+            ])
+}
+
+function meta::relational::mapping::findPropertyMapping(property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], currentPropertyMapping:PropertyMapping[*], propertyMappingFromRouter:PropertyMapping[*], mapping:Mapping[1],debug:DebugContext[1]):PropertyMapping[*]
+{
+   let propertyName = $property.name->toOne();
+   if($currentPropertyMapping->size() >= 1  && $currentPropertyMapping->at(0)->instanceOf(EmbeddedRelationalInstanceSetImplementation),
+         | let embeddedPropertyMapping = $currentPropertyMapping->cast(@EmbeddedRelationalInstanceSetImplementation)->map(c|$c.propertyMappingsByPropertyName($propertyName));
+
+           let result = if( !$embeddedPropertyMapping->isEmpty()
+                         ,|$embeddedPropertyMapping
+                         ,|if(!$propertyMappingFromRouter->isEmpty()
+                           ,| $propertyMappingFromRouter
+                           ,| // this should only been done in the builder but will refactor as part of other fixes;
+                              $currentPropertyMapping
+                              ->filter(c | $c->match([
+                                 is: InlineEmbeddedRelationalInstanceSetImplementation[1] | $is.parent.classMappingById($is.inlineSetImplementationId)->toOne().class->_subTypeOf($propertyOwnerClass),
+                                 a: Any[1] | true
+                              ]))
+                              ->map(c | $c->cast(@EmbeddedRelationalInstanceSetImplementation)->propertyMappingsByPropertyName($propertyName));
+                            );
+
+                         );
+           assert(!$result->isEmpty(), | 'The system can\'t find a mapping for the property \''+$propertyOwnerClass->elementToPath()+'.'+$propertyName+
+                  '\' in the mapping \''+$mapping->elementToPath()+ '-> (Embedded)' + $currentPropertyMapping->at(0)->cast(@EmbeddedRelationalInstanceSetImplementation).setMappingOwner.class.name->toOne() + '.' + $currentPropertyMapping->at(0).property.name->toOne() + '\'');
+           $result;
+         ,
+         | let propMappings = if (!$propertyMappingFromRouter->isEmpty() && $propertyMappingFromRouter.property->removeDuplicates() == $property,
+                 |$propertyMappingFromRouter->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping()),
+                 |let rootClassMapping = $mapping.rootClassMappingByClass($propertyOwnerClass)->potentiallyResolveOperation($mapping);
+                  let classMapping = if($rootClassMapping->isEmpty() && $propertyOwnerClass->instanceOf(MappingClass),
+                                        | $mapping.classMappings()->filter(x | $x->instanceOf(InstanceSetImplementation) && $x->cast(@InstanceSetImplementation).mappingClass == $propertyOwnerClass),
+                                        | $rootClassMapping);
+                     assertSize($classMapping, 1, | 'The system can\'t find a mapping ('+$classMapping->size()->toString()+') for the class \''+$propertyOwnerClass->elementToPath()+'\' in the mapping \''+$mapping->elementToPath()+'\'');
+                     let setImpls = $classMapping->resolveOperation($mapping);
+                     let result = $setImpls->map(s|$s.propertyMappingsByPropertyName($propertyName))->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping());
+                     assert(!$result->isEmpty(), | 'The system can\'t find a mapping for the property \''+$propertyOwnerClass->elementToPath()+'.'+$propertyName+'\' in the mapping \''+$mapping->elementToPath()+'\'');
+                     $result;
+              );
+           if ($currentPropertyMapping->size() == 1 && ($propMappings->size() > 1),
+              |//In this use case, the precedent mappings were filtered (and we have nothing to union ... so we can't take the first one)
+               let result = $propMappings->filter(p|$p.sourceSetImplementationId == $currentPropertyMapping.targetSetImplementationId);
+               assert(!$result->isEmpty(),| 'Error can\'t find a mapping for the property:\''+$property.name->toOne()+'\' (owner class:"'+$propertyOwnerClass.name->toOne()+'") in the set implement id:"'+$currentPropertyMapping.targetSetImplementationId->toOne()+'" in ['+$propMappings->map(p|$p.owner->toOne().id+' : ('+$p.sourceSetImplementationId+' -> '+$p.targetSetImplementationId+')')->joinStrings(',')+']');
+               $result;,
+              |$propMappings
+           );
+
+
+   );
+}
+
+function meta::relational::mapping::dataTypePropertyMappings(impl:RelationalInstanceSetImplementation[1]):PropertyMapping[*]
+{
+   $impl.allPropertyMappings()->map(pm | $pm.property->genericType().typeArguments->at(1).rawType->toOne()->match([
+                                              d : meta::pure::metamodel::type::DataType[1] | $pm,
+                                              a : Any[1] | []
+                                             ]))
+}
+
+
+function meta::relational::mapping::resolvePrimaryKey(rsi: RelationalInstanceSetImplementation[1]):RelationalOperationElement[*]
+{
+   $rsi->match([
+      ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner.resolvePrimaryKey(),
+      rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi.resolvePrimaryKey()
+   ])
+}
+
+function meta::relational::mapping::resolveMainTable(rsi: RelationalInstanceSetImplementation[1]):Table[1]
+{
+   $rsi->match([
+      ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner.mainTable(),
+      rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi.mainTable()
+   ])
+}
+
+function meta::relational::mapping::resolveMainRelation(rsi: RelationalInstanceSetImplementation[1]):Relation[1]
+{
+   $rsi->match([
+      ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner.mainRelation(),
+      rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi.mainRelation()
+   ])
+}
+
+function meta::relational::mapping::resolvePrimaryKeysNames(rsi: RelationalInstanceSetImplementation[1], pkMap:Map<String, Any>[1], setIdx:String[1], transformToPlatformNames:Boolean[1], extensions:RouterExtension[*]):Map<String, Any>[1]
+{
+   let pks = $rsi->resolvePrimaryKey();
+
+   $pks->map({key |
+               let pkIdx            = $pks->indexOf($key);
+               let platformName     = 'pk$_' + $pkIdx->toString() + $setIdx->toString();
+               let userFriendlyName = $key->buildUniqueName(true, $extensions);
+
+               let existingKey      = if($transformToPlatformNames, |$userFriendlyName, |$platformName);
+               let newKey           = if($transformToPlatformNames, |$platformName, |$userFriendlyName);
+
+               pair($newKey, $pkMap->get($existingKey)->toOne());
+            })->newMap();
+}
+
+function meta::relational::mapping::findMainClassInGetAllExpression(vs:ValueSpecification[1]):Class<Any>[1]
+{
+   let getAllFe = $vs->findExpressionsForFunctionInValueSpecification([getAll_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_]);
+   if($getAllFe->isEmpty(), | Any, | $getAllFe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification)->byPassRouterInfo()->cast(@InstanceValue).values->toOne()->cast(@Class<Any>));
+}

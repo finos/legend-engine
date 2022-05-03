@@ -1,0 +1,30 @@
+{
+  "logging": {
+    "level": "info",
+    "appenders": [
+      {
+        "type": "console",
+        "logFormat": "%msg\r\n"
+      }
+    ]
+  },
+  "swagger": {
+    "title": "Legend Pure IDE Light",
+    "resourcePackage": "org.finos.legend",
+    "uriPrefix": "/"
+  },
+  "server": {
+    "type": "simple",
+    "applicationContextPath": "/",
+    "adminContextPath": "/admin",
+    "connector": {
+      "maxRequestHeaderSize": "32KiB",
+      "type": "http",
+      "port": 9010
+    },
+    "requestLog": {
+      "appenders": [
+      ]
+    }
+  }
+}

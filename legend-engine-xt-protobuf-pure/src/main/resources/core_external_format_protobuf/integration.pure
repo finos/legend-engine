@@ -1,0 +1,61 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::protobuf::generation::*;
+import meta::pure::generation::metamodel::*;
+
+
+Class meta::external::format::protobuf::generation::ProtobufConfig extends GenerationConfiguration
+{
+  {doc.doc='The package you want to use for your generated Java/Kotlin classes. If no explicit java_package option is given in the .proto file, then by default the proto package (specified using the "package" keyword in the .proto file) will be used. However, proto packages generally do not make good Java packages since proto packages are not expected to start with reverse domain names.'}
+  javaPackage:String[0..1];
+  {doc.doc='The class name (and hence the file name) for the wrapper Java class you want to generate. If no explicit java_outer_classname is specified in the .proto file, the class name will be constructed by converting the .proto file name to camel-case (so foo_bar.proto becomes FooBar.java). If the java_multiple_files option is disabled, then all other classes/enums/etc. generated for the .proto file will be generated within this outer wrapper Java class as nested classes/enums/etc.'}
+  javaOuterClassname:String[0..1];
+  {doc.doc='If false, only a single .java file will be generated for this .proto file, and all the Java classes/enums/etc. generated for the top-level messages, services, and enumerations will be nested inside of an outer class (see java_outer_classname). If true, separate .java files will be generated for each of the Java classes/enums/etc. generated for the top-level messages, services, and enumerations, and the wrapper Java class generated for this .proto file won\'t contain any nested classes/enums/etc. This is a Boolean option which defaults to false'}
+  javaMultipleFiles:Boolean[0..1];
+  {doc.doc='Affects the C++ and Java code generators (and possibly third-party generators) changing the generated code to optimize for these characteristics.'} 
+  optimizeFor:OptimizeMode[0..1];
+  {doc.doc='Freeform options that are not part of the specification but can be passed through to other tooling'}
+  customOptions:ProtobufOption[*];
+}
+
+Class meta::external::format::protobuf::generation::ProtobufOption
+{
+  name:String[1];
+  value:Any[1];
+}
+
+Enum meta::external::format::protobuf::generation::OptimizeMode
+{
+  {doc.doc='(default): The protocol buffer compiler will generate code for serializing, parsing, and performing other common operations on your message types. This code is highly optimized.'}
+  SPEED,
+  {doc.doc='The protocol buffer compiler will generate minimal classes and will rely on shared, reflection-based code to implement serialialization, parsing, and various other operations. The generated code will thus be much smaller than with SPEED, but operations will be slower. Classes will still implement exactly the same public API as they do in SPEED mode. This mode is most useful in apps that contain a very large number .proto files and do not need all of them to be blindingly fast.'}
+  CODE_SIZE,
+  {doc.doc='The protocol buffer compiler will generate classes that depend only on the "lite" runtime library (libprotobuf-lite instead of libprotobuf). The lite runtime is much smaller than the full library (around an order of magnitude smaller) but omits certain features like descriptors and reflection. This is particularly useful for apps running on constrained platforms like mobile phones. The compiler will still generate fast implementations of all methods as it does in SPEED mode. Generated classes will only implement the MessageLite interface in each language, which provides only a subset of the methods of the full Message interface.'}
+  LITE_RUNTIME
+}
+
+Class meta::external::format::protobuf::generation::ProtobufOutput extends GenerationOutput
+{
+}
+
+function <<access.private>>  meta::external::format::protobuf::generation::defaultConfig():ProtobufConfig[1]
+{
+    ^ProtobufConfig();
+}
+
+function <<access.private, Generation.Configuration>>  meta::external::format::protobuf::generation::describeConfiguration():GenerationParameter[*]
+{
+    [];
+}

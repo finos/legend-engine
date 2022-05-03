@@ -1,0 +1,146 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::tds::extensions::*;
+import meta::relational::metamodel::join::*;
+
+
+
+function meta::pure::tds::extensions::rowValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], joinColumns : String[1..*], columnValueDifferenceColumns : String[1..*]) : TabularDataSet[1]
+{
+   rowValueDifference($tds1, $tds2, $joinColumns, $joinColumns, $columnValueDifferenceColumns);   
+}
+
+// Takes two TDSs that have some common key / join columns and computes the flags to identify if the values have changed
+
+function meta::pure::tds::extensions::rowValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], tds1JoinColumns : String[1..*], tds2JoinColumns : String[1..*], columnsToCheck : String[1..*]) : TabularDataSet[1]
+{
+   $tds1->restrict($tds1JoinColumns->concatenate($columnsToCheck)->removeDuplicates())->renameColumns($columnsToCheck->map(vc|pair($vc, $vc + '_1')))
+      ->join(
+            $tds2
+               ->restrict($tds2JoinColumns->concatenate($columnsToCheck)->removeDuplicates())
+               ->renameColumns($columnsToCheck->map(vc|pair($vc, $vc + '_2')))
+      , JoinType.LEFT_OUTER, $tds1JoinColumns, $tds2JoinColumns
+      )
+      ->filter(r:TDSRow[1]|and($columnsToCheck->map(vc|$vc + '_1')->map(c|$r.isNotNull($c))))
+      ->extendMatchColumns($tds1.columns->filter(c|$c.name->in($columnsToCheck))->sortBy(c|$columnsToCheck->indexOf($c.name)))
+      ->restrict(
+            $tds1JoinColumns->concatenate($tds2JoinColumns)->removeDuplicates()
+            ->concatenate($columnsToCheck->map(colName|$colName+ '_1'))
+            ->concatenate($columnsToCheck->map(colName|$colName+ '_2'))
+            ->concatenate($columnsToCheck->map(colName|$colName+ '_matched'))
+            ->concatenate(['row_matched'])
+            )
+      ->concatenate(
+            $tds1->restrict($tds1JoinColumns->concatenate($columnsToCheck)->removeDuplicates())->renameColumns($columnsToCheck->map(vc|pair($vc, $vc + '_1')))
+               ->join(
+                     $tds2
+                       ->restrict($tds2JoinColumns->concatenate($columnsToCheck)->removeDuplicates())
+                       ->renameColumns($columnsToCheck->map(vc|pair($vc, $vc + '_2')))
+               , JoinType.RIGHT_OUTER, $tds1JoinColumns, $tds2JoinColumns
+               )
+               ->filter(r:TDSRow[1]|and($columnsToCheck->map(vc|$vc + '_1')->map(c|$r.isNull($c))))
+               ->extendMatchColumns($tds1.columns->filter(c|$c.name->in($columnsToCheck))->sortBy(c|$columnsToCheck->indexOf($c.name)))
+               ->restrict(
+                     $tds1JoinColumns->concatenate($tds2JoinColumns)->removeDuplicates()
+                     ->concatenate($columnsToCheck->map(colName|$colName+ '_1'))
+                     ->concatenate($columnsToCheck->map(colName|$colName+ '_2'))
+                     ->concatenate($columnsToCheck->map(colName|$colName+ '_matched'))
+                     ->concatenate(['row_matched'])
+                  )
+    )   
+}
+
+   
+function <<access.private>> 
+   meta::pure::tds::extensions::extendMatchColumns(inputTds : TabularDataSet[1], diffCols : TDSColumn[*]) : TabularDataSet[1]
+{ 
+      $inputTds->extend(
+               $diffCols->map(col|if($col.type == Integer, 
+                            | col({r:TDSRow[1]|($r.isNull($col.name + '_1') && $r.isNull($col.name + '_2')) || ($r.isNotNull($col.name + '_1') && $r.isNotNull($col.name + '_2') && $r.getInteger($col.name +'_1') == $r.getInteger($col.name + '_2'))}, $col.name + '_matched'),
+                            | if($col.type == Float, 
+                               | col({r:TDSRow[1]|($r.isNull($col.name + '_1') && $r.isNull($col.name + '_2')) || ($r.isNotNull($col.name + '_1') && $r.isNotNull($col.name + '_2') && $r.getFloat($col.name +'_1') == $r.getFloat($col.name + '_2'))}, $col.name + '_matched'),
+                               | if($col.type == String, 
+                                  | col({r:TDSRow[1]|($r.isNull($col.name + '_1') && $r.isNull($col.name + '_2')) || ($r.isNotNull($col.name + '_1') && $r.isNotNull($col.name + '_2') && $r.getString($col.name +'_1') == $r.getString($col.name + '_2'))}, $col.name + '_matched'),
+                                  | if($col.type == Date, 
+                                     | col({r:TDSRow[1]|($r.isNull($col.name + '_1') && $r.isNull($col.name + '_2')) || ($r.isNotNull($col.name + '_1') && $r.isNotNull($col.name + '_2') && $r.getDate($col.name +'_1') == $r.getDate($col.name + '_2'))}, $col.name + '_matched'),
+                                     | if($col.type == DateTime, 
+                                          | col({r:TDSRow[1]|($r.isNull($col.name + '_1') && $r.isNull($col.name + '_2')) || ($r.isNotNull($col.name + '_1') && $r.isNotNull($col.name + '_2') && $r.getDateTime($col.name +'_1') == $r.getDateTime($col.name + '_2'))}, $col.name + '_matched'),
+                                          | if($col.type == StrictDate, 
+                                               | col({r:TDSRow[1]|($r.isNull($col.name + '_1') && $r.isNull($col.name + '_2')) || ($r.isNotNull($col.name + '_1') && $r.isNotNull($col.name + '_2') && $r.getStrictDate($col.name +'_1') == $r.getStrictDate($col.name + '_2'))}, $col.name + '_matched'),
+                                               | col({r:TDSRow[1]|($r.isNull($col.name + '_1') && $r.isNull($col.name + '_2')) || ($r.isNotNull($col.name + '_1') && $r.isNotNull($col.name + '_2') && $r.getEnum($col.name +'_1') == $r.getEnum($col.name + '_2'))}, $col.name + '_matched')
+                                               )
+                                          )
+                                     )
+                                  )
+                               )
+                            )
+                    )
+         )
+      ->extend(col({r:TDSRow[1]|and($diffCols.name->map(name|$r.getBoolean($name + '_matched')))}, 'row_matched'))
+}               
+   
+function meta::pure::tds::extensions::columnValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], joinColumns : String[1..*], columnValueDifferenceColumns : String[1..*]) : TabularDataSet[1]
+{
+   columnValueDifference($tds1, $tds2, $joinColumns, $joinColumns, $columnValueDifferenceColumns);
+}
+
+// Takes two TDSs that have some common key / join columns and computes the column value difference between a common numeric field
+function meta::pure::tds::extensions::columnValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], tds1JoinColumns : String[1..*], tds2JoinColumns : String[1..*], columnValueDifferenceColumns : String[1..*]) : TabularDataSet[1]
+{   
+   $tds1
+      ->renameColumns($columnValueDifferenceColumns->map(vc|pair($vc, $vc + '_1')))
+      ->join(
+            $tds2->renameColumns($columnValueDifferenceColumns->map(vc|pair($vc, $vc + '_2')))
+            , JoinType.LEFT_OUTER, $tds1JoinColumns, $tds2JoinColumns
+      )
+      ->filter(r:TDSRow[1]|and($columnValueDifferenceColumns->map(vc|$vc + '_1')->map(c|$r.isNotNull($c))))
+      ->extend(
+         $tds1.columns->filter(c|$c.name->in($columnValueDifferenceColumns))->sortBy(c|$columnValueDifferenceColumns->indexOf($c.name))
+               ->map(col|if($col.type == Integer, 
+                            | col({r:TDSRow[1]|if($r.isNull($col.name + '_2'), | $r.getInteger($col.name +'_1'), | $r.getInteger($col.name + '_1') - $r.getInteger($col.name + '_2'))}, $col.name + '_valueDifference'),
+                            | col({r:TDSRow[1]|if($r.isNull($col.name + '_2'), | $r.getFloat($col.name +'_1'), | $r.getFloat($col.name + '_1') - $r.getFloat($col.name + '_2'))}, $col.name + '_valueDifference')
+                            )
+                    )
+         )
+      ->restrict(
+          $tds1JoinColumns->concatenate($tds2JoinColumns)->removeDuplicates()
+          ->concatenate($tds1.columns.name->removeAll($tds1JoinColumns->concatenate($tds2JoinColumns)->removeDuplicates())->removeAll($columnValueDifferenceColumns))
+          ->concatenate($tds2.columns.name->removeAll($tds1JoinColumns->concatenate($tds2JoinColumns)->removeDuplicates())->removeAll($columnValueDifferenceColumns))
+          ->concatenate($columnValueDifferenceColumns->map(colName|[($colName + '_1'), ($colName+ '_2'), ($colName+ '_valueDifference')]))
+          )  
+      ->concatenate(
+            $tds1
+               ->renameColumns($columnValueDifferenceColumns->map(vc|pair($vc, $vc + '_1')))
+               ->join(
+                     $tds2->renameColumns($columnValueDifferenceColumns->map(vc|pair($vc, $vc + '_2')))
+                     , JoinType.RIGHT_OUTER, $tds1JoinColumns, $tds2JoinColumns
+               )
+               ->filter(r:TDSRow[1]|and($columnValueDifferenceColumns->map(vc|$vc + '_1')->map(c|$r.isNull($c))))
+               ->extend(
+                  $tds2.columns->filter(c|$c.name->in($columnValueDifferenceColumns))->sortBy(c|$columnValueDifferenceColumns->indexOf($c.name))
+                        ->map(col|if($col.type == Integer, 
+                                     | col({r:TDSRow[1]|-$r.getInteger($col.name + '_2')}, $col.name + '_valueDifference'),
+                                     | col({r:TDSRow[1]|-$r.getFloat($col.name + '_2')}, $col.name + '_valueDifference')
+                                     )
+                             )
+                  )
+               ->restrict(
+                   $tds1JoinColumns->concatenate($tds2JoinColumns)->removeDuplicates()
+                   ->concatenate($tds1.columns.name->removeAll($tds1JoinColumns->concatenate($tds2JoinColumns)->removeDuplicates())->removeAll($columnValueDifferenceColumns))
+                   ->concatenate($tds2.columns.name->removeAll($tds1JoinColumns->concatenate($tds2JoinColumns)->removeDuplicates())->removeAll($columnValueDifferenceColumns))
+                   ->concatenate($columnValueDifferenceColumns->map(colName|[($colName + '_1'), ($colName+ '_2'), ($colName+ '_valueDifference')]))
+                   ) 
+    )
+}
