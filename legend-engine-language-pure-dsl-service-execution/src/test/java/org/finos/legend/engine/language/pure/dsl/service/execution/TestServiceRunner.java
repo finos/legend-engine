@@ -51,14 +51,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.internal.matchers.ThrowableMessageMatcher;
 
+import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosPrincipal;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TestServiceRunner
@@ -428,10 +427,12 @@ public class TestServiceRunner
     public void testSimpleRelationalServiceWithUserId()
     {
         SimpleRelationalServiceWithUserRunner simpleRelationalServiceWithUserRunner = new SimpleRelationalServiceWithUserRunner();
+        Set<KerberosPrincipal> principals = new HashSet<>();
+        principals.add(new KerberosPrincipal("testPrincipal@test.com"));
 
         ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
                 .newInstance()
-                .withIdentity(IdentityFactoryProvider.getInstance().makeIdentity(Lists.mutable.of(new KerberosProfile(LocalCredentials.INSTANCE))))
+                .withIdentity(IdentityFactoryProvider.getInstance().makeIdentity(new Subject(false, principals, Sets.fixedSize.empty(), Sets.fixedSize.empty())))
                 .withSerializationFormat(SerializationFormat.PURE);
         String result = simpleRelationalServiceWithUserRunner.run(serviceRunnerInput);
         Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
