@@ -12,17 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.TransactionDerivation;
-
-public class DateTimeTransactionMilestoning extends TransactionMilestoning
+public class SourceSpecifiesInDateTime extends TransactionDerivation
 {
-    public String dateTimeInName;
-    public String dateTimeOutName;
-    public TransactionDerivation derivation;
+    public String sourceDateTimeInField;
 
-    public <T> T accept(TransactionMilestoningVisitor<T> visitor)
+    @Override
+    public <T> T accept(TransactionDerivationVisitor<T> visitor)
     {
         return visitor.visit(this);
     }
