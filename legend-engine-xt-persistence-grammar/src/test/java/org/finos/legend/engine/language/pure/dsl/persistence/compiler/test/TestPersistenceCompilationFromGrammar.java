@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.test;
 
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
