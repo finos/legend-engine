@@ -43,8 +43,6 @@ import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvi
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
-import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
-import org.finos.legend.server.pac4j.kerberos.LocalCredentials;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
