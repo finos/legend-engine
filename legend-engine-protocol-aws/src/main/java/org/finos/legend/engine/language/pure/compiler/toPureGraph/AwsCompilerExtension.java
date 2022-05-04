@@ -63,10 +63,11 @@ public class AwsCompilerExtension implements IAwsCompilerExtension
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
-        return Lists.immutable.with(Processor.newProcessor(
-                Persistence.class,
-                (persistence, context) -> new Root_meta_pure_persistence_metamodel_Persistence_Impl(""))
-                );
+        return Lists.immutable.empty();
+		// with(Processor.newProcessor(
+        //        Persistence.class,
+        //        (persistence, context) -> new Root_meta_pure_persistence_metamodel_Persistence_Impl(""))
+        //        );
     }
 
     @Override
