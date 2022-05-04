@@ -727,15 +727,27 @@ public class HelperRelationalGrammarComposer
         }
 
         // added new
-        else if (_auth instanceof OAuthAuthenticationStrategy)
+        else if (_auth instanceof AwsOAuthAuthenticationStrategy)
         {
-            OAuthAuthenticationStrategy auth = (OAuthAuthenticationStrategy)_auth;
+            AwsOAuthAuthenticationStrategy auth = (AwsOAuthAuthenticationStrategy)_auth;
             int baseIndentation = 1;
-            return "OAuth" +
+            return "AwsOAuth" +
                     "\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "secretArn: " + convertString(auth.secretArn, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "discoveryUrl: " + convertString(auth.discoveryUrl, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
+
+        else if (_auth instanceof AwsPKAuthenticationStrategy)
+        {
+            AwsPKAuthenticationStrategy auth = (AwsPKAuthenticationStrategy)_auth;
+            int baseIndentation = 1;
+            return "AwsPK" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "secretArn: " + convertString(auth.secretArn, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "user: " + convertString(auth.user, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
 

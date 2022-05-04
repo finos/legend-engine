@@ -53,6 +53,57 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                 "}\n\n";
     }
 
+    // added new
+    @Test
+    public void testAwsAuth() {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: MultiTenant;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "  };\n" +
+                "  auth: AwsOAuth\n" +
+                "  {" +
+                "       secretArn: 'name';\n" +
+                "       discoveryUrl: 'name';\n" +
+                "  };\n" +
+                "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: MultiTenant;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "  };\n" +
+                "  auth: AwsPK\n" +
+                "  {" +
+                "       secretArn: 'name';\n" +
+                "       user: 'name';\n" +
+                "  };\n" +
+                "}\n");
+    }
+
     @Test
     public void testSnowflakePublicAuth()
     {
@@ -147,30 +198,6 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                 "       publicUserName: 'name';\n" +
                 "       privateKeyVaultReference: 'name';\n" +
                 "       passPhraseVaultReference: 'name';\n" +
-                "  };\n" +
-                "}\n");
-        // added new
-        test("###Connection\n" +
-                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
-                "{\n" +
-                "  store: store::Store;\n" +
-                "  type: Snowflake;\n" +
-                "  specification: Snowflake\n" +
-                "  {\n" +
-                "    name: 'test';\n" +
-                "    account: 'account';\n" +
-                "    warehouse: 'warehouseName';\n" +
-                "    region: 'us-east2';\n" +
-                "    proxyHost: 'sampleHost';\n" +
-                "    proxyPort: 'samplePort';\n" +
-                "    nonProxyHosts: 'sample';\n" +
-                "    accountType: MultiTenant;\n" +
-                "    organization: 'sampleOrganization';\n" +
-                "  };\n" +
-                "  auth: OAuth\n" +
-                "  {" +
-                "       secretArn: 'name';\n" +
-                "       discoveryUrl: 'name';\n" +
                 "  };\n" +
                 "}\n");
         test("###Connection\n" +

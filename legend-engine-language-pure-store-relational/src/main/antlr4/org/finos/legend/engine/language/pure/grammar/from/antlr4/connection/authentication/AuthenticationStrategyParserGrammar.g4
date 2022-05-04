@@ -74,18 +74,29 @@ snowflakePublicAuthUserName:  SNOWFLAKE_AUTH_PUBLIC_USERNAME COLON STRING SEMI_C
 
 
 //added new --
-oAuth:                                  OAUTH
+awsOAuth:                                  AWS_OAUTH
                                             BRACE_OPEN
                                                 (
-                                                    oAuthSecretArn
-                                                    | oAuthDiscoveryUrl
+                                                    awsAuthSecretArn
+                                                    | awsOAuthDiscoveryUrl
                                                 )*
                                             BRACE_CLOSE
 ;
 
-oAuthSecretArn:                         OAUTH_SECRET_ARN COLON STRING SEMI_COLON
+awsAuthSecretArn:                         AWS_AUTH_SECRET_ARN COLON STRING SEMI_COLON
 ;
-oAuthDiscoveryUrl:                      OAUTH_DISCOVERY_URL COLON STRING SEMI_COLON
+awsOAuthDiscoveryUrl:                      AWS_OAUTH_DISCOVERY_URL COLON STRING SEMI_COLON
+;
+
+awsPK:                                 AWS_PK
+                                            BRACE_OPEN
+                                                (
+                                                    awsAuthSecretArn
+                                                    | awsPKUser
+                                                )*
+                                            BRACE_CLOSE
+;
+awsPKUser:                             AWS_PK_USER COLON STRING SEMI_COLON
 ;
 // --
 

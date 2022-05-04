@@ -89,19 +89,35 @@ public class AuthenticationStrategyParseTreeWalker
     }
 
     //added new
-    public OAuthAuthenticationStrategy visitOAuthAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.OAuthContext oAuth) {
+    public AwsOAuthAuthenticationStrategy visitAwsOAuthAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.AwsOAuthContext awsOAuth) {
 
-        OAuthAuthenticationStrategy oAuthAuthenticationStrategy = new OAuthAuthenticationStrategy();
-        oAuthAuthenticationStrategy.sourceInformation = code.getSourceInformation();
+        AwsOAuthAuthenticationStrategy awsOAuthAuthenticationStrategy = new AwsOAuthAuthenticationStrategy();
+        awsOAuthAuthenticationStrategy.sourceInformation = code.getSourceInformation();
 
         //secret arn
-        AuthenticationStrategyParserGrammar.OAuthSecretArnContext secretArn = PureGrammarParserUtility.validateAndExtractRequiredField(oAuth.oAuthSecretArn(), "secretArn", code.getSourceInformation());
-        oAuthAuthenticationStrategy.secretArn = PureGrammarParserUtility.fromGrammarString(secretArn.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.AwsAuthSecretArnContext secretArn = PureGrammarParserUtility.validateAndExtractRequiredField(awsOAuth.awsAuthSecretArn(), "secretArn", code.getSourceInformation());
+        awsOAuthAuthenticationStrategy.secretArn = PureGrammarParserUtility.fromGrammarString(secretArn.STRING().getText(), true);
 
         // token url
-        AuthenticationStrategyParserGrammar.OAuthDiscoveryUrlContext discoveryUrl = PureGrammarParserUtility.validateAndExtractRequiredField(oAuth.oAuthDiscoveryUrl(), "discoveryUrl", code.getSourceInformation());
-        oAuthAuthenticationStrategy.discoveryUrl = PureGrammarParserUtility.fromGrammarString(discoveryUrl.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.AwsOAuthDiscoveryUrlContext discoveryUrl = PureGrammarParserUtility.validateAndExtractRequiredField(awsOAuth.awsOAuthDiscoveryUrl(), "discoveryUrl", code.getSourceInformation());
+        awsOAuthAuthenticationStrategy.discoveryUrl = PureGrammarParserUtility.fromGrammarString(discoveryUrl.STRING().getText(), true);
 
-        return oAuthAuthenticationStrategy;
+        return awsOAuthAuthenticationStrategy;
+    }
+
+    public AwsPKAuthenticationStrategy visitAwsPKAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.AwsPKContext awsPK) {
+
+        AwsPKAuthenticationStrategy awsPKAuthenticationStrategy = new AwsPKAuthenticationStrategy();
+        awsPKAuthenticationStrategy.sourceInformation = code.getSourceInformation();
+
+        //secret arn
+        AuthenticationStrategyParserGrammar.AwsAuthSecretArnContext secretArn = PureGrammarParserUtility.validateAndExtractRequiredField(awsPK.awsAuthSecretArn(), "secretArn", code.getSourceInformation());
+        awsPKAuthenticationStrategy.secretArn = PureGrammarParserUtility.fromGrammarString(secretArn.STRING().getText(), true);
+
+        // user
+        AuthenticationStrategyParserGrammar.AwsPKUserContext user = PureGrammarParserUtility.validateAndExtractRequiredField(awsPK.awsPKUser(), "user", code.getSourceInformation());
+        awsPKAuthenticationStrategy.user = PureGrammarParserUtility.fromGrammarString(user.STRING().getText(), true);
+
+        return awsPKAuthenticationStrategy;
     }
 }

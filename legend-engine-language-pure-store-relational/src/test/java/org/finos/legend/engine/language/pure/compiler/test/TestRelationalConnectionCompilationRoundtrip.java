@@ -5,8 +5,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AwsPKAuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_OAuthAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AwsOAuthAuthenticationStrategy_Impl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -52,16 +53,40 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "    host: 'host';\n" +
                 "    port: 1234;\n" +
                 "  };\n" +
-                "  auth: OAuth\n" +
+                "  auth: AwsOAuth\n" +
                 "  {\n" +
                 "    secretArn: 'name';\n" +
                 "    discoveryUrl: 'name';\n" +
                 "  };\n" +
                 "}\n");
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection connection2 = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) compiledGraph2.getTwo().getConnection("simple::Connection", SourceInformation.getUnknownSourceInformation());
-        String secretArn = ((Root_meta_pure_alloy_connections_alloy_authentication_OAuthAuthenticationStrategy_Impl) connection2._authenticationStrategy())._secretArn();
+        String secretArn = ((Root_meta_pure_alloy_connections_alloy_authentication_AwsOAuthAuthenticationStrategy_Impl) connection2._authenticationStrategy())._secretArn();
 
         Assert.assertEquals("name", secretArn);
+
+        //added new
+        Pair<PureModelContextData, PureModel> compiledGraph3 = test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: SqlServer;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: AwsPK\n" +
+                "  {\n" +
+                "    secretArn: 'name';\n" +
+                "    user: 'name';\n" +
+                "  };\n" +
+                "}\n");
+        Root_meta_pure_alloy_connections_RelationalDatabaseConnection connection3 = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) compiledGraph3.getTwo().getConnection("simple::Connection", SourceInformation.getUnknownSourceInformation());
+        String user = ((Root_meta_pure_alloy_connections_alloy_authentication_AwsPKAuthenticationStrategy_Impl) connection3._authenticationStrategy())._user();
+
+        Assert.assertEquals("name", user);
 
         test(TestRelationalCompilationFromGrammar.DB_INC +
                 "###Connection\n" +
