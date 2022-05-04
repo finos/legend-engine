@@ -1,0 +1,122 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::dates::setUp():Boolean[1]
+{
+    meta::relational::tests::createTablesAndFillDb();
+    let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+    executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (12, 3, 2, 45, \'2016-02-04\', \'2016-02-05T21:00:00.123456789\');', $connection);//winter datetime in UTC format
+    executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (13, 3, 2, 45, \'2016-03-28\', \'2016-03-29T21:00:00.123456789\');', $connection);//summer datetime in UTC format
+    executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (14, 3, 2, 45, \'2016-03-28\', \'2016-03-29 21:00:00.123456789\');', $connection);//summer datetime in EST fomrat
+    executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (15, 3, 2, 45, \'2016-02-14\', \'2016-02-15T21:00:00.123456789\');', $connection);//summer datetime in EST format
+   
+   println(executeInDb('select settlementDateTime from  tradeTable;', $connection).rows.values);
+   
+    true;
+}
+
+function <<test.Test>> meta::relational::tests::mapping::dates::strictdate::testGet():Boolean[1]
+{
+   let result = execute(|Trade.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 15);
+   assertSize($result.values.date->filter(a|$a == %2014-12-01),3);
+   assertSize($result.values.date->filter(a|$a == today()),0);
+  
+}
+
+function <<test.Test>> meta::relational::tests::mapping::dates::strictdate::testQuery():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(i|$i.date == %2014-12-01), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   
+   let result2 = execute(|Trade.all()->filter(i|$i.date == today()), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result2.values, 0);
+   
+}
+
+function <<test.Test>> meta::relational::tests::mapping::dates::strictdate::testProject():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([t| $t.id,t|$t.date],['id','date']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 15);
+   assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, %2014-12-01, %2014-12-01, %2014-12-01, %2014-12-02, %2014-12-02, %2014-12-03, %2014-12-03, %2014-12-04, %2014-12-04, %2014-12-04, %2014-12-05, %2016-02-04, %2016-02-14, %2016-03-28, %2016-03-28], $result.values.rows.values->sort());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::dates::datetime::testGet():Boolean[1]
+{
+   let result = execute(|Trade.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 15);
+   println($result.values.settlementDateTime);
+   assertSize($result.values.settlementDateTime->filter(a|$a == %2014-12-04T15:22:23.123456789),1);
+   assertSize($result.values.settlementDateTime->filter(a|$a <= now()),13);
+   assertSize($result.values->filter(a|$a.settlementDateTime->isEmpty()),2);
+  
+}
+
+function <<test.Test>> meta::relational::tests::mapping::dates::datetime::testQuery():Boolean[1]
+{
+  
+   let result = execute(|Trade.all()->filter(i|(%2014-12-04T15:22:23.123456789 < $i.settlementDateTime ) && ($i.settlementDateTime < %2014-12-04T23:59:59.999999999)) , simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals( [%2014-12-04T21:00:00.000000000], $result.values.settlementDateTime->sort());
+   
+   let result2 = execute(|Trade.all()->filter(i|$i.settlementDateTime <= now()), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result2.values, 13);
+   
+}
+
+function <<test.ToFix>> meta::relational::tests::mapping::dates::datetime::testQueryExactEquals():Boolean[1]
+{
+  
+   let result = execute(|Trade.all()->filter(i| (%2014-12-04T15:22:23.123456789 <= $i.settlementDateTime) && ($i.settlementDateTime < %2014-12-04T23:59:59.999999999)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertEquals( [%2014-12-04T15:22:23.123456789, %2014-12-04T21:00:00.000000000], $result.values.settlementDateTime->sort());
+   
+   let result2 = execute(|Trade.all()->filter(i|$i.settlementDateTime == %2014-12-04T15:22:23.123456789), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result2.values, 1);
+   
+}
+
+function <<test.Test>> meta::relational::tests::mapping::dates::datetime::testProject():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(i|$i.date == %2014-12-04 && $i.settlementDateTime->isNotEmpty())->project([t|$t.settlementDateTime],['settlementDateTime']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 2);
+   assertEquals( [%2014-12-05T21:00:00.000000000, %2014-12-05T21:00:00.000000000], $result.values.rows.values->sort());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::dates::datetime::retrieveDateWithTimeZone():Boolean[1]
+{
+   //for testing timezone for databse is in ETS
+   
+   let winterDateSpecifiedInUTC = execute(|Trade.all()->filter(i|$i.id == 12), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals( [%2016-02-05T21:00:00.123456789], $winterDateSpecifiedInUTC.values->at(0).settlementDateTime);
+   
+    let summerDateSpecifiedInUTC = execute(|Trade.all()->filter(i|$i.id == 13), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals( [%2016-03-29T21:00:00.123456789], $summerDateSpecifiedInUTC.values->at(0).settlementDateTime);
+   
+    let winterDateSpecifiedInEST = execute(|Trade.all()->filter(i|$i.id == 14), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals( [%2016-03-29T21:00:00.123456789], $winterDateSpecifiedInEST.values->at(0).settlementDateTime);
+   
+    let summerDateSpecifiedInEST = execute(|Trade.all()->filter(i|$i.id == 15), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals( [%2016-02-15T21:00:00.123456789], $summerDateSpecifiedInEST.values->at(0).settlementDateTime);
+   
+}

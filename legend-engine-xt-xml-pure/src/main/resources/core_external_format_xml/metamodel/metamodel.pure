@@ -1,0 +1,322 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum meta::external::format::xml::metamodel::xsd::XsdContentProcessing
+{
+  LAX,
+  SKIP,
+  STRICT
+}
+
+Enum meta::external::format::xml::metamodel::xsd::XsdDerivationType
+{
+  EXTENSION,
+  RESTRICTION,
+  SUBSTITUTION,
+  LIST,
+  UNION
+}
+
+Enum meta::external::format::xml::metamodel::xsd::XsdForm
+{
+  QUALIFIED,
+  UNQUALIFIED
+}
+
+Enum meta::external::format::xml::metamodel::xsd::XsdUse
+{
+  OPTIONAL,
+  PROHIBITED,
+  REQUIRED
+}
+
+Class meta::external::format::xml::metamodel::xml::QName
+{
+  <<equality.Key>> namespace: String[1];
+  <<equality.Key>> localPart: String[1];
+  prefix : String[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdAnnotated extends meta::external::format::xml::metamodel::xsd::XsdObject
+{
+  annotation : meta::external::format::xml::metamodel::xsd::XsdAnnotation[0..1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdAnnotation extends meta::external::format::xml::metamodel::xsd::XsdObject
+{
+  items : meta::external::format::xml::metamodel::xsd::XsdAnnotationItem[*];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdAnnotationItem extends meta::external::format::xml::metamodel::xsd::XsdObject
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdAll extends meta::external::format::xml::metamodel::xsd::XsdGroupParticle
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdAny extends meta::external::format::xml::metamodel::xsd::XsdParticle
+{
+  namespace       : String[*];
+  processContents : meta::external::format::xml::metamodel::xsd::XsdContentProcessing[0..1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdAnyAttribute extends meta::external::format::xml::metamodel::xsd::XsdAnnotated
+{
+  namespace       : String[*];
+  processContents : meta::external::format::xml::metamodel::xsd::XsdContentProcessing[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdAnyType extends meta::external::format::xml::metamodel::xsd::XsdAnnotated
+{
+}
+
+Class {doc.todo = 'Any markup'} meta::external::format::xml::metamodel::xsd::XsdAppInfo extends meta::external::format::xml::metamodel::xsd::XsdAnnotationItem
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdAttribute extends meta::external::format::xml::metamodel::xsd::XsdAttributeItem, meta::external::format::xml::metamodel::xsd::XsdNamed
+[
+  defaultFixedExclusive: $this.defaultValue->isEmpty() || $this.fixedValue->isEmpty()
+]
+{
+  defaultValue : String[0..1];
+  fixedValue   : String[0..1];
+  form         : meta::external::format::xml::metamodel::xsd::XsdForm[0..1];
+  typeName     : meta::external::format::xml::metamodel::xml::QName[0..1];
+  type         : meta::external::format::xml::metamodel::xsd::XsdSimpleType[0..1];
+  use          : meta::external::format::xml::metamodel::xsd::XsdUse[0..1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdAttributeGroup extends meta::external::format::xml::metamodel::xsd::XsdAttributeItem, meta::external::format::xml::metamodel::xsd::XsdNamed
+{
+  items: meta::external::format::xml::metamodel::xsd::XsdAttributeItem[*];
+  anyAttribute: meta::external::format::xml::metamodel::xsd::XsdAnyAttribute[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdAttributeItem extends meta::external::format::xml::metamodel::xsd::XsdAnnotated
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdChoice extends meta::external::format::xml::metamodel::xsd::XsdGroupParticle
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdComplexContent extends meta::external::format::xml::metamodel::xsd::XsdContentModel
+{
+  mixed : Boolean[1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdComplexType extends meta::external::format::xml::metamodel::xsd::XsdAnyType, meta::external::format::xml::metamodel::xsd::XsdNamed
+{
+  particle       : meta::external::format::xml::metamodel::xsd::XsdParticle[0..1];
+  contentModel   : meta::external::format::xml::metamodel::xsd::XsdContentModel[0..1];
+  attributeItems : meta::external::format::xml::metamodel::xsd::XsdAttributeItem[*];
+  anyAttribute   : meta::external::format::xml::metamodel::xsd::XsdAnyAttribute[0..1];
+  abstract       : Boolean[0..1];
+  mixed          : Boolean[0..1];
+  block          : meta::external::format::xml::metamodel::xsd::XsdDerivationType[0..2];
+  final          : meta::external::format::xml::metamodel::xsd::XsdDerivationType[0..2];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdContentDerivation
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdContentModel extends meta::external::format::xml::metamodel::xsd::XsdAnnotated
+{
+  derivation : meta::external::format::xml::metamodel::xsd::XsdContentDerivation[1];
+}
+
+Class {doc.todo = 'Any markup'} meta::external::format::xml::metamodel::xsd::XsdDocumentation extends meta::external::format::xml::metamodel::xsd::XsdAnnotationItem
+{
+  language : String[0..1];
+  value    : String[1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdElement extends meta::external::format::xml::metamodel::xsd::XsdParticle, meta::external::format::xml::metamodel::xsd::XsdNamed
+{
+  defaultValue      : String[0..1];
+  fixedValue        : String[0..1];
+  form              : meta::external::format::xml::metamodel::xsd::XsdForm[0..1];
+  block             : meta::external::format::xml::metamodel::xsd::XsdDerivationType[0..3];
+  final             : meta::external::format::xml::metamodel::xsd::XsdDerivationType[0..2];
+  abstract          : Boolean[0..1];
+  nilable           : Boolean[0..1];
+  typeName          : meta::external::format::xml::metamodel::xml::QName[0..1];
+  type              : meta::external::format::xml::metamodel::xsd::XsdAnyType[0..1];
+  substitutionGroup : meta::external::format::xml::metamodel::xml::QName[0..1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdEnumeration extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdExtension extends meta::external::format::xml::metamodel::xsd::XsdAnnotated, meta::external::format::xml::metamodel::xsd::XsdContentDerivation
+{
+  baseTypeName   : meta::external::format::xml::metamodel::xml::QName[0..1];
+  attributeItems : meta::external::format::xml::metamodel::xsd::XsdAttributeItem[*];
+  anyAttribute   : meta::external::format::xml::metamodel::xsd::XsdAnyAttribute[0..1];
+  particle       : meta::external::format::xml::metamodel::xsd::XsdParticle[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdExternalSchema extends meta::external::format::xml::metamodel::xsd::XsdAnnotated
+{
+  schemaLocation : String[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdFacet extends meta::external::format::xml::metamodel::xsd::XsdAnnotated
+{
+  value : String[1];
+  fixed : Boolean[0..1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdFractionDigits extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdGroup extends meta::external::format::xml::metamodel::xsd::XsdParticle, meta::external::format::xml::metamodel::xsd::XsdNamed
+{
+  particle : meta::external::format::xml::metamodel::xsd::XsdGroupParticle[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdGroupParticle extends meta::external::format::xml::metamodel::xsd::XsdParticle
+{
+  items : meta::external::format::xml::metamodel::xsd::XsdParticle[*];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdImport extends meta::external::format::xml::metamodel::xsd::XsdExternalSchema
+{
+  namespace : String[1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdInclude extends meta::external::format::xml::metamodel::xsd::XsdExternalSchema
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdLength extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdList extends meta::external::format::xml::metamodel::xsd::XsdAnnotated, meta::external::format::xml::metamodel::xsd::XsdSimpleTypeDerivation
+{
+  itemTypeName : meta::external::format::xml::metamodel::xml::QName[0..1];
+  itemType     : meta::external::format::xml::metamodel::xsd::XsdSimpleType[0..1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdMaxExclusive extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdMaxInclusive extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdMaxLength extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdMinExclusive extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdMinInclusive extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdMinLength extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdNamed
+[
+  nameAndRefExclusive: $this.name->isEmpty() || $this.ref->isEmpty()
+]
+{
+  name : meta::external::format::xml::metamodel::xml::QName[0..1];
+  ref  : meta::external::format::xml::metamodel::xml::QName[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdObject
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdParticle extends meta::external::format::xml::metamodel::xsd::XsdAnnotated
+{
+  minOccurs : Integer[1];
+  maxOccurs : Integer[0..1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdPattern extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdRedefine extends meta::external::format::xml::metamodel::xsd::XsdExternalSchema
+{
+  items : meta::external::format::xml::metamodel::xsd::XsdObject[*];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdRestriction extends meta::external::format::xml::metamodel::xsd::XsdAnnotated, meta::external::format::xml::metamodel::xsd::XsdSimpleTypeDerivation, meta::external::format::xml::metamodel::xsd::XsdContentDerivation
+{
+  baseTypeName   : meta::external::format::xml::metamodel::xml::QName[0..1];
+  baseType       : meta::external::format::xml::metamodel::xsd::XsdAnyType[0..1];
+  facets         : meta::external::format::xml::metamodel::xsd::XsdFacet[*];
+  attributeItems : meta::external::format::xml::metamodel::xsd::XsdAttributeItem[*];
+  anyAttribute   : meta::external::format::xml::metamodel::xsd::XsdAnyAttribute[0..1];
+  particle       : meta::external::format::xml::metamodel::xsd::XsdParticle[0..1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdSchema extends meta::external::format::xml::metamodel::xsd::XsdAnnotated, meta::external::shared::format::metamodel::SchemaDetail
+{
+  targetNamespace      : String[0..1];
+  items                : meta::external::format::xml::metamodel::xsd::XsdObject[*];
+  externals            : meta::external::format::xml::metamodel::xsd::XsdExternalSchema[*];
+  attributeFormDefault : meta::external::format::xml::metamodel::xsd::XsdForm[0..1];
+  elementFormDefault   : meta::external::format::xml::metamodel::xsd::XsdForm[0..1];
+  blockDefault         : meta::external::format::xml::metamodel::xsd::XsdDerivationType[0..3];
+  finalDefault         : meta::external::format::xml::metamodel::xsd::XsdDerivationType[0..2];
+  version              : String[0..1];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdSequence extends meta::external::format::xml::metamodel::xsd::XsdGroupParticle
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdSimpleContent extends meta::external::format::xml::metamodel::xsd::XsdContentModel
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdSimpleType extends meta::external::format::xml::metamodel::xsd::XsdAnyType, meta::external::format::xml::metamodel::xsd::XsdNamed
+{
+  derivation : meta::external::format::xml::metamodel::xsd::XsdSimpleTypeDerivation[0..1];
+  final      : meta::external::format::xml::metamodel::xsd::XsdDerivationType[0..3];
+}
+
+Class <<typemodifiers.abstract>> meta::external::format::xml::metamodel::xsd::XsdSimpleTypeDerivation
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdTotalDigits extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdUnion extends meta::external::format::xml::metamodel::xsd::XsdAnnotated, meta::external::format::xml::metamodel::xsd::XsdSimpleTypeDerivation
+{
+  memberTypeNames : meta::external::format::xml::metamodel::xml::QName[*];
+  memberTypes     : meta::external::format::xml::metamodel::xsd::XsdSimpleType[*];
+}
+
+Class meta::external::format::xml::metamodel::xsd::XsdWhiteSpace extends meta::external::format::xml::metamodel::xsd::XsdFacet
+{
+}

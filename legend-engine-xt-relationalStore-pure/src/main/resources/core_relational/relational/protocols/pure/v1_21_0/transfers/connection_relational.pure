@@ -1,0 +1,216 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::json::*;
+import meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::*;
+import meta::protocols::pure::v1_21_0::metamodel::domain::*;
+import meta::protocols::pure::v1_21_0::metamodel::store::relational::mapping::*;
+import meta::protocols::pure::v1_21_0::metamodel::runtime::*;
+import meta::relational::metamodel::*;
+import meta::pure::functions::meta::*;
+import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::store::relational::*;
+import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::*;
+import meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::*;
+import meta::protocols::pure::v1_21_0::metamodel::store::relational::element::*;
+import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::model::*;
+
+function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::transformDatabaseConnection(otherConnection: meta::relational::runtime::DatabaseConnection[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::DatabaseConnection[1]
+{
+   let _type = $otherConnection->class()->toString();
+   let element = $otherConnection.element->match([d:meta::pure::store::Store[1]|$d->elementToPath(),s:String[1]|$s]);
+   let type = $otherConnection.type->toString();
+   let postProcessorsWithParams = if ($otherConnection->instanceOf(meta::pure::alloy::connections::RelationalDatabaseConnection),
+                                      | [],
+                                      | $otherConnection.queryPostProcessorsWithParameter->transformPostProcessors($extensions));
+
+
+   let alloyConnection = $otherConnection->match($extensions.serializerExtension('v1_21_0')->cast(@meta::protocols::pure::v1_21_0::extension::SerializerExtension_v1_21_0).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::v1_21_0::extension::RelationalModuleSerializerExtension).transfers_connection_transformDatabaseConnection->map(f | $f->eval($_type, $element, $type, $postProcessorsWithParams))->concatenate([
+      test:meta::relational::runtime::TestDatabaseConnection[1]|
+          ^RelationalDatabaseConnection(
+            _type = 'RelationalDatabaseConnection',
+            type = $type,
+            timeZone = $test.timeZone,
+            quoteIdentifiers = $test.quoteIdentifiers,
+            element = $element,
+            datasourceSpecification = ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification(
+              _type = 'h2Local',
+               testDataSetupCsv = $test.testDataSetupCsv,
+               testDataSetupSqls = $test.testDataSetupSqls
+            ),
+            authenticationStrategy = ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::TestDatabaseAuthenticationStrategy(
+              _type = 'test'
+            ),
+            postProcessorWithParameter = $postProcessorsWithParams
+         ),
+      relational:meta::pure::alloy::connections::RelationalDatabaseConnection[1] |
+         let processors = transformPostProcessors($relational.postProcessors, $extensions);
+         relational($type, $element, $relational.timeZone, $relational.quoteIdentifiers, $processors, $relational.datasourceSpecification, $relational.authenticationStrategy, $extensions);,
+      dbCon:meta::relational::runtime::DatabaseConnection[1]|
+         ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::DatabaseConnection(
+                  _type = $_type,
+                  timeZone = $dbCon.timeZone,
+                  quoteIdentifiers = $dbCon.quoteIdentifiers,
+                  element = $element,
+                  postProcessorWithParameter = $postProcessorsWithParams,
+                  type = $type)
+    ])->toOneMany());
+}
+
+function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::transformPostProcessors(processors:meta::pure::alloy::connections::PostProcessor[*], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_21_0::metamodel::store::relational::postProcessor::PostProcessor[*]
+{
+   $processors->map(processor |
+      $processor->match([
+         m:meta::pure::alloy::connections::MapperPostProcessor[1] | ^meta::protocols::pure::v1_21_0::metamodel::store::relational::postProcessor::MapperPostProcessor(
+            _type = 'mapper',
+            mappers = transformPostProcessorMappers($m.mappers))
+      ]->concatenate($extensions.serializerExtension('v1_21_0')->cast(@meta::protocols::pure::v1_21_0::extension::SerializerExtension_v1_21_0).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::v1_21_0::extension::RelationalModuleSerializerExtension).transfers_connection_transformPostProcessors)->toOneMany())
+   );
+}
+
+function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::transformPostProcessorMappers(mappers:meta::pure::alloy::connections::Mapper[*]):meta::protocols::pure::v1_21_0::metamodel::store::relational::postProcessor::Mapper[*]
+{
+   $mappers->map(mapper |
+                   $mapper->match([
+                      t:meta::pure::alloy::connections::TableNameMapper[1] | ^meta::protocols::pure::v1_21_0::metamodel::store::relational::postProcessor::TableNameMapper(
+                         _type = 'table',
+                         schema = ^meta::protocols::pure::v1_21_0::metamodel::store::relational::postProcessor::SchemaNameMapper(
+                            _type = 'schema',
+                            from = $t.schema.from,
+                            to = $t.schema.to
+                         ),
+                         from = $t.from,
+                         to = $t.to
+                      ),
+                      s:meta::pure::alloy::connections::SchemaNameMapper[1] | ^meta::protocols::pure::v1_21_0::metamodel::store::relational::postProcessor::SchemaNameMapper(
+                         _type = 'schema',
+                         from = $s.from,
+                         to = $s.to
+                      )
+                   ])
+                )
+}
+
+function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::relational(type:String[1], element:String[1], timeZone:String[0..1], quoteIdentifiers:Boolean[0..1],
+                                                                                              processors:meta::protocols::pure::v1_21_0::metamodel::store::relational::postProcessor::PostProcessor[*],
+                                                                                              spec:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1],
+                                                                                              auth:meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1],
+                                                                                              extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::RelationalDatabaseConnection[1]
+{
+   ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::RelationalDatabaseConnection(
+      _type = 'RelationalDatabaseConnection',
+      timeZone = $timeZone,
+      quoteIdentifiers = $quoteIdentifiers,
+      element = $element,
+      type = $type,
+      datasourceSpecification = $spec->meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::transformDatasourceSpecification($extensions),
+      authenticationStrategy = $auth->meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::transformAuthenticationStrategy($extensions),
+      postProcessors = $processors
+   );
+}
+
+
+function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::transformAuthenticationStrategy(a:meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy[1]
+{
+   $a->match($extensions.serializerExtension('v1_21_0')->cast(@meta::protocols::pure::v1_21_0::extension::SerializerExtension_v1_21_0).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::v1_21_0::extension::RelationalModuleSerializerExtension).transfers_connection_transformAuthenticationStrategy->concatenate([
+      d:meta::pure::alloy::connections::alloy::authentication::DelegatedKerberosAuthenticationStrategy[1] |
+      ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::DelegatedKerberosAuthenticationStrategy(
+         _type = 'delegatedKerberos',
+         serverPrincipal = $d.serverPrincipal
+      ),
+      d:meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy[1] |
+         ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::DefaultH2AuthenticationStrategy(
+            _type = 'h2Default'
+         ),
+      t:meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy[1] |
+         ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::TestDatabaseAuthenticationStrategy(
+            _type = 'test'
+         ),
+      s:meta::pure::alloy::connections::alloy::authentication::SnowflakePublicAuthenticationStrategy[1] |
+        ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::SnowflakePublicAuthenticationStrategy(
+            _type = 'snowflakePublic',
+            privateKeyVaultReference = $s.privateKeyVaultReference,
+            passPhraseVaultReference = $s.passPhraseVaultReference,
+            publicUserName = $s.publicUserName
+        ),
+      b:meta::pure::alloy::connections::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy[1] |
+         ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy(
+            _type = 'gcpApplicationDefaultCredentials'
+         )
+   ])->toOneMany())
+}
+
+function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::transformDatasourceSpecification(ds: meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification[1]
+{
+   $ds->match($extensions.serializerExtension('v1_21_0')->cast(@meta::protocols::pure::v1_21_0::extension::SerializerExtension_v1_21_0).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::v1_21_0::extension::RelationalModuleSerializerExtension).transfers_connection_transformDatasourceSpecification->concatenate([
+      s:meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification[1] |
+         ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::StaticDatasourceSpecification(
+            _type = 'static',
+            host = $s.host,
+            port = $s.port,
+            databaseName = $s.databaseName
+         ),
+      e:meta::pure::alloy::connections::alloy::specification::EmbeddedH2DatasourceSpecification[1] |
+         ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::EmbeddedH2DatasourceSpecification(
+            _type = 'h2Embedded',
+            databaseName = $e.databaseName,
+            directory = $e.directory,
+            autoServerMode = $e.autoServerMode
+         ),
+      l:meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification[1] |
+         ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification(
+             _type = 'h2Local',
+             testDataSetupCsv = $l.testDataSetupCsv,
+             testDataSetupSqls = $l.testDataSetupSqls
+         ),
+      s:meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification[1] |
+        ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::SnowflakeDatasourceSpecification(
+            _type = 'snowflake',
+            accountName = $s.accountName,
+            region = $s.region,
+            warehouseName = $s.warehouseName,
+            databaseName = $s.databaseName,
+            cloudType = $s.cloudType,
+            quotedIdentifiersIgnoreCase = $s.quotedIdentifiersIgnoreCase,
+            proxyHost = $s.proxyHost,
+            proxyPort = $s.proxyPort,
+            nonProxyHosts = $s.nonProxyHosts,
+            accountType = if($s.accountType->isEmpty(),|[],|$s.accountType->toOne()->toString()),
+            organization = $s.organization
+        ),
+      b:meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification[1] |
+         ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification(
+             _type = 'bigQuery',
+             projectId = $b.projectId,
+             defaultDataset = $b.defaultDataset
+         )
+   ])->toOneMany())
+}
+
+function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::transformPostProcessors(postP: meta::relational::runtime::PostProcessorWithParameter[*], extensions:meta::pure::router::extension::RouterExtension[*]): meta::protocols::pure::v1_21_0::metamodel::store::relational::PostProcessorWithParameter[*]
+{
+   $postP->map(postprocessor|
+            ^meta::protocols::pure::v1_21_0::metamodel::store::relational::PostProcessorWithParameter(pp = $postprocessor.postProcessor->elementToPath(), parameters = $postprocessor.parameters->transformPostProcessorParameters($extensions))
+               );
+}
+
+
+function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connection::transformPostProcessorParameters(params: meta::relational::runtime::PostProcessorParameter[*], extensions:meta::pure::router::extension::RouterExtension[*]): meta::protocols::pure::v1_21_0::metamodel::store::relational::PostProcessorParameter[*]
+{
+   $params->map(param|
+            $param->match([
+               t: meta::relational::postProcessor::TableNameMapper[1]| ^meta::protocols::pure::v1_21_0::metamodel::store::relational::TableNameMapper(_type='tableMapper',in =$t.in, out = $t.out, schemaMapperIn = $t.schemaNameMapper.in, schemaMapperOut = $t.schemaNameMapper.out),
+               s: meta::relational::postProcessor::SchemaNameMapper[1]| ^meta::protocols::pure::v1_21_0::metamodel::store::relational::SchemaNameMapper(_type='schemaMapper',in =$s.in, out = $s.out )
+            ]->concatenate($extensions.serializerExtension('v1_21_0')->cast(@meta::protocols::pure::v1_21_0::extension::SerializerExtension_v1_21_0).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::v1_21_0::extension::RelationalModuleSerializerExtension).transfers_connection_transformPostProcessorParameters)->toOneMany()));
+}

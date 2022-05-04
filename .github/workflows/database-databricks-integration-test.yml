@@ -63,4 +63,4 @@ jobs:
       - name: Build + Run Integration Tests
         run: |
           mvn clean install -DskipTests=true
-          mvn -P run-databricks-integration -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*Databricks*" test
+          mvn -P run-databricks-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Databricks*" test

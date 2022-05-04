@@ -1,0 +1,223 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::functions::distance::*;
+
+function <<test.BeforePackage>> meta::relational::tests::functions::distance::setUp():Boolean[1]
+{
+    createAndFillTestDb();
+}
+
+// Alloy exclusion reason: 10. Tricky usage of variables
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::functions::distance::testDistanceHaversine():Boolean[1]
+{
+   let london = ^PointOfInterest(name = 'London', location = ^GeographicCoordinate(latitude = 51.507356, longitude = -0.127706));
+   let result = execute(| PointOfInterest.all()->filter(f| distance($f.location, $london.location) < 350), testDistanceMapping, testDistanceRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['Eiffel Tower', 'Royal Observatory Greenwich'], $result.values.name);
+   assertEquals('select "root".ID as "pk_0", "root".name as "name" from coordinatesTable as "root" where (6371.0 * (2.0 * atan2(sqrt((power(sin(((1.0 * (((1.0 * (51.507356 * 3.141592653589793)) / 180) - ((1.0 * ("root".latitude * 3.141592653589793)) / 180))) / 2)), 2) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * power(sin(((1.0 * (((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))) / 2)), 2)))),sqrt((1 - (power(sin(((1.0 * (((1.0 * (51.507356 * 3.141592653589793)) / 180) - ((1.0 * ("root".latitude * 3.141592653589793)) / 180))) / 2)), 2) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * power(sin(((1.0 * (((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))) / 2)), 2)))))))) < 350', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 10. Tricky usage of variables
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::functions::distance::testDistanceHaversine2():Boolean[1]
+{
+   let london = ^PointOfInterest(name = 'London', location = ^GeographicCoordinate(latitude = 51.507356, longitude = -0.127706));
+   let result = execute(| PointOfInterest.all()->filter(f| distance($f.location, $london.location) > 15000), testDistanceMapping, testDistanceRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertSameElements(['Sydney Opera House'], $result.values.name);
+   assertEquals('select "root".ID as "pk_0", "root".name as "name" from coordinatesTable as "root" where (6371.0 * (2.0 * atan2(sqrt((power(sin(((1.0 * (((1.0 * (51.507356 * 3.141592653589793)) / 180) - ((1.0 * ("root".latitude * 3.141592653589793)) / 180))) / 2)), 2) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * power(sin(((1.0 * (((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))) / 2)), 2)))),sqrt((1 - (power(sin(((1.0 * (((1.0 * (51.507356 * 3.141592653589793)) / 180) - ((1.0 * ("root".latitude * 3.141592653589793)) / 180))) / 2)), 2) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * power(sin(((1.0 * (((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))) / 2)), 2)))))))) > 15000', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 10. Tricky usage of variables
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::functions::distance::testDistanceHaversine3():Boolean[1]
+{
+   let london = ^PointOfInterest(name = 'London', location = ^GeographicCoordinate(latitude = 51.507356, longitude = -0.127706));
+   let result = execute(| PointOfInterest.all()->filter(f| distance($f.location, $london.location) < 9.5), testDistanceMapping, testDistanceRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertSameElements(['Royal Observatory Greenwich'], $result.values.name);
+   assertEquals('select "root".ID as "pk_0", "root".name as "name" from coordinatesTable as "root" where (6371.0 * (2.0 * atan2(sqrt((power(sin(((1.0 * (((1.0 * (51.507356 * 3.141592653589793)) / 180) - ((1.0 * ("root".latitude * 3.141592653589793)) / 180))) / 2)), 2) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * power(sin(((1.0 * (((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))) / 2)), 2)))),sqrt((1 - (power(sin(((1.0 * (((1.0 * (51.507356 * 3.141592653589793)) / 180) - ((1.0 * ("root".latitude * 3.141592653589793)) / 180))) / 2)), 2) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * power(sin(((1.0 * (((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))) / 2)), 2)))))))) < 9.5', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 10. Tricky usage of variables
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::functions::distance::testDistanceHaversineInProject():Boolean[1]
+{
+   let london = ^PointOfInterest(name = 'London', location = ^GeographicCoordinate(latitude = 51.507356, longitude = -0.127706));
+   let result = execute(| PointOfInterest.all()->project([p| $p.name, p| distance($p.location, $london.location)], ['name', 'distance']), testDistanceMapping, testDistanceRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let distanceResult = $result.values->at(0).rows;
+
+   assertSize($distanceResult.values, 12);
+
+   assertEquals('Beijing', $distanceResult->at(0).values->at(0));
+   assertEqWithinTolerance(8140.461465, $distanceResult->at(0).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('Firm CHQ', $distanceResult->at(1).values->at(0));
+   assertEqWithinTolerance(8633.533525, $distanceResult->at(1).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('San Francisco', $distanceResult->at(2).values->at(0));
+   assertEqWithinTolerance(8616.436500, $distanceResult->at(2).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('Eiffel Tower', $distanceResult->at(3).values->at(0));
+   assertEqWithinTolerance(341.299022, $distanceResult->at(3).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('Sydney Opera House', $distanceResult->at(4).values->at(0));
+   assertEqWithinTolerance(16993.225277, $distanceResult->at(4).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('Royal Observatory Greenwich', $distanceResult->at(5).values->at(0));
+   assertEqWithinTolerance(9.473395, $distanceResult->at(5).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('select "root".name as "name", (6371.0 * (2.0 * atan2(sqrt((power(sin(((1.0 * (((1.0 * (51.507356 * 3.141592653589793)) / 180) - ((1.0 * ("root".latitude * 3.141592653589793)) / 180))) / 2)), 2) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * power(sin(((1.0 * (((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))) / 2)), 2)))),sqrt((1 - (power(sin(((1.0 * (((1.0 * (51.507356 * 3.141592653589793)) / 180) - ((1.0 * ("root".latitude * 3.141592653589793)) / 180))) / 2)), 2) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * power(sin(((1.0 * (((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))) / 2)), 2)))))))) as "distance" from coordinatesTable as "root"', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 10. Tricky usage of variables
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::functions::distance::testDistanceSphericalLawOfCosines():Boolean[1]
+{
+   let london = ^PointOfInterest(name = 'London', location = ^GeographicCoordinate(latitude = 51.507356, longitude = -0.127706));
+   let result = execute(| PointOfInterest.all()->filter(f| distanceSphericalLawOfCosines($f.location, $london.location) < 350), testDistanceMapping, testDistanceRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['Eiffel Tower', 'Royal Observatory Greenwich'], $result.values.name);
+   assertEquals('select "root".ID as "pk_0", "root".name as "name" from coordinatesTable as "root" where (6371.0 * acos(((sin(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * sin(((1.0 * (51.507356 * 3.141592653589793)) / 180))) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * cos((((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))))))) < 350', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 10. Tricky usage of variables
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::functions::distance::testDistanceSphericalLawOfCosines2():Boolean[1]
+{
+   let london = ^PointOfInterest(name = 'London', location = ^GeographicCoordinate(latitude = 51.507356, longitude = -0.127706));
+   let result = execute(| PointOfInterest.all()->filter(f| distanceSphericalLawOfCosines($f.location, $london.location) > 15000), testDistanceMapping, testDistanceRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertSameElements(['Sydney Opera House'], $result.values.name);
+   assertEquals('select "root".ID as "pk_0", "root".name as "name" from coordinatesTable as "root" where (6371.0 * acos(((sin(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * sin(((1.0 * (51.507356 * 3.141592653589793)) / 180))) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * cos((((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))))))) > 15000', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 10. Tricky usage of variables
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::functions::distance::testDistanceSphericalLawOfCosines3():Boolean[1]
+{
+   let london = ^PointOfInterest(name = 'London', location = ^GeographicCoordinate(latitude = 51.507356, longitude = -0.127706));
+   let result = execute(| PointOfInterest.all()->filter(f| distanceSphericalLawOfCosines($f.location, $london.location) < 9.5), testDistanceMapping, testDistanceRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertSameElements(['Royal Observatory Greenwich'], $result.values.name);
+   assertEquals('select "root".ID as "pk_0", "root".name as "name" from coordinatesTable as "root" where (6371.0 * acos(((sin(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * sin(((1.0 * (51.507356 * 3.141592653589793)) / 180))) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * cos((((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))))))) < 9.5', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 10. Tricky usage of variables
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::functions::distance::testDistanceSphericalLawOfCosinesInProject():Boolean[1]
+{
+   let london = ^PointOfInterest(name = 'London', location = ^GeographicCoordinate(latitude = 51.507356, longitude = -0.127706));
+   let result = execute(| PointOfInterest.all()->project([p| $p.name, p| distanceSphericalLawOfCosines($p.location, $london.location)], ['name', 'distance']), testDistanceMapping, testDistanceRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let distanceResult = $result.values->at(0).rows;
+
+   assertSize($distanceResult.values, 12);
+
+   assertEquals('Beijing', $distanceResult->at(0).values->at(0));
+   assertEqWithinTolerance(8140.461465, $distanceResult->at(0).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('Firm CHQ', $distanceResult->at(1).values->at(0));
+   assertEqWithinTolerance(8633.533525, $distanceResult->at(1).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('San Francisco', $distanceResult->at(2).values->at(0));
+   assertEqWithinTolerance(8616.436500, $distanceResult->at(2).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('Eiffel Tower', $distanceResult->at(3).values->at(0));
+   assertEqWithinTolerance(341.299022, $distanceResult->at(3).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('Sydney Opera House', $distanceResult->at(4).values->at(0));
+   assertEqWithinTolerance(16993.225277, $distanceResult->at(4).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('Royal Observatory Greenwich', $distanceResult->at(5).values->at(0));
+   assertEqWithinTolerance(9.473395, $distanceResult->at(5).values->at(1)->cast(@Number), 0.000001);
+
+   assertEquals('select "root".name as "name", (6371.0 * acos(((sin(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * sin(((1.0 * (51.507356 * 3.141592653589793)) / 180))) + (cos(((1.0 * ("root".latitude * 3.141592653589793)) / 180)) * cos(((1.0 * (51.507356 * 3.141592653589793)) / 180)) * cos((((1.0 * (-0.127706 * 3.141592653589793)) / 180) - ((1.0 * ("root".longitude * 3.141592653589793)) / 180))))))) as "distance" from coordinatesTable as "root"', $result->sqlRemoveFormatting());
+
+}
+
+function meta::relational::tests::functions::distance::testDisplayMapFromDB():GeographicCoordinate[*]
+{
+   meta::relational::tests::functions::distance::setUp();
+   let london = ^PointOfInterest(name = 'London', location = ^GeographicCoordinate(latitude = 51.507356, longitude = -0.127706));
+   let result = execute(| PointOfInterest.all()->filter(f| distanceSphericalLawOfCosines($f.location, $london.location) > 9.5), testDistanceMapping, testDistanceRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   $result.values.location;
+}
+
+function meta::relational::tests::functions::distance::testDistanceRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(testDistanceDB);
+}
+
+function meta::relational::tests::functions::distance::createAndFillTestDb():Boolean[1]
+{
+   let connection = testDistanceRuntime().connectionByElement(testDistanceDB)->cast(@TestDatabaseConnection);
+
+   dropAndCreateTableInDb(testDistanceDB, 'coordinatesTable', $connection);
+   executeInDb('insert into coordinatesTable (id, name, latitude, longitude) values (1, \'Beijing\', 39.905489, 116.397771);', $connection);
+   executeInDb('insert into coordinatesTable (id, name, latitude, longitude) values (2, \'Firm CHQ\', 37.42205, -122.084347);', $connection);
+   executeInDb('insert into coordinatesTable (id, name, latitude, longitude) values (3, \'San Francisco\', 37.77493, -122.419416);', $connection);
+   executeInDb('insert into coordinatesTable (id, name, latitude, longitude) values (4, \'Eiffel Tower\', 48.8582, 2.294407);', $connection);
+   executeInDb('insert into coordinatesTable (id, name, latitude, longitude) values (5, \'Sydney Opera House\', -33.856553, 151.214696);', $connection);
+   executeInDb('insert into coordinatesTable (id, name, latitude, longitude) values (6, \'Royal Observatory Greenwich\', 51.4767596, 0);', $connection);
+
+   true;
+}
+
+Class meta::relational::tests::functions::distance::PointOfInterest
+{
+   name : String[1];
+   location : GeographicCoordinate[1];
+}
+
+Class {doc.doc = 'A class to represent GIS geographic coordinate'}
+meta::relational::tests::functions::distance::GeographicCoordinate
+{
+   latitude : Float[1];
+   longitude : Float[1];
+}
+
+function meta::relational::tests::functions::distance::distance(point1:GeographicCoordinate[1], point2:GeographicCoordinate[1]):Number[1]
+{
+   distanceHaversineDegrees($point1.latitude, $point1.longitude, $point2.latitude, $point2.longitude);
+}
+
+function meta::relational::tests::functions::distance::distanceSphericalLawOfCosines(point1:GeographicCoordinate[1], point2:GeographicCoordinate[1]):Number[1]
+{
+   distanceSphericalLawOfCosinesDegrees($point1.latitude, $point1.longitude, $point2.latitude, $point2.longitude);
+}
+
+###Relational
+
+Database meta::relational::tests::functions::distance::testDistanceDB
+(
+   Table coordinatesTable(ID INT PRIMARY KEY, name VARCHAR(50), latitude FLOAT, longitude FLOAT)
+)
+
+###Mapping
+import meta::relational::tests::functions::distance::*;
+
+Mapping meta::relational::tests::functions::distance::testDistanceMapping
+(
+   PointOfInterest : Relational
+   {
+      scope([testDistanceDB]coordinatesTable)
+      (
+         name : name,
+         location
+         (
+            latitude:    latitude,
+            longitude:   longitude
+         )
+      )
+   }
+)

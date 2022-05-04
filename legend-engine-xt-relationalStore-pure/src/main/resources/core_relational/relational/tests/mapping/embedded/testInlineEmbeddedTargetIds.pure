@@ -1,0 +1,256 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::csv::*;
+import meta::relational::tests::mapping::embedded::advanced::mapping::*;
+import meta::relational::tests::mapping::embedded::advanced::model::*;
+import meta::relational::tests::mapping::embedded::advanced::*;
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testProjection():Boolean[1]
+{
+
+
+  let result = execute(|BondDetail.all()->project([p| $p.type, p | $p.issuer.name,p| $p.holder.name], ['type', 'i','h'])
+                        , testMappingEmbeddedTargetIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), debug());
+
+ assertEquals('type,i,h\n' + '5 years,issuer1,holder1\n' + '5 years,issuer2,holder1\n' + '7 weeks,issuer3,holder3\n', $result.values->toOne()->toCSV());
+ assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i", "root".HOLDER as "h" from PRODUCT_DENORM as "root"', $result);
+
+  true;
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testSubType():Boolean[1]
+{
+  let result = execute(|BondDetail.all()->project([p| $p.type, p| $p.issuer->subType(@Party).name], ['type', 'i'])
+                        , testMappingEmbeddedTargetIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('type,i\n5 years,issuer1\n5 years,issuer2\n7 weeks,issuer3\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i" from PRODUCT_DENORM as "root"', $result);
+}
+
+/**
+ (router_)routing (::processClass()) selects the incorrect setImpl for subType(@Party); it looks for the root impl for the Class parameter which is not always correct
+*/
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testSubTypeOnPropertyMappedToNonRootInlineSetImpl():Boolean[1]
+{
+  let result = execute(|BondDetail.all()->project([p| $p.type, p| $p.holder->subType(@Party).name], ['type', 'h'])
+                        , testMappingEmbeddedTargetIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('type,h\n5 years,holder1\n5 years,holder2\n7 weeks,holder3\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i" from PRODUCT_DENORM as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testFilter():Boolean[1]
+{
+   
+    let result1 = execute(|BondDetail.all()->filter(b | $b.issuer.name == 'issuer3' )
+                                    ->project( [p | $p.type, p | $p.issuer.name], ['type','i'])
+                                    , testMappingEmbeddedTargetIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('type,i\n' + '7 weeks,issuer3\n', $result1.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i" from PRODUCT_DENORM as "root" where "root".ISSUER = \'issuer3\'', $result1);
+
+   let result = execute(|BondDetail.all()->filter(b | $b.holder.name == 'holder3' )
+                                    ->project( [p | $p.type, p | $p.issuer.name,p | $p.holder.name], ['type','i','h'])
+                                    , testMappingEmbeddedTargetIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('type,i,h\n' + '7 weeks,issuer3,holder3\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i", "root".HOLDER as "h" from PRODUCT_DENORM as "root" where "root".HOLDER = \'holder3\'', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testDenormWithComplexFilter():Boolean[1]
+{
+  //filter with two embedded properties in the filter
+  let result = execute(|BondDetail.all()->filter(p | $p.holder.name->startsWith('holder3') && $p.description->startsWith('Super'))
+                                    ->project( [p | $p.description,p | $p.issuer.name, p | $p.holder.name], ['name','issuer', 'holder'])
+                                    , testMappingEmbeddedTargetIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+
+  assertEquals('name,issuer,holder\n' + 'SuperBond 3 super,issuer3,holder3\n' , $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_DETAILS as "name", "root".ISSUER as "issuer", "root".HOLDER as "holder" from PRODUCT_DENORM as "root" where ("root".HOLDER like \'holder3%\' and "root".BOND_DETAILS like \'Super%\')', $result);
+ }
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testGroupBy():Boolean[1]
+{
+  let result = execute(|BondDetail.all()->groupBy( [p | $p.holder.name] ,
+                                 [agg(x|if ( $x.type == '5 years' ,|5.0,|1.0),
+                                      y|$y->sum()
+                                      )],
+                                 ['holder', 'Profit']
+                                 ), testMappingEmbeddedTargetIds,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('holder,Profit\n' + 'holder1,10.0\n' + 'holder3,1.0\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".HOLDER as "holder", sum(case when "root".BOND_TYPE = \'5 years\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" group by "holder"', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testGroupByComplexAgg():Boolean[1]
+{
+  let result = execute(|BondDetail.all()->groupBy( [p | $p.holder.name] ,
+                                 [agg(x|if($x.holder.name->startsWith('holder3'),|5.0,|1.0),
+                                      y|$y->sum()
+                                      )],
+                                 ['c1', 'sum']
+                                 ), testMappingEmbeddedTargetIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('c1,sum\n' + 'holder1,2.0\n' + 'holder3,5.0\n', $result.values->toOne()->toCSV());
+  assertSameSQL( 'select "root".HOLDER as "c1", sum(case when "root".HOLDER like \'holder3%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "c1"', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testQualifierProperty():Boolean[1]
+{
+   let result = execute(|BondDetail.all()->filter(p | $p.issuer.description->startsWith('issuer1') )
+                                      ->project( [p | $p.description, p | $p.issuer.description,p | $p.holder.description], ['name', 'c2','c3'])
+                                    , testMappingEmbeddedTargetIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('name,c2,c3\n' + 'Bond 1,issuer1,holder1\n' , $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_DETAILS as "name", concat("root".ISSUER, cast("root".ISSUER_TYPE as varchar)) as "c2", concat("root".HOLDER, cast("root".HOLDER_TYPE as varchar)) as "c3" from PRODUCT_DENORM as "root" where concat("root".ISSUER, cast("root".ISSUER_TYPE as varchar)) like \'issuer1%\'', $result);
+
+}
+
+
+function <<test.ToFix>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testProjectionMappingIncludes():Boolean[1]
+{
+
+
+  let result = execute(|BondDetail.all()->project([p| $p.type, p | $p.issuer.name,p| $p.holder.name], ['type', 'i','h'])
+                        , testMappingEmbeddedTargetIdsWithIncludes, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+ assertEquals('type,i,h\n' + '5 years,issuer1,holder1\n' + '5 years,issuer2,holder1\n' + '7 weeks,issuer3,holder3\n', $result.values->toOne()->toCSV());
+ assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i", "root".HOLDER as "h" from PRODUCT_DENORM as "root"', $result);
+
+  true;
+}
+###Mapping
+import meta::relational::tests::mapping::embedded::advanced::store::*;
+import meta::relational::tests::mapping::embedded::advanced::model::*;
+
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedTargetIds
+(
+
+  PartyType: EnumerationMapping partyType
+    {
+       Company: 'C', 
+       Bearer:'B', 
+       Goverment: 'G'
+    } 
+   
+  BondDetail[myBondMapping]: Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        description:BOND_DETAILS,
+        type: BOND_TYPE,
+        issuer() Inline[issuer],
+        holder() Inline[holder]
+     )
+  }
+   
+  *Party[issuer]:Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        name:ISSUER,
+        type:  EnumerationMapping partyType : ISSUER_TYPE, 
+        address
+        (
+           name: ISSUER_ADDRESS_NAME,
+           street: ISSUER_ADDRESS_STREET
+        )
+     )
+  }
+   
+  Party[holder]:Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        name:HOLDER,
+        type:  EnumerationMapping partyType : HOLDER_TYPE , 
+        address
+        (
+           name: HOLDER_ADDRESS_NAME,
+           street: HOLDER_ADDRESS_STREET
+        )
+     )
+  }
+)
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedTargetIds_Common
+(
+
+    PartyType: EnumerationMapping partyType
+    {
+       Company: 'C', 
+       Bearer:'B', 
+       Goverment: 'G'
+    } 
+    
+   *Party[issuer]:Relational
+   {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        name:ISSUER,
+        type:  EnumerationMapping partyType : ISSUER_TYPE, 
+        address
+        (
+           name: ISSUER_ADDRESS_NAME,
+           street: ISSUER_ADDRESS_STREET
+        )
+     )
+   }
+   
+  Party[holder]:Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        name:HOLDER,
+        type:  EnumerationMapping partyType : HOLDER_TYPE , 
+        address
+        (
+           name: HOLDER_ADDRESS_NAME,
+           street: HOLDER_ADDRESS_STREET
+        )
+     )
+  }
+)
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedTargetIdsWithIncludesOne
+(
+    include meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedTargetIds_Common
+)
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedTargetIdsWithIncludes
+(
+
+  include meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedTargetIds_Common
+  include meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedTargetIdsWithIncludesOne
+   
+  BondDetail[myBondMapping]: Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        description:BOND_DETAILS,
+        type: BOND_TYPE,
+        issuer() Inline[issuer],
+        holder() Inline[holder]
+     )
+  }
+   
+
+)

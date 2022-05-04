@@ -1,0 +1,453 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::validation::complex::*;
+
+Class meta::relational::validation::complex::LegalEntity
+[
+   constraint1
+   (
+      ~function: !($this.firm.employees->exists(e|$e.addresses.location.street->isNotEmpty()))
+      ~enforcementLevel: Error
+   ),
+   constraint2
+   (
+      ~function:
+      ($this.firm.employees->exists(e|$e.addresses.location.street->isEmpty())) || ($this.firm.employees->filter(e|$e.addresses.location.street == $this.address.location.street)->isNotEmpty())
+      ~enforcementLevel: Error
+   )
+]
+{
+   firm: Firm[1];
+   address: Address[1];
+}
+
+Class meta::relational::validation::complex::Firm
+[
+   constraint1
+   (
+      ~function: $this.addresses->filter(a | $this.employees.addresses->filter(b | $a.location.street == $b.location.street)->isNotEmpty())->isEmpty()
+      ~enforcementLevel: Error
+   ),
+   constraint2
+   (
+      ~function: $this.employees.age->sum() > 100
+      ~enforcementLevel: Error
+   ),
+   constraint3
+   (
+      ~function: $this.employees->project([e|$e.name, e|$e.age], ['name', 'age'])->groupBy(['name'], agg('count', p|$p, y|$y->count()))->filter(x|$x.getInteger('count') > 1)->tdsRows()->isEmpty()
+      ~enforcementLevel: Error
+   ),
+   constraint4
+   (
+      ~function: $this.employeesAddresses->filter(a | $a.addressId == '9')->toOne().locationStreet->length() > 10
+      ~enforcementLevel: Error
+   ),
+   constraint5
+   (
+      ~function: ('dummyCondition' == 'dummyCondition1') || ($this.employees->filter(e | $e.name->startsWith('P')).age->sum() > 100)
+      ~enforcementLevel: Error
+   ),
+   constraint6
+   (
+      ~function: $this.employeesAddresses->exists(a | !$a.addressId->startsWith('1'))
+      ~enforcementLevel: Error
+   ),
+   constraint7
+   (
+      ~function: $this.employees.name->isDistinct()
+      ~enforcementLevel: Error
+   ),
+   constraint8
+   (
+      ~function: $this.employees->map(x | $x.name + '$' + $x.age->toString())->isDistinct()
+      ~enforcementLevel: Error
+   )
+]
+{
+   name : String[1];
+   employeesAddresses : Address[*];
+   addresses : Address[*];
+}
+
+Class meta::relational::validation::complex::Person
+{
+   name : String[1];
+   age : Integer[1];
+   addresses : Address[*];
+}
+
+Class meta::relational::validation::complex::Address
+{
+   location: Location[1];
+   locationStreet: String[1];
+   addressId: String[1];
+}
+
+Class meta::relational::validation::complex::Location
+{
+   street: String[1];
+   locality: String[1];
+}
+
+Association meta::relational::validation::complex::Employment
+{
+   employees : Person[*];
+   firm : Firm[1];
+}
+
+###Mapping
+import meta::relational::validation::complex::*;
+
+Mapping meta::relational::validation::complex::validationComplexMappingWithInnerJoins
+(
+   LegalEntity : Relational
+   {
+      ~filter [db] (INNER)@LegalEntity_Firm | [db] FirmXFilter
+      ~mainTable [db]legalEntityTable
+      firm : [db] @LegalEntity_Firm
+   }
+
+   Firm : Relational
+   {
+      ~filter [db] (INNER)@Firm_Person | [db] EmployeesBelow40Filter
+      name : [db]firmTable.LEGALNAME,
+      employees : [db]@Firm_Person,
+      addresses : [db]@Address_Firm
+   }
+
+   Person : Relational
+   {
+      ~filter [db] (INNER)@Address_Person | [db] ActiveAddressFilter
+      name : [db]personTable.FIRSTNAME,
+      age : [db]personTable.AGE,
+      addresses : [db]@Address_Person
+   }
+
+   Address : Relational
+   {
+      ~filter [db] (INNER)@Address_Location | [db] LocationStreetLengthLessThan10
+      addressId : [db]addressTable.ID,
+      location : [db]@Address_Location
+   }
+
+   Location : Relational
+   {
+      street : [db]locationTable.STREET,
+      locality : [db]locationTable.LOCALITY
+   }
+)
+
+Mapping meta::relational::validation::complex::validationComplexMapping
+(
+   LegalEntity : Relational
+   {
+      ~mainTable [db]legalEntityTable
+      firm : [db] @LegalEntity_Firm,
+      address : [db] @LegalEntity_Address
+   }
+
+   Firm : Relational
+   {
+      name : [db]firmTable.LEGALNAME,
+      employees : [db]@Firm_Person,
+      addresses : [db]@Address_Firm
+   }
+
+   Person : Relational
+   {
+      name : [db]personTable.FIRSTNAME,
+      age : [db]personTable.AGE,
+      addresses : [db]@Address_Person
+   }
+
+   Location : Relational
+   {
+      street : [db]locationTable.STREET,
+      locality : [db]locationTable.LOCALITY
+   }
+
+   Address : Relational
+   {
+      addressId : [db]addressTable.ID,
+      location : [db]@Address_Location
+   }
+)
+
+Mapping meta::relational::validation::complex::validationComplexMapping2
+(
+   Firm : Relational
+   {
+      name : [db]firmTable.LEGALNAME,
+      employeesAddresses : [db]@Firm_Person > (INNER) [db]@Address_Person
+   }
+
+   Address : Relational
+   {
+      ~filter [db] (INNER)@Address_Location | [db] LocationStreetLengthLessThan10
+      addressId : [db]addressTable.ID,
+      locationStreet : [db]@Address_Location | locationTable.STREET
+   }
+)
+
+
+###Relational
+Database meta::relational::validation::complex::db
+(
+   Table legalEntityTable (ID INT PRIMARY KEY, FIRMID INT, LEGALENTITYADDRESSID INT)
+   Table firmTable (ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT)
+   Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT)
+   Table addressTable (ID INT PRIMARY KEY, LOCATIONID INT, TYPE INT)
+   Table locationTable (ID INT PRIMARY KEY, STREET VARCHAR(200), LOCALITY VARCHAR(200))
+
+   Filter FirmXFilter(firmTable.LEGALNAME = 'Firm X')
+   Filter EmployeesBelow40Filter(personTable.AGE < 40)
+   Filter ActiveAddressFilter(addressTable.TYPE = 1)
+   Filter LocationStreetLengthLessThan10(lessThan(length(locationTable.STREET), 10))
+
+   Join LegalEntity_Firm(legalEntityTable.FIRMID = firmTable.ID)
+   Join LegalEntity_Address(legalEntityTable.LEGALENTITYADDRESSID = addressTable.ID)
+   Join Firm_Person(firmTable.ID = personTable.FIRMID)
+   Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)
+   Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+   Join Address_Location(addressTable.LOCATIONID = locationTable.ID)
+)
+
+###Pure
+import meta::relational::validation::complex::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::csv::*;
+import meta::relational::validation::*;
+import meta::relational::metamodel::*;
+import meta::pure::runtime::*;
+
+function <<test.BeforePackage>> meta::relational::validation::complex::createTablesInDb():Boolean[1]
+{
+   let runtime    = getRuntime();
+   let connection = $runtime.connections->at(0)->cast(@DatabaseConnection);
+
+   executeInDb('Drop table if exists legalEntityTable;', $connection);
+   executeInDb('Create Table legalEntityTable(id INT, firmId INT, legalEntityAddressId INT);', $connection);
+   executeInDb('insert into legalEntityTable (id, firmId, legalEntityAddressId) values (1, 1, 101);', $connection);
+   executeInDb('insert into legalEntityTable (id, firmId, legalEntityAddressId) values (2, 2, 102);', $connection);
+   executeInDb('insert into legalEntityTable (id, firmId, legalEntityAddressId) values (3, 3, 103);', $connection);
+   executeInDb('insert into legalEntityTable (id, firmId, legalEntityAddressId) values (4, 4, 104);', $connection);
+
+   executeInDb('Drop table if exists FirmTable;', $connection);
+   executeInDb('Create Table FirmTable(id INT, legalName VARCHAR(200), addressId INT, ceoId INT);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (1, \'Firm X\', 1, 1);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (1, \'Firm X\', 12, 1);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (2, \'Firm A\', 2, 2);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (3, \'Firm B\', 3, 3);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (4, \'Firm C\', 4, 4);', $connection);
+
+   executeInDb('Drop table if exists PersonTable;', $connection);
+   executeInDb('Create Table PersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',34, 5,1,2);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (2, \'John\', \'Johnson\',45, 6,1,4);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (3, \'John\', \'Hill\',76, 7,1,2);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (4, \'Anthony\', \'Allen\',52, 8,1,null);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (5, \'Fabrice\', \'Roberts\',34, 9,2,null);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (6, \'Oliver\', \'Hill\',42, 10,3,null);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (7, \'David\', \'Harris\',35, 11,4,null);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (8, \'David\', \'Harris\',55, 13,4,null);', $connection);
+
+   executeInDb('Drop table if exists addressTable;', $connection);
+   executeInDb('Create Table addressTable(id INT, locationId INT, type INT);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (1,1,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (2,2,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (3,3,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (4,4,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (5,5,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (6,6,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (7,7,0);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (8,8,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (9,9,0);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (10,10,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (11,11,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (12,12,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (13,13,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (101,101,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (102,102,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (103,103,1);', $connection);
+   executeInDb('insert into addressTable (id, locationId, type) values (104,104,1);', $connection);
+
+   executeInDb('Drop table if exists LocationTable;', $connection);
+   executeInDb('Create Table LocationTable(id INT, street VARCHAR(200), locality VARCHAR(200));', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (1, \'A street with a % in the middle\', \'Hoboken\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (2, \'A comment with a _ in the middle\',\'New York\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (3, \'Street\',\'New York\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (4, \'Street\',\'New York\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (5, \'Street\',\'San Fransisco\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (6, null, \'Hong Kong\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (7, \'Street\',\'New York\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (8, \'Long Streeeeeet\',\'New York\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (9, \'Street\',\'Cupertino\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (10, \'West Street\',\'Tokyo\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (11, \'Long Streeeeeeet\',\'Mountain View\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (12, \'Street\',\'San Fransisco\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (13, null,\'San Fransisco\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (101, \'Street\',\'Cupertino\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (102, \'Street\',\'Tokyo\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (103, \'West Street2\',\'Mountain View\');', $connection);
+   executeInDb('insert into LocationTable (id, street, locality) values (104, \'Long Streeeeeeet\',\'San Fransisco\');', $connection);
+
+   true;
+}
+
+function meta::relational::validation::complex::getRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(^Database());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation1():Boolean[1]
+{
+
+   let validationResult = validate({|LegalEntity.all()},
+                                   validationComplexMappingWithInnerJoins,
+                                   getRuntime(),
+                                   ^RelationalExecutionContext(),
+                                   ['constraint1'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint1,Error,,1\n'+
+                'constraint1,Error,,1\n'+
+                'constraint1,Error,,1\n'+
+                'constraint1,Error,,1\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation2():Boolean[1]
+{
+
+   let validationResult = validate({|LegalEntity.all()},
+                                   validationComplexMapping,
+                                   getRuntime(),
+                                   ^RelationalExecutionContext(),
+                                   ['constraint2'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint2,Error,,3\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation3():Boolean[1]
+{
+
+   let validationResult = validate({|Firm.all()},
+                                   [
+                                      col(f:Firm[1]|$f.addresses.addressId, 'addressId'),
+                                      col(f:Firm[1]|$f.employees.name, 'personId')
+                                   ],
+                                   [],
+                                   validationComplexMappingWithInnerJoins,
+                                   getRuntime(),
+                                   ^RelationalExecutionContext(),
+                                   ['constraint1'],
+                                   [], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,addressId,personId\n'+
+                'constraint1,Error,,12,Peter\n'+
+                'constraint1,Error,,12,John\n'+
+                'constraint1,Error,,12,Anthony\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation4():Boolean[1]
+{
+
+   let validationResult = validate({|Firm.all()},
+                                   validationComplexMappingWithInnerJoins,
+                                   getRuntime(),
+                                   ['constraint2'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint2,Error,,4\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation5():Boolean[1]
+{
+
+   let validationResult = validate({|Firm.all()},
+                                   validationComplexMappingWithInnerJoins,
+                                   getRuntime(),
+                                   ['constraint3'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint3,Error,,4\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation6():Boolean[1]
+{
+
+   let validationResult = validate({|Firm.all()},
+                                   validationComplexMapping2,
+                                   getRuntime(),
+                                   ['constraint4'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint4,Error,,2\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation7():Boolean[1]
+{
+
+   let validationResult = validate({|Firm.all()},
+                                   validationComplexMappingWithInnerJoins,
+                                   getRuntime(),
+                                   ['constraint5'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint5,Error,,1\n'+
+                'constraint5,Error,,1\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation8():Boolean[1]
+{
+
+   let validationResult = validate({|Firm.all()},
+                                   validationComplexMapping2,
+                                   getRuntime(),
+                                   ['constraint6'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint6,Error,,3\n'+
+                'constraint6,Error,,4\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation9():Boolean[1]
+{
+
+   let validationResult = validate({|Firm.all()},
+                                   validationComplexMapping,
+                                   getRuntime(),
+                                   ['constraint7'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint7,Error,,1\n'+
+                'constraint7,Error,,1\n'+
+                'constraint7,Error,,4\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::complex::validateComplexValidation10():Boolean[1]
+{
+
+   let validationResult = validate({|Firm.all()},
+                                   validationComplexMapping,
+                                   getRuntime(),
+                                   ['constraint8'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint8,Error,,1\n'+
+                'constraint8,Error,,1\n', $validationResult.values->toCSV());
+}

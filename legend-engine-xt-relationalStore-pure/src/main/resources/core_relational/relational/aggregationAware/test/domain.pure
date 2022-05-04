@@ -1,0 +1,68 @@
+import meta::relational::tests::aggregationAware::domain::*;
+
+Class meta::relational::tests::aggregationAware::domain::Sales {
+  id: Integer[1];
+  salesDate: FiscalCalendar[1];
+  revenue: Revenue[0..1];
+  product: Product[0..1];
+  isCancelled: Boolean[1];
+  description() {
+      $this.product.productName->toOne() + ': ' + $this.revenue.price->toOne()->toString()
+  }:String[1];
+}
+
+Class meta::relational::tests::aggregationAware::domain::Wholesales extends Sales {
+  discount: Float[0..1];
+  amount:  Integer[1];
+}
+
+Class meta::relational::tests::aggregationAware::domain::Revenue {
+  price: Float[0..1];
+}
+
+Class meta::relational::tests::aggregationAware::domain::FiscalCalendar {
+  date: Date[1];
+  fiscalYear: Integer[1];
+  fiscalMonth: Integer[1];
+  fiscalQtr: Integer[1];
+  type: CalendarType[0..1];
+}
+
+Class meta::relational::tests::aggregationAware::domain::Employee
+{
+   firstName: String[0..1];
+   lastName: String[0..1];
+}
+
+Class meta::relational::tests::aggregationAware::domain::Product
+{
+   productId: Integer[1];
+   productName: String[1];
+   productDescription: ProductDescription[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::aggregationAware::domain::ProductDescription
+{
+   description: String[1];
+}
+
+Class meta::relational::tests::aggregationAware::domain::ProductLine
+{
+   name: String[1];
+}
+
+Association meta::relational::tests::aggregationAware::domain::Product_ProductLine
+{
+   products: Product[*];
+   productLine: ProductLine[1];
+}
+
+Association meta::relational::tests::aggregationAware::domain::SalesPerson {
+   person: Employee[0..1];
+   sales: Wholesales[*];
+}
+
+Enum  meta::relational::tests::aggregationAware::domain::CalendarType
+{
+   NEW_YORK
+}

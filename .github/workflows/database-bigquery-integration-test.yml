@@ -63,5 +63,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
         run: |
           mvn clean install -DskipTests=true
-          mvn -P run-bigquery-integration -pl legend-engine-executionPlan-execution-store-authentication -Dtest="ExternalIntegration*BigQuery*" test
-          mvn -P run-bigquery-integration -pl legend-engine-executionPlan-execution-store-relational-connection-tests -Dtest="ExternalIntegration*BigQuery" test
+          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-tests -Dtest="ExternalIntegration*BigQuery" test
+          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-execution-store-authentication -Dtest="ExternalIntegration*BigQuery*" test

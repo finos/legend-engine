@@ -1,0 +1,358 @@
+###Mapping
+import meta::relational::tests::aggregationAware::store::*;
+import meta::relational::tests::aggregationAware::domain::*;
+
+Mapping meta::relational::tests::aggregationAware::mapping::baseMapping
+(
+   
+   FiscalCalendar : Relational {
+      scope( [aggregationAwareStore] base_view.Calendar)
+      (
+         date : dt_date,
+         fiscalMonth : fiscal_month,
+		     fiscalQtr : fiscal_qtr,
+		     fiscalYear : fiscal_year,   
+         type : EnumerationMapping CalendarTypeEnum : region
+      )
+   }
+     
+   Product : Relational {
+      scope([aggregationAwareStore]base_view.Product)
+      (
+         productId: prod_id,
+         productName: prod_name
+      ),
+      productLine: [aggregationAwareStore]@Product_To_ProLine,
+      productDescription (
+        description: [aggregationAwareStore]@Product_To_Description | base_view.ProductDescription.prod_description
+      )
+   }
+   
+   ProductLine : Relational {
+      scope([aggregationAwareStore]base_view.ProductLine)
+      (
+         name: prod_line_name
+      ),
+      products: [aggregationAwareStore]@Product_To_ProLine
+   }
+      
+   CalendarType : EnumerationMapping CalendarTypeEnum
+   {
+      NEW_YORK: 'NYC'
+   }
+)
+
+Mapping meta::relational::tests::aggregationAware::mapping::simpleMapping
+(
+   include meta::relational::tests::aggregationAware::mapping::baseMapping
+   
+   Employee : Relational {
+      scope([aggregationAwareStore]base_view.Employee)
+      (
+         firstName: first_name,
+         lastName: last_name,
+         sales [SCT] : @Sales_To_Employee
+      )
+   }
+   
+   Wholesales [SCT] : AggregationAware {
+      Views : [
+         (
+            ~modelOperation : {
+               ~canAggregate true,
+               ~groupByFunctions (
+                  $this.isCancelled, $this.salesDate.fiscalMonth, $this.salesDate.fiscalYear,
+                  $this.product, $this.revenue.price, $this.discount, $this.amount
+               ),
+               ~aggregateValues (
+                  ( ~mapFn: $this.revenue.price, ~aggregateFn: $mapped->sum())                
+               )
+            },
+            ~aggregateMapping : Relational {
+               scope([aggregationAwareStore]user_view_agg.SalesTable_Month)
+               (
+                  isCancelled : case(equal(is_cancelled_flag, 'Y'), 'true', 'false'),
+                  salesDate : @Sales_Month_To_Calendar,
+                  product: @Sales_Month_To_Product,
+                  discount: discount,
+                  revenue
+                  (
+                     price  : revenue
+                  )
+               )
+            }
+         ),
+         (
+            ~modelOperation : {
+               ~canAggregate true,
+               ~groupByFunctions (
+                  $this.isCancelled, $this.salesDate.fiscalMonth, $this.salesDate.fiscalYear,
+                  $this.product, $this.revenue.price, $this.discount, $this.amount
+               ),
+               ~aggregateValues (
+                  ( ~mapFn: $this.revenue.price, ~aggregateFn: $mapped->sum())               
+               )
+            },
+            ~aggregateMapping : Relational {
+               scope([aggregationAwareStore]user_view_agg.SalesTable_Day)
+               (
+                  isCancelled : case(equal(is_cancelled_flag, 'Y'), 'true', 'false'),
+                  salesDate: @Sales_Day_To_Calendar,
+                  product: @Sales_Day_To_Product,
+                  discount: discount,
+                  revenue
+                  (
+                     price : revenue
+                  ) 
+               )
+            }
+         ),
+         (
+            ~modelOperation : {
+               ~canAggregate true,
+               ~groupByFunctions (
+                  $this.isCancelled, $this.salesDate.fiscalMonth, $this.salesDate.fiscalYear,
+                  $this.product, $this.revenue.price, $this.discount, $this.amount
+               ),
+               ~aggregateValues (
+                  ( ~mapFn: $this.revenue.price, ~aggregateFn: $mapped->sum())                
+               )
+            },
+            ~aggregateMapping : Relational {
+               scope([aggregationAwareStore]user_view_agg.SalesTable_User)
+               (
+                  isCancelled : case(equal(is_cancelled_flag, 'Y'), 'true', 'false'),
+                  salesDate: @Sales_User_To_Calendar,
+                  person: @Sales_User_To_Employee,
+                  product: @Sales_User_To_Product,
+                  discount: discount,
+                  revenue
+                  (
+                     price  : revenue
+                  )
+               )
+            }
+         )
+      ],
+      ~mainMapping: Relational {
+         scope([aggregationAwareStore]base_view.SalesTable)
+         (
+            isCancelled : case(equal(is_cancelled_flag, 'Y'), 'true', 'false'),
+            salesDate: @Sales_To_Calendar,
+            product: @Sales_To_Product,
+            person: @Sales_To_Employee,
+            discount: discount,
+            revenue
+            (
+               price  : revenue
+            )
+         )
+      }
+   }
+)
+
+Mapping meta::relational::tests::aggregationAware::mapping::mappingWithMonthCannotBeAggregated
+(
+   include meta::relational::tests::aggregationAware::mapping::baseMapping
+   
+   Wholesales [SCT] : AggregationAware {
+      Views : [
+         (
+            ~modelOperation : {
+               ~canAggregate false,
+               ~groupByFunctions (
+                  $this.isCancelled, $this.salesDate.fiscalMonth, $this.salesDate.fiscalYear,
+                  $this.product, $this.revenue.price, $this.discount, $this.amount
+               ),
+               ~aggregateValues (
+                  ( ~mapFn: $this.revenue.price, ~aggregateFn: $mapped->sum())                
+               )
+            },
+            ~aggregateMapping : Relational {
+               scope([aggregationAwareStore]user_view_agg.SalesTable_Month)
+               (
+                  isCancelled : case(equal(is_cancelled_flag, 'Y'), 'true', 'false'),
+                  salesDate : @Sales_Month_To_Calendar,
+                  product: @Sales_Month_To_Product,
+                  discount: discount,
+                  revenue
+                  (
+                     price  : revenue
+                  )
+               )
+            }
+         ),
+         (
+            ~modelOperation : {
+               ~canAggregate true,
+               ~groupByFunctions (
+                  $this.isCancelled, $this.salesDate.fiscalMonth, $this.salesDate.fiscalYear,
+                  $this.product, $this.revenue.price, $this.discount, $this.amount
+               ),
+               ~aggregateValues (
+                  ( ~mapFn: $this.revenue.price, ~aggregateFn: $mapped->sum())                
+               )
+            },
+            ~aggregateMapping : Relational {
+               scope([aggregationAwareStore]user_view_agg.SalesTable_Day)
+               (
+                  isCancelled : case(equal(is_cancelled_flag, 'Y'), 'true', 'false'),
+                  salesDate: @Sales_Day_To_Calendar,
+                  product: @Sales_Day_To_Product,
+                  discount: discount,
+                  revenue
+                  (
+                     price : revenue
+                  ) 
+               )
+            }
+         )
+      ],
+      ~mainMapping: Relational {
+         scope([aggregationAwareStore]base_view.SalesTable)
+         (
+            isCancelled : case(equal(is_cancelled_flag, 'Y'), 'true', 'false'),
+            salesDate: @Sales_To_Calendar,
+            product: @Sales_To_Product,
+            person: @Sales_To_Employee,
+            discount: discount,
+            revenue
+            (
+               price  : revenue
+            )
+         )
+      }
+   }
+)
+
+Mapping meta::relational::tests::aggregationAware::mapping::relationalMapping
+(
+   include meta::relational::tests::aggregationAware::mapping::baseMapping
+   
+   Wholesales [SCT] : Relational {
+      scope([aggregationAwareStore]base_view.SalesTable)
+      (
+        isCancelled : case(equal(is_cancelled_flag, 'Y'), 'true', 'false'),
+        salesDate: @Sales_To_Calendar,
+        product: @Sales_To_Product,
+        person: @Sales_To_Employee,
+        discount: discount,
+        revenue
+        (
+          price  : revenue
+        )
+      )
+   }
+)
+
+Mapping meta::relational::tests::aggregationAware::mapping::mappingWithMultiDimensionAggregates
+(
+   include meta::relational::tests::aggregationAware::mapping::baseMapping
+   
+   Employee : Relational {
+      scope([aggregationAwareStore]base_view.Employee)
+      (
+         firstName: first_name,
+         lastName: last_name,
+         sales [SCT] : @Sales_To_Employee
+      )
+   }
+   
+   Wholesales [SCT] : AggregationAware {
+      Views : [
+         (
+            // Aggregate on ProdLine And Year
+            ~modelOperation : {
+               ~canAggregate true,
+               ~groupByFunctions (
+                  $this.product.productLine, $this.salesDate.fiscalYear
+               ),
+               ~aggregateValues (
+                  ( ~mapFn: $this.revenue.price, ~aggregateFn: $mapped->sum())                
+               )
+            },
+            ~aggregateMapping : Relational {
+               scope([aggregationAwareStore]user_view_multi_agg.SalesTable_ProdLine_Year)
+               (
+                  salesDate: @Sales_ProdLine_Year_To_Calendar,
+                  discount: discount,
+                  product 
+                  (
+                     productLine : @Sales_ProdLine_Year_To_ProdLine
+                  ), 
+                  revenue
+                  (
+                     price  : revenue
+                  )
+               )
+            }
+         ),
+         (
+            // Aggregate on ProdLine, person and Year
+            ~modelOperation : {
+               ~canAggregate true,
+               ~groupByFunctions (
+                  $this.product.productLine, $this.person, $this.salesDate.fiscalYear
+               ),
+               ~aggregateValues (
+                  ( ~mapFn: $this.revenue.price, ~aggregateFn: $mapped->sum())                  
+               )
+            },
+            ~aggregateMapping : Relational {
+               scope([aggregationAwareStore]user_view_multi_agg.SalesTable_ProdLine_SalesPerson_Year)
+               (
+                  salesDate: @Sales_ProdLine_SalesPerson_Year_To_Calendar,
+                  product 
+                  (
+                     productLine : @Sales_ProdLine_SalesPerson_Year_To_ProdLine
+                  ),
+                  person: @Sales_ProdLine_SalesPerson_Year_To_Employee,
+                  discount: discount,
+                  revenue
+                  (
+                     price  : revenue
+                  )
+               )
+            }
+         ),
+         (
+            // Aggregate on Product And Month
+            ~modelOperation : {
+               ~canAggregate true,
+               ~groupByFunctions (
+                  $this.product, $this.salesDate.fiscalYear, $this.salesDate.fiscalMonth
+               ),
+               ~aggregateValues (
+                  ( ~mapFn: $this.revenue.price, ~aggregateFn: $mapped->sum())                
+               )
+            },
+            ~aggregateMapping : Relational {
+               scope([aggregationAwareStore]user_view_multi_agg.SalesTable_Product_Month)
+               (
+                  salesDate: @Sales_Product_Month_To_Calendar,
+                  product: @Sales_Product_Month_To_Product,
+                  discount: discount,
+                  revenue
+                  (
+                     price  : revenue
+                  )
+               )
+            }
+         )
+      ],
+      ~mainMapping: Relational {
+         scope([aggregationAwareStore]base_view.SalesTable)
+         (
+            isCancelled : case(equal(is_cancelled_flag, 'Y'), 'true', 'false'),
+            salesDate: @Sales_To_Calendar,
+            product: @Sales_To_Product,
+            person: @Sales_To_Employee,
+            discount: discount,
+            revenue
+            (
+               price  : revenue
+            )
+         )
+      }
+   }
+)

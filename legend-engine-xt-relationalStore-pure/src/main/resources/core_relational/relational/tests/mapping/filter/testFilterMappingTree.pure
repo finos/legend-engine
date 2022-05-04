@@ -1,0 +1,229 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::filter::model::domain::*;
+import meta::relational::tests::mapping::filter::model::store::*;
+import meta::relational::tests::mapping::filter::model::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+
+
+
+function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMapping():Boolean[1]
+{
+   let result = execute(|Org.all(), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.name);
+   assertEquals('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" where "root".filterVal <= 4', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithJoin():Boolean[1]
+{
+   let result = execute(|Org.all(), meta::relational::tests::mapping::filter::model::mapping::orgTestMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.name);
+   assertEquals('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" left outer join otherTable as "othertable_0" on ("root".id = "othertable_0".orgTableId) where "othertable_0".filterVal <= 4', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithProjection():Boolean[1]
+{
+   let result = execute(|Org.all()->project(#/Org/name#), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.rows->map(r|$r.values->at(0)));
+   assertEquals('select "root".name as "name" from orgTable as "root" where "root".filterVal <= 4', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithProjectionOverlapp():Boolean[1]
+{
+   let result = execute(|Org.all()->project([#/Org/name#, #/Org/parent/name!p_name#, #/Org/parent/parent/name!p_p_name#]), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(6, $result.values.rows->size());
+   assertEquals(['ROOT',^TDSNull(),^TDSNull()], $result.values.rows->at(0).values);
+   assertEquals(['Firm X','ROOT',^TDSNull()], $result.values.rows->at(1).values);
+   assertEquals(['Firm A','ROOT',^TDSNull()], $result.values.rows->at(2).values);
+   assertEquals(['Securities','Firm X','ROOT'], $result.values.rows->at(3).values);
+   assertEquals(['Banking','Firm X','ROOT'], $result.values.rows->at(4).values);
+   assertEquals(['Federation','Firm X','ROOT'], $result.values.rows->at(5).values);
+   assertEquals('select "root".name as "name", "orgtable_1".name as "p_name", "orgtable_2".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id and "orgtable_1".filterVal <= 4) left outer join (select "orgtable_3".id as id, "orgtable_3".name as name from orgTable as "orgtable_3" where "orgtable_3".filterVal <= 4) as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) where "root".filterVal <= 4', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithProjectionAndJoin():Boolean[1]
+{
+   let result = execute(|Org.all()->project(#/Org/name#), meta::relational::tests::mapping::filter::model::mapping::orgTestMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.rows->map(r|$r.values->at(0)));
+   assertEquals('select "root".name as "name" from orgTable as "root" left outer join otherTable as "othertable_0" on ("root".id = "othertable_0".orgTableId) where "othertable_0".filterVal <= 4', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingQuery():Boolean[1]
+{
+   let result = execute(|Org.all()->filter(o|$o.parent.name == 'Firm X'), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Banking', 'Federation', 'Securities'], $result.values.name);
+   assertEquals('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) where "orgtable_1".filterVal <= 4 and "root".filterVal <= 4 and "orgtable_1".name = \'Firm X\'', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 4. Use getter relational protocol
+function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::mapping::filter::testGetterWithTargetFilter():Boolean[1]
+{
+   let result = execute(|Org.all(), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let res = $result.values->sortBy(a|$a.name);
+   assertEquals(['Banking', 'Federation', 'Firm A', 'Firm X', 'ROOT', 'Securities'],$res.name);
+   assertEquals('Firm X',$res->at(0).parent.name);
+   assertEquals('Firm X',$res->at(1).parent.name);
+   assertEquals('ROOT',$res->at(2).parent.name);
+   assertEquals('ROOT',$res->at(3).parent.name);
+   assertEmpty($res->at(4).parent);
+   assertEquals('Firm X',$res->at(5).parent.name);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithProjectionAndJoinAndQuery():Boolean[1]
+{
+   let result = execute(|Org.all()->filter(o|$o.parent.name == 'Firm X'), meta::relational::tests::mapping::filter::model::mapping::orgTestMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Banking', 'Federation', 'Securities'], $result.values.name);
+   assertEquals('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" left outer join otherTable as "othertable_0" on ("root".id = "othertable_0".orgTableId) left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join otherTable as "othertable_1" on ("orgtable_1".id = "othertable_1".orgTableId) where "othertable_1".filterVal <= 4 and "othertable_0".filterVal <= 4 and "orgtable_1".name = \'Firm X\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithJoinNotEmpty():Boolean[1]
+{
+   let result = execute(|Org.all()->filter(o|$o.parentName->isNotEmpty()), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping2, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Banking', 'Federation', 'Securities'], $result.values.name);
+   assertEquals('select "root".id as "pk_0", "root".name as "name", "orgtable_2".name as "parentName" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) where "root".filterVal <= 4 and "orgtable_2".name is not null', $result->sqlRemoveFormatting());
+}
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::filter::setUp():Boolean[1]
+{
+    meta::relational::tests::createTablesAndFillDb();
+    createTablesAndFillDb();
+}
+
+Class meta::relational::tests::mapping::filter::model::domain::Org
+{
+    name : String[1];
+    parent: Org[0..1];
+    children: Org[*];
+    
+    parentName: String[0..1];
+}
+
+function meta::relational::tests::mapping::filter::model::store::testDataTypeMappingRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(myDB);
+}
+
+function meta::relational::tests::mapping::filter::model::store::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+
+   executeInDb('Drop table if exists orgTable;', $connection);
+   executeInDb('Create Table orgTable(id INT, filterVal INT, parentId INT, name VARCHAR(200));', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (1, 4,-1, \'ROOT\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (2, 4, 1, \'Firm X\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (3, 4, 1, \'Firm A\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (4, 4, 2, \'Securities\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (5, 4, 2, \'Banking\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (6, 4, 2, \'Federation\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (7, 6, 2, \'ShouldNotBeDisplayed\');', $connection);
+   executeInDb('Drop table if exists otherTable;', $connection);
+   executeInDb('Create Table otherTable(orgTableId INT, filterVal INT);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (1, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (2, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (3, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (4, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (5, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (6, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (7, 6);', $connection);
+   true;
+}
+
+
+###Relational
+
+Database meta::relational::tests::mapping::filter::model::store::myDB
+(
+    Table orgTable
+    (
+        id INT PRIMARY KEY,
+        filterVal INT,
+        parentId INT,
+        name VARCHAR(200)
+    )
+    
+    Table otherTable
+    (
+       orgTableId INT PRIMARY KEY,
+       filterVal INT
+    )
+    
+    Join OrgOrgParent
+    (
+       orgTable.parentId = {target}.id
+    )
+    
+    Join OrgParentOrg
+    (
+       orgTable.id = {target}.parentId
+    )
+    
+    Join OrgTableOtherTable
+    (
+       orgTable.id = otherTable.orgTableId
+    )
+    
+    Filter myFilter(orgTable.filterVal <= 4)
+    Filter myFilter2(otherTable.filterVal <= 4)
+)
+
+###Mapping
+import meta::relational::tests::mapping::filter::model::domain::*;
+import meta::relational::tests::mapping::filter::model::store::*;
+
+Mapping meta::relational::tests::mapping::filter::model::mapping::orgTestMapping
+(
+    Org: Relational
+    {
+       ~filter [myDB]myFilter
+       
+       scope([myDB]orgTable)
+       (
+          name: [myDB]name,
+          parent : @OrgOrgParent,
+          children : @OrgParentOrg
+       )
+       
+    }
+)
+
+
+Mapping meta::relational::tests::mapping::filter::model::mapping::orgTestMappingWithJoin
+(
+    Org: Relational
+    {
+        ~filter [myDB]@OrgTableOtherTable|[myDB]myFilter2
+        name: [myDB]orgTable.name,
+        parent : [myDB]@OrgOrgParent,
+        children : [myDB]@OrgParentOrg
+    }
+)
+
+Mapping meta::relational::tests::mapping::filter::model::mapping::orgTestMapping2
+(
+    Org: Relational
+    {
+       ~filter [myDB]myFilter
+       
+         name: [myDB]orgTable.name,
+         parentName:  [myDB]@OrgOrgParent >  @OrgOrgParent | orgTable.name
+       
+    }
+)

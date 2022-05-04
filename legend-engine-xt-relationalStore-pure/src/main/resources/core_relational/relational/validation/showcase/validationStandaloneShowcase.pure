@@ -1,0 +1,331 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::csv::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::validation::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+import meta::relational::validation::showcase::model::*;
+import meta::relational::validation::showcase::standalone::*;
+
+function <<test.Test>> meta::relational::validation::showcase::standalone::validateAllConstraints():Boolean[1]
+{
+   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'etiNotEmpty,Error,External Trade ID is not valid,2\n'+
+                'validLocation,Warn,Location is not known,3\n'+
+                'validLocation,Warn,Location is not known,4\n'+
+                'quantityInValidRange,Error,Quantity not in range: 1000000,5\n'+
+                'latestEventDateValid,Error,Latest event date is not valid,2\n'+
+                'knownProduct,Error,Product unknown,4\n'+
+                'knownAccount,Error,Account unknown,1\n'+
+                'isATypeAccount,Warn,Account is not Type A : ,1\n'+
+                'isATypeAccount,Warn,Account is not Type A : Account_3_B,4\n'+
+                'cusipExists,Error,Product cusip empty,3\n'+
+                'cusipExists,Error,Product cusip empty,4\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::showcase::standalone::validateSingleConstraint():Boolean[1]
+{
+   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty'], meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select \'etiNotEmpty\' as "CONSTRAINT_ID", '+
+                         '\'Error\' as "ENFORCEMENT_LEVEL", '+
+                         '\'External Trade ID is not valid\' as "MESSAGE", '+
+                         '"root".ID as "ID" '+
+                 'from tradeTable as "root" '+
+                 'where not "root".ETI is not null', $validationResult);
+   
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'etiNotEmpty,Error,External Trade ID is not valid,2\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultipleConstraints():Boolean[1]
+{
+   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty', 'validLocation'], meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionalias_0"."CONSTRAINT_ID" as "CONSTRAINT_ID", '+
+                         '"unionalias_0"."ENFORCEMENT_LEVEL" as "ENFORCEMENT_LEVEL", '+
+                         '"unionalias_0"."MESSAGE" as "MESSAGE", '+
+                         '"unionalias_0"."ID" as "ID" '+
+                 'from ('+
+                    'select \'etiNotEmpty\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'External Trade ID is not valid\' as "MESSAGE", "root".ID as "ID" '+
+                    'from tradeTable as "root" '+
+                    'where not "root".ETI is not null '+
+                    'UNION ALL '+
+                    'select \'validLocation\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'\' as "MESSAGE", "root".ID as "ID" '+
+                    'from tradeTable as "root" '+
+                    'where ("root".LOCATION not in (\'Asia\', \'EMEA\', \'Americas\') OR "root".LOCATION is null)'+
+                 ') as "unionalias_0"', $validationResult);
+   
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'etiNotEmpty,Error,External Trade ID is not valid,2\n'+
+                'validLocation,Error,,3\n'+
+                'validLocation,Error,,4\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithConstraintInformation():Boolean[1]
+{
+   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionalias_0"."CONSTRAINT_ID" as "CONSTRAINT_ID", '+
+                         '"unionalias_0"."ENFORCEMENT_LEVEL" as "ENFORCEMENT_LEVEL", '+
+                         '"unionalias_0"."MESSAGE" as "MESSAGE", '+
+                         '"unionalias_0"."ID" as "ID" '+
+                 'from ('+
+                    'select \'etiNotEmpty\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'External Trade ID is not valid\' as "MESSAGE", "root".ID as "ID" '+
+                    'from tradeTable as "root" '+
+                    'where not "root".ETI is not null '+
+                    'UNION ALL '+
+                    'select \'validLocation\' as "CONSTRAINT_ID", \'Warn\' as "ENFORCEMENT_LEVEL", \'Location is not known\' as "MESSAGE", "root".ID as "ID" '+
+                    'from tradeTable as "root" '+
+                    'where ("root".LOCATION not in (\'Asia\', \'EMEA\', \'Americas\') OR "root".LOCATION is null)'+
+                 ') as "unionalias_0"', $validationResult);
+   
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'etiNotEmpty,Error,External Trade ID is not valid,2\n'+
+                'validLocation,Warn,Location is not known,3\n'+
+                'validLocation,Warn,Location is not known,4\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithAdditionalProjections():Boolean[1]
+{
+   let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], [], validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,Trade ID,Ext Trade ID,Location\n'+
+                'etiNotEmpty,Error,External Trade ID is not valid,2,,Americas\n'+
+                'validLocation,Warn,Location is not known,3,102,Dummy\n'+
+                'validLocation,Warn,Location is not known,4,103,Dummy\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithPostTDSOperation1():Boolean[1]
+{
+   let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], {t:TabularDataSet[1]|$t->groupBy(['CONSTRAINT_ID'],agg('COUNT', x|$x.getInteger('Trade ID'), y|$y->count()))}, 
+                                    validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('CONSTRAINT_ID,COUNT\n'+
+                'validLocation,2\n'+
+                'etiNotEmpty,1\n', $validationResult.values->sort([desc('COUNT')])->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::showcase::standalone::validateAllConstraintsWithPostTDSOperation2():Boolean[1]
+{
+   let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], {t:TabularDataSet[1]|$t->restrict(['Trade ID', 'Ext Trade ID', 'CONSTRAINT_ID', 'MESSAGE'])->sort([asc('Trade ID'),asc('CONSTRAINT_ID')])}, 
+                                    validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), [], getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('Trade ID,Ext Trade ID,CONSTRAINT_ID,MESSAGE\n'+
+                '1,100,isATypeAccount,Account is not Type A : \n'+
+                '1,100,knownAccount,Account unknown\n'+
+                '2,,etiNotEmpty,External Trade ID is not valid\n'+
+                '2,,latestEventDateValid,Latest event date is not valid\n'+
+                '3,102,cusipExists,Product cusip empty\n'+
+                '3,102,validLocation,Location is not known\n'+
+                '4,103,cusipExists,Product cusip empty\n'+
+                '4,103,isATypeAccount,Account is not Type A : Account_3_B\n'+
+                '4,103,knownProduct,Product unknown\n'+
+                '4,103,validLocation,Location is not known\n'+
+                '5,104,quantityInValidRange,Quantity not in range: 1000000\n', $validationResult.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::validation::showcase::standalone::validateAllConstraintsWithInnerJoinInFilter():Boolean[1]
+{
+   let validationResult = validate({|Trade.all()}, validationShowcaseMappingWithInnerJoinsInFilter, getRuntime(), getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'knownAccount,Error,Account unknown,1\n'+
+                'isATypeAccount,Warn,Account is not Type A : ,1\n', $validationResult.values->toCSV());
+}
+
+function meta::relational::validation::showcase::standalone::getRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(^Database());
+}
+
+function <<test.BeforePackage>> meta::relational::validation::showcase::standalone::createTablesInDb():Boolean[1]
+{
+   let runtime = getRuntime();
+   let dbConn = $runtime.connections->at(0)->cast(@DatabaseConnection);
+   dropAndCreateTableInDb(db, 'tradeTable', $dbConn);
+   dropAndCreateTableInDb(db, 'accountTable', $dbConn);
+   dropAndCreateTableInDb(db, 'tradeEventTable', $dbConn);
+   dropAndCreateTableInDb(db, 'tradingGroupTable', $dbConn);
+   
+   dropAndCreateSchemaInDb('productSchema', $dbConn);
+   dropAndCreateTableInDb(db, 'productSchema', 'productTable', $dbConn);
+   dropAndCreateTableInDb(db, 'productSchema', 'synonymTable', $dbConn);
+   
+   executeInDb('insert into tradeTable (ID, ETI, LOCATION, TRADING_GROUP, prodId, accountID, quantity, tradeDate, settlementDateTime) values (1, 100, \'Americas\', \'TG_1\', 30, 60, 1000, \'2018-08-08\', \'2014-12-02 21:00:00\');', $dbConn);
+   executeInDb('insert into tradeTable (ID, LOCATION, TRADING_GROUP, prodId, accountID, quantity, tradeDate, settlementDateTime) values (2, \'Americas\', \'TG_2\', 31, 61, 1000, \'2018-08-08\', \'2014-12-02 21:00:00\');', $dbConn);
+   executeInDb('insert into tradeTable (ID, ETI, LOCATION, TRADING_GROUP, prodId, accountID, quantity, tradeDate, settlementDateTime) values (3, 102, \'Dummy\', \'TG_3\', 32, 62, 1000, \'2018-08-08\', \'2014-12-02 21:00:00\');', $dbConn);
+   executeInDb('insert into tradeTable (ID, ETI, LOCATION, TRADING_GROUP, prodId, accountID, quantity, tradeDate, settlementDateTime) values (4, 103, \'Dummy\', \'TG_4\', 33, 63, 1000, \'2018-08-08\', \'2014-12-02 21:00:00\');', $dbConn);
+   executeInDb('insert into tradeTable (ID, ETI, LOCATION, TRADING_GROUP, prodId, accountID, quantity, tradeDate, settlementDateTime) values (5, 104, \'Americas\', \'TG_5\', 34, 64, 1000000, \'2018-08-08\', \'2014-12-02 21:00:00\');', $dbConn);
+
+   executeInDb('insert into productSchema.productTable (ID, NAME) values (30, \'Prod_1\');', $dbConn);
+   executeInDb('insert into productSchema.productTable (ID, NAME) values (31, \'Prod_2\');', $dbConn);
+   executeInDb('insert into productSchema.productTable (ID, NAME) values (32, \'Prod_3\');', $dbConn);
+   executeInDb('insert into productSchema.productTable (ID, NAME) values (34, \'Prod_4\');', $dbConn);
+   
+   executeInDb('insert into productSchema.synonymTable (ID, PRODID, TYPE, NAME) values (1, 30, \'CUSIP\', \'Synonym_1\');', $dbConn);
+   executeInDb('insert into productSchema.synonymTable (ID, PRODID, TYPE, NAME) values (2, 31, \'CUSIP\', \'Synonym_2\');', $dbConn);
+   executeInDb('insert into productSchema.synonymTable (ID, PRODID, TYPE, NAME) values (3, 31, \'ISIN\', \'Synonym_3\');', $dbConn);
+   executeInDb('insert into productSchema.synonymTable (ID, PRODID, TYPE, NAME) values (4, 34, \'CUSIP\', \'Synonym_4\');', $dbConn);
+
+   executeInDb('insert into accountTable (ID, name, createDate) values (61, \'Account_1_A\', \'2018-08-08\');', $dbConn);
+   executeInDb('insert into accountTable (ID, name, createDate) values (62, \'Account_2_A\', \'2018-08-08\');', $dbConn);
+   executeInDb('insert into accountTable (ID, name, createDate) values (63, \'Account_3_B\', \'2018-08-08\');', $dbConn);
+   executeInDb('insert into accountTable (ID, name, createDate) values (64, \'Account_4_A\', \'2018-08-08\');', $dbConn);
+   
+   executeInDb('insert into tradingGroupTable (NAME, STATUS) values (\'TG_1\', \'LIVE\');', $dbConn);
+   executeInDb('insert into tradingGroupTable (NAME, STATUS) values (\'TG_2\', \'LIVE\');', $dbConn);
+   executeInDb('insert into tradingGroupTable (NAME, STATUS) values (\'TG_3\', \'LIVE\');', $dbConn);
+   executeInDb('insert into tradingGroupTable (NAME, STATUS) values (\'TG_4\', \'DEAD\');', $dbConn);
+   executeInDb('insert into tradingGroupTable (NAME, STATUS) values (\'TG_5\', \'LIVE\');', $dbConn);
+   
+   executeInDb('insert into tradeEventTable (EVENT_ID, trade_id, eventDate, eventType) values (1, 1, \'2018-08-08\', \'Type1\');', $dbConn);
+   executeInDb('insert into tradeEventTable (EVENT_ID, trade_id, eventDate, eventType) values (2, 2, \'2018-08-08\', \'Type1\');', $dbConn);
+   executeInDb('insert into tradeEventTable (EVENT_ID, trade_id, eventDate, eventType) values (3, 3, \'2018-08-08\', \'Type1\');', $dbConn);
+   executeInDb('insert into tradeEventTable (EVENT_ID, trade_id, eventDate, eventType) values (4, 4, \'2018-08-08\', \'Type1\');', $dbConn);
+   executeInDb('insert into tradeEventTable (EVENT_ID, trade_id, eventDate, eventType) values (5, 5, \'2018-08-08\', \'Type1\');', $dbConn);
+   executeInDb('insert into tradeEventTable (EVENT_ID, trade_id, eventDate, eventType) values (6, 2, \'9999-12-31\', \'Type2\');', $dbConn);
+   
+   true;
+}
+
+###Mapping
+import meta::relational::validation::showcase::standalone::*;
+import meta::relational::validation::showcase::model::*;
+
+Mapping meta::relational::validation::showcase::standalone::validationShowcaseMapping
+(
+
+   Product : Relational
+   {
+      name : [db]productSchema.productTable.NAME,
+      synonyms : [db]@Product_Synonym
+   }
+
+   ProductSynonymType: EnumerationMapping SynonymEnum
+   {
+      CUSIP:  'CUSIP',
+      ISIN: 'ISIN'
+   }
+
+   Synonym : Relational
+   {
+      scope([db]productSchema)
+      (
+         name : synonymTable.NAME
+      ),
+      typeAsString : [db]productSchema.synonymTable.TYPE,
+      type : EnumerationMapping SynonymEnum: [db]productSchema.synonymTable.TYPE,
+      product : [db]@Product_Synonym
+   }
+
+   Trade : Relational
+   {
+      tradeId : [db]tradeTable.ID,
+      externalTradeId : [db]tradeTable.ETI,
+      quantity : [db]tradeTable.quantity,
+      location : [db]tradeTable.LOCATION,
+      tradeGroup : [db]@Trade_tradingGroup,
+      account : [db]@Trade_Account,
+      product : [db]@Trade_Product,
+      date : [db]tradeTable.tradeDate,
+      settlementDateTime : [db]tradeTable.settlementDateTime,
+      latestEventDate : [db]@Trade_TradeEventViewMaxTradeEventDate | tradeEventViewMaxTradeEventDate.maxTradeEventDate,
+      events : [db]@Trade_TradeEvent
+   }
+
+
+   TradeEvent : Relational
+   {
+      eventType : [db]tradeEventTable.eventType,
+      date: [db]tradeEventTable.eventDate
+   }
+
+   TradeTradingGroup : Relational
+   {
+      name : [db]tradingGroupTable.NAME,
+      status: EnumerationMapping status : [db]tradingGroupTable.STATUS
+   }
+
+   Account : Relational
+   {
+      name : [db]accountTable.name,
+      createDate : [db]accountTable.createDate,
+      trades: [db]@Trade_Account
+   } 
+   
+   TradingGroupStatus : EnumerationMapping status
+   {
+      DEAD : 'DEAD',
+      LIVE : 'LIVE'
+   }
+   
+)
+
+Mapping meta::relational::validation::showcase::standalone::validationShowcaseMappingWithInnerJoinsInFilter
+(
+   include meta::relational::validation::showcase::standalone::validationShowcaseMapping
+   
+   *Trade[tradeWithInnerJoinInFilter] : Relational
+   {
+      ~filter [db] (INNER) @Trade_Product | [db] ProductFilter
+      tradeId : [db]tradeTable.ID,
+      externalTradeId : [db]tradeTable.ETI,
+      quantity : [db]tradeTable.quantity,
+      location : [db]tradeTable.LOCATION,
+      tradeGroup : [db]@Trade_tradingGroup,
+      account : [db]@Trade_Account,
+      product : [db]@Trade_Product,
+      date : [db]tradeTable.tradeDate,
+      settlementDateTime : [db]tradeTable.settlementDateTime,
+      latestEventDate : [db]@Trade_TradeEventViewMaxTradeEventDate | tradeEventViewMaxTradeEventDate.maxTradeEventDate,
+      events : [db]@Trade_TradeEvent
+   }   
+)
+
+
+###Relational
+Database meta::relational::validation::showcase::standalone::db
+(
+   Table tradeTable(ID VARCHAR(100) PRIMARY KEY, ETI VARCHAR(100), LOCATION VARCHAR(100), TRADING_GROUP VARCHAR(100), prodId INT, accountID INT, quantity INT, tradeDate DATE, settlementDateTime TIMESTAMP)
+   Table tradingGroupTable(NAME VARCHAR(100) PRIMARY KEY, STATUS VARCHAR(100))
+   Table accountTable(ID INT PRIMARY KEY, name VARCHAR(200), createDate DATE)
+   Table tradeEventTable(EVENT_ID INT PRIMARY KEY, trade_id INT, eventType VARCHAR(10), eventDate DATE)
+   
+   Schema productSchema
+   (
+      Table productTable(ID INT PRIMARY KEY, NAME VARCHAR(200))
+      Table synonymTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+   )
+    
+   View tradeEventViewMaxTradeEventDate
+   (
+      ~groupBy (tradeEventTable.trade_id)
+      trade_id : tradeEventTable.trade_id,
+      maxTradeEventDate : max(tradeEventTable.eventDate)
+   )
+   
+   Join Product_Synonym(productSchema.synonymTable.PRODID = productSchema.productTable.ID)
+   Join Trade_Product(tradeTable.prodId = productSchema.productTable.ID)
+   Join Trade_tradingGroup(tradeTable.TRADING_GROUP = tradingGroupTable.NAME)
+   Join Trade_Account(tradeTable.accountID = accountTable.ID)
+   Join Trade_TradeEvent(tradeTable.ID = tradeEventTable.trade_id)
+   Join Trade_TradeEventViewMaxTradeEventDate(tradeTable.ID = tradeEventViewMaxTradeEventDate.trade_id)
+   
+   Filter ProductFilter(productSchema.productTable.NAME = 'Prod_1')
+)

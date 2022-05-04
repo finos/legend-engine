@@ -1,0 +1,318 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::pure::profiles::*;
+import meta::pure::metamodel::tds::*;
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testSimpleDerived():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/name#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 7 );
+   assertEquals('Anthony,Anthony Allen,David,David Harris,Fabrice,Fabrice Roberts,John,John,John Hill,John Johnson,Oliver,Oliver Hill,Peter,Peter Smith', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
+   assertEquals('select "root".FIRSTNAME as "firstName", concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "name" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testSimpleBoolean():Boolean[1]
+{
+   let result = execute(|Account.all()->project([a | $a.name, p | $p.isTypeA], ['Account', 'Type A']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 2 );
+   assertEquals(false, $result.values.rows->at(0).values->at(1));
+   assertEquals(true, $result.values.rows->at(1).values->at(1));
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testSimpleDerivedThroughAssociation():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([#/Firm/legalName#, #/Firm/employees/name#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 7 );
+   assertEquals(['Firm X', 'Peter Smith'], $result.values.rows->at(0).values);
+   assertEquals(['Firm X', 'John Johnson'], $result.values.rows->at(1).values);
+   assertEquals(['Firm X', 'John Hill'], $result.values.rows->at(2).values);
+   assertEquals(['Firm X', 'Anthony Allen'], $result.values.rows->at(3).values);
+   assertEquals(['Firm A', 'Fabrice Roberts'], $result.values.rows->at(4).values);
+   assertEquals(['Firm B', 'Oliver Hill'], $result.values.rows->at(5).values);
+   assertEquals(['Firm C', 'David Harris'], $result.values.rows->at(6).values);
+   assertEquals('select "root".LEGALNAME as "legalName", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "name" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testDerivedWithFiltering():Boolean[1]
+{
+   let result = execute(|Product.all()->project([#/Product/name#, #/Product/cusip#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 4);
+   assertEquals('CUSIP1,CUSIP2,CUSIP3,Firm A,Firm C,Firm D,Firm X,TDSNull', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
+   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>>   meta::relational::tests::projection::qualifier::testDerivedWithFilteringTwoProperties():Boolean[1]
+{
+   let result = execute(|Product.all()->project([#/Product/name#, #/Product/cusip#, #/Product/isin#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 4);
+   assertEquals('CUSIP1,CUSIP2,CUSIP3,Firm A,Firm C,Firm D,Firm X,ISIN1,ISIN2,ISIN3,TDSNull,TDSNull', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
+   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip", "synonymtable_1".NAME as "isin" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\') left outer join productSchema.synonymTable as "synonymtable_1" on ("synonymtable_1".PRODID = "root".ID and "synonymtable_1".TYPE = \'ISIN\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithFilteringAndParameters():Boolean[1]
+{
+   let result = execute(|Product.all()->project([#/Product/name#, #/Product/synonymByType(ProductSynonymType.CUSIP)/name!cusip#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 4);
+   assertEquals('CUSIP1,CUSIP2,CUSIP3,Firm A,Firm C,Firm D,Firm X,TDSNull', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
+   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\')', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 10. Tricky usage of variables
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::projection::qualifier::testQualifierWithClassAsParameter():Boolean[1]
+{
+   let personNameParameter = ^PersonNameParameter(lastNameFirst=true, nested=^PersonNameParameterNested(prefix='Prefix_'));
+   let result = execute(|Person.all()->project([p|$p.parameterizedName($personNameParameter)],['a']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 7 );
+   assertEquals('Prefix_ Allen, Anthony,Prefix_ Harris, David,Prefix_ Hill, John,Prefix_ Hill, Oliver,Prefix_ Johnson, John,Prefix_ Roberts, Fabrice,Prefix_ Smith, Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
+   assertEquals('select case when \'true\' then concat(\'Prefix_\', \' \', "root".LASTNAME, \', \', "root".FIRSTNAME) else concat("root".FIRSTNAME, \' \', "root".LASTNAME) end as "a" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testTwoQualifiersUsingSameJoinWithNoUserParams():Boolean[1]
+{
+   let result = execute(|Product.all()->project([#/Product/isinSynonym/name!isin#, #/Product/cusipSynonym/name!cusip#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values->at(0), 1);
+   assertEquals(['ISIN1', 'CUSIP1', 'ISIN2', 'CUSIP2', 'ISIN3', 'CUSIP3', ^TDSNull(), ^TDSNull()], $result.values->toOne().rows.values);
+   assertEquals('select "synonymtable_0".NAME as "isin", "synonymtable_1".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'ISIN\') left outer join productSchema.synonymTable as "synonymtable_1" on ("synonymtable_1".PRODID = "root".ID and "synonymtable_1".TYPE = \'CUSIP\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierInLambdaDeep():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([t|$t.product->toOne().synonymByType(ProductSynonymType.CUSIP).name],['name']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 11);
+   assertEquals(['CUSIP1', 'CUSIP1', 'CUSIP2', 'CUSIP2', 'CUSIP2', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3', ^TDSNull()], $result.values.rows.values);
+   assertEquals('select "synonymtable_0".NAME as "name" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join (select "synonymtable_1".PRODID as PRODID, "synonymtable_1".NAME as NAME from productSchema.synonymTable as "synonymtable_1" where "synonymtable_1".TYPE = \'CUSIP\') as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_0".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierBeforeProject():Boolean[1]
+{
+   let result = execute(|Trade.all().product->map(p|$p.synonymByType(ProductSynonymType.CUSIP))->project([t|$t.name],['name']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 10);
+   assertEquals(['CUSIP1', 'CUSIP1', 'CUSIP2', 'CUSIP2', 'CUSIP2', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3'], $result.values.rows.values);
+   assertEquals('select "synonymtable_0".NAME as "name" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_0".ID) where "synonymtable_0".TYPE = \'CUSIP\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithIsEmptyOnComplexType():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([#/Trade/productDescription#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 11);
+   assertEquals(['Firm X', 'Firm X', 'Firm A', 'Firm A', 'Firm A', 'Firm C', 'Firm C', 'Firm C', 'Firm C', 'Firm C', 'Unknown'], $result.values.rows.values);
+   assertSameSQL('select case when "tradetable_1".ID is null then \'Unknown\' else "producttable_1".NAME end as "productDescription" from tradeTable as "root" left outer join (select distinct "producttable_0".ID from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)) as "tradetable_1" on ("root".prodId = "tradetable_1".ID) left outer join productSchema.productTable as "producttable_1" on ("root".prodId = "producttable_1".ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithIsNotEmptyOnComplexType():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([#/Trade/accountDescription#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 11);
+   assertEquals(['Account 1', 'Account 2', 'Account 1', 'Account 2', 'Account 1', 'Account 1', 'Account 1', 'Account 2', 'Account 2', 'Account 2', 'Unknown'], $result.values.rows.values);
+   assertSameSQL('select case when "tradetable_1".ID is not null then "accounttable_1".name else \'Unknown\' end as "accountDescription" from tradeTable as "root" left outer join (select distinct "accounttable_0".ID from tradeTable as "root" left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID)) as "tradetable_1" on ("root".accountID = "tradetable_1".ID) left outer join accountTable as "accounttable_1" on ("root".accountID = "accounttable_1".ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testNestedIfWithIsEmpty():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([#/Trade/productIdentifier#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 11);
+   assertEquals(['CUSIP1', 'CUSIP1', 'CUSIP2', 'CUSIP2', 'CUSIP2', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'Unknown'], $result.values.rows.values);
+   assertSameSQL('select case when "tradetable_1".ID is not null then case when "synonymtable_0".NAME is not null then "synonymtable_0".NAME else "producttable_1".NAME end else \'Unknown\' end as "productIdentifier" from tradeTable as "root" left outer join (select distinct "producttable_0".ID from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)) as "tradetable_1" on ("root".prodId = "tradetable_1".ID) left outer join productSchema.productTable as "producttable_1" on ("root".prodId = "producttable_1".ID) left outer join (select "synonymtable_1".PRODID as PRODID, "synonymtable_1".NAME as NAME from productSchema.synonymTable as "synonymtable_1" where "synonymtable_1".TYPE = \'CUSIP\') as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_1".ID)', $result);
+}
+
+function <<test.ToFix>> meta::relational::tests::projection::qualifier::testNestedIfWithIsEmptyWithProjectFunction():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([t | $t.productIdentifier], ['productIdentifier']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 11);
+   assertEquals(['CUSIP1', 'CUSIP1', 'CUSIP2', 'CUSIP2', 'CUSIP2', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'Unknown'], $result.values.rows.values);
+   assertSameSQL('select case when "tradetable_1".ID is not null then case when "synonymtable_0".NAME is not null then "synonymtable_0".NAME else "producttable_1".NAME end else \'Unknown\' end as "productIdentifier" from tradeTable as "root" left outer join (select distinct "producttable_0".ID from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)) as "tradetable_1" on ("root".prodId = "tradetable_1".ID) left outer join productSchema.productTable as "producttable_1" on ("root".prodId = "producttable_1".ID) left outer join (select "synonymtable_1".PRODID as PRODID, "synonymtable_1".NAME as NAME from productSchema.synonymTable as "synonymtable_1" where "synonymtable_1".TYPE = \'CUSIP\') as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_1".ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testNestedIfWithIsEmptyCanReturnNull():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([#/Trade/productIdentifierWithNull#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 11);
+   assertEquals(['CUSIP1', 'CUSIP1', 'CUSIP2', 'CUSIP2', 'CUSIP2', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3', 'CUSIP3', ^TDSNull()], $result.values.rows.values);
+   assertSameSQL('select case when "tradetable_1".ID is not null then case when "synonymtable_0".NAME is not null then "synonymtable_0".NAME else "producttable_1".NAME end else null end as "productIdentifierWithNull" from tradeTable as "root" left outer join (select distinct "producttable_0".ID from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)) as "tradetable_1" on ("root".prodId = "tradetable_1".ID) left outer join productSchema.productTable as "producttable_1" on ("root".prodId = "producttable_1".ID) left outer join (select "synonymtable_1".PRODID as PRODID, "synonymtable_1".NAME as NAME from productSchema.synonymTable as "synonymtable_1" where "synonymtable_1".TYPE = \'CUSIP\') as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_1".ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithFilterWithDataTypeResult():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([t | $t.tradeDateEventTypeInlined], ['tradeDateEventTypeInlined']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 11);
+   assertEquals(['New', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), 'New', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull()], $result.values.rows.values);
+   assertEquals('select "tradeeventtable_0".eventType as "tradeDateEventTypeInlined" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierFunctionConsistencyWithDataTypeProperty():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([t | $t.tradeDateEventType], ['tradeDateEventType']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(['New', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), 'New', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull()], $result.values.rows.values);
+   assertEquals('select "tradeeventtable_0".eventType as "tradeDateEventType" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate)', $result->sqlRemoveFormatting());
+
+   let result2 = execute(|Trade.all()->project([t | $t.tradeDateEventTypeInlined], ['tradeDateEventTypeInlined']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals($result.values.rows.values, $result2.values->at(0).rows.values);
+   assertEquals($result->sqlRemoveFormatting()->replace('d#8', 'd#7')->replace('"tradeDateEventType"','"tradeDateEventTypeInlined"'), $result2->sqlRemoveFormatting());
+   assertEquals('select "tradeeventtable_0".eventType as "tradeDateEventTypeInlined" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate)', $result2->sqlRemoveFormatting());
+
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierFunctionConsistencyWithComplexTypeProperty():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([t | $t.initiator.firstName], ['initiator_firstname']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(['Peter', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), 'Anthony', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull()], $result.values.rows.values);
+   assertEquals('select "persontable_0".FIRSTNAME as "initiator_firstname" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate) left outer join personTable as "persontable_0" on ("tradeeventtable_0".person_id = "persontable_0".ID)', $result->sqlRemoveFormatting());
+
+   let result2 = execute(|Trade.all()->project([t | $t.initiatorInlined.firstName], ['initiator_firstname']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(['Peter', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), 'Anthony', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull()], $result.values.rows.values);
+   assertEquals('select "persontable_0".FIRSTNAME as "initiator_firstname" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate) left outer join personTable as "persontable_0" on ("tradeeventtable_0".person_id = "persontable_0".ID)', $result2->sqlRemoveFormatting());
+
+   assertEquals($result.values.rows.values, $result2.values.rows.values);
+   assertEquals($result->sqlRemoveFormatting()->replace('d#10', 'd#9'), $result2->sqlRemoveFormatting());
+}
+
+
+function <<test.ToFix>> meta::relational::tests::projection::qualifier::testFilterInQualifierAndMapping():Boolean[1]
+{  
+   let result = execute(|Product.all()->filter(p | $p.cusip == 'CUSIP1')
+                  ->project([p | $p.name, p | $p.cusip], ['name', 'cusip']), 
+               meta::relational::tests::projection::qualifier::productMappingWithFilter, 
+               testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 0);
+   
+   assertEquals('select "root".NAME as "name", "synonymTable_d_1_d#5_d_m2".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymTable_d_1_d#5_d_m2" on ("synonymTable_d_1_d#5_d_m2".PRODID = "root".ID and "synonymTable_d_1_d#5_d_m2".TYPE = \'CUSIP\')', $result->sqlRemoveFormatting());
+     
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testFilterInQualifierWithFilterInMappingInAggGroupBy():Boolean[1]
+{  
+   let result = execute(|Product.all()->groupBy(
+                           [p | $p.name]
+                           , 
+                           [agg(p | $p.cusip, y|$y->count())], 
+                           
+                           ['name', 'cusip']
+                           )->sort('name'), 
+               meta::relational::tests::projection::qualifier::productMappingWithFilter, 
+               testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 4);
+   assertEquals(['Firm A', 1, 'Firm C', 1, 'Firm D', 0, 'Firm X', 0], $result.values.rows.values);
+   
+   assertEquals('select "root".NAME as "name", count("synonymtable_0".NAME) as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID != 1) group by "name" order by "name"', $result->sqlRemoveFormatting());
+     
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testFilterInQualifierWithFilterInMappingInProjectGroupBy():Boolean[1]
+{  
+   let result = execute(|Product.all()->groupBy(
+                           [p | $p.cusip]
+                           , 
+                           [agg(p | $p.name, y|$y->count())], 
+                           
+                           ['cusip', 'count']
+                           )->sort('cusip'), 
+               meta::relational::tests::projection::qualifier::productMappingWithFilter, 
+               testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 3);
+
+   assertEquals([^TDSNull(), 2, 'CUSIP2', 1, 'CUSIP3', 1], $result.values.rows.values);
+   
+   assertEquals('select "synonymtable_0".NAME as "cusip", count("root".NAME) as "count" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID != 1) group by "cusip" order by "cusip"', $result->sqlRemoveFormatting());
+     
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithVariableArg():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employeeByLastName($f.legalName).name],['firmId','employeeWithFirmLastName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm X~ ', 'Firm A~ ', 'Firm B~ ', 'Firm C~ '],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select "root".LEGALNAME as "firmId", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "employeeWithFirmLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = "root".LEGALNAME)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithVariableArgReferencedFirstInFilterEqualCriteria():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employeeByLastNameWhereVarIsFirstEqualArg($f.legalName).name],['firmId','employeeWithFirmLastName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm X~ ', 'Firm A~ ', 'Firm B~ ', 'Firm C~ '],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select "root".LEGALNAME as "firmId", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "employeeWithFirmLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "root".LEGALNAME = "persontable_0".LASTNAME)', $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithVariableArgWithComplexTypeProperty():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employeesByCityOrManager($f.address.name->toOne(),'').name->joinStrings(), f|$f.address.name],['legalName','employeeWithFirmAddress','address']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm X~John Johnson,John Hill,Anthony Allen~New York', 'Firm A~TDSNull~Cupertino', 'Firm B~TDSNull~Tokyo', 'Firm C~TDSNull~Mountain View'],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select "root".LEGALNAME as "legalName", "firmtable_1".aggCol as "employeeWithFirmAddress", "addresstable_2".NAME as "address" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, group_concat(concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) ) as aggCol from firmTable as "firmtable_2" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID) where ("addresstable_1".NAME = "addresstable_0".NAME or concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'\') group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID) left outer join addressTable as "addresstable_2" on ("addresstable_2".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithVariableArgWithComplexTypePropertyAndSubsequentComplexTypePropertyCall():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.employeesByCityOrManager($f.address.name->toOne(),'').address.name],['legalName','addressFor-employeeWithFirmAddressCity']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm X~New York', 'Firm X~New York', 'Firm X~New York', 'Firm A~TDSNull', 'Firm B~TDSNull', 'Firm C~TDSNull'],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select "root".LEGALNAME as "legalName", "addresstable_2".NAME as "addressFor-employeeWithFirmAddressCity" from firmTable as "root" left outer join (select "persontable_0".ADDRESSID as ADDRESSID, "firmtable_2".ID as ID from firmTable as "firmtable_2" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID) where ("addresstable_1".NAME = "addresstable_0".NAME or concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'\')) as "firmtable_1" on ("root".ID = "firmtable_1".ID) left outer join addressTable as "addresstable_2" on ("addresstable_2".ID = "firmtable_1".ADDRESSID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::qualifier::testFilterOnRootTypeWithOrWithFilterInQualifier():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|( ($t.tradeDateEvent().eventType->isNotEmpty() || $t.account.name == 'Account 1')
+                                                   && $t.id == '1'))->project([col(t | $t.id, 'id'),
+                                                                              col(t | $t.account.name,'acc')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.rows, 1);
+   assertEquals('select "root".ID as "id", "accounttable_0".name as "acc" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".trade_id = \'1\' and "tradeeventtable_0".eventDate = "root".tradeDate) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where (("tradeeventtable_0".eventType is not null or "accounttable_0".name = \'Account 1\') and "root".ID = \'1\')', $result->sqlRemoveFormatting());
+}
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+
+Mapping meta::relational::tests::projection::qualifier::productMappingWithFilter
+(
+   include meta::relational::tests::projection::qualifier::productSubMappingWithFilter[dbInc->db]
+
+   ProductSynonymType: EnumerationMapping SynonymEnum
+   {
+        CUSIP:  'CUSIP',
+        ISIN: 'ISIN'
+   }
+
+   Synonym : Relational
+             {
+                ~filter [db]ProductSynonymFilter
+                
+                scope([db]productSchema)
+                (
+                    name : synonymTable.NAME
+                ),
+                type : EnumerationMapping SynonymEnum: [db]productSchema.synonymTable.TYPE,
+                product : [db]@Product_Synonym
+             }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+
+Mapping meta::relational::tests::projection::qualifier::productSubMappingWithFilter
+(
+   Product : Relational
+             {
+                name : [dbInc]productSchema.productTable.NAME,
+                synonyms : [db]@Product_Synonym
+             }
+
+)

@@ -1,0 +1,359 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::milestoning::inheritance::*;
+
+Class meta::relational::tests::milestoning::Order{
+   id : Integer[1];
+   product : Product[*];
+   biTemporalProduct : BiTemporalProduct[*];
+   orderDate : Date[0..1];
+   description : OrderDescription[1];
+   orderDetails : OrderDetails[1];
+   systemADescription : SystemAOrderDescription[1];   
+   stockProduct : Product[0..1];
+   cusipProduct : Product[0..1];
+   createdLocation : Location[0..1];
+   
+   latestProduct(){
+         $this.product(%latest)
+   }:Product[*];
+
+   productQp(bd:Date[1]){
+         $this.product($bd)
+   }:Product[*];
+
+   productName(bd:Date[1]){
+      if($this.product($bd).name->isEmpty(),|'empty',|$this.product($bd).name)->toOne()
+   }:String[1];
+}
+
+Class <<temporal.bitemporal>> meta::relational::tests::milestoning::ClearingHouse{
+   name : String[1];
+   location : Location[0..1];
+}
+
+Class <<temporal.bitemporal>> meta::relational::tests::milestoning::Location{
+   place : String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::OrderPnl
+{
+   pnl:Float[1];
+   productName : String[0..1];
+   product : Product[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::OrderPnlWithConstraint
+[
+   CST( ~function:$this.product($this.businessDate->adjust(-1, DurationUnit.DAYS)).id > 0
+        ~message: 'Constraint to ensure that $this.businessDate milestoning property is processed correctly when mapped to a View'
+      )   
+]
+{
+   pnl:Float[1];
+   productName : String[0..1];
+   product : Product[0..1];
+}
+
+Class meta::relational::tests::milestoning::OrderDescription{
+   id : Integer[1];
+   description : String[1];
+}
+
+Class meta::relational::tests::milestoning::OrderDetails{
+   id : Integer[1];
+   settlementDate : Date[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::SystemAOrderDescription{
+   description : String[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::milestoning::Trader{
+   kerberos : String[1];
+   certifications : Certification[*];
+   location : Location[0..1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::milestoning::Certification{
+   name : String[1];
+}
+
+Association meta::relational::tests::milestoning::Trader_AccreditedCertification
+{
+   trader        : Trader[1];
+   accreditedCertifications : Certification[*];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Product{
+   id : Integer[1];
+   name : String[1];
+   type : String[1];
+   inlinedExchangeName : String[0..1];
+   inlinedExchangeNameQp() {$this.inlinedExchangeName} : String[0..1];
+   inlinedCreatedBy : String[0..1];
+   classification : ProductClassification[1];
+   classificationTypeStr(){$this.classification($this.businessDate).type} : String[1];
+   classificationExchangeName1(){$this.classification($this.businessDate).exchange(%2019-1-1).name} : String[1];
+   classificationExchangeName2(){$this.classification(%2019-1-1).exchange($this.businessDate).name} : String[1];
+   classificationExchangeName3(){$this.classification($this.businessDate->adjust(1, DurationUnit.DAYS)).exchange($this.businessDate->adjust(1, DurationUnit.DAYS)).name} : String[1];
+   biTemporalClassification : BiTemporalProductClassification[0..1];
+   synonyms : ProductSynonym[1..*];
+   exchange : Exchange[1];
+   newActivity : NewActivityInfo[0..1];
+   cancelActivity : NewActivityInfo[0..1];
+   cancelProductActivity : NewProductActivityInfo[0..1];
+   cancelProductActivityCreatedBy : String[0..1];
+   stockProductName : String[0..1];
+   classificationType : ProductClassificationType[0..1];
+   isBrexitClassificationTypeExchange : Boolean[0..1];
+   referenceSystem : System[0..1];
+   referenceSystems : System[*];
+   externalReferenceSystem : ExternalSystem[0..1];
+   synonymsByType(type:String[1]){
+      $this.synonymsAllVersions->filter(s|$s.type==$type)
+   }:ProductSynonym[*];
+
+   classificationWithDateConstant(){
+      $this.classification(%9999-12-31)
+   }:ProductClassification[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint1 extends meta::relational::tests::milestoning::Product
+[
+   CST
+   (
+      ~function: $this.referenceSystem->toOne().systemDescription($this.businessDate).description->toOne()->length() < 10
+      ~message: 'Ensure property: systemDescription is processed with the correct milestoning date, note that there are no milestoning properties on its left through which a date could be propagated'
+   )
+]
+{
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint1b extends meta::relational::tests::milestoning::Product
+[
+   CST
+   (
+      ~function: $this.referenceSystems.systemDescription($this.businessDate).description->toOne()->length() < 10 
+      ~message: 'Ensure Ensure parent (this) milestoning context propagated through (auto) map'
+   )
+]
+{
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint1c 
+[
+   CST
+   (
+      ~function: $this.referenceSystem->toOne()->project(r|$r.systemDescription($this.businessDate).description,'system description')->tdsRows()->isNotEmpty() 
+      ~message: 'Ensure parent (this) milestoning context propagated through project'
+   )
+]
+{
+   name : String[1];
+   referenceSystem : System[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint2 extends meta::relational::tests::milestoning::Product
+[
+   CST
+   (
+      ~function: $this.classification(%2019-1-1).exchange($this.businessDate).name->toOne()->length()->isEmpty()
+      ~message: 'Ensure property: exchange is processed with the correct milestoning date, and that the milestoning property on the left (classification) is not propagagted'
+   )
+]
+{
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint3 extends meta::relational::tests::milestoning::Product
+[
+   CST
+   (
+      ~function: $this.classification(adjust($this.businessDate, 1, DurationUnit.DAYS)).exchange($this.businessDate).name == 'exchangeName'
+      ~message: 'Ensure that milestoning qualified properties passed function arguments which reference $this.temporalDate are processed correctly'
+   )
+]
+{
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::OrderWithConstraint 
+[
+   CST
+   (
+      ~function: $this.product($this.orderDate->toOne()).exchange($this.businessDate)->isNotEmpty()
+      ~message: 'Ensure that milestoning qualified properties passed function arguments which reference $this.temporalDate are processed correctly'
+   )
+]
+{
+   product : Product[*];
+   orderDate : Date[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::OrderWithProductWithConstraints
+{
+   orderDate : Date[0..1];
+   product : ProductWithConstraint1[1];
+   getClassificationDescription(date: Date[1]){$this.product($date).classification.description->joinStrings()}:String[1];
+}
+
+Class <<temporal.bitemporal>> meta::relational::tests::milestoning::BiTemporalProduct{
+   id : Integer[1];
+   name : String[1];
+   type : String[1];
+   classification : ProductClassification[1];
+   biTemporalClassification : BiTemporalProductClassification[0..1];
+   classificationType : ProductClassificationType[0..1];
+   biTemporalClassificationType(){$this.biTemporalClassification($this.processingDate, $this.businessDate).type} : String[0..1];
+   biTemporalClassificationTypeWithIndirect(){biTemporalClassificationType($this, $this.processingDate, $this.businessDate)} : String[0..1];
+}
+
+function meta::relational::tests::milestoning::biTemporalClassificationType(biTemporalProduct:BiTemporalProduct[1], processingDate:Date[1], businessDate:Date[1]):String[0..1]
+{
+   $biTemporalProduct.biTemporalClassification($processingDate, $businessDate).type
+}
+
+Class <<temporal.bitemporal>> meta::relational::tests::milestoning::BiTemporalProductClassification{
+   type : String[1];
+   description : String[1];
+   system : System[1];
+   exchange : Exchange[1];
+   product : Product[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::StockProduct extends meta::relational::tests::milestoning::Product{
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductClassification{
+   type : String[1];
+   description : String[1];
+   system : System[1];
+   exchange : Exchange[1];
+   exchangeName : String[1];
+   product : Product[1];
+   biTemporalProduct : BiTemporalProduct[0..1];
+}
+
+Enum meta::relational::tests::milestoning::ProductClassificationType
+{
+    STOCK
+}
+
+Class meta::relational::tests::milestoning::System{
+   name : String[1];
+   systemType : String[1];
+   systemDescription : SystemDescription[0..1];
+}
+
+Class meta::relational::tests::milestoning::ExternalSystem{
+   name : String[1];
+   systemType : String[1];
+   systemDescription : SystemDescription[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::SystemDescription{
+   description : String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductSynonym{
+   synonym : String[1];
+   type : String[1];
+   createActivity: NewActivityInfo[0..1];
+}
+
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Exchange{
+   name : String[1];
+   location : Location[0..1];
+}
+
+Class meta::relational::tests::milestoning::NewActivityInfo{
+   createdBy : String[1];
+}
+
+Class meta::relational::tests::milestoning::NewProductActivityInfo{
+   createdBy : String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::TradePnl
+{
+   pnl:Float[1];
+   supportContactName:String[1];
+   //trade:Trade[1];
+}
+
+Association meta::relational::tests::milestoning::OrderProduct{
+   ascProduct : Product[1];
+   orders : Order[*];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::VehicleOwner
+{
+   vehicles : Vehicle[*];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Person extends VehicleOwner
+{
+   name : String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Vehicle
+{
+   id : Integer[1];
+   description: String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Aircraft extends Vehicle
+{
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Jet extends Aircraft
+{
+   engineCount : Integer[1];
+}
+
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::RoadVehicle extends Vehicle
+{
+   wheelCount : Integer[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Bicycle extends RoadVehicle
+{
+
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Car extends RoadVehicle
+{
+   engineType : EngineType[1];
+}
+
+
+Enum meta::relational::tests::milestoning::inheritance::EngineType
+{
+   V, U, H, W, X
+}
+
+Association meta::relational::tests::milestoning::inheritance::PersonRoadVehicle
+{
+   person : Person[1];
+   roadVehicles : RoadVehicle[*];
+}
+
+Association meta::relational::tests::milestoning::inheritance::PersonVehicle
+{
+   person : Person[1];
+   vehicles : Vehicle[*];
+}

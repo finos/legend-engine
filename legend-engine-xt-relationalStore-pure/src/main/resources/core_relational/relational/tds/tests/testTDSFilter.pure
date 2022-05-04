@@ -1,0 +1,233 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlstring::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+import meta::pure::metamodel::tds::*;
+import meta::pure::profiles::*;
+import meta::relational::tests::model::simple::*;
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testSimpleFilter():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName!name#])->filter({r | $r.getString('name') == 'John'}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
+   assertSize($result.values.rows, 2 );
+   assertEquals(['John','John'], $result.values.rows->map(r|$r.values));
+   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnEnum():Boolean[1]
+{
+   let result = execute(|Address.all()->project([a | $a.name, a |$a.type],['name', 'type'])->filter({l|$l.getEnum('type') == GeographicEntityType.CITY}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(GeographicEntityType.CITY, $result.values.rows.values->at(1));
+   assertEquals(['Hoboken,CITY', 'New York,CITY', 'New York,CITY', 'New York,CITY', 'San Fransisco,CITY', 'Hong Kong,CITY', 'New York,CITY', 'New York,CITY', 'Cupertino,CITY', 'Tokyo,CITY', 'Mountain View,CITY'],$result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "root".NAME as "name", "root".TYPE as "type" from addressTable as "root" where "root".TYPE = 1', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterTwoExpressions():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | $r.getString('first') == 'John' && $r.getString('last') == 'Johnson'}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where ("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterMultipleExpressions1():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | 
+         and([
+               $r.isNotNull('first'), 
+               eq($r.getString('first'), 'John'), 
+               eq($r.getString('last'), 'Johnson')
+         ])
+      }), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where ("root".FIRSTNAME is not null and "root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterMultipleExpressions2():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | 
+         or([
+               (eq($r.getString('first'), 'John') && eq($r.getString('last'), 'Johnson')),
+               (eq($r.getString('first'), 'NotJohn1') && eq($r.getString('last'), 'NotJohnson1')),
+               (eq($r.getString('first'), 'NotJohn2') && eq($r.getString('last'), 'NotJohnson2'))
+         ])
+      }), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or ("root".FIRSTNAME = \'NotJohn1\' and "root".LASTNAME = \'NotJohnson1\') or ("root".FIRSTNAME = \'NotJohn2\' and "root".LASTNAME = \'NotJohnson2\'))', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterBeforeAndFilterAfter():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.lastName == 'Johnson')->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | $r.getString('first') == 'John'}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where "root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterBeforeWithOrAndFilterAfter():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.lastName == 'Johnson' || $p.lastName == 'Hill')->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | $r.getString('first') == 'John'}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 2);
+   assertEquals(['John','Johnson', 'John', 'Hill'], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where "root".FIRSTNAME = \'John\' and ("root".LASTNAME = \'Johnson\' or "root".LASTNAME = \'Hill\')', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterUsingFunction():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | $r.getString('first')->startsWith('A')}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['Anthony','Allen'], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where "root".FIRSTNAME like \'A%\'', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnDynaFunctionColumn():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p | $p.firstName, p | $p.lastName->startsWith('J')], ['first', 'J'])->filter({r | $r.getBoolean('J')}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['John', true], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME like \'J%\' as "J" from personTable as "root" where "root".LASTNAME like \'J%\'', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnRootClassAggValueAfterGroupBy():Boolean[1]
+{   
+   let result = execute(|Person.all()->groupBy([p|$p.age],agg(x|$x.firstName,y|$y->joinStrings(',')),['age', 'firstNamesWithSameAge'])->filter({l|$l.getString('firstNamesWithSameAge')->contains('John')}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 2);
+   assertEquals(['12,John', '22,John,Anthony'],$result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "root".AGE as "age", group_concat("root".FIRSTNAME separator \',\') as "firstNamesWithSameAge" from personTable as "root" group by "age" having group_concat("root".FIRSTNAME separator \',\') like \'%John%\'', $result->sqlRemoveFormatting());   
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnAssociatedClassAggValueAfterGroupBy():Boolean[1]
+{
+   let result = execute(|Person.all()->groupBy([p|$p.age], agg(x|$x.address.name,y|$y->joinStrings(',')),['age', 'addresses'])->filter({r|$r.getString('addresses')->contains('Hoboken')}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['23,Hoboken'],$result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "root".AGE as "age", group_concat("addresstable_0".NAME separator \',\') as "addresses" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) group by "age" having group_concat("addresstable_0".NAME separator \',\') like \'%Hoboken%\'', $result->sqlRemoveFormatting());
+}
+
+//works on Sybase
+function <<test.ToFix>> meta::relational::tests::tds::tdsFilter::testFilterAfterGroupByWithSameColForGroupByAggAndFilterOnRootClass():Boolean[1]
+{
+   let result = execute(|Person.all()->groupBy([p|$p.firstName->length()],agg(x|$x.firstName,y|$y->joinStrings(',')),['firstNameLength', 'firstNamesWithSameLength'])->filter({l|$l.getInteger('firstNameLength') == 7}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   println($result);
+   assertSize($result.values.rows, 1);
+   assertEquals(['7,Anthony,Fabrice,Oliver'],$result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", group_concat("root".FIRSTNAME separator ',') as "firstNamesWithSameLength" from personTable as "root" group by "firstNameLength" having char_length("root".FIRSTNAME) = 7', | $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterAfterGroupByWithSameColForGroupByAggAndFilterOnRootClassSybase():Boolean[1]
+{
+   let f = {|Person.all()->groupBy([p|$p.firstName->length()],agg(x|$x.firstName,y|$y->joinStrings(',')),['firstNameLength', 'firstNamesWithSameLength'])->filter({l|$l.getInteger('firstNameLength') == 7})};
+   let sql = toSQLString($f,simpleRelationalMapping,DatabaseType.Sybase, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", list("root".FIRSTNAME,\',\') as "firstNamesWithSameLength" from personTable as "root" group by char_length("root".FIRSTNAME) having char_length("root".FIRSTNAME) = 7', $sql);
+}
+
+//works on Sybase
+function <<test.ToFix>> meta::relational::tests::tds::tdsFilter::testFilterAfterGroupByWithFilterOnAllProjectColumns():Boolean[1]
+{
+   let result = execute(|Person.all()->groupBy([p|$p.firstName->length()],agg(x|$x.firstName,y|$y->joinStrings(',')),['firstNameLength', 'firstNamesWithSameLength'])->filter({l|$l.getInteger('firstNameLength') == 7 || $l.getString('firstNamesWithSameLength')->contains('David')}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   println($result);
+   assertSize($result.values.rows, 2);
+   assertEquals(['7,Anthony,Fabrice,Oliver','5,David'],$result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", group_concat("root".FIRSTNAME separator ',') as "firstNamesWithSameLength" from personTable as "root" group by "firstNameLength" having (char_length("root".FIRSTNAME) = 7 or group_concat("root".FIRSTNAME separator ',') like \'%David%\')', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterAfterGroupByWithFilterOnAllProjectColumnsSybase():Boolean[1]
+{
+   let f = {|Person.all()->groupBy([p|$p.firstName->length()],agg(x|$x.firstName,y|$y->joinStrings(',')),['firstNameLength', 'firstNamesWithSameLength'])->filter({l|$l.getInteger('firstNameLength') == 7 || $l.getString('firstNamesWithSameLength')->contains('David')})};
+   let sql = toSQLString($f,simpleRelationalMapping,DatabaseType.Sybase, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", list("root".FIRSTNAME,\',\') as "firstNamesWithSameLength" from personTable as "root" group by char_length("root".FIRSTNAME) having (char_length("root".FIRSTNAME) = 7 or list("root".FIRSTNAME,\',\') like \'%David%\')', $sql);
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterFollowedByGroupByWithFilterOnRootClass():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.firstName=='John')->groupBy([p|$p.age],agg(x|$x.firstName,y|$y->joinStrings(',')),['age', 'firstNamesWithSameAge'])->filter({l|$l.getString('firstNamesWithSameAge')->contains('John')}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 2);
+   assertEquals(['12,John','22,John'],$result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "root".AGE as "age", group_concat("root".FIRSTNAME separator \',\') as "firstNamesWithSameAge" from personTable as "root" where "root".FIRSTNAME = \'John\' group by "age" having group_concat("root".FIRSTNAME separator \',\') like \'%John%\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnDatesSybase():Boolean[1]
+{
+
+   let dt = %2015-01-01T00:00:00.000;
+   let sql = toSQLString(|Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDateTime('settlementDateTime') < $dt),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where "root".settlementDateTime < convert(DATETIME, \'2015-01-01 00:00:00.000\', 121)', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnRootClassAggValueAfterGroupByWithHavingMultipleFilters():Boolean[1]
+{
+   
+   let result = execute(|Person.all()->groupBy([p|$p.age],agg(x|$x.firstName,y|$y->joinStrings(',')),['age', 'firstNamesWithSameAge'])->filter(l| $l.getInteger('age') >20  )->filter({l|$l.getString('firstNamesWithSameAge')->contains('John')}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['22,John,Anthony'],$result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "root".AGE as "age", group_concat("root".FIRSTNAME separator \',\') as "firstNamesWithSameAge" from personTable as "root" group by "age" having group_concat("root".FIRSTNAME separator \',\') like \'%John%\' and "root".AGE > 20', $result->sqlRemoveFormatting());
+   true;
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testEvalInFilter():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | {|$p.lastName == 'Johnson' || $p.lastName == 'Hill'}->eval())->project([p | $p.firstName, p | $p.lastName], ['first', 'last']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 3);
+   assertEquals(['John','Johnson', 'John', 'Hill', 'Oliver', 'Hill'], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where ("root".LASTNAME = \'Johnson\' or "root".LASTNAME = \'Hill\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnQuotedColumnFromTableToTds():Boolean[1]
+{
+   let queryWithoutQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
+       ->project([
+                               col({r:TDSRow[1]|$r.getString('FIRST NAME')}, 'FIRST NAME'),
+                               col({r:TDSRow[1]|$r.getString('LAST NAME')}, 'LAST NAME'),
+                               col({r:TDSRow[1]|$r.getString('1columnStartsWithNumber')}, '1columnStartsWithNumber')
+                              ])
+                 ->restrict(['FIRST NAME', 'LAST NAME', '1columnStartsWithNumber'])
+                 ->filter({r | $r.getString('FIRST NAME') == 'Peter'})};
+
+   let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
+   let runtime = meta::relational::tests::testRuntime();
+   
+   let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+ 
+   let expectedSql = 'select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber" from tableWithQuotedColumns as "root" where "root"."FIRST NAME" = \'Peter\'';
+   assertEquals($expectedSql, $resWithoutQuotes->sqlRemoveFormatting());
+   
+   
+   let queryWithQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
+       ->project([
+                               col({r:TDSRow[1]|$r.getString('FIRST NAME')}, 'FIRST NAME'),
+                               col({r:TDSRow[1]|$r.getString('LAST NAME')}, 'LAST NAME'),
+                               col({r:TDSRow[1]|$r.getString('1columnStartsWithNumber')}, '1columnStartsWithNumber')
+                              ])
+                 ->restrict(['"FIRST NAME"', '"LAST NAME"', '"1columnStartsWithNumber"'])
+                 ->filter({r | $r.getString('"FIRST NAME"') == 'Peter'})};
+   
+   let resWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals($expectedSql, $resWithQuotes->sqlRemoveFormatting());
+}

@@ -1,0 +1,435 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+import meta::csv::*;
+
+import meta::relational::tests::mapping::distinct::model::*;
+import meta::relational::tests::mapping::distinct::model::domain::*;
+import meta::relational::tests::mapping::distinct::model::store::*;
+import meta::relational::tests::mapping::distinct::model::mapping::*;
+
+import meta::pure::functions::tools::*;
+
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingSelectAll():Boolean[1]
+{
+   let result = execute(|IncomeFunction.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['IF 1', 'IF 2', 'IF 2'], $result.values.name);
+   assertEquals('select distinct "root".IF_CODE as "code", "root".IF_NAME as "name" from ACCOUNT_INFO as "root"', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingSelectAllWithFilter():Boolean[1]
+{
+   let result = execute(|IncomeFunction.all()->filter(i | $i.code == 1002), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['IF 2'], $result.values.name);
+   assertSameElements([1002], $result.values.code);
+   assertEquals('select distinct "root".IF_CODE as "code", "root".IF_NAME as "name" from ACCOUNT_INFO as "root" where "root".IF_CODE = 1002', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingSimpleProjectSelectAll():Boolean[1]
+{
+   let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#,#/IncomeFunction/code#])->sort('code'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('name,code\n' + 'IF 1,1001\n' +  'IF 2,1002\n' + 'IF 2,1022\n', $result.values->toOne()->toCSV());
+   
+   //todo: could optimize to collapse the sub select back
+   assertEquals('select "root".IF_NAME as "name", "root".IF_CODE as "code" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME from ACCOUNT_INFO as "account_info_1") as "root" order by "code"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingSimpleProjectSelectOneOfTheDistinctProperties():Boolean[1]
+{
+   let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#])->sort('name'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('name\n' + 'IF 1\n' + 'IF 2\n' + 'IF 2\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".IF_NAME as "name" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME from ACCOUNT_INFO as "account_info_1") as "root" order by "name"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingSimpleProjectDistinct():Boolean[1]
+{
+   //Distinct the projection as well as the table - double distinct!
+   let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#])->distinct(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('name\n' + 'IF 1\n' + 'IF 2\n', $result.values->toOne()->toCSV());
+   assertEquals('select distinct "root".IF_NAME as "name" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME from ACCOUNT_INFO as "account_info_1") as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithFilterSelectAll():Boolean[1]
+{
+   let result = execute(|IncomeFunction.all(), testMappingWithFilter, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['IF 1', 'IF 2', 'IF 2'], $result.values.name);
+   assertEquals('select distinct "root".IF_CODE as "code", "root".IF_NAME as "name" from ACCOUNT_INFO as "root" where "root".IF_TYPE = \'Type 1\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithFilterSelectOneProperty():Boolean[1]
+{
+   let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#])->sort('name'), testMappingWithFilter, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('name\n' + 'IF 1\n' + 'IF 2\n' + 'IF 2\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".IF_NAME as "name" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME from ACCOUNT_INFO as "account_info_1" where "account_info_1".IF_TYPE = \'Type 1\') as "root" order by "name"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithJoinSelectAll():Boolean[1]
+{
+   let result = execute(|IncomeFunction.all(), testMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['IF 1', 'IF 2', 'IF 2'], $result.values.name);
+   assertEquals('select distinct "root".IF_CODE as "code", "root".IF_NAME as "name", "if_other_info_0".IF_OTHER_NAME as "IfName" from ACCOUNT_INFO as "root" left outer join IF_OTHER_INFO as "if_other_info_0" on ("root".IF_CODE = "if_other_info_0".IF_CODE)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithJoinProject():Boolean[1]
+{
+   let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/IfName#]), testMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('IfName\n' + 'IfName1\n' + 'IfName2\n' + '\n', $result.values->toOne()->toCSV());
+   assertEquals('select "if_other_info_1".IF_OTHER_NAME as "IfName" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME, "if_other_info_0".IF_OTHER_NAME as IF_OTHER_NAME from ACCOUNT_INFO as "account_info_1" left outer join IF_OTHER_INFO as "if_other_info_0" on ("account_info_1".IF_CODE = "if_other_info_0".IF_CODE)) as "root" left outer join IF_OTHER_INFO as "if_other_info_1" on ("root".IF_CODE = "if_other_info_1".IF_CODE)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testProjectDistinctMappingWithDistinctInJoin():Boolean[1]
+{
+   let result = execute(|Classification.all()->project([#/Classification/name#,#/Classification/incomeFunctions/name!incomeFunction#]), testMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('name,incomeFunction\n' + 'IfName1,IF 1\n' + 'IfName2,IF 2\n', $result.values->toOne()->toCSV());
+   
+   //TODO: replace 'root' in distinct?
+   assertEquals('select "root".IF_OTHER_NAME as "name", "account_info_0".IF_NAME as "incomeFunction" from IF_OTHER_INFO as "root" left outer join (select distinct "root".IF_CODE, "root".IF_NAME, "if_other_info_1".IF_OTHER_NAME from ACCOUNT_INFO as "root" left outer join IF_OTHER_INFO as "if_other_info_1" on ("root".IF_CODE = "if_other_info_1".IF_CODE)) as "account_info_0" on ("account_info_0".IF_CODE = "root".IF_CODE)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testProjectDistinctMappingWithDistinctInJoinWithDup():Boolean[1]
+{
+   let result = execute(|Classification.all()->project([#/Classification/name#,#/Classification/incomeFunctions/name!incomeFunction#]), testMappingWithJoinWithDup, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('name,incomeFunction\n' + 'IfName1,IF 1\n' + 'IfName2,IF 2\n', $result.values->toOne()->toCSV());
+   
+   //TODO: replace 'root' in distinct?
+   assertEquals('select "root".IF_OTHER_NAME as "name", "account_info_0".IF_NAME as "incomeFunction" from IF_OTHER_INFO as "root" left outer join (select distinct "root".IF_NAME, "if_other_info_1".IF_OTHER_NAME, "root".IF_CODE from ACCOUNT_INFO as "root" left outer join IF_OTHER_INFO as "if_other_info_1" on ("root".IF_CODE = "if_other_info_1".IF_CODE and "root".IF_CODE is not null)) as "account_info_0" on ("account_info_0".IF_CODE = "root".IF_CODE and "account_info_0".IF_CODE is not null)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithDistinctInJoinWithFilter():Boolean[1]
+{
+   let result = execute(|Classification.all()->filter(c | $c.name == 'IfName2')->project([#/Classification/name#,#/Classification/incomeFunctions/name!incomeFunction#]), testMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('name,incomeFunction\n' + 'IfName2,IF 2\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".IF_OTHER_NAME as "name", "account_info_0".IF_NAME as "incomeFunction" from IF_OTHER_INFO as "root" left outer join (select distinct "root".IF_CODE, "root".IF_NAME, "if_other_info_1".IF_OTHER_NAME from ACCOUNT_INFO as "root" left outer join IF_OTHER_INFO as "if_other_info_1" on ("root".IF_CODE = "if_other_info_1".IF_CODE)) as "account_info_0" on ("account_info_0".IF_CODE = "root".IF_CODE) where "root".IF_OTHER_NAME = \'IfName2\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithDistinctInJoinWithFilterOnJoin():Boolean[1]
+{
+   let result = execute(|Classification.all()->filter(c | $c.incomeFunctions->exists(i | $i.name == 'IF 2'))->project([#/Classification/name#,#/Classification/incomeFunctions/name!incomeFunction#]), testMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('name,incomeFunction\n' + 'IfName2,IF 2\n', $result.values->toOne()->toCSV());
+   assertSameSQL('select "root".IF_OTHER_NAME as "name", "account_info_0".IF_NAME as "incomeFunction" from IF_OTHER_INFO as "root" left outer join (select distinct "root".IF_CODE, "root".IF_NAME, "if_other_info_1".IF_OTHER_NAME from ACCOUNT_INFO as "root" left outer join IF_OTHER_INFO as "if_other_info_1" on ("root".IF_CODE = "if_other_info_1".IF_CODE)) as "account_info_0" on ("account_info_0".IF_CODE = "root".IF_CODE) where exists(select 1 from (select distinct "root".IF_CODE, "root".IF_NAME, "if_other_info_2".IF_OTHER_NAME from ACCOUNT_INFO as "root" left outer join IF_OTHER_INFO as "if_other_info_2" on ("root".IF_CODE = "if_other_info_2".IF_CODE)) as "account_info_2" where "account_info_2".IF_CODE = "root".IF_CODE and "account_info_2".IF_NAME = \'IF 2\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithFullDenormSelfJoins():Boolean[1]
+{
+   let incomeFunctions = execute(|IncomeFunction.all(), testMappingFullDenorm, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['IF 1', 'IF 2', 'IF 2'], $incomeFunctions.values.name);
+   
+   let accounts = execute(|FirmAccount.all(), testMappingFullDenorm, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Acct 1', 'Acct 2', 'Acct 3', 'Acct 4', 'Acct 5'], $accounts.values.name);
+   
+   let deskHeads = execute(|DeskHead.all(), testMappingFullDenorm, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Jack'], $deskHeads.values.name);
+   
+   let result = execute(|FirmAccount.all()->project([#/FirmAccount/name!accountName#,#/FirmAccount/incomeFunction/name!IncomeFunction#,#/FirmAccount/incomeFunction/deskHead/name!DeskHead#]), testMappingFullDenorm, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      
+   assertEquals('accountName,IncomeFunction,DeskHead\n' + 'Acct 1,IF 1,Jack\n' + 'Acct 2,IF 2,Jack\n' + 'Acct 3,IF 2,Jack\n' + 'Acct 4,IF 2,Jack\n' + 'Acct 5,IF 2,Jack\n',$result.values->toOne()->toCSV());
+   assertEquals('select "root".ACCT_NAME as "accountName", "account_info_1".IF_NAME as "IncomeFunction", "account_info_2".DESKHEAD_NAME as "DeskHead" from ACCOUNT_INFO as "root" left outer join (select distinct "root".IF_CODE, "root".IF_NAME, "root".DESKHEAD_ID from ACCOUNT_INFO as "root" where "root".IF_TYPE = \'Type 1\') as "account_info_1" on ("root".IF_CODE = "account_info_1".IF_CODE) left outer join (select distinct "root".DESKHEAD_NAME, "root".DESKHEAD_ID from ACCOUNT_INFO as "root") as "account_info_2" on ("account_info_1".DESKHEAD_ID = "account_info_2".DESKHEAD_ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithFullDenormSelfJoinsWithFilterOnJoin():Boolean[1]
+{   
+   let result = execute(|FirmAccount.all()->filter(a | $a.incomeFunction.name == 'IF 2'), testMappingFullDenorm, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Acct 2', 'Acct 3', 'Acct 4', 'Acct 5'], $result.values.name);
+   //todo - should the filter move inside the distinct ?
+   assertEquals('select "root".id as "pk_0", "root".ACC_NUM as "number", "root".ACCT_NAME as "name" from ACCOUNT_INFO as "root" left outer join (select distinct "root".IF_CODE, "root".IF_NAME, "root".DESKHEAD_ID from ACCOUNT_INFO as "root" where "root".IF_TYPE = \'Type 1\') as "account_info_1" on ("root".IF_CODE = "account_info_1".IF_CODE) where "account_info_1".IF_NAME = \'IF 2\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithFullDenormSelfJoinsWithTwoFiltersOnJoin():Boolean[1]
+{   
+   let result = execute(|FirmAccount.all()->filter(a | $a.incomeFunction.name == 'IF 2' && $a.incomeFunction.code == 1002), testMappingFullDenorm, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Acct 2', 'Acct 3', 'Acct 5'], $result.values.name);
+   
+   //todo - should the filter move inside the distinct ?
+   assertEquals('select "root".id as "pk_0", "root".ACC_NUM as "number", "root".ACCT_NAME as "name" from ACCOUNT_INFO as "root" left outer join (select distinct "root".IF_CODE, "root".IF_NAME, "root".DESKHEAD_ID from ACCOUNT_INFO as "root" where "root".IF_TYPE = \'Type 1\') as "account_info_1" on ("root".IF_CODE = "account_info_1".IF_CODE) where ("account_info_1".IF_NAME = \'IF 2\' and "account_info_1".IF_CODE = 1002)', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithCaseStatement():Boolean[1]
+{
+   let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#,#/IncomeFunction/Classification/name!IfName#])->sort(['name', 'IfName']), testMappingWithCase, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('name,IfName\n' + 'IF 1,IfName1\n' + 'IF 2,IfName2\n' + 'IF 2,Unknown\n', $result.values->toOne()->toCSV());
+   
+   assertEquals('select "root"."name" as "name", case when "if_other_info_0".IF_OTHER_NAME is null then \'Unknown\' else "if_other_info_0".IF_OTHER_NAME end as "IfName" from (select distinct "account_info_1".IF_CODE as IF_CODE, case when "account_info_1".IF_NAME is null then \'C\' else "account_info_1".IF_NAME end as "name" from ACCOUNT_INFO as "account_info_1") as "root" left outer join IF_OTHER_INFO as "if_other_info_0" on ("root".IF_CODE = "if_other_info_0".IF_CODE) order by "name","IfName"', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::distinct::setUp():Boolean[1]
+{
+    createTablesAndFillDb();
+}
+
+
+
+function meta::relational::tests::mapping::distinct::model::store::testDataTypeMappingRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(myDB);
+}
+
+
+function meta::relational::tests::mapping::distinct::model::store::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ACCOUNT_INFO', $connection);
+
+   executeInDb('insert into ACCOUNT_INFO (id, ACC_NUM, ACCT_NAME, IF_CODE, IF_NAME, IF_TYPE, DESKHEAD_ID, DESKHEAD_NAME) values (1, 7900001, \'Acct 1\', 1001, \'IF 1\', \'Type 1\', 11, \'Jack\');', $connection);
+   executeInDb('insert into ACCOUNT_INFO (id, ACC_NUM, ACCT_NAME, IF_CODE, IF_NAME, IF_TYPE, DESKHEAD_ID, DESKHEAD_NAME) values (2, 7900002, \'Acct 2\',1002, \'IF 2\', \'Type 1\', 11, \'Jack\');', $connection);
+   executeInDb('insert into ACCOUNT_INFO (id, ACC_NUM, ACCT_NAME, IF_CODE, IF_NAME, IF_TYPE, DESKHEAD_ID, DESKHEAD_NAME) values (3, 7900003, \'Acct 3\',1002, \'IF 2\', \'Type 1\', 11, \'Jack\');', $connection);
+   executeInDb('insert into ACCOUNT_INFO (id, ACC_NUM, ACCT_NAME, IF_CODE, IF_NAME, IF_TYPE, DESKHEAD_ID, DESKHEAD_NAME) values (4, 7900004, \'Acct 4\',1022, \'IF 2\', \'Type 1\', 11, \'Jack\');', $connection);
+   executeInDb('insert into ACCOUNT_INFO (id, ACC_NUM, ACCT_NAME, IF_CODE, IF_NAME, IF_TYPE, DESKHEAD_ID, DESKHEAD_NAME) values (5, 7900005, \'Acct 5\',1002, \'IF 2\', \'Type 2\', 11, \'Jack\');', $connection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ACCOUNT_INFO_NORM', $connection);
+   
+   executeInDb('Drop table if exists IF_OTHER_INFO;', $connection);
+   executeInDb('Create Table IF_OTHER_INFO(IF_CODE INT, IF_OTHER_NAME VARCHAR(20));', $connection);
+   executeInDb('insert into IF_OTHER_INFO (IF_CODE, IF_OTHER_NAME) values (1001, \'IfName1\');', $connection);
+   executeInDb('insert into IF_OTHER_INFO (IF_CODE, IF_OTHER_NAME) values (1002, \'IfName2\');', $connection);
+
+   true;
+}
+
+
+Class meta::relational::tests::mapping::distinct::model::domain::IncomeFunction
+{
+   code:Integer[1];
+   name:String[1];
+   IfName: String[0..1];
+   deskHead: DeskHead[0..1];
+}
+
+
+Class meta::relational::tests::mapping::distinct::model::domain::FirmAccount
+{
+   number:Integer[1];
+   name: String[1];
+   incomeFunction: IncomeFunction[0..1];
+}
+
+Class meta::relational::tests::mapping::distinct::model::domain::DeskHead
+{
+   name:String[1];
+   code:Integer[1];
+}
+
+Class meta::relational::tests::mapping::distinct::model::domain::Classification
+{
+   name:String[1];
+}
+
+Association meta::relational::tests::mapping::distinct::model::domain::SDI_IF
+{
+   incomeFunctions:IncomeFunction[*];
+   Classification:Classification[0..1];
+}
+
+
+###Relational
+
+Database meta::relational::tests::mapping::distinct::model::store::myDB
+(
+    Table ACCOUNT_INFO
+    (
+        id INT PRIMARY KEY,
+        ACC_NUM INT,
+        ACCT_NAME VARCHAR(20),
+        IF_CODE INT,
+        IF_NAME VARCHAR(200),
+        IF_TYPE VARCHAR(20),
+        DESKHEAD_ID INT,
+        DESKHEAD_NAME VARCHAR(20)
+    )
+    
+    Table ACCOUNT_INFO_NORM
+    (
+        id INT PRIMARY KEY,
+        ACC_NUM INT,
+        ACCT_NAME VARCHAR(20),
+        IF_CODE INT
+    )
+    
+    Table IF_OTHER_INFO
+    (
+       IF_CODE INT PRIMARY KEY,
+       IF_OTHER_NAME VARCHAR(20)
+    )
+    
+    Filter typeFilter(ACCOUNT_INFO.IF_TYPE = 'Type 1')
+       
+    Join otherInfo(ACCOUNT_INFO.IF_CODE = IF_OTHER_INFO.IF_CODE)
+    
+    Join otherInfo2(ACCOUNT_INFO.IF_CODE = IF_OTHER_INFO.IF_CODE and ACCOUNT_INFO.IF_CODE is not null)
+    
+    Join acctIncomeFunction(ACCOUNT_INFO.IF_CODE = {target}.IF_CODE)
+    Join acctIncomeFunctionNorm(ACCOUNT_INFO_NORM.IF_CODE = ACCOUNT_INFO.IF_CODE)
+    Join incomeFunctionDeskHead(ACCOUNT_INFO.DESKHEAD_ID = {target}.DESKHEAD_ID)
+    
+    
+    
+)
+
+###Mapping
+import meta::relational::tests::mapping::distinct::model::domain::*;
+import meta::relational::tests::mapping::distinct::model::store::*;
+
+Mapping meta::relational::tests::mapping::distinct::model::mapping::testMapping
+(
+    IncomeFunction: Relational
+    {
+       ~distinct
+       scope([myDB]ACCOUNT_INFO)
+       (
+          code: IF_CODE,
+          name : IF_NAME
+       )
+       
+    }
+)
+
+Mapping meta::relational::tests::mapping::distinct::model::mapping::testMappingWithFilter
+(
+    IncomeFunction: Relational
+    {
+       ~filter[myDB]typeFilter
+       ~distinct
+       scope([myDB]ACCOUNT_INFO)
+       (
+          code: IF_CODE,
+          name : IF_NAME
+       )
+       
+    }
+)
+
+Mapping meta::relational::tests::mapping::distinct::model::mapping::testMappingWithJoin
+(
+    IncomeFunction: Relational
+    {
+       ~distinct
+       scope([myDB]ACCOUNT_INFO)
+       (
+          code: IF_CODE,
+          name : IF_NAME
+       ),
+       IfName : [myDB]@otherInfo | IF_OTHER_INFO.IF_OTHER_NAME,
+       Classification : [myDB]@otherInfo
+       
+    }
+    
+    Classification: Relational
+    {
+       name: [myDB]IF_OTHER_INFO.IF_OTHER_NAME,
+       incomeFunctions: [myDB]@otherInfo
+    }
+    
+)
+
+Mapping meta::relational::tests::mapping::distinct::model::mapping::testMappingWithJoinWithDup
+(
+    IncomeFunction: Relational
+    {
+       ~distinct
+       scope([myDB]ACCOUNT_INFO)
+       (
+          name : IF_NAME
+       ),
+       IfName : [myDB]@otherInfo2 | IF_OTHER_INFO.IF_OTHER_NAME,
+       Classification : [myDB]@otherInfo2
+       
+    }
+    
+    Classification: Relational
+    {
+       name: [myDB]IF_OTHER_INFO.IF_OTHER_NAME,
+       incomeFunctions: [myDB]@otherInfo2
+    }
+    
+)
+
+
+Mapping meta::relational::tests::mapping::distinct::model::mapping::testMappingFullDenorm
+(
+    FirmAccount: Relational
+    {
+       scope([myDB]ACCOUNT_INFO)
+       (
+          number: ACC_NUM,
+          name: ACCT_NAME
+       ),
+       incomeFunction: [myDB]@acctIncomeFunction
+    }
+    
+    IncomeFunction: Relational
+    {
+       ~filter[myDB]typeFilter
+       ~distinct
+       scope([myDB]ACCOUNT_INFO)
+       (
+          
+          code: IF_CODE,
+          name : IF_NAME
+       ),
+       Classification : [myDB]@otherInfo,
+       deskHead: [myDB]@incomeFunctionDeskHead
+       
+    }
+    
+    DeskHead: Relational
+    {
+       ~distinct
+       scope([myDB]ACCOUNT_INFO)
+       (
+          name: DESKHEAD_NAME,
+          code: DESKHEAD_ID
+       )
+    }
+    
+    Classification: Relational
+    {
+       name: [myDB]IF_OTHER_INFO.IF_OTHER_NAME
+    }
+    
+)
+
+Mapping meta::relational::tests::mapping::distinct::model::mapping::testMappingWithCase
+(
+    IncomeFunction: Relational
+    {
+       ~distinct
+       scope([myDB]ACCOUNT_INFO)
+       (
+          
+          code: IF_CODE,
+          name : case(isNull(IF_NAME), 'C', IF_NAME)
+       ),
+       Classification : [myDB]@otherInfo
+       
+    }
+    
+    Classification: Relational
+    {
+       scope([myDB]IF_OTHER_INFO)
+       (
+          name: case(isNull(IF_OTHER_NAME), 'Unknown', IF_OTHER_NAME)
+       )
+    }
+)

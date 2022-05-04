@@ -1,0 +1,314 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::join::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testProjectAllColumns_Single():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project(p|$p.firstName,'firstName')
+         ->restrict(['firstName']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('Peter,John,John,Anthony,Fabrice,Oliver,David',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testProjectAllColumns_Mulitple():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName,'firstName'), col(p|'Hello', 'Hello')])
+         ->restrict(['firstName', 'Hello']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 2);   
+   
+   assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   // Expect that the sql includes all columns
+   assertEquals('select "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testLowerProjectColsEliminated():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName,'firstName'), col(p|'Hello','Hello')])
+         ->restrict(['firstName']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('Peter,John,John,Anthony,Fabrice,Oliver,David',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   //Expect that the const column has been dropped from the sql
+   assertFalse($result->sqlRemoveFormatting()->toLower()->contains('hello'));
+   
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testLowerProjectColsNotEliminatedWithDistinct():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName,'firstName'), col(p|'Hello','Hello')])
+         ->sort(asc('firstName'))
+         ->distinct()
+         ->restrict(['firstName']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('Anthony,David,Fabrice,John,Oliver,Peter',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   //Expect that the const column has been dropped from the sql
+   assert($result->sqlRemoveFormatting()->toLower()->contains('hello'));
+   
+   assertEquals('select "persontable_0"."firstName" as "firstName" from (select distinct "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "firstName") as "persontable_0"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testLowerProjectColsNotEliminatedWithSort():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName,'firstName'), col(p|'Hello','Hello')])
+         ->sort([asc('Hello'), asc('firstName')])
+         ->restrict(['firstName']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   //Expect that the const column has been dropped from the sql
+   assert($result->sqlRemoveFormatting()->toLower()->contains('hello'));
+   
+   assertEquals('select "persontable_0"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "Hello","firstName") as "persontable_0"', 
+      $result->sqlRemoveFormatting());   
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOnGroupByEleminatesUncessaryAggs():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->groupBy([p|$p.firm.legalName], 
+            [
+               agg(x | $x.firstName, y | $y->count()), 
+               agg(x | $x.age, y | $y->max())
+            ]
+            , ['Firm', 'People count', 'Max Age'])
+         ->sort(asc('Firm'))
+         ->restrict(['Firm', 'People count']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 2);   
+   
+   assertEquals('Firm A|1,Firm B|1,Firm C|1,Firm X|4',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   //Expect that the calculation of Max(age) has been dropped from the SQL
+   assertEquals('select "firmtable_0".LEGALNAME as "Firm", count("root".FIRSTNAME) as "People count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) group by "Firm" order by "Firm"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOnGroupByEleminatesUnnecessaryAggsWithDistinct():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->groupBy([p|$p.firm.legalName], 
+            [
+               agg(x | $x.firstName, y | $y->count()), 
+               agg(x | $x.age, y | $y->max())
+            ]
+            , ['Firm', 'People count', 'Max Age'])
+         ->sort(asc('Firm'))
+         ->distinct()
+         ->restrict(['Firm', 'People count']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 2);   
+   
+   assertEquals('Firm A|1,Firm B|1,Firm C|1,Firm X|4',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   //Expect that the calculation of Count(people) has been retained in the SQL
+   assert($result->sqlRemoveFormatting()->toLower()->contains('count'));
+
+   //Expect that the calculation of Max(age) has been dropped in the SQL
+   assertFalse($result->sqlRemoveFormatting()->toLower()->contains('max'));
+
+   //Expect that the calculation of Max(age) has been dropped from the SQL
+   assertEquals('select "persontable_0"."Firm" as "Firm", "persontable_0"."People count" as "People count" from (select distinct "firmtable_0".LEGALNAME as "Firm", count("root".FIRSTNAME) as "People count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) group by "Firm" order by "Firm") as "persontable_0"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOnGroupByColumn_SubSetOfGroupByColumns():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->groupBy([p|$p.firm.legalName, p|$p.locations.place], 
+            [
+               agg(x | $x.firstName, y | $y->count()), 
+               agg(x | $x.age, y | $y->max())
+            ]
+            , ['Firm', 'Place', 'People count', 'Max Age'])        
+         ->restrict(['Firm', 'People count'])
+         ->sort([asc('Firm'), asc('People count')]),
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals([String, Integer], $result.values.columns.type);
+   assertSize($result.values.columns, 2);   
+   
+   assertEquals('Firm A|1,Firm A|1,Firm B|1,Firm B|1,Firm C|1,Firm X|1,Firm X|1,Firm X|2,Firm X|4',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   //Expect that the calculation of Max(age) has been dropped from the SQL, including place in the group by
+   assertFalse($result->sqlRemoveFormatting()->toLower()->contains('max'));
+
+   //Expect that it still groups by the place
+   assert($result->sqlRemoveFormatting()->toLower()->contains('place'));
+
+   assertEquals('select "persontable_0"."Firm" as "Firm", "persontable_0"."People count" as "People count" from (select "firmtable_0".LEGALNAME as "Firm", "locationtable_0".PLACE as "Place", count("root".FIRSTNAME) as "People count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) group by "Firm","Place") as "persontable_0" order by "Firm","People count"', 
+      $result->sqlRemoveFormatting());   
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOnGroupByColumn_DropAllAggColumns():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->groupBy([p|$p.firm.legalName, p|$p.locations.place], 
+            [
+               agg(x | $x.firstName, y | $y->count()), 
+               agg(x | $x.age, y | $y->max())
+            ]
+            , ['Firm', 'Place', 'People count', 'Max Age'])
+         ->restrict(['Firm'])
+         ->sort(asc('Firm')),
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('Firm A,Firm A,Firm B,Firm B,Firm C,Firm X,Firm X,Firm X,Firm X',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   //Expect that the calculation of Max(age) and Count(People) has been dropped from the SQL, including place in the group by
+   assertFalse($result->sqlRemoveFormatting()->toLower()->contains('max'));
+   assertFalse($result->sqlRemoveFormatting()->toLower()->contains('count'));
+   
+   //Expect that it still groups by the place
+   assert($result->sqlRemoveFormatting()->toLower()->contains('place'));
+   
+   
+   assertEquals('select "persontable_0"."Firm" as "Firm" from (select "firmtable_0".LEGALNAME as "Firm", "locationtable_0".PLACE as "Place" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) group by "Firm","Place") as "persontable_0" order by "Firm"', 
+      $result->sqlRemoveFormatting());   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictHandlesQueryPathsCorrectlyOnRename():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project(col(p|$p.age, 'age'))
+         ->extend([col(r:TDSRow[1]|$r.getInteger('age') + 8, 'age_new') ])
+         ->restrict(['age_new'])
+         ->extend([col(r:TDSRow[1]|$r.getInteger('age_new'), 'age') ])
+         ->restrict(['age'])
+         ->sort(asc('age'))
+         ,
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('20,30,30,31,40,42,43',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictWithPostProcessor():Boolean[1]
+{
+   let runtime = testRuntime();
+   let conn = $runtime.connections->at(0)->cast(@TestDatabaseConnection);
+   let runtimeWithPostProcessor = ^$runtime(connections = ^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel}) }]));
+   let result = execute(|Person.all()->project([col(p|$p.firstName,'firstName'), col(p|'Hello','Hello')])->sort([asc('Hello'), asc('firstName')])->restrict(['firstName']), simpleRelationalMapping, $runtimeWithPostProcessor, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('select "persontable_0"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "Hello","firstName") as "persontable_0"', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictAfterMultiColumnGroupByFollowedByRename():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->groupBy([{p:Person[1]|$p.firstName}, {p:Person[1]|$p.lastName}], agg({x:Person[1]|$x.age}, {y:Integer[*]|$y->average()}), ['firstName', 'lastName','averageAge'])
+         ->restrict(['lastName', 'averageAge'])
+         ->renameColumns(^Pair<String,String>(first = 'lastName', second = 'name'))
+         ->sort([asc('name'), asc('averageAge')])
+         ,
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertSize($result.values.columns, 2);
+
+   assertEquals('Allen|22.0,Harris|35.0,Hill|12.0,Hill|32.0,Johnson|22.0,Roberts|34.0,Smith|23.0',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictAfterConcatenate():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+         ->concatenate(
+            Person.all()
+               ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])            
+            )
+         ->distinct()
+         ->restrict(['firstName'])
+         ,
+      simpleRelationalMapping, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter',
+      $result.values.rows->map(r|$r.values->makeString('|'))->sort()->makeString(','));
+}

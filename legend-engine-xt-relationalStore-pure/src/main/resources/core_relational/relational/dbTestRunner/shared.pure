@@ -1,0 +1,87 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::runtime::*;
+import meta::relational::dbTestRunner::*;
+import meta::pure::alloy::connections::*;
+
+Profile meta::relational::dbTestRunner::dbTest
+{
+   stereotypes : [ Test, Ignore ];
+}
+
+Class meta::relational::dbTestRunner::DbTestConfig
+{
+   dbType: DatabaseType[1];
+   connection: RelationalDatabaseConnection[0..1];
+   expectedSql: String[0..1];
+}
+
+function meta::relational::dbTestRunner::collectTests(pack: Package[1]): Function<{DbTestConfig[1] -> String[0..1]}>[*]
+{
+   $pack.children->map(c| $c->match([
+      f:Function<Any>[1]| if($f.stereotypes->contains(dbTest->stereotype('Test')), |$f->cast(@Function<{DbTestConfig[1] -> String[0..1]}>), |[]),
+      p:Package[1]| collectTests($p),
+      x:Any[1]| []
+   ]));
+}
+
+function meta::relational::dbTestRunner::runTestsWith(
+                                               allTests: Function<{DbTestConfig[1] -> String[0..1]}>[*],
+                                               ignoredTests : Function<{DbTestConfig[1] -> String[0..1]}>[*],
+                                               dbType: DatabaseType[1],
+                                               connection: RelationalDatabaseConnection[0..1],
+                                               expectedSqls: Map<Function<{DbTestConfig[1] -> String[0..1]}>, String>[0..1]
+                                               ): Boolean[1]
+{
+  println('Running DB Tests for : '+ $dbType->toString());
+
+  //list of failed test ids with corresponding error messages
+  let failedTests = $allTests->filter(t|!$ignoredTests->contains($t))->map(f|
+      println('   running test : '+ $f->elementToPath());
+      let result = $f->eval(^DbTestConfig(dbType=$dbType, connection=$connection, expectedSql=if($expectedSqls->isEmpty(), |[], |$expectedSqls->toOne()->get($f))));
+      if($result->isEmpty(), |[], |$f->elementToPath() + ': ' + $result->toOne());
+  );
+
+  let passed= ($allTests->size() - ($ignoredTests->size() + $failedTests->size()));
+  println('Test Summary : \n' +
+          '    Tests Passed = ' +  $passed->toString()+ '\n' +
+          '    Tests Failed = ' +  $failedTests->size()->toString() + 
+                if($failedTests->isEmpty(), |'\n' , |$failedTests->joinStrings('\n                ','\n                ','\n')) + 
+          '    Tests Ignored = ' + $ignoredTests->size()->toString() + '\n'
+          );
+          
+  assert($failedTests->isEmpty());
+}
+
+function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1], extensions:meta::pure::router::extension::RouterExtension[*]):RelationalDatabaseConnection[0..1]
+{
+  meta::legend::test::mayExecuteLegendTest
+     (
+       {clientVersion, serverVersion, serializationKind, host, port |
+         let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::testConnection::getTestConnection_DatabaseType_1__String_1__Integer_1__RouterExtension_MANY__RelationalDatabaseConnection_$0_1$_';
+         let xf = $fStr->pathToElement()->cast(@Function<{DatabaseType[1], String[1], Integer[1], meta::pure::router::extension::RouterExtension[*]->RelationalDatabaseConnection[0..1]}>);
+         let res= $xf->evaluate([$dbType, $host, $port]->map(v|list($v))->concatenate(list($extensions)));
+         if($res->isNotEmpty(), 
+           |$res->toOne()->cast(@RelationalDatabaseConnection),
+           | println('**** Warning **** : Test Connection for dbType: '+ $dbType->toString() + ' not available on Legend Engine Server, tests will only generate execution plans without asserting actual data');
+             []->cast(@RelationalDatabaseConnection);
+           );
+         },
+       { |
+         println('**** Warning **** : Legend Engine Server not available');
+         []->cast(@RelationalDatabaseConnection);
+       }
+     );
+}

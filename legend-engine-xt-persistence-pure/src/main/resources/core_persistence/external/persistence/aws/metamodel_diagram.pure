@@ -1,0 +1,162 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::persistence::aws::Persistence_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_7(
+        type=meta::pure::persistence::metamodel::Persistence,
+        position=(744.00000, 478.00000),
+        width=222.45313,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::persistence::metamodel::trigger::Trigger,
+        position=(377.00000, 500.00000),
+        width=222.45898,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::pure::persistence::metamodel::PersistenceContext,
+        position=(741.67702, 243.54658),
+        width=225.79297,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::pure::persistence::metamodel::persister::Persister,
+        position=(1096.97774, 485.57046),
+        width=219.76953,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::persistence::aws::metamodel::AwsPersistenceContext,
+        position=(603.42611, 361.56502),
+        width=223.11523,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::pure::runtime::Connection,
+        position=(1451.66801, 507.50405),
+        width=104.35840,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::external::persistence::aws::metamodel::connection::AwsS3Connection,
+        position=(1427.66801, 641.50405),
+        width=153.03125,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_11,
+        target=cview_2,
+        points=[(714.98373,383.56502),(854.57350,279.54658)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_15,
+        target=cview_14,
+        points=[(1504.18363,677.50405),(1503.84721,529.50405)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::persistence::metamodel::Persistence.trigger,
+        source=cview_7,
+        target=cview_4
+,        points=[(855.22656,528.00000),(488.22949,529.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::persistence::metamodel::PersistenceContext.persistence,
+        source=cview_2,
+        target=cview_7
+,        points=[(854.57350,279.54658),(855.22656,528.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::pure::persistence::metamodel::Persistence.persister,
+        source=cview_7,
+        target=cview_8
+,        points=[(855.22656,528.00000),(1206.86251,528.57046)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+}

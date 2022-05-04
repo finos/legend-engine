@@ -1,0 +1,107 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+//-----------------------------------------------------
+// File generated from GraphQL specification Chapter 4
+//-----------------------------------------------------
+
+Class meta::external::query::graphQL::introspection::model::__Schema
+{
+  types : meta::external::query::graphQL::introspection::model::__Type[*];
+  queryType : meta::external::query::graphQL::introspection::model::__Type[1];
+  mutationType : meta::external::query::graphQL::introspection::model::__Type[0..1];
+  subscriptionType : meta::external::query::graphQL::introspection::model::__Type[0..1];
+  directives : meta::external::query::graphQL::introspection::model::__Directive[*];
+}
+
+Class meta::external::query::graphQL::introspection::model::__Type
+{
+  kind : meta::external::query::graphQL::introspection::model::__TypeKind[1];
+  name : String[0..1];
+  description : String[0..1];
+  fields : meta::external::query::graphQL::introspection::model::__Field[*];
+  interfaces : meta::external::query::graphQL::introspection::model::__Type[*];
+  possibleTypes : meta::external::query::graphQL::introspection::model::__Type[*];
+  enumValues : meta::external::query::graphQL::introspection::model::__EnumValue[*];
+  inputFields : meta::external::query::graphQL::introspection::model::__InputValue[*];
+  ofType : meta::external::query::graphQL::introspection::model::__Type[0..1];
+}
+
+Class meta::external::query::graphQL::introspection::model::__Field
+{
+  name : String[1];
+  description : String[0..1];
+  args : meta::external::query::graphQL::introspection::model::__InputValue[*];
+  type : meta::external::query::graphQL::introspection::model::__Type[1];
+  isDeprecated : Boolean[1];
+  deprecationReason : String[0..1];
+}
+
+Class meta::external::query::graphQL::introspection::model::__InputValue
+{
+  name : String[1];
+  description : String[0..1];
+  type : meta::external::query::graphQL::introspection::model::__Type[1];
+  defaultValue : String[0..1];
+}
+
+Class meta::external::query::graphQL::introspection::model::__EnumValue
+{
+  name : String[1];
+  description : String[0..1];
+  isDeprecated : Boolean[1];
+  deprecationReason : String[0..1];
+}
+
+Enum meta::external::query::graphQL::introspection::model::__TypeKind
+{
+  SCALAR,
+  OBJECT,
+  INTERFACE,
+  UNION,
+  ENUM,
+  INPUT_OBJECT,
+  LIST,
+  NON_NULL
+}
+
+Class meta::external::query::graphQL::introspection::model::__Directive
+{
+  name : String[1];
+  description : String[0..1];
+  locations : meta::external::query::graphQL::introspection::model::__DirectiveLocation[*];
+  args : meta::external::query::graphQL::introspection::model::__InputValue[*];
+}
+
+Enum meta::external::query::graphQL::introspection::model::__DirectiveLocation
+{
+  QUERY,
+  MUTATION,
+  SUBSCRIPTION,
+  FIELD,
+  FRAGMENT_DEFINITION,
+  FRAGMENT_SPREAD,
+  INLINE_FRAGMENT,
+  SCHEMA,
+  SCALAR,
+  OBJECT,
+  FIELD_DEFINITION,
+  ARGUMENT_DEFINITION,
+  INTERFACE,
+  UNION,
+  ENUM,
+  ENUM_VALUE,
+  INPUT_OBJECT,
+  INPUT_FIELD_DEFINITION
+}

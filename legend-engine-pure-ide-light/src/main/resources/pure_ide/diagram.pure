@@ -1,0 +1,280 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::metamodel::serialization::json::*;
+import meta::pure::diagram::*;
+import meta::pure::ide::diagram::*;
+import meta::pure::ide::serialization::json::*;
+
+
+// --------------------------- Serialization -----------------------------
+
+function meta::pure::ide::serialization::json::diagramToJSON(diagram:meta::pure::diagram::Diagram[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('package', ^JSONString(value=$diagram.package->toOne()->elementToPath())),
+    newJSONKeyValue('name', ^JSONString(value=$diagram.name->toOne())),
+    newJSONKeyValue('typeViews', ^JSONArray(values=$diagram.typeViews->map(t | $t->typeViewToJSON()))),
+    newJSONKeyValue('associationViews', ^JSONArray(values=$diagram.associationViews->map(v | $v->associationViewToJSON()))),
+    newJSONKeyValue('propertyViews', ^JSONArray(values=$diagram.propertyViews->map(v | $v->propertyViewToJSON()))),
+    newJSONKeyValue('generalizationViews', ^JSONArray(values=$diagram.generalizationViews->map(v | $v->generalizationViewToJSON()))),
+    newJSONKeyValue('rectangleGeometry', $diagram.rectangleGeometry->rectangleGeometryToJSON()),
+    newJSONKeyValue('stereotypes', ^JSONArray(values=$diagram.stereotypes->map(s | $s->stereotypeToJSON()))),
+    newJSONKeyValue('taggedValues', ^JSONArray(values=$diagram.taggedValues->map(t | $t->taggedValueToJSON())))
+  ])
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::typeViewToJSON(typeView:TypeView[1]):JSONElement[1]
+{
+
+  newJSONObject
+  ([
+    newJSONKeyValue('type', ^JSONString(value=$typeView.type->elementToPath())),
+    newJSONKeyValue('typeVisibility', $typeView.typeVisibility->typeVisibilityToJSON()),
+    newJSONKeyValue('attributeVisibility', $typeView.attributeVisibility->attributeVisibilityToJSON()),
+    newJSONKeyValue('rendering', $typeView.rendering->renderingToJSON()),
+    newJSONKeyValue('position', $typeView.position->pointToJSON()),
+    newJSONKeyValue('rectangleGeometry', $typeView.rectangleGeometry->rectangleGeometryToJSON()),
+    newJSONKeyValue('id', ^JSONString(value=$typeView.id))
+  ])
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::typeVisibilityToJSON(typeVisibility:TypeVisibility[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('visibleAttributeCompartment', ^JSONBoolean(value=$typeVisibility.visibleAttributeCompartment)),
+    newJSONKeyValue('visibleStereotype', ^JSONBoolean(value=$typeVisibility.visibleStereotype))
+  ])
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::attributeVisibilityToJSON(attributeVisibility:AttributeVisibility[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('visibleTypes', ^JSONBoolean(value=$attributeVisibility.visibleTypes)),
+    newJSONKeyValue('visibleStereotype', ^JSONBoolean(value=$attributeVisibility.visibleStereotype))
+  ])
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::associationViewToJSON(associationView:AssociationView[1]):JSONElement[1]
+{
+  newJSONObject
+  (
+    [
+      newJSONKeyValue('association', ^JSONString(value=$associationView.association->elementToPath())),
+      newJSONKeyValue('visibility', $associationView.visibility->associationVisibilityToJSON()),
+      newJSONKeyValue('sourcePropertyView', $associationView.sourcePropertyView->associationPropertyViewToJSON()),
+      newJSONKeyValue('targetPropertyView', $associationView.targetPropertyView->associationPropertyViewToJSON())
+    ]->concatenate(abstractPathViewToJSON($associationView))
+  )
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::propertyViewToJSON(propertyView:PropertyView[1]):JSONElement[1]
+{
+  newJSONObject
+  (
+    [
+      newJSONKeyValue('property', $propertyView.property->propertyViewPropertyToJSON()),
+      newJSONKeyValue('visibility', $propertyView.visibility->associationVisibilityToJSON()),
+      newJSONKeyValue('view', $propertyView.view->associationPropertyViewToJSON())
+      ]->concatenate(abstractPathViewToJSON($propertyView))
+  )
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::generalizationViewToJSON(generalizationView:GeneralizationView[1]):JSONElement[1]
+{
+  newJSONObject(abstractPathViewToJSON($generalizationView))
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::propertyViewPropertyToJSON(property:AbstractProperty<Any>[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('owningType', ^JSONString(value=$property.owner->elementToPath())),
+    newJSONKeyValue('name', ^JSONString(value=$property.name->toOne()))
+  ])
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::abstractPathViewToJSON(abstractPathView:AbstractPathView[1]):JSONKeyValue[*]
+{
+  [              
+    newJSONKeyValue('geometry', $abstractPathView.geometry->lineGeometryToJSON()),
+    newJSONKeyValue('rendering', $abstractPathView.rendering->renderingToJSON()),
+    newJSONKeyValue('source', ^JSONString(value=$abstractPathView.source.id)),
+    newJSONKeyValue('target', ^JSONString(value=$abstractPathView.target.id)),
+    newJSONKeyValue('label', ^JSONString(value=$abstractPathView.label)),
+    newJSONKeyValue('id', ^JSONString(value=$abstractPathView.id))
+  ]
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::associationVisibilityToJSON(associationVisibility:AssociationVisibility[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('visibleName', ^JSONBoolean(value=$associationVisibility.visibleName)),
+    newJSONKeyValue('visibleStereotype', ^JSONBoolean(value=$associationVisibility.visibleStereotype))
+  ])
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::associationPropertyViewToJSON(associationPropertyView:AssociationPropertyView[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('propertyLocation', $associationPropertyView.propertyLocation->pointToJSON()),
+    newJSONKeyValue('multiplicityLocation', $associationPropertyView.multiplicityLocation->pointToJSON())
+  ])
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::pointToJSON(point:Point[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('x', ^JSONNumber(value=$point.x)),
+    newJSONKeyValue('y', ^JSONNumber(value=$point.y))
+  ])
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::rectangleGeometryToJSON(rectangleGeometry:RectangleGeometry[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('width', ^JSONNumber(value=$rectangleGeometry.width)),
+    newJSONKeyValue('height', ^JSONNumber(value=$rectangleGeometry.height))
+  ])
+}
+
+
+function <<access.private>> meta::pure::ide::serialization::json::lineGeometryToJSON(lineGeometry:LineGeometry[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('style', ^JSONString(value=$lineGeometry.style->id())),
+    newJSONKeyValue('points', ^JSONArray(values=$lineGeometry.points->map(p | $p->pointToJSON())))
+  ])
+}
+
+function <<access.private>> meta::pure::ide::serialization::json::renderingToJSON(rendering:Rendering[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('color', ^JSONString(value=$rendering.color)),
+    newJSONKeyValue('lineWidth', ^JSONNumber(value=$rendering.lineWidth))
+  ])
+}
+
+
+// --------------------------- Diagram Info -----------------------------
+
+Class <<access.private>> meta::pure::ide::diagram::DiagramInfo
+{
+  name: String[1];
+  diagram: Diagram[1];
+  domainInfo: DiagramDomainInfo[1];
+}
+
+Class <<access.private>> meta::pure::ide::diagram::DiagramDomainInfo
+{
+  // types: Type[*];
+  classes: Class<Any>[*];
+  enumerations: Enumeration<Any>[*];
+  profiles: Profile[*];
+  // associations: Association[*];
+}
+
+function meta::pure::ide::diagram::profileToJSON(profile:meta::pure::metamodel::extension::Profile[1]):JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('package', ^JSONString(value=$profile.package->toOne()->elementToPath())),
+    newJSONKeyValue('name', ^JSONString(value=$profile.name->toOne())),
+    newJSONKeyValue('tags', ^JSONArray(values=$profile.p_tags->map(st|^JSONString(value=$st.value)))),
+    newJSONKeyValue('stereotypes', ^JSONArray(values=$profile.p_stereotypes->map(st|^JSONString(value=$st.value))))
+  ])
+}
+
+function meta::pure::ide::diagram::getDiagramInfo(diagramPath:String[1]):String[1]
+{
+  let diagram = $diagramPath->pathToElement()->cast(@meta::pure::diagram::Diagram);
+  let classes = $diagram.typeViews.type->filter(t|$t->instanceOf(Class))->cast(@Class<Any>)->removeDuplicates();
+  // NOTE: we don't support showing tagged values and stereotypes for properties at the moment
+  let profiles = $classes->map(class|$class.taggedValues->map(tv|$tv.tag.profile)->concatenate($class.stereotypes->map(st|$st.profile)))
+    ->cast(@Profile)->removeDuplicates();
+  let allProperties = $classes->filter(t|$t->instanceOf(Class))->map(t|$t->cast(@Class<Any>).properties->cast(@Property<Nil,Any|*>));
+  let allQualifiedProperties = $classes->filter(t|$t->instanceOf(Class))->map(t|$t->cast(@Class<Any>).qualifiedProperties->cast(@QualifiedProperty<Any>));
+  let enumerations = $allProperties->map(p|$p.genericType.rawType)->concatenate($allQualifiedProperties->map(p|$p.genericType.rawType))->filter(t|$t->instanceOf(Enumeration))->cast(@Enumeration<Any>)->removeDuplicates();
+
+  let value = ^DiagramInfo
+  (
+    name = $diagramPath,
+    domainInfo = ^DiagramDomainInfo
+                (
+                  classes = $classes,
+                  profiles = $profiles,
+                  enumerations = $enumerations
+                  // associations = $diagram.associationViews.association->removeDuplicates()
+                ),
+    diagram = $diagram
+  );
+
+  toJSON
+  (
+    $value,
+    [
+      {d:Diagram[1],j:JSONState[1]|$d->diagramToJSON()},
+      {p:Profile[1],j:JSONState[1]|$p->profileToJSON()}
+    ],
+    1000
+  );
+}
+
+Class <<access.private>> meta::pure::ide::diagram::DiagramClassInfo
+{
+   class: Class<Any>[1];
+  //  associations: Association[*];
+   specializations: ShallowPackageableElement<Class<Any>>[*];
+   profiles: Profile[*];
+   enumerations: Enumeration<Any>[*];
+}
+
+function meta::pure::ide::diagram::getDiagramClassInfo(classPath:String[1]):String[1]
+{
+  let class = $classPath->pathToElement()->cast(@Class<Any>);
+  // let associations = $class.propertiesFromAssociations->map(p|$p.owner)->cast(@Association)->removeDuplicates();
+  // NOTE: we don't support showing tagged values and stereotypes for properties at the moment
+  let profiles = $class.taggedValues->map(tv|$tv.tag.profile)
+    ->concatenate($class.stereotypes->map(st|$st.profile))
+    ->cast(@Profile)->removeDuplicates();
+  let specializations = $class.specializations->map(g|$g.specific)->filter(s|$s->instanceOf(meta::pure::metamodel::type::Class))->map(s|$s->cast(@PackageableElement)->packageableElementPointer())->cast(@ShallowPackageableElement<Class<Any>>);
+  let enumerations = $class.properties->map(p|$p.genericType.rawType)->filter(t|$t->instanceOf(Enumeration))
+    ->concatenate($class.qualifiedProperties->map(p|$p.genericType.rawType)->filter(t|$t->instanceOf(Enumeration)))->cast(@Enumeration<Any>)->removeDuplicates();
+  
+  toJSON
+  (
+    ^DiagramClassInfo
+    (
+        class = $class,
+        // associations = $associations,
+        profiles = $profiles,
+        specializations = $specializations,
+        enumerations = $enumerations
+    ),
+    [
+      {p:Profile[1],j:JSONState[1]|$p->profileToJSON()}
+    ],
+    1000
+  );   
+}
